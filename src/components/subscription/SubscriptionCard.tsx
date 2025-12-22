@@ -1,0 +1,111 @@
+import React, { useState } from 'react';
+import { Crown, CreditCard, Loader2 } from 'lucide-react';
+import { StripeProduct } from '../../stripe-config';
+import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
+
+interface SubscriptionCardProps {
+  product: StripeProduct;
+  isCurrentPlan?: boolean;
+}
+
+export function SubscriptionCard({ product, isCurrentPlan = false }: SubscriptionCardProps) {
+  const [loading, setLoading] = useState(false);
+  const { language } = useLanguage();
+
+  const handleSubscribe = async () => {
+    setLoading(true);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          price_id: product.priceId,
+          mode: product.mode,
+          success_url: `${window.location.origin}/dashboard?payment=success`,
+          cancel_url: `${window.location.origin}/dashboard`,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+
+      const { url } = await response.json();
+      
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+      // You could add a toast notification here
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className={`relative bg-white rounded-xl shadow-lg border-2 p-8 ${
+      isCurrentPlan ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-200'
+    }`}>
+      {isCurrentPlan && (
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+          <span className="bg-green-500 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center">
+            <Crown className="w-4 h-4 mr-1" />
+            {language === 'de' ? 'Aktueller Tarif' : 'Current Plan'}
+          </span>
+        </div>
+      )}
+
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h3>
+        <p className="text-gray-600 mb-6">{product.description}</p>
+
+        <div className="mb-8">
+          <span className="text-4xl font-bold text-gray-900">
+            {product.currencySymbol}{product.price}
+          </span>
+          {product.mode === 'subscription' && (
+            <span className="text-gray-600 ml-1">
+              {language === 'de' ? '/Monat' : '/month'}
+            </span>
+          )}
+        </div>
+
+        <button
+          onClick={handleSubscribe}
+          disabled={loading || isCurrentPlan}
+          className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors ${
+            isCurrentPlan
+              ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 text-white'
+          }`}
+        >
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : isCurrentPlan ? (
+            language === 'de' ? 'Aktiv' : 'Active'
+          ) : (
+            <>
+              <CreditCard className="w-5 h-5 mr-2" />
+              {product.mode === 'subscription'
+                ? (language === 'de' ? 'Abonnieren' : 'Subscribe')
+                : (language === 'de' ? 'Kaufen' : 'Purchase')}
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}

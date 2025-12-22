@@ -1,0 +1,141 @@
+import { useState } from 'react';
+import { X, Building2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
+interface AuthModalProps {
+  onClose: () => void;
+}
+
+export default function AuthModal({ onClose }: AuthModalProps) {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { signIn, signUp } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const { error } = isLogin
+        ? await signIn(email, password)
+        : await signUp(email, password);
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          setError('Ungültige E-Mail oder Passwort');
+        } else if (error.message.includes('User already registered')) {
+          setError('Diese E-Mail ist bereits registriert');
+        } else {
+          setError(error.message);
+        }
+      } else {
+        if (!isLogin) {
+          setError('');
+        }
+      }
+    } catch (err) {
+      setError('Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <X className="w-6 h-6" />
+        </button>
+
+        <div className="p-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Building2 className="w-8 h-8 text-blue-600" />
+            <span className="text-2xl font-bold text-slate-800">Folio</span>
+          </div>
+
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            {isLogin ? 'Willkommen zurück' : 'Account erstellen'}
+          </h2>
+          <p className="text-slate-600 mb-6">
+            {isLogin
+              ? 'Melden Sie sich an, um auf Ihr Dashboard zuzugreifen'
+              : 'Erstellen Sie einen kostenlosen Account und starten Sie sofort'
+            }
+          </p>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+                E-Mail
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                placeholder="ihre@email.de"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+                Passwort
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
+              {!isLogin && (
+                <p className="mt-1 text-xs text-slate-500">Mindestens 6 Zeichen</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Bitte warten...' : (isLogin ? 'Anmelden' : 'Account erstellen')}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+              }}
+              className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            >
+              {isLogin
+                ? 'Noch kein Account? Jetzt registrieren'
+                : 'Bereits registriert? Jetzt anmelden'
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
