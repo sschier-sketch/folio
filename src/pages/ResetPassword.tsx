@@ -14,21 +14,27 @@ export function ResetPassword() {
 
   useEffect(() => {
     const checkToken = async () => {
-      const hash = window.location.hash;
-      const hashParams = new URLSearchParams(hash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      const type = hashParams.get('type');
+      const { data: { session } } = await supabase.auth.getSession();
 
-      console.log('ResetPassword - Hash:', hash);
-      console.log('ResetPassword - Type:', type);
-      console.log('ResetPassword - Token:', accessToken ? 'present' : 'not present');
-
-      if (type === 'recovery' && accessToken) {
+      if (session) {
         setHasValidToken(true);
       } else {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setHasValidToken(true);
+        const hash = window.location.hash;
+        const hashParams = new URLSearchParams(hash.substring(1));
+        const type = hashParams.get('type');
+
+        if (type === 'recovery') {
+          setTimeout(async () => {
+            const { data: { session: retrySession } } = await supabase.auth.getSession();
+            if (retrySession) {
+              setHasValidToken(true);
+            } else {
+              setMessage({
+                type: 'error',
+                text: 'Ungültiger oder abgelaufener Link. Bitte fordern Sie einen neuen Passwort-Reset-Link an.'
+              });
+            }
+          }, 500);
         } else {
           setMessage({
             type: 'error',

@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { ResetPassword } from './pages/ResetPassword';
@@ -14,10 +14,37 @@ import { Admin } from './pages/Admin';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
 import Support from './pages/Support';
+import { supabase } from './lib/supabase';
+
+function PasswordRecoveryHandler() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkForRecovery = () => {
+      const hash = window.location.hash;
+      if (hash && hash.includes('type=recovery')) {
+        navigate('/reset-password', { replace: true });
+      }
+    };
+
+    checkForRecovery();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        navigate('/reset-password', { replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  return null;
+}
 
 function App() {
   return (
     <Router>
+      <PasswordRecoveryHandler />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
