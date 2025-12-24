@@ -6,8 +6,6 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  showPasswordReset: boolean;
-  setShowPasswordReset: (show: boolean) => void;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -19,33 +17,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   useEffect(() => {
-    const checkPasswordRecovery = () => {
-      const hash = window.location.hash;
-      const hashParams = new URLSearchParams(hash.substring(1));
-      const type = hashParams.get('type');
-      const accessToken = hashParams.get('access_token');
-
-      console.log('Hash:', hash);
-      console.log('Type:', type);
-      console.log('Access Token:', accessToken ? 'present' : 'not present');
-
-      if (type === 'recovery' || (accessToken && hash.includes('type=recovery'))) {
-        console.log('Setting showPasswordReset to true');
-        setShowPasswordReset(true);
-      }
-    };
-
-    checkPasswordRecovery();
-
-    const handleHashChange = () => {
-      checkPasswordRecovery();
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -53,20 +26,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth event:', event);
-      if (event === 'PASSWORD_RECOVERY') {
-        console.log('PASSWORD_RECOVERY event received');
-        setShowPasswordReset(true);
-      }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string) => {
@@ -90,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, showPasswordReset, setShowPasswordReset, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

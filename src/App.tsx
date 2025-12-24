@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
+import { ResetPassword } from './pages/ResetPassword';
 import Dashboard from './components/Dashboard';
 import { Subscription } from './pages/Subscription';
 import { SubscriptionSuccess } from './pages/SubscriptionSuccess';
@@ -13,29 +14,15 @@ import { Admin } from './pages/Admin';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
 import Support from './pages/Support';
-import { PasswordResetModal } from './components/auth/PasswordResetModal';
-import { useAuth } from './hooks/useAuth';
 
 function App() {
-  const { showPasswordReset, setShowPasswordReset } = useAuth();
-
-  console.log('App showPasswordReset:', showPasswordReset);
-
-  const handleClosePasswordReset = () => {
-    window.history.replaceState(null, '', window.location.pathname);
-    setShowPasswordReset(false);
-  };
-
   return (
     <Router>
-      <PasswordResetModal
-        isOpen={showPasswordReset}
-        onClose={handleClosePasswordReset}
-      />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/impressum" element={<Impressum />} />
         <Route path="/features" element={<Features />} />
