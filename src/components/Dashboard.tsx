@@ -82,7 +82,7 @@ export default function Dashboard() {
                 >
                   <User className="w-4 h-4" />
                   <span className="text-sm font-medium">
-                    {user?.email?.split('@')[0] || 'User'}
+                    Einstellungen
                   </span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${showSettingsDropdown ? 'rotate-180' : ''}`} />
                 </button>

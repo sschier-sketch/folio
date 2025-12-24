@@ -10,6 +10,8 @@ interface Stats {
   totalMonthlyRent: number;
   totalPropertyValue: number;
   averageYield: number;
+  totalMonthlyExpenses: number;
+  monthlySurplus: number;
 }
 
 export default function DashboardHome() {
@@ -21,6 +23,8 @@ export default function DashboardHome() {
     totalMonthlyRent: 0,
     totalPropertyValue: 0,
     averageYield: 0,
+    totalMonthlyExpenses: 0,
+    monthlySurplus: 0,
   });
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -33,19 +37,22 @@ export default function DashboardHome() {
     if (!user) return;
 
     try {
-      const [propertiesRes, tenantsRes, contractsRes] = await Promise.all([
+      const [propertiesRes, tenantsRes, contractsRes, loansRes] = await Promise.all([
         supabase.from('properties').select('current_value').eq('user_id', user.id),
         supabase.from('tenants').select('id').eq('user_id', user.id).eq('is_active', true),
         supabase.from('rental_contracts').select('base_rent, property_id').eq('user_id', user.id),
+        supabase.from('loans').select('monthly_payment').eq('user_id', user.id),
       ]);
 
       const propertiesCount = propertiesRes.data?.length || 0;
       const tenantsCount = tenantsRes.data?.length || 0;
       const totalMonthlyRent = contractsRes.data?.reduce((sum, c) => sum + Number(c.base_rent), 0) || 0;
       const totalPropertyValue = propertiesRes.data?.reduce((sum, p) => sum + Number(p.current_value), 0) || 0;
+      const totalMonthlyExpenses = loansRes.data?.reduce((sum, l) => sum + Number(l.monthly_payment), 0) || 0;
 
       const annualRent = totalMonthlyRent * 12;
       const averageYield = totalPropertyValue > 0 ? (annualRent / totalPropertyValue) * 100 : 0;
+      const monthlySurplus = totalMonthlyRent - totalMonthlyExpenses;
 
       setStats({
         propertiesCount,
@@ -53,6 +60,8 @@ export default function DashboardHome() {
         totalMonthlyRent,
         totalPropertyValue,
         averageYield,
+        totalMonthlyExpenses,
+        monthlySurplus,
       });
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -146,11 +155,47 @@ export default function DashboardHome() {
                 {formatCurrency(stats.totalPropertyValue)}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">{t('dashboard.portfolio.annual')}</span>
-              <span className="text-lg font-semibold text-slate-900">
-                {formatCurrency(stats.totalMonthlyRent * 12)}
-              </span>
+            <div className="border-t border-slate-100 pt-4">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-slate-600">{t('dashboard.portfolio.annual')}</span>
+                <span className="text-lg font-semibold text-slate-900">
+                  {formatCurrency(stats.totalMonthlyRent * 12)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Monatlich</span>
+                <span className="text-sm text-slate-600">
+                  {formatCurrency(stats.totalMonthlyRent)}
+                </span>
+              </div>
+            </div>
+            <div className="border-t border-slate-100 pt-4">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-slate-600">Jährliche Ausgaben</span>
+                <span className="text-lg font-semibold text-slate-900">
+                  {formatCurrency(stats.totalMonthlyExpenses * 12)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Monatlich</span>
+                <span className="text-sm text-slate-600">
+                  {formatCurrency(stats.totalMonthlyExpenses)}
+                </span>
+              </div>
+            </div>
+            <div className="border-t border-slate-100 pt-4">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-slate-600 font-medium">Jährlicher Überschuss</span>
+                <span className={`text-lg font-bold ${stats.monthlySurplus >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {formatCurrency(stats.monthlySurplus * 12)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Monatlich</span>
+                <span className={`text-sm font-semibold ${stats.monthlySurplus >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {formatCurrency(stats.monthlySurplus)}
+                </span>
+              </div>
             </div>
           </div>
         </div>
