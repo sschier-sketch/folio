@@ -22,6 +22,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
+
+    if (type === 'recovery') {
+      setShowPasswordReset(true);
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -29,14 +36,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      (() => {
-        if (event === 'PASSWORD_RECOVERY') {
-          setShowPasswordReset(true);
-        }
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      })();
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowPasswordReset(true);
+      }
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

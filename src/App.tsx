@@ -19,11 +19,16 @@ import { useAuth } from './hooks/useAuth';
 function App() {
   const { showPasswordReset, setShowPasswordReset } = useAuth();
 
+  const handleClosePasswordReset = () => {
+    window.history.replaceState(null, '', window.location.pathname);
+    setShowPasswordReset(false);
+  };
+
   return (
     <Router>
       <PasswordResetModal
         isOpen={showPasswordReset}
-        onClose={() => setShowPasswordReset(false)}
+        onClose={handleClosePasswordReset}
       />
       <Routes>
         <Route path="/" element={<LandingPage />} />

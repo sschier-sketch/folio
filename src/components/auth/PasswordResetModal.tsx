@@ -41,8 +41,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
       } else {
         setMessage({ type: 'success', text: 'Passwort erfolgreich geändert!' });
         setTimeout(() => {
-          onClose();
-          window.location.reload();
+          window.location.href = '/dashboard';
         }, 1500);
       }
     } catch (error) {
