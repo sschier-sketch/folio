@@ -22,12 +22,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get('type');
+    const checkPasswordRecovery = () => {
+      const hash = window.location.hash;
+      const hashParams = new URLSearchParams(hash.substring(1));
+      const type = hashParams.get('type');
+      const accessToken = hashParams.get('access_token');
 
-    if (type === 'recovery') {
-      setShowPasswordReset(true);
-    }
+      console.log('Hash:', hash);
+      console.log('Type:', type);
+      console.log('Access Token:', accessToken ? 'present' : 'not present');
+
+      if (type === 'recovery' || (accessToken && hash.includes('type=recovery'))) {
+        console.log('Setting showPasswordReset to true');
+        setShowPasswordReset(true);
+      }
+    };
+
+    checkPasswordRecovery();
+
+    const handleHashChange = () => {
+      checkPasswordRecovery();
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -36,7 +53,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event:', event);
       if (event === 'PASSWORD_RECOVERY') {
+        console.log('PASSWORD_RECOVERY event received');
         setShowPasswordReset(true);
       }
       setSession(session);
@@ -44,7 +63,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {

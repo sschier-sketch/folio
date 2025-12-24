@@ -19,6 +19,8 @@ import { useAuth } from './hooks/useAuth';
 function App() {
   const { showPasswordReset, setShowPasswordReset } = useAuth();
 
+  console.log('App showPasswordReset:', showPasswordReset);
+
   const handleClosePasswordReset = () => {
     window.history.replaceState(null, '', window.location.pathname);
     setShowPasswordReset(false);

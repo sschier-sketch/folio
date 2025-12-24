@@ -14,6 +14,8 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
 
+  console.log('PasswordResetModal isOpen:', isOpen);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
