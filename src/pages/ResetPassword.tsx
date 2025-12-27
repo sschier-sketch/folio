@@ -20,13 +20,22 @@ export function ResetPassword() {
         setHasValidToken(true);
       } else {
         const hash = window.location.hash;
+        const search = window.location.search;
+
         const hashParams = new URLSearchParams(hash.substring(1));
-        const type = hashParams.get('type');
+        const searchParams = new URLSearchParams(search);
+
+        const type = hashParams.get('type') || searchParams.get('type');
+        const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
 
         if (type === 'recovery') {
-          setTimeout(async () => {
-            const { data: { session: retrySession } } = await supabase.auth.getSession();
-            if (retrySession) {
+          if (accessToken) {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: hashParams.get('refresh_token') || searchParams.get('refresh_token') || '',
+            });
+
+            if (!error) {
               setHasValidToken(true);
             } else {
               setMessage({
@@ -34,7 +43,19 @@ export function ResetPassword() {
                 text: 'Ungültiger oder abgelaufener Link. Bitte fordern Sie einen neuen Passwort-Reset-Link an.'
               });
             }
-          }, 500);
+          } else {
+            setTimeout(async () => {
+              const { data: { session: retrySession } } = await supabase.auth.getSession();
+              if (retrySession) {
+                setHasValidToken(true);
+              } else {
+                setMessage({
+                  type: 'error',
+                  text: 'Ungültiger oder abgelaufener Link. Bitte fordern Sie einen neuen Passwort-Reset-Link an.'
+                });
+              }
+            }, 1000);
+          }
         } else {
           setMessage({
             type: 'error',

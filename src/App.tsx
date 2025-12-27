@@ -22,8 +22,10 @@ function PasswordRecoveryHandler() {
   useEffect(() => {
     const checkForRecovery = () => {
       const hash = window.location.hash;
-      if (hash && hash.includes('type=recovery')) {
-        navigate('/reset-password', { replace: true });
+      const search = window.location.search;
+
+      if ((hash && hash.includes('type=recovery')) || (search && search.includes('type=recovery'))) {
+        navigate('/reset-password' + hash, { replace: true });
       }
     };
 
