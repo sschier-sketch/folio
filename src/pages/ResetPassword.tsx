@@ -1,79 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { Eye, EyeOff, Lock, CheckCircle } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff, Lock, CheckCircle, Mail } from 'lucide-react';
 
 export function ResetPassword() {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
+  const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
-  const [hasValidToken, setHasValidToken] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('ResetPassword component mounted');
-    console.log('Current URL:', window.location.href);
-    console.log('Hash:', window.location.hash);
-    console.log('Search:', window.location.search);
+    if (token) {
+      handleConfirmReset();
+    }
+  }, [token]);
 
-    const checkToken = async () => {
-      console.log('Checking token...');
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('Current session:', session);
+  const handleConfirmReset = async () => {
+    setConfirming(true);
+    setLoading(true);
 
-      if (session) {
-        setHasValidToken(true);
-      } else {
-        const hash = window.location.hash;
-        const search = window.location.search;
-
-        const hashParams = new URLSearchParams(hash.substring(1));
-        const searchParams = new URLSearchParams(search);
-
-        const type = hashParams.get('type') || searchParams.get('type');
-        const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
-
-        if (type === 'recovery') {
-          if (accessToken) {
-            const { error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: hashParams.get('refresh_token') || searchParams.get('refresh_token') || '',
-            });
-
-            if (!error) {
-              setHasValidToken(true);
-            } else {
-              setMessage({
-                type: 'error',
-                text: 'Ungültiger oder abgelaufener Link. Bitte fordern Sie einen neuen Passwort-Reset-Link an.'
-              });
-            }
-          } else {
-            setTimeout(async () => {
-              const { data: { session: retrySession } } = await supabase.auth.getSession();
-              if (retrySession) {
-                setHasValidToken(true);
-              } else {
-                setMessage({
-                  type: 'error',
-                  text: 'Ungültiger oder abgelaufener Link. Bitte fordern Sie einen neuen Passwort-Reset-Link an.'
-                });
-              }
-            }, 1000);
-          }
-        } else {
-          setMessage({
-            type: 'error',
-            text: 'Ungültiger oder abgelaufener Link. Bitte fordern Sie einen neuen Passwort-Reset-Link an.'
-          });
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/confirm-password-reset`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ token }),
         }
-      }
-    };
+      );
 
-    checkToken();
-  }, []);
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: data.message });
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } else {
+        setMessage({ type: 'error', text: data.error });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Ein unerwarteter Fehler ist aufgetreten' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,17 +72,27 @@ export function ResetPassword() {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/request-password-reset`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ email, newPassword }),
+        }
+      );
 
-      if (error) {
-        setMessage({ type: 'error', text: error.message });
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: data.message });
+        setEmail('');
+        setNewPassword('');
+        setConfirmPassword('');
       } else {
-        setMessage({ type: 'success', text: 'Passwort erfolgreich geändert! Sie werden weitergeleitet...' });
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
+        setMessage({ type: 'error', text: data.error });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Ein unerwarteter Fehler ist aufgetreten' });
@@ -120,8 +109,14 @@ export function ResetPassword() {
             <Lock className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Neues Passwort festlegen</h1>
-            <p className="text-sm text-slate-600">Bitte geben Sie Ihr neues Passwort ein</p>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {confirming ? 'Bestätigung läuft...' : 'Passwort zurücksetzen'}
+            </h1>
+            <p className="text-sm text-slate-600">
+              {confirming
+                ? 'Ihr Passwort wird aktualisiert'
+                : 'Geben Sie Ihre E-Mail und Ihr neues Passwort ein'}
+            </p>
           </div>
         </div>
 
@@ -136,16 +131,34 @@ export function ResetPassword() {
           </div>
         )}
 
-        {!hasValidToken && !message ? (
+        {confirming ? (
           <div className="text-center py-8">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-slate-400" />
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-blue-600 animate-pulse" />
             </div>
-            <p className="text-slate-600 mb-4">Link wird überprüft...</p>
+            <p className="text-slate-600 mb-4">Passwort wird aktualisiert...</p>
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
           </div>
-        ) : hasValidToken ? (
+        ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+                E-Mail-Adresse
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="ihre@email.de"
+                />
+              </div>
+            </div>
+
             <div>
               <label htmlFor="new-password" className="block text-sm font-medium text-slate-700 mb-2">
                 Neues Passwort
@@ -189,6 +202,13 @@ export function ResetPassword() {
               />
             </div>
 
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-700">
+                <strong>So funktioniert es:</strong> Sie erhalten eine E-Mail mit einem Bestätigungslink.
+                Ihr neues Passwort wird erst nach dem Klick auf diesen Link aktiviert.
+              </p>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -199,7 +219,7 @@ export function ResetPassword() {
               ) : (
                 <>
                   <Lock className="w-5 h-5 mr-2" />
-                  Passwort ändern
+                  Passwort zurücksetzen
                 </>
               )}
             </button>
@@ -214,7 +234,7 @@ export function ResetPassword() {
               </button>
             </div>
           </form>
-        ) : null}
+        )}
       </div>
     </div>
   );
