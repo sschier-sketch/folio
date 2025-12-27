@@ -113,28 +113,43 @@ Deno.serve(async (req: Request) => {
     // Send confirmation email
     const confirmationUrl = `${req.headers.get('origin') || 'https://rentab.ly'}/reset-password/confirm?token=${resetRequest.verification_token}`;
 
-    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-      },
-      body: JSON.stringify({
-        to: email,
-        subject: 'Passwort-Änderung bestätigen',
-        html: `
-          <h2>Passwort-Änderung bestätigen</h2>
-          <p>Sie haben eine Passwort-Änderung angefordert.</p>
-          <p>Klicken Sie auf den folgenden Link, um Ihr neues Passwort zu aktivieren:</p>
-          <p><a href="${confirmationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px;">Passwort bestätigen</a></p>
-          <p>Dieser Link ist 24 Stunden gültig.</p>
-          <p>Falls Sie diese Änderung nicht angefordert haben, ignorieren Sie diese E-Mail.</p>
-        `,
-      }),
-    });
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
-    if (!emailResponse.ok) {
-      console.error('Error sending email:', await emailResponse.text());
+    if (!RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not configured');
+    } else {
+      try {
+        const emailResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'Rentab.ly <noreply@rentab.ly>',
+            to: [email],
+            subject: 'Passwort-Änderung bestätigen',
+            html: `
+              <h2>Passwort-Änderung bestätigen</h2>
+              <p>Sie haben eine Passwort-Änderung angefordert.</p>
+              <p>Klicken Sie auf den folgenden Link, um Ihr neues Passwort zu aktivieren:</p>
+              <p><a href="${confirmationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px;">Passwort bestätigen</a></p>
+              <p>Dieser Link ist 24 Stunden gültig.</p>
+              <p>Falls Sie diese Änderung nicht angefordert haben, ignorieren Sie diese E-Mail.</p>
+            `,
+          }),
+        });
+
+        const emailData = await emailResponse.json();
+
+        if (!emailResponse.ok) {
+          console.error('Resend API error:', emailData);
+        } else {
+          console.log('Password reset email sent successfully:', emailData.id);
+        }
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+      }
     }
 
     return new Response(
