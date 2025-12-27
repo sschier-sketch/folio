@@ -24,16 +24,22 @@ function PasswordRecoveryHandler() {
       const hash = window.location.hash;
       const search = window.location.search;
 
+      console.log('Checking for recovery - hash:', hash, 'search:', search);
+
       if ((hash && hash.includes('type=recovery')) || (search && search.includes('type=recovery'))) {
+        console.log('Recovery detected, navigating to reset-password');
         navigate('/reset-password' + hash, { replace: true });
       }
     };
 
     checkForRecovery();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
       if (event === 'PASSWORD_RECOVERY') {
-        navigate('/reset-password', { replace: true });
+        console.log('PASSWORD_RECOVERY event, navigating to reset-password');
+        const hash = window.location.hash;
+        navigate('/reset-password' + hash, { replace: true });
       }
     });
 
