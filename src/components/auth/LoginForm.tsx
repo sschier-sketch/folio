@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Eye, EyeOff, LogIn, Mail } from 'lucide-react';
 
@@ -7,7 +8,8 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
-  const [loginMode, setLoginMode] = useState<'password' | 'magic' | 'reset'>('password');
+  const navigate = useNavigate();
+  const [loginMode, setLoginMode] = useState<'password' | 'magic'>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -57,31 +59,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         setMessage({
           type: 'success',
           text: 'Magic Link wurde an Ihre E-Mail-Adresse gesendet! Bitte prüfen Sie Ihr Postfach.'
-        });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Ein unerwarteter Fehler ist aufgetreten' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) {
-        setMessage({ type: 'error', text: error.message });
-      } else {
-        setMessage({
-          type: 'success',
-          text: 'Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail-Adresse gesendet! Bitte prüfen Sie Ihr Postfach.'
         });
       }
     } catch (error) {
@@ -160,11 +137,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               </label>
               <button
                 type="button"
-                onClick={() => {
-                  setLoginMode('reset');
-                  setMessage(null);
-                  setPassword('');
-                }}
+                onClick={() => navigate('/reset-password')}
                 className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 Passwort vergessen?
@@ -207,52 +180,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 Anmelden
               </>
             )}
-          </button>
-        </form>
-      ) : loginMode === 'reset' ? (
-        <form onSubmit={handlePasswordReset} className="space-y-6">
-          <div>
-            <label htmlFor="reset-email" className="block text-sm font-medium text-slate-700 mb-2">
-              E-Mail-Adresse
-            </label>
-            <input
-              id="reset-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="ihre@email.de"
-            />
-            <p className="mt-2 text-xs text-slate-500">
-              Wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts per E-Mail zu
-            </p>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <Mail className="w-5 h-5 mr-2" />
-                Reset-Link senden
-              </>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setLoginMode('password');
-              setMessage(null);
-            }}
-            className="w-full text-sm text-slate-600 hover:text-slate-900"
-          >
-            Zurück zur Anmeldung
           </button>
         </form>
       ) : (
