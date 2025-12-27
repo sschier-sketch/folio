@@ -196,7 +196,7 @@ export default function LandingPage() {
                   <div className="text-6xl font-bold mb-2">€</div>
                   <h3 className="text-2xl font-bold mb-4">Kostenlos starten</h3>
                   <p className="text-blue-100 mb-6">
-                    Testen Sie Folio unverbindlich und überzeugen Sie sich selbst von den Vorteilen
+                    Testen Sie Rentab.ly unverbindlich und überzeugen Sie sich selbst von den Vorteilen
                     einer modernen Immobilienverwaltung.
                   </p>
                   <button

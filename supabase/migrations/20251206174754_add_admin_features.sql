@@ -118,14 +118,14 @@ CREATE POLICY "Only admins can insert activity log"
 
 -- Insert default email templates
 INSERT INTO email_templates (template_key, subject, body_html, body_text, variables) VALUES
-('user_invitation', 'Sie wurden zu Folio eingeladen', 
-'<h1>Willkommen bei Folio!</h1><p>{{inviter_name}} hat Sie eingeladen, Folio zu nutzen.</p><p><a href="{{invitation_link}}">Jetzt registrieren</a></p>',
-'Willkommen bei Folio! {{inviter_name}} hat Sie eingeladen, Folio zu nutzen. Registrieren Sie sich hier: {{invitation_link}}',
+('user_invitation', 'Sie wurden zu Rentab.ly eingeladen',
+'<h1>Willkommen bei Rentab.ly!</h1><p>{{inviter_name}} hat Sie eingeladen, Rentab.ly zu nutzen.</p><p><a href="{{invitation_link}}">Jetzt registrieren</a></p>',
+'Willkommen bei Rentab.ly! {{inviter_name}} hat Sie eingeladen, Rentab.ly zu nutzen. Registrieren Sie sich hier: {{invitation_link}}',
 '["inviter_name", "invitation_link", "invitee_email"]'::jsonb),
 
-('registration', 'Willkommen bei Folio', 
-'<h1>Herzlich willkommen!</h1><p>Vielen Dank für Ihre Registrierung bei Folio, {{user_name}}.</p><p>Sie können jetzt mit der Verwaltung Ihrer Immobilien beginnen.</p>',
-'Herzlich willkommen! Vielen Dank für Ihre Registrierung bei Folio, {{user_name}}. Sie können jetzt mit der Verwaltung Ihrer Immobilien beginnen.',
+('registration', 'Willkommen bei Rentab.ly',
+'<h1>Herzlich willkommen!</h1><p>Vielen Dank für Ihre Registrierung bei Rentab.ly, {{user_name}}.</p><p>Sie können jetzt mit der Verwaltung Ihrer Immobilien beginnen.</p>',
+'Herzlich willkommen! Vielen Dank für Ihre Registrierung bei Rentab.ly, {{user_name}}. Sie können jetzt mit der Verwaltung Ihrer Immobilien beginnen.',
 '["user_name", "user_email"]'::jsonb),
 
 ('password_reset', 'Passwort zurücksetzen', 

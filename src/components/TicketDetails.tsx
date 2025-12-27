@@ -90,8 +90,8 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
             body: JSON.stringify({
               ticketId: ticket.id,
               message: newMessage,
-              senderName: user.email || 'Folio Support',
-              senderEmail: user.email || 'support@folio.app',
+              senderName: user.email || 'Rentab.ly Support',
+              senderEmail: user.email || 'support@rentab.ly',
             }),
           }
         );

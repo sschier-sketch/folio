@@ -11,8 +11,8 @@ export interface StripeProduct {
 export const stripeProducts: StripeProduct[] = [
   {
     priceId: 'price_1SbIhEDT0DRNFiKmk9kwJUXT',
-    name: 'Folio Pro Membership',
-    description: 'Verwalte deine Mieter unkompliziert mit Folio!',
+    name: 'Rentab.ly Pro Membership',
+    description: 'Verwalte deine Mieter unkompliziert mit Rentab.ly!',
     mode: 'subscription',
     price: 9.00,
     currency: 'eur',

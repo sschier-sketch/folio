@@ -51,8 +51,8 @@ export default function Impressum() {
               <div className="pl-15 space-y-2 text-slate-700">
                 <p>
                   <span className="font-medium">E-Mail:</span>{' '}
-                  <a href="mailto:hallo@folio.io" className="text-blue-600 hover:text-blue-700">
-                    hallo@folio.io
+                  <a href="mailto:hallo@rentab.ly" className="text-blue-600 hover:text-blue-700">
+                    hallo@rentab.ly
                   </a>
                 </p>
               </div>

@@ -57,7 +57,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         <div className="p-8">
           <div className="flex items-center gap-2 mb-6">
             <Building2 className="w-8 h-8 text-blue-600" />
-            <span className="text-2xl font-bold text-slate-800">Folio</span>
+            <span className="text-2xl font-bold text-slate-800">Rentab.ly</span>
           </div>
 
           <h2 className="text-2xl font-bold text-slate-900 mb-2">

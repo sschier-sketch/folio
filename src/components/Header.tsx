@@ -17,7 +17,7 @@ export function Header() {
               <Building2 className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-              Folio
+              Rentab.ly
             </span>
           </Link>
 

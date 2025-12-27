@@ -103,7 +103,7 @@ export default function ReferralProgramView() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Empfehlungsprogramm</h1>
-        <p className="text-slate-600">Empfehlen Sie Folio und verdienen Sie Belohnungen</p>
+        <p className="text-slate-600">Empfehlen Sie Rentab.ly und verdienen Sie Belohnungen</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

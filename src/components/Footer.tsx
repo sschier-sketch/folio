@@ -13,7 +13,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Building2 className="w-6 h-6 text-blue-600" />
-              <span className="text-xl font-bold text-slate-800">Folio</span>
+              <span className="text-xl font-bold text-slate-800">Rentab.ly</span>
             </div>
             <p className="text-sm text-slate-600">
               {language === 'de'
@@ -94,7 +94,7 @@ export default function Footer() {
 
         <div className="border-t border-slate-200 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-sm text-slate-600">
-            © {currentYear} Folio. {t('footer.rights')}.
+            © {currentYear} Rentab.ly. {t('footer.rights')}.
           </div>
 
           <div className="flex items-center gap-3">

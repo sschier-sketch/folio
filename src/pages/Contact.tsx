@@ -108,10 +108,10 @@ export default function Contact() {
                 </div>
               </div>
               <a
-                href="mailto:hallo@folio.io"
+                href="mailto:hallo@rentab.ly"
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                hallo@folio.io
+                hallo@rentab.ly
               </a>
             </div>
 

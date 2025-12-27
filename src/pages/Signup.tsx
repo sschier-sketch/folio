@@ -35,7 +35,7 @@ export function Signup() {
             <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
               Erstellen Sie Ihr{' '}
               <span className="bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
-                Folio-Konto
+                Rentab.ly-Konto
               </span>
             </h1>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">

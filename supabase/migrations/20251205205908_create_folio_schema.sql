@@ -1,5 +1,5 @@
 /*
-  # Folio Property Management System Schema
+  # Rentab.ly Property Management System Schema
 
   ## Overview
   Complete database schema for a property management SaaS application for landlords.

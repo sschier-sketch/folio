@@ -82,7 +82,7 @@ const translations = {
     'feedback.no_feedback': 'Noch keine Vorschläge vorhanden',
     'feedback.submit_first': 'Seien Sie der Erste und teilen Sie Ihre Idee!',
     'referral.title': 'Empfehlungsprogramm',
-    'referral.description': 'Empfehlen Sie Folio und verdienen Sie Belohnungen!',
+    'referral.description': 'Empfehlen Sie Rentab.ly und verdienen Sie Belohnungen!',
     'referral.learn_more': 'Mehr erfahren',
     'footer.product': 'Produkt',
     'footer.features': 'Funktionen',
@@ -98,12 +98,12 @@ const translations = {
     'footer.rights': 'Alle Rechte vorbehalten',
     // Dashboard Home
     'dashboard.overview': 'Übersicht',
-    'dashboard.welcome': 'Willkommen in Ihrem Folio Dashboard',
+    'dashboard.welcome': 'Willkommen in Ihrem Rentab.ly Dashboard',
     'dashboard.properties': 'Immobilien',
     'dashboard.tenants.active': 'Aktive Mieter',
     'dashboard.rent.monthly': 'Monatliche Mieteinnahmen',
     'dashboard.yield.average': 'Durchschnittliche Rendite',
-    'dashboard.portfolio.total': 'Gesamtportfolio',
+    'dashboard.portfolio.total': 'Gesamtübersicht',
     'dashboard.portfolio.value': 'Gesamtwert Immobilien',
     'dashboard.portfolio.annual': 'Jährliche Mieteinnahmen',
     'dashboard.quickstart': 'Schnellstart',
@@ -476,7 +476,7 @@ const translations = {
     'feedback.no_feedback': 'No suggestions yet',
     'feedback.submit_first': 'Be the first to share your idea!',
     'referral.title': 'Referral Program',
-    'referral.description': 'Refer Folio and earn rewards!',
+    'referral.description': 'Refer Rentab.ly and earn rewards!',
     'referral.learn_more': 'Learn more',
     'footer.product': 'Product',
     'footer.features': 'Features',
@@ -492,12 +492,12 @@ const translations = {
     'footer.rights': 'All rights reserved',
     // Dashboard Home
     'dashboard.overview': 'Overview',
-    'dashboard.welcome': 'Welcome to your Folio Dashboard',
+    'dashboard.welcome': 'Welcome to your Rentab.ly Dashboard',
     'dashboard.properties': 'Properties',
     'dashboard.tenants.active': 'Active Tenants',
     'dashboard.rent.monthly': 'Monthly Rental Income',
     'dashboard.yield.average': 'Average Yield',
-    'dashboard.portfolio.total': 'Total Portfolio',
+    'dashboard.portfolio.total': 'Total Overview',
     'dashboard.portfolio.value': 'Total Property Value',
     'dashboard.portfolio.annual': 'Annual Rental Income',
     'dashboard.quickstart': 'Quick Start',
@@ -808,7 +808,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('de');
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('folio_language') as Language;
+    const savedLanguage = localStorage.getItem('rentably_language') as Language;
     if (savedLanguage && (savedLanguage === 'de' || savedLanguage === 'en')) {
       setLanguageState(savedLanguage);
     }
@@ -832,7 +832,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
       if (data?.language && (data.language === 'de' || data.language === 'en')) {
         setLanguageState(data.language as Language);
-        localStorage.setItem('folio_language', data.language);
+        localStorage.setItem('rentably_language', data.language);
       }
     } catch (error) {
       console.error('Error loading user language:', error);
@@ -841,7 +841,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLanguage = async (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('folio_language', lang);
+    localStorage.setItem('rentably_language', lang);
 
     if (user) {
       try {
