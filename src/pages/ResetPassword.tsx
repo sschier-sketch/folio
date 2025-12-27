@@ -13,8 +13,15 @@ export function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('ResetPassword component mounted');
+    console.log('Current URL:', window.location.href);
+    console.log('Hash:', window.location.hash);
+    console.log('Search:', window.location.search);
+
     const checkToken = async () => {
+      console.log('Checking token...');
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Current session:', session);
 
       if (session) {
         setHasValidToken(true);
