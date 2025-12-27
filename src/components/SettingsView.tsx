@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Users, Mail, Trash2, Check, X, Loader, Globe, CreditCard, Building, FileText, Shield, MessageCircle, Send, Gift } from 'lucide-react';
+import { User, Globe, CreditCard, Building, FileText, Shield, MessageCircle, Send, Gift } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -7,15 +7,6 @@ import { stripeProducts } from '../stripe-config';
 import { SubscriptionCard } from './subscription/SubscriptionCard';
 import { SubscriptionStatus } from './subscription/SubscriptionStatus';
 import { useSubscription } from '../hooks/useSubscription';
-
-interface Invitation {
-  id: string;
-  invitee_email: string;
-  status: string;
-  role: string;
-  created_at: string;
-  expires_at: string;
-}
 
 interface UserSettings {
   role: string;
@@ -36,16 +27,6 @@ interface BillingInfo {
   subscription_status: string;
 }
 
-interface Invoice {
-  id: string;
-  invoice_number: string;
-  amount: number;
-  currency: string;
-  status: string;
-  invoice_date: string;
-  invoice_pdf_url: string | null;
-}
-
 interface Feedback {
   id: string;
   feedback_text: string;
@@ -56,20 +37,16 @@ interface Feedback {
 }
 
 interface SettingsViewProps {
-  activeTab?: 'profile' | 'users' | 'billing';
+  activeTab?: 'profile' | 'billing';
 }
 
 export default function SettingsView({ activeTab: initialTab = 'profile' }: SettingsViewProps) {
   const { user } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const { subscription } = useSubscription();
-  const [activeTab, setActiveTab] = useState<'profile' | 'users' | 'billing' | 'feedback'>(initialTab);
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [newInviteEmail, setNewInviteEmail] = useState('');
-  const [newInviteRole, setNewInviteRole] = useState('member');
+  const [activeTab, setActiveTab] = useState<'profile' | 'billing' | 'feedback'>(initialTab);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [feedbackList, setFeedbackList] = useState<Feedback[]>([]);
   const [newFeedback, setNewFeedback] = useState('');
   const [willingToPay, setWillingToPay] = useState(false);
@@ -83,11 +60,8 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
   }, [user]);
 
   useEffect(() => {
-    if (activeTab === 'users') {
-      loadInvitations();
-    } else if (activeTab === 'billing') {
+    if (activeTab === 'billing') {
       loadBillingInfo();
-      loadInvoices();
     } else if (activeTab === 'feedback') {
       loadFeedback();
     }
@@ -110,23 +84,6 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
     }
   };
 
-  const loadInvitations = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('user_invitations')
-        .select('*')
-        .eq('inviter_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setInvitations(data || []);
-    } catch (error) {
-      console.error('Error loading invitations:', error);
-    }
-  };
-
   const loadBillingInfo = async () => {
     if (!user) return;
 
@@ -141,71 +98,6 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
       setBillingInfo(data);
     } catch (error) {
       console.error('Error loading billing info:', error);
-    }
-  };
-
-  const loadInvoices = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('invoice_date', { ascending: false });
-
-      if (error) throw error;
-      setInvoices(data || []);
-    } catch (error) {
-      console.error('Error loading invoices:', error);
-    }
-  };
-
-  const handleSendInvitation = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !newInviteEmail.trim()) return;
-
-    setLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    try {
-      const { error } = await supabase.from('user_invitations').insert([
-        {
-          inviter_id: user.id,
-          invitee_email: newInviteEmail.toLowerCase().trim(),
-          role: newInviteRole,
-          status: 'pending',
-        },
-      ]);
-
-      if (error) throw error;
-
-      setSuccessMessage(t('settings.users.invite.success'));
-      setNewInviteEmail('');
-      setNewInviteRole('member');
-      loadInvitations();
-
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
-      console.error('Error sending invitation:', error);
-      setErrorMessage('Fehler beim Versenden der Einladung.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteInvitation = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('user_invitations')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      loadInvitations();
-    } catch (error) {
-      console.error('Error deleting invitation:', error);
     }
   };
 
@@ -280,34 +172,6 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs font-medium">
-            <Loader className="w-3 h-3" />
-            {t('settings.users.pending')}
-          </span>
-        );
-      case 'accepted':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-medium">
-            <Check className="w-3 h-3" />
-            {t('settings.users.accepted')}
-          </span>
-        );
-      case 'expired':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-medium">
-            <X className="w-3 h-3" />
-            Abgelaufen
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-
   const getRoleBadge = (role: string) => {
     const roleMap = {
       admin: { label: t('settings.users.admin'), color: 'bg-blue-100 text-blue-700' },
@@ -358,11 +222,8 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
     );
   };
 
-  const canInviteUsers = userSettings?.can_invite_users || userSettings?.role === 'admin';
-
   const tabs = [
     { id: 'profile' as const, label: t('settings.profile'), icon: User },
-    { id: 'users' as const, label: t('settings.users'), icon: Users, show: canInviteUsers },
     { id: 'billing' as const, label: t('settings.billing'), icon: CreditCard },
     { id: 'feedback' as const, label: t('settings.feedback.title'), icon: MessageCircle },
   ];
@@ -458,173 +319,6 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'users' && (
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  {language === 'de' ? 'Aktive Benutzer' : 'Active Users'}
-                </h3>
-                <p className="text-slate-600 text-sm">
-                  {language === 'de'
-                    ? `Sie haben ${invitations.filter(i => i.status === 'accepted').length + 1} aktive Benutzer (inklusive Ihres Accounts)`
-                    : `You have ${invitations.filter(i => i.status === 'accepted').length + 1} active users (including your account)`}
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="text-4xl font-bold text-blue-600">
-                  {invitations.filter(i => i.status === 'accepted').length + 1}
-                </div>
-                <div className="text-sm text-slate-600">
-                  {language === 'de' ? 'Benutzer' : 'Users'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {canInviteUsers && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">{t('settings.users.invite')}</h3>
-
-              {successMessage && (
-                <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm">
-                  {successMessage}
-                </div>
-              )}
-
-              {errorMessage && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-                  {errorMessage}
-                </div>
-              )}
-
-              <form onSubmit={handleSendInvitation} className="space-y-4">
-                <div className="flex gap-3">
-                  <div className="flex-1 relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                      type="email"
-                      value={newInviteEmail}
-                      onChange={(e) => setNewInviteEmail(e.target.value)}
-                      placeholder={language === 'de' ? 'benutzer@beispiel.de' : 'user@example.com'}
-                      className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      required
-                    />
-                  </div>
-                  <select
-                    value={newInviteRole}
-                    onChange={(e) => setNewInviteRole(e.target.value)}
-                    className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  >
-                    <option value="admin">{t('settings.users.admin')}</option>
-                    <option value="member">{t('settings.users.member')}</option>
-                    <option value="viewer">{t('settings.users.viewer')}</option>
-                  </select>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-                  >
-                    {loading ? (language === 'de' ? 'Senden...' : 'Sending...') : t('settings.users.invite.button')}
-                  </button>
-                </div>
-              </form>
-
-              <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                <p className="text-sm text-slate-600">
-                  <span className="font-semibold">{language === 'de' ? 'Hinweis:' : 'Note:'}</span>{' '}
-                  {language === 'de'
-                    ? 'Eingeladene Benutzer sind derzeit kostenlos. In zukünftigen Versionen können pro zusätzlichem Benutzer Kosten anfallen.'
-                    : 'Invited users are currently free. In future versions, additional costs may apply per user.'}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-900">
-                {language === 'de' ? 'Einladungen' : 'Invitations'}
-              </h3>
-            </div>
-
-            {invitations.length === 0 ? (
-              <div className="p-12 text-center">
-                <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-600 text-lg mb-2">
-                  {language === 'de' ? 'Noch keine Einladungen' : 'No invitations yet'}
-                </p>
-                <p className="text-slate-500 text-sm">
-                  {language === 'de'
-                    ? 'Laden Sie Benutzer ein, um gemeinsam Immobilien zu verwalten.'
-                    : 'Invite users to manage properties together.'}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                        {t('settings.users.email')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                        {t('settings.users.role')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                        {t('settings.users.status')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                        {language === 'de' ? 'Gesendet am' : 'Sent on'}
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                        {language === 'de' ? 'Läuft ab' : 'Expires'}
-                      </th>
-                      <th className="px-6 py-3 text-right text-sm font-semibold text-slate-900">
-                        {t('settings.users.actions')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {invitations.map((invitation) => (
-                      <tr key={invitation.id} className="hover:bg-slate-50">
-                        <td className="px-6 py-4 text-sm text-slate-900">
-                          {invitation.invitee_email}
-                        </td>
-                        <td className="px-6 py-4 text-sm">
-                          {getRoleBadge(invitation.role)}
-                        </td>
-                        <td className="px-6 py-4 text-sm">
-                          {getStatusBadge(invitation.status)}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
-                          {new Date(invitation.created_at).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
-                          {new Date(invitation.expires_at).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {canInviteUsers && (
-                            <button
-                              onClick={() => handleDeleteInvitation(invitation.id)}
-                              className="text-red-600 hover:text-red-700 transition-colors"
-                              title={t('settings.users.delete')}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -797,86 +491,6 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">{t('settings.billing.invoices')}</h3>
-            </div>
-
-            {invoices.length === 0 ? (
-              <div className="p-12 text-center">
-                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-600 text-lg mb-2">
-                  {language === 'de' ? 'Noch keine Rechnungen' : 'No invoices yet'}
-                </p>
-                <p className="text-slate-500 text-sm">
-                  {language === 'de'
-                    ? 'Ihre Rechnungen werden hier angezeigt, sobald Sie einen kostenpflichtigen Tarif buchen.'
-                    : 'Your invoices will appear here once you subscribe to a paid plan.'}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                        {language === 'de' ? 'Rechnungsnummer' : 'Invoice Number'}
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                        {language === 'de' ? 'Datum' : 'Date'}
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                        {language === 'de' ? 'Betrag' : 'Amount'}
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-right text-sm font-semibold text-slate-900">
-                        {t('settings.users.actions')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {invoices.map((invoice) => (
-                      <tr key={invoice.id} className="hover:bg-slate-50">
-                        <td className="px-6 py-4 text-sm text-slate-900 font-mono">
-                          {invoice.invoice_number}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
-                          {new Date(invoice.invoice_date).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-slate-900 font-semibold">
-                          {invoice.amount.toFixed(2)} {invoice.currency}
-                        </td>
-                        <td className="px-6 py-4 text-sm">
-                          <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                            invoice.status === 'paid'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-amber-100 text-amber-700'
-                          }`}>
-                            {invoice.status === 'paid' ? (language === 'de' ? 'Bezahlt' : 'Paid') : (language === 'de' ? 'Offen' : 'Open')}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {invoice.invoice_pdf_url && (
-                            <a
-                              href={invoice.invoice_pdf_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                            >
-                              {language === 'de' ? 'PDF anzeigen' : 'View PDF'}
-                            </a>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
         </div>
       )}
