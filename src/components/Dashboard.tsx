@@ -31,7 +31,7 @@ import TenantsView from "./TenantsView";
 import TicketsView from "./TicketsView";
 import DashboardHome from "./DashboardHome";
 import RentPaymentsView from "./RentPaymentsView";
-import FinancialAnalysisView from "./FinancialAnalysisView";
+import FinancesView from "./FinancesView";
 import SettingsView from "./SettingsView";
 import ReferralProgramView from "./ReferralProgramView";
 import FeedbackListView from "./FeedbackListView";
@@ -379,7 +379,7 @@ export default function Dashboard() {
             {currentView === "tenants" && <TenantsView />}{" "}
             {currentView === "payments" && <RentPaymentsView />}{" "}
             {currentView === "tickets" && <TicketsView />}{" "}
-            {currentView === "financial" && <FinancialAnalysisView />}{" "}
+            {currentView === "financial" && <FinancesView />}{" "}
             {currentView === "documents" && <DocumentsView />}{" "}
             {currentView === "billing" && <BillingView />}{" "}
             {currentView === "settings-profile" && (
