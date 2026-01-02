@@ -40,6 +40,10 @@ export default function TenantModal({
     move_in_date: "",
     move_out_date: "",
     is_active: true,
+    base_rent: "",
+    additional_costs: "",
+    deposit: "",
+    contract_type: "unlimited",
   });
   useEffect(() => {
     if (tenant) {
@@ -52,6 +56,10 @@ export default function TenantModal({
         move_in_date: tenant.move_in_date || "",
         move_out_date: tenant.move_out_date || "",
         is_active: tenant.is_active,
+        base_rent: "",
+        additional_costs: "",
+        deposit: "",
+        contract_type: "unlimited",
       });
     }
   }, [tenant]);
@@ -60,29 +68,86 @@ export default function TenantModal({
     if (!user) return;
     setLoading(true);
     try {
-      const data = {
-        ...formData,
-        user_id: user.id,
-        name: `${formData.first_name} ${formData.last_name}`,
-        email: formData.email || null,
-        phone: formData.phone || null,
-        move_in_date: formData.move_in_date || null,
-        move_out_date: formData.move_out_date || null,
-      };
       if (tenant) {
+        const data = {
+          property_id: formData.property_id,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          name: `${formData.first_name} ${formData.last_name}`,
+          email: formData.email || null,
+          phone: formData.phone || null,
+          move_in_date: formData.move_in_date || null,
+          move_out_date: formData.move_out_date || null,
+          is_active: formData.is_active,
+          user_id: user.id,
+        };
         const { error } = await supabase
           .from("tenants")
           .update(data)
           .eq("id", tenant.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("tenants").insert([data]);
-        if (error) throw error;
+        const baseRent = parseFloat(formData.base_rent) || 0;
+        const additionalCosts = parseFloat(formData.additional_costs) || 0;
+        const totalRent = baseRent + additionalCosts;
+
+        const { data: newTenant, error: tenantError } = await supabase
+          .from("tenants")
+          .insert([
+            {
+              property_id: formData.property_id || null,
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+              name: `${formData.first_name} ${formData.last_name}`,
+              email: formData.email || null,
+              phone: formData.phone || null,
+              move_in_date: formData.move_in_date || null,
+              move_out_date: formData.move_out_date || null,
+              is_active: formData.is_active,
+              user_id: user.id,
+            },
+          ])
+          .select()
+          .single();
+
+        if (tenantError) throw tenantError;
+
+        const { error: contractError } = await supabase
+          .from("rental_contracts")
+          .insert([
+            {
+              tenant_id: newTenant.id,
+              property_id: formData.property_id,
+              user_id: user.id,
+              base_rent: baseRent,
+              additional_costs: additionalCosts,
+              total_rent: totalRent,
+              monthly_rent: baseRent,
+              utilities_advance: additionalCosts,
+              deposit: parseFloat(formData.deposit) || 0,
+              deposit_amount: parseFloat(formData.deposit) || 0,
+              contract_start: formData.move_in_date || null,
+              start_date: formData.move_in_date || null,
+              contract_end: formData.move_out_date || null,
+              end_date: formData.move_out_date || null,
+              contract_type: formData.contract_type,
+              status: "active",
+            },
+          ]);
+
+        if (contractError) throw contractError;
+
+        const { error: updateError } = await supabase
+          .from("tenants")
+          .update({ contract_id: newTenant.id })
+          .eq("id", newTenant.id);
+
+        if (updateError) console.warn("Could not link contract:", updateError);
       }
       onSave();
     } catch (error) {
       console.error("Error saving tenant:", error);
-      alert("Fehler beim Speichern des Mieters");
+      alert("Fehler beim Speichern des Mietverhältnisses");
     } finally {
       setLoading(false);
     }
@@ -96,7 +161,7 @@ export default function TenantModal({
           {" "}
           <h2 className="text-2xl font-bold text-dark">
             {" "}
-            {tenant ? "Mieter bearbeiten" : "Neuer Mieter"}{" "}
+            {tenant ? "Mieter bearbeiten" : "Neues Mietverhältnis"}{" "}
           </h2>{" "}
           <button
             onClick={onClose}
@@ -244,6 +309,81 @@ export default function TenantModal({
               </label>{" "}
             </div>{" "}
           </div>{" "}
+          {!tenant && (
+            <>
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold text-dark mb-4">
+                  Mietvertrag
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Kaltmiete (€) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.base_rent}
+                      onChange={(e) =>
+                        setFormData({ ...formData, base_rent: e.target.value })
+                      }
+                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Nebenkosten (€)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.additional_costs}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          additional_costs: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Kaution (€)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.deposit}
+                      onChange={(e) =>
+                        setFormData({ ...formData, deposit: e.target.value })
+                      }
+                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Vertragsart
+                    </label>
+                    <select
+                      value={formData.contract_type}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contract_type: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    >
+                      <option value="unlimited">Unbefristet</option>
+                      <option value="limited">Befristet</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
           <div className="flex gap-3 pt-4">
             {" "}
             <button
