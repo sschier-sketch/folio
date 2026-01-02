@@ -19,6 +19,8 @@ import {
   X,
   Menu,
   Shield,
+  FileText,
+  Calculator,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -33,6 +35,8 @@ import FinancialAnalysisView from "./FinancialAnalysisView";
 import SettingsView from "./SettingsView";
 import ReferralProgramView from "./ReferralProgramView";
 import FeedbackListView from "./FeedbackListView";
+import DocumentsView from "./DocumentsView";
+import BillingView from "./BillingView";
 import Footer from "./Footer";
 type View =
   | "home"
@@ -41,6 +45,8 @@ type View =
   | "tickets"
   | "payments"
   | "financial"
+  | "documents"
+  | "billing"
   | "settings-profile"
   | "settings-users"
   | "settings-billing"
@@ -63,6 +69,8 @@ export default function Dashboard() {
     { id: "payments", labelKey: "nav.payments", icon: Wallet },
     { id: "tickets", labelKey: "nav.tickets", icon: MessageSquare },
     { id: "financial", labelKey: "nav.financial", icon: TrendingUp },
+    { id: "documents", labelKey: "nav.documents", icon: FileText },
+    { id: "billing", labelKey: "nav.billing", icon: Calculator },
   ];
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -372,6 +380,8 @@ export default function Dashboard() {
             {currentView === "payments" && <RentPaymentsView />}{" "}
             {currentView === "tickets" && <TicketsView />}{" "}
             {currentView === "financial" && <FinancialAnalysisView />}{" "}
+            {currentView === "documents" && <DocumentsView />}{" "}
+            {currentView === "billing" && <BillingView />}{" "}
             {currentView === "settings-profile" && (
               <SettingsView activeTab="profile" />
             )}{" "}
