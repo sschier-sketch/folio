@@ -55,9 +55,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         </button>
 
         <div className="p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <img src="/logo_1.svg" alt="Rentab.ly" className="h-8 w-auto" />
-            <span className="text-2xl font-bold text-slate-800">Rentab.ly</span>
+          <div className="flex items-center mb-6">
+            <img src="/rentably-logo.svg" alt="Rentab.ly" className="h-8 w-auto" />
           </div>
 
           <h2 className="text-2xl font-bold text-slate-900 mb-2">

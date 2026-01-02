@@ -11,9 +11,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <img src="/logo_1.svg" alt="Rentab.ly" className="h-6 w-auto" />
-              <span className="text-xl font-bold text-slate-800">Rentab.ly</span>
+            <div className="flex items-center mb-4">
+              <img src="/rentably-logo.svg" alt="Rentab.ly" className="h-6 w-auto" />
             </div>
             <p className="text-sm text-slate-600">
               {language === 'de'

@@ -27,7 +27,7 @@ export function Login() {
       <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8 mt-16">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center">
-            <img src="/logo_1.svg" alt="Rentab.ly" className="h-16 w-auto" />
+            <img src="/rentably-logo.svg" alt="Rentab.ly" className="h-16 w-auto" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-slate-900">
             Willkommen zurück

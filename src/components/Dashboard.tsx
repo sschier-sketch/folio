@@ -71,8 +71,7 @@ export default function Dashboard() {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <img src="/logo_1.svg" alt="Rentab.ly" className="h-8 w-auto" />
-              <span className="text-2xl font-bold text-slate-800">Rentab.ly</span>
+              <img src="/rentably-logo.svg" alt="Rentab.ly" className="h-8 w-auto" />
             </div>
             <div className="flex items-center gap-4">
               <div className="relative" ref={dropdownRef}>
