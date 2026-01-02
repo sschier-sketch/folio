@@ -162,12 +162,12 @@ export default function Pricing() {
             </p>
 
             {/* Billing Toggle */}
-            <div className="inline-flex items-center gap-4 bg-white rounded-full p-2 shadow-lg">
+            <div className="inline-flex items-center gap-4 bg-white rounded-full p-2">
               <button
                 onClick={() => setBillingCycle('monthly')}
                 className={`px-6 py-3 rounded-full font-semibold transition-all duration-200 ${
                   billingCycle === 'monthly'
-                    ? 'bg-primary-blue text-white shadow-md'
+                    ? 'bg-primary-blue text-white '
                     : 'text-gray-400 hover:text-dark'
                 }`}
               >
@@ -177,7 +177,7 @@ export default function Pricing() {
                 onClick={() => setBillingCycle('yearly')}
                 className={`px-6 py-3 rounded-full font-semibold transition-all duration-200 relative ${
                   billingCycle === 'yearly'
-                    ? 'bg-primary-blue text-white shadow-md'
+                    ? 'bg-primary-blue text-white '
                     : 'text-gray-400 hover:text-dark'
                 }`}
               >
@@ -201,12 +201,12 @@ export default function Pricing() {
                   key={plan.id}
                   onMouseEnter={() => setSelectedPlan(plan.id)}
                   onMouseLeave={() => setSelectedPlan(null)}
-                  className={`relative bg-white rounded-3xl p-8 transition-all duration-300 ${
+                  className={`relative bg-white rounded-lg p-8 transition-all duration-300 ${
                     isPopular
-                      ? 'border-4 border-blue-500 shadow-2xl scale-105'
+                      ? 'border-4 border-blue-500 scale-105'
                       : isSelected
-                      ? 'border-2 border-blue-300 shadow-xl transform scale-105'
-                      : 'border-2 border-gray-100 shadow-lg hover:border-gray-200'
+                      ? 'border-2 border-blue-300 transform scale-105'
+                      : 'border-2 border-gray-100 hover:border-gray-200'
                   }`}
                 >
                   {plan.badge && (
@@ -221,7 +221,7 @@ export default function Pricing() {
                   )}
 
                   <div className="text-center mb-6">
-                    <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 bg-${plan.color}-100`}>
+                    <div className={`w-16 h-16 mx-auto rounded-md flex items-center justify-center mb-4 bg-${plan.color}-100`}>
                       <Icon className={`w-8 h-8 text-${plan.color}-600`} />
                     </div>
                     <h3 className="text-2xl font-bold text-dark mb-2">{plan.name}</h3>
@@ -242,7 +242,7 @@ export default function Pricing() {
                   </div>
 
                   {/* XP Badge */}
-                  <div className={`mb-6 p-3 rounded-xl text-center bg-${plan.color}-50 border border-${plan.color}-200`}>
+                  <div className={`mb-6 p-3 rounded text-center bg-${plan.color}-50 border border-${plan.color}-200`}>
                     <div className="flex items-center justify-center gap-2 text-sm font-bold text-${plan.color}-700">
                       <Zap className="w-4 h-4" />
                       {plan.xp}
@@ -268,9 +268,9 @@ export default function Pricing() {
 
                   <button
                     onClick={() => navigate(plan.id === 'starter' ? '/signup' : '/subscription')}
-                    className={`w-full py-4 rounded-xl font-bold transition-all duration-200 ${
+                    className={`w-full py-4 rounded font-bold transition-all duration-200 ${
                       isPopular
-                        ? 'bg-primary-blue text-white hover:bg-primary-blue shadow-lg hover:shadow-xl'
+                        ? 'bg-primary-blue text-white hover:bg-primary-blue hover:'
                         : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
                     }`}
                   >
@@ -284,7 +284,7 @@ export default function Pricing() {
           </div>
 
           {/* Bonus Section */}
-          <div className="bg-gradient-to-br from-primary-blue to-purple-600 rounded-3xl p-12 mb-20 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary-blue to-purple-600 rounded-full p-12 mb-20 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full -mr-48 -mt-48"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -ml-32 -mb-32"></div>
 
@@ -310,9 +310,9 @@ export default function Pricing() {
                   return (
                     <div
                       key={index}
-                      className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300"
+                      className="bg-white/10 backdrop-blur-sm rounded-md p-6 hover:bg-white/20 transition-all duration-300"
                     >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-${bonus.color}-500`}>
+                      <div className={`w-12 h-12 rounded flex items-center justify-center mb-4 bg-${bonus.color}-500`}>
                         <Icon className="w-6 h-6 text-white" />
                       </div>
                       <h3 className="text-xl font-bold text-white mb-2">{bonus.title}</h3>
@@ -326,25 +326,25 @@ export default function Pricing() {
 
           {/* Trust Section */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
-            <div className="bg-white rounded-2xl p-6 text-center shadow-lg">
+            <div className="bg-white rounded-md p-6 text-center">
               <Shield className="w-8 h-8 text-emerald-500 mx-auto mb-3" />
               <p className="text-gray-400 text-sm font-medium">
                 {language === 'de' ? '30 Tage Geld-zurück-Garantie' : '30-day money-back guarantee'}
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 text-center shadow-lg">
+            <div className="bg-white rounded-md p-6 text-center">
               <TrendingUp className="w-8 h-8 text-blue-500 mx-auto mb-3" />
               <p className="text-gray-400 text-sm font-medium">
                 {language === 'de' ? 'Jederzeit kündbar' : 'Cancel anytime'}
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 text-center shadow-lg">
+            <div className="bg-white rounded-md p-6 text-center">
               <Heart className="w-8 h-8 text-red-500 mx-auto mb-3" />
               <p className="text-gray-400 text-sm font-medium">
                 {language === 'de' ? 'Von 10.000+ Nutzern geliebt' : 'Loved by 10,000+ users'}
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 text-center shadow-lg">
+            <div className="bg-white rounded-md p-6 text-center">
               <Star className="w-8 h-8 text-amber-500 mx-auto mb-3" />
               <p className="text-gray-400 text-sm font-medium">
                 {language === 'de' ? '4.9/5 Sterne Bewertung' : '4.9/5 star rating'}
@@ -353,7 +353,7 @@ export default function Pricing() {
           </div>
 
           {/* FAQ Section */}
-          <div className="bg-white rounded-3xl p-12 shadow-xl">
+          <div className="bg-white rounded-lg p-12">
             <h2 className="text-3xl font-bold text-dark mb-8 text-center">
               {language === 'de' ? 'Häufig gestellte Fragen' : 'Frequently Asked Questions'}
             </h2>
@@ -417,7 +417,7 @@ export default function Pricing() {
             </p>
             <button
               onClick={() => navigate('/contact')}
-              className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100 shadow-lg"
+              className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
             >
               {language === 'de' ? 'Kontakt aufnehmen' : 'Contact Us'}
             </button>

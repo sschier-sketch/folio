@@ -105,7 +105,7 @@ export function AdminEmailTemplatesView() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <div className="lg:col-span-1 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+      <div className="lg:col-span-1 bg-white rounded border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-dark">E-Mail Templates</h2>
           <p className="text-xs text-gray-300 mt-1">{templates.length} Templates</p>
@@ -121,7 +121,7 @@ export function AdminEmailTemplatesView() {
               }`}
             >
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
                   <Mail className="w-5 h-5 text-primary-blue" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -134,7 +134,7 @@ export function AdminEmailTemplatesView() {
         </div>
       </div>
 
-      <div className="lg:col-span-3 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+      <div className="lg:col-span-3 bg-white rounded border border-gray-100 overflow-hidden">
         {editedTemplate ? (
           <div className="flex flex-col h-[calc(100vh-300px)]">
             <div className="p-6 border-b border-gray-100">
@@ -146,7 +146,7 @@ export function AdminEmailTemplatesView() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? (
                     <>

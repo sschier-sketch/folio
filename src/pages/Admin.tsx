@@ -147,7 +147,7 @@ export function Admin() {
             Zurück zum Dashboard
           </button>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center">
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -207,7 +207,7 @@ export function Admin() {
         {activeTab === 'overview' && (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+              <div className="bg-white rounded p-6 border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <Users className="w-8 h-8 text-primary-blue" />
                   <span className="text-3xl font-bold text-dark">{stats.totalUsers}</span>
@@ -215,7 +215,7 @@ export function Admin() {
                 <p className="text-gray-400 font-medium">Gesamt Nutzer</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+              <div className="bg-white rounded p-6 border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <UserCheck className="w-8 h-8 text-emerald-600" />
                   <span className="text-3xl font-bold text-dark">{stats.freeUsers}</span>
@@ -223,7 +223,7 @@ export function Admin() {
                 <p className="text-gray-400 font-medium">Gratis Nutzer</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+              <div className="bg-white rounded p-6 border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <TrendingUp className="w-8 h-8 text-amber-600" />
                   <span className="text-3xl font-bold text-dark">{stats.premiumUsers}</span>
@@ -231,7 +231,7 @@ export function Admin() {
                 <p className="text-gray-400 font-medium">Premium Nutzer</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+              <div className="bg-white rounded p-6 border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <span className="text-3xl font-bold text-dark">{stats.monthlyRevenue}€</span>
@@ -240,12 +240,12 @@ export function Admin() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+            <div className="bg-white rounded p-6 border border-gray-100">
               <h2 className="text-xl font-bold text-dark mb-4">Schnellzugriff</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                   onClick={() => setActiveTab('users')}
-                  className="p-4 border-2 border-gray-100 rounded-xl hover:border-primary-blue hover:bg-primary-blue/5 transition-all text-left"
+                  className="p-4 border-2 border-gray-100 rounded-full hover:border-primary-blue hover:bg-primary-blue/5 transition-all text-left"
                 >
                   <Users className="w-6 h-6 text-primary-blue mb-2" />
                   <p className="font-semibold text-dark">Benutzer verwalten</p>
@@ -254,14 +254,14 @@ export function Admin() {
 
                 <button
                   onClick={() => setActiveTab('templates')}
-                  className="p-4 border-2 border-gray-100 rounded-xl hover:border-primary-blue hover:bg-primary-blue/5 transition-all text-left"
+                  className="p-4 border-2 border-gray-100 rounded-full hover:border-primary-blue hover:bg-primary-blue/5 transition-all text-left"
                 >
                   <Mail className="w-6 h-6 text-primary-blue mb-2" />
                   <p className="font-semibold text-dark">E-Mail Templates</p>
                   <p className="text-sm text-gray-400">Templates bearbeiten</p>
                 </button>
 
-                <div className="p-4 border-2 border-gray-100 rounded-xl bg-gray-50">
+                <div className="p-4 border-2 border-gray-100 rounded bg-gray-50">
                   <Settings className="w-6 h-6 text-gray-300 mb-2" />
                   <p className="font-semibold text-dark">System-Einstellungen</p>
                   <p className="text-sm text-gray-400">Bald verfügbar</p>
@@ -272,7 +272,7 @@ export function Admin() {
         )}
 
         {activeTab === 'users' && (
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-100">
               <h2 className="text-xl font-bold text-dark">Alle Benutzer</h2>
             </div>

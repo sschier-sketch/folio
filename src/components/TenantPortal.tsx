@@ -328,7 +328,7 @@ export default function TenantPortal() {
         </div>
 
         <div className="max-w-6xl mx-auto p-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="bg-white rounded shadow-sm border border-gray-100">
             <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
               {messages.length === 0 ? (
                 <p className="text-center text-gray-300 py-8">Noch keine Nachrichten</p>
@@ -375,7 +375,7 @@ export default function TenantPortal() {
                   <div className="flex justify-end mt-2">
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                      className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
                     >
                       Nachricht senden
                     </button>
@@ -414,7 +414,7 @@ export default function TenantPortal() {
           <h2 className="text-xl font-semibold text-dark">Meine Anfragen</h2>
           <button
             onClick={() => setShowNewTicket(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-5 h-5" />
             Neue Anfrage
@@ -422,7 +422,7 @@ export default function TenantPortal() {
         </div>
 
         {tickets.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-12 text-center">
             <MessageSquare className="w-16 h-16 text-gray-200 mx-auto mb-4" />
             <p className="text-gray-400 text-lg mb-2">Noch keine Anfragen</p>
             <p className="text-gray-300 text-sm">
@@ -435,7 +435,7 @@ export default function TenantPortal() {
               <div
                 key={ticket.id}
                 onClick={() => setSelectedTicket(ticket)}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded shadow-sm border border-gray-100 p-6 hover:transition-shadow cursor-pointer"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -474,7 +474,7 @@ export default function TenantPortal() {
 
       {showNewTicket && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
+          <div className="bg-white rounded-md w-full max-w-2xl">
             <div className="border-b border-gray-100 px-6 py-4 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-dark">Neue Anfrage erstellen</h2>
               <button
@@ -588,7 +588,7 @@ export default function TenantPortal() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
                 >
                   {loading ? 'Erstellen...' : 'Anfrage erstellen'}
                 </button>

@@ -191,7 +191,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
         Zurück zur Übersicht
       </button>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+      <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden mb-6">
         <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -215,7 +215,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
               {ticket.status === 'open' && (
                 <button
                   onClick={() => handleStatusChange('in_progress')}
-                  className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-all hover:shadow-md"
+                  className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-all hover:"
                 >
                   In Bearbeitung
                 </button>
@@ -223,7 +223,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
               {ticket.status !== 'closed' && (
                 <button
                   onClick={() => handleStatusChange('closed')}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-all hover:shadow-md"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-all hover:"
                 >
                   Schließen
                 </button>
@@ -231,7 +231,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
               {ticket.status === 'closed' && (
                 <button
                   onClick={() => handleStatusChange('open')}
-                  className="px-4 py-2 bg-primary-blue text-white rounded-lg text-sm font-medium hover:bg-primary-blue transition-all hover:shadow-md"
+                  className="px-4 py-2 bg-primary-blue text-white rounded-full text-sm font-medium hover:bg-primary-blue transition-all hover:"
                 >
                   Wieder öffnen
                 </button>
@@ -249,7 +249,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
                 <div>
                   <span className="text-gray-300 font-medium">Typ:</span>
                   <div className="text-dark mt-1">
-                    <span className="inline-flex items-center px-2 py-1 bg-primary-blue/10 text-primary-blue rounded text-xs font-medium">
+                    <span className="inline-flex items-center px-2 py-1 bg-primary-blue/10 text-primary-blue rounded-full text-xs font-medium">
                       Kontaktanfrage
                     </span>
                   </div>
@@ -310,7 +310,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div className="bg-white rounded shadow-sm border border-gray-100 p-6 mb-6">
         <h2 className="text-lg font-semibold text-dark mb-4">Nachrichtenverlauf</h2>
 
         {messages.length === 0 ? (
@@ -351,7 +351,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
             <button
               type="submit"
               disabled={sending || !newMessage.trim()}
-              className="px-6 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               <Send className="w-4 h-4" />
               Senden

@@ -193,21 +193,21 @@ export default function RentPaymentsView() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <div className="text-sm text-gray-300 mb-1">Ausstehend</div>
           <div className="text-2xl font-bold text-orange-600">{formatCurrency(totalUnpaid)}</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <div className="text-sm text-gray-300 mb-1">Bezahlt</div>
           <div className="text-2xl font-bold text-emerald-600">{formatCurrency(totalPaid)}</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <div className="text-sm text-gray-300 mb-1">Gesamt</div>
           <div className="text-2xl font-bold text-dark">{formatCurrency(totalUnpaid + totalPaid)}</div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="w-5 h-5 text-gray-400" />
           <h3 className="font-semibold text-dark">Filter</h3>
@@ -291,7 +291,7 @@ export default function RentPaymentsView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden">
         {payments.length === 0 ? (
           <div className="p-8 text-center text-gray-300">
             Keine Mieteingänge gefunden. Mieteingänge werden automatisch generiert, wenn Sie Mietverträge anlegen.

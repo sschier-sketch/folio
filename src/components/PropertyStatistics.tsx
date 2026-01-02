@@ -166,7 +166,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
   return (
     <div className="space-y-6">
       {loans.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-300">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-12 text-center text-gray-300">
           <PiggyBank className="w-16 h-16 mx-auto mb-4 text-gray-200" />
           <p className="text-lg font-medium">Keine Kredite vorhanden</p>
           <p className="text-sm mt-2">Fügen Sie einen Kredit hinzu, um detaillierte Finanzanalysen zu sehen.</p>
@@ -174,7 +174,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
       ) : (
         <>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-full p-4 border border-blue-200">
                   <div className="flex items-center gap-2 mb-2">
                     <DollarSign className="w-5 h-5 text-primary-blue" />
                     <div className="text-sm font-medium text-blue-900">Eigenkapital</div>
@@ -183,7 +183,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                   <div className="text-xs text-primary-blue mt-1">Immobilienwert - Kredit + Mieten</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-200">
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-full p-4 border border-emerald-200">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="w-5 h-5 text-emerald-600" />
                     <div className="text-sm font-medium text-emerald-900">ROI</div>
@@ -192,7 +192,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                   <div className="text-xs text-emerald-700 mt-1">Return on Investment</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-full p-4 border border-orange-200">
                   <div className="flex items-center gap-2 mb-2">
                     <Calendar className="w-5 h-5 text-orange-600" />
                     <div className="text-sm font-medium text-orange-900">Break-Even</div>
@@ -203,7 +203,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                   <div className="text-xs text-orange-700 mt-1">Bis zur Amortisation</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-violet-50 to-violet-100 rounded-xl p-4 border border-violet-200">
+                <div className="bg-gradient-to-br from-violet-50 to-violet-100 rounded-full p-4 border border-violet-200">
                   <div className="flex items-center gap-2 mb-2">
                     <PiggyBank className="w-5 h-5 text-violet-600" />
                     <div className="text-sm font-medium text-violet-900">Gewinn bei Kreditende</div>
@@ -213,7 +213,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <div className="bg-white rounded border border-gray-100 p-6">
                 <h3 className="text-lg font-semibold text-dark mb-4">Kreditabbau</h3>
 
                 <div className="mb-4">
@@ -249,7 +249,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <div className="bg-white rounded border border-gray-100 p-6">
                 <h3 className="text-lg font-semibold text-dark mb-4">Monatliche Cashflow-Analyse</h3>
 
                 <div className="space-y-4">
@@ -296,7 +296,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <div className="bg-white rounded border border-gray-100 p-6">
                 <h3 className="text-lg font-semibold text-dark mb-4">Finanzieren die Mieter die Immobilie?</h3>
 
                 <div className="space-y-4">
@@ -360,7 +360,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                     </p>
                   </div>
 
-                  <div className="p-4 bg-primary-blue/5 rounded-lg border border-blue-200">
+                  <div className="p-4 bg-primary-blue/5 rounded-full border border-blue-200">
                     <h4 className="font-semibold text-blue-900 mb-2">Zusammenfassung</h4>
                     <ul className="space-y-1 text-sm text-primary-blue">
                       <li>• Monatliche Mieteinnahmen: {formatCurrency(monthlyRent)}</li>
@@ -377,7 +377,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <div className="bg-white rounded border border-gray-100 p-6">
                 <h3 className="text-lg font-semibold text-dark mb-4">Weitere Kennzahlen</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

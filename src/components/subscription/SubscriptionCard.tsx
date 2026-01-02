@@ -56,7 +56,7 @@ export function SubscriptionCard({ product, isCurrentPlan = false }: Subscriptio
   };
 
   return (
-    <div className={`relative bg-white rounded-xl shadow-lg border-2 p-8 ${
+    <div className={`relative bg-white rounded border-2 p-8 ${
       isCurrentPlan ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-200'
     }`}>
       {isCurrentPlan && (

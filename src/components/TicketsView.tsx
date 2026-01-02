@@ -173,7 +173,7 @@ export default function TicketsView() {
               setSelectedTicket(null);
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-all hover:shadow-md flex-shrink-0"
+            className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-all hover:flex-shrink-0"
           >
             <Plus className="w-5 h-5" />
             Ticket erstellen
@@ -224,7 +224,7 @@ export default function TicketsView() {
       </div>
 
       {filteredTickets.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-12 text-center">
           <MessageSquare className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-dark mb-2">
             {filterStatus === 'all' ? 'Noch keine Tickets' : 'Keine Tickets gefunden'}
@@ -240,7 +240,7 @@ export default function TicketsView() {
                 setSelectedTicket(null);
                 setShowModal(true);
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
             >
               <Plus className="w-5 h-5" />
               Erstes Ticket erstellen
@@ -256,7 +256,7 @@ export default function TicketsView() {
                 setSelectedTicket(ticket);
                 setShowDetails(true);
               }}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
+              className="bg-white rounded shadow-sm border border-gray-100 p-6 hover:transition-shadow cursor-pointer"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
@@ -276,7 +276,7 @@ export default function TicketsView() {
                     <div className="flex items-center gap-4 text-sm text-gray-400">
                       {ticket.ticket_type === 'contact' ? (
                         <>
-                          <span className="inline-flex items-center px-2 py-1 bg-primary-blue/10 text-primary-blue rounded text-xs font-medium">
+                          <span className="inline-flex items-center px-2 py-1 bg-primary-blue/10 text-primary-blue rounded-full text-xs font-medium">
                             Kontaktanfrage
                           </span>
                           <span>•</span>

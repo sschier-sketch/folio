@@ -32,9 +32,9 @@ export function PremiumFeatureGuard({ children, featureName, inline = false }: P
           {children}
         </div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-white/95 backdrop-blur border-2 border-amber-400 rounded-xl p-4 shadow-xl transform group-hover:scale-105 transition-all">
+          <div className="bg-white/95 backdrop-blur border-2 border-amber-400 rounded p-4 transform group-transition-all">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center">
                 <Lock className="w-4 h-4 text-white" />
               </div>
               <span className="font-bold text-dark">Premium Feature</span>
@@ -42,7 +42,7 @@ export function PremiumFeatureGuard({ children, featureName, inline = false }: P
             <p className="text-sm text-gray-400 mb-3">{featureName}</p>
             <button
               onClick={() => navigate('/subscription')}
-              className="w-full px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-blue text-white text-sm font-semibold rounded-lg hover:from-primary-blue hover:to-primary-blue transition-all flex items-center justify-center gap-2"
+              className="w-full px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-blue text-white text-sm font-semibold rounded-full hover:from-primary-blue hover:to-primary-blue transition-all flex items-center justify-center gap-2"
             >
               <Sparkles className="w-4 h-4" />
               Jetzt upgraden
@@ -54,8 +54,8 @@ export function PremiumFeatureGuard({ children, featureName, inline = false }: P
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-200 rounded-2xl p-8 text-center">
-      <div className="inline-flex w-16 h-16 bg-gradient-to-br from-primary-blue to-primary-blue rounded-2xl items-center justify-center mb-4">
+    <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-200 rounded-full p-8 text-center">
+      <div className="inline-flex w-16 h-16 bg-gradient-to-br from-primary-blue to-primary-blue rounded-full items-center justify-center mb-4">
         <Lock className="w-8 h-8 text-white" />
       </div>
 
@@ -64,7 +64,7 @@ export function PremiumFeatureGuard({ children, featureName, inline = false }: P
         Diese Funktion ist nur im Premium-Plan verfügbar. Upgraden Sie jetzt für nur 9 EUR/Monat und erhalten Sie Zugriff auf alle erweiterten Features.
       </p>
 
-      <div className="bg-white rounded-xl p-6 mb-6 border border-gray-100 max-w-md mx-auto">
+      <div className="bg-white rounded p-6 mb-6 border border-gray-100 max-w-md mx-auto">
         <h4 className="font-semibold text-dark mb-4 flex items-center justify-center gap-2">
           <Sparkles className="w-5 h-5 text-amber-500" />
           Premium-Features
@@ -91,7 +91,7 @@ export function PremiumFeatureGuard({ children, featureName, inline = false }: P
 
       <button
         onClick={() => navigate('/subscription')}
-        className="px-8 py-3 bg-gradient-to-r from-primary-blue to-primary-blue text-white font-semibold rounded-xl hover:from-primary-blue hover:to-primary-blue transition-all shadow-lg hover:shadow-xl transform hover:scale-105 inline-flex items-center gap-2"
+        className="px-8 py-3 bg-gradient-to-r from-primary-blue to-primary-blue text-white font-semibold rounded-full hover:from-primary-blue hover:to-primary-blue transition-all hover:inline-flex items-center gap-2"
       >
         <Sparkles className="w-5 h-5" />
         Jetzt für 9 EUR/Monat upgraden

@@ -109,9 +109,9 @@ export function ResetPassword() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
+      <div className="bg-white rounded-md max-w-md w-full p-8">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-primary-blue/10 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
             <Lock className="w-6 h-6 text-primary-blue" />
           </div>
           <div>
@@ -208,7 +208,7 @@ export function ResetPassword() {
               />
             </div>
 
-            <div className="bg-primary-blue/5 border border-blue-200 rounded-lg p-4">
+            <div className="bg-primary-blue/5 border border-blue-200 rounded-full p-4">
               <p className="text-sm text-primary-blue">
                 <strong>So funktioniert es:</strong> Sie erhalten eine E-Mail mit einem Bestätigungslink.
                 Ihr neues Passwort wird erst nach dem Klick auf diesen Link aktiviert.
@@ -218,7 +218,7 @@ export function ResetPassword() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-full shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

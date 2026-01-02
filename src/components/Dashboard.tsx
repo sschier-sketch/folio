@@ -87,7 +87,7 @@ export default function Dashboard() {
                 </button>
 
                 {showSettingsDropdown && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg border border-gray-100 py-2 z-50">
                     <button
                       onClick={() => {
                         setCurrentView('settings-profile');
@@ -208,11 +208,10 @@ export default function Dashboard() {
         {/* Mobile Menu */}
         <div className={`fixed top-16 left-0 bottom-0 w-72 bg-white z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${
           showMobileMenu ? 'translate-x-0' : '-translate-x-full'
-        } overflow-y-auto shadow-xl`}>
+        } overflow-y-auto `}>
           <div className="p-4 space-y-4">
-            <nav className="bg-white rounded-xl border border-gray-100 p-2">
+            <nav className="bg-white rounded border border-gray-100 p-2">
               {navigation.map((item) => {
-                const Icon = item.icon;
                 return (
                   <button
                     key={item.id}
@@ -220,13 +219,12 @@ export default function Dashboard() {
                       setCurrentView(item.id as View);
                       setShowMobileMenu(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    className={`w-full px-4 py-3 rounded transition-colors text-left ${
                       currentView === item.id
                         ? 'bg-primary-blue/5 text-primary-blue'
                         : 'text-gray-400 hover:bg-gray-50'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
                     <span className="font-medium">{t(item.labelKey)}</span>
                   </button>
                 );
@@ -238,7 +236,7 @@ export default function Dashboard() {
                 setCurrentView('referral');
                 setShowMobileMenu(false);
               }}
-              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg p-4 text-white cursor-pointer hover:shadow-xl transition-shadow"
+              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full p-4 text-white cursor-pointer hover:transition-shadow"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -259,20 +257,18 @@ export default function Dashboard() {
 
         <div className="flex gap-6 items-start">
           <aside className="hidden lg:block w-64 flex-shrink-0 space-y-4 sticky top-24">
-            <nav className="bg-white rounded-xl shadow-sm border border-gray-100 p-2">
+            <nav className="bg-white rounded border border-gray-100 p-2">
               {navigation.map((item) => {
-                const Icon = item.icon;
                 return (
                   <button
                     key={item.id}
                     onClick={() => setCurrentView(item.id as View)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    className={`w-full px-4 py-3 rounded transition-colors text-left ${
                       currentView === item.id
                         ? 'bg-primary-blue/5 text-primary-blue'
                         : 'text-gray-400 hover:bg-gray-50'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
                     <span className="font-medium">{t(item.labelKey)}</span>
                   </button>
                 );
@@ -281,7 +277,7 @@ export default function Dashboard() {
 
             <div
               onClick={() => setCurrentView('referral')}
-              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg p-4 text-white cursor-pointer hover:shadow-xl transition-shadow"
+              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full p-4 text-white cursor-pointer hover:transition-shadow"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">

@@ -168,7 +168,7 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-dark">
             {contract ? 'Mietvertrag bearbeiten' : 'Neuer Mietvertrag'}
@@ -217,7 +217,7 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
               </div>
 
               <div className="col-span-2">
-                <div className="bg-primary-blue/5 rounded-lg p-4">
+                <div className="bg-primary-blue/5 rounded-full p-4">
                   <div className="text-sm text-primary-blue mb-1">Warmmiete (gesamt)</div>
                   <div className="text-2xl font-bold text-blue-900">
                     {(Number(formData.base_rent) + Number(formData.additional_costs)).toLocaleString('de-DE', {
@@ -412,7 +412,7 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
             <button
               type="submit"
               disabled={loading || uploadingFile}
-              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
             >
               {loading ? 'Speichern...' : uploadingFile ? 'Hochladen...' : 'Speichern'}
             </button>

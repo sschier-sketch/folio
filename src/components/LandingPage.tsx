@@ -29,7 +29,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <button
                   onClick={() => navigate('/signup')}
-                  className="px-8 py-4 bg-primary-blue text-white text-lg rounded-xl font-semibold hover:opacity-90 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
+                  className="px-8 py-4 bg-primary-blue text-white text-lg rounded-full font-semibold hover:opacity-90 transition-all hover:flex items-center gap-2"
                 >
                   <Zap className="w-5 h-5" />
                   Kostenlos registrieren
@@ -40,14 +40,14 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-primary-blue rounded-3xl p-8 mb-20 text-white shadow-2xl">
+            <div className="bg-primary-blue rounded-full p-8 mb-20 text-white">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold mb-3">Transparente Preise</h2>
                 <p className="text-white/70">Starten Sie kostenlos und upgraden Sie bei Bedarf</p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                <div className="bg-white/10 backdrop-blur rounded-2xl p-6 border-2 border-white/20">
+                <div className="bg-white/10 backdrop-blur rounded-md p-6 border-2 border-white/20">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
                       <Check className="w-6 h-6 text-white" />
@@ -75,12 +75,12 @@ export default function LandingPage() {
                   </ul>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 text-dark shadow-xl border-4 border-amber-400 relative overflow-hidden">
+                <div className="bg-white rounded-md p-6 text-dark border-4 border-amber-400 relative overflow-hidden">
                   <div className="absolute top-0 right-0 bg-amber-400 text-dark px-4 py-1 text-xs font-bold rounded-bl-lg">
                     BELIEBT
                   </div>
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-10 h-10 bg-primary-blue rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary-blue rounded-full flex items-center justify-center">
                       <Sparkles className="w-6 h-6 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold">Premium</h3>
@@ -113,8 +113,8 @@ export default function LandingPage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 mb-20">
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-                <div className="w-14 h-14 bg-primary-blue/10 rounded-xl flex items-center justify-center mb-4">
+              <div className="bg-white rounded-md p-8 hover:transition-shadow border border-gray-100">
+                <div className="w-14 h-14 bg-primary-blue/10 rounded-full flex items-center justify-center mb-4">
                   <Building2 className="w-7 h-7 text-primary-blue" />
                 </div>
                 <h3 className="text-xl font-semibold text-dark mb-3">Objektverwaltung</h3>
@@ -124,8 +124,8 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-                <div className="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
+              <div className="bg-white rounded-md p-8 hover:transition-shadow border border-gray-100">
+                <div className="w-14 h-14 bg-emerald-100 rounded flex items-center justify-center mb-4">
                   <Users className="w-7 h-7 text-emerald-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-dark mb-3">Mieterverwaltung</h3>
@@ -135,8 +135,8 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-                <div className="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
+              <div className="bg-white rounded-md p-8 hover:transition-shadow border border-gray-100">
+                <div className="w-14 h-14 bg-amber-100 rounded flex items-center justify-center mb-4">
                   <MessageSquare className="w-7 h-7 text-amber-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-dark mb-3">Ticketsystem</h3>
@@ -147,7 +147,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-12 shadow-xl border border-gray-100 mb-20">
+            <div className="bg-white rounded-lg p-12 border border-gray-100 mb-20">
               <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div>
                   <h2 className="text-3xl font-bold text-dark mb-6">
@@ -192,7 +192,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-primary-blue rounded-2xl p-8 text-white">
+                <div className="bg-primary-blue rounded-full p-8 text-white">
                   <div className="text-6xl font-bold mb-2">€</div>
                   <h3 className="text-2xl font-bold mb-4">Kostenlos starten</h3>
                   <p className="text-white/70 mb-6">

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, Mail, FileText, LogIn, UserPlus } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,42 +16,39 @@ export function Header() {
             <img
               src="/rentably-logo.svg"
               alt="Rentab.ly"
-              className="h-10 w-auto transform group-hover:scale-105 transition-transform"
+              className="h-10 w-auto transition-transform"
             />
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
             <Link
               to="/"
-              className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+              className={`text-sm font-medium transition-colors ${
                 isActive('/')
                   ? 'text-primary-blue'
                   : 'text-gray-400 hover:text-dark'
               }`}
             >
-              <Home className="w-4 h-4" />
               Home
             </Link>
             <Link
               to="/contact"
-              className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+              className={`text-sm font-medium transition-colors ${
                 isActive('/contact')
                   ? 'text-primary-blue'
                   : 'text-gray-400 hover:text-dark'
               }`}
             >
-              <Mail className="w-4 h-4" />
               Kontakt
             </Link>
             <Link
               to="/impressum"
-              className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+              className={`text-sm font-medium transition-colors ${
                 isActive('/impressum')
                   ? 'text-primary-blue'
                   : 'text-gray-400 hover:text-dark'
               }`}
             >
-              <FileText className="w-4 h-4" />
               Impressum
             </Link>
           </div>
@@ -59,16 +56,14 @@ export function Header() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               to="/login"
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-400 hover:text-dark transition-colors"
+              className="px-6 py-2 text-sm font-medium text-gray-400 hover:text-dark transition-colors"
             >
-              <LogIn className="w-4 h-4" />
               Anmelden
             </Link>
             <Link
               to="/signup"
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-blue text-white text-sm font-medium rounded-lg hover:from-primary-blue hover:to-primary-blue transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+              className="px-6 py-2 bg-dark text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
             >
-              <UserPlus className="w-4 h-4" />
               Kostenlos starten
             </Link>
           </div>
@@ -91,54 +86,49 @@ export function Header() {
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
                   isActive('/')
                     ? 'bg-primary-blue/5 text-primary-blue'
                     : 'text-gray-400 hover:bg-gray-50'
                 }`}
               >
-                <Home className="w-4 h-4" />
                 Home
               </Link>
               <Link
                 to="/contact"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
                   isActive('/contact')
                     ? 'bg-primary-blue/5 text-primary-blue'
                     : 'text-gray-400 hover:bg-gray-50'
                 }`}
               >
-                <Mail className="w-4 h-4" />
                 Kontakt
               </Link>
               <Link
                 to="/impressum"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
                   isActive('/impressum')
                     ? 'bg-primary-blue/5 text-primary-blue'
                     : 'text-gray-400 hover:bg-gray-50'
                 }`}
               >
-                <FileText className="w-4 h-4" />
                 Impressum
               </Link>
               <div className="border-t border-gray-100 my-2"></div>
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 rounded text-sm font-medium text-gray-400 hover:bg-gray-50 transition-colors"
               >
-                <LogIn className="w-4 h-4" />
                 Anmelden
               </Link>
               <Link
                 to="/signup"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-blue text-white text-sm font-medium rounded-lg hover:from-primary-blue hover:to-primary-blue transition-all shadow-md"
+                className="px-4 py-2 bg-dark text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
               >
-                <UserPlus className="w-4 h-4" />
                 Kostenlos starten
               </Link>
             </div>

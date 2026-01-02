@@ -200,14 +200,14 @@ export default function Support() {
               <div className="flex items-center justify-center gap-4">
                 <button
                   onClick={() => navigate('/contact')}
-                  className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+                  className="px-8 py-4 bg-emerald-600 text-white rounded font-semibold hover:bg-emerald-700 transition-all duration-200 hover:flex items-center gap-2"
                 >
                   <MessageSquare className="w-5 h-5" />
                   {language === 'de' ? 'Kontakt aufnehmen' : 'Contact Us'}
                 </button>
                 <button
                   onClick={() => navigate('/tenant-login')}
-                  className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
+                  className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
                 >
                   {language === 'de' ? 'Zum Mieterportal' : 'To Tenant Portal'}
                 </button>
@@ -222,9 +222,9 @@ export default function Support() {
               return (
                 <div
                   key={index}
-                  className="bg-white rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  className="bg-white rounded-md p-6 text-center hover:transition-all duration-300 transform hover:-translate-y-1"
                 >
-                  <div className={`w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-3 bg-${stat.color}-100`}>
+                  <div className={`w-12 h-12 mx-auto rounded flex items-center justify-center mb-3 bg-${stat.color}-100`}>
                     <Icon className={`w-6 h-6 text-${stat.color}-600`} />
                   </div>
                   <div className="text-3xl font-bold text-dark mb-1">{stat.value}</div>
@@ -254,12 +254,12 @@ export default function Support() {
                   <div
                     key={index}
                     onClick={() => handleCategoryClick(channel.title)}
-                    className={`bg-white rounded-2xl p-6 shadow-lg cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-2 ${
+                    className={`bg-white rounded-md p-6 cursor-pointer transition-all duration-300 hover:hover:-translate-y-2 border-2 ${
                       selectedCategory === channel.title ? 'border-emerald-500' : 'border-transparent'
                     }`}
                   >
                     <div className="relative">
-                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-${channel.color}-100`}>
+                      <div className={`w-14 h-14 rounded flex items-center justify-center mb-4 bg-${channel.color}-100`}>
                         <Icon className={`w-7 h-7 text-${channel.color}-600`} />
                       </div>
                       <div className="absolute -top-2 -right-2 bg-amber-400 text-amber-900 text-xs font-bold px-2 py-1 rounded-full">
@@ -285,7 +285,7 @@ export default function Support() {
           </div>
 
           {/* Tenant Portal Section */}
-          <div className="bg-gradient-to-br from-emerald-600 to-primary-blue rounded-3xl p-12 mb-20 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-emerald-600 to-primary-blue rounded-full p-12 mb-20 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full -mr-48 -mt-48"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -ml-32 -mb-32"></div>
 
@@ -313,10 +313,10 @@ export default function Support() {
                   return (
                     <div
                       key={index}
-                      className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300"
+                      className="bg-white/10 backdrop-blur-sm rounded-md p-6 hover:bg-white/20 transition-all duration-300"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/20 flex-shrink-0">
+                        <div className="w-12 h-12 rounded flex items-center justify-center bg-white/20 flex-shrink-0">
                           <Icon className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -332,7 +332,7 @@ export default function Support() {
               <div className="text-center">
                 <button
                   onClick={() => navigate('/tenant-login')}
-                  className="px-8 py-4 bg-white text-emerald-600 rounded-xl font-bold hover:bg-emerald-50 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105 inline-flex items-center gap-2"
+                  className="px-8 py-4 bg-white text-emerald-600 rounded font-bold hover:bg-emerald-50 transition-all duration-200 hover:inline-flex items-center gap-2"
                 >
                   <Sparkles className="w-5 h-5" />
                   {language === 'de' ? 'Zum Mieterportal' : 'Go to Tenant Portal'}
@@ -360,9 +360,9 @@ export default function Support() {
                 return (
                   <div
                     key={index}
-                    className={`bg-white rounded-2xl p-6 shadow-lg cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-2 border-transparent hover:border-${category.color}-500`}
+                    className={`bg-white rounded-md p-6 cursor-pointer transition-all duration-300 hover:hover:-translate-y-2 border-2 border-transparent hover:border-${category.color}-500`}
                   >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-${category.color}-100`}>
+                    <div className={`w-12 h-12 rounded flex items-center justify-center mb-4 bg-${category.color}-100`}>
                       <Icon className={`w-6 h-6 text-${category.color}-600`} />
                     </div>
                     <h3 className="text-lg font-bold text-dark mb-2">{category.title}</h3>
@@ -374,7 +374,7 @@ export default function Support() {
               })}
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-lg">
+            <div className="bg-white rounded-md p-8">
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <div className="relative">
@@ -382,11 +382,11 @@ export default function Support() {
                     <input
                       type="text"
                       placeholder={language === 'de' ? 'Wie können wir Ihnen helfen?' : 'How can we help you?'}
-                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-lg"
+                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-100 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-lg"
                     />
                   </div>
                 </div>
-                <button className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-all duration-200 flex items-center gap-2">
+                <button className="px-8 py-4 bg-emerald-600 text-white rounded font-semibold hover:bg-emerald-700 transition-all duration-200 flex items-center gap-2">
                   <HelpCircle className="w-5 h-5" />
                   {language === 'de' ? 'Suchen' : 'Search'}
                 </button>
@@ -395,7 +395,7 @@ export default function Support() {
           </div>
 
           {/* Achievements Section */}
-          <div className="bg-white rounded-3xl p-12 shadow-xl mb-20">
+          <div className="bg-white rounded-lg p-12 mb-20">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 rounded-full text-amber-700 font-medium mb-4">
                 <Trophy className="w-4 h-4" />
@@ -417,7 +417,7 @@ export default function Support() {
                 return (
                   <div
                     key={index}
-                    className={`rounded-2xl p-6 transition-all duration-300 ${
+                    className={`rounded-md p-6 transition-all duration-300 ${
                       achievement.unlocked
                         ? 'bg-gradient-to-br from-amber-100 to-amber-200 border-2 border-amber-400'
                         : 'bg-gray-50 border-2 border-gray-100 opacity-50'
@@ -460,13 +460,13 @@ export default function Support() {
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={() => navigate('/contact')}
-                className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="px-8 py-4 bg-emerald-600 text-white rounded font-semibold hover:bg-emerald-700 transition-all duration-200 hover:"
               >
                 {language === 'de' ? 'Jetzt Support kontaktieren' : 'Contact Support Now'}
               </button>
               <button
                 onClick={() => navigate('/signup')}
-                className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
+                className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
               >
                 {language === 'de' ? 'Kostenlos starten' : 'Start Free'}
               </button>

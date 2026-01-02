@@ -107,7 +107,7 @@ export default function ReferralProgramView() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-gradient-to-br from-blue-500 to-primary-blue rounded-2xl shadow-xl p-8 text-white">
+        <div className="lg:col-span-2 bg-gradient-to-br from-blue-500 to-primary-blue rounded-full p-8 text-white">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
               <Gift className="w-6 h-6" />
@@ -115,7 +115,7 @@ export default function ReferralProgramView() {
             <h2 className="text-2xl font-bold">Ihr persönlicher Empfehlungscode</h2>
           </div>
 
-          <div className="bg-white/20 backdrop-blur rounded-xl p-6 mb-6">
+          <div className="bg-white/20 backdrop-blur rounded p-6 mb-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1">
                 <p className="text-primary-blue/20 text-sm mb-2">Ihr Empfehlungscode:</p>
@@ -140,7 +140,7 @@ export default function ReferralProgramView() {
             </div>
           </div>
 
-          <div className="bg-white/20 backdrop-blur rounded-xl p-6">
+          <div className="bg-white/20 backdrop-blur rounded p-6">
             <p className="text-primary-blue/20 text-sm mb-2">Empfehlungslink:</p>
             <div className="flex items-center gap-3">
               <p className="flex-1 text-sm font-mono bg-white/10 px-4 py-2 rounded-lg break-all">
@@ -158,7 +158,7 @@ export default function ReferralProgramView() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                 <Users className="w-6 h-6 text-emerald-600" />
@@ -168,9 +168,9 @@ export default function ReferralProgramView() {
             <div className="text-sm text-gray-400">Gesamt Empfehlungen</div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
                 <Award className="w-6 h-6 text-primary-blue" />
               </div>
             </div>
@@ -181,7 +181,7 @@ export default function ReferralProgramView() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-emerald-600" />
@@ -228,7 +228,7 @@ export default function ReferralProgramView() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-6 text-white">
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-full p-6 text-white">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
               <Gift className="w-5 h-5" />
@@ -272,7 +272,7 @@ export default function ReferralProgramView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h3 className="text-lg font-semibold text-dark">Ihre Empfehlungen</h3>
         </div>
@@ -331,7 +331,7 @@ export default function ReferralProgramView() {
         )}
       </div>
 
-      <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-lg p-4">
+      <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-full p-4">
         <p className="text-sm text-blue-900">
           <span className="font-semibold">Hinweis:</span> Das Empfehlungsprogramm befindet sich derzeit in der
           Beta-Phase. Die finalen Belohnungen und Konditionen werden vor dem offiziellen Launch bekanntgegeben.

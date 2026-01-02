@@ -242,7 +242,7 @@ export function AdminTicketsView() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
-      <div className="lg:col-span-1 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col">
+      <div className="lg:col-span-1 bg-white rounded border border-gray-100 overflow-hidden flex flex-col">
         <div className="p-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-dark mb-3">Kontakt-Tickets</h2>
           <div className="flex gap-2">
@@ -323,7 +323,7 @@ export function AdminTicketsView() {
         </div>
       </div>
 
-      <div className="lg:col-span-2 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col">
+      <div className="lg:col-span-2 bg-white rounded border border-gray-100 overflow-hidden flex flex-col">
         {selectedTicket ? (
           <>
             <div className="p-6 border-b border-gray-100">
@@ -423,7 +423,7 @@ export function AdminTicketsView() {
                   <button
                     onClick={handleSendReply}
                     disabled={!replyMessage.trim() || sending}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {sending ? (
                       <>

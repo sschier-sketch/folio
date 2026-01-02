@@ -95,9 +95,9 @@ export default function Contact() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
                   <Mail className="w-6 h-6 text-primary-blue" />
                 </div>
                 <div>
@@ -115,7 +115,7 @@ export default function Contact() {
               </a>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <MessageSquare className="w-6 h-6 text-emerald-600" />
@@ -139,7 +139,7 @@ export default function Contact() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-8">
             <h2 className="text-2xl font-bold text-dark mb-6">
               {language === 'de' ? 'Kontaktformular' : 'Contact Form'}
             </h2>
@@ -221,7 +221,7 @@ export default function Contact() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <>

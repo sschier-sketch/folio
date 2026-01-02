@@ -45,7 +45,7 @@ export function Login() {
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow-xl border border-gray-100 rounded-2xl sm:px-10">
+          <div className="bg-white py-8 px-4 border border-gray-100 rounded-md sm:px-10">
             <LoginForm onSuccess={() => window.location.href = '/dashboard'} />
           </div>
         </div>

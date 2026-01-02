@@ -185,7 +185,7 @@ export default function FeedbackListView() {
         <p className="text-gray-400">{t('feedback.description')}</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+      <div className="bg-white rounded shadow-sm border border-gray-100 p-6 mb-8">
         <h2 className="text-xl font-semibold text-dark mb-4">{t('feedback.submit')}</h2>
 
         {successMessage && (
@@ -236,7 +236,7 @@ export default function FeedbackListView() {
           <button
             type="submit"
             disabled={submitting || !newFeedback.trim()}
-            className="w-full py-3 bg-primary-blue text-white rounded-lg hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="w-full py-3 bg-primary-blue text-white rounded-full hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {submitting
               ? (language === 'de' ? 'Wird gesendet...' : 'Submitting...')
@@ -290,7 +290,7 @@ export default function FeedbackListView() {
       </div>
 
       {feedbackList.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-12 text-center">
           <h3 className="text-xl font-semibold text-dark mb-2">
             {t('feedback.no_feedback')}
           </h3>
@@ -301,7 +301,7 @@ export default function FeedbackListView() {
           {feedbackList.map((feedback) => (
             <div
               key={feedback.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow"
+              className="bg-white rounded shadow-sm border border-gray-100 p-6 hover:transition-shadow"
             >
               <div className="flex gap-4">
                 <div className="flex flex-col items-center gap-2 flex-shrink-0">

@@ -140,13 +140,13 @@ export default function Features() {
               <div className="flex items-center justify-center gap-4">
                 <button
                   onClick={() => navigate('/signup')}
-                  className="px-8 py-4 bg-primary-blue text-white rounded-xl font-semibold hover:bg-primary-blue transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="px-8 py-4 bg-primary-blue text-white rounded-full font-semibold hover:bg-primary-blue transition-all duration-200 hover:"
                 >
                   {language === 'de' ? 'Jetzt starten - Kostenlos' : 'Start Now - Free'}
                 </button>
                 <button
                   onClick={() => navigate('/pricing')}
-                  className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
+                  className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
                 >
                   {language === 'de' ? 'Preise ansehen' : 'View Pricing'}
                 </button>
@@ -165,13 +165,13 @@ export default function Features() {
                   key={index}
                   onMouseEnter={() => setHoveredFeature(index)}
                   onMouseLeave={() => setHoveredFeature(null)}
-                  className={`bg-white rounded-2xl p-8 shadow-lg border-2 transition-all duration-300 cursor-pointer ${
+                  className={`bg-white rounded-md p-8 border-2 transition-all duration-300 cursor-pointer ${
                     isHovered
-                      ? 'border-blue-500 shadow-2xl transform -translate-y-2'
+                      ? 'border-blue-500 transform -translate-y-2'
                       : 'border-transparent hover:border-gray-100'
                   }`}
                 >
-                  <div className={`w-16 h-16 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 ${
+                  <div className={`w-16 h-16 rounded flex items-center justify-center mb-4 transition-transform duration-300 ${
                     isHovered ? 'scale-110' : 'scale-100'
                   } bg-${feature.color}-100`}>
                     <Icon className={`w-8 h-8 text-${feature.color}-600`} />
@@ -199,7 +199,7 @@ export default function Features() {
           </div>
 
           {/* Journey Section */}
-          <div className="bg-gradient-to-br from-primary-blue to-primary-blue rounded-3xl p-12 mb-20 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary-blue to-primary-blue rounded-full p-12 mb-20 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -ml-48 -mb-48"></div>
 
@@ -228,14 +228,14 @@ export default function Features() {
                     <div
                       key={index}
                       onClick={() => handleStepClick(index)}
-                      className={`bg-white/10 backdrop-blur-sm rounded-2xl p-6 cursor-pointer transition-all duration-300 ${
+                      className={`bg-white/10 backdrop-blur-sm rounded-md p-6 cursor-pointer transition-all duration-300 ${
                         isCompleted
                           ? 'bg-emerald-500/20 border-2 border-emerald-400'
                           : 'hover:bg-white/20 border-2 border-transparent'
                       }`}
                     >
                       <div className="relative">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
+                        <div className={`w-12 h-12 rounded flex items-center justify-center mb-4 transition-all duration-300 ${
                           isCompleted ? 'bg-emerald-500' : 'bg-white/20'
                         }`}>
                           {isCompleted ? (
@@ -259,7 +259,7 @@ export default function Features() {
               <div className="text-center mt-12">
                 <button
                   onClick={() => navigate('/signup')}
-                  className="px-8 py-4 bg-white text-primary-blue rounded-xl font-bold hover:bg-primary-blue/5 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105"
+                  className="px-8 py-4 bg-white text-primary-blue rounded-full font-bold hover:bg-primary-blue/5 transition-all duration-200 hover:"
                 >
                   {language === 'de' ? 'Jetzt Journey starten!' : 'Start Journey Now!'}
                 </button>
@@ -269,7 +269,7 @@ export default function Features() {
 
           {/* Trust Indicators */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg">
+            <div className="bg-white rounded-md p-8 text-center">
               <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-emerald-600" />
               </div>
@@ -279,7 +279,7 @@ export default function Features() {
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg">
+            <div className="bg-white rounded-md p-8 text-center">
               <div className="w-16 h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="w-8 h-8 text-primary-blue" />
               </div>
@@ -289,7 +289,7 @@ export default function Features() {
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg">
+            <div className="bg-white rounded-md p-8 text-center">
               <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="w-8 h-8 text-amber-600" />
               </div>
@@ -301,7 +301,7 @@ export default function Features() {
           </div>
 
           {/* Final CTA */}
-          <div className="text-center bg-white rounded-3xl p-12 shadow-xl">
+          <div className="text-center bg-white rounded-lg p-12">
             <h2 className="text-3xl font-bold text-dark mb-4">
               {language === 'de'
                 ? 'Bereit für die moderne Immobilienverwaltung?'
@@ -315,14 +315,14 @@ export default function Features() {
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={() => navigate('/signup')}
-                className="px-8 py-4 bg-primary-blue text-white rounded-xl font-semibold hover:bg-primary-blue transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+                className="px-8 py-4 bg-primary-blue text-white rounded-full font-semibold hover:bg-primary-blue transition-all duration-200 hover:flex items-center gap-2"
               >
                 <Sparkles className="w-5 h-5" />
                 {language === 'de' ? 'Kostenlos starten' : 'Start Free'}
               </button>
               <button
                 onClick={() => navigate('/contact')}
-                className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
+                className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
               >
                 {language === 'de' ? 'Kontakt aufnehmen' : 'Contact Us'}
               </button>

@@ -100,9 +100,9 @@ export default function DashboardHome() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
               <Building2 className="w-6 h-6 text-primary-blue" />
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function DashboardHome() {
           <div className="text-sm text-gray-400">{t('dashboard.properties')}</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
               <Users className="w-6 h-6 text-emerald-600" />
@@ -120,7 +120,7 @@ export default function DashboardHome() {
           <div className="text-sm text-gray-400">{t('dashboard.tenants.active')}</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
               <Euro className="w-6 h-6 text-amber-600" />
@@ -132,7 +132,7 @@ export default function DashboardHome() {
           <div className="text-sm text-gray-400">{t('dashboard.rent.monthly')}</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-indigo-600" />
@@ -146,7 +146,7 @@ export default function DashboardHome() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <h3 className="text-lg font-semibold text-dark mb-4">{t('dashboard.portfolio.total')}</h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -200,7 +200,7 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-primary-blue rounded-xl shadow-lg p-6 text-white">
+        <div className="bg-gradient-to-br from-blue-500 to-primary-blue rounded-full p-6 text-white">
           <h3 className="text-lg font-semibold mb-4">{t('dashboard.quickstart')}</h3>
           <p className="text-primary-blue/20 mb-4">
             {t('dashboard.quickstart.description')}
@@ -221,7 +221,7 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
+        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full p-6 text-white">
           <div className="flex items-center gap-2 mb-3">
             <ExternalLink className="w-5 h-5" />
             <h3 className="text-lg font-semibold">{t('dashboard.portal.title')}</h3>

@@ -22,10 +22,10 @@ export default function Impressum() {
             </p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 space-y-8">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-8 space-y-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
                   <Building2 className="w-6 h-6 text-primary-blue" />
                 </div>
                 <h2 className="text-xl font-semibold text-dark">

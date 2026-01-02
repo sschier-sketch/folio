@@ -198,7 +198,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+      <div className="bg-white rounded-md w-full max-w-md p-8">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-blue/10 rounded-full mb-4">
             <LogIn className="w-8 h-8 text-primary-blue" />
@@ -262,7 +262,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Anmelden...' : 'Anmelden'}
             </button>
@@ -285,7 +285,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
 
         {mode === 'setup' && (
           <form onSubmit={handleSetupPassword} className="space-y-4">
-            <div className="p-4 bg-primary-blue/5 border border-blue-200 rounded-lg text-primary-blue text-sm mb-4">
+            <div className="p-4 bg-primary-blue/5 border border-blue-200 rounded-full text-primary-blue text-sm mb-4">
               Sie haben noch kein Passwort eingerichtet. Bitte wählen Sie ein sicheres Passwort.
             </div>
 
@@ -343,7 +343,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Einrichten...' : 'Passwort einrichten'}
             </button>
@@ -427,7 +427,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Zurücksetzen...' : 'Passwort zurücksetzen'}
             </button>

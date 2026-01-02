@@ -181,7 +181,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
         Zurück zur Übersicht
       </button>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div className="bg-white rounded shadow-sm border border-gray-100 p-6 mb-6">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-3xl font-bold text-dark mb-2">{property.name}</h1>
@@ -221,7 +221,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
 
       {currentView === 'overview' && (
         <>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6 mb-6">
             <div className="mb-4">
               <h2 className="text-xl font-semibold text-dark">Objektdetails</h2>
             </div>
@@ -265,7 +265,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6 relative">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-300">Bruttorendite</span>
@@ -284,7 +284,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
           </div>
           <div className="text-xs text-gray-300">pro Jahr</div>
           {showGrossYieldTooltip && (
-            <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-lg p-4 z-10 shadow-xl">
+            <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-full p-4 z-10">
               <div className="font-semibold mb-2">Berechnung Bruttorendite:</div>
               <div className="space-y-1 text-xs">
                 <div>Formel: (Jahresmiete ÷ Aktueller Wert) × 100</div>
@@ -299,7 +299,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6 relative">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-300">Nettorendite</span>
@@ -318,7 +318,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
           </div>
           <div className="text-xs text-gray-300">nach Kreditkosten</div>
           {showNetYieldTooltip && (
-            <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-lg p-4 z-10 shadow-xl">
+            <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-full p-4 z-10">
               <div className="font-semibold mb-2">Berechnung Nettorendite:</div>
               <div className="space-y-1 text-xs">
                 <div>Formel: (Netto-Jahreseinkommen ÷ Aktueller Wert) × 100</div>
@@ -334,7 +334,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-300">Netto-Cashflow</span>
             <Users className="w-5 h-5 text-amber-600" />
@@ -346,7 +346,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div className="bg-white rounded shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-dark">Kredite & Finanzierungen</h2>
               <button
@@ -354,7 +354,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
                   setSelectedLoan(null);
                   setShowLoanModal(true);
                 }}
-                className="flex items-center gap-2 px-3 py-2 bg-primary-blue text-white text-sm rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-primary-blue text-white text-sm rounded-full font-medium hover:bg-primary-blue transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Kredit hinzufügen
@@ -408,7 +408,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-dark">Mietverhältnisse</h2>
               <button

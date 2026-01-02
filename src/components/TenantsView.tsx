@@ -123,7 +123,7 @@ export default function TenantsView() {
             setSelectedContract(null);
             setShowContractModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
         >
           <Plus className="w-5 h-5" />
           Mietverhältnis hinzufügen
@@ -131,7 +131,7 @@ export default function TenantsView() {
       </div>
 
       {contracts.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-12 text-center">
           <Users className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-dark mb-2">Noch keine Mietverhältnisse</h3>
           <p className="text-gray-400 mb-6">
@@ -142,7 +142,7 @@ export default function TenantsView() {
               setSelectedContract(null);
               setShowContractModal(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-5 h-5" />
             Erstes Mietverhältnis hinzufügen
@@ -151,7 +151,7 @@ export default function TenantsView() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {contracts.map((contract) => (
-            <div key={contract.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            <div key={contract.id} className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden hover:transition-shadow">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start gap-4">

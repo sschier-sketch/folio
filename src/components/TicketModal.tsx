@@ -175,7 +175,7 @@ export default function TicketModal({ ticket, properties, tenants, onClose, onSa
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-md w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-dark">
             {ticket ? 'Ticket bearbeiten' : 'Neues Ticket'}
@@ -356,7 +356,7 @@ export default function TicketModal({ ticket, properties, tenants, onClose, onSa
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
             >
               {loading ? 'Speichern...' : 'Speichern'}
             </button>

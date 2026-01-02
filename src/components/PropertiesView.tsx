@@ -103,7 +103,7 @@ export default function PropertiesView() {
             setSelectedProperty(null);
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
         >
           <Plus className="w-5 h-5" />
           Immobilie hinzufügen
@@ -111,7 +111,7 @@ export default function PropertiesView() {
       </div>
 
       {properties.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-12 text-center">
           <Building2 className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-dark mb-2">
             Noch keine Immobilien
@@ -124,7 +124,7 @@ export default function PropertiesView() {
               setSelectedProperty(null);
               setShowModal(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-5 h-5" />
             Erste Immobilie hinzufügen
@@ -135,11 +135,11 @@ export default function PropertiesView() {
           {properties.map((property) => (
             <div
               key={property.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+              className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden hover:transition-shadow"
             >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center flex-shrink-0">
                     <Building2 className="w-6 h-6 text-primary-blue" />
                   </div>
                   <div className="flex gap-2">

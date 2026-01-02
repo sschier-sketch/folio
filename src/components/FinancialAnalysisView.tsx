@@ -230,7 +230,7 @@ export default function FinancialAnalysisView() {
       {viewMode === 'current' && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-6 h-6 text-emerald-600" />
@@ -242,7 +242,7 @@ export default function FinancialAnalysisView() {
               <div className="text-sm text-gray-400">Jährliche Mieteinnahmen</div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                   <TrendingDown className="w-6 h-6 text-red-600" />
@@ -254,7 +254,7 @@ export default function FinancialAnalysisView() {
               <div className="text-sm text-gray-400">Jährliche Ausgaben</div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                   financialData.netIncome >= 0 ? 'bg-primary-blue/10' : 'bg-amber-100'
@@ -274,7 +274,7 @@ export default function FinancialAnalysisView() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-emerald-600" />
@@ -325,7 +325,7 @@ export default function FinancialAnalysisView() {
               )}
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
                   <CreditCard className="w-5 h-5 text-red-600" />
@@ -385,9 +385,9 @@ export default function FinancialAnalysisView() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-primary-blue" />
               </div>
               <h3 className="text-lg font-semibold text-dark">Übersicht</h3>
@@ -458,9 +458,9 @@ export default function FinancialAnalysisView() {
 
       {viewMode === 'projection' && (
         <>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
                 <PieChart className="w-5 h-5 text-primary-blue" />
               </div>
               <h3 className="text-lg font-semibold text-dark">Prognose-Einstellungen</h3>
@@ -530,9 +530,9 @@ export default function FinancialAnalysisView() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-primary-blue" />
               </div>
               <h3 className="text-lg font-semibold text-dark">Prognose-Visualisierung</h3>
@@ -651,7 +651,7 @@ export default function FinancialAnalysisView() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-dark">Detaillierte Prognose-Tabelle</h3>
             </div>
@@ -712,7 +712,7 @@ export default function FinancialAnalysisView() {
             </div>
           </div>
 
-          <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-lg p-4">
+          <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-full p-4">
             <div className="flex items-start gap-3">
               <Calculator className="w-5 h-5 text-primary-blue mt-0.5" />
               <div className="text-sm text-blue-900">

@@ -259,7 +259,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
       </div>
 
       {activeTab === 'profile' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
           <h3 className="text-lg font-semibold text-dark mb-6">{t('settings.profile')}</h3>
 
           <div className="space-y-4 max-w-2xl">
@@ -325,7 +325,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
 
       {activeTab === 'billing' && (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-xl p-6">
+          <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-full p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
                 <Gift className="w-5 h-5 text-white" />
@@ -401,7 +401,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
             </form>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-dark mb-6">{t('settings.plan')}</h3>
 
             <div className="mb-6">
@@ -425,7 +425,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-dark mb-6">{t('settings.billing.company')}</h3>
 
             {successMessage && (
@@ -497,7 +497,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
 
       {activeTab === 'feedback' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded shadow-sm border border-gray-100 p-6">
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-dark mb-2">{t('settings.feedback.title')}</h3>
               <p className="text-gray-400 text-sm">{t('settings.feedback.description')}</p>
@@ -577,7 +577,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center gap-2 px-6 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                   {loading ? (language === 'de' ? 'Senden...' : 'Sending...') : t('settings.feedback.submit')}
@@ -586,7 +586,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
             </form>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-dark">{t('settings.feedback.history')}</h3>
             </div>

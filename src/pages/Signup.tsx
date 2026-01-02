@@ -45,9 +45,9 @@ export function Signup() {
 
           <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="order-2 lg:order-1 space-y-6">
-              <div className="bg-gradient-to-br from-primary-blue to-primary-blue rounded-2xl p-8 text-white shadow-xl">
+              <div className="bg-gradient-to-br from-primary-blue to-primary-blue rounded-full p-8 text-white">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-white/20 rounded flex items-center justify-center">
                     <Sparkles className="w-6 h-6" />
                   </div>
                   <h3 className="text-2xl font-bold">Was Sie erwartet</h3>
@@ -87,15 +87,15 @@ export function Signup() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
-                  <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center mb-3">
+                <div className="bg-white rounded p-6 border border-gray-100 hover:transition-shadow">
+                  <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center mb-3">
                     <Building2 className="w-5 h-5 text-primary-blue" />
                   </div>
                   <h4 className="font-semibold text-dark mb-1">Objektverwaltung</h4>
                   <p className="text-sm text-gray-400">Alle Immobilien im Blick</p>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded p-6 border border-gray-100 hover:transition-shadow">
                   <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mb-3">
                     <Users className="w-5 h-5 text-emerald-600" />
                   </div>
@@ -103,7 +103,7 @@ export function Signup() {
                   <p className="text-sm text-gray-400">Zentrale Datenverwaltung</p>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded p-6 border border-gray-100 hover:transition-shadow">
                   <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-3">
                     <TrendingUp className="w-5 h-5 text-amber-600" />
                   </div>
@@ -111,7 +111,7 @@ export function Signup() {
                   <p className="text-sm text-gray-400">Profitabilität tracken</p>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded p-6 border border-gray-100 hover:transition-shadow">
                   <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center mb-3">
                     <Shield className="w-5 h-5 text-violet-600" />
                   </div>
@@ -120,7 +120,7 @@ export function Signup() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-xl p-6">
+              <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-full p-6">
                 <div className="flex items-start gap-3">
                   <Gift className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
                   <div>
@@ -134,9 +134,9 @@ export function Signup() {
             </div>
 
             <div className="order-1 lg:order-2">
-              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 sticky top-24">
+              <div className="bg-white rounded-md border border-gray-100 p-8 sticky top-24">
                 <div className="flex items-center justify-center gap-2 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-blue to-primary-blue rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-blue to-primary-blue rounded-full flex items-center justify-center">
                     <Zap className="w-6 h-6 text-white" />
                   </div>
                   <h2 className="text-2xl font-bold text-dark">Schnellstart</h2>
