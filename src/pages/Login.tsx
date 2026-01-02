@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { LoginForm } from '../components/auth/LoginForm';
 import { useAuth } from '../hooks/useAuth';
-import { Building2, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Header } from '../components/Header';
 
 export function Login() {
@@ -27,9 +27,7 @@ export function Login() {
       <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8 mt-16">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
+            <img src="/logo_1.svg" alt="Rentab.ly" className="h-16 w-auto" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-slate-900">
             Willkommen zurück

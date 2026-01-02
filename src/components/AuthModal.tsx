@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Building2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface AuthModalProps {
@@ -55,8 +55,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         </button>
 
         <div className="p-8">
-          <div className="flex items-center gap-2 mb-6">
-            <Building2 className="w-8 h-8 text-blue-600" />
+          <div className="flex items-center gap-3 mb-6">
+            <img src="/logo_1.svg" alt="Rentab.ly" className="h-8 w-auto" />
             <span className="text-2xl font-bold text-slate-800">Rentab.ly</span>
           </div>
 

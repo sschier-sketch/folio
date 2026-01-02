@@ -71,7 +71,7 @@ export default function Dashboard() {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <Building2 className="w-8 h-8 text-blue-600" />
+              <img src="/logo_1.svg" alt="Rentab.ly" className="h-8 w-auto" />
               <span className="text-2xl font-bold text-slate-800">Rentab.ly</span>
             </div>
             <div className="flex items-center gap-4">

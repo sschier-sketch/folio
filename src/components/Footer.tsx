@@ -1,4 +1,4 @@
-import { Building2, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -11,8 +11,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Building2 className="w-6 h-6 text-blue-600" />
+            <div className="flex items-center gap-3 mb-4">
+              <img src="/logo_1.svg" alt="Rentab.ly" className="h-6 w-auto" />
               <span className="text-xl font-bold text-slate-800">Rentab.ly</span>
             </div>
             <p className="text-sm text-slate-600">
