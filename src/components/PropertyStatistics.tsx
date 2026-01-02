@@ -158,7 +158,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -166,8 +166,8 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
   return (
     <div className="space-y-6">
       {loans.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center text-slate-500">
-          <PiggyBank className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-300">
+          <PiggyBank className="w-16 h-16 mx-auto mb-4 text-gray-200" />
           <p className="text-lg font-medium">Keine Kredite vorhanden</p>
           <p className="text-sm mt-2">Fügen Sie einen Kredit hinzu, um detaillierte Finanzanalysen zu sehen.</p>
         </div>
@@ -176,11 +176,11 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
                   <div className="flex items-center gap-2 mb-2">
-                    <DollarSign className="w-5 h-5 text-blue-600" />
+                    <DollarSign className="w-5 h-5 text-primary-blue" />
                     <div className="text-sm font-medium text-blue-900">Eigenkapital</div>
                   </div>
                   <div className="text-2xl font-bold text-blue-900">{formatCurrency(netEquity)}</div>
-                  <div className="text-xs text-blue-700 mt-1">Immobilienwert - Kredit + Mieten</div>
+                  <div className="text-xs text-primary-blue mt-1">Immobilienwert - Kredit + Mieten</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-200">
@@ -213,17 +213,17 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Kreditabbau</h3>
+              <div className="bg-white rounded-xl border border-gray-100 p-6">
+                <h3 className="text-lg font-semibold text-dark mb-4">Kreditabbau</h3>
 
                 <div className="mb-4">
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-slate-600">Fortschritt</span>
-                    <span className="font-semibold text-slate-900">{calculateLoanProgress().toFixed(1)}%</span>
+                    <span className="text-gray-400">Fortschritt</span>
+                    <span className="font-semibold text-dark">{calculateLoanProgress().toFixed(1)}%</span>
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
+                  <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-blue-500 to-primary-blue h-full rounded-full transition-all duration-500"
                       style={{ width: `${calculateLoanProgress()}%` }}
                     />
                   </div>
@@ -231,26 +231,26 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                   <div>
-                    <div className="text-sm text-slate-600 mb-1">Ursprünglicher Kredit</div>
-                    <div className="text-lg font-bold text-slate-900">{formatCurrency(totalLoanAmount)}</div>
+                    <div className="text-sm text-gray-400 mb-1">Ursprünglicher Kredit</div>
+                    <div className="text-lg font-bold text-dark">{formatCurrency(totalLoanAmount)}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-slate-600 mb-1">Restschuld</div>
+                    <div className="text-sm text-gray-400 mb-1">Restschuld</div>
                     <div className="text-lg font-bold text-orange-600">{formatCurrency(totalRemainingBalance)}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-slate-600 mb-1">Bereits getilgt</div>
+                    <div className="text-sm text-gray-400 mb-1">Bereits getilgt</div>
                     <div className="text-lg font-bold text-emerald-600">{formatCurrency(totalPaidOff)}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-slate-600 mb-1">Zinsen gezahlt</div>
+                    <div className="text-sm text-gray-400 mb-1">Zinsen gezahlt</div>
                     <div className="text-lg font-bold text-red-600">{formatCurrency(totalInterestPaid)}</div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Monatliche Cashflow-Analyse</h3>
+              <div className="bg-white rounded-xl border border-gray-100 p-6">
+                <h3 className="text-lg font-semibold text-dark mb-4">Monatliche Cashflow-Analyse</h3>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-lg border border-emerald-200">
@@ -296,13 +296,13 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Finanzieren die Mieter die Immobilie?</h3>
+              <div className="bg-white rounded-xl border border-gray-100 p-6">
+                <h3 className="text-lg font-semibold text-dark mb-4">Finanzieren die Mieter die Immobilie?</h3>
 
                 <div className="space-y-4">
-                  <div className="p-4 bg-slate-50 rounded-lg">
+                  <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-slate-700">Deckung der Gesamtrate</span>
+                      <span className="text-sm font-medium text-gray-400">Deckung der Gesamtrate</span>
                       <span className={`text-lg font-bold ${
                         rentCoverageRatio >= 100 ? 'text-emerald-600' :
                         rentCoverageRatio >= 80 ? 'text-orange-600' : 'text-red-600'
@@ -310,7 +310,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                         {formatPercent(rentCoverageRatio)}
                       </span>
                     </div>
-                    <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                    <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
                           rentCoverageRatio >= 100 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' :
@@ -320,7 +320,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                         style={{ width: `${Math.min(rentCoverageRatio, 100)}%` }}
                       />
                     </div>
-                    <p className="text-xs text-slate-600 mt-2">
+                    <p className="text-xs text-gray-400 mt-2">
                       {rentCoverageRatio >= 100
                         ? '✓ Die Miete deckt die komplette Rate inkl. Zinsen und Tilgung'
                         : rentCoverageRatio >= 80
@@ -329,9 +329,9 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                     </p>
                   </div>
 
-                  <div className="p-4 bg-slate-50 rounded-lg">
+                  <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-slate-700">Deckung der Tilgung</span>
+                      <span className="text-sm font-medium text-gray-400">Deckung der Tilgung</span>
                       <span className={`text-lg font-bold ${
                         principalCoverage >= 100 ? 'text-emerald-600' :
                         principalCoverage >= 50 ? 'text-orange-600' : 'text-red-600'
@@ -339,7 +339,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                         {formatPercent(principalCoverage)}
                       </span>
                     </div>
-                    <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                    <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
                           principalCoverage >= 100 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' :
@@ -349,7 +349,7 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                         style={{ width: `${Math.min(principalCoverage, 100)}%` }}
                       />
                     </div>
-                    <p className="text-xs text-slate-600 mt-2">
+                    <p className="text-xs text-gray-400 mt-2">
                       {principalCoverage >= 100
                         ? '✓ Die Mieter finanzieren die komplette Tilgung + tragen zu den Zinsen bei'
                         : principalCoverage >= 50
@@ -360,9 +360,9 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                     </p>
                   </div>
 
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="p-4 bg-primary-blue/5 rounded-lg border border-blue-200">
                     <h4 className="font-semibold text-blue-900 mb-2">Zusammenfassung</h4>
-                    <ul className="space-y-1 text-sm text-blue-800">
+                    <ul className="space-y-1 text-sm text-primary-blue">
                       <li>• Monatliche Mieteinnahmen: {formatCurrency(monthlyRent)}</li>
                       <li>• Monatliche Zinskosten: {formatCurrency(monthlyInterest)}</li>
                       <li>• Monatliche Tilgung: {formatCurrency(monthlyPrincipal)}</li>
@@ -377,38 +377,38 @@ export default function PropertyStatistics({ property, onClose }: PropertyStatis
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Weitere Kennzahlen</h3>
+              <div className="bg-white rounded-xl border border-gray-100 p-6">
+                <h3 className="text-lg font-semibold text-dark mb-4">Weitere Kennzahlen</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="text-sm text-slate-600 mb-1">Gesamte Mieteinnahmen (bisher)</div>
-                    <div className="text-xl font-bold text-slate-900">{formatCurrency(totalRentReceived)}</div>
-                    <div className="text-xs text-slate-500 mt-1">Aus {rentPayments.length} bezahlten Mieten</div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="text-sm text-gray-400 mb-1">Gesamte Mieteinnahmen (bisher)</div>
+                    <div className="text-xl font-bold text-dark">{formatCurrency(totalRentReceived)}</div>
+                    <div className="text-xs text-gray-300 mt-1">Aus {rentPayments.length} bezahlten Mieten</div>
                   </div>
 
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="text-sm text-slate-600 mb-1">Wertsteigerung der Immobilie</div>
-                    <div className="text-xl font-bold text-slate-900">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="text-sm text-gray-400 mb-1">Wertsteigerung der Immobilie</div>
+                    <div className="text-xl font-bold text-dark">
                       {formatCurrency(Number(property.current_value) - Number(property.purchase_price))}
                     </div>
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-gray-300 mt-1">
                       Von {formatCurrency(Number(property.purchase_price))} auf {formatCurrency(Number(property.current_value))}
                     </div>
                   </div>
 
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="text-sm text-slate-600 mb-1">Eigenkapitaleinsatz</div>
-                    <div className="text-xl font-bold text-slate-900">{formatCurrency(totalInvested)}</div>
-                    <div className="text-xs text-slate-500 mt-1">Kaufpreis - Kreditsumme</div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="text-sm text-gray-400 mb-1">Eigenkapitaleinsatz</div>
+                    <div className="text-xl font-bold text-dark">{formatCurrency(totalInvested)}</div>
+                    <div className="text-xs text-gray-300 mt-1">Kaufpreis - Kreditsumme</div>
                   </div>
 
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="text-sm text-slate-600 mb-1">Kreditlaufzeit</div>
-                    <div className="text-xl font-bold text-slate-900">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="text-sm text-gray-400 mb-1">Kreditlaufzeit</div>
+                    <div className="text-xl font-bold text-dark">
                       {loan ? `${Math.round((new Date(loan.end_date).getTime() - new Date(loan.start_date).getTime()) / (1000 * 60 * 60 * 24 * 365))} Jahre` : 'N/A'}
                     </div>
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-gray-300 mt-1">
                       {loan ? `Von ${new Date(loan.start_date).toLocaleDateString('de-DE')} bis ${new Date(loan.end_date).toLocaleDateString('de-DE')}` : ''}
                     </div>
                   </div>

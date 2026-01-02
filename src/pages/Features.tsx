@@ -120,19 +120,19 @@ export default function Features() {
           {/* Hero Section */}
           <div className="text-center mb-16 relative">
             <div className="absolute inset-0 flex items-center justify-center opacity-10">
-              <Sparkles className="w-64 h-64 text-blue-600" />
+              <Sparkles className="w-64 h-64 text-primary-blue" />
             </div>
             <div className="relative">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full text-blue-700 font-medium mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue/10 rounded-full text-primary-blue font-medium mb-4">
                 <Zap className="w-4 h-4" />
                 {language === 'de' ? 'Alle Features im Überblick' : 'All Features at a Glance'}
               </div>
-              <h1 className="text-5xl font-bold text-slate-900 mb-6">
+              <h1 className="text-5xl font-bold text-dark mb-6">
                 {language === 'de'
                   ? 'Immobilienverwaltung neu gedacht'
                   : 'Property Management Reimagined'}
               </h1>
-              <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
                 {language === 'de'
                   ? 'Entdecken Sie die moderne Art der Immobilienverwaltung. Einfach, effizient und digital.'
                   : 'Discover the modern way of property management. Simple, efficient and digital.'}
@@ -140,13 +140,13 @@ export default function Features() {
               <div className="flex items-center justify-center gap-4">
                 <button
                   onClick={() => navigate('/signup')}
-                  className="px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="px-8 py-4 bg-primary-blue text-white rounded-xl font-semibold hover:bg-primary-blue transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   {language === 'de' ? 'Jetzt starten - Kostenlos' : 'Start Now - Free'}
                 </button>
                 <button
                   onClick={() => navigate('/pricing')}
-                  className="px-8 py-4 bg-white text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all duration-200 border-2 border-slate-200"
+                  className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
                 >
                   {language === 'de' ? 'Preise ansehen' : 'View Pricing'}
                 </button>
@@ -168,7 +168,7 @@ export default function Features() {
                   className={`bg-white rounded-2xl p-8 shadow-lg border-2 transition-all duration-300 cursor-pointer ${
                     isHovered
                       ? 'border-blue-500 shadow-2xl transform -translate-y-2'
-                      : 'border-transparent hover:border-slate-200'
+                      : 'border-transparent hover:border-gray-100'
                   }`}
                 >
                   <div className={`w-16 h-16 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 ${
@@ -177,8 +177,8 @@ export default function Features() {
                     <Icon className={`w-8 h-8 text-${feature.color}-600`} />
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
-                  <p className="text-slate-600 mb-4 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-xl font-bold text-dark mb-3">{feature.title}</h3>
+                  <p className="text-gray-400 mb-4 leading-relaxed">{feature.description}</p>
 
                   <div className="flex items-center gap-2 text-sm">
                     <TrendingUp className="w-4 h-4 text-emerald-500" />
@@ -186,7 +186,7 @@ export default function Features() {
                   </div>
 
                   {isHovered && (
-                    <div className="mt-4 pt-4 border-t border-slate-200 flex items-center gap-2 text-amber-600">
+                    <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2 text-amber-600">
                       <Award className="w-4 h-4" />
                       <span className="text-sm font-medium">
                         {language === 'de' ? 'Achievement freigeschaltet!' : 'Achievement unlocked!'}
@@ -199,7 +199,7 @@ export default function Features() {
           </div>
 
           {/* Journey Section */}
-          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl p-12 mb-20 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary-blue to-primary-blue rounded-3xl p-12 mb-20 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -ml-48 -mb-48"></div>
 
@@ -212,7 +212,7 @@ export default function Features() {
                 <h2 className="text-4xl font-bold text-white mb-4">
                   {language === 'de' ? 'In 4 Schritten zum Erfolg' : 'Success in 4 Steps'}
                 </h2>
-                <p className="text-blue-100 text-lg">
+                <p className="text-primary-blue/20 text-lg">
                   {language === 'de'
                     ? 'Sammeln Sie XP und schalten Sie Achievements frei!'
                     : 'Collect XP and unlock achievements!'}
@@ -250,7 +250,7 @@ export default function Features() {
                       </div>
 
                       <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
-                      <p className="text-blue-100 text-sm">{step.description}</p>
+                      <p className="text-primary-blue/20 text-sm">{step.description}</p>
                     </div>
                   );
                 })}
@@ -259,7 +259,7 @@ export default function Features() {
               <div className="text-center mt-12">
                 <button
                   onClick={() => navigate('/signup')}
-                  className="px-8 py-4 bg-white text-blue-600 rounded-xl font-bold hover:bg-blue-50 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105"
+                  className="px-8 py-4 bg-white text-primary-blue rounded-xl font-bold hover:bg-primary-blue/5 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105"
                 >
                   {language === 'de' ? 'Jetzt Journey starten!' : 'Start Journey Now!'}
                 </button>
@@ -273,18 +273,18 @@ export default function Features() {
               <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-emerald-600" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">100%</h3>
-              <p className="text-slate-600">
+              <h3 className="text-2xl font-bold text-dark mb-2">100%</h3>
+              <p className="text-gray-400">
                 {language === 'de' ? 'DSGVO-konform & sicher' : 'GDPR compliant & secure'}
               </p>
             </div>
 
             <div className="bg-white rounded-2xl p-8 text-center shadow-lg">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-primary-blue" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">24/7</h3>
-              <p className="text-slate-600">
+              <h3 className="text-2xl font-bold text-dark mb-2">24/7</h3>
+              <p className="text-gray-400">
                 {language === 'de' ? 'Support & Verfügbarkeit' : 'Support & Availability'}
               </p>
             </div>
@@ -293,8 +293,8 @@ export default function Features() {
               <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="w-8 h-8 text-amber-600" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">4.9/5</h3>
-              <p className="text-slate-600">
+              <h3 className="text-2xl font-bold text-dark mb-2">4.9/5</h3>
+              <p className="text-gray-400">
                 {language === 'de' ? 'Kundenbewertung' : 'Customer Rating'}
               </p>
             </div>
@@ -302,12 +302,12 @@ export default function Features() {
 
           {/* Final CTA */}
           <div className="text-center bg-white rounded-3xl p-12 shadow-xl">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl font-bold text-dark mb-4">
               {language === 'de'
                 ? 'Bereit für die moderne Immobilienverwaltung?'
                 : 'Ready for Modern Property Management?'}
             </h2>
-            <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
               {language === 'de'
                 ? 'Starten Sie noch heute kostenlos und erleben Sie, wie einfach Immobilienverwaltung sein kann.'
                 : 'Start for free today and experience how simple property management can be.'}
@@ -315,14 +315,14 @@ export default function Features() {
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={() => navigate('/signup')}
-                className="px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+                className="px-8 py-4 bg-primary-blue text-white rounded-xl font-semibold hover:bg-primary-blue transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
               >
                 <Sparkles className="w-5 h-5" />
                 {language === 'de' ? 'Kostenlos starten' : 'Start Free'}
               </button>
               <button
                 onClick={() => navigate('/contact')}
-                className="px-8 py-4 bg-white text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all duration-200 border-2 border-slate-200"
+                className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
               >
                 {language === 'de' ? 'Kontakt aufnehmen' : 'Contact Us'}
               </button>

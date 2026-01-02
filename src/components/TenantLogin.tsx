@@ -200,11 +200,11 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-            <LogIn className="w-8 h-8 text-blue-600" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-blue/10 rounded-full mb-4">
+            <LogIn className="w-8 h-8 text-primary-blue" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Mieter-Portal</h1>
-          <p className="text-slate-600">
+          <h1 className="text-3xl font-bold text-dark mb-2">Mieter-Portal</h1>
+          <p className="text-gray-400">
             {mode === 'login' && 'Melden Sie sich mit Ihrer E-Mail und Ihrem Passwort an'}
             {mode === 'setup' && 'Richten Sie Ihr Passwort ein'}
             {mode === 'reset' && 'Setzen Sie Ihr Passwort zurück'}
@@ -226,16 +226,16 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
         {mode === 'login' && (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 E-Mail-Adresse
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="ihre.email@beispiel.de"
                   required
                 />
@@ -243,16 +243,16 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Passwort
               </label>
               <div className="relative">
-                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="••••••••"
                   required
                 />
@@ -262,7 +262,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Anmelden...' : 'Anmelden'}
             </button>
@@ -275,7 +275,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
                   setError('');
                   setPassword('');
                 }}
-                className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                className="text-sm text-primary-blue hover:text-primary-blue transition-colors"
               >
                 Passwort vergessen?
               </button>
@@ -285,36 +285,36 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
 
         {mode === 'setup' && (
           <form onSubmit={handleSetupPassword} className="space-y-4">
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm mb-4">
+            <div className="p-4 bg-primary-blue/5 border border-blue-200 rounded-lg text-primary-blue text-sm mb-4">
               Sie haben noch kein Passwort eingerichtet. Bitte wählen Sie ein sicheres Passwort.
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 E-Mail-Adresse
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   type="email"
                   value={email}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg bg-slate-50"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50"
                   disabled
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Neues Passwort
               </label>
               <div className="relative">
-                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Mindestens 6 Zeichen"
                   required
                   minLength={6}
@@ -323,16 +323,16 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Passwort bestätigen
               </label>
               <div className="relative">
-                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Passwort wiederholen"
                   required
                   minLength={6}
@@ -343,7 +343,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Einrichten...' : 'Passwort einrichten'}
             </button>
@@ -357,7 +357,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
                   setPassword('');
                   setConfirmPassword('');
                 }}
-                className="text-sm text-slate-600 hover:text-slate-700 transition-colors"
+                className="text-sm text-gray-400 hover:text-gray-400 transition-colors"
               >
                 Zurück zur Anmeldung
               </button>
@@ -372,16 +372,16 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 E-Mail-Adresse
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="ihre.email@beispiel.de"
                   required
                 />
@@ -389,16 +389,16 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Neues Passwort
               </label>
               <div className="relative">
-                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Mindestens 6 Zeichen"
                   required
                   minLength={6}
@@ -407,16 +407,16 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Passwort bestätigen
               </label>
               <div className="relative">
-                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Passwort wiederholen"
                   required
                   minLength={6}
@@ -427,7 +427,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Zurücksetzen...' : 'Passwort zurücksetzen'}
             </button>
@@ -441,7 +441,7 @@ export default function TenantLogin({ landlordId, onLoginSuccess }: TenantLoginP
                   setPassword('');
                   setConfirmPassword('');
                 }}
-                className="text-sm text-slate-600 hover:text-slate-700 transition-colors"
+                className="text-sm text-gray-400 hover:text-gray-400 transition-colors"
               >
                 Zurück zur Anmeldung
               </button>

@@ -191,7 +191,7 @@ export default function FinancialAnalysisView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -200,8 +200,8 @@ export default function FinancialAnalysisView() {
     <PremiumFeatureGuard featureName="Finanzanalyse & Prognosen">
       <div>
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Finanzanalyse</h1>
-          <p className="text-slate-600">Aktuelle Zahlen und Zukunftsprognosen</p>
+          <h1 className="text-3xl font-bold text-dark mb-2">Finanzanalyse</h1>
+          <p className="text-gray-400">Aktuelle Zahlen und Zukunftsprognosen</p>
         </div>
 
       <div className="flex gap-3 mb-6">
@@ -209,8 +209,8 @@ export default function FinancialAnalysisView() {
           onClick={() => setViewMode('current')}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
             viewMode === 'current'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50'
           }`}
         >
           IST-Stand
@@ -219,8 +219,8 @@ export default function FinancialAnalysisView() {
           onClick={() => setViewMode('projection')}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
             viewMode === 'projection'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50'
           }`}
         >
           Prognose
@@ -230,37 +230,37 @@ export default function FinancialAnalysisView() {
       {viewMode === 'current' && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-6 h-6 text-emerald-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-slate-900 mb-1">
+              <div className="text-3xl font-bold text-dark mb-1">
                 {formatCurrency(financialData.monthlyRent * 12)}
               </div>
-              <div className="text-sm text-slate-600">Jährliche Mieteinnahmen</div>
+              <div className="text-sm text-gray-400">Jährliche Mieteinnahmen</div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                   <TrendingDown className="w-6 h-6 text-red-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-slate-900 mb-1">
+              <div className="text-3xl font-bold text-dark mb-1">
                 {formatCurrency(financialData.loanPayments * 12 + financialData.otherExpenses)}
               </div>
-              <div className="text-sm text-slate-600">Jährliche Ausgaben</div>
+              <div className="text-sm text-gray-400">Jährliche Ausgaben</div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                  financialData.netIncome >= 0 ? 'bg-blue-100' : 'bg-amber-100'
+                  financialData.netIncome >= 0 ? 'bg-primary-blue/10' : 'bg-amber-100'
                 }`}>
                   <DollarSign className={`w-6 h-6 ${
-                    financialData.netIncome >= 0 ? 'text-blue-600' : 'text-amber-600'
+                    financialData.netIncome >= 0 ? 'text-primary-blue' : 'text-amber-600'
                   }`} />
                 </div>
               </div>
@@ -269,54 +269,54 @@ export default function FinancialAnalysisView() {
               }`}>
                 {formatCurrency(financialData.netIncome)}
               </div>
-              <div className="text-sm text-slate-600">Nettoeinkommen (Jahr)</div>
+              <div className="text-sm text-gray-400">Nettoeinkommen (Jahr)</div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-emerald-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">Einnahmen nach Objekt</h3>
+                <h3 className="text-lg font-semibold text-dark">Einnahmen nach Objekt</h3>
               </div>
 
               {propertyFinancials.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-8 text-gray-300">
                   Keine Objekte vorhanden
                 </div>
               ) : (
                 <div className="space-y-3">
                   {propertyFinancials.map((property) => (
-                    <div key={property.id} className="p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                    <div key={property.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-50 transition-colors">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-slate-900">{property.name}</h4>
-                          <p className="text-sm text-slate-600">{property.address}</p>
+                          <h4 className="font-semibold text-dark">{property.name}</h4>
+                          <p className="text-sm text-gray-400">{property.address}</p>
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold text-emerald-600">
                             {formatCurrency(property.monthlyRent)}
                           </div>
-                          <div className="text-xs text-slate-500">pro Monat</div>
+                          <div className="text-xs text-gray-300">pro Monat</div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between text-sm text-slate-600 mt-2 pt-2 border-t border-slate-200">
+                      <div className="flex items-center justify-between text-sm text-gray-400 mt-2 pt-2 border-t border-gray-100">
                         <span>{property.contracts} Vertrag{property.contracts !== 1 ? 'e' : ''}</span>
-                        <span className="font-semibold text-slate-900">
+                        <span className="font-semibold text-dark">
                           {formatCurrency(property.yearlyRent)}/Jahr
                         </span>
                       </div>
                     </div>
                   ))}
-                  <div className="mt-4 pt-4 border-t-2 border-slate-300 flex justify-between items-center">
-                    <span className="font-bold text-slate-900">Gesamt</span>
+                  <div className="mt-4 pt-4 border-t-2 border-gray-200 flex justify-between items-center">
+                    <span className="font-bold text-dark">Gesamt</span>
                     <div className="text-right">
                       <div className="text-xl font-bold text-emerald-600">
                         {formatCurrency(financialData.monthlyRent)}
                       </div>
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm text-gray-400">
                         {formatCurrency(financialData.monthlyRent * 12)}/Jahr
                       </div>
                     </div>
@@ -325,49 +325,49 @@ export default function FinancialAnalysisView() {
               )}
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
                   <CreditCard className="w-5 h-5 text-red-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">Ausgaben nach Kredit</h3>
+                <h3 className="text-lg font-semibold text-dark">Ausgaben nach Kredit</h3>
               </div>
 
               {loanFinancials.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-8 text-gray-300">
                   Keine Kredite vorhanden
                 </div>
               ) : (
                 <div className="space-y-3">
                   {loanFinancials.map((loan) => (
-                    <div key={loan.id} className="p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                    <div key={loan.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-50 transition-colors">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-slate-900">{loan.lenderName}</h4>
-                          <p className="text-sm text-slate-600">{loan.propertyName}</p>
+                          <h4 className="font-semibold text-dark">{loan.lenderName}</h4>
+                          <p className="text-sm text-gray-400">{loan.propertyName}</p>
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-bold text-red-600">
                             {formatCurrency(loan.monthlyPayment)}
                           </div>
-                          <div className="text-xs text-slate-500">pro Monat</div>
+                          <div className="text-xs text-gray-300">pro Monat</div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between text-sm text-slate-600 mt-2 pt-2 border-t border-slate-200">
+                      <div className="flex items-center justify-between text-sm text-gray-400 mt-2 pt-2 border-t border-gray-100">
                         <span>Restsaldo: {formatCurrency(loan.remainingBalance)}</span>
-                        <span className="font-semibold text-slate-900">
+                        <span className="font-semibold text-dark">
                           {loan.interestRate.toFixed(2)}% Zins
                         </span>
                       </div>
                     </div>
                   ))}
-                  <div className="mt-4 pt-4 border-t-2 border-slate-300 flex justify-between items-center">
-                    <span className="font-bold text-slate-900">Gesamt</span>
+                  <div className="mt-4 pt-4 border-t-2 border-gray-200 flex justify-between items-center">
+                    <span className="font-bold text-dark">Gesamt</span>
                     <div className="text-right">
                       <div className="text-xl font-bold text-red-600">
                         {formatCurrency(financialData.loanPayments)}
                       </div>
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm text-gray-400">
                         {formatCurrency(financialData.loanPayments * 12)}/Jahr
                       </div>
                     </div>
@@ -385,25 +385,25 @@ export default function FinancialAnalysisView() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-primary-blue" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Übersicht</h3>
+              <h3 className="text-lg font-semibold text-dark">Übersicht</h3>
             </div>
 
             <div className="space-y-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-slate-700">Einnahmen vs. Ausgaben (Monatlich)</span>
-                  <span className="text-sm text-slate-600">
+                  <span className="text-sm font-medium text-gray-400">Einnahmen vs. Ausgaben (Monatlich)</span>
+                  <span className="text-sm text-gray-400">
                     {financialData.monthlyRent > 0
                       ? `${((financialData.loanPayments / financialData.monthlyRent) * 100).toFixed(1)}% Ausgabenquote`
                       : 'Keine Daten'}
                   </span>
                 </div>
-                <div className="relative h-12 bg-slate-100 rounded-lg overflow-hidden">
+                <div className="relative h-12 bg-gray-50 rounded-lg overflow-hidden">
                   <div
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm"
                     style={{ width: `${financialData.monthlyRent > 0 ? ((financialData.monthlyRent / (financialData.monthlyRent + financialData.loanPayments)) * 100) : 0}%` }}
@@ -429,16 +429,16 @@ export default function FinancialAnalysisView() {
               {loanFinancials.length > 0 && (
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-slate-700">Restschuld nach Objekt</span>
+                    <span className="text-sm font-medium text-gray-400">Restschuld nach Objekt</span>
                   </div>
                   <div className="space-y-2">
                     {loanFinancials.map((loan) => (
                       <div key={loan.id}>
                         <div className="flex justify-between items-center text-sm mb-1">
-                          <span className="text-slate-600">{loan.propertyName}</span>
-                          <span className="font-semibold text-slate-900">{formatCurrency(loan.remainingBalance)}</span>
+                          <span className="text-gray-400">{loan.propertyName}</span>
+                          <span className="font-semibold text-dark">{formatCurrency(loan.remainingBalance)}</span>
                         </div>
-                        <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="relative h-2 bg-gray-50 rounded-full overflow-hidden">
                           <div
                             className="absolute top-0 left-0 h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full"
                             style={{
@@ -458,16 +458,16 @@ export default function FinancialAnalysisView() {
 
       {viewMode === 'projection' && (
         <>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <PieChart className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                <PieChart className="w-5 h-5 text-primary-blue" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Prognose-Einstellungen</h3>
+              <h3 className="text-lg font-semibold text-dark">Prognose-Einstellungen</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Prognosezeitraum
                 </label>
                 <div className="flex items-center gap-3">
@@ -479,15 +479,15 @@ export default function FinancialAnalysisView() {
                     onChange={(e) => setProjectionYears(Number(e.target.value))}
                     className="flex-1"
                   />
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg min-w-[100px]">
-                    <Calendar className="w-4 h-4 text-slate-600" />
-                    <span className="font-semibold text-slate-900">{projectionYears} Jahre</span>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg min-w-[100px]">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span className="font-semibold text-dark">{projectionYears} Jahre</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Mietsteigerung p.a.
                 </label>
                 <div className="flex items-center gap-3">
@@ -508,7 +508,7 @@ export default function FinancialAnalysisView() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Kostensteigerung p.a.
                 </label>
                 <div className="flex items-center gap-3">
@@ -530,18 +530,18 @@ export default function FinancialAnalysisView() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-primary-blue" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Prognose-Visualisierung</h3>
+              <h3 className="text-lg font-semibold text-dark">Prognose-Visualisierung</h3>
             </div>
 
             <div className="space-y-6">
               <div>
                 <div className="mb-4">
-                  <span className="text-sm font-medium text-slate-700">Nettoeinkommen über die Jahre</span>
+                  <span className="text-sm font-medium text-gray-400">Nettoeinkommen über die Jahre</span>
                 </div>
                 <div className="relative h-64 flex items-end gap-2">
                   {projections.slice(0, 10).map((proj, idx) => {
@@ -569,7 +569,7 @@ export default function FinancialAnalysisView() {
                             </div>
                           </div>
                         </div>
-                        <div className="text-xs font-medium text-slate-600">Jahr {proj.year}</div>
+                        <div className="text-xs font-medium text-gray-400">Jahr {proj.year}</div>
                       </div>
                     );
                   })}
@@ -579,7 +579,7 @@ export default function FinancialAnalysisView() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <div className="mb-4">
-                    <span className="text-sm font-medium text-slate-700">Kumuliertes Einkommen</span>
+                    <span className="text-sm font-medium text-gray-400">Kumuliertes Einkommen</span>
                   </div>
                   <div className="space-y-2">
                     {projections.slice(0, Math.min(10, projectionYears)).map((proj, idx) => {
@@ -590,12 +590,12 @@ export default function FinancialAnalysisView() {
                       return (
                         <div key={idx}>
                           <div className="flex justify-between items-center text-sm mb-1">
-                            <span className="text-slate-600 font-medium">Jahr {proj.year}</span>
+                            <span className="text-gray-400 font-medium">Jahr {proj.year}</span>
                             <span className={`font-bold ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
                               {formatCurrency(proj.cumulativeIncome)}
                             </span>
                           </div>
-                          <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="relative h-2 bg-gray-50 rounded-full overflow-hidden">
                             <div
                               className={`absolute top-0 left-0 h-full rounded-full ${
                                 isPositive
@@ -613,7 +613,7 @@ export default function FinancialAnalysisView() {
 
                 <div>
                   <div className="mb-4">
-                    <span className="text-sm font-medium text-slate-700">Restschuld-Entwicklung</span>
+                    <span className="text-sm font-medium text-gray-400">Restschuld-Entwicklung</span>
                   </div>
                   {loanFinancials.length > 0 ? (
                     <div className="space-y-2">
@@ -626,12 +626,12 @@ export default function FinancialAnalysisView() {
                         return (
                           <div key={idx}>
                             <div className="flex justify-between items-center text-sm mb-1">
-                              <span className="text-slate-600 font-medium">Jahr {proj.year}</span>
+                              <span className="text-gray-400 font-medium">Jahr {proj.year}</span>
                               <span className="font-bold text-amber-900">
                                 {formatCurrency(estimatedDebt)}
                               </span>
                             </div>
-                            <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="relative h-2 bg-gray-50 rounded-full overflow-hidden">
                               <div
                                 className="absolute top-0 left-0 h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full"
                                 style={{ width: `${width}%` }}
@@ -642,7 +642,7 @@ export default function FinancialAnalysisView() {
                       })}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-slate-500">
+                    <div className="text-center py-8 text-gray-300">
                       Keine Kredite vorhanden
                     </div>
                   )}
@@ -651,25 +651,25 @@ export default function FinancialAnalysisView() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-900">Detaillierte Prognose-Tabelle</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-dark">Detaillierte Prognose-Tabelle</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-50 border-b border-slate-200">
+                <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Jahr</th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-900">Einnahmen</th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-900">Ausgaben</th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-900">Nettoeinkommen</th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-slate-900">Kumuliert</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Jahr</th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-dark">Einnahmen</th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-dark">Ausgaben</th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-dark">Nettoeinkommen</th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-dark">Kumuliert</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {projections.map((proj) => (
-                    <tr key={proj.year} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                    <tr key={proj.year} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-dark">
                         Jahr {proj.year}
                       </td>
                       <td className="px-6 py-4 text-sm text-right font-semibold text-emerald-600">
@@ -679,31 +679,31 @@ export default function FinancialAnalysisView() {
                         {formatCurrency(proj.expenses)}
                       </td>
                       <td className={`px-6 py-4 text-sm text-right font-semibold ${
-                        proj.netIncome >= 0 ? 'text-blue-600' : 'text-amber-600'
+                        proj.netIncome >= 0 ? 'text-primary-blue' : 'text-amber-600'
                       }`}>
                         {formatCurrency(proj.netIncome)}
                       </td>
                       <td className={`px-6 py-4 text-sm text-right font-bold ${
-                        proj.cumulativeIncome >= 0 ? 'text-slate-900' : 'text-red-600'
+                        proj.cumulativeIncome >= 0 ? 'text-dark' : 'text-red-600'
                       }`}>
                         {formatCurrency(proj.cumulativeIncome)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-50 border-t-2 border-slate-300">
+                <tfoot className="bg-gray-50 border-t-2 border-gray-200">
                   <tr>
-                    <td className="px-6 py-4 text-sm font-bold text-slate-900">Gesamt</td>
+                    <td className="px-6 py-4 text-sm font-bold text-dark">Gesamt</td>
                     <td className="px-6 py-4 text-sm text-right font-bold text-emerald-600">
                       {formatCurrency(projections.reduce((sum, p) => sum + p.revenue, 0))}
                     </td>
                     <td className="px-6 py-4 text-sm text-right font-bold text-red-600">
                       {formatCurrency(projections.reduce((sum, p) => sum + p.expenses, 0))}
                     </td>
-                    <td className="px-6 py-4 text-sm text-right font-bold text-blue-600">
+                    <td className="px-6 py-4 text-sm text-right font-bold text-primary-blue">
                       {formatCurrency(projections.reduce((sum, p) => sum + p.netIncome, 0))}
                     </td>
-                    <td className="px-6 py-4 text-sm text-right font-bold text-slate-900">
+                    <td className="px-6 py-4 text-sm text-right font-bold text-dark">
                       {formatCurrency(projections[projections.length - 1]?.cumulativeIncome || 0)}
                     </td>
                   </tr>
@@ -712,9 +712,9 @@ export default function FinancialAnalysisView() {
             </div>
           </div>
 
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <Calculator className="w-5 h-5 text-blue-600 mt-0.5" />
+              <Calculator className="w-5 h-5 text-primary-blue mt-0.5" />
               <div className="text-sm text-blue-900">
                 <p className="font-semibold mb-1">Hinweis zur Prognose:</p>
                 <p>

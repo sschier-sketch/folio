@@ -189,10 +189,10 @@ export default function Support() {
                 <Heart className="w-4 h-4" />
                 {language === 'de' ? 'Wir sind für Sie da' : "We're Here for You"}
               </div>
-              <h1 className="text-5xl font-bold text-slate-900 mb-6">
+              <h1 className="text-5xl font-bold text-dark mb-6">
                 {language === 'de' ? 'Erstklassiger Support' : 'First-Class Support'}
               </h1>
-              <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
                 {language === 'de'
                   ? 'Unser Support-Team steht Ihnen mit Rat und Tat zur Seite. Schnell, kompetent und persönlich.'
                   : 'Our support team is here to help you. Fast, competent and personal.'}
@@ -207,7 +207,7 @@ export default function Support() {
                 </button>
                 <button
                   onClick={() => navigate('/tenant-login')}
-                  className="px-8 py-4 bg-white text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all duration-200 border-2 border-slate-200"
+                  className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
                 >
                   {language === 'de' ? 'Zum Mieterportal' : 'To Tenant Portal'}
                 </button>
@@ -227,8 +227,8 @@ export default function Support() {
                   <div className={`w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-3 bg-${stat.color}-100`}>
                     <Icon className={`w-6 h-6 text-${stat.color}-600`} />
                   </div>
-                  <div className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</div>
-                  <p className="text-slate-600 text-sm">{stat.label}</p>
+                  <div className="text-3xl font-bold text-dark mb-1">{stat.value}</div>
+                  <p className="text-gray-400 text-sm">{stat.label}</p>
                 </div>
               );
             })}
@@ -237,10 +237,10 @@ export default function Support() {
           {/* Support Channels */}
           <div className="mb-20">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              <h2 className="text-4xl font-bold text-dark mb-4">
                 {language === 'de' ? 'Wie möchten Sie Kontakt aufnehmen?' : 'How Would You Like to Get in Touch?'}
               </h2>
-              <p className="text-lg text-slate-600">
+              <p className="text-lg text-gray-400">
                 {language === 'de'
                   ? 'Wählen Sie Ihren bevorzugten Kommunikationskanal'
                   : 'Choose your preferred communication channel'}
@@ -266,10 +266,10 @@ export default function Support() {
                         {channel.xp}
                       </div>
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">{channel.title}</h3>
-                    <p className="text-slate-600 text-sm mb-4">{channel.description}</p>
+                    <h3 className="text-xl font-bold text-dark mb-2">{channel.title}</h3>
+                    <p className="text-gray-400 text-sm mb-4">{channel.description}</p>
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <div className="flex items-center gap-2 text-sm text-gray-300">
                         <Clock className="w-4 h-4" />
                         {channel.availability}
                       </div>
@@ -285,7 +285,7 @@ export default function Support() {
           </div>
 
           {/* Tenant Portal Section */}
-          <div className="bg-gradient-to-br from-emerald-600 to-blue-600 rounded-3xl p-12 mb-20 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-emerald-600 to-primary-blue rounded-3xl p-12 mb-20 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full -mr-48 -mt-48"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -ml-32 -mb-32"></div>
 
@@ -344,10 +344,10 @@ export default function Support() {
           {/* Help Center */}
           <div className="mb-20">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              <h2 className="text-4xl font-bold text-dark mb-4">
                 {language === 'de' ? 'Hilfe-Center' : 'Help Center'}
               </h2>
-              <p className="text-lg text-slate-600">
+              <p className="text-lg text-gray-400">
                 {language === 'de'
                   ? 'Finden Sie Antworten auf die häufigsten Fragen'
                   : 'Find answers to the most common questions'}
@@ -365,8 +365,8 @@ export default function Support() {
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-${category.color}-100`}>
                       <Icon className={`w-6 h-6 text-${category.color}-600`} />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">{category.title}</h3>
-                    <p className="text-slate-600 text-sm">
+                    <h3 className="text-lg font-bold text-dark mb-2">{category.title}</h3>
+                    <p className="text-gray-400 text-sm">
                       {category.articles} {language === 'de' ? 'Artikel' : 'Articles'}
                     </p>
                   </div>
@@ -378,11 +378,11 @@ export default function Support() {
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <div className="relative">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-300" />
                     <input
                       type="text"
                       placeholder={language === 'de' ? 'Wie können wir Ihnen helfen?' : 'How can we help you?'}
-                      className="w-full pl-12 pr-4 py-4 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-lg"
+                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-lg"
                     />
                   </div>
                 </div>
@@ -401,10 +401,10 @@ export default function Support() {
                 <Trophy className="w-4 h-4" />
                 {language === 'de' ? 'Ihre Erfolge' : 'Your Achievements'}
               </div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              <h2 className="text-3xl font-bold text-dark mb-4">
                 {language === 'de' ? 'Support-Level' : 'Support Level'}
               </h2>
-              <p className="text-lg text-slate-600">
+              <p className="text-lg text-gray-400">
                 {language === 'de'
                   ? 'Sammeln Sie Erfahrungspunkte und schalten Sie Erfolge frei!'
                   : 'Collect experience points and unlock achievements!'}
@@ -420,27 +420,27 @@ export default function Support() {
                     className={`rounded-2xl p-6 transition-all duration-300 ${
                       achievement.unlocked
                         ? 'bg-gradient-to-br from-amber-100 to-amber-200 border-2 border-amber-400'
-                        : 'bg-slate-100 border-2 border-slate-200 opacity-50'
+                        : 'bg-gray-50 border-2 border-gray-100 opacity-50'
                     }`}
                   >
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                      achievement.unlocked ? 'bg-amber-400' : 'bg-slate-300'
+                      achievement.unlocked ? 'bg-amber-400' : 'bg-gray-200'
                     }`}>
                       <Icon className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 text-center mb-2">
+                    <h3 className="text-lg font-bold text-dark text-center mb-2">
                       {achievement.title}
                     </h3>
-                    <p className="text-sm text-slate-600 text-center">{achievement.description}</p>
+                    <p className="text-sm text-gray-400 text-center">{achievement.description}</p>
                   </div>
                 );
               })}
             </div>
 
             <div className="mt-8 text-center">
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 rounded-full">
-                <TrendingUp className="w-5 h-5 text-slate-600" />
-                <span className="font-semibold text-slate-700">
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-gray-50 rounded-full">
+                <TrendingUp className="w-5 h-5 text-gray-400" />
+                <span className="font-semibold text-gray-400">
                   {ticketsResolved} / 10 {language === 'de' ? 'Tickets gelöst' : 'Tickets resolved'}
                 </span>
               </div>
@@ -449,10 +449,10 @@ export default function Support() {
 
           {/* Final CTA */}
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl font-bold text-dark mb-4">
               {language === 'de' ? 'Haben Sie noch Fragen?' : 'Do You Still Have Questions?'}
             </h2>
-            <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
               {language === 'de'
                 ? 'Unser Support-Team ist bereit, Ihnen zu helfen. Wir freuen uns auf Ihre Anfrage!'
                 : 'Our support team is ready to help you. We look forward to your inquiry!'}
@@ -466,7 +466,7 @@ export default function Support() {
               </button>
               <button
                 onClick={() => navigate('/signup')}
-                className="px-8 py-4 bg-white text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all duration-200 border-2 border-slate-200"
+                className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100"
               >
                 {language === 'de' ? 'Kostenlos starten' : 'Start Free'}
               </button>

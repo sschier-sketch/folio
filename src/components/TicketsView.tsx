@@ -87,7 +87,7 @@ export default function TicketsView() {
       case 'closed':
         return <CheckCircle className="w-5 h-5 text-emerald-500" />;
       default:
-        return <MessageSquare className="w-5 h-5 text-slate-400" />;
+        return <MessageSquare className="w-5 h-5 text-gray-300" />;
     }
   };
 
@@ -113,9 +113,9 @@ export default function TicketsView() {
       case 'medium':
         return 'bg-amber-100 text-amber-800';
       case 'low':
-        return 'bg-slate-100 text-slate-800';
+        return 'bg-gray-50 text-dark';
       default:
-        return 'bg-slate-100 text-slate-800';
+        return 'bg-gray-50 text-dark';
     }
   };
 
@@ -142,7 +142,7 @@ export default function TicketsView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -165,15 +165,15 @@ export default function TicketsView() {
       <div>
         <div className="flex justify-between items-start gap-6 mb-8">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Tickets</h1>
-            <p className="text-slate-600">Verwalten Sie Anfragen und Nachrichten Ihrer Mieter</p>
+            <h1 className="text-3xl font-bold text-dark mb-2">Tickets</h1>
+            <p className="text-gray-400">Verwalten Sie Anfragen und Nachrichten Ihrer Mieter</p>
           </div>
           <button
             onClick={() => {
               setSelectedTicket(null);
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all hover:shadow-md flex-shrink-0"
+            className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-all hover:shadow-md flex-shrink-0"
           >
             <Plus className="w-5 h-5" />
             Ticket erstellen
@@ -185,8 +185,8 @@ export default function TicketsView() {
           onClick={() => setFilterStatus('all')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             filterStatus === 'all'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'
           }`}
         >
           Alle
@@ -195,8 +195,8 @@ export default function TicketsView() {
           onClick={() => setFilterStatus('open')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             filterStatus === 'open'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'
           }`}
         >
           Offen
@@ -205,8 +205,8 @@ export default function TicketsView() {
           onClick={() => setFilterStatus('in_progress')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             filterStatus === 'in_progress'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'
           }`}
         >
           In Bearbeitung
@@ -215,8 +215,8 @@ export default function TicketsView() {
           onClick={() => setFilterStatus('closed')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             filterStatus === 'closed'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'
           }`}
         >
           Geschlossen
@@ -224,12 +224,12 @@ export default function TicketsView() {
       </div>
 
       {filteredTickets.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-          <MessageSquare className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+          <MessageSquare className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-dark mb-2">
             {filterStatus === 'all' ? 'Noch keine Tickets' : 'Keine Tickets gefunden'}
           </h3>
-          <p className="text-slate-600 mb-6">
+          <p className="text-gray-400 mb-6">
             {filterStatus === 'all'
               ? 'Erstellen Sie Ihr erstes Ticket oder warten Sie auf Anfragen von Mietern.'
               : `Es gibt keine Tickets mit dem Status "${getStatusLabel(filterStatus)}".`}
@@ -240,7 +240,7 @@ export default function TicketsView() {
                 setSelectedTicket(null);
                 setShowModal(true);
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
             >
               <Plus className="w-5 h-5" />
               Erstes Ticket erstellen
@@ -256,27 +256,27 @@ export default function TicketsView() {
                 setSelectedTicket(ticket);
                 setShowDetails(true);
               }}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   {getStatusIcon(ticket.status)}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-sm font-medium text-slate-500">
+                      <span className="text-sm font-medium text-gray-300">
                         {ticket.ticket_number}
                       </span>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(ticket.priority)}`}>
                         {getPriorityLabel(ticket.priority)}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    <h3 className="text-lg font-semibold text-dark mb-2">
                       {ticket.subject}
                     </h3>
-                    <div className="flex items-center gap-4 text-sm text-slate-600">
+                    <div className="flex items-center gap-4 text-sm text-gray-400">
                       {ticket.ticket_type === 'contact' ? (
                         <>
-                          <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                          <span className="inline-flex items-center px-2 py-1 bg-primary-blue/10 text-primary-blue rounded text-xs font-medium">
                             Kontaktanfrage
                           </span>
                           <span>•</span>

@@ -166,7 +166,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -175,45 +175,45 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
     <div>
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6 transition-colors"
+        className="flex items-center gap-2 text-gray-400 hover:text-dark mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
         Zurück zur Übersicht
       </button>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">{property.name}</h1>
-            <p className="text-slate-600">{property.address}</p>
+            <h1 className="text-3xl font-bold text-dark mb-2">{property.name}</h1>
+            <p className="text-gray-400">{property.address}</p>
           </div>
         </div>
 
-        <div className="flex gap-3 border-b border-slate-200">
+        <div className="flex gap-3 border-b border-gray-100">
           <button
             onClick={() => setCurrentView('overview')}
             className={`px-6 py-3 font-medium transition-colors relative ${
               currentView === 'overview'
-                ? 'text-blue-600'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'text-primary-blue'
+                : 'text-gray-400 hover:text-dark'
             }`}
           >
             Übersicht
             {currentView === 'overview' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
             )}
           </button>
           <button
             onClick={() => setCurrentView('statistics')}
             className={`px-6 py-3 font-medium transition-colors relative ${
               currentView === 'statistics'
-                ? 'text-blue-600'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'text-primary-blue'
+                : 'text-gray-400 hover:text-dark'
             }`}
           >
             Finanzanalyse
             {currentView === 'statistics' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
             )}
           </button>
         </div>
@@ -221,42 +221,42 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
 
       {currentView === 'overview' && (
         <>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="mb-4">
-              <h2 className="text-xl font-semibold text-slate-900">Objektdetails</h2>
+              <h2 className="text-xl font-semibold text-dark">Objektdetails</h2>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {property.rooms && (
                 <div>
-                  <div className="text-sm text-slate-500">Zimmer</div>
-                  <div className="text-lg font-semibold text-slate-900">{property.rooms}</div>
+                  <div className="text-sm text-gray-300">Zimmer</div>
+                  <div className="text-lg font-semibold text-dark">{property.rooms}</div>
                 </div>
               )}
               {property.size_sqm && (
                 <div>
-                  <div className="text-sm text-slate-500">Wohnfläche</div>
-                  <div className="text-lg font-semibold text-slate-900">{property.size_sqm} m²</div>
+                  <div className="text-sm text-gray-300">Wohnfläche</div>
+                  <div className="text-lg font-semibold text-dark">{property.size_sqm} m²</div>
                 </div>
               )}
               {property.parking_spot_number && (
                 <div>
-                  <div className="text-sm text-slate-500">Stellplatznummer</div>
-                  <div className="text-lg font-semibold text-slate-900">{property.parking_spot_number}</div>
+                  <div className="text-sm text-gray-300">Stellplatznummer</div>
+                  <div className="text-lg font-semibold text-dark">{property.parking_spot_number}</div>
                 </div>
               )}
               <div>
-                <div className="text-sm text-slate-500">Kaufpreis</div>
-                <div className="text-lg font-semibold text-slate-900">{formatCurrency(property.purchase_price)}</div>
+                <div className="text-sm text-gray-300">Kaufpreis</div>
+                <div className="text-lg font-semibold text-dark">{formatCurrency(property.purchase_price)}</div>
               </div>
               <div>
-                <div className="text-sm text-slate-500">Aktueller Wert</div>
-                <div className="text-lg font-semibold text-slate-900">{formatCurrency(property.current_value)}</div>
+                <div className="text-sm text-gray-300">Aktueller Wert</div>
+                <div className="text-lg font-semibold text-dark">{formatCurrency(property.current_value)}</div>
               </div>
               {property.size_sqm && property.size_sqm > 0 && (
                 <div>
-                  <div className="text-sm text-slate-500">Preis pro m²</div>
-                  <div className="text-lg font-semibold text-slate-900">
+                  <div className="text-sm text-gray-300">Preis pro m²</div>
+                  <div className="text-lg font-semibold text-dark">
                     {formatCurrency(property.purchase_price / property.size_sqm)}
                   </div>
                 </div>
@@ -265,26 +265,26 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">Bruttorendite</span>
+              <span className="text-sm text-gray-300">Bruttorendite</span>
               <button
                 onMouseEnter={() => setShowGrossYieldTooltip(true)}
                 onMouseLeave={() => setShowGrossYieldTooltip(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-gray-300 hover:text-gray-400 transition-colors"
               >
                 <Info className="w-4 h-4" />
               </button>
             </div>
             <TrendingUp className="w-5 h-5 text-emerald-600" />
           </div>
-          <div className="text-3xl font-bold text-slate-900 mb-1">
+          <div className="text-3xl font-bold text-dark mb-1">
             {calculateGrossYield().toFixed(2)}%
           </div>
-          <div className="text-xs text-slate-500">pro Jahr</div>
+          <div className="text-xs text-gray-300">pro Jahr</div>
           {showGrossYieldTooltip && (
-            <div className="absolute top-full left-0 mt-2 w-80 bg-slate-900 text-white text-sm rounded-lg p-4 z-10 shadow-xl">
+            <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-lg p-4 z-10 shadow-xl">
               <div className="font-semibold mb-2">Berechnung Bruttorendite:</div>
               <div className="space-y-1 text-xs">
                 <div>Formel: (Jahresmiete ÷ Aktueller Wert) × 100</div>
@@ -299,26 +299,26 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">Nettorendite</span>
+              <span className="text-sm text-gray-300">Nettorendite</span>
               <button
                 onMouseEnter={() => setShowNetYieldTooltip(true)}
                 onMouseLeave={() => setShowNetYieldTooltip(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-gray-300 hover:text-gray-400 transition-colors"
               >
                 <Info className="w-4 h-4" />
               </button>
             </div>
-            <TrendingUp className="w-5 h-5 text-blue-600" />
+            <TrendingUp className="w-5 h-5 text-primary-blue" />
           </div>
-          <div className="text-3xl font-bold text-slate-900 mb-1">
+          <div className="text-3xl font-bold text-dark mb-1">
             {calculateYield().toFixed(2)}%
           </div>
-          <div className="text-xs text-slate-500">nach Kreditkosten</div>
+          <div className="text-xs text-gray-300">nach Kreditkosten</div>
           {showNetYieldTooltip && (
-            <div className="absolute top-full left-0 mt-2 w-80 bg-slate-900 text-white text-sm rounded-lg p-4 z-10 shadow-xl">
+            <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-lg p-4 z-10 shadow-xl">
               <div className="font-semibold mb-2">Berechnung Nettorendite:</div>
               <div className="space-y-1 text-xs">
                 <div>Formel: (Netto-Jahreseinkommen ÷ Aktueller Wert) × 100</div>
@@ -334,27 +334,27 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-slate-500">Netto-Cashflow</span>
+            <span className="text-sm text-gray-300">Netto-Cashflow</span>
             <Users className="w-5 h-5 text-amber-600" />
           </div>
-          <div className="text-3xl font-bold text-slate-900 mb-1">
+          <div className="text-3xl font-bold text-dark mb-1">
             {formatCurrency(netMonthlyIncome)}
           </div>
-          <div className="text-xs text-slate-500">pro Monat</div>
+          <div className="text-xs text-gray-300">pro Monat</div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-slate-900">Kredite & Finanzierungen</h2>
+              <h2 className="text-xl font-semibold text-dark">Kredite & Finanzierungen</h2>
               <button
                 onClick={() => {
                   setSelectedLoan(null);
                   setShowLoanModal(true);
                 }}
-                className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-primary-blue text-white text-sm rounded-lg font-medium hover:bg-primary-blue transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Kredit hinzufügen
@@ -362,27 +362,27 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
             </div>
 
             {loans.length === 0 ? (
-              <p className="text-slate-500 text-center py-8">Noch keine Kredite hinterlegt</p>
+              <p className="text-gray-300 text-center py-8">Noch keine Kredite hinterlegt</p>
             ) : (
               <div className="space-y-3">
                 {loans.map((loan) => (
                   <div
                     key={loan.id}
-                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg"
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                   >
                     <div className="flex items-center gap-4">
-                      <CreditCard className="w-5 h-5 text-slate-400" />
+                      <CreditCard className="w-5 h-5 text-gray-300" />
                       <div>
-                        <div className="font-semibold text-slate-900">{loan.lender_name}</div>
-                        <div className="text-sm text-slate-600">
+                        <div className="font-semibold text-dark">{loan.lender_name}</div>
+                        <div className="text-sm text-gray-400">
                           {formatCurrency(loan.remaining_balance)} verbleibend • {loan.interest_rate}% Zinsen
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <div className="font-semibold text-slate-900">{formatCurrency(loan.monthly_payment)}</div>
-                        <div className="text-sm text-slate-500">monatlich</div>
+                        <div className="font-semibold text-dark">{formatCurrency(loan.monthly_payment)}</div>
+                        <div className="text-sm text-gray-300">monatlich</div>
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -390,13 +390,13 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
                             setSelectedLoan(loan);
                             setShowLoanModal(true);
                           }}
-                          className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                          className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteLoan(loan.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                          className="p-2 text-gray-300 hover:text-red-600 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -408,9 +408,9 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-slate-900">Mietverhältnisse</h2>
+              <h2 className="text-xl font-semibold text-dark">Mietverhältnisse</h2>
               <button
                 onClick={() => {
                   setSelectedContract(null);
@@ -423,23 +423,23 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
               </button>
             </div>
             {contracts.length === 0 ? (
-              <p className="text-slate-500 text-center py-8">
+              <p className="text-gray-300 text-center py-8">
                 Noch keine Mietverhältnisse vorhanden
               </p>
             ) : (
               <div className="space-y-3">
                 {contracts.map((contract) => (
-                  <div key={contract.id} className="p-4 bg-slate-50 rounded-lg">
+                  <div key={contract.id} className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-4">
-                        <Users className="w-5 h-5 text-slate-400" />
+                        <Users className="w-5 h-5 text-gray-300" />
                         <div>
-                          <div className="font-semibold text-slate-900">
+                          <div className="font-semibold text-dark">
                             {contract.tenants && contract.tenants.length > 0
                               ? contract.tenants.map(t => `${t.first_name} ${t.last_name}`).join(', ')
                               : 'Keine Mieter'}
                           </div>
-                          <div className="text-sm text-slate-600">
+                          <div className="text-sm text-gray-400">
                             {formatCurrency(contract.base_rent)} Kaltmiete
                           </div>
                         </div>
@@ -450,21 +450,21 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
                             setSelectedContract(contract);
                             setShowContractModal(true);
                           }}
-                          className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                          className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteContract(contract.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                          className="p-2 text-gray-300 hover:text-red-600 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
                     {contract.tenants && contract.tenants.length > 1 && (
-                      <div className="mt-2 pt-2 border-t border-slate-200">
-                        <div className="text-xs text-slate-500">
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <div className="text-xs text-gray-300">
                           {contract.tenants.length} Mieter im Mietverhältnis
                         </div>
                       </div>

@@ -169,56 +169,56 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-slate-900">
+        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-dark">
             {contract ? 'Mietvertrag bearbeiten' : 'Neuer Mietvertrag'}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <button onClick={onClose} className="text-gray-300 hover:text-gray-400 transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="bg-slate-50 rounded-lg p-4">
-            <div className="text-sm text-slate-600 mb-1">Mieter</div>
-            <div className="font-semibold text-slate-900">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-400 mb-1">Mieter</div>
+            <div className="font-semibold text-dark">
               {tenant.first_name} {tenant.last_name}
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold text-slate-900 text-lg">Miete</h3>
+            <h3 className="font-semibold text-dark text-lg">Miete</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   Kaltmiete (€) *
                 </label>
                 <input
                   type="text"
                   value={formData.base_rent}
                   onChange={(e) => setFormData({ ...formData, base_rent: parseNumberInput(e.target.value) })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="z.B. 850 oder 850,50"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   Nebenkosten (€)
                 </label>
                 <input
                   type="text"
                   value={formData.additional_costs}
                   onChange={(e) => setFormData({ ...formData, additional_costs: parseNumberInput(e.target.value) })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="z.B. 150 oder 150,75"
                 />
               </div>
 
               <div className="col-span-2">
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <div className="text-sm text-blue-600 mb-1">Warmmiete (gesamt)</div>
+                <div className="bg-primary-blue/5 rounded-lg p-4">
+                  <div className="text-sm text-primary-blue mb-1">Warmmiete (gesamt)</div>
                   <div className="text-2xl font-bold text-blue-900">
                     {(Number(formData.base_rent) + Number(formData.additional_costs)).toLocaleString('de-DE', {
                       style: 'currency',
@@ -229,14 +229,14 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
               </div>
 
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   Kaution (€)
                 </label>
                 <input
                   type="text"
                   value={formData.deposit}
                   onChange={(e) => setFormData({ ...formData, deposit: parseNumberInput(e.target.value) })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="z.B. 2550 oder 2550,00"
                 />
               </div>
@@ -244,16 +244,16 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold text-slate-900 text-lg">Mieterhöhung</h3>
+            <h3 className="font-semibold text-dark text-lg">Mieterhöhung</h3>
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   Art der Mieterhöhung
                 </label>
                 <select
                   value={formData.rent_increase_type}
                   onChange={(e) => setFormData({ ...formData, rent_increase_type: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 >
                   <option value="none">Keine</option>
                   <option value="staffel">Staffelmiete</option>
@@ -262,41 +262,41 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
               </div>
 
               {formData.rent_increase_type === 'staffel' && (
-                <div className="grid grid-cols-3 gap-4 bg-slate-50 rounded-lg p-4">
+                <div className="grid grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
                       Erhöhung pro Jahr
                     </label>
                     <input
                       type="text"
                       value={formData.staffel_amount}
                       onChange={(e) => setFormData({ ...formData, staffel_amount: parseNumberInput(e.target.value) })}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="z.B. 2,5"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
                       Typ
                     </label>
                     <select
                       value={formData.staffel_type}
                       onChange={(e) => setFormData({ ...formData, staffel_type: e.target.value })}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     >
                       <option value="percentage">Prozent (%)</option>
                       <option value="fixed">Fester Betrag (€)</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
                       Anzahl Jahre
                     </label>
                     <input
                       type="text"
                       value={formData.staffel_years}
                       onChange={(e) => setFormData({ ...formData, staffel_years: parseNumberInput(e.target.value) })}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="z.B. 5"
                     />
                   </div>
@@ -304,15 +304,15 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
               )}
 
               {formData.rent_increase_type === 'index' && (
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
                     Erster Erhöhungszeitpunkt
                   </label>
                   <input
                     type="date"
                     value={formData.index_first_increase_date}
                     onChange={(e) => setFormData({ ...formData, index_first_increase_date: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
               )}
@@ -320,41 +320,41 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold text-slate-900 text-lg">Vertragsdaten</h3>
+            <h3 className="font-semibold text-dark text-lg">Vertragsdaten</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   Vertragsbeginn *
                 </label>
                 <input
                   type="date"
                   value={formData.contract_start}
                   onChange={(e) => setFormData({ ...formData, contract_start: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   Vertragsende
                 </label>
                 <input
                   type="date"
                   value={formData.contract_end}
                   onChange={(e) => setFormData({ ...formData, contract_end: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
               </div>
 
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   Vertragsart
                 </label>
                 <select
                   value={formData.contract_type}
                   onChange={(e) => setFormData({ ...formData, contract_type: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 >
                   <option value="unlimited">Unbefristet</option>
                   <option value="fixed">Befristet</option>
@@ -362,14 +362,14 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
               </div>
 
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Mietvertrag (Dokument)
                 </label>
                 <div className="flex items-center gap-4">
                   <label className="flex-1 cursor-pointer">
-                    <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-slate-300 rounded-lg hover:border-blue-400 transition-colors">
-                      <Upload className="w-5 h-5 text-slate-400" />
-                      <span className="text-sm text-slate-600">
+                    <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-200 rounded-lg hover:border-blue-400 transition-colors">
+                      <Upload className="w-5 h-5 text-gray-300" />
+                      <span className="text-sm text-gray-400">
                         {selectedFile ? selectedFile.name : formData.document_path ? 'Dokument vorhanden' : 'Datei auswählen'}
                       </span>
                     </div>
@@ -381,19 +381,19 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
                     />
                   </label>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-gray-300">
                   PDF, Word oder Bild (max. 10MB)
                 </p>
               </div>
 
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   Notizen
                 </label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   rows={3}
                   placeholder="Zusätzliche Informationen..."
                 />
@@ -405,14 +405,14 @@ export default function ContractModal({ tenant, contract, onClose, onSave }: Con
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+              className="flex-1 px-4 py-2 border border-gray-200 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
             >
               Abbrechen
             </button>
             <button
               type="submit"
               disabled={loading || uploadingFile}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
             >
               {loading ? 'Speichern...' : uploadingFile ? 'Hochladen...' : 'Speichern'}
             </button>

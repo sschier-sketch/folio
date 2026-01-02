@@ -11,7 +11,7 @@ export function Signup() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -32,20 +32,20 @@ export function Signup() {
               <span className="text-sm font-semibold text-amber-800">Kostenlos starten & sofort loslegen</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold text-dark mb-4">
               Erstellen Sie Ihr{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary-blue to-emerald-600 bg-clip-text text-transparent">
                 Rentab.ly-Konto
               </span>
             </h1>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               In weniger als 60 Sekunden zum professionellen Immobilien-Management
             </p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="order-2 lg:order-1 space-y-6">
-              <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
+              <div className="bg-gradient-to-br from-primary-blue to-primary-blue rounded-2xl p-8 text-white shadow-xl">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                     <Sparkles className="w-6 h-6" />
@@ -60,7 +60,7 @@ export function Signup() {
                     </div>
                     <div>
                       <h4 className="font-semibold mb-1">Unbegrenzt Objekte & Mieter</h4>
-                      <p className="text-sm text-blue-100">Verwalten Sie beliebig viele Immobilien und Mieter - komplett kostenlos</p>
+                      <p className="text-sm text-primary-blue/20">Verwalten Sie beliebig viele Immobilien und Mieter - komplett kostenlos</p>
                     </div>
                   </div>
 
@@ -70,7 +70,7 @@ export function Signup() {
                     </div>
                     <div>
                       <h4 className="font-semibold mb-1">Sofort einsatzbereit</h4>
-                      <p className="text-sm text-blue-100">Keine Wartezeit - direkt nach der Registrierung loslegen</p>
+                      <p className="text-sm text-primary-blue/20">Keine Wartezeit - direkt nach der Registrierung loslegen</p>
                     </div>
                   </div>
 
@@ -80,43 +80,43 @@ export function Signup() {
                     </div>
                     <div>
                       <h4 className="font-semibold mb-1">Keine Kreditkarte nötig</h4>
-                      <p className="text-sm text-blue-100">Starten Sie risikofrei ohne Zahlungsinformationen</p>
+                      <p className="text-sm text-primary-blue/20">Starten Sie risikofrei ohne Zahlungsinformationen</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
-                    <Building2 className="w-5 h-5 text-blue-600" />
+                <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+                  <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center mb-3">
+                    <Building2 className="w-5 h-5 text-primary-blue" />
                   </div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Objektverwaltung</h4>
-                  <p className="text-sm text-slate-600">Alle Immobilien im Blick</p>
+                  <h4 className="font-semibold text-dark mb-1">Objektverwaltung</h4>
+                  <p className="text-sm text-gray-400">Alle Immobilien im Blick</p>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
                   <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mb-3">
                     <Users className="w-5 h-5 text-emerald-600" />
                   </div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Mieterverwaltung</h4>
-                  <p className="text-sm text-slate-600">Zentrale Datenverwaltung</p>
+                  <h4 className="font-semibold text-dark mb-1">Mieterverwaltung</h4>
+                  <p className="text-sm text-gray-400">Zentrale Datenverwaltung</p>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
                   <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-3">
                     <TrendingUp className="w-5 h-5 text-amber-600" />
                   </div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Renditeanalyse</h4>
-                  <p className="text-sm text-slate-600">Profitabilität tracken</p>
+                  <h4 className="font-semibold text-dark mb-1">Renditeanalyse</h4>
+                  <p className="text-sm text-gray-400">Profitabilität tracken</p>
                 </div>
 
-                <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
                   <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center mb-3">
                     <Shield className="w-5 h-5 text-violet-600" />
                   </div>
-                  <h4 className="font-semibold text-slate-900 mb-1">100% Sicher</h4>
-                  <p className="text-sm text-slate-600">DSGVO-konform</p>
+                  <h4 className="font-semibold text-dark mb-1">100% Sicher</h4>
+                  <p className="text-sm text-gray-400">DSGVO-konform</p>
                 </div>
               </div>
 
@@ -124,8 +124,8 @@ export function Signup() {
                 <div className="flex items-start gap-3">
                   <Gift className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
                   <div>
-                    <h4 className="font-semibold text-slate-900 mb-1">Premium-Features für nur 9 EUR/Monat</h4>
-                    <p className="text-sm text-slate-600">
+                    <h4 className="font-semibold text-dark mb-1">Premium-Features für nur 9 EUR/Monat</h4>
+                    <p className="text-sm text-gray-400">
                       Upgraden Sie später für Ticketsystem, automatische Mieterhöhungs-Erinnerungen und erweiterte Analysen
                     </p>
                   </div>
@@ -134,20 +134,20 @@ export function Signup() {
             </div>
 
             <div className="order-1 lg:order-2">
-              <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-8 sticky top-24">
+              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 sticky top-24">
                 <div className="flex items-center justify-center gap-2 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-blue to-primary-blue rounded-xl flex items-center justify-center">
                     <Zap className="w-6 h-6 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900">Schnellstart</h2>
+                  <h2 className="text-2xl font-bold text-dark">Schnellstart</h2>
                 </div>
 
                 <SignupForm onSuccess={() => window.location.href = '/dashboard'} />
 
-                <div className="mt-6 pt-6 border-t border-slate-200 text-center">
-                  <p className="text-sm text-slate-600">
+                <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+                  <p className="text-sm text-gray-400">
                     Bereits registriert?{' '}
-                    <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700">
+                    <Link to="/login" className="font-semibold text-primary-blue hover:text-primary-blue">
                       Jetzt anmelden
                     </Link>
                   </p>

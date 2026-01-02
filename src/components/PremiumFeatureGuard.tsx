@@ -16,7 +16,7 @@ export function PremiumFeatureGuard({ children, featureName, inline = false }: P
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -37,12 +37,12 @@ export function PremiumFeatureGuard({ children, featureName, inline = false }: P
               <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-500 rounded-lg flex items-center justify-center">
                 <Lock className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-slate-900">Premium Feature</span>
+              <span className="font-bold text-dark">Premium Feature</span>
             </div>
-            <p className="text-sm text-slate-600 mb-3">{featureName}</p>
+            <p className="text-sm text-gray-400 mb-3">{featureName}</p>
             <button
               onClick={() => navigate('/subscription')}
-              className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all flex items-center justify-center gap-2"
+              className="w-full px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-blue text-white text-sm font-semibold rounded-lg hover:from-primary-blue hover:to-primary-blue transition-all flex items-center justify-center gap-2"
             >
               <Sparkles className="w-4 h-4" />
               Jetzt upgraden
@@ -55,35 +55,35 @@ export function PremiumFeatureGuard({ children, featureName, inline = false }: P
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-200 rounded-2xl p-8 text-center">
-      <div className="inline-flex w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl items-center justify-center mb-4">
+      <div className="inline-flex w-16 h-16 bg-gradient-to-br from-primary-blue to-primary-blue rounded-2xl items-center justify-center mb-4">
         <Lock className="w-8 h-8 text-white" />
       </div>
 
-      <h3 className="text-2xl font-bold text-slate-900 mb-2">{featureName}</h3>
-      <p className="text-slate-600 mb-6 max-w-md mx-auto">
+      <h3 className="text-2xl font-bold text-dark mb-2">{featureName}</h3>
+      <p className="text-gray-400 mb-6 max-w-md mx-auto">
         Diese Funktion ist nur im Premium-Plan verfügbar. Upgraden Sie jetzt für nur 9 EUR/Monat und erhalten Sie Zugriff auf alle erweiterten Features.
       </p>
 
-      <div className="bg-white rounded-xl p-6 mb-6 border border-slate-200 max-w-md mx-auto">
-        <h4 className="font-semibold text-slate-900 mb-4 flex items-center justify-center gap-2">
+      <div className="bg-white rounded-xl p-6 mb-6 border border-gray-100 max-w-md mx-auto">
+        <h4 className="font-semibold text-dark mb-4 flex items-center justify-center gap-2">
           <Sparkles className="w-5 h-5 text-amber-500" />
           Premium-Features
         </h4>
-        <ul className="text-left space-y-2 text-sm text-slate-700">
+        <ul className="text-left space-y-2 text-sm text-gray-400">
           <li className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <Zap className="w-4 h-4 text-primary-blue flex-shrink-0" />
             Ticketsystem für Mieter-Kommunikation
           </li>
           <li className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <Zap className="w-4 h-4 text-primary-blue flex-shrink-0" />
             Automatische Mieterhöhungs-Erinnerungen
           </li>
           <li className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <Zap className="w-4 h-4 text-primary-blue flex-shrink-0" />
             Erweiterte Renditeberechnung
           </li>
           <li className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <Zap className="w-4 h-4 text-primary-blue flex-shrink-0" />
             Detaillierte Finanzanalysen
           </li>
         </ul>
@@ -91,7 +91,7 @@ export function PremiumFeatureGuard({ children, featureName, inline = false }: P
 
       <button
         onClick={() => navigate('/subscription')}
-        className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 inline-flex items-center gap-2"
+        className="px-8 py-3 bg-gradient-to-r from-primary-blue to-primary-blue text-white font-semibold rounded-xl hover:from-primary-blue hover:to-primary-blue transition-all shadow-lg hover:shadow-xl transform hover:scale-105 inline-flex items-center gap-2"
       >
         <Sparkles className="w-5 h-5" />
         Jetzt für 9 EUR/Monat upgraden

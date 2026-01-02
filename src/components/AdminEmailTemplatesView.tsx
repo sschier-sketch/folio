@@ -98,17 +98,17 @@ export function AdminEmailTemplatesView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <div className="lg:col-span-1 bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
-        <div className="p-4 border-b border-slate-200">
-          <h2 className="text-lg font-bold text-slate-900">E-Mail Templates</h2>
-          <p className="text-xs text-slate-500 mt-1">{templates.length} Templates</p>
+      <div className="lg:col-span-1 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="p-4 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-dark">E-Mail Templates</h2>
+          <p className="text-xs text-gray-300 mt-1">{templates.length} Templates</p>
         </div>
 
         <div className="divide-y divide-slate-200">
@@ -116,17 +116,17 @@ export function AdminEmailTemplatesView() {
             <button
               key={template.id}
               onClick={() => setSelectedTemplate(template)}
-              className={`w-full p-4 text-left hover:bg-slate-50 transition-colors ${
-                selectedTemplate?.id === template.id ? 'bg-blue-50' : ''
+              className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
+                selectedTemplate?.id === template.id ? 'bg-primary-blue/5' : ''
               }`}
             >
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-blue-600" />
+                <div className="flex-shrink-0 w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-primary-blue" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-slate-900 mb-1">{template.template_name}</h3>
-                  <p className="text-xs text-slate-500 line-clamp-2">{template.description}</p>
+                  <h3 className="font-semibold text-dark mb-1">{template.template_name}</h3>
+                  <p className="text-xs text-gray-300 line-clamp-2">{template.description}</p>
                 </div>
               </div>
             </button>
@@ -134,19 +134,19 @@ export function AdminEmailTemplatesView() {
         </div>
       </div>
 
-      <div className="lg:col-span-3 bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+      <div className="lg:col-span-3 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
         {editedTemplate ? (
           <div className="flex flex-col h-[calc(100vh-300px)]">
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-gray-100">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-slate-900 mb-1">{editedTemplate.template_name}</h2>
-                  <p className="text-sm text-slate-600">{editedTemplate.description}</p>
+                  <h2 className="text-xl font-bold text-dark mb-1">{editedTemplate.template_name}</h2>
+                  <p className="text-sm text-gray-400">{editedTemplate.description}</p>
                 </div>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? (
                     <>
@@ -164,63 +164,63 @@ export function AdminEmailTemplatesView() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     Template-Schlüssel (nicht änderbar)
                   </label>
                   <input
                     type="text"
                     value={editedTemplate.template_key}
                     disabled
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-300"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     Template-Name
                   </label>
                   <input
                     type="text"
                     value={editedTemplate.template_name}
                     onChange={(e) => setEditedTemplate({ ...editedTemplate, template_name: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     E-Mail Betreff
                   </label>
                   <input
                     type="text"
                     value={editedTemplate.subject}
                     onChange={(e) => setEditedTemplate({ ...editedTemplate, subject: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     Beschreibung
                   </label>
                   <input
                     type="text"
                     value={editedTemplate.description}
                     onChange={(e) => setEditedTemplate({ ...editedTemplate, description: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
 
                 {editedTemplate.variables && editedTemplate.variables.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       Verfügbare Variablen
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {editedTemplate.variables.map((variable) => (
                         <span
                           key={variable}
-                          className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-xs font-mono rounded-full"
+                          className="inline-flex items-center px-3 py-1 bg-primary-blue/10 text-primary-blue text-xs font-mono rounded-full"
                         >
                           {`{{${variable}}}`}
                         </span>
@@ -232,13 +232,13 @@ export function AdminEmailTemplatesView() {
             </div>
 
             <div className="flex-1 overflow-hidden flex flex-col">
-              <div className="flex gap-2 p-4 border-b border-slate-200">
+              <div className="flex gap-2 p-4 border-b border-gray-100">
                 <button
                   onClick={() => setPreviewMode('html')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     previewMode === 'html'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-primary-blue text-white'
+                      : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
                   }`}
                 >
                   <Code className="w-4 h-4" />
@@ -248,8 +248,8 @@ export function AdminEmailTemplatesView() {
                   onClick={() => setPreviewMode('text')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     previewMode === 'text'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-primary-blue text-white'
+                      : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
                   }`}
                 >
                   <FileText className="w-4 h-4" />
@@ -259,7 +259,7 @@ export function AdminEmailTemplatesView() {
 
               <div className="flex-1 overflow-hidden grid grid-cols-2 gap-4 p-4">
                 <div className="flex flex-col h-full">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     {previewMode === 'html' ? 'HTML Code' : 'Text-Version'}
                   </label>
                   <textarea
@@ -270,16 +270,16 @@ export function AdminEmailTemplatesView() {
                         [previewMode === 'html' ? 'body_html' : 'body_text']: e.target.value,
                       })
                     }
-                    className="flex-1 w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none font-mono text-sm"
+                    className="flex-1 w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none font-mono text-sm"
                   />
                 </div>
 
                 <div className="flex flex-col h-full">
                   <div className="flex items-center gap-2 mb-2">
-                    <Eye className="w-4 h-4 text-slate-700" />
-                    <label className="text-sm font-medium text-slate-700">Vorschau</label>
+                    <Eye className="w-4 h-4 text-gray-400" />
+                    <label className="text-sm font-medium text-gray-400">Vorschau</label>
                   </div>
-                  <div className="flex-1 border border-slate-300 rounded-lg overflow-auto bg-white p-4">
+                  <div className="flex-1 border border-gray-200 rounded-lg overflow-auto bg-white p-4">
                     {previewMode === 'html' ? (
                       <div
                         dangerouslySetInnerHTML={{
@@ -287,7 +287,7 @@ export function AdminEmailTemplatesView() {
                         }}
                       />
                     ) : (
-                      <pre className="whitespace-pre-wrap text-sm text-slate-900 font-sans">
+                      <pre className="whitespace-pre-wrap text-sm text-dark font-sans">
                         {replaceVariables(editedTemplate.body_text, editedTemplate.variables || [])}
                       </pre>
                     )}
@@ -297,9 +297,9 @@ export function AdminEmailTemplatesView() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-96 text-slate-500">
+          <div className="flex items-center justify-center h-96 text-gray-300">
             <div className="text-center">
-              <Mail className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+              <Mail className="w-16 h-16 mx-auto mb-4 text-gray-200" />
               <p>Wählen Sie ein Template aus der Liste</p>
             </div>
           </div>

@@ -180,7 +180,7 @@ export default function RentPaymentsView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-slate-600">Lade Mieteingänge...</div>
+        <div className="text-gray-400">Lade Mieteingänge...</div>
       </div>
     );
   }
@@ -188,40 +188,40 @@ export default function RentPaymentsView() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">Mieteingänge</h2>
-        <p className="text-slate-600">Verwalten Sie ausstehende und bezahlte Mieten</p>
+        <h2 className="text-2xl font-bold text-dark mb-2">Mieteingänge</h2>
+        <p className="text-gray-400">Verwalten Sie ausstehende und bezahlte Mieten</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="text-sm text-slate-500 mb-1">Ausstehend</div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="text-sm text-gray-300 mb-1">Ausstehend</div>
           <div className="text-2xl font-bold text-orange-600">{formatCurrency(totalUnpaid)}</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="text-sm text-slate-500 mb-1">Bezahlt</div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="text-sm text-gray-300 mb-1">Bezahlt</div>
           <div className="text-2xl font-bold text-emerald-600">{formatCurrency(totalPaid)}</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="text-sm text-slate-500 mb-1">Gesamt</div>
-          <div className="text-2xl font-bold text-slate-900">{formatCurrency(totalUnpaid + totalPaid)}</div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="text-sm text-gray-300 mb-1">Gesamt</div>
+          <div className="text-2xl font-bold text-dark">{formatCurrency(totalUnpaid + totalPaid)}</div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-slate-600" />
-          <h3 className="font-semibold text-slate-900">Filter</h3>
+          <Filter className="w-5 h-5 text-gray-400" />
+          <h3 className="font-semibold text-dark">Filter</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Immobilie
             </label>
             <select
               value={filterProperty}
               onChange={(e) => setFilterProperty(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
             >
               <option value="all">Alle</option>
               {properties.map((property) => (
@@ -233,13 +233,13 @@ export default function RentPaymentsView() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Mietvertrag
             </label>
             <select
               value={filterContract}
               onChange={(e) => setFilterContract(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
             >
               <option value="all">Alle</option>
               {contracts.map((contract: any) => (
@@ -251,13 +251,13 @@ export default function RentPaymentsView() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Status
             </label>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as 'all' | 'paid' | 'unpaid')}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
             >
               <option value="all">Alle</option>
               <option value="unpaid">Ausstehend</option>
@@ -266,78 +266,78 @@ export default function RentPaymentsView() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Von
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Bis
             </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {payments.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">
+          <div className="p-8 text-center text-gray-300">
             Keine Mieteingänge gefunden. Mieteingänge werden automatisch generiert, wenn Sie Mietverträge anlegen.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Fälligkeitsdatum
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Immobilie
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Mieter
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Betrag
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Aktion
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {payments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                  <tr key={payment.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
                       {formatDate(payment.due_date)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-900">
+                    <td className="px-6 py-4 text-sm text-dark">
                       {payment.property ? (
                         <>
                           <div className="font-medium">{payment.property.name}</div>
-                          <div className="text-xs text-slate-500">{payment.property.address}</div>
+                          <div className="text-xs text-gray-300">{payment.property.address}</div>
                         </>
                       ) : (
-                        <span className="text-slate-400 italic">Keine Immobilie</span>
+                        <span className="text-gray-300 italic">Keine Immobilie</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-900">
+                    <td className="px-6 py-4 text-sm text-dark">
                       {payment.rental_contract?.tenants && payment.rental_contract.tenants.length > 0 ? (
                         <div className="space-y-1">
                           {payment.rental_contract.tenants.map((tenant, idx) => (
@@ -347,10 +347,10 @@ export default function RentPaymentsView() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-slate-400 italic">Kein Mieter</span>
+                        <span className="text-gray-300 italic">Kein Mieter</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark">
                       {formatCurrency(payment.amount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

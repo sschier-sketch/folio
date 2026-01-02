@@ -176,7 +176,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -185,19 +185,19 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
     <div>
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6 transition-colors"
+        className="flex items-center gap-2 text-gray-400 hover:text-dark mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
         Zurück zur Übersicht
       </button>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-        <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {getStatusIcon(ticket.status)}
               <div>
-                <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                <div className="text-xs font-medium text-gray-300 uppercase tracking-wide mb-1">
                   {ticket.ticket_number}
                 </div>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -231,7 +231,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
               {ticket.status === 'closed' && (
                 <button
                   onClick={() => handleStatusChange('open')}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all hover:shadow-md"
+                  className="px-4 py-2 bg-primary-blue text-white rounded-lg text-sm font-medium hover:bg-primary-blue transition-all hover:shadow-md"
                 >
                   Wieder öffnen
                 </button>
@@ -241,29 +241,29 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
         </div>
 
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-slate-900 mb-4">{ticket.subject}</h1>
+          <h1 className="text-2xl font-bold text-dark mb-4">{ticket.subject}</h1>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             {ticket.ticket_type === 'contact' ? (
               <>
                 <div>
-                  <span className="text-slate-500 font-medium">Typ:</span>
-                  <div className="text-slate-900 mt-1">
-                    <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                  <span className="text-gray-300 font-medium">Typ:</span>
+                  <div className="text-dark mt-1">
+                    <span className="inline-flex items-center px-2 py-1 bg-primary-blue/10 text-primary-blue rounded text-xs font-medium">
                       Kontaktanfrage
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 font-medium">Kontakt Name:</span>
-                  <div className="text-slate-900 mt-1">{ticket.contact_name}</div>
+                  <span className="text-gray-300 font-medium">Kontakt Name:</span>
+                  <div className="text-dark mt-1">{ticket.contact_name}</div>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 font-medium">Kontakt E-Mail:</span>
-                  <div className="text-slate-900 mt-1">
-                    <a href={`mailto:${ticket.contact_email}`} className="text-blue-600 hover:underline">
+                  <span className="text-gray-300 font-medium">Kontakt E-Mail:</span>
+                  <div className="text-dark mt-1">
+                    <a href={`mailto:${ticket.contact_email}`} className="text-primary-blue hover:underline">
                       {ticket.contact_email}
                     </a>
                   </div>
@@ -272,14 +272,14 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
             ) : (
               <>
                 <div>
-                  <span className="text-slate-500 font-medium">Immobilie:</span>
-                  <div className="text-slate-900 mt-1">{ticket.properties?.name}</div>
+                  <span className="text-gray-300 font-medium">Immobilie:</span>
+                  <div className="text-dark mt-1">{ticket.properties?.name}</div>
                 </div>
 
                 {ticket.tenants && (
                   <div>
-                    <span className="text-slate-500 font-medium">Mieter:</span>
-                    <div className="text-slate-900 mt-1">
+                    <span className="text-gray-300 font-medium">Mieter:</span>
+                    <div className="text-dark mt-1">
                       {ticket.tenants.first_name} {ticket.tenants.last_name}
                     </div>
                   </div>
@@ -288,8 +288,8 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
             )}
 
             <div>
-              <span className="text-slate-500 font-medium">Erstellt am:</span>
-              <div className="text-slate-900 mt-1">
+              <span className="text-gray-300 font-medium">Erstellt am:</span>
+              <div className="text-dark mt-1">
                 {new Date(ticket.created_at).toLocaleDateString('de-DE', {
                   day: '2-digit',
                   month: '2-digit',
@@ -302,19 +302,19 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
 
             {ticket.created_by_name && (
               <div>
-                <span className="text-slate-500 font-medium">Erstellt von:</span>
-                <div className="text-slate-900 mt-1">{ticket.created_by_name}</div>
+                <span className="text-gray-300 font-medium">Erstellt von:</span>
+                <div className="text-dark mt-1">{ticket.created_by_name}</div>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Nachrichtenverlauf</h2>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h2 className="text-lg font-semibold text-dark mb-4">Nachrichtenverlauf</h2>
 
         {messages.length === 0 ? (
-          <p className="text-slate-500 text-center py-8">Noch keine Nachrichten</p>
+          <p className="text-gray-300 text-center py-8">Noch keine Nachrichten</p>
         ) : (
           <div className="space-y-4 mb-6">
             {messages.map((message) => (
@@ -325,8 +325,8 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
                 <div
                   className={`max-w-[70%] rounded-lg p-4 ${
                     message.sender_type === 'landlord'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 text-slate-900'
+                      ? 'bg-primary-blue text-white'
+                      : 'bg-gray-50 text-dark'
                   }`}
                 >
                   <div className="text-xs opacity-75 mb-2">
@@ -345,13 +345,13 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               placeholder="Nachricht schreiben..."
             />
             <button
               type="submit"
               disabled={sending || !newMessage.trim()}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               <Send className="w-4 h-4" />
               Senden

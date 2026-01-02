@@ -111,14 +111,14 @@ export function ResetPassword() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-            <Lock className="w-6 h-6 text-blue-600" />
+          <div className="w-12 h-12 bg-primary-blue/10 rounded-xl flex items-center justify-center">
+            <Lock className="w-6 h-6 text-primary-blue" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-dark">
               {confirming ? 'Bestätigung läuft...' : 'Passwort zurücksetzen'}
             </h1>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-gray-400">
               {confirming
                 ? 'Ihr Passwort wird aktualisiert'
                 : 'Geben Sie Ihre E-Mail und Ihr neues Passwort ein'}
@@ -139,34 +139,34 @@ export function ResetPassword() {
 
         {confirming ? (
           <div className="text-center py-8">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-blue-600 animate-pulse" />
+            <div className="w-16 h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-primary-blue animate-pulse" />
             </div>
-            <p className="text-slate-600 mb-4">Passwort wird aktualisiert...</p>
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-gray-400 mb-4">Passwort wird aktualisiert...</p>
+            <div className="w-8 h-8 border-4 border-primary-blue border-t-transparent rounded-full animate-spin mx-auto" />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
                 E-Mail-Adresse
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="ihre@email.de"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="new-password" className="block text-sm font-medium text-gray-400 mb-2">
                 Neues Passwort
               </label>
               <div className="relative">
@@ -176,7 +176,7 @@ export function ResetPassword() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Mindestens 6 Zeichen"
                 />
                 <button
@@ -185,16 +185,16 @@ export function ResetPassword() {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+                    <EyeOff className="h-5 w-5 text-gray-300 hover:text-gray-400" />
                   ) : (
-                    <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+                    <Eye className="h-5 w-5 text-gray-300 hover:text-gray-400" />
                   )}
                 </button>
               </div>
             </div>
 
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-400 mb-2">
                 Passwort bestätigen
               </label>
               <input
@@ -203,13 +203,13 @@ export function ResetPassword() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Passwort wiederholen"
               />
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-700">
+            <div className="bg-primary-blue/5 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-primary-blue">
                 <strong>So funktioniert es:</strong> Sie erhalten eine E-Mail mit einem Bestätigungslink.
                 Ihr neues Passwort wird erst nach dem Klick auf diesen Link aktiviert.
               </p>
@@ -218,7 +218,7 @@ export function ResetPassword() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -234,7 +234,7 @@ export function ResetPassword() {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
+                className="text-sm text-gray-400 hover:text-dark transition-colors"
               >
                 Zurück zur Anmeldung
               </button>

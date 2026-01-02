@@ -80,7 +80,7 @@ export function Admin() {
     console.log('Admin Component - Still loading admin status, showing spinner');
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -141,7 +141,7 @@ export function Admin() {
         <div className="mb-8">
           <button
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors mb-4"
+            className="flex items-center gap-2 text-gray-400 hover:text-dark transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Zurück zum Dashboard
@@ -151,19 +151,19 @@ export function Admin() {
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Admin-Dashboard</h1>
-              <p className="text-slate-600">System-Verwaltung & Übersicht</p>
+              <h1 className="text-3xl font-bold text-dark">Admin-Dashboard</h1>
+              <p className="text-gray-400">System-Verwaltung & Übersicht</p>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-2 mb-6 border-b border-slate-200">
+        <div className="flex gap-2 mb-6 border-b border-gray-100">
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-4 py-2 font-medium transition-colors border-b-2 ${
               activeTab === 'overview'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-primary-blue text-primary-blue'
+                : 'border-transparent text-gray-400 hover:text-dark'
             }`}
           >
             <Activity className="w-4 h-4 inline mr-2" />
@@ -173,8 +173,8 @@ export function Admin() {
             onClick={() => setActiveTab('users')}
             className={`px-4 py-2 font-medium transition-colors border-b-2 ${
               activeTab === 'users'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-primary-blue text-primary-blue'
+                : 'border-transparent text-gray-400 hover:text-dark'
             }`}
           >
             <Users className="w-4 h-4 inline mr-2" />
@@ -184,8 +184,8 @@ export function Admin() {
             onClick={() => setActiveTab('tickets')}
             className={`px-4 py-2 font-medium transition-colors border-b-2 ${
               activeTab === 'tickets'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-primary-blue text-primary-blue'
+                : 'border-transparent text-gray-400 hover:text-dark'
             }`}
           >
             <MessageSquare className="w-4 h-4 inline mr-2" />
@@ -195,8 +195,8 @@ export function Admin() {
             onClick={() => setActiveTab('templates')}
             className={`px-4 py-2 font-medium transition-colors border-b-2 ${
               activeTab === 'templates'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
+                ? 'border-primary-blue text-primary-blue'
+                : 'border-transparent text-gray-400 hover:text-dark'
             }`}
           >
             <Mail className="w-4 h-4 inline mr-2" />
@@ -207,64 +207,64 @@ export function Admin() {
         {activeTab === 'overview' && (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200">
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
-                  <Users className="w-8 h-8 text-blue-600" />
-                  <span className="text-3xl font-bold text-slate-900">{stats.totalUsers}</span>
+                  <Users className="w-8 h-8 text-primary-blue" />
+                  <span className="text-3xl font-bold text-dark">{stats.totalUsers}</span>
                 </div>
-                <p className="text-slate-600 font-medium">Gesamt Nutzer</p>
+                <p className="text-gray-400 font-medium">Gesamt Nutzer</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200">
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <UserCheck className="w-8 h-8 text-emerald-600" />
-                  <span className="text-3xl font-bold text-slate-900">{stats.freeUsers}</span>
+                  <span className="text-3xl font-bold text-dark">{stats.freeUsers}</span>
                 </div>
-                <p className="text-slate-600 font-medium">Gratis Nutzer</p>
+                <p className="text-gray-400 font-medium">Gratis Nutzer</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200">
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <TrendingUp className="w-8 h-8 text-amber-600" />
-                  <span className="text-3xl font-bold text-slate-900">{stats.premiumUsers}</span>
+                  <span className="text-3xl font-bold text-dark">{stats.premiumUsers}</span>
                 </div>
-                <p className="text-slate-600 font-medium">Premium Nutzer</p>
+                <p className="text-gray-400 font-medium">Premium Nutzer</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200">
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
-                  <span className="text-3xl font-bold text-slate-900">{stats.monthlyRevenue}€</span>
+                  <span className="text-3xl font-bold text-dark">{stats.monthlyRevenue}€</span>
                 </div>
-                <p className="text-slate-600 font-medium">Monatl. Umsatz</p>
+                <p className="text-gray-400 font-medium">Monatl. Umsatz</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200">
-              <h2 className="text-xl font-bold text-slate-900 mb-4">Schnellzugriff</h2>
+            <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+              <h2 className="text-xl font-bold text-dark mb-4">Schnellzugriff</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                   onClick={() => setActiveTab('users')}
-                  className="p-4 border-2 border-slate-200 rounded-xl hover:border-blue-600 hover:bg-blue-50 transition-all text-left"
+                  className="p-4 border-2 border-gray-100 rounded-xl hover:border-primary-blue hover:bg-primary-blue/5 transition-all text-left"
                 >
-                  <Users className="w-6 h-6 text-blue-600 mb-2" />
-                  <p className="font-semibold text-slate-900">Benutzer verwalten</p>
-                  <p className="text-sm text-slate-600">Alle Nutzer anzeigen & verwalten</p>
+                  <Users className="w-6 h-6 text-primary-blue mb-2" />
+                  <p className="font-semibold text-dark">Benutzer verwalten</p>
+                  <p className="text-sm text-gray-400">Alle Nutzer anzeigen & verwalten</p>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('templates')}
-                  className="p-4 border-2 border-slate-200 rounded-xl hover:border-blue-600 hover:bg-blue-50 transition-all text-left"
+                  className="p-4 border-2 border-gray-100 rounded-xl hover:border-primary-blue hover:bg-primary-blue/5 transition-all text-left"
                 >
-                  <Mail className="w-6 h-6 text-blue-600 mb-2" />
-                  <p className="font-semibold text-slate-900">E-Mail Templates</p>
-                  <p className="text-sm text-slate-600">Templates bearbeiten</p>
+                  <Mail className="w-6 h-6 text-primary-blue mb-2" />
+                  <p className="font-semibold text-dark">E-Mail Templates</p>
+                  <p className="text-sm text-gray-400">Templates bearbeiten</p>
                 </button>
 
-                <div className="p-4 border-2 border-slate-200 rounded-xl bg-slate-50">
-                  <Settings className="w-6 h-6 text-slate-400 mb-2" />
-                  <p className="font-semibold text-slate-900">System-Einstellungen</p>
-                  <p className="text-sm text-slate-600">Bald verfügbar</p>
+                <div className="p-4 border-2 border-gray-100 rounded-xl bg-gray-50">
+                  <Settings className="w-6 h-6 text-gray-300 mb-2" />
+                  <p className="font-semibold text-dark">System-Einstellungen</p>
+                  <p className="text-sm text-gray-400">Bald verfügbar</p>
                 </div>
               </div>
             </div>
@@ -272,44 +272,44 @@ export function Admin() {
         )}
 
         {activeTab === 'users' && (
-          <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-200">
-              <h2 className="text-xl font-bold text-slate-900">Alle Benutzer</h2>
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-dark">Alle Benutzer</h2>
             </div>
 
             {loadingData ? (
               <div className="flex items-center justify-center p-8">
-                <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         E-Mail
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Registriert
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Tarif
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Aktionen
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
                     {users.map((user) => (
-                      <tr key={user.id} className="hover:bg-slate-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                      <tr key={user.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
                           {user.email}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                           {new Date(user.created_at).toLocaleDateString('de-DE')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -317,7 +317,7 @@ export function Admin() {
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               user.subscription_plan === 'premium'
                                 ? 'bg-amber-100 text-amber-800'
-                                : 'bg-slate-100 text-slate-800'
+                                : 'bg-gray-50 text-dark'
                             }`}
                           >
                             {user.subscription_plan === 'premium' ? 'Premium' : 'Gratis'}
@@ -338,7 +338,7 @@ export function Admin() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleImpersonate(user.id, user.email)}
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                              className="text-primary-blue hover:text-primary-blue transition-colors"
                               title="Als Nutzer anmelden"
                             >
                               <Eye className="w-4 h-4" />

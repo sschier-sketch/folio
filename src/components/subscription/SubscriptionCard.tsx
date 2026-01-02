@@ -89,7 +89,7 @@ export function SubscriptionCard({ product, isCurrentPlan = false }: Subscriptio
           className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors ${
             isCurrentPlan
               ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
+              : 'bg-primary-blue hover:bg-primary-blue text-white'
           }`}
         >
           {loading ? (

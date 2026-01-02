@@ -70,7 +70,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2 p-1 bg-slate-100 rounded-lg">
+      <div className="flex gap-2 p-1 bg-gray-50 rounded-lg">
         <button
           type="button"
           onClick={() => {
@@ -79,8 +79,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           }}
           className={`flex-1 py-2 px-4 rounded-md font-medium text-sm transition-all ${
             loginMode === 'password'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-primary-blue shadow-sm'
+              : 'text-gray-400 hover:text-dark'
           }`}
         >
           <LogIn className="w-4 h-4 inline mr-2" />
@@ -94,8 +94,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           }}
           className={`flex-1 py-2 px-4 rounded-md font-medium text-sm transition-all ${
             loginMode === 'magic'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-primary-blue shadow-sm'
+              : 'text-gray-400 hover:text-dark'
           }`}
         >
           <Mail className="w-4 h-4 inline mr-2" />
@@ -116,7 +116,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       {loginMode === 'password' ? (
         <form onSubmit={handlePasswordLogin} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
               E-Mail-Adresse
             </label>
             <input
@@ -125,20 +125,20 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="ihre@email.de"
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-400">
                 Passwort
               </label>
               <button
                 type="button"
                 onClick={() => navigate('/reset-password')}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-primary-blue hover:text-primary-blue font-medium"
               >
                 Passwort vergessen?
               </button>
@@ -150,7 +150,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Ihr Passwort"
               />
               <button
@@ -159,9 +159,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-slate-400" />
+                  <EyeOff className="h-5 w-5 text-gray-300" />
                 ) : (
-                  <Eye className="h-5 w-5 text-slate-400" />
+                  <Eye className="h-5 w-5 text-gray-300" />
                 )}
               </button>
             </div>
@@ -170,7 +170,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -185,7 +185,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       ) : (
         <form onSubmit={handleMagicLinkLogin} className="space-y-6">
           <div>
-            <label htmlFor="magic-email" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="magic-email" className="block text-sm font-medium text-gray-400 mb-2">
               E-Mail-Adresse
             </label>
             <input
@@ -194,10 +194,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="ihre@email.de"
             />
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-gray-300">
               Wir senden Ihnen einen sicheren Login-Link per E-Mail zu
             </p>
           </div>
@@ -205,7 +205,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

@@ -106,7 +106,7 @@ export default function TenantsView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -115,15 +115,15 @@ export default function TenantsView() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Mietverhältnisse</h1>
-          <p className="text-slate-600">Verwalten Sie Ihre Mietverhältnisse und Mieter</p>
+          <h1 className="text-3xl font-bold text-dark mb-2">Mietverhältnisse</h1>
+          <p className="text-gray-400">Verwalten Sie Ihre Mietverhältnisse und Mieter</p>
         </div>
         <button
           onClick={() => {
             setSelectedContract(null);
             setShowContractModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
         >
           <Plus className="w-5 h-5" />
           Mietverhältnis hinzufügen
@@ -131,10 +131,10 @@ export default function TenantsView() {
       </div>
 
       {contracts.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-          <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">Noch keine Mietverhältnisse</h3>
-          <p className="text-slate-600 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+          <Users className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-dark mb-2">Noch keine Mietverhältnisse</h3>
+          <p className="text-gray-400 mb-6">
             Fügen Sie Ihr erstes Mietverhältnis hinzu, um mit der Verwaltung zu beginnen.
           </p>
           <button
@@ -142,7 +142,7 @@ export default function TenantsView() {
               setSelectedContract(null);
               setShowContractModal(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-5 h-5" />
             Erstes Mietverhältnis hinzufügen
@@ -151,7 +151,7 @@ export default function TenantsView() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {contracts.map((contract) => (
-            <div key={contract.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div key={contract.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start gap-4">
@@ -160,19 +160,19 @@ export default function TenantsView() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <Home className="w-4 h-4 text-slate-400" />
-                        <span className="text-sm font-medium text-slate-900">
+                        <Home className="w-4 h-4 text-gray-300" />
+                        <span className="text-sm font-medium text-dark">
                           {contract.properties?.name || 'Nicht zugeordnet'}
                         </span>
                       </div>
-                      <div className="font-bold text-lg text-slate-900 mb-1">
+                      <div className="font-bold text-lg text-dark mb-1">
                         {contract.tenants && contract.tenants.length > 0
                           ? contract.tenants.map(t => `${t.first_name} ${t.last_name}`).join(', ')
                           : 'Keine Mieter'}
                       </div>
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm text-gray-400">
                         {contract.tenants && contract.tenants.length > 1 && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-blue/5 text-primary-blue rounded-full text-xs font-medium">
                             {contract.tenants.length} Mieter
                           </span>
                         )}
@@ -185,48 +185,48 @@ export default function TenantsView() {
                         setSelectedContract(contract);
                         setShowContractModal(true);
                       }}
-                      className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                      className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(contract.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                      className="p-2 text-gray-300 hover:text-red-600 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                   <div>
-                    <div className="text-xs text-slate-500 mb-1">Kaltmiete</div>
-                    <div className="font-semibold text-slate-900">{formatCurrency(contract.base_rent)}</div>
+                    <div className="text-xs text-gray-300 mb-1">Kaltmiete</div>
+                    <div className="font-semibold text-dark">{formatCurrency(contract.base_rent)}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-slate-500 mb-1">Warmmiete</div>
-                    <div className="font-semibold text-slate-900">{formatCurrency(contract.total_rent)}</div>
+                    <div className="text-xs text-gray-300 mb-1">Warmmiete</div>
+                    <div className="font-semibold text-dark">{formatCurrency(contract.total_rent)}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-slate-500 mb-1">Vertragsbeginn</div>
-                    <div className="text-sm text-slate-900">
+                    <div className="text-xs text-gray-300 mb-1">Vertragsbeginn</div>
+                    <div className="text-sm text-dark">
                       {new Date(contract.contract_start).toLocaleDateString('de-DE')}
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-slate-500 mb-1">Vertragsart</div>
-                    <div className="text-sm text-slate-900">
+                    <div className="text-xs text-gray-300 mb-1">Vertragsart</div>
+                    <div className="text-sm text-dark">
                       {contract.contract_type === 'unlimited' ? 'Unbefristet' : 'Befristet'}
                     </div>
                   </div>
                 </div>
 
                 {contract.tenants && contract.tenants.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-slate-200">
-                    <div className="text-xs text-slate-500 mb-2">Kontakt</div>
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="text-xs text-gray-300 mb-2">Kontakt</div>
                     <div className="space-y-1">
                       {contract.tenants.slice(0, 2).map((tenant) => (
-                        <div key={tenant.id} className="text-sm text-slate-700">
+                        <div key={tenant.id} className="text-sm text-gray-400">
                           {tenant.email && (
                             <div className="truncate">{tenant.email}</div>
                           )}
@@ -236,7 +236,7 @@ export default function TenantsView() {
                         </div>
                       ))}
                       {contract.tenants.length > 2 && (
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-gray-300">
                           +{contract.tenants.length - 2} weitere
                         </div>
                       )}

@@ -239,15 +239,15 @@ export default function TenantPortal() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'open':
-        return <AlertCircle className="w-5 h-5 text-blue-600" />;
+        return <AlertCircle className="w-5 h-5 text-primary-blue" />;
       case 'in_progress':
         return <Clock className="w-5 h-5 text-amber-600" />;
       case 'resolved':
         return <CheckCircle className="w-5 h-5 text-emerald-600" />;
       case 'closed':
-        return <XCircle className="w-5 h-5 text-slate-600" />;
+        return <XCircle className="w-5 h-5 text-gray-400" />;
       default:
-        return <MessageSquare className="w-5 h-5 text-slate-600" />;
+        return <MessageSquare className="w-5 h-5 text-gray-400" />;
     }
   };
 
@@ -269,13 +269,13 @@ export default function TenantPortal() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'low':
-        return 'bg-slate-100 text-slate-700';
+        return 'bg-gray-50 text-gray-400';
       case 'medium':
         return 'bg-amber-100 text-amber-700';
       case 'high':
         return 'bg-red-100 text-red-700';
       default:
-        return 'bg-slate-100 text-slate-700';
+        return 'bg-gray-50 text-gray-400';
     }
   };
 
@@ -298,8 +298,8 @@ export default function TenantPortal() {
 
   if (selectedTicket) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
-        <div className="bg-white border-b border-slate-200 px-6 py-4">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="bg-white border-b border-gray-100 px-6 py-4">
           <div className="max-w-6xl mx-auto flex justify-between items-center">
             <div>
               <button
@@ -307,19 +307,19 @@ export default function TenantPortal() {
                   setSelectedTicket(null);
                   setMessages([]);
                 }}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-2"
+                className="text-primary-blue hover:text-primary-blue text-sm font-medium mb-2"
               >
                 ← Zurück zu allen Tickets
               </button>
-              <h1 className="text-2xl font-bold text-slate-900">
+              <h1 className="text-2xl font-bold text-dark">
                 Ticket #{selectedTicket.ticket_number}
               </h1>
-              <p className="text-slate-600">{selectedTicket.subject}</p>
+              <p className="text-gray-400">{selectedTicket.subject}</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 {getStatusIcon(selectedTicket.status)}
-                <span className="text-sm font-medium text-slate-700">
+                <span className="text-sm font-medium text-gray-400">
                   {getStatusText(selectedTicket.status)}
                 </span>
               </div>
@@ -328,10 +328,10 @@ export default function TenantPortal() {
         </div>
 
         <div className="max-w-6xl mx-auto p-6">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
             <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
               {messages.length === 0 ? (
-                <p className="text-center text-slate-500 py-8">Noch keine Nachrichten</p>
+                <p className="text-center text-gray-300 py-8">Noch keine Nachrichten</p>
               ) : (
                 messages.map((msg) => (
                   <div
@@ -341,8 +341,8 @@ export default function TenantPortal() {
                     <div
                       className={`max-w-[70%] rounded-lg p-4 ${
                         msg.sender_type === 'tenant'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-slate-100 text-slate-900'
+                          ? 'bg-primary-blue text-white'
+                          : 'bg-gray-50 text-dark'
                       }`}
                     >
                       <div className="text-xs opacity-75 mb-1">
@@ -356,7 +356,7 @@ export default function TenantPortal() {
             </div>
 
             {selectedTicket.status !== 'closed' && (
-              <div className="border-t border-slate-200 p-4">
+              <div className="border-t border-gray-100 p-4">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -367,7 +367,7 @@ export default function TenantPortal() {
                 >
                   <textarea
                     name="message"
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                     rows={3}
                     placeholder="Ihre Nachricht..."
                     required
@@ -375,7 +375,7 @@ export default function TenantPortal() {
                   <div className="flex justify-end mt-2">
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                      className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
                     >
                       Nachricht senden
                     </button>
@@ -392,16 +392,16 @@ export default function TenantPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <div className="bg-white border-b border-slate-200 px-6 py-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="bg-white border-b border-gray-100 px-6 py-4">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Mieter-Portal</h1>
-            <p className="text-slate-600">{tenantEmail}</p>
+            <h1 className="text-2xl font-bold text-dark">Mieter-Portal</h1>
+            <p className="text-gray-400">{tenantEmail}</p>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-900 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-dark transition-colors"
           >
             <LogOut className="w-5 h-5" />
             Abmelden
@@ -411,10 +411,10 @@ export default function TenantPortal() {
 
       <div className="max-w-6xl mx-auto p-6 flex-1">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-900">Meine Anfragen</h2>
+          <h2 className="text-xl font-semibold text-dark">Meine Anfragen</h2>
           <button
             onClick={() => setShowNewTicket(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-5 h-5" />
             Neue Anfrage
@@ -422,10 +422,10 @@ export default function TenantPortal() {
         </div>
 
         {tickets.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-            <MessageSquare className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-600 text-lg mb-2">Noch keine Anfragen</p>
-            <p className="text-slate-500 text-sm">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+            <MessageSquare className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+            <p className="text-gray-400 text-lg mb-2">Noch keine Anfragen</p>
+            <p className="text-gray-300 text-sm">
               Erstellen Sie Ihre erste Anfrage, um mit Ihrem Vermieter in Kontakt zu treten.
             </p>
           </div>
@@ -435,12 +435,12 @@ export default function TenantPortal() {
               <div
                 key={ticket.id}
                 onClick={() => setSelectedTicket(ticket)}
-                className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-sm font-mono text-slate-500">
+                      <span className="text-sm font-mono text-gray-300">
                         #{ticket.ticket_number}
                       </span>
                       <span
@@ -451,17 +451,17 @@ export default function TenantPortal() {
                         {getPriorityText(ticket.priority)}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                    <h3 className="text-lg font-semibold text-dark mb-1">
                       {ticket.subject}
                     </h3>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-gray-300">
                       Erstellt am {new Date(ticket.created_at).toLocaleDateString('de-DE')} •
                       Aktualisiert am {new Date(ticket.updated_at).toLocaleDateString('de-DE')}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusIcon(ticket.status)}
-                    <span className="text-sm font-medium text-slate-700">
+                    <span className="text-sm font-medium text-gray-400">
                       {getStatusText(ticket.status)}
                     </span>
                   </div>
@@ -475,11 +475,11 @@ export default function TenantPortal() {
       {showNewTicket && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-            <div className="border-b border-slate-200 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-slate-900">Neue Anfrage erstellen</h2>
+            <div className="border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-dark">Neue Anfrage erstellen</h2>
               <button
                 onClick={() => setShowNewTicket(false)}
-                className="text-slate-400 hover:text-slate-600 text-2xl"
+                className="text-gray-300 hover:text-gray-400 text-2xl"
               >
                 ×
               </button>
@@ -488,7 +488,7 @@ export default function TenantPortal() {
             <form onSubmit={handleCreateTicket} className="p-6 space-y-4">
               {properties.length > 1 && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     Immobilie
                   </label>
                   <select
@@ -496,7 +496,7 @@ export default function TenantPortal() {
                     onChange={(e) =>
                       setNewTicketForm({ ...newTicketForm, property_id: e.target.value })
                     }
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     required
                   >
                     {properties.map((prop) => (
@@ -509,7 +509,7 @@ export default function TenantPortal() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Betreff *
                 </label>
                 <input
@@ -518,7 +518,7 @@ export default function TenantPortal() {
                   onChange={(e) =>
                     setNewTicketForm({ ...newTicketForm, subject: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="z.B. Heizung defekt"
                   required
                 />
@@ -526,7 +526,7 @@ export default function TenantPortal() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     Kategorie
                   </label>
                   <select
@@ -534,7 +534,7 @@ export default function TenantPortal() {
                     onChange={(e) =>
                       setNewTicketForm({ ...newTicketForm, category: e.target.value })
                     }
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
                     <option value="general">Allgemein</option>
                     <option value="maintenance">Wartung</option>
@@ -544,7 +544,7 @@ export default function TenantPortal() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     Priorität
                   </label>
                   <select
@@ -552,7 +552,7 @@ export default function TenantPortal() {
                     onChange={(e) =>
                       setNewTicketForm({ ...newTicketForm, priority: e.target.value })
                     }
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
                     <option value="low">Niedrig</option>
                     <option value="medium">Mittel</option>
@@ -562,7 +562,7 @@ export default function TenantPortal() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Beschreibung *
                 </label>
                 <textarea
@@ -570,7 +570,7 @@ export default function TenantPortal() {
                   onChange={(e) =>
                     setNewTicketForm({ ...newTicketForm, message: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                   rows={5}
                   placeholder="Beschreiben Sie Ihr Anliegen..."
                   required
@@ -581,14 +581,14 @@ export default function TenantPortal() {
                 <button
                   type="button"
                   onClick={() => setShowNewTicket(false)}
-                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-200 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                 >
                   Abbrechen
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
                 >
                   {loading ? 'Erstellen...' : 'Anfrage erstellen'}
                 </button>

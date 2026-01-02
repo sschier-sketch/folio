@@ -146,16 +146,16 @@ export default function Pricing() {
         <div className="max-w-7xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full text-blue-700 font-medium mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue/10 rounded-full text-primary-blue font-medium mb-4">
               <Sparkles className="w-4 h-4" />
               {language === 'de' ? 'Transparente Preise' : 'Transparent Pricing'}
             </div>
-            <h1 className="text-5xl font-bold text-slate-900 mb-6">
+            <h1 className="text-5xl font-bold text-dark mb-6">
               {language === 'de'
                 ? 'Der perfekte Plan für Sie'
                 : 'The Perfect Plan for You'}
             </h1>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
               {language === 'de'
                 ? 'Starten Sie kostenlos und upgraden Sie, wenn Ihr Portfolio wächst. Keine versteckten Kosten.'
                 : 'Start for free and upgrade as your portfolio grows. No hidden costs.'}
@@ -167,8 +167,8 @@ export default function Pricing() {
                 onClick={() => setBillingCycle('monthly')}
                 className={`px-6 py-3 rounded-full font-semibold transition-all duration-200 ${
                   billingCycle === 'monthly'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-primary-blue text-white shadow-md'
+                    : 'text-gray-400 hover:text-dark'
                 }`}
               >
                 {language === 'de' ? 'Monatlich' : 'Monthly'}
@@ -177,8 +177,8 @@ export default function Pricing() {
                 onClick={() => setBillingCycle('yearly')}
                 className={`px-6 py-3 rounded-full font-semibold transition-all duration-200 relative ${
                   billingCycle === 'yearly'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-primary-blue text-white shadow-md'
+                    : 'text-gray-400 hover:text-dark'
                 }`}
               >
                 {language === 'de' ? 'Jährlich' : 'Yearly'}
@@ -206,12 +206,12 @@ export default function Pricing() {
                       ? 'border-4 border-blue-500 shadow-2xl scale-105'
                       : isSelected
                       ? 'border-2 border-blue-300 shadow-xl transform scale-105'
-                      : 'border-2 border-slate-200 shadow-lg hover:border-slate-300'
+                      : 'border-2 border-gray-100 shadow-lg hover:border-gray-200'
                   }`}
                 >
                   {plan.badge && (
                     <div className={`absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-full text-sm font-bold text-white ${
-                      isPopular ? 'bg-blue-600' : 'bg-amber-500'
+                      isPopular ? 'bg-primary-blue' : 'bg-amber-500'
                     }`}>
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4" />
@@ -224,12 +224,12 @@ export default function Pricing() {
                     <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 bg-${plan.color}-100`}>
                       <Icon className={`w-8 h-8 text-${plan.color}-600`} />
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">{plan.name}</h3>
-                    <p className="text-slate-600 text-sm mb-4">{plan.description}</p>
+                    <h3 className="text-2xl font-bold text-dark mb-2">{plan.name}</h3>
+                    <p className="text-gray-400 text-sm mb-4">{plan.description}</p>
                     <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-bold text-slate-900">{getPrice(plan)}</span>
+                      <span className="text-4xl font-bold text-dark">{getPrice(plan)}</span>
                       {plan.monthlyPrice > 0 && (
-                        <span className="text-slate-600">{getPeriod()}</span>
+                        <span className="text-gray-400">{getPeriod()}</span>
                       )}
                     </div>
                     {billingCycle === 'yearly' && plan.monthlyPrice > 0 && (
@@ -257,9 +257,9 @@ export default function Pricing() {
                         {feature.included ? (
                           <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                         ) : (
-                          <X className="w-5 h-5 text-slate-300 flex-shrink-0 mt-0.5" />
+                          <X className="w-5 h-5 text-gray-200 flex-shrink-0 mt-0.5" />
                         )}
-                        <span className={feature.included ? 'text-slate-700' : 'text-slate-400'}>
+                        <span className={feature.included ? 'text-gray-400' : 'text-gray-300'}>
                           {feature.text}
                         </span>
                       </li>
@@ -270,8 +270,8 @@ export default function Pricing() {
                     onClick={() => navigate(plan.id === 'starter' ? '/signup' : '/subscription')}
                     className={`w-full py-4 rounded-xl font-bold transition-all duration-200 ${
                       isPopular
-                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        ? 'bg-primary-blue text-white hover:bg-primary-blue shadow-lg hover:shadow-xl'
+                        : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
                     }`}
                   >
                     {plan.id === 'starter'
@@ -284,7 +284,7 @@ export default function Pricing() {
           </div>
 
           {/* Bonus Section */}
-          <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl p-12 mb-20 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary-blue to-purple-600 rounded-3xl p-12 mb-20 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full -mr-48 -mt-48"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -ml-32 -mb-32"></div>
 
@@ -297,7 +297,7 @@ export default function Pricing() {
                 <h2 className="text-4xl font-bold text-white mb-4">
                   {language === 'de' ? 'Mehr als nur Software' : 'More Than Just Software'}
                 </h2>
-                <p className="text-blue-100 text-lg">
+                <p className="text-primary-blue/20 text-lg">
                   {language === 'de'
                     ? 'Profitieren Sie von unserem Belohnungssystem und zusätzlichen Vorteilen'
                     : 'Benefit from our rewards system and additional perks'}
@@ -316,7 +316,7 @@ export default function Pricing() {
                         <Icon className="w-6 h-6 text-white" />
                       </div>
                       <h3 className="text-xl font-bold text-white mb-2">{bonus.title}</h3>
-                      <p className="text-blue-100">{bonus.description}</p>
+                      <p className="text-primary-blue/20">{bonus.description}</p>
                     </div>
                   );
                 })}
@@ -328,25 +328,25 @@ export default function Pricing() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
             <div className="bg-white rounded-2xl p-6 text-center shadow-lg">
               <Shield className="w-8 h-8 text-emerald-500 mx-auto mb-3" />
-              <p className="text-slate-600 text-sm font-medium">
+              <p className="text-gray-400 text-sm font-medium">
                 {language === 'de' ? '30 Tage Geld-zurück-Garantie' : '30-day money-back guarantee'}
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 text-center shadow-lg">
               <TrendingUp className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-              <p className="text-slate-600 text-sm font-medium">
+              <p className="text-gray-400 text-sm font-medium">
                 {language === 'de' ? 'Jederzeit kündbar' : 'Cancel anytime'}
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 text-center shadow-lg">
               <Heart className="w-8 h-8 text-red-500 mx-auto mb-3" />
-              <p className="text-slate-600 text-sm font-medium">
+              <p className="text-gray-400 text-sm font-medium">
                 {language === 'de' ? 'Von 10.000+ Nutzern geliebt' : 'Loved by 10,000+ users'}
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 text-center shadow-lg">
               <Star className="w-8 h-8 text-amber-500 mx-auto mb-3" />
-              <p className="text-slate-600 text-sm font-medium">
+              <p className="text-gray-400 text-sm font-medium">
                 {language === 'de' ? '4.9/5 Sterne Bewertung' : '4.9/5 star rating'}
               </p>
             </div>
@@ -354,16 +354,16 @@ export default function Pricing() {
 
           {/* FAQ Section */}
           <div className="bg-white rounded-3xl p-12 shadow-xl">
-            <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">
+            <h2 className="text-3xl font-bold text-dark mb-8 text-center">
               {language === 'de' ? 'Häufig gestellte Fragen' : 'Frequently Asked Questions'}
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               <div>
-                <h3 className="font-bold text-slate-900 mb-2">
+                <h3 className="font-bold text-dark mb-2">
                   {language === 'de' ? 'Kann ich jederzeit wechseln?' : 'Can I switch anytime?'}
                 </h3>
-                <p className="text-slate-600">
+                <p className="text-gray-400">
                   {language === 'de'
                     ? 'Ja! Sie können jederzeit zwischen den Plänen wechseln. Bei einem Upgrade zahlen Sie nur die Differenz.'
                     : 'Yes! You can switch between plans anytime. When upgrading, you only pay the difference.'}
@@ -371,10 +371,10 @@ export default function Pricing() {
               </div>
 
               <div>
-                <h3 className="font-bold text-slate-900 mb-2">
+                <h3 className="font-bold text-dark mb-2">
                   {language === 'de' ? 'Gibt es versteckte Kosten?' : 'Are there hidden costs?'}
                 </h3>
-                <p className="text-slate-600">
+                <p className="text-gray-400">
                   {language === 'de'
                     ? 'Nein! Was Sie sehen ist was Sie bezahlen. Keine Setup-Gebühren, keine versteckten Kosten.'
                     : 'No! What you see is what you pay. No setup fees, no hidden costs.'}
@@ -382,10 +382,10 @@ export default function Pricing() {
               </div>
 
               <div>
-                <h3 className="font-bold text-slate-900 mb-2">
+                <h3 className="font-bold text-dark mb-2">
                   {language === 'de' ? 'Was passiert beim Downgrade?' : 'What happens when I downgrade?'}
                 </h3>
-                <p className="text-slate-600">
+                <p className="text-gray-400">
                   {language === 'de'
                     ? 'Ihre Daten bleiben erhalten. Sie verlieren nur Zugriff auf Premium-Features.'
                     : 'Your data remains intact. You only lose access to premium features.'}
@@ -393,10 +393,10 @@ export default function Pricing() {
               </div>
 
               <div>
-                <h3 className="font-bold text-slate-900 mb-2">
+                <h3 className="font-bold text-dark mb-2">
                   {language === 'de' ? 'Wie funktioniert die Bezahlung?' : 'How does payment work?'}
                 </h3>
-                <p className="text-slate-600">
+                <p className="text-gray-400">
                   {language === 'de'
                     ? 'Sichere Zahlung per Kreditkarte oder SEPA-Lastschrift. Alle Transaktionen sind verschlüsselt.'
                     : 'Secure payment via credit card or SEPA direct debit. All transactions are encrypted.'}
@@ -407,17 +407,17 @@ export default function Pricing() {
 
           {/* Final CTA */}
           <div className="text-center mt-16">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl font-bold text-dark mb-4">
               {language === 'de' ? 'Noch Fragen?' : 'Still have questions?'}
             </h2>
-            <p className="text-lg text-slate-600 mb-8">
+            <p className="text-lg text-gray-400 mb-8">
               {language === 'de'
                 ? 'Unser Team hilft Ihnen gerne bei der Auswahl des richtigen Plans.'
                 : 'Our team is happy to help you choose the right plan.'}
             </p>
             <button
               onClick={() => navigate('/contact')}
-              className="px-8 py-4 bg-white text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all duration-200 border-2 border-slate-200 shadow-lg"
+              className="px-8 py-4 bg-white text-gray-400 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 border-2 border-gray-100 shadow-lg"
             >
               {language === 'de' ? 'Kontakt aufnehmen' : 'Contact Us'}
             </button>

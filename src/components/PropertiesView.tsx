@@ -73,7 +73,7 @@ export default function PropertiesView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -95,15 +95,15 @@ export default function PropertiesView() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Immobilien</h1>
-          <p className="text-slate-600">Verwalten Sie Ihre Immobilien und deren Details</p>
+          <h1 className="text-3xl font-bold text-dark mb-2">Immobilien</h1>
+          <p className="text-gray-400">Verwalten Sie Ihre Immobilien und deren Details</p>
         </div>
         <button
           onClick={() => {
             setSelectedProperty(null);
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
         >
           <Plus className="w-5 h-5" />
           Immobilie hinzufügen
@@ -111,12 +111,12 @@ export default function PropertiesView() {
       </div>
 
       {properties.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-          <Building2 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+          <Building2 className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-dark mb-2">
             Noch keine Immobilien
           </h3>
-          <p className="text-slate-600 mb-6">
+          <p className="text-gray-400 mb-6">
             Fügen Sie Ihre erste Immobilie hinzu, um mit der Verwaltung zu beginnen.
           </p>
           <button
@@ -124,7 +124,7 @@ export default function PropertiesView() {
               setSelectedProperty(null);
               setShowModal(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-5 h-5" />
             Erste Immobilie hinzufügen
@@ -135,12 +135,12 @@ export default function PropertiesView() {
           {properties.map((property) => (
             <div
               key={property.id}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
             >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Building2 className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-6 h-6 text-primary-blue" />
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -148,32 +148,32 @@ export default function PropertiesView() {
                         setSelectedProperty(property);
                         setShowModal(true);
                       }}
-                      className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                      className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(property.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                      className="p-2 text-gray-300 hover:text-red-600 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                <h3 className="text-lg font-semibold text-slate-900 mb-1">{property.name}</h3>
-                <p className="text-sm text-slate-600 mb-4">{property.address}</p>
+                <h3 className="text-lg font-semibold text-dark mb-1">{property.name}</h3>
+                <p className="text-sm text-gray-400 mb-4">{property.address}</p>
 
                 <div className="space-y-2 mb-4">
                   {property.rooms && (
-                    <div className="text-sm text-slate-600">
+                    <div className="text-sm text-gray-400">
                       {property.rooms} Zimmer
                       {property.size_sqm && ` • ${property.size_sqm} m²`}
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <Euro className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm font-medium text-slate-900">
+                    <Euro className="w-4 h-4 text-gray-300" />
+                    <span className="text-sm font-medium text-dark">
                       {formatCurrency(property.current_value)}
                     </span>
                   </div>
@@ -184,7 +184,7 @@ export default function PropertiesView() {
                     setSelectedProperty(property);
                     setShowDetails(true);
                   }}
-                  className="w-full px-4 py-2 bg-slate-50 text-slate-700 rounded-lg font-medium hover:bg-slate-100 transition-colors"
+                  className="w-full px-4 py-2 bg-gray-50 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                 >
                   Details ansehen
                 </button>

@@ -11,7 +11,7 @@ export function Login() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -29,14 +29,14 @@ export function Login() {
           <div className="flex justify-center">
             <img src="/rentably-logo.svg" alt="Rentab.ly" className="h-16 w-auto" />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-slate-900">
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-dark">
             Willkommen zurück
           </h2>
-          <p className="mt-2 text-center text-sm text-slate-600">
+          <p className="mt-2 text-center text-sm text-gray-400">
             Noch kein Konto?{' '}
             <Link
               to="/signup"
-              className="font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+              className="font-semibold text-primary-blue hover:text-primary-blue inline-flex items-center gap-1"
             >
               Jetzt kostenlos registrieren
               <Sparkles className="w-4 h-4" />
@@ -45,7 +45,7 @@ export function Login() {
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow-xl border border-slate-200 rounded-2xl sm:px-10">
+          <div className="bg-white py-8 px-4 shadow-xl border border-gray-100 rounded-2xl sm:px-10">
             <LoginForm onSuccess={() => window.location.href = '/dashboard'} />
           </div>
         </div>

@@ -87,7 +87,7 @@ export default function DashboardHome() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -95,103 +95,103 @@ export default function DashboardHome() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">{t('dashboard.overview')}</h1>
-        <p className="text-slate-600">{t('dashboard.welcome')}</p>
+        <h1 className="text-3xl font-bold text-dark mb-2">{t('dashboard.overview')}</h1>
+        <p className="text-gray-400">{t('dashboard.welcome')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-primary-blue" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-slate-900 mb-1">{stats.propertiesCount}</div>
-          <div className="text-sm text-slate-600">{t('dashboard.properties')}</div>
+          <div className="text-3xl font-bold text-dark mb-1">{stats.propertiesCount}</div>
+          <div className="text-sm text-gray-400">{t('dashboard.properties')}</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
               <Users className="w-6 h-6 text-emerald-600" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-slate-900 mb-1">{stats.tenantsCount}</div>
-          <div className="text-sm text-slate-600">{t('dashboard.tenants.active')}</div>
+          <div className="text-3xl font-bold text-dark mb-1">{stats.tenantsCount}</div>
+          <div className="text-sm text-gray-400">{t('dashboard.tenants.active')}</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
               <Euro className="w-6 h-6 text-amber-600" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-slate-900 mb-1">
+          <div className="text-3xl font-bold text-dark mb-1">
             {formatCurrency(stats.totalMonthlyRent)}
           </div>
-          <div className="text-sm text-slate-600">{t('dashboard.rent.monthly')}</div>
+          <div className="text-sm text-gray-400">{t('dashboard.rent.monthly')}</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-indigo-600" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-slate-900 mb-1">
+          <div className="text-3xl font-bold text-dark mb-1">
             {stats.averageYield.toFixed(2)}%
           </div>
-          <div className="text-sm text-slate-600">{t('dashboard.yield.average')}</div>
+          <div className="text-sm text-gray-400">{t('dashboard.yield.average')}</div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">{t('dashboard.portfolio.total')}</h3>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-semibold text-dark mb-4">{t('dashboard.portfolio.total')}</h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-slate-600">{t('dashboard.portfolio.value')}</span>
-              <span className="text-lg font-semibold text-slate-900">
+              <span className="text-gray-400">{t('dashboard.portfolio.value')}</span>
+              <span className="text-lg font-semibold text-dark">
                 {formatCurrency(stats.totalPropertyValue)}
               </span>
             </div>
-            <div className="border-t border-slate-100 pt-4">
+            <div className="border-t border-gray-50 pt-4">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-slate-600">{t('dashboard.portfolio.annual')}</span>
-                <span className="text-lg font-semibold text-slate-900">
+                <span className="text-gray-400">{t('dashboard.portfolio.annual')}</span>
+                <span className="text-lg font-semibold text-dark">
                   {formatCurrency(stats.totalMonthlyRent * 12)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Monatlich</span>
-                <span className="text-sm text-slate-600">
+                <span className="text-xs text-gray-300">Monatlich</span>
+                <span className="text-sm text-gray-400">
                   {formatCurrency(stats.totalMonthlyRent)}
                 </span>
               </div>
             </div>
-            <div className="border-t border-slate-100 pt-4">
+            <div className="border-t border-gray-50 pt-4">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-slate-600">Jährliche Ausgaben</span>
-                <span className="text-lg font-semibold text-slate-900">
+                <span className="text-gray-400">Jährliche Ausgaben</span>
+                <span className="text-lg font-semibold text-dark">
                   {formatCurrency(stats.totalMonthlyExpenses * 12)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Monatlich</span>
-                <span className="text-sm text-slate-600">
+                <span className="text-xs text-gray-300">Monatlich</span>
+                <span className="text-sm text-gray-400">
                   {formatCurrency(stats.totalMonthlyExpenses)}
                 </span>
               </div>
             </div>
-            <div className="border-t border-slate-100 pt-4">
+            <div className="border-t border-gray-50 pt-4">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-slate-600 font-medium">Jährlicher Überschuss</span>
+                <span className="text-gray-400 font-medium">Jährlicher Überschuss</span>
                 <span className={`text-lg font-bold ${stats.monthlySurplus >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                   {formatCurrency(stats.monthlySurplus * 12)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Monatlich</span>
+                <span className="text-xs text-gray-300">Monatlich</span>
                 <span className={`text-sm font-semibold ${stats.monthlySurplus >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                   {formatCurrency(stats.monthlySurplus)}
                 </span>
@@ -200,9 +200,9 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+        <div className="bg-gradient-to-br from-blue-500 to-primary-blue rounded-xl shadow-lg p-6 text-white">
           <h3 className="text-lg font-semibold mb-4">{t('dashboard.quickstart')}</h3>
-          <p className="text-blue-100 mb-4">
+          <p className="text-primary-blue/20 mb-4">
             {t('dashboard.quickstart.description')}
           </p>
           <div className="space-y-2 text-sm">

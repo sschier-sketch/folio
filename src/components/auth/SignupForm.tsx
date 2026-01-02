@@ -170,7 +170,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       <div>
         <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-2">
           <div className="flex items-center gap-2">
-            <Gift className="h-4 w-4 text-blue-600" />
+            <Gift className="h-4 w-4 text-primary-blue" />
             Referral Code (optional)
           </div>
         </label>
@@ -183,7 +183,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           placeholder="Enter referral code"
         />
         {referralCode && (
-          <p className="mt-1 text-xs text-blue-600">
+          <p className="mt-1 text-xs text-primary-blue">
             You'll receive 20% off your first year!
           </p>
         )}

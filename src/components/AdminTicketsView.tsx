@@ -226,9 +226,9 @@ export function AdminTicketsView() {
 
   const getStatusBadge = (status: string) => {
     const badges = {
-      open: { bg: 'bg-blue-100', text: 'text-blue-800', icon: Clock, label: 'Offen' },
+      open: { bg: 'bg-primary-blue/10', text: 'text-primary-blue', icon: Clock, label: 'Offen' },
       answered: { bg: 'bg-emerald-100', text: 'text-emerald-800', icon: CheckCircle, label: 'Beantwortet' },
-      closed: { bg: 'bg-slate-100', text: 'text-slate-800', icon: XCircle, label: 'Geschlossen' },
+      closed: { bg: 'bg-gray-50', text: 'text-dark', icon: XCircle, label: 'Geschlossen' },
     };
     const badge = badges[status as keyof typeof badges] || badges.open;
     const Icon = badge.icon;
@@ -242,16 +242,16 @@ export function AdminTicketsView() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
-      <div className="lg:col-span-1 bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-200">
-          <h2 className="text-lg font-bold text-slate-900 mb-3">Kontakt-Tickets</h2>
+      <div className="lg:col-span-1 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-dark mb-3">Kontakt-Tickets</h2>
           <div className="flex gap-2">
             <button
               onClick={() => setStatusFilter('all')}
               className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 statusFilter === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-primary-blue text-white'
+                  : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
               }`}
             >
               Alle ({tickets.length})
@@ -260,8 +260,8 @@ export function AdminTicketsView() {
               onClick={() => setStatusFilter('open')}
               className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 statusFilter === 'open'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-primary-blue text-white'
+                  : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
               }`}
             >
               Offen
@@ -270,8 +270,8 @@ export function AdminTicketsView() {
               onClick={() => setStatusFilter('answered')}
               className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 statusFilter === 'answered'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-primary-blue text-white'
+                  : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
               }`}
             >
               Beantwortet
@@ -280,8 +280,8 @@ export function AdminTicketsView() {
               onClick={() => setStatusFilter('closed')}
               className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 statusFilter === 'closed'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-primary-blue text-white'
+                  : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
               }`}
             >
               Geschlossen
@@ -292,11 +292,11 @@ export function AdminTicketsView() {
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center p-8">
-              <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
             </div>
           ) : tickets.length === 0 ? (
-            <div className="p-6 text-center text-slate-500">
-              <MessageSquare className="w-12 h-12 mx-auto mb-2 text-slate-300" />
+            <div className="p-6 text-center text-gray-300">
+              <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-200" />
               <p>Keine Tickets gefunden</p>
             </div>
           ) : (
@@ -305,17 +305,17 @@ export function AdminTicketsView() {
                 <button
                   key={ticket.id}
                   onClick={() => handleSelectTicket(ticket)}
-                  className={`w-full p-4 text-left hover:bg-slate-50 transition-colors ${
-                    selectedTicket?.id === ticket.id ? 'bg-blue-50' : ''
+                  className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
+                    selectedTicket?.id === ticket.id ? 'bg-primary-blue/5' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="text-xs text-slate-500">#{ticket.ticket_number}</span>
+                    <span className="text-xs text-gray-300">#{ticket.ticket_number}</span>
                     {getStatusBadge(ticket.status)}
                   </div>
-                  <h3 className="font-semibold text-slate-900 mb-1 line-clamp-1">{ticket.subject}</h3>
-                  <p className="text-sm text-slate-600 mb-1">{ticket.contact_name}</p>
-                  <p className="text-xs text-slate-500">{new Date(ticket.created_at).toLocaleString('de-DE')}</p>
+                  <h3 className="font-semibold text-dark mb-1 line-clamp-1">{ticket.subject}</h3>
+                  <p className="text-sm text-gray-400 mb-1">{ticket.contact_name}</p>
+                  <p className="text-xs text-gray-300">{new Date(ticket.created_at).toLocaleString('de-DE')}</p>
                 </button>
               ))}
             </div>
@@ -323,23 +323,23 @@ export function AdminTicketsView() {
         </div>
       </div>
 
-      <div className="lg:col-span-2 bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden flex flex-col">
+      <div className="lg:col-span-2 bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col">
         {selectedTicket ? (
           <>
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-gray-100">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h2 className="text-xl font-bold text-slate-900">{selectedTicket.subject}</h2>
+                    <h2 className="text-xl font-bold text-dark">{selectedTicket.subject}</h2>
                     {getStatusBadge(selectedTicket.status)}
                   </div>
-                  <p className="text-sm text-slate-600">Ticket #{selectedTicket.ticket_number}</p>
+                  <p className="text-sm text-gray-400">Ticket #{selectedTicket.ticket_number}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <select
                     value={selectedTicket.status}
                     onChange={(e) => handleChangeStatus(e.target.value)}
-                    className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
                     <option value="open">Offen</option>
                     <option value="answered">Beantwortet</option>
@@ -349,21 +349,21 @@ export function AdminTicketsView() {
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-slate-500">Von:</p>
-                  <p className="font-medium text-slate-900">{selectedTicket.contact_name}</p>
+                  <p className="text-gray-300">Von:</p>
+                  <p className="font-medium text-dark">{selectedTicket.contact_name}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">E-Mail:</p>
-                  <p className="font-medium text-slate-900">{selectedTicket.contact_email}</p>
+                  <p className="text-gray-300">E-Mail:</p>
+                  <p className="font-medium text-dark">{selectedTicket.contact_email}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Erstellt:</p>
-                  <p className="font-medium text-slate-900">{new Date(selectedTicket.created_at).toLocaleString('de-DE')}</p>
+                  <p className="text-gray-300">Erstellt:</p>
+                  <p className="font-medium text-dark">{new Date(selectedTicket.created_at).toLocaleString('de-DE')}</p>
                 </div>
                 {selectedTicket.answered_at && (
                   <div>
-                    <p className="text-slate-500">Beantwortet:</p>
-                    <p className="font-medium text-slate-900">{new Date(selectedTicket.answered_at).toLocaleString('de-DE')}</p>
+                    <p className="text-gray-300">Beantwortet:</p>
+                    <p className="font-medium text-dark">{new Date(selectedTicket.answered_at).toLocaleString('de-DE')}</p>
                   </div>
                 )}
               </div>
@@ -376,7 +376,7 @@ export function AdminTicketsView() {
                   className={`flex gap-3 ${msg.sender_type === 'admin' ? 'flex-row-reverse' : ''}`}
                 >
                   <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                    msg.sender_type === 'admin' ? 'bg-blue-600' : 'bg-slate-600'
+                    msg.sender_type === 'admin' ? 'bg-primary-blue' : 'bg-gray-400'
                   }`}>
                     {msg.sender_type === 'admin' ? (
                       <Mail className="w-5 h-5 text-white" />
@@ -386,13 +386,13 @@ export function AdminTicketsView() {
                   </div>
                   <div className={`flex-1 ${msg.sender_type === 'admin' ? 'text-right' : ''}`}>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-slate-900">{msg.sender_name}</span>
-                      <span className="text-xs text-slate-500">{new Date(msg.created_at).toLocaleString('de-DE')}</span>
+                      <span className="font-medium text-dark">{msg.sender_name}</span>
+                      <span className="text-xs text-gray-300">{new Date(msg.created_at).toLocaleString('de-DE')}</span>
                     </div>
                     <div className={`inline-block max-w-[80%] p-3 rounded-lg ${
                       msg.sender_type === 'admin'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-slate-100 text-slate-900'
+                        ? 'bg-primary-blue text-white'
+                        : 'bg-gray-50 text-dark'
                     }`}>
                       <p className="whitespace-pre-wrap">{msg.message}</p>
                     </div>
@@ -402,16 +402,16 @@ export function AdminTicketsView() {
             </div>
 
             {selectedTicket.status !== 'closed' && (
-              <div className="p-6 border-t border-slate-200">
+              <div className="p-6 border-t border-gray-100">
                 <textarea
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
                   placeholder="Antwort eingeben..."
                   rows={3}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none mb-3"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none mb-3"
                 />
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-sm text-slate-600">
+                  <label className="flex items-center gap-2 text-sm text-gray-400">
                     <input
                       type="checkbox"
                       checked={closeAfterReply}
@@ -423,7 +423,7 @@ export function AdminTicketsView() {
                   <button
                     onClick={handleSendReply}
                     disabled={!replyMessage.trim() || sending}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {sending ? (
                       <>
@@ -442,9 +442,9 @@ export function AdminTicketsView() {
             )}
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-slate-500">
+          <div className="flex-1 flex items-center justify-center text-gray-300">
             <div className="text-center">
-              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-200" />
               <p>Wählen Sie ein Ticket aus der Liste</p>
             </div>
           </div>

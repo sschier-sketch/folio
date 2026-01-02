@@ -84,10 +84,10 @@ export default function Contact() {
       <div className="flex-1 py-16 px-4 sm:px-6 lg:px-8 mt-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-slate-900 mb-4">
+            <h1 className="text-4xl font-bold text-dark mb-4">
               {language === 'de' ? 'Kontakt' : 'Contact'}
             </h1>
-            <p className="text-lg text-slate-600">
+            <p className="text-lg text-gray-400">
               {language === 'de'
                 ? 'Wir freuen uns auf Ihre Nachricht und helfen Ihnen gerne weiter.'
                 : 'We look forward to your message and are happy to help you.'}
@@ -95,43 +95,43 @@ export default function Contact() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-primary-blue" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-900">E-Mail</h3>
-                  <p className="text-sm text-slate-600">
+                  <h3 className="font-semibold text-dark">E-Mail</h3>
+                  <p className="text-sm text-gray-400">
                     {language === 'de' ? 'Schreiben Sie uns eine E-Mail' : 'Send us an email'}
                   </p>
                 </div>
               </div>
               <a
                 href="mailto:hallo@rentab.ly"
-                className="text-blue-600 hover:text-blue-700 font-medium"
+                className="text-primary-blue hover:text-primary-blue font-medium"
               >
                 hallo@rentab.ly
               </a>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <MessageSquare className="w-6 h-6 text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-900">
+                  <h3 className="font-semibold text-dark">
                     {language === 'de' ? 'Support' : 'Support'}
                   </h3>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-gray-400">
                     {language === 'de'
                       ? 'Wir helfen Ihnen bei allen Fragen'
                       : 'We help you with all questions'}
                   </p>
                 </div>
               </div>
-              <p className="text-slate-700">
+              <p className="text-gray-400">
                 {language === 'de'
                   ? 'Montag bis Freitag, 9:00 - 18:00 Uhr'
                   : 'Monday to Friday, 9:00 AM - 6:00 PM'}
@@ -139,8 +139,8 @@ export default function Contact() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            <h2 className="text-2xl font-bold text-dark mb-6">
               {language === 'de' ? 'Kontaktformular' : 'Contact Form'}
             </h2>
 
@@ -161,58 +161,58 @@ export default function Contact() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     {language === 'de' ? 'Name' : 'Name'}
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     E-Mail <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     required
                     placeholder={language === 'de' ? 'ihre.email@beispiel.de' : 'your.email@example.com'}
                   />
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-gray-300 mt-1">
                     {language === 'de' ? 'Pflichtfeld - damit wir Ihnen antworten können' : 'Required field - so we can respond to you'}
                   </p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   {language === 'de' ? 'Betreff' : 'Subject'}
                 </label>
                 <input
                   type="text"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   {language === 'de' ? 'Nachricht' : 'Message'}
                 </label>
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows={6}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                   required
                 />
               </div>
@@ -221,7 +221,7 @@ export default function Contact() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <>

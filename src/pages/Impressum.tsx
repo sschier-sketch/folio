@@ -12,62 +12,62 @@ export default function Impressum() {
       <div className="flex-1 py-16 px-4 sm:px-6 lg:px-8 mt-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-slate-900 mb-4">
+            <h1 className="text-4xl font-bold text-dark mb-4">
               {language === 'de' ? 'Impressum' : 'Legal Notice'}
             </h1>
-            <p className="text-lg text-slate-600">
+            <p className="text-lg text-gray-400">
               {language === 'de'
                 ? 'Angaben gemäß § 5 TMG'
                 : 'Information according to § 5 TMG'}
             </p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 space-y-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 space-y-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-primary-blue" />
                 </div>
-                <h2 className="text-xl font-semibold text-slate-900">
+                <h2 className="text-xl font-semibold text-dark">
                   {language === 'de' ? 'Unternehmen' : 'Company'}
                 </h2>
               </div>
-              <div className="pl-15 space-y-2 text-slate-700">
+              <div className="pl-15 space-y-2 text-gray-400">
                 <p className="font-semibold text-lg">sober care GmbH</p>
                 <p>Pappelallee 78/79</p>
                 <p>10437 Berlin</p>
               </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-8">
+            <div className="border-t border-gray-100 pt-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <Mail className="w-6 h-6 text-emerald-600" />
                 </div>
-                <h2 className="text-xl font-semibold text-slate-900">
+                <h2 className="text-xl font-semibold text-dark">
                   {language === 'de' ? 'Kontakt' : 'Contact'}
                 </h2>
               </div>
-              <div className="pl-15 space-y-2 text-slate-700">
+              <div className="pl-15 space-y-2 text-gray-400">
                 <p>
                   <span className="font-medium">E-Mail:</span>{' '}
-                  <a href="mailto:hallo@rentab.ly" className="text-blue-600 hover:text-blue-700">
+                  <a href="mailto:hallo@rentab.ly" className="text-primary-blue hover:text-primary-blue">
                     hallo@rentab.ly
                   </a>
                 </p>
               </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-8">
+            <div className="border-t border-gray-100 pt-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                   <Scale className="w-6 h-6 text-purple-600" />
                 </div>
-                <h2 className="text-xl font-semibold text-slate-900">
+                <h2 className="text-xl font-semibold text-dark">
                   {language === 'de' ? 'Rechtliche Angaben' : 'Legal Information'}
                 </h2>
               </div>
-              <div className="pl-15 space-y-3 text-slate-700">
+              <div className="pl-15 space-y-3 text-gray-400">
                 <p>
                   <span className="font-medium">
                     {language === 'de' ? 'Geschäftsführer:' : 'Managing Directors:'}
@@ -97,23 +97,23 @@ export default function Impressum() {
               </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-3">
+            <div className="border-t border-gray-100 pt-8">
+              <h3 className="text-lg font-semibold text-dark mb-3">
                 {language === 'de'
                   ? 'Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:'
                   : 'Responsible for content according to § 55 Abs. 2 RStV:'}
               </h3>
-              <p className="text-slate-700">Simon Schier, Philipp Roth</p>
-              <p className="text-slate-700 mt-1">Pappelallee 78/79, 10437 Berlin</p>
+              <p className="text-gray-400">Simon Schier, Philipp Roth</p>
+              <p className="text-gray-400 mt-1">Pappelallee 78/79, 10437 Berlin</p>
             </div>
 
-            <div className="border-t border-slate-200 pt-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-3">
+            <div className="border-t border-gray-100 pt-8">
+              <h3 className="text-lg font-semibold text-dark mb-3">
                 {language === 'de' ? 'Haftungsausschluss' : 'Disclaimer'}
               </h3>
-              <div className="space-y-4 text-sm text-slate-600">
+              <div className="space-y-4 text-sm text-gray-400">
                 <div>
-                  <h4 className="font-medium text-slate-900 mb-2">
+                  <h4 className="font-medium text-dark mb-2">
                     {language === 'de' ? 'Haftung für Inhalte' : 'Liability for Content'}
                   </h4>
                   <p>
@@ -123,7 +123,7 @@ export default function Impressum() {
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-slate-900 mb-2">
+                  <h4 className="font-medium text-dark mb-2">
                     {language === 'de' ? 'Haftung für Links' : 'Liability for Links'}
                   </h4>
                   <p>
@@ -133,7 +133,7 @@ export default function Impressum() {
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-slate-900 mb-2">
+                  <h4 className="font-medium text-dark mb-2">
                     {language === 'de' ? 'Urheberrecht' : 'Copyright'}
                   </h4>
                   <p>

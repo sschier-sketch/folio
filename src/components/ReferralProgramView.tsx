@@ -94,7 +94,7 @@ export default function ReferralProgramView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -102,12 +102,12 @@ export default function ReferralProgramView() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Empfehlungsprogramm</h1>
-        <p className="text-slate-600">Empfehlen Sie Rentab.ly und verdienen Sie Belohnungen</p>
+        <h1 className="text-3xl font-bold text-dark mb-2">Empfehlungsprogramm</h1>
+        <p className="text-gray-400">Empfehlen Sie Rentab.ly und verdienen Sie Belohnungen</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-8 text-white">
+        <div className="lg:col-span-2 bg-gradient-to-br from-blue-500 to-primary-blue rounded-2xl shadow-xl p-8 text-white">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
               <Gift className="w-6 h-6" />
@@ -118,7 +118,7 @@ export default function ReferralProgramView() {
           <div className="bg-white/20 backdrop-blur rounded-xl p-6 mb-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1">
-                <p className="text-blue-100 text-sm mb-2">Ihr Empfehlungscode:</p>
+                <p className="text-primary-blue/20 text-sm mb-2">Ihr Empfehlungscode:</p>
                 <p className="text-3xl font-bold font-mono tracking-wider">{referralCode}</p>
               </div>
               <button
@@ -141,7 +141,7 @@ export default function ReferralProgramView() {
           </div>
 
           <div className="bg-white/20 backdrop-blur rounded-xl p-6">
-            <p className="text-blue-100 text-sm mb-2">Empfehlungslink:</p>
+            <p className="text-primary-blue/20 text-sm mb-2">Empfehlungslink:</p>
             <div className="flex items-center gap-3">
               <p className="flex-1 text-sm font-mono bg-white/10 px-4 py-2 rounded-lg break-all">
                 {window.location.origin}/?ref={referralCode}
@@ -158,69 +158,69 @@ export default function ReferralProgramView() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                 <Users className="w-6 h-6 text-emerald-600" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-slate-900 mb-1">{stats.totalReferrals}</div>
-            <div className="text-sm text-slate-600">Gesamt Empfehlungen</div>
+            <div className="text-3xl font-bold text-dark mb-1">{stats.totalReferrals}</div>
+            <div className="text-sm text-gray-400">Gesamt Empfehlungen</div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Award className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                <Award className="w-6 h-6 text-primary-blue" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-slate-900 mb-1">{stats.rewardsEarned}</div>
-            <div className="text-sm text-slate-600">Verdiente Belohnungen</div>
+            <div className="text-3xl font-bold text-dark mb-1">{stats.rewardsEarned}</div>
+            <div className="text-sm text-gray-400">Verdiente Belohnungen</div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-emerald-600" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-900">So funktioniert's</h3>
+            <h3 className="text-lg font-semibold text-dark">So funktioniert's</h3>
           </div>
 
           <div className="space-y-4">
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary-blue/10 rounded-full flex items-center justify-center text-primary-blue font-semibold text-sm">
                 1
               </div>
               <div>
-                <h4 className="font-semibold text-slate-900 mb-1">Teilen Sie Ihren Code</h4>
-                <p className="text-sm text-slate-600">
+                <h4 className="font-semibold text-dark mb-1">Teilen Sie Ihren Code</h4>
+                <p className="text-sm text-gray-400">
                   Teilen Sie Ihren persönlichen Empfehlungscode oder Link mit Freunden und Kollegen.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary-blue/10 rounded-full flex items-center justify-center text-primary-blue font-semibold text-sm">
                 2
               </div>
               <div>
-                <h4 className="font-semibold text-slate-900 mb-1">Freunde registrieren sich</h4>
-                <p className="text-sm text-slate-600">
+                <h4 className="font-semibold text-dark mb-1">Freunde registrieren sich</h4>
+                <p className="text-sm text-gray-400">
                   Wenn sich Ihre Freunde mit Ihrem Code registrieren, erhalten beide einen Bonus.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary-blue/10 rounded-full flex items-center justify-center text-primary-blue font-semibold text-sm">
                 3
               </div>
               <div>
-                <h4 className="font-semibold text-slate-900 mb-1">Belohnungen erhalten</h4>
-                <p className="text-sm text-slate-600">
+                <h4 className="font-semibold text-dark mb-1">Belohnungen erhalten</h4>
+                <p className="text-sm text-gray-400">
                   Sobald Ihr Freund aktiv wird, erhalten Sie beide Ihre Belohnung.
                 </p>
               </div>
@@ -272,32 +272,32 @@ export default function ReferralProgramView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900">Ihre Empfehlungen</h3>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-dark">Ihre Empfehlungen</h3>
         </div>
 
         {referrals.length === 0 ? (
           <div className="p-12 text-center">
-            <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-600 text-lg mb-2">Noch keine Empfehlungen</p>
-            <p className="text-slate-500 text-sm">
+            <Users className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+            <p className="text-gray-400 text-lg mb-2">Noch keine Empfehlungen</p>
+            <p className="text-gray-300 text-sm">
               Teilen Sie Ihren Empfehlungscode, um Ihre ersten Belohnungen zu verdienen.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Datum</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Belohnung</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">Status</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">Datum</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">Belohnung</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {referrals.map((referral) => (
-                  <tr key={referral.id} className="hover:bg-slate-50">
+                  <tr key={referral.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm">
                       {referral.status === 'completed' ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-medium">
@@ -310,7 +310,7 @@ export default function ReferralProgramView() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
+                    <td className="px-6 py-4 text-sm text-gray-400">
                       {new Date(referral.created_at).toLocaleDateString('de-DE')}
                     </td>
                     <td className="px-6 py-4 text-sm">
@@ -320,7 +320,7 @@ export default function ReferralProgramView() {
                           Verdient
                         </span>
                       ) : (
-                        <span className="text-slate-400">Ausstehend</span>
+                        <span className="text-gray-300">Ausstehend</span>
                       )}
                     </td>
                   </tr>
@@ -331,7 +331,7 @@ export default function ReferralProgramView() {
         )}
       </div>
 
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-900">
           <span className="font-semibold">Hinweis:</span> Das Empfehlungsprogramm befindet sich derzeit in der
           Beta-Phase. Die finalen Belohnungen und Konditionen werden vor dem offiziellen Launch bekanntgegeben.

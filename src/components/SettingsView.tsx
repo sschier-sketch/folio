@@ -174,9 +174,9 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
 
   const getRoleBadge = (role: string) => {
     const roleMap = {
-      admin: { label: t('settings.users.admin'), color: 'bg-blue-100 text-blue-700' },
+      admin: { label: t('settings.users.admin'), color: 'bg-primary-blue/10 text-primary-blue' },
       member: { label: t('settings.users.member'), color: 'bg-emerald-100 text-emerald-700' },
-      viewer: { label: t('settings.users.viewer'), color: 'bg-slate-100 text-slate-700' },
+      viewer: { label: t('settings.users.viewer'), color: 'bg-gray-50 text-gray-400' },
     };
 
     const roleInfo = roleMap[role as keyof typeof roleMap] || roleMap.member;
@@ -191,8 +191,8 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
 
   const getPlanBadge = (plan: string) => {
     const planMap = {
-      free: { label: t('settings.plan.free'), color: 'bg-slate-100 text-slate-700' },
-      pro: { label: t('settings.plan.pro'), color: 'bg-blue-100 text-blue-700' },
+      free: { label: t('settings.plan.free'), color: 'bg-gray-50 text-gray-400' },
+      pro: { label: t('settings.plan.pro'), color: 'bg-primary-blue/10 text-primary-blue' },
       enterprise: { label: t('settings.plan.enterprise'), color: 'bg-purple-100 text-purple-700' },
     };
 
@@ -208,7 +208,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
   const getFeedbackStatusBadge = (status: string) => {
     const statusMap = {
       pending: { label: t('settings.feedback.status.pending'), color: 'bg-amber-100 text-amber-700' },
-      reviewed: { label: t('settings.feedback.status.reviewed'), color: 'bg-blue-100 text-blue-700' },
+      reviewed: { label: t('settings.feedback.status.reviewed'), color: 'bg-primary-blue/10 text-primary-blue' },
       planned: { label: t('settings.feedback.status.planned'), color: 'bg-purple-100 text-purple-700' },
       implemented: { label: t('settings.feedback.status.implemented'), color: 'bg-emerald-100 text-emerald-700' },
     };
@@ -231,15 +231,15 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
+        <h1 className="text-3xl font-bold text-dark mb-2">
           {t('settings.title')}
         </h1>
-        <p className="text-slate-600">
+        <p className="text-gray-400">
           {language === 'de' ? 'Verwalten Sie Ihre Einstellungen und Präferenzen.' : 'Manage your settings and preferences.'}
         </p>
       </div>
 
-      <div className="mb-6 border-b border-slate-200">
+      <div className="mb-6 border-b border-gray-100">
         <nav className="flex gap-1">
           {tabs.filter(tab => tab.show !== false).map((tab) => (
             <button
@@ -247,8 +247,8 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-6 py-3 font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                  ? 'border-primary-blue text-primary-blue'
+                  : 'border-transparent text-gray-400 hover:text-dark hover:border-gray-200'
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -259,28 +259,28 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
       </div>
 
       {activeTab === 'profile' && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-6">{t('settings.profile')}</h3>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-semibold text-dark mb-6">{t('settings.profile')}</h3>
 
           <div className="space-y-4 max-w-2xl">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 {t('settings.email')}
               </label>
               <input
                 type="email"
                 value={user?.email || ''}
                 disabled
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-300"
               />
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-sm text-gray-300 mt-1">
                 {language === 'de' ? 'Ihre E-Mail-Adresse kann derzeit nicht geändert werden.' : 'Your email address cannot be changed currently.'}
               </p>
             </div>
 
             {userSettings && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   {t('settings.users.role')}
                 </label>
                 <div>
@@ -290,7 +290,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4" />
                   {t('settings.language')}
@@ -301,8 +301,8 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                   onClick={() => setLanguage('de')}
                   className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
                     language === 'de'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                      ? 'bg-primary-blue text-white'
+                      : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'
                   }`}
                 >
                   Deutsch
@@ -311,8 +311,8 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                   onClick={() => setLanguage('en')}
                   className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
                     language === 'en'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                      ? 'bg-primary-blue text-white'
+                      : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'
                   }`}
                 >
                   English
@@ -330,11 +330,11 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
               <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
                 <Gift className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">
+              <h3 className="text-lg font-semibold text-dark">
                 {language === 'de' ? 'Empfehlungscode einlösen' : 'Redeem Referral Code'}
               </h3>
             </div>
-            <p className="text-slate-600 text-sm mb-4">
+            <p className="text-gray-400 text-sm mb-4">
               {language === 'de'
                 ? 'Haben Sie einen Empfehlungscode? Lösen Sie ihn ein und erhalten Sie 20% Rabatt auf Ihr erstes Jahr!'
                 : 'Have a referral code? Redeem it and get 20% off your first year!'}
@@ -401,16 +401,16 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
             </form>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-6">{t('settings.plan')}</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-semibold text-dark mb-6">{t('settings.plan')}</h3>
 
             <div className="mb-6">
-              <p className="text-slate-600 mb-4">{language === 'de' ? 'Ihr aktueller Tarif:' : 'Your current plan:'}</p>
+              <p className="text-gray-400 mb-4">{language === 'de' ? 'Ihr aktueller Tarif:' : 'Your current plan:'}</p>
               <SubscriptionStatus />
             </div>
 
             <div className="mt-8">
-              <h4 className="text-md font-semibold text-slate-900 mb-4">
+              <h4 className="text-md font-semibold text-dark mb-4">
                 {language === 'de' ? 'Verfügbare Tarife' : 'Available Plans'}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -425,8 +425,8 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-6">{t('settings.billing.company')}</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-semibold text-dark mb-6">{t('settings.billing.company')}</h3>
 
             {successMessage && (
               <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm">
@@ -436,7 +436,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
 
             <div className="space-y-4 max-w-2xl">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   {t('settings.billing.name')}
                 </label>
                 <input
@@ -445,12 +445,12 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                   onChange={(e) => setBillingInfo({ ...billingInfo!, company_name: e.target.value })}
                   onBlur={() => handleUpdateBillingInfo({ company_name: billingInfo?.company_name })}
                   placeholder={language === 'de' ? 'Musterfirma GmbH' : 'Company Name Ltd.'}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   {t('settings.billing.vat')}
                 </label>
                 <input
@@ -459,12 +459,12 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                   onChange={(e) => setBillingInfo({ ...billingInfo!, vat_id: e.target.value })}
                   onBlur={() => handleUpdateBillingInfo({ vat_id: billingInfo?.vat_id })}
                   placeholder="DE123456789"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   {t('settings.billing.address')}
                 </label>
                 <textarea
@@ -473,17 +473,17 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                   onBlur={() => handleUpdateBillingInfo({ billing_address: billingInfo?.billing_address })}
                   placeholder={language === 'de' ? 'Musterstraße 123\n12345 Musterstadt\nDeutschland' : '123 Example St\n12345 Example City\nGermany'}
                   rows={4}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   {t('settings.billing.payment')}
                 </label>
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-slate-400" />
-                  <span className="text-slate-600">
+                  <CreditCard className="w-5 h-5 text-gray-300" />
+                  <span className="text-gray-400">
                     {billingInfo?.payment_method === 'none' || !billingInfo?.payment_method
                       ? (language === 'de' ? 'Noch keine Zahlungsart hinterlegt' : 'No payment method added yet')
                       : billingInfo?.payment_method}
@@ -497,10 +497,10 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
 
       {activeTab === 'feedback' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">{t('settings.feedback.title')}</h3>
-              <p className="text-slate-600 text-sm">{t('settings.feedback.description')}</p>
+              <h3 className="text-lg font-semibold text-dark mb-2">{t('settings.feedback.title')}</h3>
+              <p className="text-gray-400 text-sm">{t('settings.feedback.description')}</p>
             </div>
 
             {successMessage && (
@@ -517,7 +517,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
 
             <form onSubmit={handleSubmitFeedback} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   {t('settings.feedback.idea')}
                 </label>
                 <textarea
@@ -525,13 +525,13 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                   onChange={(e) => setNewFeedback(e.target.value)}
                   placeholder={t('settings.feedback.idea.placeholder')}
                   rows={5}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   {t('settings.feedback.willing_to_pay')}
                 </label>
                 <div className="flex gap-4">
@@ -541,9 +541,9 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                       name="willingToPay"
                       checked={willingToPay === true}
                       onChange={() => setWillingToPay(true)}
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 text-primary-blue focus:ring-blue-500"
                     />
-                    <span className="text-sm text-slate-700">{t('settings.feedback.willing_to_pay.yes')}</span>
+                    <span className="text-sm text-gray-400">{t('settings.feedback.willing_to_pay.yes')}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -551,16 +551,16 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                       name="willingToPay"
                       checked={willingToPay === false}
                       onChange={() => setWillingToPay(false)}
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 text-primary-blue focus:ring-blue-500"
                     />
-                    <span className="text-sm text-slate-700">{t('settings.feedback.willing_to_pay.no')}</span>
+                    <span className="text-sm text-gray-400">{t('settings.feedback.willing_to_pay.no')}</span>
                   </label>
                 </div>
               </div>
 
               {willingToPay && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     {t('settings.feedback.amount')}
                   </label>
                   <input
@@ -568,7 +568,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
                     placeholder={t('settings.feedback.amount.placeholder')}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
               )}
@@ -577,7 +577,7 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                   {loading ? (language === 'de' ? 'Senden...' : 'Sending...') : t('settings.feedback.submit')}
@@ -586,18 +586,18 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
             </form>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-900">{t('settings.feedback.history')}</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-dark">{t('settings.feedback.history')}</h3>
             </div>
 
             {feedbackList.length === 0 ? (
               <div className="p-12 text-center">
-                <MessageCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-600 text-lg mb-2">
+                <MessageCircle className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                <p className="text-gray-400 text-lg mb-2">
                   {language === 'de' ? 'Noch kein Feedback eingereicht' : 'No feedback submitted yet'}
                 </p>
-                <p className="text-slate-500 text-sm">
+                <p className="text-gray-300 text-sm">
                   {language === 'de'
                     ? 'Teilen Sie uns Ihre Ideen und Vorschläge mit.'
                     : 'Share your ideas and suggestions with us.'}
@@ -606,16 +606,16 @@ export default function SettingsView({ activeTab: initialTab = 'profile' }: Sett
             ) : (
               <div className="divide-y divide-slate-200">
                 {feedbackList.map((feedback) => (
-                  <div key={feedback.id} className="p-6 hover:bg-slate-50 transition-colors">
+                  <div key={feedback.id} className="p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <p className="text-slate-900 whitespace-pre-wrap">{feedback.feedback_text}</p>
+                        <p className="text-dark whitespace-pre-wrap">{feedback.feedback_text}</p>
                       </div>
                       <div className="ml-4">
                         {getFeedbackStatusBadge(feedback.status)}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-slate-500">
+                    <div className="flex items-center gap-4 text-sm text-gray-300">
                       <span>{new Date(feedback.created_at).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}</span>
                       {feedback.willing_to_pay && feedback.payment_amount && (
                         <span className="flex items-center gap-1">

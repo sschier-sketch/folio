@@ -160,9 +160,9 @@ export default function FeedbackListView() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'implemented': return 'text-emerald-600 bg-emerald-50';
-      case 'planned': return 'text-blue-600 bg-blue-50';
+      case 'planned': return 'text-primary-blue bg-primary-blue/5';
       case 'reviewed': return 'text-amber-600 bg-amber-50';
-      default: return 'text-slate-600 bg-slate-50';
+      default: return 'text-gray-400 bg-gray-50';
     }
   };
 
@@ -173,7 +173,7 @@ export default function FeedbackListView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -181,12 +181,12 @@ export default function FeedbackListView() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">{t('feedback.title')}</h1>
-        <p className="text-slate-600">{t('feedback.description')}</p>
+        <h1 className="text-3xl font-bold text-dark mb-2">{t('feedback.title')}</h1>
+        <p className="text-gray-400">{t('feedback.description')}</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-slate-900 mb-4">{t('feedback.submit')}</h2>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-dark mb-4">{t('feedback.submit')}</h2>
 
         {successMessage && (
           <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm">
@@ -196,13 +196,13 @@ export default function FeedbackListView() {
 
         <form onSubmit={handleSubmitFeedback} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-gray-400 mb-2">
               {t('settings.feedback.idea')}
             </label>
             <textarea
               value={newFeedback}
               onChange={(e) => setNewFeedback(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
               rows={4}
               placeholder={t('settings.feedback.idea.placeholder')}
               required
@@ -215,9 +215,9 @@ export default function FeedbackListView() {
                 type="checkbox"
                 checked={willingToPay}
                 onChange={(e) => setWillingToPay(e.target.checked)}
-                className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-2 focus:ring-blue-500"
+                className="w-5 h-5 text-primary-blue rounded border-gray-200 focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-sm font-medium text-slate-700">
+              <span className="text-sm font-medium text-gray-400">
                 {t('settings.feedback.willing_to_pay')}
               </span>
             </label>
@@ -227,7 +227,7 @@ export default function FeedbackListView() {
                 type="text"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
-                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 placeholder={t('settings.feedback.amount.placeholder')}
               />
             )}
@@ -236,7 +236,7 @@ export default function FeedbackListView() {
           <button
             type="submit"
             disabled={submitting || !newFeedback.trim()}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="w-full py-3 bg-primary-blue text-white rounded-lg hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {submitting
               ? (language === 'de' ? 'Wird gesendet...' : 'Submitting...')
@@ -250,8 +250,8 @@ export default function FeedbackListView() {
           onClick={() => setFilter('all')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
             filter === 'all'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50'
           }`}
         >
           <Filter className="w-4 h-4" />
@@ -261,8 +261,8 @@ export default function FeedbackListView() {
           onClick={() => setFilter('top')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             filter === 'top'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50'
           }`}
         >
           {t('feedback.filter.top')}
@@ -271,8 +271,8 @@ export default function FeedbackListView() {
           onClick={() => setFilter('new')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             filter === 'new'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50'
           }`}
         >
           {t('feedback.filter.new')}
@@ -281,8 +281,8 @@ export default function FeedbackListView() {
           onClick={() => setFilter('mine')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             filter === 'mine'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+              ? 'bg-primary-blue text-white'
+              : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50'
           }`}
         >
           {t('feedback.filter.mine')}
@@ -290,18 +290,18 @@ export default function FeedbackListView() {
       </div>
 
       {feedbackList.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+          <h3 className="text-xl font-semibold text-dark mb-2">
             {t('feedback.no_feedback')}
           </h3>
-          <p className="text-slate-600">{t('feedback.submit_first')}</p>
+          <p className="text-gray-400">{t('feedback.submit_first')}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {feedbackList.map((feedback) => (
             <div
               key={feedback.id}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex gap-4">
                 <div className="flex flex-col items-center gap-2 flex-shrink-0">
@@ -310,23 +310,23 @@ export default function FeedbackListView() {
                     className={`p-2 rounded-lg transition-colors ${
                       feedback.user_vote === 'up'
                         ? 'bg-emerald-100 text-emerald-600'
-                        : 'bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600'
+                        : 'bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600'
                     }`}
                   >
                     <ThumbsUp className="w-5 h-5" />
                   </button>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-slate-900">
+                    <div className="text-2xl font-bold text-dark">
                       {feedback.upvotes - feedback.downvotes}
                     </div>
-                    <div className="text-xs text-slate-500">{t('feedback.votes')}</div>
+                    <div className="text-xs text-gray-300">{t('feedback.votes')}</div>
                   </div>
                   <button
                     onClick={() => handleVote(feedback.id, 'down')}
                     className={`p-2 rounded-lg transition-colors ${
                       feedback.user_vote === 'down'
                         ? 'bg-red-100 text-red-600'
-                        : 'bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-600'
+                        : 'bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600'
                     }`}
                   >
                     <ThumbsDown className="w-5 h-5" />
@@ -339,18 +339,18 @@ export default function FeedbackListView() {
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(feedback.status)}`}>
                         {getStatusText(feedback.status)}
                       </span>
-                      <span className="text-sm text-slate-500">
+                      <span className="text-sm text-gray-300">
                         {formatDate(feedback.created_at)}
                       </span>
                       {feedback.willing_to_pay && (
-                        <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
+                        <span className="px-3 py-1 bg-primary-blue/5 text-primary-blue rounded-full text-xs font-medium">
                           {language === 'de' ? 'Zahlungsbereit' : 'Willing to Pay'}
                           {feedback.payment_amount && ` (${feedback.payment_amount})`}
                         </span>
                       )}
                     </div>
                   </div>
-                  <p className="text-slate-900 text-lg leading-relaxed whitespace-pre-wrap">
+                  <p className="text-dark text-lg leading-relaxed whitespace-pre-wrap">
                     {feedback.feedback_text}
                   </p>
                 </div>
