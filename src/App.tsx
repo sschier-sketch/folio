@@ -1,20 +1,26 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { Login } from './pages/Login';
-import { Signup } from './pages/Signup';
-import { ResetPassword } from './pages/ResetPassword';
-import Dashboard from './components/Dashboard';
-import { Subscription } from './pages/Subscription';
-import { SubscriptionSuccess } from './pages/SubscriptionSuccess';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import Contact from './pages/Contact';
-import Impressum from './pages/Impressum';
-import LandingPage from './components/LandingPage';
-import { Admin } from './pages/Admin';
-import Features from './pages/Features';
-import Pricing from './pages/Pricing';
-import Support from './pages/Support';
-import { supabase } from './lib/supabase';
+import React, { useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
+import { Login } from "./pages/Login";
+import { Signup } from "./pages/Signup";
+import { ResetPassword } from "./pages/ResetPassword";
+import Dashboard from "./components/Dashboard";
+import { Subscription } from "./pages/Subscription";
+import { SubscriptionSuccess } from "./pages/SubscriptionSuccess";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import Contact from "./pages/Contact";
+import Impressum from "./pages/Impressum";
+import LandingPage from "./components/LandingPage";
+import { Admin } from "./pages/Admin";
+import Features from "./pages/Features";
+import Pricing from "./pages/Pricing";
+import Support from "./pages/Support";
+import { supabase } from "./lib/supabase";
 
 function PasswordRecoveryHandler() {
   const navigate = useNavigate();
@@ -24,17 +30,22 @@ function PasswordRecoveryHandler() {
       const hash = window.location.hash;
       const search = window.location.search;
 
-      if ((hash && hash.includes('type=recovery')) || (search && search.includes('type=recovery'))) {
-        navigate('/reset-password' + hash, { replace: true });
+      if (
+        (hash && hash.includes("type=recovery")) ||
+        (search && search.includes("type=recovery"))
+      ) {
+        navigate("/reset-password" + hash, { replace: true });
       }
     };
 
     checkForRecovery();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
         const hash = window.location.hash;
-        navigate('/reset-password' + hash, { replace: true });
+        navigate("/reset-password" + hash, { replace: true });
       }
     });
 

@@ -1,7 +1,5 @@
 export function parseNumberInput(value: string): number {
-  const normalized = value
-    .replace(/\./g, '')
-    .replace(',', '.');
+  const normalized = value.replace(/\./g, "").replace(",", ".");
   return parseFloat(normalized) || 0;
 }
 

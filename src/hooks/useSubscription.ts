@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from './useAuth';
-import { getProductByPriceId } from '../stripe-config';
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "./useAuth";
+import { getProductByPriceId } from "../stripe-config";
 
 export interface Subscription {
   customer_id: string | null;
@@ -30,18 +30,18 @@ export function useSubscription() {
     const fetchSubscription = async () => {
       try {
         const { data, error } = await supabase
-          .from('stripe_user_subscriptions')
-          .select('*')
+          .from("stripe_user_subscriptions")
+          .select("*")
           .maybeSingle();
 
         if (error) {
-          console.error('Error fetching subscription:', error);
+          console.error("Error fetching subscription:", error);
           setSubscription(null);
         } else {
           setSubscription(data);
         }
       } catch (error) {
-        console.error('Error fetching subscription:', error);
+        console.error("Error fetching subscription:", error);
         setSubscription(null);
       } finally {
         setLoading(false);
@@ -52,18 +52,20 @@ export function useSubscription() {
   }, [user]);
 
   const getSubscriptionPlan = () => {
-    if (!subscription?.price_id) return 'Free';
-    
+    if (!subscription?.price_id) return "Free";
+
     const product = getProductByPriceId(subscription.price_id);
-    return product?.name || 'Unknown Plan';
+    return product?.name || "Unknown Plan";
   };
 
   const isActive = () => {
-    return subscription?.subscription_status === 'active';
+    return subscription?.subscription_status === "active";
   };
 
   const hasPremium = () => {
-    return subscription?.subscription_status === 'active' && subscription?.price_id;
+    return (
+      subscription?.subscription_status === "active" && subscription?.price_id
+    );
   };
 
   return {

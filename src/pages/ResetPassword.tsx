@@ -1,247 +1,285 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff, Lock, CheckCircle, Mail } from 'lucide-react';
-
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Eye, EyeOff, Lock, CheckCircle, Mail } from "lucide-react";
 export function ResetPassword() {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
-  const [email, setEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const token = searchParams.get("token");
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "error" | "success";
+    text: string;
+  } | null>(null);
   const navigate = useNavigate();
-
   useEffect(() => {
     if (token) {
       handleConfirmReset();
     }
   }, [token]);
-
   const handleConfirmReset = async () => {
     setConfirming(true);
     setLoading(true);
-
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mypuvkzsgwanilduniup.supabase.co';
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15cHV2a3pzZ3dhbmlsZHVuaXVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5NjY2NTgsImV4cCI6MjA4MDU0MjY1OH0.N-N2Vs8QrlOmWeA0CxJmAXyVs0JClqbWb3Tm5Ze15WA';
-
+      const supabaseUrl =
+        import.meta.env.VITE_SUPABASE_URL ||
+        "https://mypuvkzsgwanilduniup.supabase.co";
+      const supabaseKey =
+        import.meta.env.VITE_SUPABASE_ANON_KEY ||
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15cHV2a3pzZ3dhbmlsZHVuaXVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5NjY2NTgsImV4cCI6MjA4MDU0MjY1OH0.N-N2Vs8QrlOmWeA0CxJmAXyVs0JClqbWb3Tm5Ze15WA";
       const response = await fetch(
         `${supabaseUrl}/functions/v1/confirm-password-reset`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseKey}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseKey}`,
           },
           body: JSON.stringify({ token }),
-        }
+        },
       );
-
       const data = await response.json();
-
       if (response.ok) {
-        setMessage({ type: 'success', text: data.message });
+        setMessage({ type: "success", text: data.message });
         setTimeout(() => {
-          navigate('/login');
+          navigate("/login");
         }, 3000);
       } else {
-        setMessage({ type: 'error', text: data.error });
+        setMessage({ type: "error", text: data.error });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Ein unerwarteter Fehler ist aufgetreten' });
+      setMessage({
+        type: "error",
+        text: "Ein unerwarteter Fehler ist aufgetreten",
+      });
     } finally {
       setLoading(false);
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
-
     if (newPassword !== confirmPassword) {
-      setMessage({ type: 'error', text: 'Die Passwörter stimmen nicht überein' });
+      setMessage({
+        type: "error",
+        text: "Die Passwörter stimmen nicht überein",
+      });
       setLoading(false);
       return;
     }
-
     if (newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Das Passwort muss mindestens 6 Zeichen lang sein' });
+      setMessage({
+        type: "error",
+        text: "Das Passwort muss mindestens 6 Zeichen lang sein",
+      });
       setLoading(false);
       return;
     }
-
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mypuvkzsgwanilduniup.supabase.co';
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15cHV2a3pzZ3dhbmlsZHVuaXVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5NjY2NTgsImV4cCI6MjA4MDU0MjY1OH0.N-N2Vs8QrlOmWeA0CxJmAXyVs0JClqbWb3Tm5Ze15WA';
-
+      const supabaseUrl =
+        import.meta.env.VITE_SUPABASE_URL ||
+        "https://mypuvkzsgwanilduniup.supabase.co";
+      const supabaseKey =
+        import.meta.env.VITE_SUPABASE_ANON_KEY ||
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15cHV2a3pzZ3dhbmlsZHVuaXVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5NjY2NTgsImV4cCI6MjA4MDU0MjY1OH0.N-N2Vs8QrlOmWeA0CxJmAXyVs0JClqbWb3Tm5Ze15WA";
       const response = await fetch(
         `${supabaseUrl}/functions/v1/request-password-reset`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseKey}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseKey}`,
           },
           body: JSON.stringify({ email, newPassword }),
-        }
+        },
       );
-
       const data = await response.json();
-
       if (response.ok) {
-        setMessage({ type: 'success', text: data.message });
-        setEmail('');
-        setNewPassword('');
-        setConfirmPassword('');
+        setMessage({ type: "success", text: data.message });
+        setEmail("");
+        setNewPassword("");
+        setConfirmPassword("");
       } else {
-        setMessage({ type: 'error', text: data.error });
+        setMessage({ type: "error", text: data.error });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Ein unerwarteter Fehler ist aufgetreten' });
+      setMessage({
+        type: "error",
+        text: "Ein unerwarteter Fehler ist aufgetreten",
+      });
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4">
+      {" "}
       <div className="bg-white rounded-md max-w-md w-full p-8">
+        {" "}
         <div className="flex items-center gap-3 mb-8">
+          {" "}
           <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
-            <Lock className="w-6 h-6 text-primary-blue" />
-          </div>
+            {" "}
+            <Lock className="w-6 h-6 text-primary-blue" />{" "}
+          </div>{" "}
           <div>
+            {" "}
             <h1 className="text-2xl font-bold text-dark">
-              {confirming ? 'Bestätigung läuft...' : 'Passwort zurücksetzen'}
-            </h1>
-            <p className="text-sm text-gray-400">
+              {" "}
               {confirming
-                ? 'Ihr Passwort wird aktualisiert'
-                : 'Geben Sie Ihre E-Mail und Ihr neues Passwort ein'}
-            </p>
-          </div>
-        </div>
-
+                ? "Bestätigung läuft..."
+                : "Passwort zurücksetzen"}{" "}
+            </h1>{" "}
+            <p className="text-sm text-gray-400">
+              {" "}
+              {confirming
+                ? "Ihr Passwort wird aktualisiert"
+                : "Geben Sie Ihre E-Mail und Ihr neues Passwort ein"}{" "}
+            </p>{" "}
+          </div>{" "}
+        </div>{" "}
         {message && (
-          <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
-            message.type === 'error'
-              ? 'bg-red-50 text-red-700 border border-red-200'
-              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-          }`}>
-            {message.type === 'success' && <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-            <span>{message.text}</span>
+          <div
+            className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${message.type === "error" ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}
+          >
+            {" "}
+            {message.type === "success" && (
+              <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            )}{" "}
+            <span>{message.text}</span>{" "}
           </div>
-        )}
-
+        )}{" "}
         {confirming ? (
           <div className="text-center py-8">
+            {" "}
             <div className="w-16 h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-primary-blue animate-pulse" />
-            </div>
-            <p className="text-gray-400 mb-4">Passwort wird aktualisiert...</p>
-            <div className="w-8 h-8 border-4 border-primary-blue border-t-transparent rounded-full animate-spin mx-auto" />
+              {" "}
+              <Lock className="w-8 h-8 text-primary-blue animate-pulse" />{" "}
+            </div>{" "}
+            <p className="text-gray-400 mb-4">Passwort wird aktualisiert...</p>{" "}
+            <div className="w-8 h-8 border-4 border-primary-blue border-t-transparent rounded-full animate-spin mx-auto" />{" "}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
+            {" "}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
-                E-Mail-Adresse
-              </label>
+              {" "}
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-400 mb-2"
+              >
+                {" "}
+                E-Mail-Adresse{" "}
+              </label>{" "}
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
+                {" "}
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />{" "}
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="ihre@email.de"
-                />
-              </div>
-            </div>
-
+                />{" "}
+              </div>{" "}
+            </div>{" "}
             <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-gray-400 mb-2">
-                Neues Passwort
-              </label>
+              {" "}
+              <label
+                htmlFor="new-password"
+                className="block text-sm font-medium text-gray-400 mb-2"
+              >
+                {" "}
+                Neues Passwort{" "}
+              </label>{" "}
               <div className="relative">
+                {" "}
                 <input
                   id="new-password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pr-10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Mindestens 6 Zeichen"
-                />
+                />{" "}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
+                  {" "}
                   {showPassword ? (
                     <EyeOff className="h-5 w-5 text-gray-300 hover:text-gray-400" />
                   ) : (
                     <Eye className="h-5 w-5 text-gray-300 hover:text-gray-400" />
-                  )}
-                </button>
-              </div>
-            </div>
-
+                  )}{" "}
+                </button>{" "}
+              </div>{" "}
+            </div>{" "}
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-400 mb-2">
-                Passwort bestätigen
-              </label>
+              {" "}
+              <label
+                htmlFor="confirm-password"
+                className="block text-sm font-medium text-gray-400 mb-2"
+              >
+                {" "}
+                Passwort bestätigen{" "}
+              </label>{" "}
               <input
                 id="confirm-password"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Passwort wiederholen"
-              />
-            </div>
-
+              />{" "}
+            </div>{" "}
             <div className="bg-primary-blue/5 border border-blue-200 rounded-full p-4">
+              {" "}
               <p className="text-sm text-primary-blue">
-                <strong>So funktioniert es:</strong> Sie erhalten eine E-Mail mit einem Bestätigungslink.
-                Ihr neues Passwort wird erst nach dem Klick auf diesen Link aktiviert.
-              </p>
-            </div>
-
+                {" "}
+                <strong>So funktioniert es:</strong> Sie erhalten eine E-Mail
+                mit einem Bestätigungslink. Ihr neues Passwort wird erst nach
+                dem Klick auf diesen Link aktiviert.{" "}
+              </p>{" "}
+            </div>{" "}
             <button
               type="submit"
               disabled={loading}
               className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-full shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
+              {" "}
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <Lock className="w-5 h-5 mr-2" />
-                  Passwort zurücksetzen
+                  {" "}
+                  <Lock className="w-5 h-5 mr-2" /> Passwort zurücksetzen{" "}
                 </>
-              )}
-            </button>
-
+              )}{" "}
+            </button>{" "}
             <div className="text-center pt-4">
+              {" "}
               <button
                 type="button"
-                onClick={() => navigate('/login')}
+                onClick={() => navigate("/login")}
                 className="text-sm text-gray-400 hover:text-dark transition-colors"
               >
-                Zurück zur Anmeldung
-              </button>
-            </div>
+                {" "}
+                Zurück zur Anmeldung{" "}
+              </button>{" "}
+            </div>{" "}
           </form>
-        )}
-      </div>
+        )}{" "}
+      </div>{" "}
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from './useAuth';
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "./useAuth";
 
 export interface AdminPermissions {
   isAdmin: boolean;
@@ -26,12 +26,12 @@ export function useAdmin() {
   useEffect(() => {
     // Wait for auth to finish loading
     if (authLoading) {
-      console.log('useAdmin: Waiting for auth to finish loading');
+      console.log("useAdmin: Waiting for auth to finish loading");
       return;
     }
 
     if (!user) {
-      console.log('useAdmin: No user found, setting admin to false');
+      console.log("useAdmin: No user found, setting admin to false");
       setPermissions({
         isAdmin: false,
         isSuperAdmin: false,
@@ -46,17 +46,17 @@ export function useAdmin() {
 
     async function loadAdminStatus() {
       try {
-        console.log('Loading admin status for user:', user.id);
+        console.log("Loading admin status for user:", user.id);
         const { data, error } = await supabase
-          .from('admin_users')
-          .select('*')
-          .eq('user_id', user.id)
+          .from("admin_users")
+          .select("*")
+          .eq("user_id", user.id)
           .maybeSingle();
 
-        console.log('Admin status response:', { data, error });
+        console.log("Admin status response:", { data, error });
 
         if (error) {
-          console.error('Error loading admin status:', error);
+          console.error("Error loading admin status:", error);
           setPermissions({
             isAdmin: false,
             isSuperAdmin: false,
@@ -66,7 +66,7 @@ export function useAdmin() {
             canManageSubscriptions: false,
           });
         } else if (data) {
-          console.log('User is admin, setting permissions:', data);
+          console.log("User is admin, setting permissions:", data);
           setPermissions({
             isAdmin: true,
             isSuperAdmin: data.is_super_admin || false,
@@ -76,7 +76,7 @@ export function useAdmin() {
             canManageSubscriptions: data.can_manage_subscriptions || false,
           });
         } else {
-          console.log('No admin record found for user');
+          console.log("No admin record found for user");
           setPermissions({
             isAdmin: false,
             isSuperAdmin: false,
@@ -87,7 +87,7 @@ export function useAdmin() {
           });
         }
       } catch (err) {
-        console.error('Unexpected error loading admin status:', err);
+        console.error("Unexpected error loading admin status:", err);
         setPermissions({
           isAdmin: false,
           isSuperAdmin: false,
