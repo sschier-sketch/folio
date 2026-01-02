@@ -3,6 +3,7 @@ import { Plus, Users, Building, Calendar, DollarSign, Eye } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import TenantContractDetails from "./TenantContractDetails";
+import TenantModal from "./TenantModal";
 
 interface Property {
   id: string;
@@ -37,6 +38,7 @@ export default function TenantsView() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+  const [showTenantModal, setShowTenantModal] = useState(false);
   const [filters, setFilters] = useState({
     property_id: "",
     status: "",
@@ -165,7 +167,7 @@ export default function TenantsView() {
           </p>
         </div>
         <button
-          onClick={() => {}}
+          onClick={() => setShowTenantModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
         >
           <Plus className="w-5 h-5" />
@@ -184,7 +186,7 @@ export default function TenantsView() {
             beginnen.
           </p>
           <button
-            onClick={() => {}}
+            onClick={() => setShowTenantModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -362,6 +364,18 @@ export default function TenantsView() {
             </div>
           </div>
         </>
+      )}
+
+      {showTenantModal && (
+        <TenantModal
+          tenant={null}
+          properties={properties}
+          onClose={() => setShowTenantModal(false)}
+          onSave={() => {
+            setShowTenantModal(false);
+            loadData();
+          }}
+        />
       )}
     </div>
   );

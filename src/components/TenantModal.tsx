@@ -63,6 +63,7 @@ export default function TenantModal({
       const data = {
         ...formData,
         user_id: user.id,
+        name: `${formData.first_name} ${formData.last_name}`,
         email: formData.email || null,
         phone: formData.phone || null,
         move_in_date: formData.move_in_date || null,
