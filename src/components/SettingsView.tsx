@@ -357,7 +357,7 @@ export default function SettingsView({
       {activeTab === "billing" && (
         <div className="space-y-6">
           {" "}
-          <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-full p-6">
+          <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-6">
             {" "}
             <div className="flex items-center gap-3 mb-4">
               {" "}

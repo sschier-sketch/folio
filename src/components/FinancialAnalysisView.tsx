@@ -972,7 +972,7 @@ export default function FinancialAnalysisView() {
                 </table>{" "}
               </div>{" "}
             </div>{" "}
-            <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-full p-4">
+            <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-lg p-4">
               {" "}
               <div className="flex items-start gap-3">
                 {" "}

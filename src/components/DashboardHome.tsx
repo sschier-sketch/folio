@@ -277,7 +277,7 @@ export default function DashboardHome() {
             </div>{" "}
           </div>{" "}
         </div>{" "}
-        <div className="bg-gradient-to-br from-blue-500 to-primary-blue rounded-full p-6 text-white">
+        <div className="bg-gradient-to-br from-blue-500 to-primary-blue rounded-xl p-6 text-white">
           {" "}
           <h3 className="text-lg font-semibold mb-4">
             {t("dashboard.quickstart")}
@@ -305,7 +305,7 @@ export default function DashboardHome() {
             </div>{" "}
           </div>{" "}
         </div>{" "}
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full p-6 text-white">
+        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white">
           {" "}
           <div className="flex items-center gap-2 mb-3">
             {" "}

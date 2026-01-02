@@ -112,7 +112,7 @@ export default function ReferralProgramView() {
       </div>{" "}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {" "}
-        <div className="lg:col-span-2 bg-gradient-to-br from-blue-500 to-primary-blue rounded-full p-8 text-white">
+        <div className="lg:col-span-2 bg-gradient-to-br from-blue-500 to-primary-blue rounded-xl p-8 text-white">
           {" "}
           <div className="flex items-center gap-3 mb-6">
             {" "}
@@ -285,7 +285,7 @@ export default function ReferralProgramView() {
             </div>{" "}
           </div>{" "}
         </div>{" "}
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-full p-6 text-white">
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-6 text-white">
           {" "}
           <div className="flex items-center gap-3 mb-6">
             {" "}
@@ -427,7 +427,7 @@ export default function ReferralProgramView() {
           </div>
         )}{" "}
       </div>{" "}
-      <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-full p-4">
+      <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-lg p-4">
         {" "}
         <p className="text-sm text-blue-900">
           {" "}

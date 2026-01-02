@@ -59,7 +59,7 @@ export function PremiumFeatureGuard({
     );
   }
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-200 rounded-full p-8 text-center">
+    <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-200 rounded-lg p-8 text-center">
       {" "}
       <div className="inline-flex w-16 h-16 bg-gradient-to-br from-primary-blue to-primary-blue rounded-full items-center justify-center mb-4">
         {" "}

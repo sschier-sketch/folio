@@ -334,7 +334,7 @@ export default function PropertyDetails({
               </div>{" "}
               <div className="text-xs text-gray-300">pro Jahr</div>{" "}
               {showGrossYieldTooltip && (
-                <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-full p-4 z-10">
+                <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-lg p-4 z-10">
                   {" "}
                   <div className="font-semibold mb-2">
                     Berechnung Bruttorendite:
@@ -398,7 +398,7 @@ export default function PropertyDetails({
               </div>{" "}
               <div className="text-xs text-gray-300">nach Kreditkosten</div>{" "}
               {showNetYieldTooltip && (
-                <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-full p-4 z-10">
+                <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-lg p-4 z-10">
                   {" "}
                   <div className="font-semibold mb-2">
                     Berechnung Nettorendite:
