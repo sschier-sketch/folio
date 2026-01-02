@@ -7,6 +7,9 @@ import {
   Wallet,
   CheckCircle,
   Edit,
+  Plus,
+  X,
+  FileText,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
@@ -46,6 +49,16 @@ export default function TenantOverviewTab({
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [property, setProperty] = useState<Property | null>(null);
   const [showEditStatus, setShowEditStatus] = useState(false);
+  const [showCreateContract, setShowCreateContract] = useState(false);
+  const [savingContract, setSavingContract] = useState(false);
+  const [contractForm, setContractForm] = useState({
+    start_date: "",
+    end_date: "",
+    monthly_rent: "",
+    utilities_advance: "",
+    deposit_amount: "",
+    contract_type: "unlimited",
+  });
 
   useEffect(() => {
     if (user && tenantId) {
@@ -109,6 +122,61 @@ export default function TenantOverviewTab({
     }
   }
 
+  async function handleCreateContract(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user || !tenant) return;
+
+    setSavingContract(true);
+    try {
+      const monthlyRent = parseFloat(contractForm.monthly_rent) || 0;
+      const utilitiesAdvance = parseFloat(contractForm.utilities_advance) || 0;
+      const depositAmount = parseFloat(contractForm.deposit_amount) || 0;
+
+      const { data: newContract, error } = await supabase
+        .from("rental_contracts")
+        .insert([
+          {
+            tenant_id: tenantId,
+            property_id: tenant.property_id,
+            user_id: user.id,
+            start_date: contractForm.start_date,
+            end_date: contractForm.end_date || null,
+            monthly_rent: monthlyRent,
+            base_rent: monthlyRent,
+            utilities_advance: utilitiesAdvance,
+            additional_costs: utilitiesAdvance,
+            total_rent: monthlyRent + utilitiesAdvance,
+            deposit_amount: depositAmount,
+            deposit: depositAmount,
+            deposit_status: depositAmount > 0 ? "open" : "complete",
+            contract_type: contractForm.contract_type,
+            contract_start: contractForm.start_date,
+            contract_end: contractForm.end_date || null,
+            status: "active",
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (newContract) {
+        await supabase
+          .from("tenants")
+          .update({ contract_id: newContract.id })
+          .eq("id", tenantId);
+      }
+
+      setShowCreateContract(false);
+      loadData();
+    } catch (error) {
+      console.error("Error creating contract:", error);
+      alert("Fehler beim Erstellen des Vertrags");
+    } finally {
+      setSavingContract(false);
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -160,12 +228,185 @@ export default function TenantOverviewTab({
 
   if (!contract) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-        <p className="text-gray-400 mb-4">Kein Mietvertrag vorhanden</p>
-        <p className="text-sm text-gray-400">
-          Erstellen Sie einen Mietvertrag für diesen Mieter
-        </p>
-      </div>
+      <>
+        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8 text-primary-blue" />
+          </div>
+          <h3 className="text-xl font-semibold text-dark mb-2">
+            Kein Mietvertrag vorhanden
+          </h3>
+          <p className="text-gray-400 mb-6">
+            Erstellen Sie einen Mietvertrag, um alle Funktionen nutzen zu können
+          </p>
+          <button
+            onClick={() => setShowCreateContract(true)}
+            className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Mietvertrag erstellen
+          </button>
+        </div>
+
+        {showCreateContract && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-dark">
+                  Mietvertrag erstellen
+                </h2>
+                <button
+                  onClick={() => setShowCreateContract(false)}
+                  className="text-gray-300 hover:text-gray-400 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateContract} className="p-6 space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Mietbeginn *
+                    </label>
+                    <input
+                      type="date"
+                      value={contractForm.start_date}
+                      onChange={(e) =>
+                        setContractForm({
+                          ...contractForm,
+                          start_date: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Mietende (optional)
+                    </label>
+                    <input
+                      type="date"
+                      value={contractForm.end_date}
+                      onChange={(e) =>
+                        setContractForm({
+                          ...contractForm,
+                          end_date: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Kaltmiete (€) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={contractForm.monthly_rent}
+                      onChange={(e) =>
+                        setContractForm({
+                          ...contractForm,
+                          monthly_rent: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Nebenkosten (€)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={contractForm.utilities_advance}
+                      onChange={(e) =>
+                        setContractForm({
+                          ...contractForm,
+                          utilities_advance: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Kaution (€)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={contractForm.deposit_amount}
+                      onChange={(e) =>
+                        setContractForm({
+                          ...contractForm,
+                          deposit_amount: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Vertragsart
+                    </label>
+                    <select
+                      value={contractForm.contract_type}
+                      onChange={(e) =>
+                        setContractForm({
+                          ...contractForm,
+                          contract_type: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    >
+                      <option value="unlimited">Unbefristet</option>
+                      <option value="limited">Befristet</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-900">
+                    <strong>Gesamtmiete:</strong>{" "}
+                    {(
+                      (parseFloat(contractForm.monthly_rent) || 0) +
+                      (parseFloat(contractForm.utilities_advance) || 0)
+                    ).toFixed(2)}{" "}
+                    € / Monat
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateContract(false)}
+                    className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingContract}
+                    className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+                  >
+                    {savingContract ? "Erstelle..." : "Vertrag erstellen"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
