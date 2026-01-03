@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Upload, X, FileText, Lock, Check } from "lucide-react";
+import { Upload, X, FileText, Lock, Check, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -17,6 +17,10 @@ interface UploadFile {
   error?: string;
 }
 
+const FREE_STORAGE_LIMIT = 200 * 1024 * 1024;
+const PRO_STORAGE_LIMIT = 2 * 1024 * 1024 * 1024;
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
 export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const { user } = useAuth();
   const { isPro } = useSubscription();
@@ -31,12 +35,33 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentStorageUsed, setCurrentStorageUsed] = useState(0);
+  const [storageError, setStorageError] = useState("");
+
+  const storageLimit = isPro ? PRO_STORAGE_LIMIT : FREE_STORAGE_LIMIT;
 
   useEffect(() => {
     if (user) {
       loadReferences();
+      loadCurrentStorage();
     }
   }, [user]);
+
+  async function loadCurrentStorage() {
+    try {
+      const { data: documents } = await supabase
+        .from("documents")
+        .select("file_size")
+        .eq("is_archived", false);
+
+      if (documents) {
+        const totalSize = documents.reduce((sum, doc) => sum + (doc.file_size || 0), 0);
+        setCurrentStorageUsed(totalSize);
+      }
+    } catch (error) {
+      console.error("Error loading storage:", error);
+    }
+  }
 
   async function loadReferences() {
     try {
@@ -55,17 +80,44 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const handleFileSelect = (selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
 
+    setStorageError("");
+
     const maxFiles = isPro ? 10 : 1;
     const currentCount = files.length;
     const newFilesArray = Array.from(selectedFiles);
+
+    if (currentCount > 0 && !isPro) {
+      alert("Free-Nutzer können nur eine Datei pro Upload hochladen. Upgraden Sie auf Pro für Mehrfach-Upload.");
+      return;
+    }
 
     if (currentCount + newFilesArray.length > maxFiles) {
       alert(
         isPro
           ? `Sie können maximal ${maxFiles} Dateien auf einmal hochladen.`
-          : "Upgraden Sie auf Pro, um mehrere Dateien gleichzeitig hochzuladen."
+          : "Free-Nutzer können nur eine Datei pro Upload hochladen. Upgraden Sie auf Pro für Mehrfach-Upload."
       );
       return;
+    }
+
+    const newFilesSize = newFilesArray.reduce((sum, file) => sum + file.size, 0);
+    const totalNewSize = currentStorageUsed + newFilesSize;
+
+    if (totalNewSize > storageLimit) {
+      const remainingSpace = storageLimit - currentStorageUsed;
+      setStorageError(
+        `Speicherlimit überschritten! Sie haben noch ${formatFileSize(remainingSpace)} verfügbar. ${
+          !isPro ? "Upgraden Sie auf Pro für 2GB Speicher." : ""
+        }`
+      );
+      return;
+    }
+
+    for (const file of newFilesArray) {
+      if (file.size > MAX_FILE_SIZE) {
+        alert(`Die Datei "${file.name}" ist zu groß. Maximale Dateigröße: 50MB`);
+        return;
+      }
     }
 
     const newFiles: UploadFile[] = newFilesArray.map((file) => ({
@@ -81,20 +133,12 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-
-    if (!isPro) {
-      alert("Drag & Drop ist ein Pro Feature. Nutzen Sie den Upload-Button oder upgraden Sie auf Pro.");
-      return;
-    }
-
     handleFileSelect(e.dataTransfer.files);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (isPro) {
-      setIsDragging(true);
-    }
+    setIsDragging(true);
   };
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
@@ -126,7 +170,10 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           upsert: false,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Storage upload error:", uploadError);
+        throw uploadError;
+      }
 
       const { data: docData, error: docError } = await supabase
         .from("documents")
@@ -143,7 +190,10 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         .select()
         .single();
 
-      if (docError) throw docError;
+      if (docError) {
+        await supabase.storage.from("documents").remove([fileName]);
+        throw docError;
+      }
 
       if (associationType && associationId && docData) {
         await supabase.from("document_associations").insert({
@@ -162,8 +212,10 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         )
       );
 
+      setCurrentStorageUsed((prev) => prev + uploadFile.file.size);
+
       return docData.id;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload error:", error);
       setFiles((prev) =>
         prev.map((f) =>
@@ -171,7 +223,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
             ? {
                 ...f,
                 status: "error" as const,
-                error: "Upload fehlgeschlagen",
+                error: error.message || "Upload fehlgeschlagen",
               }
             : f
         )
@@ -215,70 +267,102 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   };
 
   const allSuccess = files.length > 0 && files.every((f) => f.status === "success");
+  const storagePercentage = (currentStorageUsed / storageLimit) * 100;
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-dark">Speicherplatz</h2>
+          {!isPro && (
+            <span className="text-xs text-gray-500">Free: 200MB | Pro: 2GB</span>
+          )}
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600">
+              {formatFileSize(currentStorageUsed)} von {formatFileSize(storageLimit)} verwendet
+            </span>
+            <span className="text-gray-500">{Math.round(storagePercentage)}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className={`h-2 rounded-full transition-all ${
+                storagePercentage > 90
+                  ? "bg-red-600"
+                  : storagePercentage > 70
+                  ? "bg-orange-500"
+                  : "bg-blue-600"
+              }`}
+              style={{ width: `${Math.min(storagePercentage, 100)}%` }}
+            ></div>
+          </div>
+          {storagePercentage > 80 && (
+            <p className="text-xs text-orange-600">
+              {storagePercentage > 90
+                ? "Speicher fast voll!"
+                : "Speicher wird knapp."}{" "}
+              {!isPro && (
+                <button className="underline hover:text-orange-700">
+                  Auf Pro upgraden für 2GB
+                </button>
+              )}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {storageError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-red-900">Speicherlimit überschritten</p>
+              <p className="text-sm text-red-700 mt-1">{storageError}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
         <h2 className="text-lg font-semibold text-dark mb-4">Dateien auswählen</h2>
 
-        <DocumentFeatureGuard
-          feature="drag-drop-upload"
-          fallback={
-            <div className="relative">
-              <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center bg-gray-50 relative"
-              >
-                <div className="absolute inset-0 bg-white bg-opacity-60 rounded-lg flex items-center justify-center z-10">
-                  <div className="text-center">
-                    <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-gray-600">
-                      Drag & Drop mit Pro freischalten
-                    </p>
-                  </div>
-                </div>
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">Dateien hierher ziehen</p>
-                <p className="text-sm text-gray-400">Nur mit Pro verfügbar</p>
-              </div>
-            </div>
-          }
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
+            isDragging
+              ? "border-blue-500 bg-blue-50"
+              : "border-gray-300 bg-gray-50 hover:border-gray-400"
+          }`}
         >
-          <div
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
-              isDragging
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-300 bg-gray-50 hover:border-gray-400"
-            }`}
+          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600 mb-2">
+            Dateien hierher ziehen oder klicken Sie auf den Button
+          </p>
+          <p className="text-sm text-gray-400 mb-4">
+            {isPro
+              ? "Mehrere Dateien werden unterstützt (max. 10)"
+              : "Eine Datei pro Upload (Pro: bis zu 10 gleichzeitig)"}
+          </p>
+          <p className="text-xs text-gray-400 mb-4">Maximale Dateigröße: 50MB</p>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
           >
-            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-2">
-              Dateien hierher ziehen oder klicken Sie auf den Button
-            </p>
-            <p className="text-sm text-gray-400 mb-4">
-              {isPro
-                ? "Mehrere Dateien werden unterstützt"
-                : "Nur eine Datei pro Upload (Pro: Mehrfach-Upload)"}
-            </p>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
-            >
-              <Upload className="w-4 h-4" />
-              Dateien auswählen
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple={isPro}
-              onChange={(e) => handleFileSelect(e.target.files)}
-              className="hidden"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.xlsx,.xls,.csv"
-            />
-          </div>
-        </DocumentFeatureGuard>
+            <Upload className="w-4 h-4" />
+            Dateien auswählen
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple={isPro}
+            onChange={(e) => handleFileSelect(e.target.files)}
+            className="hidden"
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.xlsx,.xls,.csv"
+          />
+        </div>
 
         {files.length > 0 && (
           <div className="mt-6 space-y-2">
@@ -505,6 +589,45 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           )}
         </button>
       </div>
+
+      {!isPro && (
+        <div className="bg-gradient-to-r from-blue-50 to-violet-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Upload className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-dark mb-2">
+                Mehr Speicher mit Pro
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Upgraden Sie auf Pro und erhalten Sie:
+              </p>
+              <ul className="space-y-2 text-sm text-gray-600 mb-4">
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  2GB Speicherplatz (10x mehr)
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  Mehrfach-Upload (bis zu 10 Dateien gleichzeitig)
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  Direkte Zuordnung beim Upload
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  Erweiterte Kategorisierung und Metadaten
+                </li>
+              </ul>
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Jetzt auf Pro upgraden
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

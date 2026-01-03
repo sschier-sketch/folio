@@ -8,6 +8,7 @@ import DocumentFeatureGuard from "./DocumentFeatureGuard";
 interface Document {
   id: string;
   file_name: string;
+  file_path: string;
   document_type: string;
   upload_date: string;
   file_size: number;

@@ -11,6 +11,7 @@ interface PropertyDocumentsTabProps {
 interface Document {
   id: string;
   file_name: string;
+  file_path: string;
   document_type: string;
   file_size: number;
   upload_date: string;

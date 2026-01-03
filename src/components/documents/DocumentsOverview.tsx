@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FileText, FolderCheck, HardDrive, Upload, Clock, TrendingUp } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { useSubscription } from "../../hooks/useSubscription";
 
 interface DocumentsOverviewProps {
   onNavigateToUpload: () => void;
@@ -23,8 +24,12 @@ interface RecentActivity {
   timestamp: string;
 }
 
+const FREE_STORAGE_LIMIT = 200 * 1024 * 1024;
+const PRO_STORAGE_LIMIT = 2 * 1024 * 1024 * 1024;
+
 export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList }: DocumentsOverviewProps) {
   const { user } = useAuth();
+  const { isPro } = useSubscription();
   const [stats, setStats] = useState<Stats>({
     totalDocuments: 0,
     assignedDocuments: 0,
@@ -116,6 +121,9 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
   };
 
+  const storageLimit = isPro ? PRO_STORAGE_LIMIT : FREE_STORAGE_LIMIT;
+  const storagePercentage = (stats.totalSize / storageLimit) * 100;
+
   const getActionLabel = (action: string) => {
     const labels: Record<string, string> = {
       created: "Hochgeladen",
@@ -182,7 +190,21 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
             </div>
           </div>
           <div className="text-2xl font-bold text-dark mb-1">{formatFileSize(stats.totalSize)}</div>
-          <div className="text-sm text-gray-500">Speicherplatz genutzt</div>
+          <div className="text-sm text-gray-500">von {formatFileSize(storageLimit)}</div>
+          <div className="mt-2">
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
+              <div
+                className={`h-1.5 rounded-full transition-all ${
+                  storagePercentage > 90
+                    ? "bg-red-600"
+                    : storagePercentage > 70
+                    ? "bg-orange-500"
+                    : "bg-orange-600"
+                }`}
+                style={{ width: `${Math.min(storagePercentage, 100)}%` }}
+              ></div>
+            </div>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
