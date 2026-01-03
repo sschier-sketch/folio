@@ -32,7 +32,12 @@ interface TenantWithDetails extends Tenant {
   properties?: Property;
 }
 
-export default function TenantsView() {
+interface TenantsViewProps {
+  selectedTenantId?: string | null;
+  onClearSelection?: () => void;
+}
+
+export default function TenantsView({ selectedTenantId: externalSelectedTenantId, onClearSelection }: TenantsViewProps = {}) {
   const { user } = useAuth();
   const [tenants, setTenants] = useState<TenantWithDetails[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -43,6 +48,12 @@ export default function TenantsView() {
     property_id: "",
     status: "",
   });
+
+  useEffect(() => {
+    if (externalSelectedTenantId) {
+      setSelectedTenantId(externalSelectedTenantId);
+    }
+  }, [externalSelectedTenantId]);
 
   useEffect(() => {
     if (user) {
@@ -142,7 +153,12 @@ export default function TenantsView() {
     return (
       <TenantContractDetails
         tenantId={selectedTenantId}
-        onBack={() => setSelectedTenantId(null)}
+        onBack={() => {
+          setSelectedTenantId(null);
+          if (onClearSelection) {
+            onClearSelection();
+          }
+        }}
       />
     );
   }
