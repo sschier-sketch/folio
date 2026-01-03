@@ -67,6 +67,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   const [associations, setAssociations] = useState<Association[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     file_name: "",
@@ -80,7 +81,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
     id: "",
   });
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
-  const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
   const [contracts, setContracts] = useState<{ id: string; tenant_name: string }[]>([]);
 
   useEffect(() => {
@@ -111,11 +111,30 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
           category: data.category || "",
           description: data.description || "",
         });
+
+        if (data.file_type === "application/pdf") {
+          loadPreview(data.file_path);
+        }
       }
     } catch (error) {
       console.error("Error loading document:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadPreview(filePath: string) {
+    try {
+      const { data, error } = await supabase.storage
+        .from("documents")
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      setPreviewUrl(url);
+    } catch (error) {
+      console.error("Error loading preview:", error);
     }
   }
 
@@ -138,13 +157,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                 .eq("id", assoc.association_id)
                 .maybeSingle();
               name = prop?.name || "Unbekannt";
-            } else if (assoc.association_type === "tenant") {
-              const { data: tenant } = await supabase
-                .from("tenants")
-                .select("name")
-                .eq("id", assoc.association_id)
-                .maybeSingle();
-              name = tenant?.name || "Unbekannt";
             } else if (assoc.association_type === "rental_contract") {
               const { data: contract } = await supabase
                 .from("rental_contracts")
@@ -183,9 +195,8 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
 
   async function loadReferences() {
     try {
-      const [propsRes, tenantsRes, contractsRes] = await Promise.all([
+      const [propsRes, contractsRes] = await Promise.all([
         supabase.from("properties").select("id, name").order("name"),
-        supabase.from("tenants").select("id, name").order("name"),
         supabase
           .from("rental_contracts")
           .select("id, tenants(name)")
@@ -193,7 +204,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
       ]);
 
       if (propsRes.data) setProperties(propsRes.data);
-      if (tenantsRes.data) setTenants(tenantsRes.data);
       if (contractsRes.data) {
         setContracts(
           contractsRes.data.map((c: any) => ({
@@ -433,27 +443,13 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
         </button>
 
         <div className="flex items-center gap-2">
-          <DocumentFeatureGuard
-            feature="document-download"
-            fallback={
-              <button
-                disabled
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download</span>
-                <Lock className="w-3 h-3" />
-              </button>
-            }
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Download
-            </button>
-          </DocumentFeatureGuard>
+            <Download className="w-4 h-4" />
+            Download
+          </button>
 
           {!isEditing && (
             <button
@@ -612,15 +608,27 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
               </div>
             )}
 
-            <div className="bg-gray-50 rounded-lg p-6 aspect-video flex items-center justify-center">
-              <div className="text-center">
-                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">Vorschau nicht verfügbar</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Laden Sie die Datei herunter, um sie anzuzeigen
-                </p>
+            {previewUrl && document.file_type === "application/pdf" ? (
+              <div className="bg-gray-50 rounded-lg overflow-hidden">
+                <iframe
+                  src={previewUrl}
+                  className="w-full h-[600px] border-0"
+                  title="PDF Vorschau"
+                />
               </div>
-            </div>
+            ) : (
+              <div className="bg-gray-50 rounded-lg p-6 aspect-video flex items-center justify-center">
+                <div className="text-center">
+                  <FileText className="w-16 h-16 text-gray-400 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500">Vorschau nicht verfügbar</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {document.file_type === "application/pdf"
+                      ? "PDF wird geladen..."
+                      : "Laden Sie die Datei herunter, um sie anzuzeigen"}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {document.description && !isEditing && (
               <div className="mt-6 pt-6 border-t border-gray-200">
@@ -660,7 +668,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="property">Immobilie</option>
-                      <option value="tenant">Mieter</option>
                       <option value="rental_contract">Mietverhältnis</option>
                     </select>
                   </div>
@@ -681,12 +688,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                         properties.map((prop) => (
                           <option key={prop.id} value={prop.id}>
                             {prop.name}
-                          </option>
-                        ))}
-                      {newAssociation.type === "tenant" &&
-                        tenants.map((tenant) => (
-                          <option key={tenant.id} value={tenant.id}>
-                            {tenant.name}
                           </option>
                         ))}
                       {newAssociation.type === "rental_contract" &&

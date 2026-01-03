@@ -31,7 +31,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const [associationType, setAssociationType] = useState("");
   const [associationId, setAssociationId] = useState("");
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
-  const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
+  const [contracts, setContracts] = useState<{ id: string; name: string }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -65,13 +65,22 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
 
   async function loadReferences() {
     try {
-      const [propsRes, tenantsRes] = await Promise.all([
+      const [propsRes, contractsRes] = await Promise.all([
         supabase.from("properties").select("id, name").order("name"),
-        supabase.from("tenants").select("id, name").order("name"),
+        supabase
+          .from("rental_contracts")
+          .select("id, tenants(name)")
+          .order("start_date", { ascending: false }),
       ]);
 
       if (propsRes.data) setProperties(propsRes.data);
-      if (tenantsRes.data) setTenants(tenantsRes.data);
+      if (contractsRes.data) {
+        const contractsList = contractsRes.data.map((c: any) => ({
+          id: c.id,
+          name: c.tenants?.name || "Unbekannter Mieter",
+        }));
+        setContracts(contractsList);
+      }
     } catch (error) {
       console.error("Error loading references:", error);
     }
@@ -521,7 +530,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               >
                 <option value="">Keine Zuordnung</option>
                 <option value="property">Immobilie</option>
-                <option value="tenant">Mieter</option>
+                <option value="rental_contract">Mietverhältnis</option>
               </select>
             </div>
 
@@ -542,10 +551,10 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                         {prop.name}
                       </option>
                     ))}
-                  {associationType === "tenant" &&
-                    tenants.map((tenant) => (
-                      <option key={tenant.id} value={tenant.id}>
-                        {tenant.name}
+                  {associationType === "rental_contract" &&
+                    contracts.map((contract) => (
+                      <option key={contract.id} value={contract.id}>
+                        {contract.name}
                       </option>
                     ))}
                 </select>
