@@ -19,6 +19,7 @@ interface PropertyOverviewTabProps {
     description: string;
   };
   onUpdate?: () => void;
+  onNavigateToTenant?: (tenantId: string) => void;
 }
 
 interface PropertyStats {
@@ -52,12 +53,13 @@ interface RentalContract {
   contract_type: string;
   notes: string;
   tenants?: Array<{
+    id: string;
     first_name: string;
     last_name: string;
   }>;
 }
 
-export default function PropertyOverviewTab({ property, onUpdate }: PropertyOverviewTabProps) {
+export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTenant }: PropertyOverviewTabProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
@@ -125,7 +127,7 @@ export default function PropertyOverviewTab({ property, onUpdate }: PropertyOver
         for (const contract of contractsRes.data) {
           const { data: tenants } = await supabase
             .from("tenants")
-            .select("first_name, last_name")
+            .select("id, first_name, last_name")
             .eq("contract_id", contract.id);
 
           contractsWithTenants.push({ ...contract, tenants: tenants || [] });
@@ -469,9 +471,17 @@ export default function PropertyOverviewTab({ property, onUpdate }: PropertyOver
                   <div className="flex-1">
                     <div className="font-semibold text-dark">
                       {contract.tenants && contract.tenants.length > 0
-                        ? contract.tenants
-                            .map((t) => `${t.first_name} ${t.last_name}`)
-                            .join(", ")
+                        ? contract.tenants.map((t, index) => (
+                            <span key={t.id}>
+                              {index > 0 && ", "}
+                              <button
+                                onClick={() => onNavigateToTenant && onNavigateToTenant(t.id)}
+                                className="text-primary-blue hover:underline"
+                              >
+                                {t.first_name} {t.last_name}
+                              </button>
+                            </span>
+                          ))
                         : "Keine Mieter"}
                     </div>
                     <div className="text-sm text-gray-500 mt-1">

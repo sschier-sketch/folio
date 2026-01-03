@@ -36,6 +36,7 @@ interface Property {
 interface PropertyDetailsProps {
   property: Property;
   onBack: () => void;
+  onNavigateToTenant?: (tenantId: string) => void;
 }
 
 type Tab =
@@ -48,7 +49,7 @@ type Tab =
   | "maintenance"
   | "metrics";
 
-export default function PropertyDetails({ property, onBack }: PropertyDetailsProps) {
+export default function PropertyDetails({ property, onBack, onNavigateToTenant }: PropertyDetailsProps) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   const tabs = [
@@ -112,7 +113,7 @@ export default function PropertyDetails({ property, onBack }: PropertyDetailsPro
       </div>
 
       <div>
-        {activeTab === "overview" && <PropertyOverviewTab property={property} />}
+        {activeTab === "overview" && <PropertyOverviewTab property={property} onNavigateToTenant={onNavigateToTenant} />}
         {activeTab === "units" && <PropertyUnitsTab propertyId={property.id} />}
         {activeTab === "equipment" && <PropertyEquipmentTab propertyId={property.id} />}
         {activeTab === "documents" && <PropertyDocumentsTab propertyId={property.id} />}

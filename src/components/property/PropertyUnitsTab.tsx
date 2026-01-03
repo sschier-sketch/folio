@@ -19,6 +19,8 @@ interface PropertyUnit {
   tenant_id: string | null;
   rent_amount: number | null;
   notes: string;
+  mea?: string | null;
+  location?: string | null;
   tenant?: {
     id: string;
     first_name: string;
@@ -58,6 +60,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     status: "vacant",
     tenant_id: "",
     notes: "",
+    mea: "",
+    location: "",
   });
 
   useEffect(() => {
@@ -172,6 +176,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
         status: formData.status,
         tenant_id: formData.tenant_id || null,
         notes: formData.notes,
+        mea: formData.mea || null,
+        location: formData.location || null,
       };
 
       if (editingUnit) {
@@ -240,6 +246,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       status: unit.status,
       tenant_id: unit.tenant_id || "",
       notes: unit.notes || "",
+      mea: unit.mea || "",
+      location: unit.location || "",
     });
     setShowModal(true);
   }
@@ -254,6 +262,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       status: "vacant",
       tenant_id: "",
       notes: "",
+      mea: "",
+      location: "",
     });
   }
 
@@ -273,6 +283,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       vacant: "Leer",
       rented: "Vermietet",
       maintenance: "Wartung",
+      self_occupied: "Selbstnutzung",
     };
     return labels[status] || status;
   };
@@ -282,6 +293,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       vacant: "bg-amber-100 text-amber-700",
       rented: "bg-emerald-100 text-emerald-700",
       maintenance: "bg-blue-100 text-blue-700",
+      self_occupied: "bg-purple-100 text-purple-700",
     };
     return colors[status] || "bg-gray-100 text-gray-700";
   };
@@ -552,7 +564,38 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                     <option value="vacant">Leer</option>
                     <option value="rented">Vermietet</option>
                     <option value="maintenance">Wartung</option>
+                    <option value="self_occupied">Selbstnutzung</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Miteigentumsanteil (MEA)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.mea}
+                    onChange={(e) =>
+                      setFormData({ ...formData, mea: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    placeholder="z.B. 50/1000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Lage
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    placeholder="z.B. Erdgeschoss links, 2. OG rechts"
+                  />
                 </div>
 
                 <div className="col-span-2">

@@ -10,6 +10,7 @@ interface Property {
   street?: string;
   zip_code?: string;
   city?: string;
+  country?: string;
   property_type: string;
   purchase_price: number;
   current_value: number;
@@ -36,6 +37,7 @@ export default function PropertyModal({
     street: "",
     zip_code: "",
     city: "",
+    country: "Deutschland",
     property_type: "apartment",
     purchase_price: 0,
     current_value: 0,
@@ -52,6 +54,7 @@ export default function PropertyModal({
         street: property.street || "",
         zip_code: property.zip_code || "",
         city: property.city || "",
+        country: property.country || "Deutschland",
         property_type: property.property_type,
         purchase_price: property.purchase_price,
         current_value: property.current_value,
@@ -74,6 +77,7 @@ export default function PropertyModal({
         street: formData.street,
         zip_code: formData.zip_code,
         city: formData.city,
+        country: formData.country,
         address: address,
         property_type: formData.property_type,
         purchase_price: formData.purchase_price,
@@ -205,6 +209,35 @@ export default function PropertyModal({
               {" "}
               <label className="block text-sm font-medium text-gray-400 mb-1">
                 {" "}
+                Land *{" "}
+              </label>{" "}
+              <select
+                value={formData.country}
+                onChange={(e) =>
+                  setFormData({ ...formData, country: e.target.value })
+                }
+                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                required
+              >
+                {" "}
+                <option value="Deutschland">Deutschland</option>{" "}
+                <option value="Österreich">Österreich</option>{" "}
+                <option value="Schweiz">Schweiz</option>{" "}
+                <option value="Belgien">Belgien</option>{" "}
+                <option value="Dänemark">Dänemark</option>{" "}
+                <option value="Frankreich">Frankreich</option>{" "}
+                <option value="Italien">Italien</option>{" "}
+                <option value="Niederlande">Niederlande</option>{" "}
+                <option value="Polen">Polen</option>{" "}
+                <option value="Spanien">Spanien</option>{" "}
+                <option value="Tschechien">Tschechien</option>{" "}
+                <option value="Sonstiges">Sonstiges</option>{" "}
+              </select>{" "}
+            </div>{" "}
+            <div>
+              {" "}
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                {" "}
                 Immobilientyp{" "}
               </label>{" "}
               <select
@@ -215,11 +248,13 @@ export default function PropertyModal({
                 className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               >
                 {" "}
-                <option value="apartment">Wohnung</option>{" "}
-                <option value="house">Haus</option>{" "}
-                <option value="commercial">Gewerbe</option>{" "}
+                <option value="multi_family">Mehrfamilienhaus</option>{" "}
+                <option value="apartment">Eigentumswohnung</option>{" "}
+                <option value="house">Einfamilienhaus</option>{" "}
+                <option value="commercial">Gewerbeeinheit</option>{" "}
+                <option value="parking">Garage/Stellplatz</option>{" "}
                 <option value="land">Grundstück</option>{" "}
-                <option value="parking">Stellplatz</option>{" "}
+                <option value="other">Sonstiges</option>{" "}
               </select>{" "}
             </div>{" "}
             <div>

@@ -50,6 +50,9 @@ export default function RentalContractModal({
     base_rent: 0,
     additional_costs: 0,
     deposit: 0,
+    deposit_type: "",
+    deposit_account: "",
+    deposit_received_date: "",
     contract_start: "",
     contract_end: "",
     contract_type: "unlimited",
@@ -66,25 +69,34 @@ export default function RentalContractModal({
   ]);
   useEffect(() => {
     if (contract) {
+      const contractWithDeposit = contract as Contract & {
+        deposit_type?: string;
+        deposit_account?: string;
+        deposit_received_date?: string;
+        tenants?: Tenant[];
+      };
       setFormData({
-        property_id: contract.property_id,
-        base_rent: contract.base_rent,
-        additional_costs: contract.additional_costs,
-        deposit: contract.deposit,
-        contract_start: contract.contract_start,
-        contract_end: contract.contract_end || "",
-        contract_type: contract.contract_type,
-        rent_increase_type: contract.rent_increase_type || "none",
-        staffel_amount: contract.staffel_amount || 0,
-        staffel_type: contract.staffel_type || "fixed",
-        staffel_years: contract.staffel_years || 1,
-        index_first_increase_date: contract.index_first_increase_date || "",
+        property_id: contractWithDeposit.property_id,
+        base_rent: contractWithDeposit.base_rent,
+        additional_costs: contractWithDeposit.additional_costs,
+        deposit: contractWithDeposit.deposit,
+        deposit_type: contractWithDeposit.deposit_type || "",
+        deposit_account: contractWithDeposit.deposit_account || "",
+        deposit_received_date: contractWithDeposit.deposit_received_date || "",
+        contract_start: contractWithDeposit.contract_start,
+        contract_end: contractWithDeposit.contract_end || "",
+        contract_type: contractWithDeposit.contract_type,
+        rent_increase_type: contractWithDeposit.rent_increase_type || "none",
+        staffel_amount: contractWithDeposit.staffel_amount || 0,
+        staffel_type: contractWithDeposit.staffel_type || "fixed",
+        staffel_years: contractWithDeposit.staffel_years || 1,
+        index_first_increase_date: contractWithDeposit.index_first_increase_date || "",
         auto_create_rent_increase_tickets:
-          contract.auto_create_rent_increase_tickets || false,
-        notes: contract.notes,
+          contractWithDeposit.auto_create_rent_increase_tickets || false,
+        notes: contractWithDeposit.notes,
       });
-      if (contract.tenants && contract.tenants.length > 0) {
-        setTenants(contract.tenants);
+      if (contractWithDeposit.tenants && contractWithDeposit.tenants.length > 0) {
+        setTenants(contractWithDeposit.tenants);
       }
     }
   }, [contract]);
@@ -122,6 +134,9 @@ export default function RentalContractModal({
         additional_costs: Number(formData.additional_costs),
         total_rent: totalRent,
         deposit: Number(formData.deposit),
+        deposit_type: formData.deposit_type || null,
+        deposit_account: formData.deposit_account || null,
+        deposit_received_date: formData.deposit_received_date || null,
         contract_start: formData.contract_start,
         contract_end: formData.contract_end || null,
         contract_type: formData.contract_type,
@@ -413,6 +428,58 @@ export default function RentalContractModal({
                   }
                   className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="z.B. 9750"
+                />{" "}
+              </div>{" "}
+              <div>
+                {" "}
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  {" "}
+                  Kautionsart{" "}
+                </label>{" "}
+                <select
+                  value={formData.deposit_type}
+                  onChange={(e) =>
+                    setFormData({ ...formData, deposit_type: e.target.value })
+                  }
+                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                >
+                  {" "}
+                  <option value="">Bitte wählen...</option>{" "}
+                  <option value="cash">Bar</option>{" "}
+                  <option value="bank_account">Bankkonto</option>{" "}
+                  <option value="deposit_account">Mietkautionskonto</option>{" "}
+                  <option value="guarantee">Bürgschaft</option>{" "}
+                </select>{" "}
+              </div>{" "}
+              <div>
+                {" "}
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  {" "}
+                  Eingangsdatum{" "}
+                </label>{" "}
+                <input
+                  type="date"
+                  value={formData.deposit_received_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, deposit_received_date: e.target.value })
+                  }
+                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />{" "}
+              </div>{" "}
+              <div className="col-span-2">
+                {" "}
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  {" "}
+                  Konto/Details{" "}
+                </label>{" "}
+                <input
+                  type="text"
+                  value={formData.deposit_account}
+                  onChange={(e) =>
+                    setFormData({ ...formData, deposit_account: e.target.value })
+                  }
+                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  placeholder="z.B. Mietkautionskonto bei Bank XYZ, IBAN: DE..."
                 />{" "}
               </div>{" "}
             </div>{" "}

@@ -25,7 +25,11 @@ interface Property {
   };
 }
 
-export default function PropertiesView() {
+interface PropertiesViewProps {
+  onNavigateToTenant?: (tenantId: string) => void;
+}
+
+export default function PropertiesView({ onNavigateToTenant }: PropertiesViewProps = {}) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -110,6 +114,7 @@ export default function PropertiesView() {
           setSelectedProperty(null);
           loadProperties();
         }}
+        onNavigateToTenant={onNavigateToTenant}
       />
     );
   }

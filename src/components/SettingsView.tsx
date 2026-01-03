@@ -328,6 +328,45 @@ export default function SettingsView({
               {" "}
               <label className="block text-sm font-medium text-gray-400 mb-2">
                 {" "}
+                Aktueller Tarif{" "}
+              </label>{" "}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                {" "}
+                <div className="flex items-center gap-3">
+                  {" "}
+                  <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                    {" "}
+                    <CreditCard className="w-5 h-5 text-primary-blue" />{" "}
+                  </div>{" "}
+                  <div>
+                    {" "}
+                    <div className="font-semibold text-dark">
+                      {" "}
+                      {subscription?.status === "active" ? "Pro" : "Basic"}{" "}
+                    </div>{" "}
+                    <div className="text-sm text-gray-400">
+                      {" "}
+                      {subscription?.status === "active"
+                        ? "Alle Funktionen freigeschaltet"
+                        : "Basis-Funktionen"}{" "}
+                    </div>{" "}
+                  </div>{" "}
+                </div>{" "}
+                {subscription?.status !== "active" && (
+                  <button
+                    onClick={() => setActiveTab("billing")}
+                    className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                  >
+                    {" "}
+                    Auf Pro upgraden{" "}
+                  </button>
+                )}{" "}
+              </div>{" "}
+            </div>{" "}
+            <div>
+              {" "}
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                {" "}
                 <div className="flex items-center gap-2">
                   {" "}
                   <Globe className="w-4 h-4" /> {t("settings.language")}{" "}

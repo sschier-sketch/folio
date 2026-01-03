@@ -57,11 +57,17 @@ export default function Dashboard() {
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleNavigateToTenant = (tenantId: string) => {
+    setSelectedTenantId(tenantId);
+    setCurrentView("tenants");
+  };
   const navigation = [
     { id: "home", labelKey: "nav.overview", icon: Home },
     { id: "properties", labelKey: "nav.properties", icon: Building2 },
@@ -375,8 +381,8 @@ export default function Dashboard() {
           <main className="flex-1 min-w-0">
             {" "}
             {currentView === "home" && <DashboardHome />}{" "}
-            {currentView === "properties" && <PropertiesView />}{" "}
-            {currentView === "tenants" && <TenantsView />}{" "}
+            {currentView === "properties" && <PropertiesView onNavigateToTenant={handleNavigateToTenant} />}{" "}
+            {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} />}{" "}
             {currentView === "payments" && <RentPaymentsView />}{" "}
             {currentView === "tickets" && <TicketsView />}{" "}
             {currentView === "financial" && <FinancesView />}{" "}
