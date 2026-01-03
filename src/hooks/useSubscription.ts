@@ -74,5 +74,6 @@ export function useSubscription() {
     getSubscriptionPlan,
     isActive,
     hasPremium: hasPremium(),
+    isPro: hasPremium(),
   };
 }
