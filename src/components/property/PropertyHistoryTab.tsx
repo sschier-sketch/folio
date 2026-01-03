@@ -50,6 +50,8 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
       case "unit_created":
       case "unit_updated":
         return <Home className="w-5 h-5 text-primary-blue" />;
+      case "equipment_updated":
+        return <FileCheck className="w-5 h-5 text-primary-blue" />;
       case "tenant_change":
         return <User className="w-5 h-5 text-emerald-600" />;
       case "rent_increase":
@@ -69,6 +71,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
     const labels: Record<string, string> = {
       unit_created: "Einheit angelegt",
       unit_updated: "Einheit aktualisiert",
+      equipment_updated: "Ausstattung aktualisiert",
       tenant_change: "Mieterwechsel",
       rent_increase: "Mieterhöhung",
       maintenance: "Instandhaltung",

@@ -24,12 +24,28 @@ interface PropertyUnit {
     first_name: string;
     last_name: string;
   } | null;
+  rental_contract?: {
+    id: string;
+    base_rent: number;
+  } | null;
+}
+
+interface RentalContractWithTenants {
+  id: string;
+  property_id: string;
+  base_rent: number;
+  tenants: Array<{
+    id: string;
+    first_name: string;
+    last_name: string;
+  }>;
 }
 
 export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [units, setUnits] = useState<PropertyUnit[]>([]);
+  const [availableContracts, setAvailableContracts] = useState<RentalContractWithTenants[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUnit, setEditingUnit] = useState<PropertyUnit | null>(null);
@@ -40,15 +56,19 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     area_sqm: "",
     rooms: "",
     status: "vacant",
-    rent_amount: "",
+    tenant_id: "",
     notes: "",
   });
 
   useEffect(() => {
     if (user) {
-      loadUnits();
+      loadData();
     }
   }, [user, propertyId]);
+
+  async function loadData() {
+    await Promise.all([loadUnits(), loadContracts()]);
+  }
 
   async function loadUnits() {
     try {
@@ -61,26 +81,78 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
 
       if (error) throw error;
 
-      const unitsWithTenants = await Promise.all(
+      const unitsWithDetails = await Promise.all(
         (data || []).map(async (unit) => {
+          let tenant = null;
+          let rentalContract = null;
+
           if (unit.tenant_id) {
-            const { data: tenant } = await supabase
+            const { data: tenantData } = await supabase
               .from("tenants")
               .select("id, first_name, last_name")
               .eq("id", unit.tenant_id)
               .maybeSingle();
 
-            return { ...unit, tenant };
+            tenant = tenantData;
+
+            const { data: contractData } = await supabase
+              .from("rental_contracts")
+              .select("id, base_rent")
+              .contains("tenants", [{ id: unit.tenant_id }])
+              .eq("property_id", propertyId)
+              .maybeSingle();
+
+            if (!contractData) {
+              const { data: contractByTenant } = await supabase
+                .from("tenants")
+                .select("contract_id, rental_contracts(id, base_rent)")
+                .eq("id", unit.tenant_id)
+                .maybeSingle();
+
+              if (contractByTenant?.rental_contracts) {
+                rentalContract = contractByTenant.rental_contracts;
+              }
+            } else {
+              rentalContract = contractData;
+            }
           }
-          return { ...unit, tenant: null };
+
+          return { ...unit, tenant, rental_contract: rentalContract };
         })
       );
 
-      setUnits(unitsWithTenants);
+      setUnits(unitsWithDetails);
     } catch (error) {
       console.error("Error loading units:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadContracts() {
+    try {
+      const { data: contracts } = await supabase
+        .from("rental_contracts")
+        .select("id, property_id, base_rent")
+        .eq("property_id", propertyId);
+
+      if (contracts) {
+        const contractsWithTenants: RentalContractWithTenants[] = [];
+        for (const contract of contracts) {
+          const { data: tenants } = await supabase
+            .from("tenants")
+            .select("id, first_name, last_name")
+            .eq("contract_id", contract.id);
+
+          contractsWithTenants.push({
+            ...contract,
+            tenants: tenants || [],
+          });
+        }
+        setAvailableContracts(contractsWithTenants);
+      }
+    } catch (error) {
+      console.error("Error loading contracts:", error);
     }
   }
 
@@ -98,7 +170,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
         area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
         rooms: formData.rooms ? parseInt(formData.rooms) : null,
         status: formData.status,
-        rent_amount: formData.rent_amount ? parseFloat(formData.rent_amount) : null,
+        tenant_id: formData.tenant_id || null,
         notes: formData.notes,
       };
 
@@ -136,7 +208,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       setShowModal(false);
       setEditingUnit(null);
       resetForm();
-      loadUnits();
+      loadData();
     } catch (error) {
       console.error("Error saving unit:", error);
       alert("Fehler beim Speichern der Einheit");
@@ -151,7 +223,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       const { error } = await supabase.from("property_units").delete().eq("id", unit.id);
 
       if (error) throw error;
-      loadUnits();
+      loadData();
     } catch (error) {
       console.error("Error deleting unit:", error);
     }
@@ -166,7 +238,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       area_sqm: unit.area_sqm ? unit.area_sqm.toString() : "",
       rooms: unit.rooms ? unit.rooms.toString() : "",
       status: unit.status,
-      rent_amount: unit.rent_amount ? unit.rent_amount.toString() : "",
+      tenant_id: unit.tenant_id || "",
       notes: unit.notes || "",
     });
     setShowModal(true);
@@ -180,7 +252,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       area_sqm: "",
       rooms: "",
       status: "vacant",
-      rent_amount: "",
+      tenant_id: "",
       notes: "",
     });
   }
@@ -212,6 +284,19 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       maintenance: "bg-blue-100 text-blue-700",
     };
     return colors[status] || "bg-gray-100 text-gray-700";
+  };
+
+  const getTenantOptions = () => {
+    const options: Array<{ value: string; label: string }> = [];
+    availableContracts.forEach((contract) => {
+      contract.tenants.forEach((tenant) => {
+        options.push({
+          value: tenant.id,
+          label: `${tenant.first_name} ${tenant.last_name}`,
+        });
+      });
+    });
+    return options;
   };
 
   if (loading) {
@@ -327,8 +412,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                       </span>
                     </td>
                     <td className="py-4 px-6 text-sm text-right text-gray-700 font-medium">
-                      {unit.rent_amount
-                        ? `${unit.rent_amount.toFixed(2)} €`
+                      {unit.rental_contract?.base_rent
+                        ? `${unit.rental_contract.base_rent.toFixed(2)} €`
                         : "-"}
                     </td>
                     <td className="py-4 px-6">
@@ -472,17 +557,25 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
 
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Miete (€)
+                    Mieter (aus Mietverhältnissen)
                   </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.rent_amount}
+                  <select
+                    value={formData.tenant_id}
                     onChange={(e) =>
-                      setFormData({ ...formData, rent_amount: e.target.value })
+                      setFormData({ ...formData, tenant_id: e.target.value })
                     }
                     className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
+                  >
+                    <option value="">Kein Mieter</option>
+                    {getTenantOptions().map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Die Miete wird automatisch aus dem Mietverhältnis übernommen
+                  </p>
                 </div>
 
                 <div className="col-span-2">
