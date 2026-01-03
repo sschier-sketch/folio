@@ -28,6 +28,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const [documentType, setDocumentType] = useState("other");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
+  const [documentDate, setDocumentDate] = useState("");
   const [associationType, setAssociationType] = useState("");
   const [associationId, setAssociationId] = useState("");
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
@@ -195,6 +196,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           document_type: documentType,
           category: category || null,
           description: description || null,
+          document_date: documentDate || null,
         })
         .select()
         .single();
@@ -484,6 +486,43 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+
+          <DocumentFeatureGuard
+            feature="document-date"
+            fallback={
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dokumentdatum
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed"
+                  />
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Pro Feature: Geben Sie das tatsächliche Datum des Dokuments an
+                </p>
+              </div>
+            }
+          >
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Dokumentdatum (Optional)
+              </label>
+              <input
+                type="date"
+                value={documentDate}
+                onChange={(e) => setDocumentDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Z.B. Rechnungsdatum, Vertragsdatum (nicht Upload-Datum)
+              </p>
+            </div>
+          </DocumentFeatureGuard>
         </div>
       </div>
 

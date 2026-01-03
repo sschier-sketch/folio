@@ -37,6 +37,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
     assignmentStatus: "",
     propertyId: "",
     timeRange: "",
+    archiveStatus: "active",
   });
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -46,7 +47,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
       loadDocuments();
       loadProperties();
     }
-  }, [user]);
+  }, [user, filters.archiveStatus]);
 
   async function loadProperties() {
     try {
@@ -65,11 +66,15 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
     try {
       setLoading(true);
 
-      const { data: docs } = await supabase
-        .from("documents")
-        .select("*")
-        .eq("is_archived", false)
-        .order("upload_date", { ascending: false });
+      let query = supabase.from("documents").select("*");
+
+      if (filters.archiveStatus === "active") {
+        query = query.eq("is_archived", false);
+      } else if (filters.archiveStatus === "archived") {
+        query = query.eq("is_archived", true);
+      }
+
+      const { data: docs } = await query.order("upload_date", { ascending: false });
 
       if (docs) {
         const docsWithAssociations = await Promise.all(
@@ -278,7 +283,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-4 pt-4 border-t border-gray-200">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Dokumenttyp
@@ -310,6 +315,21 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                 <option value="">Alle</option>
                 <option value="assigned">Zugeordnet</option>
                 <option value="unassigned">Nicht zugeordnet</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                value={filters.archiveStatus}
+                onChange={(e) => setFilters({ ...filters, archiveStatus: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="active">Aktive Dokumente</option>
+                <option value="archived">Archivierte Dokumente</option>
+                <option value="">Alle Dokumente</option>
               </select>
             </div>
 
