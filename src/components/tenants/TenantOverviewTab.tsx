@@ -10,6 +10,7 @@ import {
   Plus,
   X,
   FileText,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
@@ -119,6 +120,40 @@ export default function TenantOverviewTab({
       }
     } catch (error) {
       console.error("Error updating status:", error);
+    }
+  }
+
+  async function handleDeleteContract() {
+    if (!contract) return;
+
+    if (
+      !confirm(
+        "Möchten Sie dieses Mietverhältnis wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const { error: updateTenantError } = await supabase
+        .from("tenants")
+        .update({ contract_id: null })
+        .eq("id", tenantId);
+
+      if (updateTenantError) throw updateTenantError;
+
+      const { error: deleteError } = await supabase
+        .from("rental_contracts")
+        .delete()
+        .eq("id", contract.id);
+
+      if (deleteError) throw deleteError;
+
+      setContract(null);
+      alert("Mietverhältnis erfolgreich gelöscht");
+    } catch (error) {
+      console.error("Error deleting contract:", error);
+      alert("Fehler beim Löschen des Mietverhältnisses");
     }
   }
 
@@ -417,10 +452,19 @@ export default function TenantOverviewTab({
           <h3 className="text-lg font-semibold text-dark">
             Mietverhältnis-Übersicht
           </h3>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-            <Edit className="w-4 h-4" />
-            Bearbeiten
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+              <Edit className="w-4 h-4" />
+              Bearbeiten
+            </button>
+            <button
+              onClick={handleDeleteContract}
+              className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Löschen
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
