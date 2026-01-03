@@ -4,7 +4,6 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import LoanModal from "../LoanModal";
-import RentalContractModal from "../RentalContractModal";
 
 interface PropertyOverviewTabProps {
   property: {
@@ -73,8 +72,6 @@ export default function PropertyOverviewTab({ property, onUpdate }: PropertyOver
   const [contracts, setContracts] = useState<RentalContract[]>([]);
   const [showLoanModal, setShowLoanModal] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
-  const [showContractModal, setShowContractModal] = useState(false);
-  const [selectedContract, setSelectedContract] = useState<RentalContract | null>(null);
   const [showGrossYieldTooltip, setShowGrossYieldTooltip] = useState(false);
   const [showNetYieldTooltip, setShowNetYieldTooltip] = useState(false);
 
@@ -154,25 +151,6 @@ export default function PropertyOverviewTab({ property, onUpdate }: PropertyOver
     }
   }
 
-  async function handleDeleteContract(id: string) {
-    if (
-      !confirm(
-        "Möchten Sie dieses Mietverhältnis wirklich löschen? Alle zugehörigen Mieter werden ebenfalls gelöscht."
-      )
-    )
-      return;
-
-    try {
-      const { error } = await supabase
-        .from("rental_contracts")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-      loadData();
-    } catch (error) {
-      console.error("Error deleting contract:", error);
-    }
-  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("de-DE", {
@@ -476,18 +454,7 @@ export default function PropertyOverviewTab({ property, onUpdate }: PropertyOver
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-dark">Mietverhältnisse</h2>
-          <button
-            onClick={() => {
-              setSelectedContract(null);
-              setShowContractModal(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Mietverhältnis hinzufügen
-          </button>
-        </div>
+        <h2 className="text-xl font-semibold text-dark mb-6">Mietverhältnisse</h2>
 
         {contracts.length === 0 ? (
           <p className="text-gray-400 text-center py-8">
@@ -497,47 +464,24 @@ export default function PropertyOverviewTab({ property, onUpdate }: PropertyOver
           <div className="space-y-3">
             {contracts.map((contract) => (
               <div key={contract.id} className="p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-4">
-                    <Users className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <div className="font-semibold text-dark">
-                        {contract.tenants && contract.tenants.length > 0
-                          ? contract.tenants
-                              .map((t) => `${t.first_name} ${t.last_name}`)
-                              .join(", ")
-                          : "Keine Mieter"}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {formatCurrency(contract.base_rent)} Kaltmiete
-                      </div>
+                <div className="flex items-center gap-4">
+                  <Users className="w-5 h-5 text-gray-400" />
+                  <div className="flex-1">
+                    <div className="font-semibold text-dark">
+                      {contract.tenants && contract.tenants.length > 0
+                        ? contract.tenants
+                            .map((t) => `${t.first_name} ${t.last_name}`)
+                            .join(", ")
+                        : "Keine Mieter"}
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedContract(contract);
-                        setShowContractModal(true);
-                      }}
-                      className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteContract(contract.id)}
-                      className="p-2 text-gray-300 hover:text-red-600 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="text-sm text-gray-500 mt-1">
+                      {formatCurrency(contract.base_rent)} Kaltmiete
+                      {contract.tenants && contract.tenants.length > 1 && (
+                        <span className="ml-2">• {contract.tenants.length} Mieter</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                {contract.tenants && contract.tenants.length > 1 && (
-                  <div className="mt-2 pt-2 border-t border-gray-200">
-                    <div className="text-xs text-gray-400">
-                      {contract.tenants.length} Mieter im Mietverhältnis
-                    </div>
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -555,23 +499,6 @@ export default function PropertyOverviewTab({ property, onUpdate }: PropertyOver
           onSave={() => {
             setShowLoanModal(false);
             setSelectedLoan(null);
-            loadData();
-            if (onUpdate) onUpdate();
-          }}
-        />
-      )}
-
-      {showContractModal && (
-        <RentalContractModal
-          contract={selectedContract}
-          properties={[{ id: property.id, name: property.name }]}
-          onClose={() => {
-            setShowContractModal(false);
-            setSelectedContract(null);
-          }}
-          onSave={() => {
-            setShowContractModal(false);
-            setSelectedContract(null);
             loadData();
             if (onUpdate) onUpdate();
           }}
