@@ -19,9 +19,11 @@ interface PropertyUnit {
   tenant_id: string | null;
   rent_amount: number | null;
   notes: string;
-  tenants?: {
-    name: string;
-  };
+  tenant?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+  } | null;
 }
 
 export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) {
@@ -53,17 +55,28 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       setLoading(true);
       const { data, error } = await supabase
         .from("property_units")
-        .select(`
-          *,
-          tenants:tenant_id (
-            name
-          )
-        `)
+        .select("*")
         .eq("property_id", propertyId)
         .order("unit_number", { ascending: true });
 
       if (error) throw error;
-      setUnits(data || []);
+
+      const unitsWithTenants = await Promise.all(
+        (data || []).map(async (unit) => {
+          if (unit.tenant_id) {
+            const { data: tenant } = await supabase
+              .from("tenants")
+              .select("id, first_name, last_name")
+              .eq("id", unit.tenant_id)
+              .maybeSingle();
+
+            return { ...unit, tenant };
+          }
+          return { ...unit, tenant: null };
+        })
+      );
+
+      setUnits(unitsWithTenants);
     } catch (error) {
       console.error("Error loading units:", error);
     } finally {
@@ -284,9 +297,9 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                   <tr key={unit.id} className="border-b border-gray-100">
                     <td className="py-4 px-6 text-sm text-gray-700">
                       <div className="font-medium">{unit.unit_number}</div>
-                      {unit.tenants && (
+                      {unit.tenant && (
                         <div className="text-xs text-gray-400 mt-1">
-                          {unit.tenants.name}
+                          {unit.tenant.first_name} {unit.tenant.last_name}
                         </div>
                       )}
                     </td>
