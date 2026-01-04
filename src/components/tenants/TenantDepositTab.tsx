@@ -38,8 +38,8 @@ export default function TenantDepositTab({
   const [editData, setEditData] = useState({
     deposit_type: "none",
     deposit_amount: "",
-    deposit_payment_type: "transfer",
-    deposit_due_date: "",
+    deposit_status: "open",
+    deposit_payment_date: "",
   });
 
   useEffect(() => {
@@ -65,8 +65,8 @@ export default function TenantDepositTab({
         setEditData({
           deposit_type: contractData.deposit_type || "none",
           deposit_amount: contractData.deposit_amount?.toString() || "0",
-          deposit_payment_type: contractData.deposit_payment_type || "transfer",
-          deposit_due_date: contractData.deposit_due_date || "",
+          deposit_status: contractData.deposit_status || "open",
+          deposit_payment_date: contractData.deposit_due_date || "",
         });
 
         const { data: historyData } = await supabase
@@ -94,9 +94,8 @@ export default function TenantDepositTab({
           deposit_type: editData.deposit_type,
           deposit_amount: parseFloat(editData.deposit_amount) || 0,
           deposit: parseFloat(editData.deposit_amount) || 0,
-          deposit_payment_type: editData.deposit_payment_type,
-          deposit_due_date: editData.deposit_due_date || null,
-          deposit_status: editData.deposit_type === "none" ? "complete" : (parseFloat(editData.deposit_amount) > 0 ? "open" : "complete"),
+          deposit_status: editData.deposit_type === "none" ? "complete" : editData.deposit_status,
+          deposit_due_date: editData.deposit_payment_date || null,
         })
         .eq("id", contract.id);
 
@@ -255,30 +254,31 @@ export default function TenantDepositTab({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Zahlungsart
+                    Status *
                   </label>
                   <select
-                    value={editData.deposit_payment_type}
+                    value={editData.deposit_status}
                     onChange={(e) =>
-                      setEditData({ ...editData, deposit_payment_type: e.target.value })
+                      setEditData({ ...editData, deposit_status: e.target.value })
                     }
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   >
-                    <option value="transfer">Überweisung</option>
-                    <option value="cash">Bar</option>
-                    <option value="guarantee">Bürgschaft</option>
+                    <option value="open">Offen</option>
+                    <option value="partial">Teilweise bezahlt</option>
+                    <option value="complete">Vollständig bezahlt</option>
+                    <option value="returned">Zurückgezahlt</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Fälligkeitsdatum
+                    Bezahldatum
                   </label>
                   <input
                     type="date"
-                    value={editData.deposit_due_date}
+                    value={editData.deposit_payment_date}
                     onChange={(e) =>
-                      setEditData({ ...editData, deposit_due_date: e.target.value })
+                      setEditData({ ...editData, deposit_payment_date: e.target.value })
                     }
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   />

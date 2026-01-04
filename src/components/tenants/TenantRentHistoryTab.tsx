@@ -333,25 +333,67 @@ export default function TenantRentHistoryTab({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="text-sm text-gray-400 mb-1">Kaltmiete</div>
-                <div className="text-2xl font-bold text-dark">
-                  {contract.monthly_rent?.toFixed(2) || "0.00"} €
+            {contract.rent_type === "flat_rate" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Pauschalmiete (Warmmiete)</div>
+                  <div className="text-2xl font-bold text-dark">
+                    {contract.flat_rate_amount?.toFixed(2) || "0.00"} €
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">pro Monat</div>
                 </div>
-                <div className="text-sm text-gray-600 mt-1">pro Monat</div>
               </div>
+            ) : contract.rent_type === "cold_rent_advance" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Kaltmiete</div>
+                  <div className="text-2xl font-bold text-dark">
+                    {contract.monthly_rent?.toFixed(2) || "0.00"} €
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">pro Monat</div>
+                </div>
 
-              <div>
-                <div className="text-sm text-gray-400 mb-1">
-                  Nebenkostenvorauszahlung
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">
+                    Nebenkostenvorauszahlung
+                  </div>
+                  <div className="text-2xl font-bold text-dark">
+                    {contract.total_advance?.toFixed(2) || "0.00"} €
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">pro Monat</div>
                 </div>
-                <div className="text-2xl font-bold text-dark">
-                  {contract.utilities_advance?.toFixed(2) || "0.00"} €
-                </div>
-                <div className="text-sm text-gray-600 mt-1">pro Monat</div>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Kaltmiete</div>
+                  <div className="text-2xl font-bold text-dark">
+                    {contract.monthly_rent?.toFixed(2) || "0.00"} €
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">pro Monat</div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">
+                    Betriebskosten
+                  </div>
+                  <div className="text-2xl font-bold text-dark">
+                    {contract.operating_costs?.toFixed(2) || "0.00"} €
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">pro Monat</div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">
+                    Heizkosten
+                  </div>
+                  <div className="text-2xl font-bold text-dark">
+                    {contract.heating_costs?.toFixed(2) || "0.00"} €
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">pro Monat</div>
+                </div>
+              </div>
+            )}
 
             {history.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-100">

@@ -29,7 +29,7 @@ interface TenantModalProps {
 
 type RentType = "flat_rate" | "cold_rent_advance" | "cold_rent_utilities_heating";
 type DepositType = "none" | "cash" | "bank_transfer" | "pledged_savings" | "bank_guarantee";
-type DepositPaymentType = "cash" | "transfer" | "guarantee" | "none";
+type DepositStatus = "open" | "partial" | "complete" | "returned";
 
 export default function TenantModal({
   tenant,
@@ -74,8 +74,8 @@ export default function TenantModal({
   const [depositData, setDepositData] = useState({
     deposit_type: "none" as DepositType,
     deposit_amount: "",
-    deposit_due_date: "",
-    deposit_payment_type: "transfer" as DepositPaymentType,
+    deposit_payment_date: "",
+    deposit_status: "open" as DepositStatus,
   });
 
   const [costAllocations, setCostAllocations] = useState<string[]>([]);
@@ -123,8 +123,8 @@ export default function TenantModal({
           setDepositData({
             deposit_type: contract.deposit_type || "none",
             deposit_amount: contract.deposit_amount?.toString() || "",
-            deposit_due_date: contract.deposit_due_date || "",
-            deposit_payment_type: contract.deposit_payment_type || "transfer",
+            deposit_payment_date: contract.deposit_due_date || "",
+            deposit_status: contract.deposit_status || "open",
           });
         }
       }
@@ -222,9 +222,8 @@ export default function TenantModal({
             deposit_type: depositData.deposit_type,
             deposit: parseFloat(depositData.deposit_amount) || 0,
             deposit_amount: parseFloat(depositData.deposit_amount) || 0,
-            deposit_due_date: depositData.deposit_due_date || null,
-            deposit_payment_type: depositData.deposit_payment_type,
-            deposit_status: depositData.deposit_type === "none" ? "complete" : (parseFloat(depositData.deposit_amount) > 0 ? "open" : "complete"),
+            deposit_due_date: depositData.deposit_payment_date || null,
+            deposit_status: depositData.deposit_type === "none" ? "complete" : depositData.deposit_status,
             contract_start: tenantData.move_in_date,
             start_date: tenantData.move_in_date,
             contract_end: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
@@ -338,9 +337,8 @@ export default function TenantModal({
                 deposit_type: depositData.deposit_type,
                 deposit: parseFloat(depositData.deposit_amount) || 0,
                 deposit_amount: parseFloat(depositData.deposit_amount) || 0,
-                deposit_due_date: depositData.deposit_due_date || null,
-                deposit_payment_type: depositData.deposit_payment_type,
-                deposit_status: depositData.deposit_type === "none" ? "complete" : (parseFloat(depositData.deposit_amount) > 0 ? "open" : "complete"),
+                deposit_due_date: depositData.deposit_payment_date || null,
+                deposit_status: depositData.deposit_type === "none" ? "complete" : depositData.deposit_status,
                 contract_start: tenantData.move_in_date,
                 start_date: tenantData.move_in_date,
                 contract_end: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
@@ -1010,17 +1008,34 @@ export default function TenantModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">
-                Fällig zum
+                Status
               </label>
-              <input
-                type="date"
-                value={depositData.deposit_due_date}
+              <select
+                value={depositData.deposit_status}
                 onChange={(e) =>
-                  setDepositData({ ...depositData, deposit_due_date: e.target.value })
+                  setDepositData({ ...depositData, deposit_status: e.target.value as DepositStatus })
                 }
                 className="w-full px-4 py-2 border border-gray-100 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
-              />
+              >
+                <option value="open">Offen</option>
+                <option value="partial">Teilweise bezahlt</option>
+                <option value="complete">Vollständig bezahlt</option>
+                <option value="returned">Zurückgezahlt</option>
+              </select>
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Bezahldatum
+            </label>
+            <input
+              type="date"
+              value={depositData.deposit_payment_date}
+              onChange={(e) =>
+                setDepositData({ ...depositData, deposit_payment_date: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-100 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            />
           </div>
         </div>
       )}
