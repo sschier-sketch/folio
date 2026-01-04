@@ -273,7 +273,7 @@ export default function TenantModal({
 
         const totalRent = monthlyRent + utilitiesAdvance;
 
-        const { error: contractError } = await supabase
+        const { data: newContract, error: contractError } = await supabase
           .from("rental_contracts")
           .insert([
             {
@@ -306,16 +306,18 @@ export default function TenantModal({
               contract_type: tenantData.is_unlimited ? "unlimited" : "limited",
               status: "active",
             },
-          ]);
+          ])
+          .select()
+          .single();
 
         if (contractError) throw contractError;
 
         const { error: updateError } = await supabase
           .from("tenants")
-          .update({ contract_id: newTenant.id })
+          .update({ contract_id: newContract.id })
           .eq("id", newTenant.id);
 
-        if (updateError) console.warn("Could not link contract:", updateError);
+        if (updateError) throw updateError;
       }
 
       onSave();
