@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Plus, Lock, Calendar } from "lucide-react";
+import { TrendingUp, Plus, Lock, Calendar, Edit, Save, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -20,8 +20,15 @@ interface RentHistory {
 
 interface Contract {
   id: string;
+  rent_type: string;
+  flat_rate_amount: number;
+  cold_rent: number;
+  total_advance: number;
+  operating_costs: number;
+  heating_costs: number;
   monthly_rent: number;
   utilities_advance: number;
+  total_rent: number;
 }
 
 export default function TenantRentHistoryTab({
@@ -32,6 +39,15 @@ export default function TenantRentHistoryTab({
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState<Contract | null>(null);
   const [history, setHistory] = useState<RentHistory[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    rent_type: "flat_rate",
+    flat_rate_amount: "",
+    cold_rent: "",
+    total_advance: "",
+    operating_costs: "",
+    heating_costs: "",
+  });
 
   useEffect(() => {
     if (user && tenantId) {
@@ -53,6 +69,14 @@ export default function TenantRentHistoryTab({
 
       if (contractData) {
         setContract(contractData);
+        setEditData({
+          rent_type: contractData.rent_type || "flat_rate",
+          flat_rate_amount: contractData.flat_rate_amount?.toString() || "0",
+          cold_rent: contractData.cold_rent?.toString() || "0",
+          total_advance: contractData.total_advance?.toString() || "0",
+          operating_costs: contractData.operating_costs?.toString() || "0",
+          heating_costs: contractData.heating_costs?.toString() || "0",
+        });
 
         const { data: historyData } = await supabase
           .from("rent_history")
@@ -66,6 +90,53 @@ export default function TenantRentHistoryTab({
       console.error("Error loading rent history:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleSaveRent() {
+    if (!contract || !user) return;
+
+    try {
+      let monthlyRent = 0;
+      let utilitiesAdvance = 0;
+
+      if (editData.rent_type === "flat_rate") {
+        monthlyRent = parseFloat(editData.flat_rate_amount) || 0;
+      } else if (editData.rent_type === "cold_rent_advance") {
+        monthlyRent = parseFloat(editData.cold_rent) || 0;
+        utilitiesAdvance = parseFloat(editData.total_advance) || 0;
+      } else if (editData.rent_type === "cold_rent_utilities_heating") {
+        monthlyRent = parseFloat(editData.cold_rent) || 0;
+        utilitiesAdvance = (parseFloat(editData.operating_costs) || 0) + (parseFloat(editData.heating_costs) || 0);
+      }
+
+      const totalRent = monthlyRent + utilitiesAdvance;
+
+      const { error } = await supabase
+        .from("rental_contracts")
+        .update({
+          rent_type: editData.rent_type,
+          flat_rate_amount: editData.rent_type === "flat_rate" ? parseFloat(editData.flat_rate_amount) || 0 : 0,
+          cold_rent: editData.rent_type !== "flat_rate" ? parseFloat(editData.cold_rent) || 0 : 0,
+          total_advance: editData.rent_type === "cold_rent_advance" ? parseFloat(editData.total_advance) || 0 : 0,
+          operating_costs: editData.rent_type === "cold_rent_utilities_heating" ? parseFloat(editData.operating_costs) || 0 : 0,
+          heating_costs: editData.rent_type === "cold_rent_utilities_heating" ? parseFloat(editData.heating_costs) || 0 : 0,
+          base_rent: monthlyRent,
+          monthly_rent: monthlyRent,
+          additional_costs: utilitiesAdvance,
+          utilities_advance: utilitiesAdvance,
+          total_rent: totalRent,
+        })
+        .eq("id", contract.id);
+
+      if (error) throw error;
+
+      setIsEditing(false);
+      await loadData();
+      alert("Mietdaten erfolgreich aktualisiert");
+    } catch (error) {
+      console.error("Error updating rent:", error);
+      alert("Fehler beim Aktualisieren der Mietdaten");
     }
   }
 
@@ -99,39 +170,200 @@ export default function TenantRentHistoryTab({
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-dark mb-4">
-          Aktuelle Miete
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <div className="text-sm text-gray-400 mb-1">Kaltmiete</div>
-            <div className="text-2xl font-bold text-dark">
-              {contract.monthly_rent.toFixed(2)} €
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-dark">
+            Aktuelle Miete
+          </h3>
+          {!isEditing ? (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            >
+              <Edit className="w-4 h-4" />
+              Bearbeiten
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  loadData();
+                }}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                <X className="w-4 h-4" />
+                Abbrechen
+              </button>
+              <button
+                onClick={handleSaveRent}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                Speichern
+              </button>
             </div>
-            <div className="text-sm text-gray-600 mt-1">pro Monat</div>
-          </div>
-
-          <div>
-            <div className="text-sm text-gray-400 mb-1">
-              Nebenkostenvorauszahlung
-            </div>
-            <div className="text-2xl font-bold text-dark">
-              {contract.utilities_advance?.toFixed(2) || "0.00"} €
-            </div>
-            <div className="text-sm text-gray-600 mt-1">pro Monat</div>
-          </div>
+          )}
         </div>
 
-        {history.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="text-sm text-gray-400">Letzte Änderung</div>
-            <div className="text-sm text-gray-700 mt-1">
-              {new Date(history[0].effective_date).toLocaleDateString("de-DE")}
-              {" - "}
-              {getReasonLabel(history[0].reason)}
+        {isEditing ? (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mietart *
+              </label>
+              <select
+                value={editData.rent_type}
+                onChange={(e) =>
+                  setEditData({ ...editData, rent_type: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="flat_rate">Pauschalmiete (Warmmiete)</option>
+                <option value="cold_rent_advance">
+                  Kaltmiete + Vorauszahlung
+                </option>
+                <option value="cold_rent_utilities_heating">
+                  Kaltmiete + Betriebskosten + Heizkosten
+                </option>
+              </select>
             </div>
+
+            {editData.rent_type === "flat_rate" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pauschalmiete *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editData.flat_rate_amount}
+                  onChange={(e) =>
+                    setEditData({ ...editData, flat_rate_amount: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="0.00"
+                />
+              </div>
+            )}
+
+            {editData.rent_type === "cold_rent_advance" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Kaltmiete *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editData.cold_rent}
+                    onChange={(e) =>
+                      setEditData({ ...editData, cold_rent: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Vorauszahlung gesamt *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editData.total_advance}
+                    onChange={(e) =>
+                      setEditData({ ...editData, total_advance: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="0.00"
+                  />
+                </div>
+              </>
+            )}
+
+            {editData.rent_type === "cold_rent_utilities_heating" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Kaltmiete *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editData.cold_rent}
+                    onChange={(e) =>
+                      setEditData({ ...editData, cold_rent: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Betriebskosten *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editData.operating_costs}
+                    onChange={(e) =>
+                      setEditData({ ...editData, operating_costs: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Heizkosten *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editData.heating_costs}
+                    onChange={(e) =>
+                      setEditData({ ...editData, heating_costs: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="0.00"
+                  />
+                </div>
+              </>
+            )}
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="text-sm text-gray-400 mb-1">Kaltmiete</div>
+                <div className="text-2xl font-bold text-dark">
+                  {contract.monthly_rent?.toFixed(2) || "0.00"} €
+                </div>
+                <div className="text-sm text-gray-600 mt-1">pro Monat</div>
+              </div>
+
+              <div>
+                <div className="text-sm text-gray-400 mb-1">
+                  Nebenkostenvorauszahlung
+                </div>
+                <div className="text-2xl font-bold text-dark">
+                  {contract.utilities_advance?.toFixed(2) || "0.00"} €
+                </div>
+                <div className="text-sm text-gray-600 mt-1">pro Monat</div>
+              </div>
+            </div>
+
+            {history.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="text-sm text-gray-400">Letzte Änderung</div>
+                <div className="text-sm text-gray-700 mt-1">
+                  {new Date(history[0].effective_date).toLocaleDateString("de-DE")}
+                  {" - "}
+                  {getReasonLabel(history[0].reason)}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

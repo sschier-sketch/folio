@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Wallet, Plus, Lock, Calendar } from "lucide-react";
+import { Wallet, Plus, Lock, Calendar, Edit, Save, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -18,9 +18,12 @@ interface DepositHistory {
 
 interface Contract {
   id: string;
+  deposit_type: string;
   deposit_amount: number;
   deposit_status: string;
   deposit_notes: string;
+  deposit_payment_type: string;
+  deposit_due_date: string;
 }
 
 export default function TenantDepositTab({
@@ -31,6 +34,13 @@ export default function TenantDepositTab({
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState<Contract | null>(null);
   const [history, setHistory] = useState<DepositHistory[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    deposit_type: "none",
+    deposit_amount: "",
+    deposit_payment_type: "transfer",
+    deposit_due_date: "",
+  });
 
   useEffect(() => {
     if (user && tenantId) {
@@ -52,6 +62,12 @@ export default function TenantDepositTab({
 
       if (contractData) {
         setContract(contractData);
+        setEditData({
+          deposit_type: contractData.deposit_type || "none",
+          deposit_amount: contractData.deposit_amount?.toString() || "0",
+          deposit_payment_type: contractData.deposit_payment_type || "transfer",
+          deposit_due_date: contractData.deposit_due_date || "",
+        });
 
         const { data: historyData } = await supabase
           .from("deposit_history")
@@ -65,6 +81,33 @@ export default function TenantDepositTab({
       console.error("Error loading deposit data:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleSaveDeposit() {
+    if (!contract || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from("rental_contracts")
+        .update({
+          deposit_type: editData.deposit_type,
+          deposit_amount: parseFloat(editData.deposit_amount) || 0,
+          deposit: parseFloat(editData.deposit_amount) || 0,
+          deposit_payment_type: editData.deposit_payment_type,
+          deposit_due_date: editData.deposit_due_date || null,
+          deposit_status: editData.deposit_type === "none" ? "complete" : (parseFloat(editData.deposit_amount) > 0 ? "open" : "complete"),
+        })
+        .eq("id", contract.id);
+
+      if (error) throw error;
+
+      setIsEditing(false);
+      await loadData();
+      alert("Kautionsdaten erfolgreich aktualisiert");
+    } catch (error) {
+      console.error("Error updating deposit:", error);
+      alert("Fehler beim Aktualisieren der Kautionsdaten");
     }
   }
 
@@ -136,44 +179,151 @@ export default function TenantDepositTab({
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-dark mb-4">
-          Kautionsinformationen
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <div className="text-sm text-gray-400 mb-1">Kautionsbetrag</div>
-            <div className="text-2xl font-bold text-dark">
-              {contract.deposit_amount?.toFixed(2) || "0.00"} €
-            </div>
-          </div>
-
-          <div>
-            <div className="text-sm text-gray-400 mb-1">Status</div>
-            <span
-              className={`inline-block px-3 py-1 rounded text-sm font-medium ${getStatusColor(
-                contract.deposit_status
-              )}`}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-dark">
+            Kautionsinformationen
+          </h3>
+          {!isEditing ? (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
             >
-              {getStatusLabel(contract.deposit_status)}
-            </span>
-          </div>
-
-          {isPremium && (
-            <div>
-              <div className="text-sm text-gray-400 mb-1">Eingegangen</div>
-              <div className="text-2xl font-bold text-dark">
-                {totalPaid.toFixed(2)} €
-              </div>
+              <Edit className="w-4 h-4" />
+              Bearbeiten
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  loadData();
+                }}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                <X className="w-4 h-4" />
+                Abbrechen
+              </button>
+              <button
+                onClick={handleSaveDeposit}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                Speichern
+              </button>
             </div>
           )}
         </div>
 
-        {contract.deposit_notes && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="text-sm text-gray-400 mb-1">Notizen</div>
-            <div className="text-sm text-gray-700">{contract.deposit_notes}</div>
+        {isEditing ? (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Kautionsart *
+              </label>
+              <select
+                value={editData.deposit_type}
+                onChange={(e) =>
+                  setEditData({ ...editData, deposit_type: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="none">Keine Kaution</option>
+                <option value="cash">Bar</option>
+                <option value="bank_transfer">Banküberweisung</option>
+                <option value="pledged_savings">Verpfändetes Sparguthaben</option>
+                <option value="bank_guarantee">Bankbürgschaft</option>
+              </select>
+            </div>
+
+            {editData.deposit_type !== "none" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Kautionsbetrag *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editData.deposit_amount}
+                    onChange={(e) =>
+                      setEditData({ ...editData, deposit_amount: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Zahlungsart
+                  </label>
+                  <select
+                    value={editData.deposit_payment_type}
+                    onChange={(e) =>
+                      setEditData({ ...editData, deposit_payment_type: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  >
+                    <option value="transfer">Überweisung</option>
+                    <option value="cash">Bar</option>
+                    <option value="guarantee">Bürgschaft</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fälligkeitsdatum
+                  </label>
+                  <input
+                    type="date"
+                    value={editData.deposit_due_date}
+                    onChange={(e) =>
+                      setEditData({ ...editData, deposit_due_date: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  />
+                </div>
+              </>
+            )}
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <div className="text-sm text-gray-400 mb-1">Kautionsbetrag</div>
+                <div className="text-2xl font-bold text-dark">
+                  {contract.deposit_amount?.toFixed(2) || "0.00"} €
+                </div>
+              </div>
+
+              <div>
+                <div className="text-sm text-gray-400 mb-1">Status</div>
+                <span
+                  className={`inline-block px-3 py-1 rounded text-sm font-medium ${getStatusColor(
+                    contract.deposit_status
+                  )}`}
+                >
+                  {getStatusLabel(contract.deposit_status)}
+                </span>
+              </div>
+
+              {isPremium && (
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Eingegangen</div>
+                  <div className="text-2xl font-bold text-dark">
+                    {totalPaid.toFixed(2)} €
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {contract.deposit_notes && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="text-sm text-gray-400 mb-1">Notizen</div>
+                <div className="text-sm text-gray-700">{contract.deposit_notes}</div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
