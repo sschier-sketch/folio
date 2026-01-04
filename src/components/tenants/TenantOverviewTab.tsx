@@ -41,6 +41,7 @@ interface Tenant {
 }
 
 interface Property {
+  id: string;
   name: string;
   address: string;
 }
@@ -52,6 +53,7 @@ export default function TenantOverviewTab({
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [property, setProperty] = useState<Property | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Tenant | null>(null);
 
@@ -65,26 +67,27 @@ export default function TenantOverviewTab({
     try {
       setLoading(true);
 
-      const { data: tenantData } = await supabase
-        .from("tenants")
-        .select("*")
-        .eq("id", tenantId)
-        .single();
+      const [tenantRes, propertiesRes] = await Promise.all([
+        supabase.from("tenants").select("*").eq("id", tenantId).single(),
+        supabase.from("properties").select("id, name, address").order("name"),
+      ]);
 
-      if (tenantData) {
-        setTenant(tenantData);
-        setFormData(tenantData);
+      if (tenantRes.data) {
+        setTenant(tenantRes.data);
+        setFormData(tenantRes.data);
 
-        if (tenantData.property_id) {
+        if (tenantRes.data.property_id) {
           const { data: propertyData } = await supabase
             .from("properties")
-            .select("name, address")
-            .eq("id", tenantData.property_id)
+            .select("id, name, address")
+            .eq("id", tenantRes.data.property_id)
             .maybeSingle();
 
           if (propertyData) setProperty(propertyData);
         }
       }
+
+      if (propertiesRes.data) setProperties(propertiesRes.data);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -93,7 +96,7 @@ export default function TenantOverviewTab({
   }
 
   async function handleSave() {
-    if (!formData || !tenant) return;
+    if (!formData || !tenant || !user) return;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
@@ -105,6 +108,7 @@ export default function TenantOverviewTab({
       const { error } = await supabase
         .from("tenants")
         .update({
+          property_id: formData.property_id,
           salutation: formData.salutation,
           first_name: formData.first_name,
           last_name: formData.last_name,
@@ -123,13 +127,62 @@ export default function TenantOverviewTab({
         })
         .eq("id", tenant.id);
 
-      if (!error) {
-        setTenant(formData);
-        setIsEditing(false);
-        alert("Änderungen erfolgreich gespeichert");
-      } else {
-        throw error;
+      if (error) throw error;
+
+      if (formData.property_id && formData.move_in_date) {
+        const { data: existingContract } = await supabase
+          .from("rental_contracts")
+          .select("id")
+          .eq("tenant_id", tenant.id)
+          .maybeSingle();
+
+        if (!existingContract) {
+          const { error: contractError } = await supabase
+            .from("rental_contracts")
+            .insert([
+              {
+                tenant_id: tenant.id,
+                property_id: formData.property_id,
+                user_id: user.id,
+                rent_type: "flat_rate",
+                flat_rate_amount: 0,
+                cold_rent: 0,
+                total_advance: 0,
+                operating_costs: 0,
+                heating_costs: 0,
+                rent_due_day: 1,
+                base_rent: 0,
+                monthly_rent: 0,
+                additional_costs: 0,
+                utilities_advance: 0,
+                total_rent: 0,
+                deposit_type: "none",
+                deposit: 0,
+                deposit_amount: 0,
+                deposit_payment_type: "transfer",
+                deposit_status: "complete",
+                contract_start: formData.move_in_date,
+                start_date: formData.move_in_date,
+                contract_end: formData.move_out_date,
+                end_date: formData.move_out_date,
+                is_unlimited: !formData.move_out_date,
+                contract_type: formData.move_out_date ? "limited" : "unlimited",
+                status: "active",
+              },
+            ])
+            .select()
+            .single();
+
+          if (contractError) {
+            console.error("Error creating contract:", contractError);
+          }
+        }
       }
+
+      setTenant(formData);
+      setIsEditing(false);
+      await loadData();
+      alert("Änderungen erfolgreich gespeichert");
     } catch (error) {
       console.error("Error updating tenant:", error);
       alert("Fehler beim Speichern der Änderungen");
@@ -240,11 +293,30 @@ export default function TenantOverviewTab({
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">Immobilie</div>
-                <div className="font-semibold text-dark">
-                  {property?.name || "Keine Immobilie zugeordnet"}
-                </div>
-                {property?.address && (
-                  <div className="text-sm text-gray-600">{property.address}</div>
+                {isEditing && formData ? (
+                  <select
+                    value={formData.property_id || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, property_id: e.target.value || null })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  >
+                    <option value="">Bitte wählen...</option>
+                    {properties.map((prop) => (
+                      <option key={prop.id} value={prop.id}>
+                        {prop.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <>
+                    <div className="font-semibold text-dark">
+                      {property?.name || "Keine Immobilie zugeordnet"}
+                    </div>
+                    {property?.address && (
+                      <div className="text-sm text-gray-600">{property.address}</div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
