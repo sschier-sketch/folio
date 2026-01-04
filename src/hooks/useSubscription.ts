@@ -29,16 +29,30 @@ export function useSubscription() {
 
     const fetchSubscription = async () => {
       try {
-        const { data, error } = await supabase
-          .from("stripe_user_subscriptions")
-          .select("*")
-          .maybeSingle();
+        const [stripeResult, billingResult] = await Promise.all([
+          supabase.from("stripe_user_subscriptions").select("*").maybeSingle(),
+          supabase.from("billing_info").select("*").eq("user_id", user.id).maybeSingle(),
+        ]);
 
-        if (error) {
-          console.error("Error fetching subscription:", error);
+        if (billingResult.data && billingResult.data.subscription_plan === "pro" && billingResult.data.subscription_status === "active") {
+          setSubscription({
+            customer_id: billingResult.data.stripe_customer_id,
+            subscription_id: null,
+            subscription_status: "active",
+            price_id: "pro_plan",
+            current_period_start: null,
+            current_period_end: billingResult.data.subscription_ends_at ? Math.floor(new Date(billingResult.data.subscription_ends_at).getTime() / 1000) : null,
+            cancel_at_period_end: false,
+            payment_method_brand: null,
+            payment_method_last4: null,
+          });
+        } else if (stripeResult.data) {
+          setSubscription(stripeResult.data);
+        } else if (stripeResult.error) {
+          console.error("Error fetching subscription:", stripeResult.error);
           setSubscription(null);
         } else {
-          setSubscription(data);
+          setSubscription(null);
         }
       } catch (error) {
         console.error("Error fetching subscription:", error);
