@@ -129,32 +129,32 @@ export default function TenantOverviewTab({
 
     if (
       !confirm(
-        "Möchten Sie dieses Mietverhältnis wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+        "Möchten Sie diesen Mieter wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
       )
     ) {
       return;
     }
 
     try {
-      const { error: updateTenantError } = await supabase
-        .from("tenants")
-        .update({ contract_id: null })
-        .eq("id", tenantId);
-
-      if (updateTenantError) throw updateTenantError;
-
-      const { error: deleteError } = await supabase
+      const { error: deleteContractError } = await supabase
         .from("rental_contracts")
         .delete()
-        .eq("id", contract.id);
+        .eq("tenant_id", tenantId);
 
-      if (deleteError) throw deleteError;
+      if (deleteContractError) throw deleteContractError;
 
-      setContract(null);
-      alert("Mietverhältnis erfolgreich gelöscht");
+      const { error: deleteTenantError } = await supabase
+        .from("tenants")
+        .delete()
+        .eq("id", tenantId);
+
+      if (deleteTenantError) throw deleteTenantError;
+
+      alert("Mieter erfolgreich gelöscht");
+      window.location.href = "/dashboard?view=tenants";
     } catch (error) {
-      console.error("Error deleting contract:", error);
-      alert("Fehler beim Löschen des Mietverhältnisses");
+      console.error("Error deleting tenant:", error);
+      alert("Fehler beim Löschen des Mieters");
     }
   }
 
