@@ -268,67 +268,69 @@ export default function TenantModal({
 
         if (tenantError) throw tenantError;
 
-        let monthlyRent = 0;
-        let utilitiesAdvance = 0;
+        if (tenantData.property_id && tenantData.move_in_date) {
+          let monthlyRent = 0;
+          let utilitiesAdvance = 0;
 
-        if (rentData.rent_type === "flat_rate") {
-          monthlyRent = parseFloat(rentData.flat_rate_amount) || 0;
-          utilitiesAdvance = 0;
-        } else if (rentData.rent_type === "cold_rent_advance") {
-          monthlyRent = parseFloat(rentData.cold_rent) || 0;
-          utilitiesAdvance = parseFloat(rentData.total_advance) || 0;
-        } else if (rentData.rent_type === "cold_rent_utilities_heating") {
-          monthlyRent = parseFloat(rentData.cold_rent) || 0;
-          utilitiesAdvance = (parseFloat(rentData.operating_costs) || 0) + (parseFloat(rentData.heating_costs) || 0);
+          if (rentData.rent_type === "flat_rate") {
+            monthlyRent = parseFloat(rentData.flat_rate_amount) || 0;
+            utilitiesAdvance = 0;
+          } else if (rentData.rent_type === "cold_rent_advance") {
+            monthlyRent = parseFloat(rentData.cold_rent) || 0;
+            utilitiesAdvance = parseFloat(rentData.total_advance) || 0;
+          } else if (rentData.rent_type === "cold_rent_utilities_heating") {
+            monthlyRent = parseFloat(rentData.cold_rent) || 0;
+            utilitiesAdvance = (parseFloat(rentData.operating_costs) || 0) + (parseFloat(rentData.heating_costs) || 0);
+          }
+
+          const totalRent = monthlyRent + utilitiesAdvance;
+
+          const { data: newContract, error: contractError } = await supabase
+            .from("rental_contracts")
+            .insert([
+              {
+                tenant_id: newTenant.id,
+                property_id: tenantData.property_id,
+                user_id: user.id,
+                rent_type: rentData.rent_type,
+                flat_rate_amount: rentData.rent_type === "flat_rate" ? parseFloat(rentData.flat_rate_amount) || 0 : 0,
+                cold_rent: rentData.rent_type !== "flat_rate" ? parseFloat(rentData.cold_rent) || 0 : 0,
+                total_advance: rentData.rent_type === "cold_rent_advance" ? parseFloat(rentData.total_advance) || 0 : 0,
+                operating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.operating_costs) || 0 : 0,
+                heating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.heating_costs) || 0 : 0,
+                rent_due_day: parseInt(rentData.rent_due_day) || 1,
+                base_rent: monthlyRent,
+                monthly_rent: monthlyRent,
+                additional_costs: utilitiesAdvance,
+                utilities_advance: utilitiesAdvance,
+                total_rent: totalRent,
+                deposit_type: depositData.deposit_type,
+                deposit: parseFloat(depositData.deposit_amount) || 0,
+                deposit_amount: parseFloat(depositData.deposit_amount) || 0,
+                deposit_due_date: depositData.deposit_due_date || null,
+                deposit_payment_type: depositData.deposit_payment_type,
+                deposit_status: depositData.deposit_type === "none" ? "complete" : (parseFloat(depositData.deposit_amount) > 0 ? "open" : "complete"),
+                contract_start: tenantData.move_in_date,
+                start_date: tenantData.move_in_date,
+                contract_end: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
+                end_date: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
+                is_unlimited: tenantData.is_unlimited,
+                contract_type: tenantData.is_unlimited ? "unlimited" : "limited",
+                status: "active",
+              },
+            ])
+            .select()
+            .single();
+
+          if (contractError) throw contractError;
+
+          const { error: updateError } = await supabase
+            .from("tenants")
+            .update({ contract_id: newContract.id })
+            .eq("id", newTenant.id);
+
+          if (updateError) throw updateError;
         }
-
-        const totalRent = monthlyRent + utilitiesAdvance;
-
-        const { data: newContract, error: contractError } = await supabase
-          .from("rental_contracts")
-          .insert([
-            {
-              tenant_id: newTenant.id,
-              property_id: tenantData.property_id,
-              user_id: user.id,
-              rent_type: rentData.rent_type,
-              flat_rate_amount: rentData.rent_type === "flat_rate" ? parseFloat(rentData.flat_rate_amount) || 0 : 0,
-              cold_rent: rentData.rent_type !== "flat_rate" ? parseFloat(rentData.cold_rent) || 0 : 0,
-              total_advance: rentData.rent_type === "cold_rent_advance" ? parseFloat(rentData.total_advance) || 0 : 0,
-              operating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.operating_costs) || 0 : 0,
-              heating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.heating_costs) || 0 : 0,
-              rent_due_day: parseInt(rentData.rent_due_day) || 1,
-              base_rent: monthlyRent,
-              monthly_rent: monthlyRent,
-              additional_costs: utilitiesAdvance,
-              utilities_advance: utilitiesAdvance,
-              total_rent: totalRent,
-              deposit_type: depositData.deposit_type,
-              deposit: parseFloat(depositData.deposit_amount) || 0,
-              deposit_amount: parseFloat(depositData.deposit_amount) || 0,
-              deposit_due_date: depositData.deposit_due_date || null,
-              deposit_payment_type: depositData.deposit_payment_type,
-              deposit_status: depositData.deposit_type === "none" ? "complete" : (parseFloat(depositData.deposit_amount) > 0 ? "open" : "complete"),
-              contract_start: tenantData.move_in_date || null,
-              start_date: tenantData.move_in_date || null,
-              contract_end: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
-              end_date: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
-              is_unlimited: tenantData.is_unlimited,
-              contract_type: tenantData.is_unlimited ? "unlimited" : "limited",
-              status: "active",
-            },
-          ])
-          .select()
-          .single();
-
-        if (contractError) throw contractError;
-
-        const { error: updateError } = await supabase
-          .from("tenants")
-          .update({ contract_id: newContract.id })
-          .eq("id", newTenant.id);
-
-        if (updateError) throw updateError;
       }
 
       onSave();

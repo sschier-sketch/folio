@@ -73,9 +73,14 @@ export default function TenantContractDetails({
 
   const tabs = [
     { id: "overview" as Tab, label: "Überblick", icon: Home },
-    { id: "contract" as Tab, label: "Vertrag & Dokumente", icon: FileText },
     { id: "rent" as Tab, label: "Miete & Historie", icon: TrendingUp },
     { id: "deposit" as Tab, label: "Kaution", icon: Wallet },
+    {
+      id: "contract" as Tab,
+      label: "Vertrag & Dokumente",
+      icon: FileText,
+      premium: true
+    },
     {
       id: "communication" as Tab,
       label: "Kommunikation",
