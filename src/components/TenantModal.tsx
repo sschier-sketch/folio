@@ -29,7 +29,7 @@ interface TenantModalProps {
 
 type RentType = "flat_rate" | "cold_rent_advance" | "cold_rent_utilities_heating";
 type DepositType = "none" | "cash" | "bank_transfer" | "pledged_savings" | "bank_guarantee";
-type DepositPaymentType = "single_payment" | "three_months";
+type DepositPaymentType = "cash" | "transfer" | "guarantee" | "none";
 
 export default function TenantModal({
   tenant,
@@ -75,32 +75,62 @@ export default function TenantModal({
     deposit_type: "none" as DepositType,
     deposit_amount: "",
     deposit_due_date: "",
-    deposit_payment_type: "single_payment" as DepositPaymentType,
+    deposit_payment_type: "transfer" as DepositPaymentType,
   });
 
   const [costAllocations, setCostAllocations] = useState<string[]>([]);
 
   useEffect(() => {
-    if (tenant) {
-      setTenantData({
-        property_id: tenant.property_id,
-        salutation: "",
-        first_name: tenant.first_name,
-        last_name: tenant.last_name,
-        street: "",
-        house_number: "",
-        zip_code: "",
-        city: "",
-        country: "Deutschland",
-        email: tenant.email || "",
-        phone: tenant.phone || "",
-        move_in_date: tenant.move_in_date || "",
-        move_out_date: tenant.move_out_date || "",
-        is_unlimited: !tenant.move_out_date,
-        household_size: 1,
-        is_active: tenant.is_active,
-      });
-    }
+    const loadTenantData = async () => {
+      if (tenant) {
+        setTenantData({
+          property_id: tenant.property_id,
+          salutation: tenant.salutation || "",
+          first_name: tenant.first_name,
+          last_name: tenant.last_name,
+          street: tenant.street || "",
+          house_number: tenant.house_number || "",
+          zip_code: tenant.zip_code || "",
+          city: tenant.city || "",
+          country: tenant.country || "Deutschland",
+          email: tenant.email || "",
+          phone: tenant.phone || "",
+          move_in_date: tenant.move_in_date || "",
+          move_out_date: tenant.move_out_date || "",
+          is_unlimited: !tenant.move_out_date,
+          household_size: tenant.household_size || 1,
+          is_active: tenant.is_active,
+        });
+
+        const { data: contract } = await supabase
+          .from("rental_contracts")
+          .select("*")
+          .eq("tenant_id", tenant.id)
+          .maybeSingle();
+
+        if (contract) {
+          setRentData({
+            rent_type: contract.rent_type || "flat_rate",
+            flat_rate_amount: contract.flat_rate_amount?.toString() || "",
+            cold_rent: contract.cold_rent?.toString() || "",
+            total_advance: contract.total_advance?.toString() || "",
+            operating_costs: contract.operating_costs?.toString() || "",
+            heating_costs: contract.heating_costs?.toString() || "",
+            valid_from: contract.start_date || "",
+            rent_due_day: contract.rent_due_day?.toString() || "1",
+          });
+
+          setDepositData({
+            deposit_type: contract.deposit_type || "none",
+            deposit_amount: contract.deposit_amount?.toString() || "",
+            deposit_due_date: contract.deposit_due_date || "",
+            deposit_payment_type: contract.deposit_payment_type || "transfer",
+          });
+        }
+      }
+    };
+
+    loadTenantData();
   }, [tenant]);
 
   const handleNext = () => {
@@ -121,7 +151,7 @@ export default function TenantModal({
     setLoading(true);
     try {
       if (tenant) {
-        const data = {
+        const tenantUpdateData = {
           property_id: tenantData.property_id,
           salutation: tenantData.salutation || null,
           first_name: tenantData.first_name,
@@ -141,12 +171,63 @@ export default function TenantModal({
           user_id: user.id,
         };
 
-        const { error } = await supabase
+        const { error: tenantError } = await supabase
           .from("tenants")
-          .update(data)
+          .update(tenantUpdateData)
           .eq("id", tenant.id);
 
-        if (error) throw error;
+        if (tenantError) throw tenantError;
+
+        let monthlyRent = 0;
+        let utilitiesAdvance = 0;
+
+        if (rentData.rent_type === "flat_rate") {
+          monthlyRent = parseFloat(rentData.flat_rate_amount) || 0;
+        } else if (rentData.rent_type === "cold_rent_advance") {
+          monthlyRent = parseFloat(rentData.cold_rent) || 0;
+          utilitiesAdvance = parseFloat(rentData.total_advance) || 0;
+        } else if (rentData.rent_type === "cold_rent_utilities_heating") {
+          monthlyRent = parseFloat(rentData.cold_rent) || 0;
+          utilitiesAdvance = (parseFloat(rentData.operating_costs) || 0) + (parseFloat(rentData.heating_costs) || 0);
+        }
+
+        const totalRent = monthlyRent + utilitiesAdvance;
+
+        const contractUpdateData = {
+          property_id: tenantData.property_id,
+          rent_type: rentData.rent_type,
+          flat_rate_amount: rentData.rent_type === "flat_rate" ? parseFloat(rentData.flat_rate_amount) || 0 : 0,
+          cold_rent: rentData.rent_type !== "flat_rate" ? parseFloat(rentData.cold_rent) || 0 : 0,
+          total_advance: rentData.rent_type === "cold_rent_advance" ? parseFloat(rentData.total_advance) || 0 : 0,
+          operating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.operating_costs) || 0 : 0,
+          heating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.heating_costs) || 0 : 0,
+          rent_due_day: parseInt(rentData.rent_due_day) || 1,
+          base_rent: monthlyRent,
+          monthly_rent: monthlyRent,
+          additional_costs: utilitiesAdvance,
+          utilities_advance: utilitiesAdvance,
+          total_rent: totalRent,
+          deposit_type: depositData.deposit_type,
+          deposit: parseFloat(depositData.deposit_amount) || 0,
+          deposit_amount: parseFloat(depositData.deposit_amount) || 0,
+          deposit_due_date: depositData.deposit_due_date || null,
+          deposit_payment_type: depositData.deposit_payment_type,
+          deposit_status: depositData.deposit_type === "none" ? "complete" : (parseFloat(depositData.deposit_amount) > 0 ? "open" : "complete"),
+          contract_start: tenantData.move_in_date || null,
+          start_date: tenantData.move_in_date || null,
+          contract_end: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
+          end_date: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
+          is_unlimited: tenantData.is_unlimited,
+          contract_type: tenantData.is_unlimited ? "unlimited" : "limited",
+          status: "active",
+        };
+
+        const { error: contractError } = await supabase
+          .from("rental_contracts")
+          .update(contractUpdateData)
+          .eq("tenant_id", tenant.id);
+
+        if (contractError) throw contractError;
       } else {
         const { data: newTenant, error: tenantError } = await supabase
           .from("tenants")
@@ -896,33 +977,51 @@ export default function TenantModal({
             </div>
           </div>
 
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="deposit_payment_type"
-                value="single_payment"
-                checked={depositData.deposit_payment_type === "single_payment"}
-                onChange={(e) =>
-                  setDepositData({ ...depositData, deposit_payment_type: e.target.value as DepositPaymentType })
-                }
-                className="w-4 h-4 text-[#008CFF]"
-              />
-              <span className="text-sm text-gray-400">Einmalzahlung</span>
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Zahlungsart
             </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="deposit_payment_type"
-                value="three_months"
-                checked={depositData.deposit_payment_type === "three_months"}
-                onChange={(e) =>
-                  setDepositData({ ...depositData, deposit_payment_type: e.target.value as DepositPaymentType })
-                }
-                className="w-4 h-4 text-[#008CFF]"
-              />
-              <span className="text-sm text-gray-400">Zahlung in 3 Monatsraten</span>
-            </label>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="deposit_payment_type"
+                  value="transfer"
+                  checked={depositData.deposit_payment_type === "transfer"}
+                  onChange={(e) =>
+                    setDepositData({ ...depositData, deposit_payment_type: e.target.value as DepositPaymentType })
+                  }
+                  className="w-4 h-4 text-[#008CFF]"
+                />
+                <span className="text-sm text-gray-700">Überweisung</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="deposit_payment_type"
+                  value="cash"
+                  checked={depositData.deposit_payment_type === "cash"}
+                  onChange={(e) =>
+                    setDepositData({ ...depositData, deposit_payment_type: e.target.value as DepositPaymentType })
+                  }
+                  className="w-4 h-4 text-[#008CFF]"
+                />
+                <span className="text-sm text-gray-700">Bar</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="deposit_payment_type"
+                  value="guarantee"
+                  checked={depositData.deposit_payment_type === "guarantee"}
+                  onChange={(e) =>
+                    setDepositData({ ...depositData, deposit_payment_type: e.target.value as DepositPaymentType })
+                  }
+                  className="w-4 h-4 text-[#008CFF]"
+                />
+                <span className="text-sm text-gray-700">Bürgschaft</span>
+              </label>
+            </div>
           </div>
         </div>
       )}
