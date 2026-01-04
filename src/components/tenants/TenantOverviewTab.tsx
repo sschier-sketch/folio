@@ -3,9 +3,13 @@ import {
   Home,
   User,
   Calendar,
-  DollarSign,
-  Wallet,
-  CheckCircle,
+  Mail,
+  Phone,
+  MapPin,
+  Users,
+  Edit,
+  Save,
+  X,
   Trash2,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
@@ -15,21 +19,25 @@ interface TenantOverviewTabProps {
   tenantId: string;
 }
 
-interface Contract {
-  id: string;
-  start_date: string;
-  end_date: string | null;
-  monthly_rent: number;
-  utilities_advance: number;
-  deposit_amount: number;
-  deposit_status: string;
-  status: string;
-}
-
 interface Tenant {
   id: string;
-  name: string;
-  property_id: string;
+  property_id: string | null;
+  salutation: string | null;
+  first_name: string;
+  last_name: string;
+  name: string | null;
+  street: string | null;
+  house_number: string | null;
+  zip_code: string | null;
+  city: string | null;
+  country: string | null;
+  email: string | null;
+  phone: string | null;
+  move_in_date: string | null;
+  move_out_date: string | null;
+  household_size: number | null;
+  is_active: boolean | null;
+  notes: string | null;
 }
 
 interface Property {
@@ -42,11 +50,10 @@ export default function TenantOverviewTab({
 }: TenantOverviewTabProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [contract, setContract] = useState<Contract | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [property, setProperty] = useState<Property | null>(null);
-  const [showEditStatus, setShowEditStatus] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState("active");
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<Tenant | null>(null);
 
   useEffect(() => {
     if (user && tenantId) {
@@ -66,24 +73,17 @@ export default function TenantOverviewTab({
 
       if (tenantData) {
         setTenant(tenantData);
+        setFormData(tenantData);
 
-        const { data: propertyData } = await supabase
-          .from("properties")
-          .select("name, address")
-          .eq("id", tenantData.property_id)
-          .single();
+        if (tenantData.property_id) {
+          const { data: propertyData } = await supabase
+            .from("properties")
+            .select("name, address")
+            .eq("id", tenantData.property_id)
+            .maybeSingle();
 
-        if (propertyData) setProperty(propertyData);
-
-        const { data: contractData } = await supabase
-          .from("rental_contracts")
-          .select("*")
-          .eq("tenant_id", tenantId)
-          .order("start_date", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (contractData) setContract(contractData);
+          if (propertyData) setProperty(propertyData);
+        }
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -92,26 +92,52 @@ export default function TenantOverviewTab({
     }
   }
 
-  async function handleStatusChange(newStatus: string) {
-    if (!contract) return;
+  async function handleSave() {
+    if (!formData || !tenant) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      alert("Bitte geben Sie eine gültige E-Mail-Adresse ein");
+      return;
+    }
 
     try {
       const { error } = await supabase
-        .from("rental_contracts")
-        .update({ status: newStatus })
-        .eq("id", contract.id);
+        .from("tenants")
+        .update({
+          salutation: formData.salutation,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          name: `${formData.first_name} ${formData.last_name}`,
+          street: formData.street,
+          house_number: formData.house_number,
+          zip_code: formData.zip_code,
+          city: formData.city,
+          country: formData.country,
+          email: formData.email,
+          phone: formData.phone,
+          move_in_date: formData.move_in_date,
+          move_out_date: formData.move_out_date,
+          household_size: formData.household_size,
+          notes: formData.notes,
+        })
+        .eq("id", tenant.id);
 
       if (!error) {
-        setContract({ ...contract, status: newStatus });
-        setShowEditStatus(false);
+        setTenant(formData);
+        setIsEditing(false);
+        alert("Änderungen erfolgreich gespeichert");
+      } else {
+        throw error;
       }
     } catch (error) {
-      console.error("Error updating status:", error);
+      console.error("Error updating tenant:", error);
+      alert("Fehler beim Speichern der Änderungen");
     }
   }
 
-  async function handleDeleteContract() {
-    if (!contract) return;
+  async function handleDelete() {
+    if (!tenant) return;
 
     if (
       !confirm(
@@ -122,13 +148,6 @@ export default function TenantOverviewTab({
     }
 
     try {
-      const { error: deleteContractError } = await supabase
-        .from("rental_contracts")
-        .delete()
-        .eq("tenant_id", tenantId);
-
-      if (deleteContractError) throw deleteContractError;
-
       const { error: deleteTenantError } = await supabase
         .from("tenants")
         .delete()
@@ -144,66 +163,21 @@ export default function TenantOverviewTab({
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-emerald-100 text-emerald-700";
-      case "ending_soon":
-        return "bg-amber-100 text-amber-700";
-      case "terminated":
-        return "bg-red-100 text-red-700";
-      case "vacant":
-        return "bg-gray-100 text-gray-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "active":
-        return "Aktiv";
-      case "ending_soon":
-        return "Endet bald";
-      case "terminated":
-        return "Gekündigt";
-      case "vacant":
-        return "Leer";
-      default:
-        return status;
-    }
-  };
-
-  const getDepositStatusLabel = (status: string) => {
-    switch (status) {
-      case "open":
-        return "Offen";
-      case "partial":
-        return "Teilweise";
-      case "complete":
-        return "Vollständig";
-      case "returned":
-        return "Zurückgezahlt";
-      default:
-        return status;
-    }
-  };
-
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
   }
 
-  if (!contract) {
+  if (!tenant) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-12 text-center">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Calendar className="w-8 h-8 text-red-600" />
+          <User className="w-8 h-8 text-red-600" />
         </div>
         <h3 className="text-xl font-semibold text-dark mb-2">
-          Daten nicht vollständig
+          Mieter nicht gefunden
         </h3>
         <p className="text-gray-400">
-          Es konnte kein Mietvertrag für diesen Mieter gefunden werden. Bitte kontaktieren Sie den Support.
+          Der Mieter konnte nicht geladen werden.
         </p>
       </div>
     );
@@ -214,15 +188,48 @@ export default function TenantOverviewTab({
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-dark">
-            Mietverhältnis-Übersicht
+            Mieterdaten
           </h3>
-          <button
-            onClick={handleDeleteContract}
-            className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-            Löschen
-          </button>
+          <div className="flex gap-2">
+            {!isEditing ? (
+              <>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                  Bearbeiten
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Löschen
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setIsEditing(false);
+                    setFormData(tenant);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                  Abbrechen
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  Speichern
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -232,13 +239,13 @@ export default function TenantOverviewTab({
                 <Home className="w-5 h-5 text-primary-blue" />
               </div>
               <div className="flex-1">
-                <div className="text-sm text-gray-400 mb-1">Einheit</div>
+                <div className="text-sm text-gray-400 mb-1">Immobilie</div>
                 <div className="font-semibold text-dark">
-                  {property?.name || "Unbekannt"}
+                  {property?.name || "Keine Immobilie zugeordnet"}
                 </div>
-                <div className="text-sm text-gray-600">
-                  {property?.address || ""}
-                </div>
+                {property?.address && (
+                  <div className="text-sm text-gray-600">{property.address}</div>
+                )}
               </div>
             </div>
 
@@ -247,187 +254,258 @@ export default function TenantOverviewTab({
                 <User className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="flex-1">
-                <div className="text-sm text-gray-400 mb-1">Mieter</div>
-                <div className="font-semibold text-dark">
-                  {tenant?.name || "Unbekannt"}
-                </div>
+                <div className="text-sm text-gray-400 mb-1">Name</div>
+                {isEditing && formData ? (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={formData.first_name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, first_name: e.target.value })
+                      }
+                      placeholder="Vorname"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    />
+                    <input
+                      type="text"
+                      value={formData.last_name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, last_name: e.target.value })
+                      }
+                      placeholder="Nachname"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    />
+                  </div>
+                ) : (
+                  <div className="font-semibold text-dark">
+                    {tenant.salutation ? `${tenant.salutation} ` : ""}
+                    {tenant.first_name} {tenant.last_name}
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center shrink-0">
-                <CheckCircle className="w-5 h-5 text-violet-600" />
+                <Mail className="w-5 h-5 text-violet-600" />
               </div>
               <div className="flex-1">
-                <div className="text-sm text-gray-400 mb-1">
-                  Vertragsstatus
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
-                      contract.status
-                    )}`}
-                  >
-                    {getStatusLabel(contract.status)}
-                  </span>
-                  <button
-                    onClick={() => {
-                      setSelectedStatus(contract.status);
-                      setShowEditStatus(true);
-                    }}
-                    className="text-xs text-primary-blue hover:underline"
-                  >
-                    Ändern
-                  </button>
-                </div>
+                <div className="text-sm text-gray-400 mb-1">E-Mail</div>
+                {isEditing && formData ? (
+                  <input
+                    type="email"
+                    value={formData.email || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  />
+                ) : (
+                  <div className="text-gray-700">{tenant.email || "-"}</div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+                <Phone className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-400 mb-1">Telefon</div>
+                {isEditing && formData ? (
+                  <input
+                    type="tel"
+                    value={formData.phone || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  />
+                ) : (
+                  <div className="text-gray-700">{tenant.phone || "-"}</div>
+                )}
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
-                <Calendar className="w-5 h-5 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm text-gray-400 mb-1">Mietbeginn</div>
-                <div className="font-semibold text-dark">
-                  {new Date(contract.start_date).toLocaleDateString("de-DE")}
-                </div>
-                {contract.end_date && (
-                  <div className="text-sm text-gray-600 mt-1">
-                    Ende: {new Date(contract.end_date).toLocaleDateString("de-DE")}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
-                <DollarSign className="w-5 h-5 text-green-600" />
+                <MapPin className="w-5 h-5 text-green-600" />
               </div>
               <div className="flex-1">
-                <div className="text-sm text-gray-400 mb-1">Kaltmiete</div>
-                <div className="font-semibold text-dark">
-                  {contract.monthly_rent.toFixed(2)} € / Monat
-                </div>
-                {contract.utilities_advance > 0 && (
-                  <div className="text-sm text-gray-600 mt-1">
-                    Nebenkosten: +{contract.utilities_advance.toFixed(2)} €
+                <div className="text-sm text-gray-400 mb-1">Adresse</div>
+                {isEditing && formData ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        value={formData.street || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, street: e.target.value })
+                        }
+                        placeholder="Straße"
+                        className="col-span-2 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      />
+                      <input
+                        type="text"
+                        value={formData.house_number || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, house_number: e.target.value })
+                        }
+                        placeholder="Nr."
+                        className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        value={formData.zip_code || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, zip_code: e.target.value })
+                        }
+                        placeholder="PLZ"
+                        className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      />
+                      <input
+                        type="text"
+                        value={formData.city || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, city: e.target.value })
+                        }
+                        placeholder="Stadt"
+                        className="col-span-2 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      />
+                    </div>
                   </div>
+                ) : (
+                  <>
+                    {tenant.street || tenant.house_number ? (
+                      <div className="font-semibold text-dark">
+                        {tenant.street} {tenant.house_number}
+                      </div>
+                    ) : (
+                      <div className="text-gray-700">-</div>
+                    )}
+                    {tenant.zip_code || tenant.city ? (
+                      <div className="text-sm text-gray-600">
+                        {tenant.zip_code} {tenant.city}
+                      </div>
+                    ) : null}
+                    {tenant.country && tenant.country !== "Deutschland" && (
+                      <div className="text-sm text-gray-600">{tenant.country}</div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
 
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                <Wallet className="w-5 h-5 text-primary-blue" />
+                <Calendar className="w-5 h-5 text-primary-blue" />
               </div>
               <div className="flex-1">
-                <div className="text-sm text-gray-400 mb-1">Kaution</div>
-                <div className="font-semibold text-dark">
-                  {contract.deposit_amount?.toFixed(2) || "0.00"} €
-                </div>
-                <div className="text-sm text-gray-600 mt-1">
-                  Status: {getDepositStatusLabel(contract.deposit_status)}
-                </div>
+                <div className="text-sm text-gray-400 mb-1">Einzug / Auszug</div>
+                {isEditing && formData ? (
+                  <div className="space-y-2">
+                    <input
+                      type="date"
+                      value={formData.move_in_date || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, move_in_date: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    />
+                    <input
+                      type="date"
+                      value={formData.move_out_date || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, move_out_date: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div className="font-semibold text-dark">
+                      Einzug:{" "}
+                      {tenant.move_in_date
+                        ? new Date(tenant.move_in_date).toLocaleDateString("de-DE")
+                        : "-"}
+                    </div>
+                    {tenant.move_out_date && (
+                      <div className="text-sm text-gray-600">
+                        Auszug:{" "}
+                        {new Date(tenant.move_out_date).toLocaleDateString("de-DE")}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-orange-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-400 mb-1">Haushaltsgröße</div>
+                {isEditing && formData ? (
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.household_size || 1}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        household_size: parseInt(e.target.value) || 1,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  />
+                ) : (
+                  <div className="font-semibold text-dark">
+                    {tenant.household_size || 1}{" "}
+                    {tenant.household_size === 1 ? "Person" : "Personen"}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
+
+        {isEditing && formData && (
+          <div className="mt-6 pt-6 border-t">
+            <div className="text-sm text-gray-400 mb-2">Interne Notizen</div>
+            <textarea
+              value={formData.notes || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              placeholder="Notizen zum Mieter..."
+            />
+          </div>
+        )}
+
+        {!isEditing && tenant.notes && (
+          <div className="mt-6 pt-6 border-t">
+            <div className="text-sm text-gray-400 mb-2">Interne Notizen</div>
+            <div className="text-gray-700 whitespace-pre-wrap">{tenant.notes}</div>
+          </div>
+        )}
       </div>
 
-      {showEditStatus && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-semibold text-dark mb-4">
-              Status ändern
-            </h3>
-
-            <div className="space-y-3 mb-6">
-              <label
-                className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-primary-blue transition-colors ${
-                  selectedStatus === "active" ? "border-primary-blue bg-blue-50" : "border-gray-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="status"
-                  value="active"
-                  checked={selectedStatus === "active"}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="mt-1 w-4 h-4 text-primary-blue"
-                />
-                <div className="flex-1">
-                  <div className="font-semibold text-dark">Aktiv</div>
-                  <div className="text-sm text-gray-400">
-                    Mietverhältnis läuft normal
-                  </div>
-                </div>
-              </label>
-
-              <label
-                className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-primary-blue transition-colors ${
-                  selectedStatus === "ending_soon" ? "border-primary-blue bg-blue-50" : "border-gray-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="status"
-                  value="ending_soon"
-                  checked={selectedStatus === "ending_soon"}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="mt-1 w-4 h-4 text-primary-blue"
-                />
-                <div className="flex-1">
-                  <div className="font-semibold text-dark">Endet bald</div>
-                  <div className="text-sm text-gray-400">
-                    Mietvertrag läuft demnächst aus
-                  </div>
-                </div>
-              </label>
-
-              <label
-                className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-primary-blue transition-colors ${
-                  selectedStatus === "terminated" ? "border-primary-blue bg-blue-50" : "border-gray-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="status"
-                  value="terminated"
-                  checked={selectedStatus === "terminated"}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="mt-1 w-4 h-4 text-primary-blue"
-                />
-                <div className="flex-1">
-                  <div className="font-semibold text-dark">Gekündigt</div>
-                  <div className="text-sm text-gray-400">
-                    Mietvertrag wurde gekündigt
-                  </div>
-                </div>
-              </label>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowEditStatus(false)}
-                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-              >
-                Abbrechen
-              </button>
-              <button
-                onClick={() => {
-                  handleStatusChange(selectedStatus);
-                }}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
-              >
-                Speichern
-              </button>
-            </div>
-          </div>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="text-sm text-blue-900">
+          <p className="font-semibold mb-1">Hinweis:</p>
+          <p>
+            Alle Mieterdaten werden DSGVO-konform gespeichert. Sie können die
+            Daten jederzeit bearbeiten oder den Mieter löschen.
+          </p>
         </div>
-      )}
+      </div>
     </div>
   );
 }
