@@ -68,6 +68,7 @@ export default function TenantModal({
     operating_costs: "",
     heating_costs: "",
     valid_from: "",
+    rent_due_day: "1",
   });
 
   const [depositData, setDepositData] = useState({
@@ -204,6 +205,7 @@ export default function TenantModal({
               total_advance: rentData.rent_type === "cold_rent_advance" ? parseFloat(rentData.total_advance) || 0 : 0,
               operating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.operating_costs) || 0 : 0,
               heating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.heating_costs) || 0 : 0,
+              rent_due_day: parseInt(rentData.rent_due_day) || 1,
               base_rent: monthlyRent,
               monthly_rent: monthlyRent,
               additional_costs: utilitiesAdvance,
@@ -214,6 +216,7 @@ export default function TenantModal({
               deposit_amount: parseFloat(depositData.deposit_amount) || 0,
               deposit_due_date: depositData.deposit_due_date || null,
               deposit_payment_type: depositData.deposit_payment_type,
+              deposit_status: depositData.deposit_type === "none" ? "complete" : (parseFloat(depositData.deposit_amount) > 0 ? "open" : "complete"),
               contract_start: tenantData.move_in_date || null,
               start_date: tenantData.move_in_date || null,
               contract_end: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
@@ -622,9 +625,21 @@ export default function TenantModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="text-sm text-gray-500 mb-2">Mieteingang erwartet ab</div>
-            <div className="text-lg font-semibold text-dark">1 eines jeden Monats</div>
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Mieteingang erwartet am (Tag des Monats)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="31"
+              value={rentData.rent_due_day}
+              onChange={(e) =>
+                setRentData({ ...rentData, rent_due_day: e.target.value })
+              }
+              placeholder="z.B. 1"
+              className="w-full px-4 py-2 border border-gray-100 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            />
           </div>
         </div>
       )}
@@ -684,13 +699,29 @@ export default function TenantModal({
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center">
               <div className="text-sm text-gray-500">Gesamtmiete</div>
               <div className="text-2xl font-bold text-dark">
                 {((parseFloat(rentData.cold_rent) || 0) + (parseFloat(rentData.total_advance) || 0)).toFixed(2)} €
               </div>
             </div>
-            <div className="text-sm text-gray-500">Mieteingang erwartet ab: 1 eines jeden Monats</div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Mieteingang erwartet am (Tag des Monats)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="31"
+              value={rentData.rent_due_day}
+              onChange={(e) =>
+                setRentData({ ...rentData, rent_due_day: e.target.value })
+              }
+              placeholder="z.B. 1"
+              className="w-full px-4 py-2 border border-gray-100 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            />
           </div>
         </div>
       )}
@@ -768,13 +799,29 @@ export default function TenantModal({
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center">
               <div className="text-sm text-gray-500">Gesamtmiete</div>
               <div className="text-2xl font-bold text-dark">
                 {((parseFloat(rentData.cold_rent) || 0) + (parseFloat(rentData.operating_costs) || 0) + (parseFloat(rentData.heating_costs) || 0)).toFixed(2)} €
               </div>
             </div>
-            <div className="text-sm text-gray-500">Mieteingang erwartet ab: 1 eines jeden Monats</div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Mieteingang erwartet am (Tag des Monats)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="31"
+              value={rentData.rent_due_day}
+              onChange={(e) =>
+                setRentData({ ...rentData, rent_due_day: e.target.value })
+              }
+              placeholder="z.B. 1"
+              className="w-full px-4 py-2 border border-gray-100 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            />
           </div>
         </div>
       )}
