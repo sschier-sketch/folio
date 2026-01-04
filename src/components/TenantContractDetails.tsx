@@ -15,7 +15,6 @@ import TenantOverviewTab from "./tenants/TenantOverviewTab";
 import TenantContractTab from "./tenants/TenantContractTab";
 import TenantRentHistoryTab from "./tenants/TenantRentHistoryTab";
 import TenantDepositTab from "./tenants/TenantDepositTab";
-import TenantInfoTab from "./tenants/TenantInfoTab";
 import TenantCommunicationTab from "./tenants/TenantCommunicationTab";
 import TenantHandoverTab from "./tenants/TenantHandoverTab";
 
@@ -24,7 +23,6 @@ type Tab =
   | "contract"
   | "rent"
   | "deposit"
-  | "info"
   | "communication"
   | "handover";
 
@@ -78,7 +76,6 @@ export default function TenantContractDetails({
     { id: "contract" as Tab, label: "Vertrag & Dokumente", icon: FileText },
     { id: "rent" as Tab, label: "Miete & Historie", icon: TrendingUp },
     { id: "deposit" as Tab, label: "Kaution", icon: Wallet },
-    { id: "info" as Tab, label: "Mieter", icon: User },
     {
       id: "communication" as Tab,
       label: "Kommunikation",
@@ -160,7 +157,6 @@ export default function TenantContractDetails({
         {activeTab === "contract" && <TenantContractTab tenantId={tenantId} />}
         {activeTab === "rent" && <TenantRentHistoryTab tenantId={tenantId} />}
         {activeTab === "deposit" && <TenantDepositTab tenantId={tenantId} />}
-        {activeTab === "info" && <TenantInfoTab tenantId={tenantId} onUpdate={loadTenant} />}
         {activeTab === "communication" && (
           <TenantCommunicationTab tenantId={tenantId} />
         )}

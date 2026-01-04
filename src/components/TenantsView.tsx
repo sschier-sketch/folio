@@ -23,6 +23,7 @@ interface Contract {
   start_date: string;
   end_date: string | null;
   monthly_rent: number;
+  total_rent: number;
   status: string;
   tenant_id: string;
 }
@@ -338,7 +339,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                         </td>
                         <td className="py-4 px-6 text-sm text-right font-medium text-dark">
                           {currentContract ? (
-                            <span>{currentContract.monthly_rent.toFixed(2)} €</span>
+                            <span>{(currentContract.total_rent || currentContract.monthly_rent || 0).toFixed(2)} €</span>
                           ) : (
                             "-"
                           )}

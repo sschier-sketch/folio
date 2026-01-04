@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Upload, Download, Lock } from "lucide-react";
+import { FileText, Upload, Download, Lock, Calendar, Euro, Home } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -17,6 +17,24 @@ interface ContractDocument {
   uploaded_at: string;
 }
 
+interface Contract {
+  id: string;
+  rent_type: string;
+  flat_rate_amount: number;
+  cold_rent: number;
+  total_advance: number;
+  operating_costs: number;
+  heating_costs: number;
+  total_rent: number;
+  rent_due_day: number;
+  deposit_type: string;
+  deposit_amount: number;
+  contract_start: string;
+  contract_end: string | null;
+  is_unlimited: boolean;
+  status: string;
+}
+
 export default function TenantContractTab({
   tenantId,
 }: TenantContractTabProps) {
@@ -24,25 +42,37 @@ export default function TenantContractTab({
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState<ContractDocument[]>([]);
+  const [contract, setContract] = useState<Contract | null>(null);
 
   useEffect(() => {
     if (user && tenantId) {
-      loadDocuments();
+      loadData();
     }
   }, [user, tenantId]);
 
-  async function loadDocuments() {
+  async function loadData() {
     try {
       setLoading(true);
-      const { data } = await supabase
+
+      const { data: contractData } = await supabase
+        .from("rental_contracts")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .order("start_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (contractData) setContract(contractData);
+
+      const { data: documentsData } = await supabase
         .from("contract_documents")
         .select("*")
         .eq("tenant_id", tenantId)
         .order("uploaded_at", { ascending: false });
 
-      if (data) setDocuments(data);
+      if (documentsData) setDocuments(documentsData);
     } catch (error) {
-      console.error("Error loading documents:", error);
+      console.error("Error loading data:", error);
     } finally {
       setLoading(false);
     }
@@ -67,8 +97,46 @@ export default function TenantContractTab({
     return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
+  const getRentTypeLabel = (type: string) => {
+    switch (type) {
+      case "flat_rate":
+        return "Warmmiete (Pauschal)";
+      case "cold_rent_advance":
+        return "Kaltmiete + Pauschale NK";
+      case "cold_rent_utilities_heating":
+        return "Kaltmiete + NK + Heizung";
+      default:
+        return type;
+    }
+  };
+
+  const getDepositTypeLabel = (type: string) => {
+    switch (type) {
+      case "none":
+        return "Keine Kaution";
+      case "cash":
+        return "Barkaution";
+      case "bank_transfer":
+        return "Banküberweisung";
+      case "pledged_savings":
+        return "Verpfändetes Sparbuch";
+      case "bank_guarantee":
+        return "Bankbürgschaft";
+      default:
+        return type;
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
+  }
+
+  if (!contract) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+        <p className="text-gray-400">Kein Mietvertrag vorhanden</p>
+      </div>
+    );
   }
 
   if (!isPremium) {
@@ -121,6 +189,134 @@ export default function TenantContractTab({
 
   return (
     <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h3 className="text-lg font-semibold text-dark mb-4">
+          Vertragsdaten
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                <Calendar className="w-5 h-5 text-primary-blue" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-400 mb-1">Mietbeginn</div>
+                <div className="font-semibold text-dark">
+                  {contract.contract_start
+                    ? new Date(contract.contract_start).toLocaleDateString("de-DE")
+                    : "-"}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+                <Euro className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-400 mb-1">Mietart</div>
+                <div className="font-semibold text-dark">
+                  {getRentTypeLabel(contract.rent_type)}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center shrink-0">
+                <Euro className="w-5 h-5 text-violet-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-400 mb-1">Gesamtmiete</div>
+                <div className="text-2xl font-bold text-dark">
+                  {contract.total_rent.toFixed(2)} €
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Fällig am {contract.rent_due_day}. des Monats
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+                <Home className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-400 mb-1">Mietdetails</div>
+                {contract.rent_type === "flat_rate" ? (
+                  <div className="font-semibold text-dark">
+                    Warmmiete: {contract.flat_rate_amount.toFixed(2)} €
+                  </div>
+                ) : (
+                  <>
+                    <div className="font-semibold text-dark">
+                      Kaltmiete: {contract.cold_rent.toFixed(2)} €
+                    </div>
+                    {contract.rent_type === "cold_rent_advance" && (
+                      <div className="text-sm text-gray-600">
+                        NK-Pauschale: {contract.total_advance.toFixed(2)} €
+                      </div>
+                    )}
+                    {contract.rent_type === "cold_rent_utilities_heating" && (
+                      <>
+                        <div className="text-sm text-gray-600">
+                          Betriebskosten: {contract.operating_costs.toFixed(2)} €
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Heizkosten: {contract.heating_costs.toFixed(2)} €
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center shrink-0">
+                <FileText className="w-5 h-5 text-orange-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-400 mb-1">Kaution</div>
+                <div className="font-semibold text-dark">
+                  {contract.deposit_amount > 0
+                    ? `${contract.deposit_amount.toFixed(2)} €`
+                    : "Keine Kaution"}
+                </div>
+                {contract.deposit_amount > 0 && (
+                  <div className="text-sm text-gray-600">
+                    {getDepositTypeLabel(contract.deposit_type)}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                <Calendar className="w-5 h-5 text-gray-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-400 mb-1">Vertragslaufzeit</div>
+                <div className="font-semibold text-dark">
+                  {contract.is_unlimited ? (
+                    "Unbefristet"
+                  ) : contract.contract_end ? (
+                    <>
+                      Befristet bis{" "}
+                      {new Date(contract.contract_end).toLocaleDateString("de-DE")}
+                    </>
+                  ) : (
+                    "Unbefristet"
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">
