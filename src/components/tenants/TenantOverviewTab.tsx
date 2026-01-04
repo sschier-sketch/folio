@@ -50,6 +50,7 @@ export default function TenantOverviewTab({
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [property, setProperty] = useState<Property | null>(null);
   const [showEditStatus, setShowEditStatus] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("active");
   const [showCreateContract, setShowCreateContract] = useState(false);
   const [savingContract, setSavingContract] = useState(false);
   const [contractForm, setContractForm] = useState({
@@ -513,7 +514,10 @@ export default function TenantOverviewTab({
                     {getStatusLabel(contract.status)}
                   </span>
                   <button
-                    onClick={() => setShowEditStatus(true)}
+                    onClick={() => {
+                      setSelectedStatus(contract.status);
+                      setShowEditStatus(true);
+                    }}
                     className="text-xs text-primary-blue hover:underline"
                   >
                     Ändern
@@ -584,53 +588,86 @@ export default function TenantOverviewTab({
             </h3>
 
             <div className="space-y-3 mb-6">
-              <button
-                onClick={() => handleStatusChange("active")}
-                className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-primary-blue transition-colors"
+              <label
+                className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-primary-blue transition-colors ${
+                  selectedStatus === "active" ? "border-primary-blue bg-blue-50" : "border-gray-200"
+                }`}
               >
-                <div className="font-semibold text-dark">Aktiv</div>
-                <div className="text-sm text-gray-400">
-                  Mietverhältnis läuft normal
+                <input
+                  type="radio"
+                  name="status"
+                  value="active"
+                  checked={selectedStatus === "active"}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="mt-1 w-4 h-4 text-primary-blue"
+                />
+                <div className="flex-1">
+                  <div className="font-semibold text-dark">Aktiv</div>
+                  <div className="text-sm text-gray-400">
+                    Mietverhältnis läuft normal
+                  </div>
                 </div>
-              </button>
+              </label>
 
-              <button
-                onClick={() => handleStatusChange("ending_soon")}
-                className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-primary-blue transition-colors"
+              <label
+                className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-primary-blue transition-colors ${
+                  selectedStatus === "ending_soon" ? "border-primary-blue bg-blue-50" : "border-gray-200"
+                }`}
               >
-                <div className="font-semibold text-dark">Endet bald</div>
-                <div className="text-sm text-gray-400">
-                  Mietvertrag läuft demnächst aus
+                <input
+                  type="radio"
+                  name="status"
+                  value="ending_soon"
+                  checked={selectedStatus === "ending_soon"}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="mt-1 w-4 h-4 text-primary-blue"
+                />
+                <div className="flex-1">
+                  <div className="font-semibold text-dark">Endet bald</div>
+                  <div className="text-sm text-gray-400">
+                    Mietvertrag läuft demnächst aus
+                  </div>
                 </div>
-              </button>
+              </label>
 
-              <button
-                onClick={() => handleStatusChange("terminated")}
-                className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-primary-blue transition-colors"
+              <label
+                className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-primary-blue transition-colors ${
+                  selectedStatus === "terminated" ? "border-primary-blue bg-blue-50" : "border-gray-200"
+                }`}
               >
-                <div className="font-semibold text-dark">Gekündigt</div>
-                <div className="text-sm text-gray-400">
-                  Mietvertrag wurde gekündigt
+                <input
+                  type="radio"
+                  name="status"
+                  value="terminated"
+                  checked={selectedStatus === "terminated"}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="mt-1 w-4 h-4 text-primary-blue"
+                />
+                <div className="flex-1">
+                  <div className="font-semibold text-dark">Gekündigt</div>
+                  <div className="text-sm text-gray-400">
+                    Mietvertrag wurde gekündigt
+                  </div>
                 </div>
-              </button>
-
-              <button
-                onClick={() => handleStatusChange("vacant")}
-                className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-primary-blue transition-colors"
-              >
-                <div className="font-semibold text-dark">Leer</div>
-                <div className="text-sm text-gray-400">
-                  Einheit ist nicht vermietet
-                </div>
-              </button>
+              </label>
             </div>
 
-            <button
-              onClick={() => setShowEditStatus(false)}
-              className="w-full px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-            >
-              Abbrechen
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowEditStatus(false)}
+                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={() => {
+                  handleStatusChange(selectedStatus);
+                }}
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+              >
+                Speichern
+              </button>
+            </div>
           </div>
         </div>
       )}

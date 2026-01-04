@@ -285,13 +285,13 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                       Mietbeginn
                     </th>
                     <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
-                      Aktuelle Miete
+                      Warmmiete
                     </th>
                     <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
                       Status
                     </th>
                     <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
-                      Aktionen
+                      Details
                     </th>
                   </tr>
                 </thead>
@@ -338,10 +338,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                         </td>
                         <td className="py-4 px-6 text-sm text-right font-medium text-dark">
                           {currentContract ? (
-                            <div className="flex items-center justify-end gap-2">
-                              <DollarSign className="w-4 h-4 text-gray-400" />
-                              {currentContract.monthly_rent.toFixed(2)} €
-                            </div>
+                            <span>{currentContract.monthly_rent.toFixed(2)} €</span>
                           ) : (
                             "-"
                           )}

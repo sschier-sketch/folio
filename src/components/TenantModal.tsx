@@ -152,7 +152,7 @@ export default function TenantModal({
     try {
       if (tenant) {
         const tenantUpdateData = {
-          property_id: tenantData.property_id,
+          property_id: tenantData.property_id || null,
           salutation: tenantData.salutation || null,
           first_name: tenantData.first_name,
           last_name: tenantData.last_name,
@@ -194,7 +194,7 @@ export default function TenantModal({
         const totalRent = monthlyRent + utilitiesAdvance;
 
         const contractUpdateData = {
-          property_id: tenantData.property_id,
+          property_id: tenantData.property_id || null,
           rent_type: rentData.rent_type,
           flat_rate_amount: rentData.rent_type === "flat_rate" ? parseFloat(rentData.flat_rate_amount) || 0 : 0,
           cold_rent: rentData.rent_type !== "flat_rate" ? parseFloat(rentData.cold_rent) || 0 : 0,
@@ -974,53 +974,6 @@ export default function TenantModal({
                 }
                 className="w-full px-4 py-2 border border-gray-100 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
               />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              Zahlungsart
-            </label>
-            <div className="flex flex-wrap gap-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="deposit_payment_type"
-                  value="transfer"
-                  checked={depositData.deposit_payment_type === "transfer"}
-                  onChange={(e) =>
-                    setDepositData({ ...depositData, deposit_payment_type: e.target.value as DepositPaymentType })
-                  }
-                  className="w-4 h-4 text-[#008CFF]"
-                />
-                <span className="text-sm text-gray-700">Überweisung</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="deposit_payment_type"
-                  value="cash"
-                  checked={depositData.deposit_payment_type === "cash"}
-                  onChange={(e) =>
-                    setDepositData({ ...depositData, deposit_payment_type: e.target.value as DepositPaymentType })
-                  }
-                  className="w-4 h-4 text-[#008CFF]"
-                />
-                <span className="text-sm text-gray-700">Bar</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="deposit_payment_type"
-                  value="guarantee"
-                  checked={depositData.deposit_payment_type === "guarantee"}
-                  onChange={(e) =>
-                    setDepositData({ ...depositData, deposit_payment_type: e.target.value as DepositPaymentType })
-                  }
-                  className="w-4 h-4 text-[#008CFF]"
-                />
-                <span className="text-sm text-gray-700">Bürgschaft</span>
-              </label>
             </div>
           </div>
         </div>
