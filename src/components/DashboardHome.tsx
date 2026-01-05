@@ -31,8 +31,12 @@ interface MaintenanceTask {
   priority: string;
   due_date: string;
   property_id: string;
+  unit_id: string | null;
   properties: {
     name: string;
+  };
+  property_units?: {
+    unit_number: string;
   };
 }
 export default function DashboardHome() {
@@ -131,8 +135,12 @@ export default function DashboardHome() {
           priority,
           due_date,
           property_id,
+          unit_id,
           properties (
             name
+          ),
+          property_units (
+            unit_number
           )
         `)
         .eq("user_id", user.id)
@@ -186,7 +194,7 @@ export default function DashboardHome() {
       </div>{" "}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {" "}
-        <div className="bg-white rounded shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
@@ -202,7 +210,7 @@ export default function DashboardHome() {
             {t("dashboard.properties")}
           </div>{" "}
         </div>{" "}
-        <div className="bg-white rounded shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
@@ -218,7 +226,7 @@ export default function DashboardHome() {
             {t("dashboard.tenants.active")}
           </div>{" "}
         </div>{" "}
-        <div className="bg-white rounded shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
@@ -235,7 +243,7 @@ export default function DashboardHome() {
             {t("dashboard.rent.monthly")}
           </div>{" "}
         </div>{" "}
-        <div className="bg-white rounded shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
@@ -255,7 +263,7 @@ export default function DashboardHome() {
       </div>{" "}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {" "}
-        <div className="bg-white rounded shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {" "}
           <h3 className="text-lg font-semibold text-dark mb-4">
             {t("dashboard.portfolio.total")}
@@ -436,6 +444,12 @@ export default function DashboardHome() {
                       </div>
                       <div className="flex items-center gap-3 text-sm text-gray-500">
                         <span>{task.properties?.name}</span>
+                        {task.property_units?.unit_number && (
+                          <>
+                            <span>•</span>
+                            <span>Einheit {task.property_units.unit_number}</span>
+                          </>
+                        )}
                         <span>•</span>
                         <span>Fällig: {new Date(task.due_date).toLocaleDateString("de-DE")}</span>
                       </div>

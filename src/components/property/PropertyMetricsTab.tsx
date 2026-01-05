@@ -48,15 +48,24 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
     vacantUnits: 0,
   });
 
+  const currentYear = new Date().getFullYear();
+  const [dateFrom, setDateFrom] = useState(`${currentYear}-01-01`);
+  const [dateTo, setDateTo] = useState(`${currentYear}-12-31`);
+
   useEffect(() => {
     if (user && isPremium) {
       loadMetrics();
     }
-  }, [user, propertyId, isPremium]);
+  }, [user, propertyId, isPremium, dateFrom, dateTo]);
 
   async function loadMetrics() {
     try {
       setLoading(true);
+
+      const fromDate = new Date(dateFrom);
+      const toDate = new Date(dateTo);
+      const daysInPeriod = Math.ceil((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24));
+      const monthsInPeriod = daysInPeriod / 30;
 
       const [propertyRes, unitsRes, contractsRes, expensesRes, loansRes] = await Promise.all([
         supabase.from("properties").select("*").eq("id", propertyId).single(),
@@ -66,7 +75,8 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           .from("expenses")
           .select("amount")
           .eq("property_id", propertyId)
-          .gte("expense_date", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+          .gte("expense_date", dateFrom)
+          .lte("expense_date", dateTo),
         supabase.from("loans").select("monthly_payment").eq("property_id", propertyId),
       ]);
 
@@ -82,12 +92,13 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
             ?.filter((c) => c.status === "active")
             .reduce((sum, c) => sum + Number(c.base_rent || 0), 0) || 0;
 
-        const monthlyExpensesFromData =
+        const totalExpensesInPeriod =
           expensesRes.data?.reduce((sum, e) => sum + Number(e.amount || 0), 0) || 0;
 
         const monthlyLoanPayments =
           loansRes.data?.reduce((sum, l) => sum + Number(l.monthly_payment || 0), 0) || 0;
 
+        const monthlyExpensesFromData = monthsInPeriod > 0 ? totalExpensesInPeriod / monthsInPeriod : 0;
         const monthlyExpenses = monthlyExpensesFromData + monthlyLoanPayments;
 
         const costRatio = monthlyRent > 0 ? (monthlyExpenses / monthlyRent) * 100 : 0;
@@ -184,6 +195,29 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       <div>
         <h3 className="text-lg font-semibold text-dark">Kennzahlen</h3>
         <p className="text-sm text-gray-500 mt-1">Übersicht der wichtigsten Kennzahlen für diese Immobilie</p>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Von</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Bis</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
