@@ -33,6 +33,9 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const [associationId, setAssociationId] = useState("");
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
   const [contracts, setContracts] = useState<{ id: string; name: string }[]>([]);
+  const [units, setUnits] = useState<{ id: string; unit_number: string; property_id: string }[]>([]);
+  const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
+  const [selectedPropertyForUnit, setSelectedPropertyForUnit] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -66,21 +69,34 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
 
   async function loadReferences() {
     try {
-      const [propsRes, contractsRes] = await Promise.all([
+      const [propsRes, contractsRes, unitsRes, tenantsRes] = await Promise.all([
         supabase.from("properties").select("id, name").order("name"),
         supabase
           .from("rental_contracts")
-          .select("id, tenants(name)")
-          .order("start_date", { ascending: false }),
+          .select("id, tenants(first_name, last_name)")
+          .order("contract_start", { ascending: false }),
+        supabase.from("property_units").select("id, unit_number, property_id").order("unit_number"),
+        supabase.from("tenants").select("id, first_name, last_name").order("last_name"),
       ]);
 
       if (propsRes.data) setProperties(propsRes.data);
       if (contractsRes.data) {
-        const contractsList = contractsRes.data.map((c: any) => ({
-          id: c.id,
-          name: c.tenants?.name || "Unbekannter Mieter",
-        }));
+        const contractsList = contractsRes.data.map((c: any) => {
+          const tenantNames = c.tenants?.map((t: any) => `${t.first_name} ${t.last_name}`).join(", ") || "Unbekannter Mieter";
+          return {
+            id: c.id,
+            name: tenantNames,
+          };
+        });
         setContracts(contractsList);
+      }
+      if (unitsRes.data) setUnits(unitsRes.data);
+      if (tenantsRes.data) {
+        const tenantsList = tenantsRes.data.map((t) => ({
+          id: t.id,
+          name: `${t.first_name} ${t.last_name}`,
+        }));
+        setTenants(tenantsList);
       }
     } catch (error) {
       console.error("Error loading references:", error);
@@ -564,19 +580,70 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                 onChange={(e) => {
                   setAssociationType(e.target.value);
                   setAssociationId("");
+                  setSelectedPropertyForUnit("");
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Keine Zuordnung</option>
                 <option value="property">Immobilie</option>
+                <option value="unit">Einheit</option>
                 <option value="rental_contract">Mietverhältnis</option>
+                <option value="tenant">Mieter</option>
               </select>
             </div>
 
-            {associationType && (
+            {associationType === "unit" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Immobilie auswählen
+                  </label>
+                  <select
+                    value={selectedPropertyForUnit}
+                    onChange={(e) => {
+                      setSelectedPropertyForUnit(e.target.value);
+                      setAssociationId("");
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Bitte wählen...</option>
+                    {properties.map((prop) => (
+                      <option key={prop.id} value={prop.id}>
+                        {prop.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {selectedPropertyForUnit && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Einheit auswählen
+                    </label>
+                    <select
+                      value={associationId}
+                      onChange={(e) => setAssociationId(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Bitte wählen...</option>
+                      {units
+                        .filter((unit) => unit.property_id === selectedPropertyForUnit)
+                        .map((unit) => (
+                          <option key={unit.id} value={unit.id}>
+                            {unit.unit_number}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                )}
+              </>
+            )}
+
+            {associationType && associationType !== "unit" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Objekt auswählen
+                  {associationType === "property" && "Immobilie auswählen"}
+                  {associationType === "rental_contract" && "Mietverhältnis auswählen"}
+                  {associationType === "tenant" && "Mieter auswählen"}
                 </label>
                 <select
                   value={associationId}
@@ -594,6 +661,12 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                     contracts.map((contract) => (
                       <option key={contract.id} value={contract.id}>
                         {contract.name}
+                      </option>
+                    ))}
+                  {associationType === "tenant" &&
+                    tenants.map((tenant) => (
+                      <option key={tenant.id} value={tenant.id}>
+                        {tenant.name}
                       </option>
                     ))}
                 </select>
