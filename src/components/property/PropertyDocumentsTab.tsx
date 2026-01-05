@@ -54,6 +54,8 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
 
   useEffect(() => {
     if (user && isPro) {
@@ -370,6 +372,19 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
     return labels[type] || type;
   };
 
+  const filteredDocuments = documents.filter((doc) => {
+    if (!filterDateFrom && !filterDateTo) return true;
+
+    const uploadDate = new Date(doc.upload_date);
+    const fromDate = filterDateFrom ? new Date(filterDateFrom) : null;
+    const toDate = filterDateTo ? new Date(filterDateTo) : null;
+
+    if (fromDate && uploadDate < fromDate) return false;
+    if (toDate && uploadDate > toDate) return false;
+
+    return true;
+  });
+
   const categories: DocumentCategory[] = [
     {
       id: "floor_plans",
@@ -377,7 +392,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       icon: Home,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
-      documents: documents.filter((d) => ["floor_plan", "blueprint", "expose"].includes(d.document_type)),
+      documents: filteredDocuments.filter((d) => ["floor_plan", "blueprint", "expose"].includes(d.document_type)),
       types: ["floor_plan", "blueprint", "expose"],
     },
     {
@@ -386,7 +401,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       icon: FileCheck,
       color: "text-emerald-600",
       bgColor: "bg-emerald-50",
-      documents: documents.filter((d) => d.document_type === "energy_certificate"),
+      documents: filteredDocuments.filter((d) => d.document_type === "energy_certificate"),
       types: ["energy_certificate"],
     },
     {
@@ -395,7 +410,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       icon: Shield,
       color: "text-violet-600",
       bgColor: "bg-violet-50",
-      documents: documents.filter((d) => d.document_type === "insurance"),
+      documents: filteredDocuments.filter((d) => d.document_type === "insurance"),
       types: ["insurance"],
     },
     {
@@ -404,7 +419,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       icon: FileSignature,
       color: "text-amber-600",
       bgColor: "bg-amber-50",
-      documents: documents.filter((d) =>
+      documents: filteredDocuments.filter((d) =>
         ["property_deed", "rental_agreement", "contract"].includes(d.document_type)
       ),
       types: ["property_deed", "rental_agreement", "contract"],
@@ -415,7 +430,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       icon: Receipt,
       color: "text-orange-600",
       bgColor: "bg-orange-50",
-      documents: documents.filter((d) =>
+      documents: filteredDocuments.filter((d) =>
         ["utility_bill", "invoice", "bill", "receipt"].includes(d.document_type)
       ),
       types: ["utility_bill", "invoice", "bill", "receipt"],
@@ -426,7 +441,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       icon: Wrench,
       color: "text-slate-600",
       bgColor: "bg-slate-50",
-      documents: documents.filter((d) => d.document_type === "maintenance"),
+      documents: filteredDocuments.filter((d) => d.document_type === "maintenance"),
       types: ["maintenance"],
     },
     {
@@ -435,7 +450,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       icon: Image,
       color: "text-pink-600",
       bgColor: "bg-pink-50",
-      documents: documents.filter((d) => d.document_type === "photo"),
+      documents: filteredDocuments.filter((d) => d.document_type === "photo"),
       types: ["photo"],
     },
     {
@@ -444,7 +459,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       icon: FileText,
       color: "text-gray-600",
       bgColor: "bg-gray-50",
-      documents: documents.filter((d) =>
+      documents: filteredDocuments.filter((d) =>
         ["other", "report"].includes(d.document_type)
       ),
       types: ["other", "report"],
@@ -509,20 +524,58 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-dark">Dokumente</h3>
-          <p className="text-sm text-gray-500 mt-1">
-            {documents.length} Dokument{documents.length !== 1 ? "e" : ""} gespeichert
-          </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-dark">Dokumente</h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {filteredDocuments.length} von {documents.length} Dokument{documents.length !== 1 ? "en" : ""} {filterDateFrom || filterDateTo ? "gefiltert" : "gespeichert"}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Dokument hochladen
+          </button>
         </div>
-        <button
-          onClick={() => setShowUploadModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Dokument hochladen
-        </button>
+
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Von</label>
+              <input
+                type="date"
+                value={filterDateFrom}
+                onChange={(e) => setFilterDateFrom(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Bis</label>
+              <input
+                type="date"
+                value={filterDateTo}
+                onChange={(e) => setFilterDateTo(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            {(filterDateFrom || filterDateTo) && (
+              <div className="flex items-end">
+                <button
+                  onClick={() => {
+                    setFilterDateFrom("");
+                    setFilterDateTo("");
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                >
+                  Filter zurücksetzen
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {documents.length === 0 ? (

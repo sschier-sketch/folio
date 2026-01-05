@@ -7,10 +7,14 @@ import {
   ExternalLink,
   Copy,
   Check,
+  Wrench,
+  AlertCircle,
+  ChevronRight,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+
 interface Stats {
   propertiesCount: number;
   tenantsCount: number;
@@ -19,6 +23,17 @@ interface Stats {
   averageYield: number;
   totalMonthlyExpenses: number;
   monthlySurplus: number;
+}
+
+interface MaintenanceTask {
+  id: string;
+  title: string;
+  priority: string;
+  due_date: string;
+  property_id: string;
+  properties: {
+    name: string;
+  };
 }
 export default function DashboardHome() {
   const { user } = useAuth();
@@ -34,8 +49,11 @@ export default function DashboardHome() {
   });
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [upcomingTasks, setUpcomingTasks] = useState<MaintenanceTask[]>([]);
+
   useEffect(() => {
     loadStats();
+    loadUpcomingTasks();
   }, [user]);
   const loadStats = async () => {
     if (!user) return;
@@ -98,11 +116,55 @@ export default function DashboardHome() {
       currency: "EUR",
     }).format(value);
   };
+  const loadUpcomingTasks = async () => {
+    if (!user) return;
+
+    try {
+      const ninetyDaysFromNow = new Date();
+      ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
+
+      const { data, error } = await supabase
+        .from("maintenance_tasks")
+        .select(`
+          id,
+          title,
+          priority,
+          due_date,
+          property_id,
+          properties (
+            name
+          )
+        `)
+        .eq("user_id", user.id)
+        .in("status", ["open", "in_progress"])
+        .not("due_date", "is", null)
+        .lte("due_date", ninetyDaysFromNow.toISOString().split("T")[0])
+        .order("due_date", { ascending: true })
+        .limit(5);
+
+      if (error) throw error;
+      setUpcomingTasks(data || []);
+    } catch (error) {
+      console.error("Error loading upcoming tasks:", error);
+    }
+  };
+
   const handleCopyPortalLink = () => {
     const portalUrl = `${window.location.origin}/portal/${user?.id}`;
     navigator.clipboard.writeText(portalUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "text-red-600 bg-red-50";
+      case "low":
+        return "text-gray-600 bg-gray-50";
+      default:
+        return "text-amber-600 bg-amber-50";
+    }
   };
   if (loading) {
     return (
@@ -345,6 +407,47 @@ export default function DashboardHome() {
           </button>{" "}
         </div>{" "}
       </div>{" "}
+
+      {upcomingTasks.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold text-dark mb-4">Anstehende Wartungsaufgaben</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            {upcomingTasks.map((task, index) => (
+              <div
+                key={task.id}
+                className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                  index !== upcomingTasks.length - 1 ? "border-b border-gray-200" : ""
+                }`}
+                onClick={() => {
+                  window.location.href = `#/dashboard/properties/${task.property_id}?tab=maintenance`;
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Wrench className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-dark truncate">{task.title}</h3>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                          {task.priority === "high" ? "Hoch" : task.priority === "low" ? "Niedrig" : "Mittel"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-gray-500">
+                        <span>{task.properties?.name}</span>
+                        <span>•</span>
+                        <span>Fällig: {new Date(task.due_date).toLocaleDateString("de-DE")}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
