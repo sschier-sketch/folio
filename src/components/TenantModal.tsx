@@ -40,9 +40,11 @@ export default function TenantModal({
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [units, setUnits] = useState<{ id: string; unit_number: string }[]>([]);
 
   const [tenantData, setTenantData] = useState({
     property_id: "",
+    unit_id: "",
     salutation: "",
     first_name: "",
     last_name: "",
@@ -85,6 +87,7 @@ export default function TenantModal({
       if (tenant) {
         setTenantData({
           property_id: tenant.property_id,
+          unit_id: tenant.unit_id || "",
           salutation: tenant.salutation || "",
           first_name: tenant.first_name,
           last_name: tenant.last_name,
@@ -101,6 +104,10 @@ export default function TenantModal({
           household_size: tenant.household_size || 1,
           is_active: tenant.is_active,
         });
+
+        if (tenant.property_id) {
+          loadUnits(tenant.property_id);
+        }
 
         const { data: contract } = await supabase
           .from("rental_contracts")
@@ -133,6 +140,31 @@ export default function TenantModal({
     loadTenantData();
   }, [tenant]);
 
+  const loadUnits = async (propertyId: string) => {
+    try {
+      const { data } = await supabase
+        .from("property_units")
+        .select("id, unit_number")
+        .eq("property_id", propertyId)
+        .order("unit_number");
+
+      if (data) {
+        setUnits(data);
+      }
+    } catch (error) {
+      console.error("Error loading units:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (tenantData.property_id) {
+      loadUnits(tenantData.property_id);
+      setTenantData({ ...tenantData, unit_id: "" });
+    } else {
+      setUnits([]);
+    }
+  }, [tenantData.property_id]);
+
   const handleNext = () => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
@@ -164,6 +196,7 @@ export default function TenantModal({
       if (tenant) {
         const tenantUpdateData = {
           property_id: tenantData.property_id || null,
+          unit_id: tenantData.unit_id || null,
           salutation: tenantData.salutation || null,
           first_name: tenantData.first_name,
           last_name: tenantData.last_name,
@@ -275,6 +308,7 @@ export default function TenantModal({
           .insert([
             {
               property_id: tenantData.property_id || null,
+              unit_id: tenantData.unit_id || null,
               salutation: tenantData.salutation || null,
               first_name: tenantData.first_name,
               last_name: tenantData.last_name,
@@ -432,7 +466,7 @@ export default function TenantModal({
           <select
             value={tenantData.property_id}
             onChange={(e) =>
-              setTenantData({ ...tenantData, property_id: e.target.value })
+              setTenantData({ ...tenantData, property_id: e.target.value, unit_id: "" })
             }
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
             required
@@ -445,6 +479,28 @@ export default function TenantModal({
             ))}
           </select>
         </div>
+
+        {units.length > 0 && (
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Mieteinheit (Optional)
+            </label>
+            <select
+              value={tenantData.unit_id}
+              onChange={(e) =>
+                setTenantData({ ...tenantData, unit_id: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            >
+              <option value="">Keine Einheit zuweisen</option>
+              {units.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.unit_number}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-400 mb-1">

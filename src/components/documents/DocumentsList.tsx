@@ -137,6 +137,16 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
       receipt: "Beleg",
       report: "Bericht",
       other: "Sonstiges",
+      floor_plan: "Grundriss",
+      energy_certificate: "Energieausweis",
+      insurance: "Versicherung",
+      property_deed: "Grundbuchauszug",
+      rental_agreement: "Mietvertrag",
+      utility_bill: "Nebenkostenabrechnung",
+      maintenance: "Wartung",
+      photo: "Foto",
+      blueprint: "Bauplan",
+      expose: "Exposé",
     };
     return labels[type] || type;
   };
@@ -149,6 +159,16 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
       receipt: "bg-violet-100 text-violet-700",
       report: "bg-gray-100 text-gray-700",
       other: "bg-gray-100 text-gray-700",
+      floor_plan: "bg-blue-100 text-blue-700",
+      energy_certificate: "bg-emerald-100 text-emerald-700",
+      insurance: "bg-violet-100 text-violet-700",
+      property_deed: "bg-amber-100 text-amber-700",
+      rental_agreement: "bg-amber-100 text-amber-700",
+      utility_bill: "bg-orange-100 text-orange-700",
+      maintenance: "bg-slate-100 text-slate-700",
+      photo: "bg-pink-100 text-pink-700",
+      blueprint: "bg-blue-100 text-blue-700",
+      expose: "bg-blue-100 text-blue-700",
     };
     return colors[type] || "bg-gray-100 text-gray-700";
   };

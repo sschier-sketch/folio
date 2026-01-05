@@ -40,10 +40,12 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
   const { user } = useAuth();
   const { isPro } = useSubscription();
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [units, setUnits] = useState<{ id: string; unit_number: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
   const [selectedDocType, setSelectedDocType] = useState("floor_plan");
+  const [selectedUnitId, setSelectedUnitId] = useState("");
   const [uploadDescription, setUploadDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -52,8 +54,25 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
   useEffect(() => {
     if (user && isPro) {
       loadDocuments();
+      loadUnits();
     }
   }, [user, propertyId, isPro]);
+
+  async function loadUnits() {
+    try {
+      const { data } = await supabase
+        .from("property_units")
+        .select("id, unit_number")
+        .eq("property_id", propertyId)
+        .order("unit_number");
+
+      if (data) {
+        setUnits(data);
+      }
+    } catch (error) {
+      console.error("Error loading units:", error);
+    }
+  }
 
   async function loadDocuments() {
     try {
@@ -215,6 +234,15 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           association_id: propertyId,
           created_by: user.id,
         });
+
+        if (selectedUnitId) {
+          await supabase.from("document_associations").insert({
+            document_id: docData.id,
+            association_type: "unit",
+            association_id: selectedUnitId,
+            created_by: user.id,
+          });
+        }
       }
 
       setUploadFiles((prev) =>
@@ -255,6 +283,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           setShowUploadModal(false);
           setUploadFiles([]);
           setSelectedDocType("floor_plan");
+          setSelectedUnitId("");
           setUploadDescription("");
           loadDocuments();
         }, 1000);
@@ -295,6 +324,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       maintenance: "Wartung",
       photo: "Foto",
       blueprint: "Bauplan",
+      expose: "Exposé",
       contract: "Vertrag",
       invoice: "Rechnung",
       bill: "Abrechnung",
@@ -312,8 +342,8 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       icon: Home,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
-      documents: documents.filter((d) => ["floor_plan", "blueprint"].includes(d.document_type)),
-      types: ["floor_plan", "blueprint"],
+      documents: documents.filter((d) => ["floor_plan", "blueprint", "expose"].includes(d.document_type)),
+      types: ["floor_plan", "blueprint", "expose"],
     },
     {
       id: "certificates",
@@ -483,8 +513,8 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
             const Icon = category.icon;
 
             return (
-              <div key={category.id} className="bg-white rounded-lg shadow-sm border border-gray-100">
-                <div className={`${category.bgColor} px-4 py-3 border-b border-gray-200 flex items-center gap-3`}>
+              <div key={category.id} className="bg-white rounded-lg shadow-sm border-2 border-gray-200">
+                <div className={`${category.bgColor} px-4 py-3 border-b-2 border-gray-200 flex items-center gap-3`}>
                   <Icon className={`w-5 h-5 ${category.color}`} />
                   <div className="flex-1">
                     <h4 className="font-semibold text-dark">{category.title}</h4>
@@ -545,6 +575,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                   setShowUploadModal(false);
                   setUploadFiles([]);
                   setSelectedDocType("floor_plan");
+                  setSelectedUnitId("");
                   setUploadDescription("");
                 }}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -566,6 +597,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                   <optgroup label="Grundrisse & Pläne">
                     <option value="floor_plan">Grundriss</option>
                     <option value="blueprint">Bauplan</option>
+                    <option value="expose">Exposé</option>
                   </optgroup>
                   <optgroup label="Zertifikate">
                     <option value="energy_certificate">Energieausweis</option>
@@ -609,6 +641,29 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+
+              {units.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Mieteinheit (Optional)
+                  </label>
+                  <select
+                    value={selectedUnitId}
+                    onChange={(e) => setSelectedUnitId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Keine Einheit - für gesamte Immobilie</option>
+                    {units.map((unit) => (
+                      <option key={unit.id} value={unit.id}>
+                        {unit.unit_number}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Wählen Sie optional eine Einheit, falls das Dokument nur für diese relevant ist
+                  </p>
+                </div>
+              )}
 
               <div
                 onDrop={handleDrop}
@@ -697,6 +752,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                     setShowUploadModal(false);
                     setUploadFiles([]);
                     setSelectedDocType("floor_plan");
+                    setSelectedUnitId("");
                     setUploadDescription("");
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
