@@ -20,15 +20,15 @@ interface Document {
 
 export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTabProps) {
   const { user } = useAuth();
-  const { isPremium } = useSubscription();
+  const { isPro } = useSubscription();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user && isPremium) {
+    if (user && isPro) {
       loadDocuments();
     }
-  }, [user, propertyId, isPremium]);
+  }, [user, propertyId, isPro]);
 
   async function loadDocuments() {
     try {
@@ -126,14 +126,14 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
     }).format(date);
   };
 
-  if (!isPremium) {
+  if (!isPro) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8">
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-amber-600" />
           </div>
-          <h3 className="text-xl font-semibold text-dark mb-2">Premium-Funktion</h3>
+          <h3 className="text-xl font-semibold text-dark mb-2">Pro-Funktion</h3>
           <p className="text-gray-600 mb-6">
             Die Dokumentenverwaltung für Immobilien ist im Pro-Tarif verfügbar.
             Upgrade jetzt für:

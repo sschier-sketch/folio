@@ -12,7 +12,7 @@ export function PremiumFeatureGuard({
   featureName,
   inline = false,
 }: PremiumFeatureGuardProps) {
-  const { hasPremium, loading } = useSubscription();
+  const { isPro, loading } = useSubscription();
   const navigate = useNavigate();
   if (loading) {
     return (
@@ -22,7 +22,7 @@ export function PremiumFeatureGuard({
       </div>
     );
   }
-  if (hasPremium) {
+  if (isPro) {
     return <>{children}</>;
   }
   if (inline) {
@@ -43,7 +43,7 @@ export function PremiumFeatureGuard({
                 {" "}
                 <Lock className="w-4 h-4 text-white" />{" "}
               </div>{" "}
-              <span className="font-bold text-dark">Premium Feature</span>{" "}
+              <span className="font-bold text-dark">Pro Feature</span>{" "}
             </div>{" "}
             <p className="text-sm text-gray-400 mb-3">{featureName}</p>{" "}
             <button
@@ -68,7 +68,7 @@ export function PremiumFeatureGuard({
       <h3 className="text-2xl font-bold text-dark mb-2">{featureName}</h3>{" "}
       <p className="text-gray-400 mb-6 max-w-md mx-auto">
         {" "}
-        Diese Funktion ist nur im Premium-Plan verfügbar. Upgraden Sie jetzt für
+        Diese Funktion ist nur im Pro-Plan verfügbar. Upgraden Sie jetzt für
         nur 9 EUR/Monat und erhalten Sie Zugriff auf alle erweiterten
         Features.{" "}
       </p>{" "}
@@ -76,7 +76,7 @@ export function PremiumFeatureGuard({
         {" "}
         <h4 className="font-semibold text-dark mb-4 flex items-center justify-center gap-2">
           {" "}
-          <Sparkles className="w-5 h-5 text-amber-500" /> Premium-Features{" "}
+          <Sparkles className="w-5 h-5 text-amber-500" /> Pro-Features{" "}
         </h4>{" "}
         <ul className="text-left space-y-2 text-sm text-gray-400">
           {" "}

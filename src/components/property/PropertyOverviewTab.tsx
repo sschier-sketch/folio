@@ -668,11 +668,17 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
                       {contract.property_units && (
-                        <span className="font-medium">
-                          {contract.property_units.unit_number} •{" "}
+                        <span className="font-medium text-primary-blue">
+                          Einheit {contract.property_units.unit_number}
                         </span>
                       )}
-                      {formatCurrency(contract.base_rent)} Kaltmiete
+                      {!contract.property_units && (
+                        <span className="font-medium text-gray-400 italic">
+                          Keine Einheit zugeordnet
+                        </span>
+                      )}
+                      <span className="mx-2">•</span>
+                      <span className="font-medium">{formatCurrency(contract.base_rent)} Kaltmiete</span>
                       {contract.tenants && contract.tenants.length > 1 && (
                         <span className="ml-2">• {contract.tenants.length} Mieter</span>
                       )}

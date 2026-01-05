@@ -76,7 +76,7 @@ export function useSubscription() {
     return subscription?.subscription_status === "active";
   };
 
-  const hasPremium = () => {
+  const hasPro = () => {
     return (
       subscription?.subscription_status === "active" && subscription?.price_id
     );
@@ -87,7 +87,8 @@ export function useSubscription() {
     loading,
     getSubscriptionPlan,
     isActive,
-    hasPremium: hasPremium(),
-    isPro: hasPremium(),
+    isPro: hasPro(),
+    isPremium: hasPro(),
+    hasPremium: hasPro(),
   };
 }
