@@ -240,6 +240,7 @@ export default function TenantModal({
         if (tenantData.property_id && tenantData.move_in_date) {
           const contractUpdateData = {
             property_id: tenantData.property_id,
+            unit_id: tenantData.unit_id || null,
             rent_type: rentData.rent_type,
             flat_rate_amount: rentData.rent_type === "flat_rate" ? parseFloat(rentData.flat_rate_amount) || 0 : 0,
             cold_rent: rentData.rent_type !== "flat_rate" ? parseFloat(rentData.cold_rent) || 0 : 0,
@@ -355,6 +356,7 @@ export default function TenantModal({
               {
                 tenant_id: newTenant.id,
                 property_id: tenantData.property_id,
+                unit_id: tenantData.unit_id || null,
                 user_id: user.id,
                 rent_type: rentData.rent_type,
                 flat_rate_amount: rentData.rent_type === "flat_rate" ? parseFloat(rentData.flat_rate_amount) || 0 : 0,

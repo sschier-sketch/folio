@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Clock, FileText, User, Home, TrendingUp, FileCheck } from "lucide-react";
+import { Clock, FileText, User, Home, TrendingUp, FileCheck, Lock } from "lucide-react";
 import { supabase } from "../../lib/supabase";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../contexts/AuthContext";
+import { useSubscription } from "../../hooks/useSubscription";
 
 interface PropertyHistoryTabProps {
   propertyId: string;
@@ -17,6 +18,7 @@ interface HistoryEntry {
 
 export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabProps) {
   const { user } = useAuth();
+  const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
@@ -81,6 +83,47 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
     };
     return labels[eventType] || eventType;
   };
+
+  if (!isPremium) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-8">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-amber-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-dark mb-2">Pro-Funktion</h3>
+          <p className="text-gray-600 mb-6">
+            Die Änderungshistorie für Immobilien ist im Pro-Tarif verfügbar. Behalten Sie den Überblick über alle Änderungen:
+          </p>
+          <div className="text-left space-y-2 mb-6">
+            <div className="flex items-start gap-2">
+              <Home className="w-5 h-5 text-primary-blue mt-0.5" />
+              <span className="text-sm text-gray-600">Einheit angelegt / geändert</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <User className="w-5 h-5 text-primary-blue mt-0.5" />
+              <span className="text-sm text-gray-600">Mieterwechsel dokumentiert</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <TrendingUp className="w-5 h-5 text-primary-blue mt-0.5" />
+              <span className="text-sm text-gray-600">Mieterhöhungen nachvollziehen</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <FileText className="w-5 h-5 text-primary-blue mt-0.5" />
+              <span className="text-sm text-gray-600">Abrechnungen erstellt</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <Clock className="w-5 h-5 text-primary-blue mt-0.5" />
+              <span className="text-sm text-gray-600">Änderungsprotokoll (wer / wann)</span>
+            </div>
+          </div>
+          <button className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+            Jetzt auf Pro upgraden
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;

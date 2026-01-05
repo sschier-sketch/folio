@@ -513,8 +513,8 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
             const Icon = category.icon;
 
             return (
-              <div key={category.id} className="bg-white rounded-lg shadow-sm border-2 border-gray-200">
-                <div className={`${category.bgColor} px-4 py-3 border-b-2 border-gray-200 flex items-center gap-3`}>
+              <div key={category.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className={`${category.bgColor} px-4 py-3 border-b border-gray-200 flex items-center gap-3`}>
                   <Icon className={`w-5 h-5 ${category.color}`} />
                   <div className="flex-1">
                     <h4 className="font-semibold text-dark">{category.title}</h4>
