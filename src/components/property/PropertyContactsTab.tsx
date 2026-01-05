@@ -16,6 +16,10 @@ interface Contact {
   phone_mobile: string | null;
   email: string | null;
   notes: string | null;
+  availability_days: string[] | null;
+  availability_time_start: string | null;
+  availability_time_end: string | null;
+  availability_notes: string | null;
 }
 
 interface ContactGroup {
@@ -42,6 +46,10 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
     phone_mobile: "",
     email: "",
     notes: "",
+    availability_days: [] as string[],
+    availability_time_start: "",
+    availability_time_end: "",
+    availability_notes: "",
   });
 
   useEffect(() => {
@@ -78,6 +86,10 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
       phone_mobile: "",
       email: "",
       notes: "",
+      availability_days: [],
+      availability_time_start: "",
+      availability_time_end: "",
+      availability_notes: "",
     });
     setShowAddModal(true);
   };
@@ -91,6 +103,10 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
       phone_mobile: contact.phone_mobile || "",
       email: contact.email || "",
       notes: contact.notes || "",
+      availability_days: contact.availability_days || [],
+      availability_time_start: contact.availability_time_start || "",
+      availability_time_end: contact.availability_time_end || "",
+      availability_notes: contact.availability_notes || "",
     });
     setShowAddModal(true);
   };
@@ -112,6 +128,10 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
             phone_mobile: formData.phone_mobile || null,
             email: formData.email || null,
             notes: formData.notes || null,
+            availability_days: formData.availability_days.length > 0 ? formData.availability_days : null,
+            availability_time_start: formData.availability_time_start || null,
+            availability_time_end: formData.availability_time_end || null,
+            availability_notes: formData.availability_notes || null,
           })
           .eq("id", editingContact.id);
 
@@ -126,6 +146,10 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
           phone_mobile: formData.phone_mobile || null,
           email: formData.email || null,
           notes: formData.notes || null,
+          availability_days: formData.availability_days.length > 0 ? formData.availability_days : null,
+          availability_time_start: formData.availability_time_start || null,
+          availability_time_end: formData.availability_time_end || null,
+          availability_notes: formData.availability_notes || null,
         });
 
         if (error) throw error;
@@ -297,7 +321,7 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
 
             return (
               <div key={group.role} className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className={`${group.bgColor} px-4 py-3 border-b border-gray-200 flex items-center gap-3`}>
+                <div className={`${group.bgColor} px-4 py-3 border-b border-gray-200 flex items-center gap-3 rounded-t-lg`}>
                   <Icon className={`w-5 h-5 ${group.color}`} />
                   <div className="flex-1">
                     <h4 className="font-semibold text-dark">{group.title}</h4>
@@ -354,6 +378,30 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
                             <a href={`mailto:${contact.email}`} className="hover:text-blue-600">
                               {contact.email}
                             </a>
+                          </div>
+                        )}
+                        {(contact.availability_days?.length || contact.availability_time_start || contact.availability_notes) && (
+                          <div className="mt-2 pt-2 border-t border-gray-200">
+                            <p className="text-xs font-medium text-gray-700 mb-1">Verfügbarkeit</p>
+                            {contact.availability_days && contact.availability_days.length > 0 && (
+                              <p className="text-xs text-gray-600">
+                                {contact.availability_days.map(d => {
+                                  const dayLabels: Record<string, string> = {
+                                    monday: 'Mo', tuesday: 'Di', wednesday: 'Mi',
+                                    thursday: 'Do', friday: 'Fr', saturday: 'Sa', sunday: 'So'
+                                  };
+                                  return dayLabels[d] || d;
+                                }).join(', ')}
+                              </p>
+                            )}
+                            {(contact.availability_time_start || contact.availability_time_end) && (
+                              <p className="text-xs text-gray-600">
+                                {contact.availability_time_start || '?'} - {contact.availability_time_end || '?'} Uhr
+                              </p>
+                            )}
+                            {contact.availability_notes && (
+                              <p className="text-xs text-gray-500 mt-1">{contact.availability_notes}</p>
+                            )}
                           </div>
                         )}
                         {contact.notes && (
@@ -465,6 +513,89 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
                   placeholder="Zusätzliche Informationen zum Kontakt"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-3">Verfügbarkeit</label>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-2">Wochentage</p>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "monday", label: "Mo" },
+                        { value: "tuesday", label: "Di" },
+                        { value: "wednesday", label: "Mi" },
+                        { value: "thursday", label: "Do" },
+                        { value: "friday", label: "Fr" },
+                        { value: "saturday", label: "Sa" },
+                        { value: "sunday", label: "So" },
+                      ].map((day) => (
+                        <label
+                          key={day.value}
+                          className={`flex items-center justify-center px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                            formData.availability_days.includes(day.value)
+                              ? "bg-blue-100 border-blue-600 text-blue-700"
+                              : "bg-white border-gray-300 text-gray-700 hover:border-blue-400"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={formData.availability_days.includes(day.value)}
+                            onChange={(e) => {
+                              const newDays = e.target.checked
+                                ? [...formData.availability_days, day.value]
+                                : formData.availability_days.filter((d) => d !== day.value);
+                              setFormData({ ...formData, availability_days: newDays });
+                            }}
+                          />
+                          <span className="text-sm font-medium">{day.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Von</label>
+                      <input
+                        type="time"
+                        value={formData.availability_time_start}
+                        onChange={(e) =>
+                          setFormData({ ...formData, availability_time_start: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Bis</label>
+                      <input
+                        type="time"
+                        value={formData.availability_time_end}
+                        onChange={(e) =>
+                          setFormData({ ...formData, availability_time_end: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Verfügbarkeits-Hinweise
+                    </label>
+                    <textarea
+                      value={formData.availability_notes}
+                      onChange={(e) =>
+                        setFormData({ ...formData, availability_notes: e.target.value })
+                      }
+                      rows={2}
+                      placeholder="z.B. nur nach Terminvereinbarung, Urlaubszeiten, etc."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">

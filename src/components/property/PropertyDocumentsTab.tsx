@@ -17,6 +17,10 @@ interface Document {
   upload_date: string;
   category: string | null;
   description: string | null;
+  unit_id: string | null;
+  property_units?: {
+    unit_number: string;
+  };
 }
 
 interface DocumentCategory {
@@ -80,7 +84,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
 
       const { data: associations } = await supabase
         .from("document_associations")
-        .select("document_id")
+        .select("document_id, association_id, association_type")
         .eq("association_type", "property")
         .eq("association_id", propertyId);
 
@@ -92,10 +96,41 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           .select("*")
           .in("id", documentIds)
           .eq("is_archived", false)
-          .order("upload_date", { ascending: false });
+          .order("upload_date", { ascending: false});
 
         if (docs) {
-          setDocuments(docs);
+          const { data: unitAssociations } = await supabase
+            .from("document_associations")
+            .select("document_id, association_id")
+            .eq("association_type", "unit")
+            .in("document_id", documentIds);
+
+          const unitIds = unitAssociations?.map(ua => ua.association_id) || [];
+
+          let unitsMap: Record<string, string> = {};
+          if (unitIds.length > 0) {
+            const { data: unitsData } = await supabase
+              .from("property_units")
+              .select("id, unit_number")
+              .in("id", unitIds);
+
+            if (unitsData) {
+              unitsMap = Object.fromEntries(unitsData.map(u => [u.id, u.unit_number]));
+            }
+          }
+
+          const docsWithUnits = docs.map(doc => {
+            const unitAssoc = unitAssociations?.find(ua => ua.document_id === doc.id);
+            return {
+              ...doc,
+              unit_id: unitAssoc?.association_id || null,
+              property_units: unitAssoc && unitsMap[unitAssoc.association_id]
+                ? { unit_number: unitsMap[unitAssoc.association_id] }
+                : undefined
+            };
+          });
+
+          setDocuments(docsWithUnits);
         }
       } else {
         setDocuments([]);
@@ -514,7 +549,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
 
             return (
               <div key={category.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className={`${category.bgColor} px-4 py-3 border-b border-gray-200 flex items-center gap-3`}>
+                <div className={`${category.bgColor} px-4 py-3 border-b border-gray-200 flex items-center gap-3 rounded-t-lg`}>
                   <Icon className={`w-5 h-5 ${category.color}`} />
                   <div className="flex-1">
                     <h4 className="font-semibold text-dark">{category.title}</h4>
@@ -537,6 +572,12 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                             <span>{formatFileSize(doc.file_size)}</span>
                             <span>•</span>
                             <span>{formatDate(doc.upload_date)}</span>
+                            {doc.property_units && (
+                              <>
+                                <span>•</span>
+                                <span className="text-blue-600 font-medium">Einheit {doc.property_units.unit_number}</span>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
