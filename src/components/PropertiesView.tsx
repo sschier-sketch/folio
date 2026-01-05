@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Plus, Building2, Edit2, Trash2, TrendingUp, Euro, AlertCircle, CheckCircle, X, Tag } from "lucide-react";
+import { Plus, Building2, Edit2, Trash2, TrendingUp, Euro, AlertCircle, CheckCircle, X, Tag, Download, FileDown, FileSpreadsheet, FileText } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import PropertyModal from "./PropertyModal";
 import PropertyDetails from "./PropertyDetails";
+import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
 
 interface PropertyLabel {
   id: string;
@@ -17,11 +18,11 @@ interface Property {
   name: string;
   address: string;
   property_type: string;
+  property_management_type?: string;
   purchase_price: number;
   current_value: number;
   purchase_date: string | null;
   size_sqm: number | null;
-  rooms: number | null;
   parking_spot_number?: string;
   description: string;
   labels?: PropertyLabel[];
@@ -65,6 +66,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
   const [newLabelText, setNewLabelText] = useState("");
   const [selectedColor, setSelectedColor] = useState("blue");
   const [allLabels, setAllLabels] = useState<string[]>([]);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [filters, setFilters] = useState({
     status: "",
     property_type: "",
@@ -184,6 +186,96 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
     }).format(value);
   };
 
+  const getPropertyTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      multi_family: "Mehrfamilienhaus",
+      house: "Einfamilienhaus",
+      commercial: "Gewerbeeinheit",
+      parking: "Garage/Stellplatz",
+      land: "Grundstück",
+      other: "Sonstiges",
+    };
+    return labels[type] || type;
+  };
+
+  const handleExport = async (format: 'pdf' | 'csv' | 'excel') => {
+    if (!user) return;
+
+    try {
+      setShowExportMenu(false);
+
+      const exportData = await Promise.all(
+        properties.map(async (property) => {
+          const { data: units } = await supabase
+            .from("property_units")
+            .select("id, unit_number, status, size_sqm")
+            .eq("property_id", property.id)
+            .order("unit_number");
+
+          const unitsWithTenants = await Promise.all(
+            (units || []).map(async (unit) => {
+              const { data: contract } = await supabase
+                .from("rental_contracts")
+                .select(`
+                  monthly_rent,
+                  total_rent,
+                  tenants (
+                    name,
+                    email,
+                    phone
+                  )
+                `)
+                .eq("unit_id", unit.id)
+                .eq("status", "active")
+                .maybeSingle();
+
+              return {
+                unit: {
+                  unit_number: unit.unit_number,
+                  status: unit.status,
+                  size_sqm: unit.size_sqm,
+                  monthly_rent: contract?.total_rent || contract?.monthly_rent,
+                },
+                tenant: contract?.tenants ? {
+                  name: (contract.tenants as any).name,
+                  email: (contract.tenants as any).email,
+                  phone: (contract.tenants as any).phone,
+                } : undefined,
+              };
+            })
+          );
+
+          return {
+            property: {
+              id: property.id,
+              name: property.name,
+              address: property.address,
+              property_type: property.property_type,
+              property_management_type: property.property_management_type,
+              purchase_price: property.purchase_price,
+              current_value: property.current_value,
+              purchase_date: property.purchase_date,
+              size_sqm: property.size_sqm,
+              description: property.description,
+            },
+            units: unitsWithTenants,
+          };
+        })
+      );
+
+      if (format === 'pdf') {
+        await exportToPDF(exportData);
+      } else if (format === 'csv') {
+        exportToCSV(exportData);
+      } else if (format === 'excel') {
+        exportToExcel(exportData);
+      }
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      alert("Fehler beim Exportieren der Daten");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -239,15 +331,52 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
             Verwalten Sie Ihre Immobilien und deren Details
           </p>
         </div>
-        <button
-          onClick={() => {
-            setSelectedProperty(null);
-            setShowModal(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
-        >
-          <Plus className="w-5 h-5" /> Immobilie hinzufügen
-        </button>
+        <div className="flex items-center gap-3">
+          {properties.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-full font-medium hover:bg-gray-50 transition-colors"
+              >
+                <Download className="w-5 h-5" /> Exportieren
+              </button>
+              {showExportMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <button
+                    onClick={() => handleExport('pdf')}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <FileText className="w-4 h-4" />
+                    PDF exportieren
+                  </button>
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    CSV exportieren
+                  </button>
+                  <button
+                    onClick={() => handleExport('excel')}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    Excel exportieren
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          <button
+            onClick={() => {
+              setSelectedProperty(null);
+              setShowModal(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+          >
+            <Plus className="w-5 h-5" /> Immobilie hinzufügen
+          </button>
+        </div>
       </div>
       {properties.length === 0 ? (
         <div className="bg-white rounded shadow-sm p-12 text-center">
@@ -301,11 +430,12 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   <option value="">Alle Typen</option>
-                  <option value="apartment">Wohnung</option>
-                  <option value="house">Haus</option>
-                  <option value="commercial">Gewerbe</option>
-                  <option value="parking">Stellplatz</option>
-                  <option value="mixed">Gemischt</option>
+                  <option value="multi_family">Mehrfamilienhaus</option>
+                  <option value="house">Einfamilienhaus</option>
+                  <option value="commercial">Gewerbeeinheit</option>
+                  <option value="parking">Garage/Stellplatz</option>
+                  <option value="land">Grundstück</option>
+                  <option value="other">Sonstiges</option>
                 </select>
               </div>
 
@@ -435,12 +565,10 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
                     )}
 
                     <div className="space-y-2 mb-4">
-                      {property.rooms && (
-                        <div className="text-sm text-gray-400">
-                          {property.rooms} Zimmer
-                          {property.size_sqm && ` • ${property.size_sqm} m²`}
-                        </div>
-                      )}
+                      <div className="text-sm text-gray-400">
+                        {getPropertyTypeLabel(property.property_type)}
+                        {property.size_sqm && ` • ${property.size_sqm} m²`}
+                      </div>
                       <div className="flex items-center gap-2">
                         <Euro className="w-4 h-4 text-gray-300" />
                         <div className="text-sm">
