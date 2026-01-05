@@ -12,11 +12,11 @@ interface Property {
   city?: string;
   country?: string;
   property_type: string;
+  property_management_type?: string;
   purchase_price: number;
   current_value: number;
   purchase_date: string | null;
   size_sqm: number | null;
-  rooms: number | null;
   parking_spot_number?: string;
   description: string;
 }
@@ -38,12 +38,12 @@ export default function PropertyModal({
     zip_code: "",
     city: "",
     country: "Deutschland",
-    property_type: "apartment",
+    property_type: "multi_family",
+    property_management_type: "rental_management",
     purchase_price: 0,
     current_value: 0,
     purchase_date: "",
     size_sqm: 0,
-    rooms: 0,
     parking_spot_number: "",
     description: "",
   });
@@ -56,11 +56,11 @@ export default function PropertyModal({
         city: property.city || "",
         country: property.country || "Deutschland",
         property_type: property.property_type,
+        property_management_type: property.property_management_type || "rental_management",
         purchase_price: property.purchase_price,
         current_value: property.current_value,
         purchase_date: property.purchase_date || "",
         size_sqm: property.size_sqm || 0,
-        rooms: property.rooms || 0,
         parking_spot_number: property.parking_spot_number || "",
         description: property.description,
       });
@@ -80,6 +80,7 @@ export default function PropertyModal({
         country: formData.country,
         address: address,
         property_type: formData.property_type,
+        property_management_type: formData.property_management_type,
         purchase_price: formData.purchase_price,
         current_value: formData.current_value,
         purchase_date: formData.purchase_date,
@@ -88,8 +89,6 @@ export default function PropertyModal({
           formData.property_type === "parking"
             ? null
             : formData.size_sqm || null,
-        rooms:
-          formData.property_type === "parking" ? null : formData.rooms || null,
         parking_spot_number:
           formData.property_type === "parking"
             ? formData.parking_spot_number || null
@@ -249,12 +248,30 @@ export default function PropertyModal({
               >
                 {" "}
                 <option value="multi_family">Mehrfamilienhaus</option>{" "}
-                <option value="apartment">Eigentumswohnung</option>{" "}
                 <option value="house">Einfamilienhaus</option>{" "}
                 <option value="commercial">Gewerbeeinheit</option>{" "}
                 <option value="parking">Garage/Stellplatz</option>{" "}
                 <option value="land">Grundstück</option>{" "}
                 <option value="other">Sonstiges</option>{" "}
+              </select>{" "}
+            </div>{" "}
+            <div>
+              {" "}
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                {" "}
+                Immobilienverwaltung{" "}
+              </label>{" "}
+              <select
+                value={formData.property_management_type}
+                onChange={(e) =>
+                  setFormData({ ...formData, property_management_type: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                {" "}
+                <option value="rental_management">Miet Verwaltung</option>{" "}
+                <option value="weg_management">WEG Verwaltung</option>{" "}
+                <option value="rental_and_weg_management">Miet und WEG Verwaltung</option>{" "}
               </select>{" "}
             </div>{" "}
             <div>
@@ -312,47 +329,25 @@ export default function PropertyModal({
               />{" "}
             </div>{" "}
             {formData.property_type !== "parking" && (
-              <>
+              <div>
                 {" "}
-                <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    {" "}
-                    Wohnfläche (m²){" "}
-                  </label>{" "}
-                  <input
-                    type="text"
-                    value={formData.size_sqm}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        size_sqm: parseNumberInput(e.target.value),
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="z.B. 75,5"
-                  />{" "}
-                </div>{" "}
-                <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    {" "}
-                    Anzahl Zimmer{" "}
-                  </label>{" "}
-                  <input
-                    type="text"
-                    value={formData.rooms}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        rooms: parseNumberInput(e.target.value),
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="z.B. 3 oder 3,5"
-                  />{" "}
-                </div>{" "}
-              </>
+                  Fläche (m²){" "}
+                </label>{" "}
+                <input
+                  type="text"
+                  value={formData.size_sqm}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      size_sqm: parseNumberInput(e.target.value),
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. 75,5"
+                />{" "}
+              </div>
             )}{" "}
             {formData.property_type === "parking" && (
               <div className="col-span-2">

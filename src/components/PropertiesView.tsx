@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
-import { Plus, Building2, Edit2, Trash2, TrendingUp, Euro, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, Building2, Edit2, Trash2, TrendingUp, Euro, AlertCircle, CheckCircle, X, Tag } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import PropertyModal from "./PropertyModal";
 import PropertyDetails from "./PropertyDetails";
+
+interface PropertyLabel {
+  id: string;
+  label: string;
+  color: string;
+}
 
 interface Property {
   id: string;
@@ -18,6 +24,7 @@ interface Property {
   rooms: number | null;
   parking_spot_number?: string;
   description: string;
+  labels?: PropertyLabel[];
   units?: {
     total: number;
     rented: number;
@@ -29,6 +36,23 @@ interface PropertiesViewProps {
   onNavigateToTenant?: (tenantId: string) => void;
 }
 
+const PREDEFINED_LABELS = [
+  { label: "Hochrentabel", color: "green" },
+  { label: "Sanierungsbedarf", color: "amber" },
+  { label: "Verkauf geplant", color: "red" },
+  { label: "Neukauf", color: "blue" },
+  { label: "Top Lage", color: "purple" },
+];
+
+const LABEL_COLORS = {
+  blue: { bg: "bg-blue-100", text: "text-blue-700", hover: "hover:bg-blue-200" },
+  green: { bg: "bg-green-100", text: "text-green-700", hover: "hover:bg-green-200" },
+  red: { bg: "bg-red-100", text: "text-red-700", hover: "hover:bg-red-200" },
+  amber: { bg: "bg-amber-100", text: "text-amber-700", hover: "hover:bg-amber-200" },
+  purple: { bg: "bg-purple-100", text: "text-purple-700", hover: "hover:bg-purple-200" },
+  pink: { bg: "bg-pink-100", text: "text-pink-700", hover: "hover:bg-pink-200" },
+};
+
 export default function PropertiesView({ onNavigateToTenant }: PropertiesViewProps = {}) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
@@ -37,13 +61,20 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
   const [showModal, setShowModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [showLabelModal, setShowLabelModal] = useState<string | null>(null);
+  const [newLabelText, setNewLabelText] = useState("");
+  const [selectedColor, setSelectedColor] = useState("blue");
+  const [allLabels, setAllLabels] = useState<string[]>([]);
   const [filters, setFilters] = useState({
     status: "",
     property_type: "",
+    label: "",
   });
+
   useEffect(() => {
     loadProperties();
   }, [user]);
+
   const loadProperties = async () => {
     if (!user) return;
     try {
@@ -55,7 +86,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
 
       if (error) throw error;
 
-      const propertiesWithUnits = await Promise.all(
+      const propertiesWithUnitsAndLabels = await Promise.all(
         (data || []).map(async (property) => {
           const { data: units } = await supabase
             .from("property_units")
@@ -66,20 +97,74 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
           const rented = units?.filter((u) => u.status === "rented").length || 0;
           const vacant = units?.filter((u) => u.status === "vacant").length || 0;
 
+          const { data: labels } = await supabase
+            .from("property_labels")
+            .select("id, label, color")
+            .eq("property_id", property.id);
+
           return {
             ...property,
             units: { total, rented, vacant },
+            labels: labels || [],
           };
         })
       );
 
-      setProperties(propertiesWithUnits);
+      setProperties(propertiesWithUnitsAndLabels);
+
+      // Extract all unique labels for the filter
+      const uniqueLabels = Array.from(
+        new Set(
+          propertiesWithUnitsAndLabels.flatMap((p) =>
+            p.labels?.map((l) => l.label) || []
+          )
+        )
+      );
+      setAllLabels(uniqueLabels);
     } catch (error) {
       console.error("Error loading properties:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleAddLabel = async (propertyId: string, labelText: string, color: string) => {
+    if (!user || !labelText.trim()) return;
+
+    try {
+      const { error } = await supabase.from("property_labels").insert({
+        property_id: propertyId,
+        user_id: user.id,
+        label: labelText.trim(),
+        color: color,
+      });
+
+      if (error) throw error;
+
+      await loadProperties();
+      setShowLabelModal(null);
+      setNewLabelText("");
+      setSelectedColor("blue");
+    } catch (error) {
+      console.error("Error adding label:", error);
+    }
+  };
+
+  const handleRemoveLabel = async (labelId: string) => {
+    try {
+      const { error } = await supabase
+        .from("property_labels")
+        .delete()
+        .eq("id", labelId);
+
+      if (error) throw error;
+
+      await loadProperties();
+    } catch (error) {
+      console.error("Error removing label:", error);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Möchten Sie diese Immobilie wirklich löschen?")) return;
     try {
@@ -90,6 +175,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
       console.error("Error deleting property:", error);
     }
   };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("de-DE", {
       style: "currency",
@@ -97,14 +183,15 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
       maximumFractionDigits: 0,
     }).format(value);
   };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        {" "}
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>{" "}
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
+
   if (showDetails && selectedProperty) {
     return (
       <PropertyDetails
@@ -118,6 +205,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
       />
     );
   }
+
   const getOccupancyStatus = (units?: { total: number; rented: number; vacant: number }) => {
     if (!units || units.total === 0) return { label: "Keine Einheiten", color: "text-gray-400" };
     if (units.vacant === 0) return { label: "Voll vermietet", color: "text-emerald-600" };
@@ -134,6 +222,10 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
     }
     if (filters.property_type && property.property_type !== filters.property_type) {
       return false;
+    }
+    if (filters.label) {
+      const hasLabel = property.labels?.some((l) => l.label === filters.label);
+      if (!hasLabel) return false;
     }
     return true;
   });
@@ -180,7 +272,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
         <>
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <h3 className="text-lg font-semibold text-dark mb-4">Filter</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Status
@@ -217,9 +309,29 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
                 </select>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Label
+                </label>
+                <select
+                  value={filters.label}
+                  onChange={(e) =>
+                    setFilters({ ...filters, label: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  <option value="">Alle Labels</option>
+                  {allLabels.map((label) => (
+                    <option key={label} value={label}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="flex items-end">
                 <button
-                  onClick={() => setFilters({ status: "", property_type: "" })}
+                  onClick={() => setFilters({ status: "", property_type: "", label: "" })}
                   className="w-full px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                 >
                   Zurücksetzen
@@ -232,97 +344,220 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
             {filteredProperties.map((property) => {
               const occupancyStatus = getOccupancyStatus(property.units);
               return (
-              <div
-                key={property.id}
-                className="bg-white rounded shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Building2 className="w-6 h-6 text-primary-blue" />
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedProperty(property);
-                          setShowModal(true);
-                        }}
-                        className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(property.id)}
-                        className="p-2 text-gray-300 hover:text-red-600 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <h3 className="text-lg font-semibold text-dark mb-1">
-                    {property.name}
-                  </h3>
-                  <p className="text-sm text-gray-400 mb-4">{property.address}</p>
-
-                  {property.units && property.units.total > 0 && (
-                    <div className="mb-4 pb-4 border-b border-gray-100">
-                      <div className="flex items-center justify-between text-sm mb-2">
-                        <span className="text-gray-400">Einheiten:</span>
-                        <span className="font-medium text-dark">
-                          {property.units.total}
-                        </span>
+                <div
+                  key={property.id}
+                  className="bg-white rounded shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-6 h-6 text-primary-blue" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        {occupancyStatus.label === "Voll vermietet" ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-600" />
-                        ) : occupancyStatus.label === "Leer" ? (
-                          <AlertCircle className="w-4 h-4 text-amber-600" />
-                        ) : null}
-                        <span className={`text-sm font-medium ${occupancyStatus.color}`}>
-                          {occupancyStatus.label}
-                        </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedProperty(property);
+                            setShowModal(true);
+                          }}
+                          className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(property.id)}
+                          className="p-2 text-gray-300 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
-                      {isPremium && property.units.vacant > 0 && (
-                        <div className="mt-2 text-xs text-amber-600">
-                          {property.units.vacant} Einheit{property.units.vacant > 1 ? "en" : ""}{" "}
-                          leer
+                    </div>
+
+                    <h3 className="text-lg font-semibold text-dark mb-1">
+                      {property.name}
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-3">{property.address}</p>
+
+                    {/* Labels Section */}
+                    <div className="mb-4 min-h-[32px]">
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {property.labels?.map((label) => {
+                          const colorClasses = LABEL_COLORS[label.color as keyof typeof LABEL_COLORS] || LABEL_COLORS.blue;
+                          return (
+                            <span
+                              key={label.id}
+                              className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded font-medium ${colorClasses.bg} ${colorClasses.text}`}
+                            >
+                              {label.label}
+                              <button
+                                onClick={() => handleRemoveLabel(label.id)}
+                                className="hover:opacity-70"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          );
+                        })}
+                        <button
+                          onClick={() => setShowLabelModal(property.id)}
+                          className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
+                        >
+                          <Tag className="w-3 h-3" />
+                          Label
+                        </button>
+                      </div>
+                    </div>
+
+                    {property.units && property.units.total > 0 && (
+                      <div className="mb-4 pb-4 border-b border-gray-100">
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-gray-400">Einheiten:</span>
+                          <span className="font-medium text-dark">
+                            {property.units.total}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="space-y-2 mb-4">
-                    {property.rooms && (
-                      <div className="text-sm text-gray-400">
-                        {property.rooms} Zimmer
-                        {property.size_sqm && ` • ${property.size_sqm} m²`}
+                        <div className="flex items-center gap-2">
+                          {occupancyStatus.label === "Voll vermietet" ? (
+                            <CheckCircle className="w-4 h-4 text-emerald-600" />
+                          ) : occupancyStatus.label === "Leer" ? (
+                            <AlertCircle className="w-4 h-4 text-amber-600" />
+                          ) : null}
+                          <span className={`text-sm font-medium ${occupancyStatus.color}`}>
+                            {occupancyStatus.label}
+                          </span>
+                        </div>
+                        {isPremium && property.units.vacant > 0 && (
+                          <div className="mt-2 text-xs text-amber-600">
+                            {property.units.vacant} Einheit{property.units.vacant > 1 ? "en" : ""}{" "}
+                            leer
+                          </div>
+                        )}
                       </div>
                     )}
-                    <div className="flex items-center gap-2">
-                      <Euro className="w-4 h-4 text-gray-300" />
-                      <span className="text-sm font-medium text-dark">
-                        {formatCurrency(property.current_value)}
-                      </span>
-                    </div>
-                  </div>
 
-                  <button
-                    onClick={() => {
-                      setSelectedProperty(property);
-                      setShowDetails(true);
-                    }}
-                    className="w-full px-4 py-2 bg-gray-50 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                  >
-                    Details ansehen
-                  </button>
+                    <div className="space-y-2 mb-4">
+                      {property.rooms && (
+                        <div className="text-sm text-gray-400">
+                          {property.rooms} Zimmer
+                          {property.size_sqm && ` • ${property.size_sqm} m²`}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <Euro className="w-4 h-4 text-gray-300" />
+                        <div className="text-sm">
+                          <span className="text-gray-500 font-medium">Aktueller Wert:</span>{" "}
+                          <span className="font-medium text-dark">
+                            {formatCurrency(property.current_value)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setSelectedProperty(property);
+                        setShowDetails(true);
+                      }}
+                      className="w-full px-4 py-2 bg-gray-50 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                    >
+                      Details ansehen
+                    </button>
+                  </div>
                 </div>
-              </div>
               );
             })}
           </div>
         </>
       )}
+
+      {/* Label Modal */}
+      {showLabelModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-dark mb-4">Label hinzufügen</h3>
+
+            {/* Predefined Labels */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Vordefinierte Labels
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {PREDEFINED_LABELS.map((preLabel) => {
+                  const colorClasses = LABEL_COLORS[preLabel.color as keyof typeof LABEL_COLORS];
+                  return (
+                    <button
+                      key={preLabel.label}
+                      onClick={() => {
+                        handleAddLabel(showLabelModal, preLabel.label, preLabel.color);
+                      }}
+                      className={`px-3 py-1.5 text-xs rounded font-medium ${colorClasses.bg} ${colorClasses.text} ${colorClasses.hover} transition-colors`}
+                    >
+                      {preLabel.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 pt-4 mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Eigenes Label
+              </label>
+              <input
+                type="text"
+                value={newLabelText}
+                onChange={(e) => setNewLabelText(e.target.value)}
+                placeholder="Label-Text eingeben"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue mb-3"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newLabelText.trim()) {
+                    handleAddLabel(showLabelModal, newLabelText, selectedColor);
+                  }
+                }}
+              />
+
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Farbe wählen
+              </label>
+              <div className="flex gap-2">
+                {Object.entries(LABEL_COLORS).map(([colorName, colorClasses]) => (
+                  <button
+                    key={colorName}
+                    onClick={() => setSelectedColor(colorName)}
+                    className={`w-8 h-8 rounded-full ${colorClasses.bg} ${
+                      selectedColor === colorName ? "ring-2 ring-primary-blue ring-offset-2" : ""
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowLabelModal(null);
+                  setNewLabelText("");
+                  setSelectedColor("blue");
+                }}
+                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={() => {
+                  if (newLabelText.trim()) {
+                    handleAddLabel(showLabelModal, newLabelText, selectedColor);
+                  }
+                }}
+                disabled={!newLabelText.trim()}
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Hinzufügen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showModal && (
         <PropertyModal
           property={selectedProperty}
@@ -336,7 +571,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
             loadProperties();
           }}
         />
-      )}{" "}
+      )}
     </div>
   );
 }

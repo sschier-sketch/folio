@@ -11,11 +11,11 @@ interface PropertyOverviewTabProps {
     name: string;
     address: string;
     property_type: string;
+    property_management_type?: string;
     purchase_price: number;
     current_value: number;
     purchase_date: string | null;
     size_sqm: number | null;
-    rooms: number | null;
     description: string;
   };
   onUpdate?: () => void;
@@ -86,8 +86,8 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     name: property.name,
     address: property.address,
     property_type: property.property_type,
+    property_management_type: property.property_management_type || "rental_management",
     purchase_date: property.purchase_date || "",
-    rooms: property.rooms || "",
     size_sqm: property.size_sqm || "",
     purchase_price: property.purchase_price,
     current_value: property.current_value,
@@ -183,8 +183,8 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           name: editData.name,
           address: editData.address,
           property_type: editData.property_type,
+          property_management_type: editData.property_management_type,
           purchase_date: editData.purchase_date || null,
-          rooms: editData.rooms ? Number(editData.rooms) : null,
           size_sqm: editData.size_sqm ? Number(editData.size_sqm) : null,
           purchase_price: Number(editData.purchase_price),
           current_value: Number(editData.current_value),
@@ -213,13 +213,23 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
 
   const getPropertyTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      apartment: "Wohnung",
-      house: "Haus",
-      commercial: "Gewerbe",
-      parking: "Stellplatz",
-      mixed: "Gemischt",
+      multi_family: "Mehrfamilienhaus",
+      house: "Einfamilienhaus",
+      commercial: "Gewerbeeinheit",
+      parking: "Garage/Stellplatz",
+      land: "Grundstück",
+      other: "Sonstiges",
     };
     return labels[type] || type;
+  };
+
+  const getPropertyManagementTypeLabel = (type?: string) => {
+    const labels: Record<string, string> = {
+      rental_management: "Miet Verwaltung",
+      weg_management: "WEG Verwaltung",
+      rental_and_weg_management: "Miet und WEG Verwaltung",
+    };
+    return type ? labels[type] || type : "Nicht angegeben";
   };
 
   const calculateGrossYield = () => {
@@ -274,8 +284,8 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                     name: property.name,
                     address: property.address,
                     property_type: property.property_type,
+                    property_management_type: property.property_management_type || "rental_management",
                     purchase_date: property.purchase_date || "",
-                    rooms: property.rooms || "",
                     size_sqm: property.size_sqm || "",
                     purchase_price: property.purchase_price,
                     current_value: property.current_value,
@@ -339,15 +349,37 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                 onChange={(e) => setEditData({ ...editData, property_type: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               >
-                <option value="apartment">Wohnung</option>
-                <option value="house">Haus</option>
-                <option value="commercial">Gewerbe</option>
-                <option value="parking">Stellplatz</option>
-                <option value="mixed">Gemischt</option>
+                <option value="multi_family">Mehrfamilienhaus</option>
+                <option value="house">Einfamilienhaus</option>
+                <option value="commercial">Gewerbeeinheit</option>
+                <option value="parking">Garage/Stellplatz</option>
+                <option value="land">Grundstück</option>
+                <option value="other">Sonstiges</option>
               </select>
             ) : (
               <div className="text-dark font-medium">
                 {getPropertyTypeLabel(property.property_type)}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Immobilienverwaltung
+            </label>
+            {isEditingMasterData ? (
+              <select
+                value={editData.property_management_type}
+                onChange={(e) => setEditData({ ...editData, property_management_type: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="rental_management">Miet Verwaltung</option>
+                <option value="weg_management">WEG Verwaltung</option>
+                <option value="rental_and_weg_management">Miet und WEG Verwaltung</option>
+              </select>
+            ) : (
+              <div className="text-dark font-medium">
+                {getPropertyManagementTypeLabel(property.property_management_type)}
               </div>
             )}
           </div>
@@ -374,25 +406,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Zimmer
-            </label>
-            {isEditingMasterData ? (
-              <input
-                type="number"
-                value={editData.rooms}
-                onChange={(e) => setEditData({ ...editData, rooms: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />
-            ) : property.rooms ? (
-              <div className="text-dark font-medium">{property.rooms}</div>
-            ) : (
-              <div className="text-gray-400 italic">Nicht angegeben</div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Wohnfläche (m²)
+              Fläche (m²)
             </label>
             {isEditingMasterData ? (
               <input

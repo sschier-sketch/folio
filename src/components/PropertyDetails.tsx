@@ -24,11 +24,11 @@ interface Property {
   name: string;
   address: string;
   property_type: string;
+  property_management_type?: string;
   purchase_price: number;
   current_value: number;
   purchase_date: string | null;
   size_sqm: number | null;
-  rooms: number | null;
   parking_spot_number?: string;
   description: string;
 }
