@@ -11,8 +11,8 @@ export interface StripeProduct {
 export const stripeProducts: StripeProduct[] = [
   {
     priceId: "price_1SbIhEDT0DRNFiKmk9kwJUXT",
-    name: "Rentab.ly Pro Membership",
-    description: "Verwalte deine Mieter unkompliziert mit Rentab.ly!",
+    name: "Rentably Pro Membership",
+    description: "Verwalte deine Mieter unkompliziert mit Rentably!",
     mode: "subscription",
     price: 9.0,
     currency: "eur",

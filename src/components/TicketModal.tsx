@@ -191,7 +191,7 @@ export default function TicketModal({
                 onChange={(e) =>
                   setFormData({ ...formData, property_id: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 required
               >
                 {" "}
@@ -215,7 +215,7 @@ export default function TicketModal({
                 onChange={(e) =>
                   setFormData({ ...formData, tenant_id: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               >
                 {" "}
                 <option value="">Kein Mieter zugeordnet</option>{" "}
@@ -239,7 +239,7 @@ export default function TicketModal({
                 onChange={(e) =>
                   setFormData({ ...formData, subject: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. Heizung defekt"
                 required
               />{" "}
@@ -255,7 +255,7 @@ export default function TicketModal({
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               >
                 {" "}
                 <option value="general">Allgemein</option>{" "}
@@ -276,7 +276,7 @@ export default function TicketModal({
                 onChange={(e) =>
                   setFormData({ ...formData, priority: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               >
                 {" "}
                 <option value="low">Niedrig</option>{" "}
@@ -296,7 +296,7 @@ export default function TicketModal({
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               >
                 {" "}
                 <option value="open">Offen</option>{" "}
@@ -319,7 +319,7 @@ export default function TicketModal({
                       assigned_user_id: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   {" "}
                   <option value="">Keinem Benutzer zugewiesen</option>{" "}
@@ -380,7 +380,7 @@ export default function TicketModal({
                 onChange={(e) =>
                   setFormData({ ...formData, message: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 rows={4}
                 placeholder="Beschreiben Sie das Anliegen..."
               />{" "}

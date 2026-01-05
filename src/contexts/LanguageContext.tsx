@@ -96,7 +96,7 @@ const translations = {
     "feedback.submit_first": "Seien Sie der Erste und teilen Sie Ihre Idee!",
     "referral.title": "Empfehlungsprogramm",
     "referral.description":
-      "Empfehlen Sie Rentab.ly und verdienen Sie Belohnungen!",
+      "Empfehlen Sie Rentably und verdienen Sie Belohnungen!",
     "referral.learn_more": "Mehr erfahren",
     "footer.product": "Produkt",
     "footer.features": "Funktionen",
@@ -112,7 +112,7 @@ const translations = {
     "footer.rights": "Alle Rechte vorbehalten",
     // Dashboard Home
     "dashboard.overview": "Übersicht",
-    "dashboard.welcome": "Willkommen in Ihrem Rentab.ly Dashboard",
+    "dashboard.welcome": "Willkommen in Ihrem Rentably Dashboard",
     "dashboard.properties": "Immobilien",
     "dashboard.tenants.active": "Aktive Mieter",
     "dashboard.rent.monthly": "Monatliche Mieteinnahmen",
@@ -505,7 +505,7 @@ const translations = {
     "feedback.no_feedback": "No suggestions yet",
     "feedback.submit_first": "Be the first to share your idea!",
     "referral.title": "Referral Program",
-    "referral.description": "Refer Rentab.ly and earn rewards!",
+    "referral.description": "Refer Rentably and earn rewards!",
     "referral.learn_more": "Learn more",
     "footer.product": "Product",
     "footer.features": "Features",
@@ -521,7 +521,7 @@ const translations = {
     "footer.rights": "All rights reserved",
     // Dashboard Home
     "dashboard.overview": "Overview",
-    "dashboard.welcome": "Welcome to your Rentab.ly Dashboard",
+    "dashboard.welcome": "Welcome to your Rentably Dashboard",
     "dashboard.properties": "Properties",
     "dashboard.tenants.active": "Active Tenants",
     "dashboard.rent.monthly": "Monthly Rental Income",

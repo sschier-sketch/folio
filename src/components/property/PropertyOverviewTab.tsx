@@ -45,6 +45,7 @@ interface Loan {
 interface RentalContract {
   id: string;
   property_id: string;
+  unit_id?: string | null;
   base_rent: number;
   additional_costs: number;
   deposit: number;
@@ -57,6 +58,10 @@ interface RentalContract {
     first_name: string;
     last_name: string;
   }>;
+  property_units?: {
+    id: string;
+    unit_number: string;
+  };
 }
 
 export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTenant }: PropertyOverviewTabProps) {
@@ -76,6 +81,18 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [showGrossYieldTooltip, setShowGrossYieldTooltip] = useState(false);
   const [showNetYieldTooltip, setShowNetYieldTooltip] = useState(false);
+  const [isEditingMasterData, setIsEditingMasterData] = useState(false);
+  const [editData, setEditData] = useState({
+    name: property.name,
+    address: property.address,
+    property_type: property.property_type,
+    purchase_date: property.purchase_date || "",
+    rooms: property.rooms || "",
+    size_sqm: property.size_sqm || "",
+    purchase_price: property.purchase_price,
+    current_value: property.current_value,
+    description: property.description,
+  });
 
   useEffect(() => {
     if (user) {
@@ -99,7 +116,10 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           .order("created_at", { ascending: false }),
         supabase
           .from("rental_contracts")
-          .select("*")
+          .select(`
+            *,
+            property_units(id, unit_number)
+          `)
           .eq("property_id", property.id)
           .order("created_at", { ascending: false }),
       ]);
@@ -150,6 +170,35 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
       loadData();
     } catch (error) {
       console.error("Error deleting loan:", error);
+    }
+  }
+
+  async function handleSaveMasterData() {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("properties")
+        .update({
+          name: editData.name,
+          address: editData.address,
+          property_type: editData.property_type,
+          purchase_date: editData.purchase_date || null,
+          rooms: editData.rooms ? Number(editData.rooms) : null,
+          size_sqm: editData.size_sqm ? Number(editData.size_sqm) : null,
+          purchase_price: Number(editData.purchase_price),
+          current_value: Number(editData.current_value),
+          description: editData.description,
+        })
+        .eq("id", property.id);
+
+      if (error) throw error;
+
+      setIsEditingMasterData(false);
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error("Error updating property:", error);
+      alert("Fehler beim Speichern der Daten");
     }
   }
 
@@ -208,92 +257,211 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-dark">Stammdaten</h3>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-            <Edit className="w-4 h-4" />
-            Bearbeiten
-          </button>
+          {!isEditingMasterData ? (
+            <button
+              onClick={() => setIsEditingMasterData(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            >
+              <Edit className="w-4 h-4" />
+              Bearbeiten
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setIsEditingMasterData(false);
+                  setEditData({
+                    name: property.name,
+                    address: property.address,
+                    property_type: property.property_type,
+                    purchase_date: property.purchase_date || "",
+                    rooms: property.rooms || "",
+                    size_sqm: property.size_sqm || "",
+                    purchase_price: property.purchase_price,
+                    current_value: property.current_value,
+                    description: property.description,
+                  });
+                }}
+                className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={handleSaveMasterData}
+                className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Speichern
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Immobilienname
             </label>
-            <div className="text-dark font-medium">{property.name}</div>
+            {isEditingMasterData ? (
+              <input
+                type="text"
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            ) : (
+              <div className="text-dark font-medium">{property.name}</div>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Adresse
             </label>
-            <div className="text-dark font-medium">{property.address}</div>
+            {isEditingMasterData ? (
+              <input
+                type="text"
+                value={editData.address}
+                onChange={(e) => setEditData({ ...editData, address: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            ) : (
+              <div className="text-dark font-medium">{property.address}</div>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Immobilientyp
             </label>
-            <div className="text-dark font-medium">
-              {getPropertyTypeLabel(property.property_type)}
-            </div>
+            {isEditingMasterData ? (
+              <select
+                value={editData.property_type}
+                onChange={(e) => setEditData({ ...editData, property_type: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="apartment">Wohnung</option>
+                <option value="house">Haus</option>
+                <option value="commercial">Gewerbe</option>
+                <option value="parking">Stellplatz</option>
+                <option value="mixed">Gemischt</option>
+              </select>
+            ) : (
+              <div className="text-dark font-medium">
+                {getPropertyTypeLabel(property.property_type)}
+              </div>
+            )}
           </div>
 
-          {property.purchase_date && (
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Kaufdatum
-              </label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Kaufdatum
+            </label>
+            {isEditingMasterData ? (
+              <input
+                type="date"
+                value={editData.purchase_date}
+                onChange={(e) => setEditData({ ...editData, purchase_date: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            ) : property.purchase_date ? (
               <div className="text-dark font-medium">
                 {new Date(property.purchase_date).toLocaleDateString("de-DE")}
               </div>
-            </div>
-          )}
-
-          {property.rooms && (
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Zimmer
-              </label>
-              <div className="text-dark font-medium">{property.rooms}</div>
-            </div>
-          )}
-
-          {property.size_sqm && (
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Wohnfläche
-              </label>
-              <div className="text-dark font-medium">{property.size_sqm} m²</div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Kaufpreis
-            </label>
-            <div className="text-dark font-medium">
-              {formatCurrency(property.purchase_price)}
-            </div>
+            ) : (
+              <div className="text-gray-400 italic">Nicht angegeben</div>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Zimmer
+            </label>
+            {isEditingMasterData ? (
+              <input
+                type="number"
+                value={editData.rooms}
+                onChange={(e) => setEditData({ ...editData, rooms: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            ) : property.rooms ? (
+              <div className="text-dark font-medium">{property.rooms}</div>
+            ) : (
+              <div className="text-gray-400 italic">Nicht angegeben</div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Wohnfläche (m²)
+            </label>
+            {isEditingMasterData ? (
+              <input
+                type="number"
+                value={editData.size_sqm}
+                onChange={(e) => setEditData({ ...editData, size_sqm: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            ) : property.size_sqm ? (
+              <div className="text-dark font-medium">{property.size_sqm} m²</div>
+            ) : (
+              <div className="text-gray-400 italic">Nicht angegeben</div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Kaufpreis
+            </label>
+            {isEditingMasterData ? (
+              <input
+                type="number"
+                value={editData.purchase_price}
+                onChange={(e) => setEditData({ ...editData, purchase_price: Number(e.target.value) })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            ) : (
+              <div className="text-dark font-medium">
+                {formatCurrency(property.purchase_price)}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Aktueller Wert
             </label>
-            <div className="text-dark font-medium">
-              {formatCurrency(property.current_value)}
-            </div>
+            {isEditingMasterData ? (
+              <input
+                type="number"
+                value={editData.current_value}
+                onChange={(e) => setEditData({ ...editData, current_value: Number(e.target.value) })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            ) : (
+              <div className="text-dark font-medium">
+                {formatCurrency(property.current_value)}
+              </div>
+            )}
           </div>
         </div>
 
-        {property.description && (
-          <div className="mt-6 pt-6 border-t border-gray-100">
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              Interne Notizen
-            </label>
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Interne Notizen
+          </label>
+          {isEditingMasterData ? (
+            <textarea
+              value={editData.description}
+              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+              rows={4}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            />
+          ) : property.description ? (
             <div className="text-dark whitespace-pre-wrap">{property.description}</div>
-          </div>
-        )}
+          ) : (
+            <div className="text-gray-400 italic">Keine Notizen vorhanden</div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -485,6 +653,11 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                         : "Keine Mieter"}
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
+                      {contract.property_units && (
+                        <span className="font-medium">
+                          {contract.property_units.unit_number} •{" "}
+                        </span>
+                      )}
                       {formatCurrency(contract.base_rent)} Kaltmiete
                       {contract.tenants && contract.tenants.length > 1 && (
                         <span className="ml-2">• {contract.tenants.length} Mieter</span>

@@ -360,7 +360,7 @@ export default function TenantPortal() {
                   {" "}
                   <textarea
                     name="message"
-                    className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
                     rows={3}
                     placeholder="Ihre Nachricht..."
                     required
@@ -523,7 +523,7 @@ export default function TenantPortal() {
                         property_id: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     required
                   >
                     {" "}
@@ -551,7 +551,7 @@ export default function TenantPortal() {
                       subject: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. Heizung defekt"
                   required
                 />{" "}
@@ -572,7 +572,7 @@ export default function TenantPortal() {
                         category: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   >
                     {" "}
                     <option value="general">Allgemein</option>{" "}
@@ -595,7 +595,7 @@ export default function TenantPortal() {
                         priority: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   >
                     {" "}
                     <option value="low">Niedrig</option>{" "}
@@ -618,7 +618,7 @@ export default function TenantPortal() {
                       message: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
                   rows={5}
                   placeholder="Beschreiben Sie Ihr Anliegen..."
                   required

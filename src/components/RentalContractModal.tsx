@@ -13,6 +13,7 @@ interface Tenant {
 interface Contract {
   id: string;
   property_id: string;
+  unit_id?: string | null;
   base_rent: number;
   additional_costs: number;
   deposit: number;
@@ -31,6 +32,15 @@ interface Property {
   id: string;
   name: string;
 }
+
+interface PropertyUnit {
+  id: string;
+  unit_number: string;
+  unit_type: string;
+  floor: number | null;
+  area_sqm: number | null;
+  status: string;
+}
 interface RentalContractModalProps {
   contract: (Contract & { tenants?: Tenant[] }) | null;
   properties: Property[];
@@ -45,8 +55,11 @@ export default function RentalContractModal({
 }: RentalContractModalProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [units, setUnits] = useState<PropertyUnit[]>([]);
+  const [loadingUnits, setLoadingUnits] = useState(false);
   const [formData, setFormData] = useState({
     property_id: "",
+    unit_id: "",
     base_rent: 0,
     additional_costs: 0,
     deposit: 0,
@@ -77,6 +90,7 @@ export default function RentalContractModal({
       };
       setFormData({
         property_id: contractWithDeposit.property_id,
+        unit_id: contractWithDeposit.unit_id || "",
         base_rent: contractWithDeposit.base_rent,
         additional_costs: contractWithDeposit.additional_costs,
         deposit: contractWithDeposit.deposit,
@@ -100,6 +114,34 @@ export default function RentalContractModal({
       }
     }
   }, [contract]);
+
+  useEffect(() => {
+    if (formData.property_id) {
+      loadUnits(formData.property_id);
+    } else {
+      setUnits([]);
+      setFormData((prev) => ({ ...prev, unit_id: "" }));
+    }
+  }, [formData.property_id]);
+
+  async function loadUnits(propertyId: string) {
+    setLoadingUnits(true);
+    try {
+      const { data, error } = await supabase
+        .from("property_units")
+        .select("*")
+        .eq("property_id", propertyId)
+        .order("unit_number");
+
+      if (error) throw error;
+      setUnits(data || []);
+    } catch (error) {
+      console.error("Error loading units:", error);
+      setUnits([]);
+    } finally {
+      setLoadingUnits(false);
+    }
+  }
   const addTenant = () => {
     setTenants([
       ...tenants,
@@ -129,6 +171,7 @@ export default function RentalContractModal({
         Number(formData.base_rent) + Number(formData.additional_costs);
       const contractData = {
         property_id: formData.property_id,
+        unit_id: formData.unit_id || null,
         user_id: user.id,
         base_rent: Number(formData.base_rent),
         additional_costs: Number(formData.additional_costs),
@@ -242,7 +285,7 @@ export default function RentalContractModal({
           {" "}
           <div>
             {" "}
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               {" "}
               Immobilie *{" "}
             </label>{" "}
@@ -251,7 +294,7 @@ export default function RentalContractModal({
               onChange={(e) =>
                 setFormData({ ...formData, property_id: e.target.value })
               }
-              className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               required
               disabled={!!contract}
             >
@@ -265,6 +308,46 @@ export default function RentalContractModal({
               ))}{" "}
             </select>{" "}
           </div>{" "}
+          {formData.property_id && (
+            <div>
+              {" "}
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {" "}
+                Einheit {units.length > 0 && "*"}{" "}
+              </label>{" "}
+              {loadingUnits ? (
+                <div className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-400">
+                  Lädt Einheiten...
+                </div>
+              ) : units.length === 0 ? (
+                <div className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-400 bg-gray-50">
+                  Keine Einheiten vorhanden
+                </div>
+              ) : (
+                <select
+                  value={formData.unit_id}
+                  onChange={(e) =>
+                    setFormData({ ...formData, unit_id: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required={units.length > 0}
+                >
+                  {" "}
+                  <option value="">Bitte wählen...</option>{" "}
+                  {units.map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      {" "}
+                      {unit.unit_number}
+                      {unit.floor !== null && ` - ${unit.floor}. OG`}
+                      {unit.area_sqm && ` - ${unit.area_sqm} m²`}
+                      {unit.status === "rented" && " (Vermietet)"}
+                      {" "}
+                    </option>
+                  ))}{" "}
+                </select>
+              )}{" "}
+            </div>
+          )}{" "}
           <div className="space-y-4">
             {" "}
             <div className="flex justify-between items-center">
@@ -311,7 +394,7 @@ export default function RentalContractModal({
                       onChange={(e) =>
                         updateTenant(index, "first_name", e.target.value)
                       }
-                      className="px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                      className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                       placeholder="Vorname *"
                       required
                     />{" "}
@@ -321,7 +404,7 @@ export default function RentalContractModal({
                       onChange={(e) =>
                         updateTenant(index, "last_name", e.target.value)
                       }
-                      className="px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                      className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                       placeholder="Nachname *"
                       required
                     />{" "}
@@ -331,7 +414,7 @@ export default function RentalContractModal({
                       onChange={(e) =>
                         updateTenant(index, "email", e.target.value)
                       }
-                      className="px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                      className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                       placeholder="E-Mail"
                     />{" "}
                     <input
@@ -340,7 +423,7 @@ export default function RentalContractModal({
                       onChange={(e) =>
                         updateTenant(index, "phone", e.target.value)
                       }
-                      className="px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                      className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                       placeholder="Telefon"
                     />{" "}
                   </div>{" "}
@@ -368,7 +451,7 @@ export default function RentalContractModal({
                       base_rent: parseNumberInput(e.target.value),
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. 3250"
                   required
                 />{" "}
@@ -388,7 +471,7 @@ export default function RentalContractModal({
                       additional_costs: parseNumberInput(e.target.value),
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. 250"
                 />{" "}
               </div>{" "}
@@ -426,7 +509,7 @@ export default function RentalContractModal({
                       deposit: parseNumberInput(e.target.value),
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. 9750"
                 />{" "}
               </div>{" "}
@@ -441,7 +524,7 @@ export default function RentalContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, deposit_type: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   {" "}
                   <option value="">Bitte wählen...</option>{" "}
@@ -463,7 +546,7 @@ export default function RentalContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, deposit_received_date: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 />{" "}
               </div>{" "}
               <div className="col-span-2">
@@ -478,7 +561,7 @@ export default function RentalContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, deposit_account: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. Mietkautionskonto bei Bank XYZ, IBAN: DE..."
                 />{" "}
               </div>{" "}
@@ -503,7 +586,7 @@ export default function RentalContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, contract_start: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   required
                 />{" "}
               </div>{" "}
@@ -519,7 +602,7 @@ export default function RentalContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, contract_end: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 />{" "}
               </div>{" "}
               <div className="col-span-2">
@@ -533,7 +616,7 @@ export default function RentalContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, contract_type: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   {" "}
                   <option value="unlimited">Unbefristet</option>{" "}
@@ -563,7 +646,7 @@ export default function RentalContractModal({
                       rent_increase_type: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   {" "}
                   <option value="none">Keine automatische Erhöhung</option>{" "}
@@ -587,7 +670,7 @@ export default function RentalContractModal({
                         index_first_increase_date: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   />{" "}
                   <p className="text-xs text-gray-300 mt-1">
                     {" "}
@@ -615,7 +698,7 @@ export default function RentalContractModal({
                           staffel_years: parseNumberInput(e.target.value),
                         })
                       }
-                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     />{" "}
                   </div>{" "}
                   <div>
@@ -632,7 +715,7 @@ export default function RentalContractModal({
                           staffel_type: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     >
                       {" "}
                       <option value="fixed">Fester Betrag (€)</option>{" "}
@@ -656,7 +739,7 @@ export default function RentalContractModal({
                           staffel_amount: parseNumberInput(e.target.value),
                         })
                       }
-                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                       placeholder={
                         formData.staffel_type === "fixed" ? "z.B. 50" : "z.B. 3"
                       }
@@ -716,7 +799,7 @@ export default function RentalContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   rows={3}
                   placeholder="Zusätzliche Informationen..."
                 />{" "}

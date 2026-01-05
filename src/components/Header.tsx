@@ -16,7 +16,7 @@ export function Header() {
             {" "}
             <img
               src="/rentably-logo.svg"
-              alt="Rentab.ly"
+              alt="Rentably"
               className="h-10 w-auto transition-transform"
             />{" "}
           </Link>{" "}

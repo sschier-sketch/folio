@@ -75,8 +75,8 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
             body: JSON.stringify({
               ticketId: ticket.id,
               message: newMessage,
-              senderName: user.email || "Rentab.ly Support",
-              senderEmail: user.email || "support@rentab.ly",
+              senderName: user.email || "Rentably Support",
+              senderEmail: user.email || "support@rentably.com",
             }),
           },
         );
@@ -370,7 +370,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              className="flex-1 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               placeholder="Nachricht schreiben..."
             />{" "}
             <button

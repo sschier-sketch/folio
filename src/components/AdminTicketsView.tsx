@@ -355,7 +355,7 @@ ${badge.text}`}
                   <select
                     value={selectedTicket.status}
                     onChange={(e) => handleChangeStatus(e.target.value)}
-                    className="px-3 py-1.5 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   >
                     {" "}
                     <option value="open">Offen</option>{" "}
@@ -451,7 +451,7 @@ ${badge.text}`}
                   onChange={(e) => setReplyMessage(e.target.value)}
                   placeholder="Antwort eingeben..."
                   rows={3}
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none mb-3"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none mb-3"
                 />{" "}
                 <div className="flex items-center justify-between">
                   {" "}

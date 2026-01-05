@@ -115,11 +115,11 @@ export default function Contact() {
                 </div>{" "}
               </div>{" "}
               <a
-                href="mailto:hallo@rentab.ly"
+                href="mailto:hallo@rentably.com"
                 className="text-primary-blue hover:text-primary-blue font-medium"
               >
                 {" "}
-                hallo@rentab.ly{" "}
+                hallo@rentably.com{" "}
               </a>{" "}
             </div>{" "}
             <div className="bg-white rounded shadow-sm p-6">
@@ -188,7 +188,7 @@ export default function Contact() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     required
                   />{" "}
                 </div>{" "}
@@ -204,7 +204,7 @@ export default function Contact() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     required
                     placeholder={
                       language === "de"
@@ -232,7 +232,7 @@ export default function Contact() {
                   onChange={(e) =>
                     setFormData({ ...formData, subject: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   required
                 />{" "}
               </div>{" "}
@@ -248,7 +248,7 @@ export default function Contact() {
                     setFormData({ ...formData, message: e.target.value })
                   }
                   rows={6}
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
                   required
                 />{" "}
               </div>{" "}

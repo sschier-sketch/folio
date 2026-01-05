@@ -297,7 +297,7 @@ export default function LandingPage() {
                   <h3 className="text-2xl font-bold mb-4">Kostenlos starten</h3>{" "}
                   <p className="text-white/70 mb-6">
                     {" "}
-                    Testen Sie Rentab.ly unverbindlich und überzeugen Sie sich
+                    Testen Sie Rentably unverbindlich und überzeugen Sie sich
                     selbst von den Vorteilen einer modernen
                     Immobilienverwaltung.{" "}
                   </p>{" "}

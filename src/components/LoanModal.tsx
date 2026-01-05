@@ -134,7 +134,7 @@ export default function LoanModal({
                 onChange={(e) =>
                   setFormData({ ...formData, lender_name: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. Sparkasse"
                 required
               />{" "}
@@ -154,7 +154,7 @@ export default function LoanModal({
                     loan_amount: parseNumberInput(e.target.value),
                   })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. 200000 oder 200.000,00"
                 required
               />{" "}
@@ -174,7 +174,7 @@ export default function LoanModal({
                     remaining_balance: parseNumberInput(e.target.value),
                   })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. 185000 oder 185.000,00"
                 required
               />{" "}
@@ -194,7 +194,7 @@ export default function LoanModal({
                     interest_rate: parseNumberInput(e.target.value),
                   })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. 1,62 oder 2,5"
                 required
               />{" "}
@@ -214,7 +214,7 @@ export default function LoanModal({
                     monthly_payment: parseNumberInput(e.target.value),
                   })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. 306,28 oder 1200,50"
                 required
               />{" "}
@@ -233,7 +233,7 @@ export default function LoanModal({
                   onChange={(e) =>
                     setPrincipalInput(parseNumberInput(e.target.value))
                   }
-                  className="flex-1 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder={
                     principalType === "euro" ? "z.B. 800" : "z.B. 1,5 oder 2"
                   }
@@ -244,7 +244,7 @@ export default function LoanModal({
                   onChange={(e) =>
                     setPrincipalType(e.target.value as "euro" | "percent")
                   }
-                  className="px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white"
                 >
                   {" "}
                   <option value="euro">€</option>{" "}
@@ -270,7 +270,7 @@ export default function LoanModal({
                 onChange={(e) =>
                   setFormData({ ...formData, start_date: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 required
               />{" "}
             </div>{" "}
@@ -286,7 +286,7 @@ export default function LoanModal({
                 onChange={(e) =>
                   setFormData({ ...formData, end_date: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 required
               />{" "}
             </div>{" "}
@@ -301,7 +301,7 @@ export default function LoanModal({
                 onChange={(e) =>
                   setFormData({ ...formData, loan_type: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               >
                 {" "}
                 <option value="mortgage">Hypothek</option>{" "}
@@ -320,7 +320,7 @@ export default function LoanModal({
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 rows={3}
                 placeholder="Zusätzliche Informationen..."
               />{" "}

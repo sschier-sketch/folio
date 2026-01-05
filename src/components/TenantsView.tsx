@@ -26,6 +26,11 @@ interface Contract {
   total_rent: number;
   status: string;
   tenant_id: string;
+  unit_id?: string | null;
+  property_units?: {
+    id: string;
+    unit_number: string;
+  };
 }
 
 interface TenantWithDetails extends Tenant {
@@ -82,7 +87,10 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
           tenantsRes.data.map(async (tenant) => {
             const { data: contracts } = await supabase
               .from("rental_contracts")
-              .select("*")
+              .select(`
+                *,
+                property_units(id, unit_number)
+              `)
               .eq("tenant_id", tenant.id)
               .order("start_date", { ascending: false })
               .limit(1);
@@ -312,7 +320,14 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                         <td className="py-4 px-6 text-sm text-gray-700">
                           <div className="flex items-center gap-2">
                             <Building className="w-4 h-4 text-gray-400" />
-                            {tenant.properties?.name || "Unbekannt"}
+                            <div>
+                              <div>{tenant.properties?.name || "Unbekannt"}</div>
+                              {currentContract?.property_units && (
+                                <div className="text-xs text-gray-500">
+                                  {currentContract.property_units.unit_number}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="py-4 px-6 text-sm">

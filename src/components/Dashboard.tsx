@@ -119,7 +119,7 @@ export default function Dashboard() {
               </button>{" "}
               <img
                 src="/rentably-logo.svg"
-                alt="Rentab.ly"
+                alt="Rentably"
                 className="h-8 w-auto"
               />{" "}
             </div>{" "}

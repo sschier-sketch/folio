@@ -215,7 +215,7 @@ export default function ContractModal({
                       base_rent: parseNumberInput(e.target.value),
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. 850 oder 850,50"
                   required
                 />{" "}
@@ -235,7 +235,7 @@ export default function ContractModal({
                       additional_costs: parseNumberInput(e.target.value),
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. 150 oder 150,75"
                 />{" "}
               </div>{" "}
@@ -273,7 +273,7 @@ export default function ContractModal({
                       deposit: parseNumberInput(e.target.value),
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. 2550 oder 2550,00"
                 />{" "}
               </div>{" "}
@@ -300,7 +300,7 @@ export default function ContractModal({
                       rent_increase_type: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   {" "}
                   <option value="none">Keine</option>{" "}
@@ -326,7 +326,7 @@ export default function ContractModal({
                           staffel_amount: parseNumberInput(e.target.value),
                         })
                       }
-                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                       placeholder="z.B. 2,5"
                     />{" "}
                   </div>{" "}
@@ -344,7 +344,7 @@ export default function ContractModal({
                           staffel_type: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     >
                       {" "}
                       <option value="percentage">Prozent (%)</option>{" "}
@@ -366,7 +366,7 @@ export default function ContractModal({
                           staffel_years: parseNumberInput(e.target.value),
                         })
                       }
-                      className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                       placeholder="z.B. 5"
                     />{" "}
                   </div>{" "}
@@ -388,7 +388,7 @@ export default function ContractModal({
                         index_first_increase_date: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   />{" "}
                 </div>
               )}{" "}
@@ -413,7 +413,7 @@ export default function ContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, contract_start: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   required
                 />{" "}
               </div>{" "}
@@ -429,7 +429,7 @@ export default function ContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, contract_end: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 />{" "}
               </div>{" "}
               <div className="col-span-2">
@@ -443,7 +443,7 @@ export default function ContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, contract_type: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   {" "}
                   <option value="unlimited">Unbefristet</option>{" "}
@@ -496,7 +496,7 @@ export default function ContractModal({
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   rows={3}
                   placeholder="Zusätzliche Informationen..."
                 />{" "}

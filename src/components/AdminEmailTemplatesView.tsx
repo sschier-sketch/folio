@@ -201,7 +201,7 @@ export function AdminEmailTemplatesView() {
                         template_name: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   />{" "}
                 </div>{" "}
                 <div>
@@ -219,7 +219,7 @@ export function AdminEmailTemplatesView() {
                         subject: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   />{" "}
                 </div>{" "}
                 <div>
@@ -237,7 +237,7 @@ export function AdminEmailTemplatesView() {
                         description: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   />{" "}
                 </div>{" "}
                 {editedTemplate.variables &&
@@ -304,7 +304,7 @@ export function AdminEmailTemplatesView() {
                           e.target.value,
                       })
                     }
-                    className="flex-1 w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none font-mono text-sm"
+                    className="flex-1 w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none font-mono text-sm"
                   />{" "}
                 </div>{" "}
                 <div className="flex flex-col h-full">

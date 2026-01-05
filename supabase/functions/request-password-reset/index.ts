@@ -111,7 +111,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Send confirmation email
-    const confirmationUrl = `${req.headers.get('origin') || 'https://rentab.ly'}/reset-password/confirm?token=${resetRequest.verification_token}`;
+    const confirmationUrl = `${req.headers.get('origin') || 'https://rentably.com'}/reset-password/confirm?token=${resetRequest.verification_token}`;
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
@@ -126,7 +126,7 @@ Deno.serve(async (req: Request) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Rentab.ly <noreply@rentab.ly>',
+            from: 'Rentably <noreply@rentably.com>',
             to: [email],
             subject: 'Passwort-Änderung bestätigen',
             html: `

@@ -105,7 +105,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
           placeholder="Enter your email"
         />{" "}
       </div>{" "}
@@ -126,7 +126,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 pr-10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             placeholder="Enter your password"
           />{" "}
           <button
@@ -160,7 +160,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 pr-10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             placeholder="Confirm your password"
           />{" "}
           <button
@@ -195,7 +195,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           type="text"
           value={referralCode}
           onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-          className="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue uppercase"
           placeholder="Enter referral code"
         />{" "}
         {referralCode && (

@@ -105,7 +105,7 @@ Deno.serve(async (req: Request) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: `Rentab.ly Support <support@rentab.ly>`,
+          from: `Rentably Support <support@rentably.com>`,
           to: [ticket.contact_email],
           subject: emailSubject,
           html: emailHtml,

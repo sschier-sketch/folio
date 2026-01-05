@@ -483,7 +483,7 @@ export default function SettingsView({
                 name="referralCode"
                 type="text"
                 placeholder={language === "de" ? "CODE EINGEBEN" : "ENTER CODE"}
-                className="flex-1 px-4 py-2 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none uppercase font-mono"
+                className="flex-1 px-4 py-2 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase font-mono"
                 maxLength={8}
               />{" "}
               <button
@@ -565,7 +565,7 @@ export default function SettingsView({
                   placeholder={
                     language === "de" ? "Musterfirma GmbH" : "Company Name Ltd."
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 />{" "}
               </div>{" "}
               <div>
@@ -584,7 +584,7 @@ export default function SettingsView({
                     handleUpdateBillingInfo({ vat_id: billingInfo?.vat_id })
                   }
                   placeholder="DE123456789"
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 />{" "}
               </div>{" "}
               <div>
@@ -612,7 +612,7 @@ export default function SettingsView({
                       : "123 Example St\n12345 Example City\nGermany"
                   }
                   rows={4}
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
                 />{" "}
               </div>{" "}
               <div>
@@ -678,7 +678,7 @@ export default function SettingsView({
                   onChange={(e) => setNewFeedback(e.target.value)}
                   placeholder={t("settings.feedback.idea.placeholder")}
                   rows={5}
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
                   required
                 />{" "}
               </div>{" "}
@@ -730,7 +730,7 @@ export default function SettingsView({
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
                     placeholder={t("settings.feedback.amount.placeholder")}
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   />{" "}
                 </div>
               )}{" "}

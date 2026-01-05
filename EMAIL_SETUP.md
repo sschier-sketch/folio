@@ -1,6 +1,6 @@
 # E-Mail-Versand Konfiguration
 
-Diese Anleitung erklärt, wie Sie den E-Mail-Versand für Rentab.ly einrichten.
+Diese Anleitung erklärt, wie Sie den E-Mail-Versand für Rentably einrichten.
 
 ## 1. Magic Link Login (bereits funktionsfähig)
 
@@ -64,7 +64,7 @@ const response = await fetch('https://api.resend.com/emails', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    from: 'Rentab.ly <noreply@ihre-domain.de>',
+    from: 'Rentably <noreply@ihre-domain.de>',
     to: [to],
     subject,
     html,
@@ -87,7 +87,7 @@ const response = await fetch(
     },
     body: JSON.stringify({
       to: 'user@example.com',
-      subject: 'Willkommen bei Rentab.ly',
+      subject: 'Willkommen bei Rentably',
       html: '<h1>Willkommen!</h1><p>Vielen Dank für Ihre Registrierung.</p>',
       text: 'Willkommen! Vielen Dank für Ihre Registrierung.',
     }),
@@ -118,7 +118,7 @@ const { data: template } = await supabase
 // Variablen ersetzen
 let html = template.body_html;
 html = html.replace('{{inviter_name}}', 'Max Mustermann');
-html = html.replace('{{invitation_link}}', 'https://rentab.ly/invite/...');
+html = html.replace('{{invitation_link}}', 'https://rentably.com/invite/...');
 
 // E-Mail senden
 await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
@@ -158,7 +158,7 @@ const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
     ],
     from: {
       email: 'noreply@ihre-domain.de',
-      name: 'Rentab.ly',
+      name: 'Rentably',
     },
     content: [
       {

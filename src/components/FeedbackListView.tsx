@@ -189,7 +189,7 @@ export default function FeedbackListView() {
             <textarea
               value={newFeedback}
               onChange={(e) => setNewFeedback(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
               rows={4}
               placeholder={t("settings.feedback.idea.placeholder")}
               required
@@ -215,7 +215,7 @@ export default function FeedbackListView() {
                 type="text"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder={t("settings.feedback.amount.placeholder")}
               />
             )}{" "}

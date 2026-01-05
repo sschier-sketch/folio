@@ -29,7 +29,7 @@ export function Login() {
             {" "}
             <img
               src="/rentably-logo.svg"
-              alt="Rentab.ly"
+              alt="Rentably"
               className="h-16 w-auto"
             />{" "}
           </div>{" "}

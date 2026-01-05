@@ -149,7 +149,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. Wohnung Musterstraße 1"
                 required
               />{" "}
@@ -166,7 +166,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({ ...formData, street: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. Musterstraße 1"
                 required
               />{" "}
@@ -183,7 +183,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({ ...formData, zip_code: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. 12345"
                 required
               />{" "}
@@ -200,7 +200,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({ ...formData, city: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. Berlin"
                 required
               />{" "}
@@ -216,7 +216,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({ ...formData, country: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 required
               >
                 {" "}
@@ -245,7 +245,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({ ...formData, property_type: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               >
                 {" "}
                 <option value="multi_family">Mehrfamilienhaus</option>{" "}
@@ -269,7 +269,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({ ...formData, purchase_date: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 required
               />{" "}
             </div>{" "}
@@ -288,7 +288,7 @@ export default function PropertyModal({
                     purchase_price: parseNumberInput(e.target.value),
                   })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. 250000 oder 250.000,50"
               />{" "}
             </div>{" "}
@@ -307,7 +307,7 @@ export default function PropertyModal({
                     current_value: parseNumberInput(e.target.value),
                   })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder="z.B. 280000 oder 280.000,00"
               />{" "}
             </div>{" "}
@@ -329,7 +329,7 @@ export default function PropertyModal({
                         size_sqm: parseNumberInput(e.target.value),
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     placeholder="z.B. 75,5"
                   />{" "}
                 </div>{" "}
@@ -348,7 +348,7 @@ export default function PropertyModal({
                         rooms: parseNumberInput(e.target.value),
                       })
                     }
-                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     placeholder="z.B. 3 oder 3,5"
                   />{" "}
                 </div>{" "}
@@ -370,7 +370,7 @@ export default function PropertyModal({
                       parking_spot_number: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. P-12 oder A5"
                 />{" "}
               </div>
@@ -386,7 +386,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 rows={3}
                 placeholder="Zusätzliche Informationen..."
               />{" "}

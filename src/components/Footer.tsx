@@ -17,7 +17,7 @@ export default function Footer() {
               {" "}
               <img
                 src="/rentably-logo.svg"
-                alt="Rentab.ly"
+                alt="Rentably"
                 className="h-6 w-auto"
               />{" "}
             </div>{" "}
@@ -127,7 +127,7 @@ export default function Footer() {
           {" "}
           <div className="text-sm text-gray-400">
             {" "}
-            © {currentYear} Rentab.ly. {t("footer.rights")}.{" "}
+            © {currentYear} Rentably. {t("footer.rights")}.{" "}
           </div>{" "}
           <div className="flex items-center gap-3">
             {" "}
