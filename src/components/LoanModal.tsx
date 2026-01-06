@@ -122,7 +122,35 @@ export default function LoanModal({
     if (!user) return;
     setLoading(true);
     try {
-      const data = { ...formData, property_id: propertyId, user_id: user.id };
+      const data: any = {
+        lender_name: formData.lender_name,
+        loan_amount: formData.loan_amount,
+        remaining_balance: formData.remaining_balance,
+        interest_rate: formData.interest_rate,
+        monthly_payment: formData.monthly_payment,
+        monthly_principal: formData.monthly_principal,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
+        loan_type: formData.loan_type,
+        notes: formData.notes || null,
+        contact_person_name: formData.contact_person_name || null,
+        contact_person_email: formData.contact_person_email || null,
+        contact_person_phone: formData.contact_person_phone || null,
+        fixed_interest_start_date: formData.fixed_interest_start_date || null,
+        fixed_interest_end_date: formData.fixed_interest_end_date || null,
+        fixed_interest_equals_loan_end: formData.fixed_interest_equals_loan_end,
+        special_repayment_allowed: formData.special_repayment_allowed,
+        special_repayment_max_amount: formData.special_repayment_max_amount || null,
+        special_repayment_max_percent: formData.special_repayment_max_percent || null,
+        special_repayment_due_date: formData.special_repayment_due_date || null,
+        special_repayment_annual_end: formData.special_repayment_annual_end,
+        special_repayment_used_amount: formData.special_repayment_used_amount || null,
+        loan_status: formData.loan_status,
+        responsible_person: formData.responsible_person || null,
+        property_id: propertyId,
+        user_id: user.id,
+      };
+
       if (loan) {
         const { error } = await supabase
           .from("loans")

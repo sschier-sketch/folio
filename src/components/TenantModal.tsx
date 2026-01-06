@@ -183,7 +183,6 @@ export default function TenantModal({
   useEffect(() => {
     if (tenantData.property_id) {
       loadUnits(tenantData.property_id);
-      setTenantData({ ...tenantData, unit_id: "" });
     } else {
       setUnits([]);
     }
@@ -541,7 +540,7 @@ export default function TenantModal({
           <select
             value={tenantData.property_id}
             onChange={(e) =>
-              setTenantData({ ...tenantData, property_id: e.target.value, unit_id: "" })
+              setTenantData({ ...tenantData, property_id: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
             required
