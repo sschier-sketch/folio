@@ -85,6 +85,7 @@ export default function TenantModal({
     rent_due_day: "1",
     rent_increase_type: "none",
     graduated_rent_date: "",
+    graduated_rent_new_amount: "",
     is_sublet: false,
     vat_applicable: false,
   });
@@ -145,6 +146,7 @@ export default function TenantModal({
             rent_due_day: contract.rent_due_day?.toString() || "1",
             rent_increase_type: contract.rent_increase_type || "none",
             graduated_rent_date: contract.graduated_rent_date || "",
+            graduated_rent_new_amount: contract.graduated_rent_new_amount?.toString() || "",
             is_sublet: contract.is_sublet || false,
             vat_applicable: contract.vat_applicable || false,
           });
@@ -274,6 +276,7 @@ export default function TenantModal({
             rent_due_day: parseInt(rentData.rent_due_day) || 1,
             rent_increase_type: rentData.rent_increase_type,
             graduated_rent_date: rentData.graduated_rent_date || null,
+            graduated_rent_new_amount: rentData.graduated_rent_new_amount ? parseFloat(rentData.graduated_rent_new_amount) : null,
             is_sublet: rentData.is_sublet,
             vat_applicable: rentData.vat_applicable,
             base_rent: monthlyRent,
@@ -397,6 +400,7 @@ export default function TenantModal({
                 rent_due_day: parseInt(rentData.rent_due_day) || 1,
                 rent_increase_type: rentData.rent_increase_type,
                 graduated_rent_date: rentData.graduated_rent_date || null,
+                graduated_rent_new_amount: rentData.graduated_rent_new_amount ? parseFloat(rentData.graduated_rent_new_amount) : null,
                 is_sublet: rentData.is_sublet,
                 vat_applicable: rentData.vat_applicable,
                 base_rent: monthlyRent,
@@ -1111,26 +1115,48 @@ export default function TenantModal({
         >
           <option value="none">Keine automatische Erhöhung</option>
           <option value="index">Indexmiete</option>
-          <option value="staffel">Staffelmiete</option>
           <option value="graduated">Staffelmiete (vorausgeplant)</option>
         </select>
 
         {rentData.rent_increase_type === "graduated" && (
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Erste Erhöhung am (1. Januar)
-            </label>
-            <input
-              type="date"
-              value={rentData.graduated_rent_date}
-              onChange={(e) =>
-                setRentData({ ...rentData, graduated_rent_date: e.target.value })
-              }
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              Die Miete erhöht sich automatisch immer am 1. Januar eines jeden Jahres.
-            </p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Erste Erhöhung am
+              </label>
+              <input
+                type="date"
+                value={rentData.graduated_rent_date}
+                onChange={(e) =>
+                  setRentData({ ...rentData, graduated_rent_date: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Das Datum der ersten Mieterhöhung (normalerweise 12 Monate nach Mietbeginn).
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Neue Kaltmiete ab diesem Zeitpunkt
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.01"
+                  value={rentData.graduated_rent_new_amount}
+                  onChange={(e) =>
+                    setRentData({ ...rentData, graduated_rent_new_amount: e.target.value })
+                  }
+                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                  placeholder="z.B. 850.00"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">€</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                Die neue Kaltmiete, die ab dem angegebenen Datum gelten soll.
+              </p>
+            </div>
           </div>
         )}
       </div>

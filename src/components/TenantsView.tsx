@@ -27,6 +27,7 @@ interface Contract {
   status: string;
   tenant_id: string;
   unit_id?: string | null;
+  rent_increase_type?: string;
   property_units?: {
     id: string;
     unit_number: string;
@@ -297,6 +298,9 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                       Warmmiete
                     </th>
                     <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                      Mietart
+                    </th>
+                    <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
                       Status
                     </th>
                     <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
@@ -355,6 +359,17 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                         <td className="py-4 px-6 text-sm text-right font-medium text-dark">
                           {currentContract ? (
                             <span>{(currentContract.total_rent || currentContract.monthly_rent || 0).toFixed(2)} €</span>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          {currentContract ? (
+                            <span className="text-xs text-gray-700">
+                              {currentContract.rent_increase_type === "index" ? "Indexmiete" :
+                               currentContract.rent_increase_type === "graduated" ? "Staffelmiete" :
+                               "Normale Miete"}
+                            </span>
                           ) : (
                             "-"
                           )}
