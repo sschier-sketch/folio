@@ -15,6 +15,9 @@ interface Loan {
   end_date: string;
   loan_type: string;
   notes: string;
+  contact_person_name?: string;
+  contact_person_email?: string;
+  contact_person_phone?: string;
 }
 interface LoanModalProps {
   propertyId: string;
@@ -45,6 +48,9 @@ export default function LoanModal({
     end_date: "",
     loan_type: "mortgage",
     notes: "",
+    contact_person_name: "",
+    contact_person_email: "",
+    contact_person_phone: "",
   });
   useEffect(() => {
     if (loan) {
@@ -59,6 +65,9 @@ export default function LoanModal({
         end_date: loan.end_date,
         loan_type: loan.loan_type,
         notes: loan.notes,
+        contact_person_name: loan.contact_person_name || "",
+        contact_person_email: loan.contact_person_email || "",
+        contact_person_phone: loan.contact_person_phone || "",
       });
       setPrincipalInput(loan.monthly_principal || 0);
     }
@@ -309,6 +318,51 @@ export default function LoanModal({
                 <option value="other">Sonstiges</option>{" "}
               </select>{" "}
             </div>{" "}
+            <div className="col-span-2">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Ansprechpartner beim Kreditgeber</h3>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Name
+              </label>
+              <input
+                type="text"
+                value={formData.contact_person_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, contact_person_name: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. Max Mustermann"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                E-Mail
+              </label>
+              <input
+                type="email"
+                value={formData.contact_person_email}
+                onChange={(e) =>
+                  setFormData({ ...formData, contact_person_email: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. max@bank.de"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Telefon
+              </label>
+              <input
+                type="tel"
+                value={formData.contact_person_phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, contact_person_phone: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. +49 123 456789"
+              />
+            </div>
             <div className="col-span-2">
               {" "}
               <label className="block text-sm font-medium text-gray-400 mb-1">

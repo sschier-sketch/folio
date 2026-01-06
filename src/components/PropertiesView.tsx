@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Building2, Edit2, Trash2, TrendingUp, Euro, AlertCircle, CheckCircle, X, Tag, Download, FileDown, FileSpreadsheet, FileText } from "lucide-react";
+import { Plus, Building2, Edit2, Trash2, TrendingUp, Euro, AlertCircle, CheckCircle, X, Tag, Download, FileDown, FileSpreadsheet, FileText, Grid3x3, List } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -67,6 +67,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
   const [selectedColor, setSelectedColor] = useState("blue");
   const [allLabels, setAllLabels] = useState<string[]>([]);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [filters, setFilters] = useState({
     status: "",
     property_type: "",
@@ -333,13 +334,38 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
         </div>
         <div className="flex items-center gap-3">
           {properties.length > 0 && (
-            <div className="relative">
-              <button
-                onClick={() => setShowExportMenu(!showExportMenu)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-full font-medium hover:bg-gray-50 transition-colors"
-              >
-                <Download className="w-5 h-5" /> Exportieren
-              </button>
+            <>
+              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded transition-colors ${
+                    viewMode === "grid"
+                      ? "bg-white text-primary-blue shadow-sm"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
+                  title="Kachelansicht"
+                >
+                  <Grid3x3 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`p-2 rounded transition-colors ${
+                    viewMode === "table"
+                      ? "bg-white text-primary-blue shadow-sm"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
+                  title="Tabellenansicht"
+                >
+                  <List className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-full font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <Download className="w-5 h-5" /> Exportieren
+                </button>
               {showExportMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                   <button
@@ -365,7 +391,8 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
                   </button>
                 </div>
               )}
-            </div>
+              </div>
+            </>
           )}
           <button
             onClick={() => {
@@ -470,8 +497,9 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProperties.map((property) => {
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProperties.map((property) => {
               const occupancyStatus = getOccupancyStatus(property.units);
               return (
                 <div
@@ -593,7 +621,112 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
                 </div>
               );
             })}
-          </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Immobilie</th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Typ</th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Adresse</th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Fläche</th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Status</th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Wert</th>
+                      <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Aktionen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProperties.map((property) => {
+                      const occupancyStatus = getOccupancyStatus(property.units);
+                      return (
+                        <tr key={property.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Building2 className="w-5 h-5 text-primary-blue" />
+                              </div>
+                              <div>
+                                <div className="font-semibold text-dark">{property.name}</div>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {property.labels?.slice(0, 2).map((label) => {
+                                    const colorClasses = LABEL_COLORS[label.color as keyof typeof LABEL_COLORS] || LABEL_COLORS.blue;
+                                    return (
+                                      <span
+                                        key={label.id}
+                                        className={`inline-block px-1.5 py-0.5 text-xs rounded ${colorClasses.bg} ${colorClasses.text}`}
+                                      >
+                                        {label.label}
+                                      </span>
+                                    );
+                                  })}
+                                  {property.labels && property.labels.length > 2 && (
+                                    <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-600">
+                                      +{property.labels.length - 2}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-sm text-gray-600">{getPropertyTypeLabel(property.property_type)}</td>
+                          <td className="py-4 px-6 text-sm text-gray-600">{property.address}</td>
+                          <td className="py-4 px-6 text-sm text-gray-600">{property.size_sqm ? `${property.size_sqm} m²` : '-'}</td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-2">
+                              {occupancyStatus.label === "Voll vermietet" ? (
+                                <CheckCircle className="w-4 h-4 text-emerald-600" />
+                              ) : occupancyStatus.label === "Leer" ? (
+                                <AlertCircle className="w-4 h-4 text-amber-600" />
+                              ) : null}
+                              <span className={`text-sm font-medium ${occupancyStatus.color}`}>
+                                {occupancyStatus.label}
+                              </span>
+                            </div>
+                            {property.units && property.units.total > 0 && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                {property.units.rented}/{property.units.total} vermietet
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-4 px-6 text-sm font-medium text-dark">{formatCurrency(property.current_value)}</td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedProperty(property);
+                                  setShowDetails(true);
+                                }}
+                                className="px-3 py-1.5 text-sm text-primary-blue hover:bg-primary-blue/5 rounded transition-colors"
+                              >
+                                Details
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedProperty(property);
+                                  setShowModal(true);
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-primary-blue transition-colors"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(property.id)}
+                                className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </>
       )}
 

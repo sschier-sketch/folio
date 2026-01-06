@@ -30,6 +30,7 @@ interface PropertyUnit {
     id: string;
     base_rent: number;
   } | null;
+  outstanding_rent?: number;
 }
 
 interface RentalContractWithTenants {
@@ -90,6 +91,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
           let tenant = null;
           let rentalContract = null;
 
+          let outstandingRent = 0;
+
           if (unit.tenant_id) {
             const { data: tenantData } = await supabase
               .from("tenants")
@@ -119,9 +122,22 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
             } else {
               rentalContract = contractData;
             }
+
+            // Get outstanding rent payments
+            if (rentalContract) {
+              const { data: payments } = await supabase
+                .from("rent_payments")
+                .select("amount_due, amount_paid")
+                .eq("contract_id", rentalContract.id)
+                .eq("status", "outstanding");
+
+              if (payments && payments.length > 0) {
+                outstandingRent = payments.reduce((sum, p) => sum + (p.amount_due - (p.amount_paid || 0)), 0);
+              }
+            }
           }
 
-          return { ...unit, tenant, rental_contract: rentalContract };
+          return { ...unit, tenant, rental_contract: rentalContract, outstanding_rent: outstandingRent };
         })
       );
 
@@ -384,6 +400,9 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                   <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
                     Miete
                   </th>
+                  <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
+                    Offene Miete
+                  </th>
                   <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktionen
                   </th>
@@ -427,6 +446,15 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                       {unit.rental_contract?.base_rent
                         ? `${unit.rental_contract.base_rent.toFixed(2)} €`
                         : "-"}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-right">
+                      {unit.outstanding_rent && unit.outstanding_rent > 0 ? (
+                        <span className="text-red-600 font-semibold">
+                          {unit.outstanding_rent.toFixed(2)} € offen
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center gap-2">

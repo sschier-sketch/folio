@@ -9,6 +9,8 @@ interface Tenant {
   last_name: string;
   email: string;
   phone: string;
+  company_name?: string;
+  date_of_birth?: string;
 }
 interface Contract {
   id: string;
@@ -75,10 +77,13 @@ export default function RentalContractModal({
     staffel_years: 1,
     index_first_increase_date: "",
     auto_create_rent_increase_tickets: false,
+    is_sublet: false,
+    vat_applicable: false,
+    graduated_rent_date: "",
     notes: "",
   });
   const [tenants, setTenants] = useState<Tenant[]>([
-    { first_name: "", last_name: "", email: "", phone: "" },
+    { first_name: "", last_name: "", email: "", phone: "", company_name: "", date_of_birth: "" },
   ]);
   useEffect(() => {
     if (contract) {

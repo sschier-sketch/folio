@@ -21,6 +21,8 @@ interface MaintenanceTask {
   recurrence_interval: string | null;
   notes: string | null;
   unit_id: string | null;
+  email_notification_enabled?: boolean | null;
+  notification_days_before?: number | null;
   created_at: string;
   property_units?: {
     unit_number: string;
@@ -48,6 +50,8 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
     recurrence_interval: "monthly",
     unit_id: "",
     notes: "",
+    email_notification_enabled: false,
+    notification_days_before: "30",
   });
 
   useEffect(() => {
@@ -109,6 +113,8 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
       recurrence_interval: "monthly",
       unit_id: "",
       notes: "",
+      email_notification_enabled: false,
+      notification_days_before: "30",
     });
     setShowAddModal(true);
   };
@@ -126,6 +132,8 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
       recurrence_interval: task.recurrence_interval || "monthly",
       unit_id: task.unit_id || "",
       notes: task.notes || "",
+      email_notification_enabled: task.email_notification_enabled || false,
+      notification_days_before: task.notification_days_before?.toString() || "30",
     });
     setShowAddModal(true);
   };
@@ -148,6 +156,8 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
         recurrence_interval: formData.is_recurring ? formData.recurrence_interval : null,
         unit_id: formData.unit_id || null,
         notes: formData.notes || null,
+        email_notification_enabled: formData.email_notification_enabled,
+        notification_days_before: formData.email_notification_enabled ? parseInt(formData.notification_days_before) : null,
         completed_at: formData.status === "completed" && !editingTask?.completed_at ? new Date().toISOString() : editingTask?.completed_at,
       };
 
@@ -512,6 +522,34 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <label className="flex items-center gap-2 mb-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.email_notification_enabled}
+                    onChange={(e) => setFormData({ ...formData, email_notification_enabled: e.target.checked })}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Per E-Mail benachrichtigen</span>
+                </label>
+
+                {formData.email_notification_enabled && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Vorlaufzeit zur Fälligkeit</label>
+                    <select
+                      value={formData.notification_days_before}
+                      onChange={(e) => setFormData({ ...formData, notification_days_before: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="90">3 Monate vorher</option>
+                      <option value="30">1 Monat vorher</option>
+                      <option value="14">14 Tage vorher</option>
+                      <option value="5">5 Tage vorher</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
               {units.length > 0 && (
