@@ -179,8 +179,6 @@ export default function LoanModal({
         special_repayment_used_amount: formData.special_repayment_used_amount || null,
         loan_status: formData.loan_status,
         responsible_person: formData.responsible_person || null,
-        email_notification_enabled: formData.email_notification_enabled,
-        notification_days_before: formData.notification_days_before,
         property_id: propertyId,
         user_id: user.id,
       };

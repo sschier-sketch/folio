@@ -139,7 +139,6 @@ export default function TenantRentHistoryTab({
         await supabase.from("rent_history").insert([
           {
             contract_id: contract.id,
-            tenant_id: tenantId,
             user_id: user.id,
             effective_date: new Date().toISOString().split('T')[0],
             cold_rent: monthlyRent,
