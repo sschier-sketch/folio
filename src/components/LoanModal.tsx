@@ -119,15 +119,23 @@ export default function LoanModal({
   useEffect(() => {
     if (principalType === "percent" && formData.loan_amount > 0) {
       const annualPrincipal = (formData.loan_amount * principalInput) / 100;
-      const monthlyPrincipal = annualPrincipal / 12;
-      setFormData({
-        ...formData,
-        monthly_principal: Math.round(monthlyPrincipal * 100) / 100,
-      });
+      const monthlyPrincipal = Math.round((annualPrincipal / 12) * 100) / 100;
+
+      if (formData.monthly_principal !== monthlyPrincipal) {
+        setFormData((prev) => ({
+          ...prev,
+          monthly_principal: monthlyPrincipal,
+        }));
+      }
     } else if (principalType === "euro") {
-      setFormData({ ...formData, monthly_principal: principalInput });
+      if (formData.monthly_principal !== principalInput) {
+        setFormData((prev) => ({
+          ...prev,
+          monthly_principal: principalInput,
+        }));
+      }
     }
-  }, [principalInput, principalType, formData.loan_amount]);
+  }, [principalInput, principalType, formData.loan_amount, formData.monthly_principal]);
 
   const handleNext = () => {
     if (currentStep < 4) {
@@ -804,7 +812,7 @@ export default function LoanModal({
               <button
                 type="button"
                 onClick={handleBack}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Zurück
@@ -814,7 +822,7 @@ export default function LoanModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
             >
               Abbrechen
             </button>
@@ -823,7 +831,7 @@ export default function LoanModal({
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
               >
                 Weiter
                 <ChevronRight className="w-4 h-4" />
@@ -832,7 +840,7 @@ export default function LoanModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
               >
                 {loading ? "Speichern..." : "Speichern"}
               </button>

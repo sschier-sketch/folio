@@ -112,6 +112,10 @@ export default function TenantRentHistoryTab({
 
       const totalRent = monthlyRent + utilitiesAdvance;
 
+      const oldMonthlyRent = contract.monthly_rent || 0;
+      const oldUtilities = contract.utilities_advance || contract.additional_costs || 0;
+      const rentChanged = monthlyRent !== oldMonthlyRent || utilitiesAdvance !== oldUtilities;
+
       const { error } = await supabase
         .from("rental_contracts")
         .update({
@@ -130,6 +134,21 @@ export default function TenantRentHistoryTab({
         .eq("id", contract.id);
 
       if (error) throw error;
+
+      if (rentChanged) {
+        await supabase.from("rent_history").insert([
+          {
+            contract_id: contract.id,
+            tenant_id: tenantId,
+            user_id: user.id,
+            effective_date: new Date().toISOString().split('T')[0],
+            cold_rent: monthlyRent,
+            utilities: utilitiesAdvance,
+            reason: "increase",
+            notes: "Manuell angepasst",
+          },
+        ]);
+      }
 
       setIsEditing(false);
       await loadData();
