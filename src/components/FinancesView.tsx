@@ -7,6 +7,7 @@ import {
   CreditCard,
   Bell,
   Lightbulb,
+  Calculator,
 } from "lucide-react";
 import IncomeView from "./finances/IncomeView";
 import ExpensesView from "./finances/ExpensesView";
@@ -15,12 +16,14 @@ import ReceiptsView from "./finances/ReceiptsView";
 import BankConnectionView from "./finances/BankConnectionView";
 import DunningView from "./finances/DunningView";
 import IntelligenceView from "./finances/IntelligenceView";
+import IndexRentView from "./finances/IndexRentView";
 
 type Tab =
   | "income"
   | "expenses"
   | "cashflow"
   | "receipts"
+  | "indexrent"
   | "bank"
   | "dunning"
   | "intelligence";
@@ -33,6 +36,7 @@ export default function FinancesView() {
     { id: "expenses" as Tab, label: "Ausgaben", icon: TrendingDown },
     { id: "cashflow" as Tab, label: "Cashflow", icon: BarChart3 },
     { id: "receipts" as Tab, label: "Belege & Buchungen", icon: Receipt },
+    { id: "indexrent" as Tab, label: "Indexmiete", icon: Calculator },
     { id: "bank" as Tab, label: "Bankanbindung", icon: CreditCard, premium: true },
     { id: "dunning" as Tab, label: "Mahnwesen", icon: Bell, premium: true },
     { id: "intelligence" as Tab, label: "Intelligenz", icon: Lightbulb, premium: true },
@@ -79,6 +83,7 @@ export default function FinancesView() {
         {activeTab === "expenses" && <ExpensesView />}
         {activeTab === "cashflow" && <CashflowView />}
         {activeTab === "receipts" && <ReceiptsView />}
+        {activeTab === "indexrent" && <IndexRentView />}
         {activeTab === "bank" && <BankConnectionView />}
         {activeTab === "dunning" && <DunningView />}
         {activeTab === "intelligence" && <IntelligenceView />}
