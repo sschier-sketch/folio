@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Building2,
   Users,
@@ -10,6 +11,7 @@ import {
   Wrench,
   AlertCircle,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -39,9 +41,19 @@ interface MaintenanceTask {
     unit_number: string;
   };
 }
+
+interface RentIncrease {
+  tenant_id: string;
+  tenant_name: string;
+  increase_date: string;
+  old_rent: number;
+  new_rent: number;
+  increase_type: string;
+}
 export default function DashboardHome() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats>({
     propertiesCount: 0,
     tenantsCount: 0,
@@ -54,10 +66,14 @@ export default function DashboardHome() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [upcomingTasks, setUpcomingTasks] = useState<MaintenanceTask[]>([]);
+  const [rentIncreases, setRentIncreases] = useState<RentIncrease[]>([]);
+  const [showTasksCard, setShowTasksCard] = useState(true);
+  const [showRentIncreasesCard, setShowRentIncreasesCard] = useState(true);
 
   useEffect(() => {
     loadStats();
     loadUpcomingTasks();
+    loadUpcomingRentIncreases();
   }, [user]);
   const loadStats = async () => {
     if (!user) return;
@@ -154,6 +170,84 @@ export default function DashboardHome() {
       setUpcomingTasks(data || []);
     } catch (error) {
       console.error("Error loading upcoming tasks:", error);
+    }
+  };
+
+  const loadUpcomingRentIncreases = async () => {
+    if (!user) return;
+
+    try {
+      const today = new Date();
+      const sixtyDaysFromNow = new Date();
+      sixtyDaysFromNow.setDate(sixtyDaysFromNow.getDate() + 60);
+
+      const { data: contracts, error } = await supabase
+        .from("rental_contracts")
+        .select(`
+          id,
+          base_rent,
+          rent_type,
+          graduated_rent_schedule,
+          index_base_rent,
+          index_base_date,
+          tenants (
+            id,
+            first_name,
+            last_name
+          )
+        `)
+        .eq("user_id", user.id)
+        .in("rent_type", ["graduated", "indexed"]);
+
+      if (error) throw error;
+
+      const increases: RentIncrease[] = [];
+
+      contracts?.forEach((contract: any) => {
+        if (contract.rent_type === "graduated" && contract.graduated_rent_schedule) {
+          const schedule = contract.graduated_rent_schedule as any[];
+          const upcomingStep = schedule.find((step: any) => {
+            const stepDate = new Date(step.effective_date);
+            return stepDate >= today && stepDate <= sixtyDaysFromNow;
+          });
+
+          if (upcomingStep && contract.tenants) {
+            increases.push({
+              tenant_id: contract.tenants.id,
+              tenant_name: `${contract.tenants.first_name} ${contract.tenants.last_name}`,
+              increase_date: upcomingStep.effective_date,
+              old_rent: contract.base_rent,
+              new_rent: upcomingStep.new_rent,
+              increase_type: "Staffelmiete",
+            });
+          }
+        } else if (contract.rent_type === "indexed" && contract.index_base_date) {
+          const baseDate = new Date(contract.index_base_date);
+          const nextReviewDate = new Date(baseDate);
+          nextReviewDate.setFullYear(nextReviewDate.getFullYear() + 1);
+
+          while (nextReviewDate < today) {
+            nextReviewDate.setFullYear(nextReviewDate.getFullYear() + 1);
+          }
+
+          if (nextReviewDate >= today && nextReviewDate <= sixtyDaysFromNow && contract.tenants) {
+            increases.push({
+              tenant_id: contract.tenants.id,
+              tenant_name: `${contract.tenants.first_name} ${contract.tenants.last_name}`,
+              increase_date: nextReviewDate.toISOString().split('T')[0],
+              old_rent: contract.base_rent,
+              new_rent: 0,
+              increase_type: "Indexmiete",
+            });
+          }
+        }
+      });
+
+      setRentIncreases(increases.sort((a, b) =>
+        new Date(a.increase_date).getTime() - new Date(b.increase_date).getTime()
+      ));
+    } catch (error) {
+      console.error("Error loading rent increases:", error);
     }
   };
 
@@ -416,9 +510,18 @@ export default function DashboardHome() {
         </div>{" "}
       </div>{" "}
 
-      {upcomingTasks.length > 0 && (
+      {upcomingTasks.length > 0 && showTasksCard && (
         <div className="mt-8">
-          <h2 className="text-xl font-bold text-dark mb-4">Anstehende Wartungsaufgaben</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-dark">Anstehende Wartungsaufgaben</h2>
+            <button
+              onClick={() => setShowTasksCard(false)}
+              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Schließen"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
           <div className="bg-white rounded-lg">
             {upcomingTasks.map((task, index) => (
               <div
@@ -427,7 +530,7 @@ export default function DashboardHome() {
                   index !== upcomingTasks.length - 1 ? "border-b border-gray-200" : ""
                 }`}
                 onClick={() => {
-                  window.location.href = `#/dashboard/properties/${task.property_id}?tab=maintenance`;
+                  navigate(`/dashboard/properties/${task.property_id}?tab=maintenance`);
                 }}
               >
                 <div className="flex items-center justify-between">
@@ -452,6 +555,62 @@ export default function DashboardHome() {
                         )}
                         <span>•</span>
                         <span>Fällig: {new Date(task.due_date).toLocaleDateString("de-DE")}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {rentIncreases.length > 0 && showRentIncreasesCard && (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-dark">Anstehende Mieterhöhungen</h2>
+            <button
+              onClick={() => setShowRentIncreasesCard(false)}
+              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Schließen"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+          <div className="bg-white rounded-lg">
+            {rentIncreases.map((increase, index) => (
+              <div
+                key={`${increase.tenant_id}-${increase.increase_date}`}
+                className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                  index !== rentIncreases.length - 1 ? "border-b border-gray-200" : ""
+                }`}
+                onClick={() => {
+                  navigate(`/dashboard/tenants/${increase.tenant_id}?tab=rent`);
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <TrendingUp className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-dark truncate">{increase.tenant_name}</h3>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {increase.increase_type}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-gray-500">
+                        <span>Datum: {new Date(increase.increase_date).toLocaleDateString("de-DE")}</span>
+                        {increase.new_rent > 0 && (
+                          <>
+                            <span>•</span>
+                            <span>
+                              {formatCurrency(increase.old_rent)} → {formatCurrency(increase.new_rent)}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

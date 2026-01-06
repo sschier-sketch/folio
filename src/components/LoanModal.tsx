@@ -154,7 +154,6 @@ export default function LoanModal({
     e.stopPropagation();
 
     if (currentStep < 4) {
-      handleNext();
       return;
     }
 
@@ -835,7 +834,11 @@ export default function LoanModal({
             {currentStep < 4 ? (
               <button
                 type="button"
-                onClick={handleNext}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleNext();
+                }}
                 className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
               >
                 Weiter
@@ -843,7 +846,12 @@ export default function LoanModal({
               </button>
             ) : (
               <button
-                type="submit"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSubmit(e);
+                }}
                 disabled={loading}
                 className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
               >
