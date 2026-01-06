@@ -35,11 +35,18 @@ export default function TenantDepositTab({
   const [contract, setContract] = useState<Contract | null>(null);
   const [history, setHistory] = useState<DepositHistory[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [editData, setEditData] = useState({
     deposit_type: "none",
     deposit_amount: "",
     deposit_status: "open",
     deposit_payment_date: "",
+  });
+  const [transactionData, setTransactionData] = useState({
+    transaction_date: new Date().toISOString().split('T')[0],
+    amount: "",
+    transaction_type: "payment",
+    notes: "",
   });
 
   useEffect(() => {
@@ -107,6 +114,44 @@ export default function TenantDepositTab({
     } catch (error) {
       console.error("Error updating deposit:", error);
       alert("Fehler beim Aktualisieren der Kautionsdaten");
+    }
+  }
+
+  async function handleSaveTransaction() {
+    if (!contract || !user) return;
+
+    if (!transactionData.amount || parseFloat(transactionData.amount) <= 0) {
+      alert("Bitte geben Sie einen gültigen Betrag ein");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("deposit_history").insert([
+        {
+          contract_id: contract.id,
+          tenant_id: tenantId,
+          user_id: user.id,
+          transaction_date: transactionData.transaction_date,
+          amount: parseFloat(transactionData.amount),
+          transaction_type: transactionData.transaction_type,
+          notes: transactionData.notes || null,
+        },
+      ]);
+
+      if (error) throw error;
+
+      setShowTransactionModal(false);
+      setTransactionData({
+        transaction_date: new Date().toISOString().split('T')[0],
+        amount: "",
+        transaction_type: "payment",
+        notes: "",
+      });
+      await loadData();
+      alert("Transaktion erfolgreich erfasst");
+    } catch (error) {
+      console.error("Error saving transaction:", error);
+      alert("Fehler beim Erfassen der Transaktion");
     }
   }
 
@@ -371,7 +416,10 @@ export default function TenantDepositTab({
             <h3 className="text-lg font-semibold text-dark">
               Kautionshistorie
             </h3>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+            <button
+              onClick={() => setShowTransactionModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+            >
               <Plus className="w-4 h-4" />
               Transaktion erfassen
             </button>
@@ -469,6 +517,118 @@ export default function TenantDepositTab({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {showTransactionModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="border-b px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-dark">Transaktion erfassen</h3>
+              <button
+                onClick={() => setShowTransactionModal(false)}
+                className="text-gray-300 hover:text-gray-400 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Datum *
+                </label>
+                <input
+                  type="date"
+                  value={transactionData.transaction_date}
+                  onChange={(e) =>
+                    setTransactionData({
+                      ...transactionData,
+                      transaction_date: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Transaktionsart *
+                </label>
+                <select
+                  value={transactionData.transaction_type}
+                  onChange={(e) =>
+                    setTransactionData({
+                      ...transactionData,
+                      transaction_type: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                >
+                  <option value="payment">Einzahlung</option>
+                  <option value="partial_return">Teilrückzahlung</option>
+                  <option value="full_return">Vollständige Rückzahlung</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Betrag (€) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={transactionData.amount}
+                  onChange={(e) =>
+                    setTransactionData({
+                      ...transactionData,
+                      amount: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Notizen
+                </label>
+                <textarea
+                  value={transactionData.notes}
+                  onChange={(e) =>
+                    setTransactionData({
+                      ...transactionData,
+                      notes: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  rows={3}
+                  placeholder="Optional..."
+                />
+              </div>
+            </div>
+
+            <div className="border-t px-6 py-4 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowTransactionModal(false)}
+                className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveTransaction}
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+              >
+                Speichern
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

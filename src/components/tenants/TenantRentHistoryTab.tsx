@@ -449,14 +449,13 @@ export default function TenantRentHistoryTab({
         </div>
       ) : (
         <div className="bg-white rounded-lg">
-          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          <div className="p-6 border-b border-gray-100">
             <h3 className="text-lg font-semibold text-dark">
               Mietentwicklung
             </h3>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
-              <Plus className="w-4 h-4" />
-              Änderung erfassen
-            </button>
+            <p className="text-sm text-gray-500 mt-1">
+              Änderungen werden automatisch protokolliert bei Mietanpassungen, Staffelmieten oder Indexmieten
+            </p>
           </div>
 
           {history.length === 0 ? (
