@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Building2, Calendar, Euro, TrendingUp, Users, Plus, Edit2, Trash2, CreditCard, Info } from "lucide-react";
+import { Edit, Building2, Calendar, Euro, TrendingUp, Users, Plus, Edit2, Trash2, CreditCard, Info, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -40,6 +40,17 @@ interface Loan {
   start_date: string;
   end_date: string;
   loan_type: string;
+  fixed_interest_start_date?: string;
+  fixed_interest_end_date?: string;
+  fixed_interest_equals_loan_end?: boolean;
+  special_repayment_allowed?: boolean;
+  special_repayment_max_amount?: number;
+  special_repayment_max_percent?: number;
+  special_repayment_due_date?: string;
+  special_repayment_annual_end?: boolean;
+  special_repayment_used_amount?: number;
+  loan_status?: string;
+  responsible_person?: string;
 }
 
 interface RentalContract {
@@ -257,6 +268,80 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     0
   );
   const netMonthlyIncome = monthlyRent - totalLoanPayments;
+
+  const getDaysUntilDate = (dateString: string | null | undefined) => {
+    if (!dateString) return null;
+    const today = new Date();
+    const targetDate = new Date(dateString);
+    const diffTime = targetDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const getLoanStatus = (loan: Loan) => {
+    if (loan.loan_status === "ended") return { label: "Beendet", color: "bg-gray-100 text-gray-700", icon: CheckCircle };
+    if (loan.loan_status === "refinancing") return { label: "In Umschuldung", color: "bg-blue-100 text-blue-700", icon: AlertCircle };
+
+    const fixedInterestEndDate = loan.fixed_interest_end_date;
+    if (fixedInterestEndDate) {
+      const daysUntil = getDaysUntilDate(fixedInterestEndDate);
+      if (daysUntil !== null) {
+        if (daysUntil < 0) return { label: "Zinsbindung abgelaufen", color: "bg-red-100 text-red-700", icon: AlertCircle };
+        if (daysUntil <= 90) return { label: "Zinsbindung endet bald", color: "bg-red-100 text-red-700", icon: AlertCircle };
+        if (daysUntil <= 180) return { label: "Zinsbindung endet bald", color: "bg-amber-100 text-amber-700", icon: Clock };
+      }
+    }
+
+    return { label: "Aktiv", color: "bg-green-100 text-green-700", icon: CheckCircle };
+  };
+
+  const getNextEvent = (loan: Loan) => {
+    const events: Array<{ date: string; label: string; days: number }> = [];
+
+    if (loan.fixed_interest_end_date) {
+      const days = getDaysUntilDate(loan.fixed_interest_end_date);
+      if (days !== null && days >= 0) {
+        events.push({
+          date: loan.fixed_interest_end_date,
+          label: "Zinsbindung endet",
+          days,
+        });
+      }
+    }
+
+    if (loan.special_repayment_allowed && loan.special_repayment_due_date) {
+      const days = getDaysUntilDate(loan.special_repayment_due_date);
+      if (days !== null && days >= 0) {
+        events.push({
+          date: loan.special_repayment_due_date,
+          label: "Sondertilgung möglich bis",
+          days,
+        });
+      }
+    }
+
+    if (loan.end_date) {
+      const days = getDaysUntilDate(loan.end_date);
+      if (days !== null && days >= 0) {
+        events.push({
+          date: loan.end_date,
+          label: "Kreditende",
+          days,
+        });
+      }
+    }
+
+    if (events.length === 0) return null;
+
+    events.sort((a, b) => a.days - b.days);
+    const nextEvent = events[0];
+
+    return {
+      label: nextEvent.label,
+      date: new Date(nextEvent.date).toLocaleDateString("de-DE"),
+      days: nextEvent.days,
+    };
+  };
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
@@ -588,51 +673,96 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
             Noch keine Kredite hinterlegt
           </p>
         ) : (
-          <div className="space-y-3">
-            {loans.map((loan) => (
-              <div
-                key={loan.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-              >
-                <div className="flex items-center gap-4">
-                  <CreditCard className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <div className="font-semibold text-dark">
-                      {loan.lender_name}
+          <div className="space-y-4">
+            {loans.map((loan) => {
+              const status = getLoanStatus(loan);
+              const nextEvent = getNextEvent(loan);
+              const StatusIcon = status.icon;
+
+              return (
+                <div
+                  key={loan.id}
+                  className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start gap-3 flex-1">
+                      <CreditCard className="w-5 h-5 text-gray-400 mt-1" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="font-semibold text-dark">
+                            {loan.lender_name}
+                          </div>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${status.color}`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {status.label}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {formatCurrency(loan.remaining_balance)} verbleibend •{" "}
+                          {loan.interest_rate}% Zinsen
+                        </div>
+                        {loan.special_repayment_allowed && (
+                          <div className="flex items-center gap-1 mt-2 text-sm text-blue-600">
+                            <Info className="w-3.5 h-3.5" />
+                            <span>
+                              Sondertilgung möglich: bis{" "}
+                              {loan.special_repayment_max_amount
+                                ? formatCurrency(loan.special_repayment_max_amount)
+                                : loan.special_repayment_max_percent
+                                ? `${loan.special_repayment_max_percent}%`
+                                : "–"}{" "}
+                              / Jahr
+                            </span>
+                            {loan.special_repayment_used_amount && loan.special_repayment_used_amount > 0 && (
+                              <span className="text-gray-500">
+                                ({formatCurrency(loan.special_repayment_used_amount)} genutzt)
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {nextEvent && (
+                          <div className="flex items-center gap-1 mt-2 text-sm">
+                            <Clock className="w-3.5 h-3.5 text-amber-600" />
+                            <span className="text-gray-700">
+                              <span className="font-medium">Nächstes Ereignis:</span>{" "}
+                              {nextEvent.label} am {nextEvent.date}{" "}
+                              <span className="text-gray-500">
+                                (in {nextEvent.days} {nextEvent.days === 1 ? "Tag" : "Tagen"})
+                              </span>
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {formatCurrency(loan.remaining_balance)} verbleibend •{" "}
-                      {loan.interest_rate}% Zinsen
+                    <div className="flex items-start gap-3 ml-4">
+                      <div className="text-right">
+                        <div className="font-semibold text-dark">
+                          {formatCurrency(loan.monthly_payment)}
+                        </div>
+                        <div className="text-sm text-gray-400">monatlich</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedLoan(loan);
+                            setShowLoanModal(true);
+                          }}
+                          className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteLoan(loan.id)}
+                          className="p-2 text-gray-300 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="font-semibold text-dark">
-                      {formatCurrency(loan.monthly_payment)}
-                    </div>
-                    <div className="text-sm text-gray-400">monatlich</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedLoan(loan);
-                        setShowLoanModal(true);
-                      }}
-                      className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteLoan(loan.id)}
-                      className="p-2 text-gray-300 hover:text-red-600 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

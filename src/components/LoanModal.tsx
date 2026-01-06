@@ -18,6 +18,17 @@ interface Loan {
   contact_person_name?: string;
   contact_person_email?: string;
   contact_person_phone?: string;
+  fixed_interest_start_date?: string;
+  fixed_interest_end_date?: string;
+  fixed_interest_equals_loan_end?: boolean;
+  special_repayment_allowed?: boolean;
+  special_repayment_max_amount?: number;
+  special_repayment_max_percent?: number;
+  special_repayment_due_date?: string;
+  special_repayment_annual_end?: boolean;
+  special_repayment_used_amount?: number;
+  loan_status?: string;
+  responsible_person?: string;
 }
 interface LoanModalProps {
   propertyId: string;
@@ -51,6 +62,17 @@ export default function LoanModal({
     contact_person_name: "",
     contact_person_email: "",
     contact_person_phone: "",
+    fixed_interest_start_date: "",
+    fixed_interest_end_date: "",
+    fixed_interest_equals_loan_end: false,
+    special_repayment_allowed: false,
+    special_repayment_max_amount: 0,
+    special_repayment_max_percent: 0,
+    special_repayment_due_date: "",
+    special_repayment_annual_end: false,
+    special_repayment_used_amount: 0,
+    loan_status: "active",
+    responsible_person: "",
   });
   useEffect(() => {
     if (loan) {
@@ -68,6 +90,17 @@ export default function LoanModal({
         contact_person_name: loan.contact_person_name || "",
         contact_person_email: loan.contact_person_email || "",
         contact_person_phone: loan.contact_person_phone || "",
+        fixed_interest_start_date: loan.fixed_interest_start_date || "",
+        fixed_interest_end_date: loan.fixed_interest_end_date || "",
+        fixed_interest_equals_loan_end: loan.fixed_interest_equals_loan_end || false,
+        special_repayment_allowed: loan.special_repayment_allowed || false,
+        special_repayment_max_amount: loan.special_repayment_max_amount || 0,
+        special_repayment_max_percent: loan.special_repayment_max_percent || 0,
+        special_repayment_due_date: loan.special_repayment_due_date || "",
+        special_repayment_annual_end: loan.special_repayment_annual_end || false,
+        special_repayment_used_amount: loan.special_repayment_used_amount || 0,
+        loan_status: loan.loan_status || "active",
+        responsible_person: loan.responsible_person || "",
       });
       setPrincipalInput(loan.monthly_principal || 0);
     }
@@ -318,7 +351,210 @@ export default function LoanModal({
                 <option value="other">Sonstiges</option>{" "}
               </select>{" "}
             </div>{" "}
+            <div className="col-span-2 mt-6 pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-dark mb-3">Zinsbindung</h3>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Beginn der Zinsbindung
+              </label>
+              <input
+                type="date"
+                value={formData.fixed_interest_start_date}
+                onChange={(e) =>
+                  setFormData({ ...formData, fixed_interest_start_date: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Ende der Zinsbindung
+              </label>
+              <input
+                type="date"
+                value={formData.fixed_interest_end_date}
+                onChange={(e) =>
+                  setFormData({ ...formData, fixed_interest_end_date: e.target.value })
+                }
+                disabled={formData.fixed_interest_equals_loan_end}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-400"
+              />
+            </div>
             <div className="col-span-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.fixed_interest_equals_loan_end}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setFormData({
+                      ...formData,
+                      fixed_interest_equals_loan_end: checked,
+                      fixed_interest_end_date: checked ? formData.end_date : formData.fixed_interest_end_date
+                    });
+                  }}
+                  className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+                />
+                <span className="text-sm font-medium text-gray-700">Zinsbindung entspricht Kreditende</span>
+              </label>
+              <p className="text-xs text-gray-400 mt-2">
+                Wir erinnern dich rechtzeitig an das Ende der Zinsbindung.
+              </p>
+            </div>
+
+            <div className="col-span-2 mt-6 pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-dark mb-3">Sondertilgung</h3>
+            </div>
+            <div className="col-span-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.special_repayment_allowed}
+                  onChange={(e) =>
+                    setFormData({ ...formData, special_repayment_allowed: e.target.checked })
+                  }
+                  className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+                />
+                <span className="text-sm font-medium text-gray-700">Sondertilgung erlaubt</span>
+              </label>
+            </div>
+            {formData.special_repayment_allowed && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Max. Sondertilgung pro Jahr (€)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.special_repayment_max_amount}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        special_repayment_max_amount: parseNumberInput(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="z.B. 10000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    oder in Prozent (%)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.special_repayment_max_percent}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        special_repayment_max_percent: parseNumberInput(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="z.B. 5"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Stichtag für Sondertilgung
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.special_repayment_due_date}
+                    onChange={(e) =>
+                      setFormData({ ...formData, special_repayment_due_date: e.target.value })
+                    }
+                    disabled={formData.special_repayment_annual_end}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50"
+                  />
+                </div>
+                <div className="flex items-center">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.special_repayment_annual_end}
+                      onChange={(e) =>
+                        setFormData({ ...formData, special_repayment_annual_end: e.target.checked })
+                      }
+                      className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Jährlich zum Jahresende</span>
+                  </label>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Bereits geleistete Sondertilgung (€)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.special_repayment_used_amount}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        special_repayment_used_amount: parseNumberInput(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="0"
+                  />
+                </div>
+              </>
+            )}
+
+            {formData.interest_rate > 0 && formData.monthly_payment > 0 && formData.monthly_principal > 0 && (
+              <div className="col-span-2 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-blue-900 mb-2">Tilgungs-Transparenz</h4>
+                <div className="flex justify-between text-sm">
+                  <span className="text-blue-800">Monatliche Rate:</span>
+                  <span className="font-semibold text-blue-900">{formData.monthly_payment.toFixed(2)} €</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-blue-700">davon ca. Zinsen:</span>
+                  <span className="text-blue-800">{(formData.monthly_payment - formData.monthly_principal).toFixed(2)} €</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-blue-700">davon ca. Tilgung:</span>
+                  <span className="text-blue-800">{formData.monthly_principal.toFixed(2)} €</span>
+                </div>
+              </div>
+            )}
+
+            <div className="col-span-2 mt-6 pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-dark mb-3">Status</h3>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Kreditstatus
+              </label>
+              <select
+                value={formData.loan_status}
+                onChange={(e) =>
+                  setFormData({ ...formData, loan_status: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="active">Aktiv</option>
+                <option value="ended">Beendet</option>
+                <option value="refinancing">In Umschuldung</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Verantwortlich
+              </label>
+              <input
+                type="text"
+                value={formData.responsible_person}
+                onChange={(e) =>
+                  setFormData({ ...formData, responsible_person: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. Max Mustermann"
+              />
+            </div>
+
+            <div className="col-span-2 mt-6 pt-6 border-t border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Ansprechpartner beim Kreditgeber</h3>
             </div>
             <div>
