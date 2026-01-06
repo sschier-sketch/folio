@@ -35,6 +35,8 @@ Deno.serve(async (req: Request) => {
           end_date,
           fixed_interest_end_date,
           special_repayment_due_date,
+          special_repayment_max_amount,
+          special_repayment_max_percent,
           property_id,
           properties:property_id (name)
         )
@@ -59,12 +61,24 @@ Deno.serve(async (req: Request) => {
     }
 
     let processedCount = 0;
+    let emailsSent = 0;
     const errors: string[] = [];
 
     for (const reminder of pendingReminders) {
       try {
         const loan = reminder.loans;
         if (!loan) continue;
+
+        const { data: userData, error: userError } = await supabase.auth.admin.getUserById(
+          reminder.user_id
+        );
+
+        if (userError || !userData?.user?.email) {
+          errors.push(`Benutzer-E-Mail für Reminder ${reminder.id} nicht gefunden`);
+          continue;
+        }
+
+        const userEmail = userData.user.email;
 
         const reminderTypeLabels: Record<string, string> = {
           fixed_interest_end: 'Ende der Zinsbindung',
@@ -89,9 +103,73 @@ Deno.serve(async (req: Request) => {
         }
 
         const formattedDate = eventDate ? new Date(eventDate).toLocaleDateString('de-DE') : 'Unbekannt';
+        const formattedBalance = loan.remaining_balance.toLocaleString('de-DE', {
+          style: 'currency',
+          currency: 'EUR',
+        });
 
-        const notificationTitle = `${reminderLabel}: ${loan.lender_name}`;
-        const notificationMessage = `Erinnerung für Immobilie "${propertyName}": ${reminderLabel} am ${formattedDate} (in ${reminder.days_before} Tagen). Kredit: ${loan.lender_name}, Restschuld: ${loan.remaining_balance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}.`;
+        const emailSubject = `Erinnerung: ${reminderLabel} - ${loan.lender_name}`;
+        
+        let emailBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">`;
+        emailBody += `<h2 style="color: #008CFF;">${reminderLabel}</h2>`;
+        emailBody += `<p>Hallo,</p>`;
+        emailBody += `<p>Dies ist eine automatische Erinnerung für einen wichtigen Termin:</p>`;
+        emailBody += `<div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">`;
+        emailBody += `<table style="width: 100%; border-collapse: collapse;">`;
+        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Ereignis:</td><td style="padding: 8px 0;">${reminderLabel}</td></tr>`;
+        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Datum:</td><td style="padding: 8px 0;">${formattedDate}</td></tr>`;
+        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">In:</td><td style="padding: 8px 0;">${reminder.days_before} Tagen</td></tr>`;
+        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Immobilie:</td><td style="padding: 8px 0;">${propertyName}</td></tr>`;
+        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Kreditgeber:</td><td style="padding: 8px 0;">${loan.lender_name}</td></tr>`;
+        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Restschuld:</td><td style="padding: 8px 0;">${formattedBalance}</td></tr>`;
+        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Zinssatz:</td><td style="padding: 8px 0;">${loan.interest_rate}%</td></tr>`;
+        
+        if (reminder.reminder_type === 'special_repayment' && (loan.special_repayment_max_amount || loan.special_repayment_max_percent)) {
+          const maxAmount = loan.special_repayment_max_amount 
+            ? loan.special_repayment_max_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+            : `${loan.special_repayment_max_percent}%`;
+          emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Max. Sondertilgung:</td><td style="padding: 8px 0;">${maxAmount} / Jahr</td></tr>`;
+        }
+        
+        emailBody += `</table>`;
+        emailBody += `</div>`;
+        
+        if (reminder.reminder_type === 'fixed_interest_end') {
+          emailBody += `<p><strong>Wichtig:</strong> Ihre Zinsbindung endet bald. Wir empfehlen Ihnen, rechtzeitig mit Ihrer Bank über eine Anschlussfinanzierung zu sprechen.</p>`;
+        } else if (reminder.reminder_type === 'loan_end') {
+          emailBody += `<p><strong>Wichtig:</strong> Ihr Kredit läuft bald aus. Bitte stellen Sie sicher, dass alle offenen Beträge beglichen sind.</p>`;
+        } else if (reminder.reminder_type === 'special_repayment') {
+          emailBody += `<p><strong>Hinweis:</strong> Sie haben die Möglichkeit, eine Sondertilgung vorzunehmen. Nutzen Sie diese Chance, um Ihre Restschuld zu reduzieren.</p>`;
+        }
+        
+        emailBody += `<p>Viele Grüße,<br>Ihr Rentably Team</p>`;
+        emailBody += `</div>`;
+
+        try {
+          const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify({
+              to: userEmail,
+              subject: emailSubject,
+              html: emailBody,
+            }),
+          });
+
+          if (emailResponse.ok) {
+            emailsSent++;
+          } else {
+            const errorText = await emailResponse.text();
+            errors.push(`E-Mail-Versand fehlgeschlagen für Reminder ${reminder.id}: ${errorText}`);
+          }
+        } catch (emailError) {
+          errors.push(`E-Mail-Versand-Fehler für Reminder ${reminder.id}: ${emailError.message}`);
+        }
+
+        const notificationMessage = `Erinnerung für Immobilie "${propertyName}": ${reminderLabel} am ${formattedDate} (in ${reminder.days_before} Tagen). Kredit: ${loan.lender_name}, Restschuld: ${formattedBalance}.`;
 
         const { error: updateError } = await supabase
           .from('loan_reminders')
@@ -114,8 +192,9 @@ Deno.serve(async (req: Request) => {
 
     return new Response(
       JSON.stringify({
-        message: `${processedCount} von ${pendingReminders.length} Erinnerungen verarbeitet`,
+        message: `${processedCount} von ${pendingReminders.length} Erinnerungen verarbeitet, ${emailsSent} E-Mails versendet`,
         processed: processedCount,
+        emailsSent: emailsSent,
         total: pendingReminders.length,
         errors: errors.length > 0 ? errors : undefined,
       }),
