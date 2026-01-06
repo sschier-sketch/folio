@@ -380,7 +380,7 @@ export default function Dashboard() {
           </aside>{" "}
           <main className="flex-1 min-w-0">
             {" "}
-            {currentView === "home" && <DashboardHome />}{" "}
+            {currentView === "home" && <DashboardHome onNavigateToTenant={handleNavigateToTenant} />}{" "}
             {currentView === "properties" && <PropertiesView onNavigateToTenant={handleNavigateToTenant} />}{" "}
             {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} />}{" "}
             {currentView === "payments" && <RentPaymentsView />}{" "}

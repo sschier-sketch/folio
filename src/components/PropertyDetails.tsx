@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Home,
@@ -50,7 +51,15 @@ type Tab =
   | "metrics";
 
 export default function PropertyDetails({ property, onBack, onNavigateToTenant }: PropertyDetailsProps) {
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') as Tab | null;
+  const [activeTab, setActiveTab] = useState<Tab>(tabFromUrl || "overview");
+
+  useEffect(() => {
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
 
   const tabs = [
     { id: "overview" as Tab, label: "Überblick", icon: Home },

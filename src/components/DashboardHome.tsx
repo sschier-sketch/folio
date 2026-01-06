@@ -50,7 +50,12 @@ interface RentIncrease {
   new_rent: number;
   increase_type: string;
 }
-export default function DashboardHome() {
+
+interface DashboardHomeProps {
+  onNavigateToTenant?: (tenantId: string) => void;
+}
+
+export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps = {}) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -586,7 +591,9 @@ export default function DashboardHome() {
                   index !== rentIncreases.length - 1 ? "border-b border-gray-200" : ""
                 }`}
                 onClick={() => {
-                  navigate(`/dashboard/tenants/${increase.tenant_id}?tab=rent`);
+                  if (onNavigateToTenant) {
+                    onNavigateToTenant(increase.tenant_id);
+                  }
                 }}
               >
                 <div className="flex items-center justify-between">

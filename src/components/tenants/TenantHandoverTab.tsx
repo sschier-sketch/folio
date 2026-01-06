@@ -11,6 +11,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumFeatureGuard } from "../PremiumFeatureGuard";
+import HandoverProtocolModal from "./HandoverProtocolModal";
 
 interface TenantHandoverTabProps {
   tenantId: string;
@@ -37,6 +38,7 @@ export default function TenantHandoverTab({
   const [loading, setLoading] = useState(true);
   const [protocols, setProtocols] = useState<HandoverProtocol[]>([]);
   const [contractId, setContractId] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
@@ -111,7 +113,11 @@ export default function TenantHandoverTab({
                 Dokumentation von Ein- und Auszügen
               </p>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+            <button
+              onClick={() => setShowModal(true)}
+              disabled={!contractId}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <Plus className="w-4 h-4" />
               Neues Protokoll
             </button>
@@ -129,9 +135,18 @@ export default function TenantHandoverTab({
                 Erstellen Sie Protokolle für Ein- und Auszüge mit Zählerständen,
                 Checklisten und Fotos
               </p>
-              <button className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+              <button
+                onClick={() => setShowModal(true)}
+                disabled={!contractId}
+                className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Erstes Protokoll erstellen
               </button>
+              {!contractId && (
+                <p className="text-xs text-red-500 mt-2">
+                  Für diesen Mieter existiert kein Mietvertrag
+                </p>
+              )}
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -306,6 +321,18 @@ export default function TenantHandoverTab({
             </div>
           </div>
         </div>
+
+        {showModal && contractId && (
+          <HandoverProtocolModal
+            contractId={contractId}
+            tenantId={tenantId}
+            onClose={() => setShowModal(false)}
+            onSave={() => {
+              setShowModal(false);
+              loadData();
+            }}
+          />
+        )}
       </div>
     </PremiumFeatureGuard>
   );
