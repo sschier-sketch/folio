@@ -30,7 +30,7 @@ export default function TenantDepositTab({
   tenantId,
 }: TenantDepositTabProps) {
   const { user } = useAuth();
-  const { isPremium } = useSubscription();
+  const { isPro } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState<Contract | null>(null);
   const [history, setHistory] = useState<DepositHistory[]>([]);
@@ -126,18 +126,51 @@ export default function TenantDepositTab({
     }
 
     try {
+      const transactionAmount = parseFloat(transactionData.amount);
+      const currentDepositAmount = contract.deposit_amount || 0;
+      let newDepositAmount = currentDepositAmount;
+      let newDepositStatus = contract.deposit_status;
+
+      if (transactionData.transaction_type === "payment") {
+        newDepositAmount = currentDepositAmount + transactionAmount;
+        if (newDepositAmount >= (contract.deposit_amount || 0)) {
+          newDepositStatus = "complete";
+        } else {
+          newDepositStatus = "partial";
+        }
+      } else if (transactionData.transaction_type === "partial_return") {
+        newDepositAmount = currentDepositAmount - transactionAmount;
+        if (newDepositAmount <= 0) {
+          newDepositAmount = 0;
+          newDepositStatus = "returned";
+        }
+      } else if (transactionData.transaction_type === "full_return") {
+        newDepositAmount = 0;
+        newDepositStatus = "returned";
+      }
+
       const { error } = await supabase.from("deposit_history").insert([
         {
           contract_id: contract.id,
           user_id: user.id,
           transaction_date: transactionData.transaction_date,
-          amount: parseFloat(transactionData.amount),
+          amount: transactionAmount,
           transaction_type: transactionData.transaction_type,
           notes: transactionData.notes || null,
         },
       ]);
 
       if (error) throw error;
+
+      const { error: updateError } = await supabase
+        .from("rental_contracts")
+        .update({
+          deposit_amount: newDepositAmount,
+          deposit_status: newDepositStatus,
+        })
+        .eq("id", contract.id);
+
+      if (updateError) throw updateError;
 
       setShowTransactionModal(false);
       setTransactionData({

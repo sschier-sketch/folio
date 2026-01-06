@@ -30,22 +30,22 @@ export default function TenantContractTab({
   tenantId,
 }: TenantContractTabProps) {
   const { user } = useAuth();
-  const { isPremium } = useSubscription();
+  const { isPro } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
-  const [selectedDocType, setSelectedDocType] = useState("main_contract");
+  const [selectedDocType, setSelectedDocType] = useState("contract");
   const [uploadDescription, setUploadDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    if (user && tenantId && isPremium) {
+    if (user && tenantId && isPro) {
       loadDocuments();
     }
-  }, [user, tenantId, isPremium]);
+  }, [user, tenantId, isPro]);
 
   async function loadDocuments() {
     try {
@@ -463,12 +463,11 @@ export default function TenantContractTab({
                   onChange={(e) => setSelectedDocType(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
-                  <option value="main_contract">Hauptvertrag</option>
-                  <option value="amendment">Nachtrag</option>
-                  <option value="addendum">Zusatzvereinbarung</option>
-                  <option value="termination">Kündigung</option>
-                  <option value="protocol">Protokoll</option>
-                  <option value="correspondence">Schriftverkehr</option>
+                  <option value="contract">Hauptvertrag</option>
+                  <option value="rental_agreement">Mietvertrag</option>
+                  <option value="invoice">Rechnung</option>
+                  <option value="receipt">Quittung</option>
+                  <option value="report">Bericht</option>
                   <option value="other">Sonstiges</option>
                 </select>
               </div>

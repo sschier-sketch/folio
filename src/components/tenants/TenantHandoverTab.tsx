@@ -33,18 +33,18 @@ export default function TenantHandoverTab({
   tenantId,
 }: TenantHandoverTabProps) {
   const { user } = useAuth();
-  const { isPremium } = useSubscription();
+  const { isPro } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [protocols, setProtocols] = useState<HandoverProtocol[]>([]);
   const [contractId, setContractId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user && tenantId && isPremium) {
+    if (user && tenantId && isPro) {
       loadData();
     } else {
       setLoading(false);
     }
-  }, [user, tenantId, isPremium]);
+  }, [user, tenantId, isPro]);
 
   async function loadData() {
     try {

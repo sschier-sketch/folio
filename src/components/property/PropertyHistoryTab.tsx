@@ -18,7 +18,7 @@ interface HistoryEntry {
 
 export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabProps) {
   const { user } = useAuth();
-  const { isPremium } = useSubscription();
+  const { isPro } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 

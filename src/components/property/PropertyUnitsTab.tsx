@@ -46,7 +46,7 @@ interface RentalContractWithTenants {
 
 export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) {
   const { user } = useAuth();
-  const { isPremium } = useSubscription();
+  const { isPro } = useSubscription();
   const [units, setUnits] = useState<PropertyUnit[]>([]);
   const [availableContracts, setAvailableContracts] = useState<RentalContractWithTenants[]>([]);
   const [loading, setLoading] = useState(true);

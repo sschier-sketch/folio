@@ -32,6 +32,7 @@ export default function PropertyModal({
 }: PropertyModalProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [originalData, setOriginalData] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
     street: "",
@@ -68,7 +69,7 @@ export default function PropertyModal({
         additional_purchase_costs?: Array<{name: string, amount: number}>;
       };
 
-      setFormData({
+      const propData = {
         name: property.name,
         street: property.street || "",
         zip_code: property.zip_code || "",
@@ -89,13 +90,50 @@ export default function PropertyModal({
         real_estate_transfer_tax: propertyWithCosts.real_estate_transfer_tax || 0,
         registration_costs: propertyWithCosts.registration_costs || 0,
         expert_costs: propertyWithCosts.expert_costs || 0,
-      });
+      };
+
+      setFormData(propData);
+      setOriginalData(propData);
 
       if (propertyWithCosts.additional_purchase_costs) {
         setAdditionalCosts(propertyWithCosts.additional_purchase_costs);
       }
     }
   }, [property]);
+  function getPropertyChanges() {
+    if (!originalData || !property) return [];
+
+    const changes: string[] = [];
+    const fieldLabels: Record<string, string> = {
+      name: "Name",
+      street: "Straße",
+      zip_code: "PLZ",
+      city: "Stadt",
+      country: "Land",
+      property_type: "Immobilientyp",
+      property_management_type: "Verwaltungsart",
+      purchase_price: "Kaufpreis",
+      current_value: "Aktueller Wert",
+      purchase_date: "Kaufdatum",
+      size_sqm: "Wohnfläche (m²)",
+      usable_area_sqm: "Nutzfläche (m²)",
+      parking_spot_number: "Stellplatznummer",
+      description: "Beschreibung",
+    };
+
+    Object.keys(fieldLabels).forEach((key) => {
+      const oldValue = originalData[key];
+      const newValue = formData[key];
+
+      if (oldValue !== newValue) {
+        const label = fieldLabels[key];
+        changes.push(`${label}: ${newValue || 'Gelöscht'}`);
+      }
+    });
+
+    return changes;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -142,6 +180,18 @@ export default function PropertyModal({
           .update(data)
           .eq("id", property.id);
         if (error) throw error;
+
+        const changes = getPropertyChanges();
+        if (changes.length > 0) {
+          await supabase.from("property_history").insert([
+            {
+              property_id: property.id,
+              user_id: user.id,
+              event_type: "property_updated",
+              event_description: `Immobiliendaten aktualisiert: ${changes.join(', ')}`,
+            },
+          ]);
+        }
       } else {
         const { error } = await supabase.from("properties").insert([data]);
         if (error) throw error;

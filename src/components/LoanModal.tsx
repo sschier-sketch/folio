@@ -151,9 +151,9 @@ export default function LoanModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
 
     if (currentStep < 4) {
-      handleNext();
       return;
     }
 
