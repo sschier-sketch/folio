@@ -210,8 +210,43 @@ export default function TenantModal({
   const handleSubmit = async () => {
     if (!user) return;
 
+    if (!tenantData.first_name || !tenantData.last_name) {
+      alert("Bitte geben Sie Vor- und Nachname ein");
+      return;
+    }
+
+    if (!tenantData.property_id) {
+      alert("Bitte wählen Sie eine Immobilie aus");
+      return;
+    }
+
+    if (!tenantData.move_in_date) {
+      alert("Bitte geben Sie ein Einzugsdatum ein");
+      return;
+    }
+
     if (tenantData.email && !validateEmail(tenantData.email)) {
       alert("Bitte geben Sie eine gültige E-Mail-Adresse ein");
+      return;
+    }
+
+    if (rentData.rent_type === "flat_rate" && !rentData.flat_rate_amount) {
+      alert("Bitte geben Sie die Warmmiete (Brutto) ein");
+      return;
+    }
+
+    if (rentData.rent_type === "cold_rent_advance" && (!rentData.cold_rent || !rentData.total_advance)) {
+      alert("Bitte geben Sie Kaltmiete und Nebenkostenvorauszahlung ein");
+      return;
+    }
+
+    if (rentData.rent_type === "cold_rent_utilities_heating" && (!rentData.cold_rent || !rentData.operating_costs || !rentData.heating_costs)) {
+      alert("Bitte geben Sie Kaltmiete, Betriebskosten und Heizkosten ein");
+      return;
+    }
+
+    if (rentData.rent_increase_type === "graduated" && (!rentData.graduated_rent_date || !rentData.graduated_rent_new_amount)) {
+      alert("Bitte geben Sie bei Staffelmiete das Datum der ersten Erhöhung und die neue Kaltmiete ein");
       return;
     }
 
