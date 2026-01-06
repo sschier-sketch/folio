@@ -22,17 +22,17 @@ export default function TenantCommunicationTab({
   tenantId,
 }: TenantCommunicationTabProps) {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [communications, setCommunications] = useState<Communication[]>([]);
 
   useEffect(() => {
-    if (user && tenantId && isPro) {
+    if (user && tenantId && isPremium) {
       loadCommunications();
     } else {
       setLoading(false);
     }
-  }, [user, tenantId, isPro]);
+  }, [user, tenantId, isPremium]);
 
   async function loadCommunications() {
     try {

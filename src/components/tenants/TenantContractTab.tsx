@@ -30,7 +30,7 @@ export default function TenantContractTab({
   tenantId,
 }: TenantContractTabProps) {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -42,10 +42,10 @@ export default function TenantContractTab({
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    if (user && tenantId && isPro) {
+    if (user && tenantId && isPremium) {
       loadDocuments();
     }
-  }, [user, tenantId, isPro]);
+  }, [user, tenantId, isPremium]);
 
   async function loadDocuments() {
     try {

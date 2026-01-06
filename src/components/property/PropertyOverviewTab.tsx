@@ -77,7 +77,7 @@ interface RentalContract {
 
 export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTenant }: PropertyOverviewTabProps) {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<PropertyStats>({
     totalUnits: 0,

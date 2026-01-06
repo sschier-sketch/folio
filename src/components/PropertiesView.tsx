@@ -56,7 +56,7 @@ const LABEL_COLORS = {
 
 export default function PropertiesView({ onNavigateToTenant }: PropertiesViewProps = {}) {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium } = useSubscription();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

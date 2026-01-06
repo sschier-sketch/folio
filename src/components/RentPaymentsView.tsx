@@ -17,7 +17,7 @@ interface RentPayment {
 }
 export default function RentPaymentsView() {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium } = useSubscription();
   const [payments, setPayments] = useState<RentPayment[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);

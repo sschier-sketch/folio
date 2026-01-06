@@ -31,7 +31,7 @@ interface MaintenanceTask {
 
 export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenanceTabProps) {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium } = useSubscription();
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);

@@ -33,7 +33,7 @@ interface ContactGroup {
 
 export default function PropertyContactsTab({ propertyId }: PropertyContactsTabProps) {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium } = useSubscription();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);

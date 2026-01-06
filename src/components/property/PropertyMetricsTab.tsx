@@ -34,7 +34,7 @@ interface Comparison {
 
 export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabProps) {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [property, setProperty] = useState<PropertyData | null>(null);
   const [metrics, setMetrics] = useState<Metrics>({

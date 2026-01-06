@@ -30,7 +30,7 @@ export default function TenantDepositTab({
   tenantId,
 }: TenantDepositTabProps) {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState<Contract | null>(null);
   const [history, setHistory] = useState<DepositHistory[]>([]);
