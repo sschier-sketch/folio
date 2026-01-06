@@ -367,7 +367,7 @@ export default function TenantDepositTab({
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <div className="text-sm text-gray-400 mb-1">Kautionsbetrag</div>
+                <div className="text-sm text-gray-400 mb-1">Aktueller vorhandener Kautionsbetrag</div>
                 <div className="text-2xl font-bold text-dark">
                   {contract.deposit_amount?.toFixed(2) || "0.00"} €
                 </div>

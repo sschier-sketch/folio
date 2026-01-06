@@ -116,6 +116,7 @@ export default function TenantContractTab({
     if (!user || uploadFiles.length === 0) return;
 
     setIsUploading(true);
+    const results: { id: string; success: boolean }[] = [];
 
     for (const uploadFile of uploadFiles) {
       try {
@@ -168,6 +169,7 @@ export default function TenantContractTab({
             f.id === uploadFile.id ? { ...f, status: "success" } : f
           )
         );
+        results.push({ id: uploadFile.id, success: true });
       } catch (error: any) {
         console.error("Error uploading file:", error);
         setUploadFiles((prev) =>
@@ -177,21 +179,20 @@ export default function TenantContractTab({
               : f
           )
         );
+        results.push({ id: uploadFile.id, success: false });
       }
     }
 
     setIsUploading(false);
     await loadDocuments();
 
-    const allSuccessful = uploadFiles.every((f) => {
-      const file = uploadFiles.find((uf) => uf.id === f.id);
-      return file?.status === "success";
-    });
+    const allSuccessful = results.every((r) => r.success);
 
     if (allSuccessful) {
       setShowUploadModal(false);
       setUploadFiles([]);
       setUploadDescription("");
+      setSelectedDocType("contract");
     }
   }
 

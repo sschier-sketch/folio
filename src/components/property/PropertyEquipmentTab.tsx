@@ -65,6 +65,8 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         };
         setFormData(equipmentData);
         setOriginalData(equipmentData);
+      } else {
+        setOriginalData(formData);
       }
     } catch (error) {
       console.error("Error loading equipment:", error);
@@ -156,7 +158,23 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         ]);
       }
 
-      setOriginalData(formData);
+      const newOriginalData = {
+        heating_type: formData.heating_type,
+        energy_source: formData.energy_source,
+        construction_type: formData.construction_type,
+        roof_type: formData.roof_type,
+        parking_spots: formData.parking_spots,
+        parking_type: formData.parking_type,
+        elevator: formData.elevator,
+        balcony_terrace: formData.balcony_terrace,
+        garden: formData.garden,
+        basement: formData.basement,
+        fitted_kitchen: formData.fitted_kitchen,
+        wg_suitable: formData.wg_suitable,
+        equipment_notes: formData.equipment_notes,
+        special_features: formData.special_features,
+      };
+      setOriginalData(newOriginalData);
       alert("Ausstattung erfolgreich gespeichert");
     } catch (error) {
       console.error("Error saving equipment:", error);

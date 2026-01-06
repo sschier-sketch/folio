@@ -154,6 +154,7 @@ export default function LoanModal({
     e.stopPropagation();
 
     if (currentStep < 4) {
+      handleNext();
       return;
     }
 
