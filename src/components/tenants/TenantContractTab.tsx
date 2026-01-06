@@ -142,6 +142,7 @@ export default function TenantContractTab({
               user_id: user.id,
               file_name: uploadFile.file.name,
               file_path: filePath,
+              file_type: uploadFile.file.type || 'application/octet-stream',
               document_type: selectedDocType,
               file_size: uploadFile.file.size,
               category: "tenant",

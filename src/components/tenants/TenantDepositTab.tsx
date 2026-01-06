@@ -129,7 +129,6 @@ export default function TenantDepositTab({
       const { error } = await supabase.from("deposit_history").insert([
         {
           contract_id: contract.id,
-          tenant_id: tenantId,
           user_id: user.id,
           transaction_date: transactionData.transaction_date,
           amount: parseFloat(transactionData.amount),

@@ -29,6 +29,11 @@ interface Contract {
   monthly_rent: number;
   utilities_advance: number;
   total_rent: number;
+  rent_increase_type: string;
+  graduated_rent_date: string;
+  graduated_rent_new_amount: number;
+  index_first_increase_date: string;
+  auto_create_rent_increase_tickets: boolean;
 }
 
 export default function TenantRentHistoryTab({
@@ -47,6 +52,11 @@ export default function TenantRentHistoryTab({
     total_advance: "",
     operating_costs: "",
     heating_costs: "",
+    rent_increase_type: "none",
+    graduated_rent_date: "",
+    graduated_rent_new_amount: "",
+    index_first_increase_date: "",
+    auto_create_rent_increase_tickets: false,
   });
 
   useEffect(() => {
@@ -76,6 +86,11 @@ export default function TenantRentHistoryTab({
           total_advance: contractData.total_advance?.toString() || "0",
           operating_costs: contractData.operating_costs?.toString() || "0",
           heating_costs: contractData.heating_costs?.toString() || "0",
+          rent_increase_type: contractData.rent_increase_type || "none",
+          graduated_rent_date: contractData.graduated_rent_date || "",
+          graduated_rent_new_amount: contractData.graduated_rent_new_amount?.toString() || "",
+          index_first_increase_date: contractData.index_first_increase_date || "",
+          auto_create_rent_increase_tickets: contractData.auto_create_rent_increase_tickets || false,
         });
 
         const { data: historyData } = await supabase
@@ -130,6 +145,11 @@ export default function TenantRentHistoryTab({
           additional_costs: utilitiesAdvance,
           utilities_advance: utilitiesAdvance,
           total_rent: totalRent,
+          rent_increase_type: editData.rent_increase_type,
+          graduated_rent_date: editData.rent_increase_type === "graduated" ? editData.graduated_rent_date || null : null,
+          graduated_rent_new_amount: editData.rent_increase_type === "graduated" ? parseFloat(editData.graduated_rent_new_amount) || null : null,
+          index_first_increase_date: editData.rent_increase_type === "index" ? editData.index_first_increase_date || null : null,
+          auto_create_rent_increase_tickets: editData.rent_increase_type !== "none" ? editData.auto_create_rent_increase_tickets : false,
         })
         .eq("id", contract.id);
 
@@ -348,6 +368,115 @@ export default function TenantRentHistoryTab({
                 </div>
               </>
             )}
+
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h4 className="text-sm font-semibold text-gray-700 mb-4">Mieterhöhungsart</h4>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mieterhöhung
+                </label>
+                <select
+                  value={editData.rent_increase_type}
+                  onChange={(e) =>
+                    setEditData({ ...editData, rent_increase_type: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  <option value="none">Keine automatische Erhöhung</option>
+                  <option value="index">Indexmiete</option>
+                  <option value="graduated">Staffelmiete (vorausgeplant)</option>
+                </select>
+              </div>
+
+              {editData.rent_increase_type === "index" && (
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Datum der ersten Indexanpassung
+                    </label>
+                    <input
+                      type="date"
+                      value={editData.index_first_increase_date}
+                      onChange={(e) =>
+                        setEditData({ ...editData, index_first_increase_date: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Das Datum, ab dem die Miete erstmals indexiert werden kann (normalerweise 12 Monate nach Mietbeginn).
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={editData.auto_create_rent_increase_tickets}
+                      onChange={(e) =>
+                        setEditData({ ...editData, auto_create_rent_increase_tickets: e.target.checked })
+                      }
+                      className="w-4 h-4 text-primary-blue"
+                    />
+                    <label className="text-sm text-gray-700">
+                      Automatisch Erinnerungen für Mieterhöhungen erstellen
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {editData.rent_increase_type === "graduated" && (
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Erste Erhöhung am
+                    </label>
+                    <input
+                      type="date"
+                      value={editData.graduated_rent_date}
+                      onChange={(e) =>
+                        setEditData({ ...editData, graduated_rent_date: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Das Datum der ersten Mieterhöhung (normalerweise 12 Monate nach Mietbeginn).
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Neue Kaltmiete ab diesem Zeitpunkt
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editData.graduated_rent_new_amount}
+                        onChange={(e) =>
+                          setEditData({ ...editData, graduated_rent_new_amount: e.target.value })
+                        }
+                        className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                        placeholder="z.B. 850.00"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">€</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Die neue Kaltmiete, die ab dem angegebenen Datum gelten soll.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={editData.auto_create_rent_increase_tickets}
+                      onChange={(e) =>
+                        setEditData({ ...editData, auto_create_rent_increase_tickets: e.target.checked })
+                      }
+                      className="w-4 h-4 text-primary-blue"
+                    />
+                    <label className="text-sm text-gray-700">
+                      Automatisch Erinnerungen für Mieterhöhungen erstellen
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <>
