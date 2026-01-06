@@ -83,9 +83,17 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       if (propertyRes.data) {
         setProperty(propertyRes.data);
 
-        const totalUnits = unitsRes.data?.length || 1;
+        const totalUnits = unitsRes.data?.length || 0;
         const vacantUnits = unitsRes.data?.filter((u) => u.status === "vacant").length || 0;
-        const vacancyRate = totalUnits > 0 ? (vacantUnits / totalUnits) * 100 : 0;
+
+        const activeContracts = contractsRes.data?.filter((c) => c.status === "active").length || 0;
+
+        let vacancyRate = 0;
+        if (totalUnits > 0) {
+          vacancyRate = (vacantUnits / totalUnits) * 100;
+        } else if (activeContracts === 0) {
+          vacancyRate = 100;
+        }
 
         const monthlyRent =
           contractsRes.data

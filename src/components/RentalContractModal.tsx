@@ -367,6 +367,32 @@ export default function RentalContractModal({
               )}{" "}
             </div>
           )}{" "}
+          <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_sublet}
+                  onChange={(e) =>
+                    setFormData({ ...formData, is_sublet: e.target.checked })
+                  }
+                  className="w-4 h-4 text-primary-blue border-gray-300 rounded focus:ring-2 focus:ring-primary-blue"
+                />
+                <span className="text-sm font-medium text-gray-700">Untermietverhältnis</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.vat_applicable}
+                  onChange={(e) =>
+                    setFormData({ ...formData, vat_applicable: e.target.checked })
+                  }
+                  className="w-4 h-4 text-primary-blue border-gray-300 rounded focus:ring-2 focus:ring-primary-blue"
+                />
+                <span className="text-sm font-medium text-gray-700">Mehrwertsteuer berechnen</span>
+              </label>
+            </div>
+          </div>
           <div className="space-y-4">
             {" "}
             <div className="flex justify-between items-center">
@@ -444,6 +470,24 @@ export default function RentalContractModal({
                       }
                       className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                       placeholder="Telefon"
+                    />{" "}
+                    <input
+                      type="text"
+                      value={tenant.company_name || ""}
+                      onChange={(e) =>
+                        updateTenant(index, "company_name", e.target.value)
+                      }
+                      className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                      placeholder="Firmenname (optional)"
+                    />{" "}
+                    <input
+                      type="date"
+                      value={tenant.date_of_birth || ""}
+                      onChange={(e) =>
+                        updateTenant(index, "date_of_birth", e.target.value)
+                      }
+                      className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                      placeholder="Geburtsdatum (optional)"
                     />{" "}
                   </div>{" "}
                 </div>
@@ -671,8 +715,30 @@ export default function RentalContractModal({
                   <option value="none">Keine automatische Erhöhung</option>{" "}
                   <option value="index">Indexmiete</option>{" "}
                   <option value="staffel">Staffelmiete</option>{" "}
+                  <option value="graduated">Staffelmiete (vorausgeplant)</option>{" "}
                 </select>{" "}
               </div>{" "}
+              {formData.rent_increase_type === "graduated" && (
+                <div className="col-span-2 space-y-3">
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Erste Erhöhung am (1. Januar)
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.graduated_rent_date}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        graduated_rent_date: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  />
+                  <p className="text-xs text-gray-300 mt-1">
+                    Die Miete erhöht sich automatisch immer am 1. Januar eines jeden Jahres. Sie können die Erhöhungen für mehrere Jahre im Voraus planen.
+                  </p>
+                </div>
+              )}
               {formData.rent_increase_type === "index" && (
                 <div className="col-span-2">
                   {" "}

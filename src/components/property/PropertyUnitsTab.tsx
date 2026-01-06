@@ -566,7 +566,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Zimmeranzahl {isPremium && "(Pro)"}
+                    Zimmeranzahl
                   </label>
                   <input
                     type="number"
