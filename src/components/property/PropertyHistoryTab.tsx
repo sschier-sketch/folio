@@ -86,7 +86,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
 
   if (!isPremium) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8">
+      <div className="bg-white rounded-lg p-8">
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-amber-600" />
@@ -131,7 +131,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white rounded-lg">
         <div className="p-6 border-b border-gray-100">
           <h3 className="text-lg font-semibold text-dark">Änderungshistorie</h3>
           <p className="text-sm text-gray-400 mt-1">

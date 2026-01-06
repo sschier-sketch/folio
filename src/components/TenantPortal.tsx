@@ -312,7 +312,7 @@ export default function TenantPortal() {
         </div>{" "}
         <div className="max-w-6xl mx-auto p-6">
           {" "}
-          <div className="bg-white rounded shadow-sm ">
+          <div className="bg-white rounded shadow-sm">
             {" "}
             <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
               {" "}

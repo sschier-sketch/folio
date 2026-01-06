@@ -298,7 +298,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+      <div className="bg-white rounded-lg p-6 border border-gray-100">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-dark">Speicherplatz</h2>
           {!isPro && (
@@ -351,7 +351,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+      <div className="bg-white rounded-lg p-6 border border-gray-100">
         <h2 className="text-lg font-semibold text-dark mb-4">Dateien auswählen</h2>
 
         <div
@@ -435,7 +435,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+      <div className="bg-white rounded-lg p-6 border border-gray-100">
         <h2 className="text-lg font-semibold text-dark mb-4">Dokumentinformationen</h2>
 
         <div className="space-y-4">
@@ -545,7 +545,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
       <DocumentFeatureGuard
         feature="upload-with-assignment"
         fallback={
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100 relative">
+          <div className="bg-white rounded-lg p-6 border border-gray-100 relative">
             <div className="absolute inset-0 bg-white bg-opacity-80 rounded-lg flex items-center justify-center z-10">
               <div className="text-center">
                 <Lock className="w-12 h-12 text-gray-400 mx-auto mb-2" />
@@ -567,7 +567,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           </div>
         }
       >
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <h2 className="text-lg font-semibold text-dark mb-4">Zuordnung (Optional)</h2>
 
           <div className="space-y-4">

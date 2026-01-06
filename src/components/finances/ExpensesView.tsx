@@ -183,7 +183,7 @@ export default function ExpensesView() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
             <TrendingDown className="w-6 h-6 text-red-600" />
           </div>
@@ -193,7 +193,7 @@ export default function ExpensesView() {
           <div className="text-sm text-gray-400">Gesamt-Ausgaben</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
             <TrendingDown className="w-6 h-6 text-emerald-600" />
           </div>
@@ -203,7 +203,7 @@ export default function ExpensesView() {
           <div className="text-sm text-gray-400">Bezahlt</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
             <TrendingDown className="w-6 h-6 text-amber-600" />
           </div>
@@ -214,7 +214,7 @@ export default function ExpensesView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white rounded-lg">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">Ausgaben</h3>
           <button

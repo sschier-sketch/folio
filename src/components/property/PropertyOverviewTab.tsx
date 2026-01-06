@@ -264,7 +264,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-dark">Stammdaten</h3>
           {!isEditingMasterData ? (
@@ -479,7 +479,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 relative">
+        <div className="bg-white rounded-lg p-6 relative">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">Bruttorendite</span>
@@ -514,7 +514,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 relative">
+        <div className="bg-white rounded-lg p-6 relative">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">Nettorendite</span>
@@ -555,7 +555,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-500">Netto-Cashflow</span>
             <Users className="w-5 h-5 text-amber-600" />
@@ -567,7 +567,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-dark">
             Kredite & Finanzierungen
@@ -637,7 +637,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <h2 className="text-xl font-semibold text-dark mb-6">Mietverhältnisse</h2>
 
         {contracts.length === 0 ? (

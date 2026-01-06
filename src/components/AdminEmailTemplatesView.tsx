@@ -97,7 +97,7 @@ export function AdminEmailTemplatesView() {
       {" "}
       <div className="lg:col-span-1 bg-white rounded overflow-hidden">
         {" "}
-        <div className="p-4 border-b ">
+        <div className="p-4 border-b">
           {" "}
           <h2 className="text-lg font-bold text-dark">E-Mail Templates</h2>{" "}
           <p className="text-xs text-gray-300 mt-1">
@@ -138,7 +138,7 @@ export function AdminEmailTemplatesView() {
         {editedTemplate ? (
           <div className="flex flex-col h-[calc(100vh-300px)]">
             {" "}
-            <div className="p-6 border-b ">
+            <div className="p-6 border-b">
               {" "}
               <div className="flex items-start justify-between mb-4">
                 {" "}
@@ -266,7 +266,7 @@ export function AdminEmailTemplatesView() {
             </div>{" "}
             <div className="flex-1 overflow-hidden flex flex-col">
               {" "}
-              <div className="flex gap-2 p-4 border-b ">
+              <div className="flex gap-2 p-4 border-b">
                 {" "}
                 <button
                   onClick={() => setPreviewMode("html")}

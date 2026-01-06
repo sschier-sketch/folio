@@ -170,7 +170,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
       </button>{" "}
       <div className="bg-white rounded shadow-sm overflow-hidden mb-6">
         {" "}
-        <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b ">
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b">
           {" "}
           <div className="flex items-center justify-between">
             {" "}

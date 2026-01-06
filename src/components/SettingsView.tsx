@@ -269,7 +269,7 @@ export default function SettingsView({
             : "Manage your settings and preferences."}{" "}
         </p>{" "}
       </div>{" "}
-      <div className="mb-6 border-b ">
+      <div className="mb-6 border-b">
         {" "}
         <nav className="flex gap-1">
           {" "}
@@ -754,7 +754,7 @@ export default function SettingsView({
           </div>{" "}
           <div className="bg-white rounded shadow-sm overflow-hidden">
             {" "}
-            <div className="px-6 py-4 border-b ">
+            <div className="px-6 py-4 border-b">
               {" "}
               <h3 className="text-lg font-semibold text-dark">
                 {t("settings.feedback.history")}

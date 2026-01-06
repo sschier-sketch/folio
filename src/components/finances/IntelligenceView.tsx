@@ -12,7 +12,7 @@ export default function IntelligenceView() {
   return (
     <PremiumFeatureGuard featureName="KI-Finanzintelligenz">
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-violet-100 rounded-lg flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-violet-600" />
@@ -54,7 +54,7 @@ export default function IntelligenceView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <h3 className="text-lg font-semibold text-dark mb-4">
             Aktuelle Warnungen
           </h3>
@@ -125,7 +125,7 @@ export default function IntelligenceView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <h3 className="text-lg font-semibold text-dark mb-4">
             Cashflow-Prognose
           </h3>
@@ -169,7 +169,7 @@ export default function IntelligenceView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <h3 className="text-lg font-semibold text-dark mb-4">
             Intelligente Einblicke
           </h3>

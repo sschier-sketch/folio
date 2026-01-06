@@ -5,7 +5,7 @@ export default function DunningView() {
   return (
     <PremiumFeatureGuard featureName="Offene Posten & Mahnwesen">
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
               <Bell className="w-6 h-6 text-amber-600" />
@@ -51,7 +51,7 @@ export default function DunningView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <h3 className="text-lg font-semibold text-dark mb-4">
             Automatische Erkennung
           </h3>
@@ -123,7 +123,7 @@ export default function DunningView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <h3 className="text-lg font-semibold text-dark mb-4">
             Eskalationsstufen
           </h3>

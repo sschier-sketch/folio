@@ -348,7 +348,7 @@ export default function FinancialAnalysisView() {
                             </div>{" "}
                           </div>{" "}
                         </div>{" "}
-                        <div className="flex items-center justify-between text-sm text-gray-400 mt-2 pt-2 border-t ">
+                        <div className="flex items-center justify-between text-sm text-gray-400 mt-2 pt-2 border-t">
                           {" "}
                           <span>
                             {property.contracts} Vertrag
@@ -428,7 +428,7 @@ export default function FinancialAnalysisView() {
                             </div>{" "}
                           </div>{" "}
                         </div>{" "}
-                        <div className="flex items-center justify-between text-sm text-gray-400 mt-2 pt-2 border-t ">
+                        <div className="flex items-center justify-between text-sm text-gray-400 mt-2 pt-2 border-t">
                           {" "}
                           <span>
                             Restsaldo: {formatCurrency(loan.remainingBalance)}
@@ -869,7 +869,7 @@ export default function FinancialAnalysisView() {
             </div>{" "}
             <div className="bg-white rounded shadow-sm overflow-hidden">
               {" "}
-              <div className="px-6 py-4 border-b ">
+              <div className="px-6 py-4 border-b">
                 {" "}
                 <h3 className="text-lg font-semibold text-dark">
                   Detaillierte Prognose-Tabelle
@@ -879,7 +879,7 @@ export default function FinancialAnalysisView() {
                 {" "}
                 <table className="w-full">
                   {" "}
-                  <thead className="bg-gray-50 border-b ">
+                  <thead className="bg-gray-50 border-b">
                     {" "}
                     <tr>
                       {" "}
@@ -935,7 +935,7 @@ export default function FinancialAnalysisView() {
                       </tr>
                     ))}{" "}
                   </tbody>{" "}
-                  <tfoot className="bg-gray-50 border-t-2 ">
+                  <tfoot className="bg-gray-50 border-t-2">
                     {" "}
                     <tr>
                       {" "}

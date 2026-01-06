@@ -93,7 +93,7 @@ export default function TenantCommunicationTab({
   return (
     <PremiumFeatureGuard featureName="Kommunikationshistorie">
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-white rounded-lg">
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-dark">

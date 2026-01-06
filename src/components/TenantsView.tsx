@@ -201,7 +201,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
       </div>
 
       {tenants.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+        <div className="bg-white rounded-lg p-12 text-center">
           <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-dark mb-2">
             Noch keine Mietverhältnisse
@@ -220,7 +220,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="bg-white rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold text-dark mb-4">Filter</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -273,7 +273,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-white rounded-lg">
             <div className="p-6 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-dark">
                 Übersicht ({filteredTenants.length})

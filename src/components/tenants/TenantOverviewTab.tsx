@@ -222,7 +222,7 @@ export default function TenantOverviewTab({
 
   if (!tenant) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+      <div className="bg-white rounded-lg p-12 text-center">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <User className="w-8 h-8 text-red-600" />
         </div>
@@ -238,7 +238,7 @@ export default function TenantOverviewTab({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-dark">
             Mieterdaten

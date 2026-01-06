@@ -159,7 +159,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <FileText className="w-6 h-6 text-blue-600" />
@@ -170,7 +170,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
           <div className="text-sm text-gray-500">Dokumente gesamt</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
               <FolderCheck className="w-6 h-6 text-emerald-600" />
@@ -183,7 +183,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <HardDrive className="w-6 h-6 text-orange-600" />
@@ -207,7 +207,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-violet-100 rounded-lg flex items-center justify-center">
               <Clock className="w-6 h-6 text-violet-600" />
@@ -219,7 +219,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <h3 className="text-lg font-semibold text-dark mb-4">Letzte Aktivitäten</h3>
           {recentActivities.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
@@ -244,7 +244,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <h3 className="text-lg font-semibold text-dark mb-4">Schnellaktionen</h3>
           <div className="space-y-3">
             <button

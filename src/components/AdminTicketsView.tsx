@@ -246,7 +246,7 @@ ${badge.text}`}
       {" "}
       <div className="lg:col-span-1 bg-white rounded overflow-hidden flex flex-col">
         {" "}
-        <div className="p-4 border-b ">
+        <div className="p-4 border-b">
           {" "}
           <h2 className="text-lg font-bold text-dark mb-3">
             Kontakt-Tickets
@@ -333,7 +333,7 @@ ${badge.text}`}
         {selectedTicket ? (
           <>
             {" "}
-            <div className="p-6 border-b ">
+            <div className="p-6 border-b">
               {" "}
               <div className="flex items-start justify-between mb-3">
                 {" "}
@@ -444,7 +444,7 @@ ${badge.text}`}
               ))}
             </div>{" "}
             {selectedTicket.status !== "closed" && (
-              <div className="p-6 border-t ">
+              <div className="p-6 border-t">
                 {" "}
                 <textarea
                   value={replyMessage}

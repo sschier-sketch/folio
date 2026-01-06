@@ -161,7 +161,7 @@ export default function TenantRentHistoryTab({
 
   if (!contract) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+      <div className="bg-white rounded-lg p-12 text-center">
         <p className="text-gray-400">Kein Mietvertrag vorhanden</p>
       </div>
     );
@@ -169,7 +169,7 @@ export default function TenantRentHistoryTab({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-dark">
             Aktuelle Miete
@@ -410,7 +410,7 @@ export default function TenantRentHistoryTab({
       </div>
 
       {!isPremium ? (
-        <div className="bg-white rounded-lg shadow-sm p-8">
+        <div className="bg-white rounded-lg p-8">
           <div className="text-center max-w-md mx-auto">
             <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-amber-600" />
@@ -448,7 +448,7 @@ export default function TenantRentHistoryTab({
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-white rounded-lg">
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-dark">
               Mietentwicklung

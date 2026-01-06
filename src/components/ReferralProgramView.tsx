@@ -345,7 +345,7 @@ export default function ReferralProgramView() {
       </div>{" "}
       <div className="bg-white rounded shadow-sm overflow-hidden">
         {" "}
-        <div className="px-6 py-4 border-b ">
+        <div className="px-6 py-4 border-b">
           {" "}
           <h3 className="text-lg font-semibold text-dark">
             Ihre Empfehlungen
@@ -369,7 +369,7 @@ export default function ReferralProgramView() {
             {" "}
             <table className="w-full">
               {" "}
-              <thead className="bg-gray-50 border-b ">
+              <thead className="bg-gray-50 border-b">
                 {" "}
                 <tr>
                   {" "}

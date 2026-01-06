@@ -113,7 +113,7 @@ export default function BillingOverview() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
             <Calendar className="w-6 h-6 text-primary-blue" />
           </div>
@@ -123,7 +123,7 @@ export default function BillingOverview() {
           <div className="text-sm text-gray-400">Abrechnungszeiträume</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
             <Building className="w-6 h-6 text-emerald-600" />
           </div>
@@ -133,7 +133,7 @@ export default function BillingOverview() {
           <div className="text-sm text-gray-400">Objekte</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
             <TrendingUp className="w-6 h-6 text-amber-600" />
           </div>
@@ -144,7 +144,7 @@ export default function BillingOverview() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white rounded-lg">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-dark">
             Abrechnungszeiträume

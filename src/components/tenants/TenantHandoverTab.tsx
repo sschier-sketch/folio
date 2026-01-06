@@ -101,7 +101,7 @@ export default function TenantHandoverTab({
   return (
     <PremiumFeatureGuard featureName="Übergabeprotokolle">
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-white rounded-lg">
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-dark">
@@ -227,7 +227,7 @@ export default function TenantHandoverTab({
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <h3 className="text-lg font-semibold text-dark mb-4">
             Funktionen der Übergabeprotokolle
           </h3>

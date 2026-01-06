@@ -218,7 +218,7 @@ export default function MetersView() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex-1 max-w-md">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -330,7 +330,7 @@ export default function MetersView() {
       </div>
 
       {selectedMeter && (
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-dark">Zählerstände</h3>
             <button

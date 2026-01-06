@@ -73,14 +73,14 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant }
         Zurück zur Übersicht
       </button>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div className="bg-white rounded-lg p-6 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-dark mb-2">{property.name}</h1>
           <p className="text-gray-400">{property.address}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm mb-6">
+      <div className="bg-white rounded-lg mb-6">
         <div className="border-b border-gray-100 overflow-x-auto">
           <div className="flex">
             {tabs.map((tab) => {

@@ -5,7 +5,7 @@ export default function BillingHistoryView() {
   return (
     <PremiumFeatureGuard featureName="Abrechnungshistorie & Plausibilitätschecks">
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
               <History className="w-6 h-6 text-primary-blue" />
@@ -86,7 +86,7 @@ export default function BillingHistoryView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-amber-600" />
@@ -157,7 +157,7 @@ export default function BillingHistoryView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg p-6">
           <h3 className="text-lg font-semibold text-dark mb-4">
             Kostenentwicklung
           </h3>

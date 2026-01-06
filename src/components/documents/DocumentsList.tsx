@@ -275,7 +275,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+      <div className="bg-white rounded-lg p-4 border border-gray-100">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -431,7 +431,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
       </div>
 
       {filteredDocuments.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center border border-gray-100">
+        <div className="bg-white rounded-lg p-12 text-center border border-gray-100">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FileText className="w-8 h-8 text-gray-400" />
           </div>
@@ -445,7 +445,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">

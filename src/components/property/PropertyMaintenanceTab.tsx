@@ -242,7 +242,7 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
 
   if (!isPremium) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8">
+      <div className="bg-white rounded-lg p-8">
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-amber-600" />
@@ -326,7 +326,7 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
       </div>
 
       {filteredTasks.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+        <div className="bg-white rounded-lg p-12 text-center">
           <Wrench className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-400 mb-2">Keine Aufgaben gefunden</p>
           <p className="text-sm text-gray-400 mb-4">
@@ -345,7 +345,7 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
           {filteredTasks.map((task) => (
             <div
               key={task.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+              className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-start gap-3 flex-1">

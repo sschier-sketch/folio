@@ -163,19 +163,19 @@ export default function RentPaymentsView() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <div className="text-sm text-gray-400 mb-1">Ausstehend</div>
           <div className="text-2xl font-bold text-orange-600">
             {formatCurrency(totalUnpaid)}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <div className="text-sm text-gray-400 mb-1">Bezahlt</div>
           <div className="text-2xl font-bold text-emerald-600">
             {formatCurrency(totalPaid)}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
           <div className="text-sm text-gray-400 mb-1">Gesamt</div>
           <div className="text-2xl font-bold text-dark">
             {formatCurrency(totalUnpaid + totalPaid)}
@@ -184,7 +184,7 @@ export default function RentPaymentsView() {
       </div>
 
       {!isPremium && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow-sm p-8 border border-blue-100">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8 border border-blue-100">
           <div className="flex items-start gap-6">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <Building2 className="w-8 h-8 text-white" />
@@ -226,7 +226,7 @@ export default function RentPaymentsView() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+      <div className="bg-white rounded-lg p-6 border border-gray-100">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="w-5 h-5 text-gray-400" />
           <h3 className="font-semibold text-dark">Filter</h3>
@@ -310,7 +310,7 @@ export default function RentPaymentsView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+      <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         {payments.length === 0 ? (
           <div className="p-8 text-center text-gray-600">
             Keine Mieteingänge gefunden. Mieteingänge werden automatisch

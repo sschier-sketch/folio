@@ -194,7 +194,7 @@ export default function DashboardHome() {
       </div>{" "}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {" "}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
@@ -210,7 +210,7 @@ export default function DashboardHome() {
             {t("dashboard.properties")}
           </div>{" "}
         </div>{" "}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
@@ -226,7 +226,7 @@ export default function DashboardHome() {
             {t("dashboard.tenants.active")}
           </div>{" "}
         </div>{" "}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
@@ -243,7 +243,7 @@ export default function DashboardHome() {
             {t("dashboard.rent.monthly")}
           </div>{" "}
         </div>{" "}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
@@ -263,7 +263,7 @@ export default function DashboardHome() {
       </div>{" "}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {" "}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           {" "}
           <h3 className="text-lg font-semibold text-dark mb-4">
             {t("dashboard.portfolio.total")}
@@ -419,7 +419,7 @@ export default function DashboardHome() {
       {upcomingTasks.length > 0 && (
         <div className="mt-8">
           <h2 className="text-xl font-bold text-dark mb-4">Anstehende Wartungsaufgaben</h2>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white rounded-lg">
             {upcomingTasks.map((task, index) => (
               <div
                 key={task.id}

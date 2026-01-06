@@ -399,7 +399,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="bg-white rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold text-dark mb-4">Filter</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>

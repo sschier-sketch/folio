@@ -147,7 +147,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
 
   if (!isPremium) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8">
+      <div className="bg-white rounded-lg p-8">
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-amber-600" />
@@ -197,7 +197,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         <p className="text-sm text-gray-500 mt-1">Übersicht der wichtigsten Kennzahlen für diese Immobilie</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-lg p-4">
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">Von</label>
@@ -221,7 +221,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Euro className="w-6 h-6 text-blue-600" />
@@ -236,7 +236,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
               <Home className="w-6 h-6 text-amber-600" />
@@ -251,7 +251,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${metrics.costRatio > 80 ? "bg-red-100" : metrics.costRatio > 50 ? "bg-amber-100" : "bg-emerald-100"}`}>
               <BarChart3 className={`w-6 h-6 ${metrics.costRatio > 80 ? "text-red-600" : metrics.costRatio > 50 ? "text-amber-600" : "text-emerald-600"}`} />
@@ -266,7 +266,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-emerald-600" />
@@ -281,7 +281,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Euro className="w-6 h-6 text-blue-600" />
@@ -296,7 +296,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
               <Euro className="w-6 h-6 text-red-600" />
@@ -312,7 +312,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg p-6">
         <h4 className="text-lg font-semibold text-dark mb-4">Cashflow-Übersicht</h4>
         <div className="space-y-4">
           <div className="flex items-center justify-between py-3 border-b border-gray-200">

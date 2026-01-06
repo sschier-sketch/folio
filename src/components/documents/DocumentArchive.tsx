@@ -175,7 +175,7 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
       </div>
 
       {documents.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center border border-gray-100">
+        <div className="bg-white rounded-lg p-12 text-center border border-gray-100">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Archive className="w-8 h-8 text-gray-400" />
           </div>
@@ -185,7 +185,7 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">

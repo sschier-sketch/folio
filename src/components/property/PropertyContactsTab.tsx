@@ -236,7 +236,7 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
 
   if (!isPremium) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8">
+      <div className="bg-white rounded-lg p-8">
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-amber-600" />
@@ -298,7 +298,7 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
       </div>
 
       {contacts.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+        <div className="bg-white rounded-lg p-12 text-center">
           <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-400 mb-2">Noch keine Kontakte für diese Immobilie</p>
           <p className="text-sm text-gray-400 mb-4">
@@ -320,7 +320,7 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
             const Icon = group.icon;
 
             return (
-              <div key={group.role} className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div key={group.role} className="bg-white rounded-lg">
                 <div className={`${group.bgColor} px-4 py-3 border-b border-gray-200 flex items-center gap-3 rounded-t-lg`}>
                   <Icon className={`w-5 h-5 ${group.color}`} />
                   <div className="flex-1">

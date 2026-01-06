@@ -172,7 +172,7 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
           <Zap className="w-6 h-6 text-primary-blue" />
           <h3 className="text-lg font-semibold text-dark">Energie & Heizung</h3>
@@ -223,7 +223,7 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
           <HomeIcon className="w-6 h-6 text-primary-blue" />
           <h3 className="text-lg font-semibold text-dark">Bauweise & Konstruktion</h3>
@@ -302,7 +302,7 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
           <Droplet className="w-6 h-6 text-primary-blue" />
           <h3 className="text-lg font-semibold text-dark">Ausstattungsmerkmale</h3>
@@ -385,7 +385,7 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <h3 className="text-lg font-semibold text-dark mb-4">
           Zusätzliche Informationen
         </h3>
