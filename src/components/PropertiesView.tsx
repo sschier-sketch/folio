@@ -335,30 +335,6 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
         <div className="flex items-center gap-3">
           {properties.length > 0 && (
             <>
-              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded transition-colors ${
-                    viewMode === "grid"
-                      ? "bg-white text-primary-blue shadow-sm"
-                      : "text-gray-400 hover:text-gray-600"
-                  }`}
-                  title="Kachelansicht"
-                >
-                  <Grid3x3 className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode("table")}
-                  className={`p-2 rounded transition-colors ${
-                    viewMode === "table"
-                      ? "bg-white text-primary-blue shadow-sm"
-                      : "text-gray-400 hover:text-gray-600"
-                  }`}
-                  title="Tabellenansicht"
-                >
-                  <List className="w-5 h-5" />
-                </button>
-              </div>
               <div className="relative">
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
@@ -427,7 +403,33 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
       ) : (
         <>
           <div className="bg-white rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold text-dark mb-4">Filter</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-dark">Filter</h3>
+              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded transition-colors ${
+                    viewMode === "grid"
+                      ? "bg-white text-primary-blue shadow-sm"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
+                  title="Kachelansicht"
+                >
+                  <Grid3x3 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`p-2 rounded transition-colors ${
+                    viewMode === "table"
+                      ? "bg-white text-primary-blue shadow-sm"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
+                  title="Tabellenansicht"
+                >
+                  <List className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

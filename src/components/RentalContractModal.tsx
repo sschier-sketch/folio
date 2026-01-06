@@ -93,26 +93,35 @@ export default function RentalContractModal({
         deposit_received_date?: string;
         tenants?: Tenant[];
       };
+      const contractWithAll = contractWithDeposit as typeof contractWithDeposit & {
+        is_sublet?: boolean;
+        vat_applicable?: boolean;
+        graduated_rent_date?: string;
+      };
+
       setFormData({
-        property_id: contractWithDeposit.property_id,
-        unit_id: contractWithDeposit.unit_id || "",
-        base_rent: contractWithDeposit.base_rent,
-        additional_costs: contractWithDeposit.additional_costs,
-        deposit: contractWithDeposit.deposit,
-        deposit_type: contractWithDeposit.deposit_type || "",
-        deposit_account: contractWithDeposit.deposit_account || "",
-        deposit_received_date: contractWithDeposit.deposit_received_date || "",
-        contract_start: contractWithDeposit.contract_start,
-        contract_end: contractWithDeposit.contract_end || "",
-        contract_type: contractWithDeposit.contract_type,
-        rent_increase_type: contractWithDeposit.rent_increase_type || "none",
-        staffel_amount: contractWithDeposit.staffel_amount || 0,
-        staffel_type: contractWithDeposit.staffel_type || "fixed",
-        staffel_years: contractWithDeposit.staffel_years || 1,
-        index_first_increase_date: contractWithDeposit.index_first_increase_date || "",
+        property_id: contractWithAll.property_id,
+        unit_id: contractWithAll.unit_id || "",
+        base_rent: contractWithAll.base_rent,
+        additional_costs: contractWithAll.additional_costs,
+        deposit: contractWithAll.deposit,
+        deposit_type: contractWithAll.deposit_type || "",
+        deposit_account: contractWithAll.deposit_account || "",
+        deposit_received_date: contractWithAll.deposit_received_date || "",
+        contract_start: contractWithAll.contract_start,
+        contract_end: contractWithAll.contract_end || "",
+        contract_type: contractWithAll.contract_type,
+        rent_increase_type: contractWithAll.rent_increase_type || "none",
+        staffel_amount: contractWithAll.staffel_amount || 0,
+        staffel_type: contractWithAll.staffel_type || "fixed",
+        staffel_years: contractWithAll.staffel_years || 1,
+        index_first_increase_date: contractWithAll.index_first_increase_date || "",
         auto_create_rent_increase_tickets:
-          contractWithDeposit.auto_create_rent_increase_tickets || false,
-        notes: contractWithDeposit.notes,
+          contractWithAll.auto_create_rent_increase_tickets || false,
+        is_sublet: contractWithAll.is_sublet || false,
+        vat_applicable: contractWithAll.vat_applicable || false,
+        graduated_rent_date: contractWithAll.graduated_rent_date || "",
+        notes: contractWithAll.notes,
       });
       if (contractWithDeposit.tenants && contractWithDeposit.tenants.length > 0) {
         setTenants(contractWithDeposit.tenants);
@@ -150,7 +159,7 @@ export default function RentalContractModal({
   const addTenant = () => {
     setTenants([
       ...tenants,
-      { first_name: "", last_name: "", email: "", phone: "" },
+      { first_name: "", last_name: "", email: "", phone: "", company_name: "", date_of_birth: "" },
     ]);
   };
   const removeTenant = (index: number) => {
@@ -209,6 +218,9 @@ export default function RentalContractModal({
           formData.rent_increase_type !== "none"
             ? formData.auto_create_rent_increase_tickets
             : false,
+        is_sublet: formData.is_sublet,
+        vat_applicable: formData.vat_applicable,
+        graduated_rent_date: formData.rent_increase_type === "graduated" ? formData.graduated_rent_date : null,
         notes: formData.notes,
       };
       let contractId: string;
@@ -244,6 +256,8 @@ export default function RentalContractModal({
           last_name: tenant.last_name,
           email: tenant.email || null,
           phone: tenant.phone || null,
+          company_name: tenant.company_name || null,
+          date_of_birth: tenant.date_of_birth || null,
           is_active: true,
         };
         if (tenant.id) {

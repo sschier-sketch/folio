@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lock, Wrench, Plus, CheckCircle2, Clock, AlertCircle, Trash2, Edit2, Calendar, Euro, FileText, Receipt } from "lucide-react";
+import { Lock, Wrench, Plus, CheckCircle2, Clock, AlertCircle, Trash2, Edit2, Calendar, Euro, FileText, Receipt, Bell } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -373,6 +373,12 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
                       {task.is_recurring && (
                         <span className="px-2 py-0.5 rounded-full text-xs font-medium text-blue-600 bg-blue-50">
                           Wiederkehrend ({task.recurrence_interval === "monthly" ? "Monatlich" : task.recurrence_interval === "quarterly" ? "Vierteljährlich" : "Jährlich"})
+                        </span>
+                      )}
+                      {task.email_notification_enabled && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium text-emerald-600 bg-emerald-50 flex items-center gap-1" title={`E-Mail-Benachrichtigung ${task.notification_days_before} Tage vor Fälligkeit`}>
+                          <Bell className="w-3 h-3" />
+                          E-Mail
                         </span>
                       )}
                     </div>

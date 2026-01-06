@@ -44,11 +44,30 @@ export default function PropertyModal({
     current_value: 0,
     purchase_date: "",
     size_sqm: 0,
+    usable_area_sqm: 0,
     parking_spot_number: "",
     description: "",
+    broker_costs: 0,
+    notary_costs: 0,
+    lawyer_costs: 0,
+    real_estate_transfer_tax: 0,
+    registration_costs: 0,
+    expert_costs: 0,
   });
+  const [additionalCosts, setAdditionalCosts] = useState<Array<{name: string, amount: number}>>([]);
   useEffect(() => {
     if (property) {
+      const propertyWithCosts = property as Property & {
+        usable_area_sqm?: number;
+        broker_costs?: number;
+        notary_costs?: number;
+        lawyer_costs?: number;
+        real_estate_transfer_tax?: number;
+        registration_costs?: number;
+        expert_costs?: number;
+        additional_purchase_costs?: Array<{name: string, amount: number}>;
+      };
+
       setFormData({
         name: property.name,
         street: property.street || "",
@@ -61,9 +80,20 @@ export default function PropertyModal({
         current_value: property.current_value,
         purchase_date: property.purchase_date || "",
         size_sqm: property.size_sqm || 0,
+        usable_area_sqm: propertyWithCosts.usable_area_sqm || 0,
         parking_spot_number: property.parking_spot_number || "",
         description: property.description,
+        broker_costs: propertyWithCosts.broker_costs || 0,
+        notary_costs: propertyWithCosts.notary_costs || 0,
+        lawyer_costs: propertyWithCosts.lawyer_costs || 0,
+        real_estate_transfer_tax: propertyWithCosts.real_estate_transfer_tax || 0,
+        registration_costs: propertyWithCosts.registration_costs || 0,
+        expert_costs: propertyWithCosts.expert_costs || 0,
       });
+
+      if (propertyWithCosts.additional_purchase_costs) {
+        setAdditionalCosts(propertyWithCosts.additional_purchase_costs);
+      }
     }
   }, [property]);
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,11 +119,22 @@ export default function PropertyModal({
           formData.property_type === "parking"
             ? null
             : formData.size_sqm || null,
+        usable_area_sqm:
+          formData.property_type === "parking"
+            ? null
+            : formData.usable_area_sqm || null,
         parking_spot_number:
           formData.property_type === "parking"
             ? formData.parking_spot_number || null
             : null,
         description: formData.description,
+        broker_costs: formData.broker_costs || 0,
+        notary_costs: formData.notary_costs || 0,
+        lawyer_costs: formData.lawyer_costs || 0,
+        real_estate_transfer_tax: formData.real_estate_transfer_tax || 0,
+        registration_costs: formData.registration_costs || 0,
+        expert_costs: formData.expert_costs || 0,
+        additional_purchase_costs: additionalCosts.length > 0 ? additionalCosts : [],
       };
       if (property) {
         const { error } = await supabase
@@ -328,26 +369,205 @@ export default function PropertyModal({
                 placeholder="z.B. 280000 oder 280.000,00"
               />{" "}
             </div>{" "}
+
+            {/* Kaufnebenkosten Sektion */}
+            <div className="col-span-2 pt-4 border-t border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Kaufnebenkosten</h3>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Maklerkosten (€)
+              </label>
+              <input
+                type="text"
+                value={formData.broker_costs}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    broker_costs: parseNumberInput(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. 7500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Notarkosten (€)
+              </label>
+              <input
+                type="text"
+                value={formData.notary_costs}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    notary_costs: parseNumberInput(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. 3000"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Anwaltskosten (€)
+              </label>
+              <input
+                type="text"
+                value={formData.lawyer_costs}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    lawyer_costs: parseNumberInput(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. 1500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Grunderwerbsteuer (€)
+              </label>
+              <input
+                type="text"
+                value={formData.real_estate_transfer_tax}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    real_estate_transfer_tax: parseNumberInput(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. 15000"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Eintragungskosten (€)
+              </label>
+              <input
+                type="text"
+                value={formData.registration_costs}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    registration_costs: parseNumberInput(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. 500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Gutachterkosten (€)
+              </label>
+              <input
+                type="text"
+                value={formData.expert_costs}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    expert_costs: parseNumberInput(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                placeholder="z.B. 800"
+              />
+            </div>
+
+            {/* Zusätzliche Kaufnebenkosten */}
+            <div className="col-span-2 mt-4">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Weitere Nebenkosten
+              </label>
+              {additionalCosts.map((cost, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={cost.name}
+                    onChange={(e) => {
+                      const newCosts = [...additionalCosts];
+                      newCosts[index].name = e.target.value;
+                      setAdditionalCosts(newCosts);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="Bezeichnung"
+                  />
+                  <input
+                    type="text"
+                    value={cost.amount}
+                    onChange={(e) => {
+                      const newCosts = [...additionalCosts];
+                      newCosts[index].amount = parseNumberInput(e.target.value);
+                      setAdditionalCosts(newCosts);
+                    }}
+                    className="w-32 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="Betrag"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newCosts = additionalCosts.filter((_, i) => i !== index);
+                      setAdditionalCosts(newCosts);
+                    }}
+                    className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setAdditionalCosts([...additionalCosts, { name: "", amount: 0 }])}
+                className="text-sm text-primary-blue hover:text-primary-blue/80 font-medium"
+              >
+                + Weitere Nebenkosten hinzufügen
+              </button>
+            </div>
+
             {formData.property_type !== "parking" && (
-              <div>
-                {" "}
-                <label className="block text-sm font-medium text-gray-400 mb-1">
+              <>
+                <div>
                   {" "}
-                  Fläche (m²){" "}
-                </label>{" "}
-                <input
-                  type="text"
-                  value={formData.size_sqm}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      size_sqm: parseNumberInput(e.target.value),
-                    })
-                  }
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="z.B. 75,5"
-                />{" "}
-              </div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    {" "}
+                    Wohnfläche (m²){" "}
+                  </label>{" "}
+                  <input
+                    type="text"
+                    value={formData.size_sqm}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        size_sqm: parseNumberInput(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="z.B. 75,5"
+                  />{" "}
+                </div>
+                <div>
+                  {" "}
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    {" "}
+                    Nutzfläche (m²){" "}
+                  </label>{" "}
+                  <input
+                    type="text"
+                    value={formData.usable_area_sqm}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        usable_area_sqm: parseNumberInput(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="z.B. 85,0"
+                  />{" "}
+                </div>
+              </>
             )}{" "}
             {formData.property_type === "parking" && (
               <div className="col-span-2">
