@@ -6,12 +6,22 @@ import { useAuth } from "../contexts/AuthContext";
 interface Tenant {
   id: string;
   property_id: string;
+  unit_id?: string | null;
+  salutation?: string | null;
   first_name: string;
   last_name: string;
+  company_name?: string | null;
+  date_of_birth?: string | null;
+  street?: string | null;
+  house_number?: string | null;
+  zip_code?: string | null;
+  city?: string | null;
+  country?: string | null;
   email: string | null;
   phone: string | null;
   move_in_date: string | null;
   move_out_date: string | null;
+  household_size?: number;
   is_active: boolean;
 }
 
@@ -48,6 +58,8 @@ export default function TenantModal({
     salutation: "",
     first_name: "",
     last_name: "",
+    company_name: "",
+    date_of_birth: "",
     street: "",
     house_number: "",
     zip_code: "",
@@ -71,6 +83,10 @@ export default function TenantModal({
     heating_costs: "",
     valid_from: "",
     rent_due_day: "1",
+    rent_increase_type: "none",
+    graduated_rent_date: "",
+    is_sublet: false,
+    vat_applicable: false,
   });
 
   const [depositData, setDepositData] = useState({
@@ -91,6 +107,8 @@ export default function TenantModal({
           salutation: tenant.salutation || "",
           first_name: tenant.first_name,
           last_name: tenant.last_name,
+          company_name: tenant.company_name || "",
+          date_of_birth: tenant.date_of_birth || "",
           street: tenant.street || "",
           house_number: tenant.house_number || "",
           zip_code: tenant.zip_code || "",
@@ -125,6 +143,10 @@ export default function TenantModal({
             heating_costs: contract.heating_costs?.toString() || "",
             valid_from: contract.start_date || "",
             rent_due_day: contract.rent_due_day?.toString() || "1",
+            rent_increase_type: contract.rent_increase_type || "none",
+            graduated_rent_date: contract.graduated_rent_date || "",
+            is_sublet: contract.is_sublet || false,
+            vat_applicable: contract.vat_applicable || false,
           });
 
           setDepositData({
@@ -201,6 +223,8 @@ export default function TenantModal({
           first_name: tenantData.first_name,
           last_name: tenantData.last_name,
           name: `${tenantData.first_name} ${tenantData.last_name}`,
+          company_name: tenantData.company_name || null,
+          date_of_birth: tenantData.date_of_birth || null,
           street: tenantData.street || null,
           house_number: tenantData.house_number || null,
           zip_code: tenantData.zip_code || null,
@@ -248,6 +272,10 @@ export default function TenantModal({
             operating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.operating_costs) || 0 : 0,
             heating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.heating_costs) || 0 : 0,
             rent_due_day: parseInt(rentData.rent_due_day) || 1,
+            rent_increase_type: rentData.rent_increase_type,
+            graduated_rent_date: rentData.graduated_rent_date || null,
+            is_sublet: rentData.is_sublet,
+            vat_applicable: rentData.vat_applicable,
             base_rent: monthlyRent,
             monthly_rent: monthlyRent,
             additional_costs: utilitiesAdvance,
@@ -314,6 +342,8 @@ export default function TenantModal({
               first_name: tenantData.first_name,
               last_name: tenantData.last_name,
               name: `${tenantData.first_name} ${tenantData.last_name}`,
+              company_name: tenantData.company_name || null,
+              date_of_birth: tenantData.date_of_birth || null,
               street: tenantData.street || null,
               house_number: tenantData.house_number || null,
               zip_code: tenantData.zip_code || null,
@@ -365,6 +395,10 @@ export default function TenantModal({
                 operating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.operating_costs) || 0 : 0,
                 heating_costs: rentData.rent_type === "cold_rent_utilities_heating" ? parseFloat(rentData.heating_costs) || 0 : 0,
                 rent_due_day: parseInt(rentData.rent_due_day) || 1,
+                rent_increase_type: rentData.rent_increase_type,
+                graduated_rent_date: rentData.graduated_rent_date || null,
+                is_sublet: rentData.is_sublet,
+                vat_applicable: rentData.vat_applicable,
                 base_rent: monthlyRent,
                 monthly_rent: monthlyRent,
                 additional_costs: utilitiesAdvance,
@@ -565,6 +599,34 @@ export default function TenantModal({
             }
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
             required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-400 mb-1">
+            Firmenname (optional)
+          </label>
+          <input
+            type="text"
+            value={tenantData.company_name}
+            onChange={(e) =>
+              setTenantData({ ...tenantData, company_name: e.target.value })
+            }
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-400 mb-1">
+            Geburtsdatum (optional)
+          </label>
+          <input
+            type="date"
+            value={tenantData.date_of_birth}
+            onChange={(e) =>
+              setTenantData({ ...tenantData, date_of_birth: e.target.value })
+            }
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
           />
         </div>
 
@@ -1008,6 +1070,70 @@ export default function TenantModal({
           </div>
         </div>
       )}
+
+      <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={rentData.is_sublet}
+              onChange={(e) =>
+                setRentData({ ...rentData, is_sublet: e.target.checked })
+              }
+              className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+            />
+            <span className="text-sm font-medium text-gray-700">Untermietverhältnis</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={rentData.vat_applicable}
+              onChange={(e) =>
+                setRentData({ ...rentData, vat_applicable: e.target.checked })
+              }
+              className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+            />
+            <span className="text-sm font-medium text-gray-700">Mehrwertsteuer berechnen</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <label className="block text-sm font-medium text-gray-400 mb-1">
+          Art der Mieterhöhung
+        </label>
+        <select
+          value={rentData.rent_increase_type}
+          onChange={(e) =>
+            setRentData({ ...rentData, rent_increase_type: e.target.value })
+          }
+          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+        >
+          <option value="none">Keine automatische Erhöhung</option>
+          <option value="index">Indexmiete</option>
+          <option value="staffel">Staffelmiete</option>
+          <option value="graduated">Staffelmiete (vorausgeplant)</option>
+        </select>
+
+        {rentData.rent_increase_type === "graduated" && (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Erste Erhöhung am (1. Januar)
+            </label>
+            <input
+              type="date"
+              value={rentData.graduated_rent_date}
+              onChange={(e) =>
+                setRentData({ ...rentData, graduated_rent_date: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Die Miete erhöht sich automatisch immer am 1. Januar eines jeden Jahres.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 
