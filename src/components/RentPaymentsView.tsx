@@ -246,14 +246,31 @@ export default function RentPaymentsView() {
     return daysDiff >= -1 && daysDiff <= 1;
   };
 
-  const totalUnpaid = payments
+  const getFilteredPayments = () => {
+    switch (filterStatus) {
+      case "paid":
+        return payments.filter((p) => p.payment_status === 'paid');
+      case "unpaid":
+        return payments.filter((p) => p.payment_status !== 'paid');
+      default:
+        return payments;
+    }
+  };
+
+  const filteredPayments = getFilteredPayments();
+
+  const totalPaid = filteredPayments
+    .reduce((sum, p) => sum + Number(p.paid_amount || 0), 0);
+
+  const totalUnpaid = filteredPayments
     .filter((p) => isPending(p))
-    .reduce((sum, p) => sum + Number(p.amount), 0);
-  const totalPaid = payments
-    .filter((p) => p.paid)
-    .reduce((sum, p) => sum + Number(p.amount), 0);
-  const totalOverdue = payments
+    .reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
+
+  const totalOverdue = filteredPayments
     .filter((p) => isOverdue(p))
+    .reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
+
+  const totalAmount = filteredPayments
     .reduce((sum, p) => sum + Number(p.amount), 0);
   if (loading) {
     return (
@@ -294,7 +311,7 @@ export default function RentPaymentsView() {
         <div className="bg-white rounded-lg p-6">
           <div className="text-sm text-gray-400 mb-1">Gesamt</div>
           <div className="text-2xl font-bold text-dark">
-            {formatCurrency(totalUnpaid + totalPaid + totalOverdue)}
+            {formatCurrency(totalAmount)}
           </div>
         </div>
       </div>
@@ -458,7 +475,7 @@ export default function RentPaymentsView() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {payments.map((payment) => (
+                {filteredPayments.map((payment) => (
                   <tr
                     key={payment.id}
                     className="hover:bg-gray-50 transition-colors"
