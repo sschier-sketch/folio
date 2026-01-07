@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, DollarSign } from "lucide-react";
+import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -107,7 +107,13 @@ export default function RentPaymentsView() {
       }
       const { data, error } = await query;
       if (error) throw error;
-      setPayments(data || []);
+
+      const validPayments = (data || []).filter(payment =>
+        payment.rental_contract?.tenants &&
+        payment.rental_contract.tenants.length > 0
+      );
+
+      setPayments(validPayments);
     } catch (error) {
       console.error("Error loading payments:", error);
     }
@@ -555,7 +561,7 @@ export default function RentPaymentsView() {
                             className="inline-flex items-center gap-1 p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Teilzahlung erfassen"
                           >
-                            <DollarSign className="w-5 h-5" />
+                            <Coins className="w-5 h-5" />
                           </button>
                         </div>
                       )}
