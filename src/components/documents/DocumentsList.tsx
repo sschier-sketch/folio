@@ -470,7 +470,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-100">
                 {filteredDocuments.map((doc) => (
                   <tr
                     key={doc.id}
