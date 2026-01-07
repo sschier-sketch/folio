@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, Filter, Lock, Building2 } from "lucide-react";
+import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, DollarSign } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -114,11 +114,16 @@ export default function RentPaymentsView() {
   };
   const handleMarkAsPaid = async (paymentId: string) => {
     try {
+      const payment = payments.find(p => p.id === paymentId);
+      if (!payment) return;
+
       const { error } = await supabase
         .from("rent_payments")
         .update({
           paid: true,
           paid_date: new Date().toISOString().split("T")[0],
+          payment_status: 'paid',
+          paid_amount: payment.amount
         })
         .eq("id", paymentId);
       if (error) throw error;
@@ -491,17 +496,24 @@ export default function RentPaymentsView() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
                       <div className="font-medium">{formatCurrency(payment.amount)}</div>
-                      {payment.payment_status === 'partial' && (
+                      {(payment.payment_status === 'partial' || payment.payment_status === 'paid') && payment.paid_amount > 0 && (
                         <div className="text-xs text-gray-500">
-                          Gezahlt: {formatCurrency(payment.paid_amount || 0)}
+                          Bezahlt: {formatCurrency(payment.paid_amount || 0)}
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {payment.payment_status === 'paid' ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                          <Check className="w-3 h-3" /> Bezahlt
-                        </span>
+                        <div>
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                            <Check className="w-3 h-3" /> Bezahlt
+                          </span>
+                          {payment.paid_date && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {formatDate(payment.paid_date)}
+                            </div>
+                          )}
+                        </div>
                       ) : payment.payment_status === 'partial' ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           <Check className="w-3 h-3" /> Teilzahlung
@@ -520,26 +532,30 @@ export default function RentPaymentsView() {
                       {payment.payment_status === 'paid' ? (
                         <button
                           onClick={() => handleMarkAsUnpaid(payment.id)}
-                          className="text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                          className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                          title="Als unbezahlt markieren"
                         >
-                          Als unbezahlt markieren
+                          <XCircle className="w-4 h-4" />
+                          <span>Als unbezahlt markieren</span>
                         </button>
                       ) : (
-                        <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleMarkAsPaid(payment.id)}
-                            className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors text-left"
+                            className="inline-flex items-center gap-1 p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                            title="Als bezahlt markieren"
                           >
-                            Als bezahlt markieren
+                            <CheckCircle className="w-5 h-5" />
                           </button>
                           <button
                             onClick={() => {
                               setSelectedPayment(payment);
                               setShowPartialPaymentModal(true);
                             }}
-                            className="text-blue-600 hover:text-blue-700 font-medium transition-colors text-left"
+                            className="inline-flex items-center gap-1 p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Teilzahlung erfassen"
                           >
-                            Teilzahlung erfassen
+                            <DollarSign className="w-5 h-5" />
                           </button>
                         </div>
                       )}
