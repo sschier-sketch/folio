@@ -93,12 +93,28 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
         (data || []).map(async (property) => {
           const { data: units } = await supabase
             .from("property_units")
-            .select("id, status")
+            .select("id")
             .eq("property_id", property.id);
 
           const total = units?.length || 0;
-          const rented = units?.filter((u) => u.status === "rented").length || 0;
-          const vacant = units?.filter((u) => u.status === "vacant").length || 0;
+          let rented = 0;
+
+          if (units && units.length > 0) {
+            for (const unit of units) {
+              const { data: tenantData } = await supabase
+                .from("tenants")
+                .select("id")
+                .eq("unit_id", unit.id)
+                .eq("is_active", true)
+                .maybeSingle();
+
+              if (tenantData) {
+                rented++;
+              }
+            }
+          }
+
+          const vacant = total - rented;
 
           const { data: labels } = await supabase
             .from("property_labels")
