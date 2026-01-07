@@ -2,10 +2,12 @@ import { useState } from "react";
 import MetersManagementView from "./MetersManagementView";
 import MeterModal from "./MeterModal";
 import MeterReadingModal from "./MeterReadingModal";
+import MeterReadingsHistory from "./MeterReadingsHistory";
 
 export default function MetersView() {
   const [showMeterModal, setShowMeterModal] = useState(false);
   const [showReadingModal, setShowReadingModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedMeter, setSelectedMeter] = useState<any | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -24,6 +26,11 @@ export default function MetersView() {
     setShowReadingModal(true);
   };
 
+  const handleViewHistory = (meter: any) => {
+    setSelectedMeter(meter);
+    setShowHistoryModal(true);
+  };
+
   const handleSuccess = () => {
     setRefreshTrigger(prev => prev + 1);
   };
@@ -38,12 +45,18 @@ export default function MetersView() {
     setSelectedMeter(null);
   };
 
+  const handleCloseHistoryModal = () => {
+    setShowHistoryModal(false);
+    setSelectedMeter(null);
+  };
+
   return (
     <>
       <MetersManagementView
         onAddMeter={handleAddMeter}
         onEditMeter={handleEditMeter}
         onAddReading={handleAddReading}
+        onViewHistory={handleViewHistory}
         refreshTrigger={refreshTrigger}
       />
 
@@ -60,6 +73,13 @@ export default function MetersView() {
           meter={selectedMeter}
           onClose={handleCloseReadingModal}
           onSuccess={handleSuccess}
+        />
+      )}
+
+      {showHistoryModal && selectedMeter && (
+        <MeterReadingsHistory
+          meter={selectedMeter}
+          onClose={handleCloseHistoryModal}
         />
       )}
     </>

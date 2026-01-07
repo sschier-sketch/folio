@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, Download, Plus, Gauge, Edit2, Activity } from "lucide-react";
+import { Search, Filter, Download, Plus, Gauge, Edit2, Activity, ChevronDown, History } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import * as XLSX from "xlsx";
 
 interface Meter {
   id: string;
@@ -24,6 +25,7 @@ interface MetersManagementViewProps {
   onAddMeter: () => void;
   onEditMeter: (meter: Meter) => void;
   onAddReading: (meter: Meter) => void;
+  onViewHistory: (meter: Meter) => void;
   refreshTrigger?: number;
 }
 
@@ -31,6 +33,7 @@ export default function MetersManagementView({
   onAddMeter,
   onEditMeter,
   onAddReading,
+  onViewHistory,
   refreshTrigger = 0
 }: MetersManagementViewProps) {
   const { user } = useAuth();
@@ -42,6 +45,9 @@ export default function MetersManagementView({
   const [filterProperty, setFilterProperty] = useState("all");
   const [filterPeriod, setFilterPeriod] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const meterTypes = [
     { value: "strom", label: "Strom" },
@@ -57,6 +63,10 @@ export default function MetersManagementView({
   useEffect(() => {
     loadData();
   }, [user, refreshTrigger]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterType, filterProperty, filterPeriod]);
 
   const loadData = async () => {
     if (!user) return;
@@ -98,15 +108,17 @@ export default function MetersManagementView({
     if (filterType !== "all" && meter.meter_type !== filterType) return false;
     if (filterProperty !== "all" && meter.property?.id !== filterProperty) return false;
 
-    if (filterPeriod !== "all" && meter.last_reading_date) {
+    if (filterPeriod !== "all") {
+      if (!meter.last_reading_date) return false;
+
       const now = new Date();
       const lastReading = new Date(meter.last_reading_date);
       const daysDiff = Math.floor((now.getTime() - lastReading.getTime()) / (1000 * 60 * 60 * 24));
 
-      if (filterPeriod === "7days" && daysDiff > 7) return false;
-      if (filterPeriod === "30days" && daysDiff > 30) return false;
-      if (filterPeriod === "90days" && daysDiff > 90) return false;
-      if (filterPeriod === "365days" && daysDiff > 365) return false;
+      if (filterPeriod === "7days" && (daysDiff < 0 || daysDiff > 7)) return false;
+      if (filterPeriod === "30days" && (daysDiff < 0 || daysDiff > 30)) return false;
+      if (filterPeriod === "90days" && (daysDiff < 0 || daysDiff > 90)) return false;
+      if (filterPeriod === "365days" && (daysDiff < 0 || daysDiff > 365)) return false;
     }
 
     if (searchQuery) {
@@ -123,6 +135,12 @@ export default function MetersManagementView({
     return true;
   });
 
+  const totalPages = Math.ceil(filteredMeters.length / itemsPerPage);
+  const paginatedMeters = filteredMeters.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const getMeterTypeLabel = (type: string) => {
     const meterType = meterTypes.find(t => t.value === type);
     return meterType?.label || type;
@@ -137,7 +155,7 @@ export default function MetersManagementView({
     });
   };
 
-  const handleExport = () => {
+  const getExportData = () => {
     const headers = [
       "Objekt",
       "Einheit",
@@ -170,6 +188,11 @@ export default function MetersManagementView({
       meter.tenant ? `${meter.tenant.first_name} ${meter.tenant.last_name}` : ""
     ]);
 
+    return { headers, rows };
+  };
+
+  const handleExportCSV = () => {
+    const { headers, rows } = getExportData();
     const csv = [headers, ...rows]
       .map(row => row.map(cell => `"${cell}"`).join(","))
       .join("\n");
@@ -179,6 +202,16 @@ export default function MetersManagementView({
     link.href = URL.createObjectURL(blob);
     link.download = `zaehler_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
+    setShowExportMenu(false);
+  };
+
+  const handleExportExcel = () => {
+    const { headers, rows } = getExportData();
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Zähler");
+    XLSX.writeFile(wb, `zaehler_${new Date().toISOString().split("T")[0]}.xlsx`);
+    setShowExportMenu(false);
   };
 
   if (loading) {
@@ -236,13 +269,33 @@ export default function MetersManagementView({
             Filter
           </button>
 
-          <button
-            onClick={handleExport}
-            className="px-4 py-2.5 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2 bg-white"
-          >
-            <Download className="w-4 h-4" />
-            Exportieren
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="px-4 py-2.5 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2 bg-white"
+            >
+              <Download className="w-4 h-4" />
+              Exportieren
+              <ChevronDown className="w-4 h-4" />
+            </button>
+
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                <button
+                  onClick={handleExportCSV}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
+                >
+                  Als CSV exportieren
+                </button>
+                <button
+                  onClick={handleExportExcel}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
+                >
+                  Als Excel exportieren
+                </button>
+              </div>
+            )}
+          </div>
 
           <button
             onClick={onAddMeter}
@@ -357,7 +410,7 @@ export default function MetersManagementView({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
-              {filteredMeters.map((meter) => (
+              {paginatedMeters.map((meter) => (
                 <tr
                   key={meter.id}
                   className="hover:bg-gray-50 transition-colors"
@@ -438,6 +491,13 @@ export default function MetersManagementView({
                         <Activity className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => onViewHistory(meter)}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Verlauf anzeigen"
+                      >
+                        <History className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => onEditMeter(meter)}
                         className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                         title="Bearbeiten"
@@ -452,6 +512,30 @@ export default function MetersManagementView({
           </table>
         </div>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white rounded-lg border border-gray-100 px-6 py-4">
+          <div className="text-sm text-gray-600">
+            Seite {currentPage} von {totalPages}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Zurück
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Weiter
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
