@@ -40,6 +40,7 @@ export function AdminTemplatesView() {
     title: "",
     category: "interessentensuche",
     description: "",
+    content: "",
     is_premium: false,
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -86,6 +87,7 @@ export function AdminTemplatesView() {
         title: uploadData.title,
         category: uploadData.category,
         description: uploadData.description || null,
+        content: uploadData.content || null,
         file_name: selectedFile.name,
         file_path: filePath,
         file_size: selectedFile.size,
@@ -101,6 +103,7 @@ export function AdminTemplatesView() {
         title: "",
         category: "interessentensuche",
         description: "",
+        content: "",
         is_premium: false,
       });
       setSelectedFile(null);
@@ -220,7 +223,7 @@ export function AdminTemplatesView() {
       ) : (
         <div className="bg-white rounded-lg overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Titel
@@ -316,7 +319,7 @@ export function AdminTemplatesView() {
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-md">
-            <div className="border-b px-6 py-4 flex justify-between items-center">
+            <div className="bg-gray-50 px-6 py-4 flex justify-between items-center rounded-t-lg">
               <h3 className="text-xl font-bold text-dark">Vorlage hochladen</h3>
               <button
                 onClick={() => setShowUploadModal(false)}
@@ -381,6 +384,27 @@ export function AdminTemplatesView() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Suchbegriffe / Inhalt
+                </label>
+                <textarea
+                  value={uploadData.content}
+                  onChange={(e) =>
+                    setUploadData({
+                      ...uploadData,
+                      content: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  rows={4}
+                  placeholder="Wichtige Suchbegriffe, Schlüsselwörter oder Inhaltszusammenfassung für bessere Auffindbarkeit..."
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Diese Informationen helfen Benutzern, die Vorlage über die Suche zu finden
+                </p>
+              </div>
+
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -426,7 +450,7 @@ export function AdminTemplatesView() {
               </div>
             </div>
 
-            <div className="border-t px-6 py-4 flex gap-3">
+            <div className="bg-gray-50 px-6 py-4 flex gap-3 rounded-b-lg">
               <button
                 onClick={() => setShowUploadModal(false)}
                 className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"

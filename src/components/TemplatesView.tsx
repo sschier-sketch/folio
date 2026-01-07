@@ -9,6 +9,7 @@ interface Template {
   title: string;
   category: string;
   description: string | null;
+  content: string | null;
   file_name: string;
   file_path: string;
   file_size: number;
@@ -154,6 +155,7 @@ export default function TemplatesView() {
     return (
       template.title.toLowerCase().includes(query) ||
       template.description?.toLowerCase().includes(query) ||
+      template.content?.toLowerCase().includes(query) ||
       template.category.toLowerCase().includes(query)
     );
   });
@@ -214,7 +216,7 @@ export default function TemplatesView() {
 
             return (
               <div key={group.category} className="bg-white rounded-lg overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                <div className="bg-gray-50 px-6 py-4">
                   <h2 className="text-xl font-bold text-dark">{group.title}</h2>
                   <p className="text-sm text-gray-600 mt-1">{group.description}</p>
                 </div>
@@ -243,7 +245,7 @@ export default function TemplatesView() {
                               )}
                               {!template.is_premium && (
                                 <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded font-medium">
-                                  Free
+                                  Kostenlos
                                 </span>
                               )}
                             </div>

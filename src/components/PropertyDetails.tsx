@@ -90,7 +90,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant }
       </div>
 
       <div className="bg-white rounded-lg mb-6">
-        <div className="border-b border-gray-100 overflow-x-auto">
+        <div className="overflow-x-auto">
           <div className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon;

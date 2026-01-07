@@ -580,9 +580,7 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
             {upcomingTasks.map((task, index) => (
               <div
                 key={task.id}
-                className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                  index !== upcomingTasks.length - 1 ? "border-b border-gray-200" : ""
-                }`}
+                className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                 onClick={() => {
                   navigate(`/dashboard/properties/${task.property_id}?tab=maintenance`);
                 }}
@@ -636,9 +634,7 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
             {rentIncreases.map((increase, index) => (
               <div
                 key={`${increase.tenant_id}-${increase.increase_date}`}
-                className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                  index !== rentIncreases.length - 1 ? "border-b border-gray-200" : ""
-                }`}
+                className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                 onClick={() => {
                   if (onNavigateToTenant) {
                     onNavigateToTenant(increase.tenant_id);

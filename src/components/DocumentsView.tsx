@@ -62,7 +62,7 @@ export default function DocumentsView() {
         </button>
       </div>
 
-      <div className="border-b border-gray-200">
+      <div>
         <nav className="flex space-x-8">
           {tabs.map((tab) => {
             const Icon = tab.icon;

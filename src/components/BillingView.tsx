@@ -47,7 +47,7 @@ export default function BillingView() {
         </p>
       </div>
 
-      <div className="border-b border-gray-200">
+      <div>
         <div className="flex gap-1 overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon;
