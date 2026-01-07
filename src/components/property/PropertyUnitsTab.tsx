@@ -16,7 +16,6 @@ interface PropertyUnit {
   area_sqm: number | null;
   rooms: number | null;
   status: string;
-  tenant_id: string | null;
   rent_amount: number | null;
   notes: string;
   mea?: string | null;
@@ -33,22 +32,10 @@ interface PropertyUnit {
   outstanding_rent?: number;
 }
 
-interface RentalContractWithTenants {
-  id: string;
-  property_id: string;
-  base_rent: number;
-  tenants: Array<{
-    id: string;
-    first_name: string;
-    last_name: string;
-  }>;
-}
-
 export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [units, setUnits] = useState<PropertyUnit[]>([]);
-  const [availableContracts, setAvailableContracts] = useState<RentalContractWithTenants[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUnit, setEditingUnit] = useState<PropertyUnit | null>(null);
@@ -59,7 +46,6 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     area_sqm: "",
     rooms: "",
     status: "vacant",
-    tenant_id: "",
     notes: "",
     mea: "",
     location: "",
@@ -67,13 +53,9 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
 
   useEffect(() => {
     if (user) {
-      loadData();
+      loadUnits();
     }
   }, [user, propertyId]);
-
-  async function loadData() {
-    await Promise.all([loadUnits(), loadContracts()]);
-  }
 
   async function loadUnits() {
     try {
@@ -90,40 +72,29 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
         (data || []).map(async (unit) => {
           let tenant = null;
           let rentalContract = null;
-
           let outstandingRent = 0;
+          let unitStatus = unit.status;
 
-          if (unit.tenant_id) {
-            const { data: tenantData } = await supabase
-              .from("tenants")
-              .select("id, first_name, last_name")
-              .eq("id", unit.tenant_id)
-              .maybeSingle();
+          const { data: tenantData } = await supabase
+            .from("tenants")
+            .select("id, first_name, last_name")
+            .eq("unit_id", unit.id)
+            .eq("is_active", true)
+            .maybeSingle();
 
+          if (tenantData) {
             tenant = tenantData;
+            unitStatus = "rented";
 
             const { data: contractData } = await supabase
               .from("rental_contracts")
               .select("id, base_rent")
-              .contains("tenants", [{ id: unit.tenant_id }])
+              .eq("tenant_id", tenantData.id)
               .eq("property_id", propertyId)
               .maybeSingle();
 
-            if (!contractData) {
-              const { data: contractByTenant } = await supabase
-                .from("tenants")
-                .select("contract_id, rental_contracts(id, base_rent)")
-                .eq("id", unit.tenant_id)
-                .maybeSingle();
+            rentalContract = contractData;
 
-              if (contractByTenant?.rental_contracts) {
-                rentalContract = contractByTenant.rental_contracts;
-              }
-            } else {
-              rentalContract = contractData;
-            }
-
-            // Get outstanding rent payments
             if (rentalContract) {
               const { data: payments } = await supabase
                 .from("rent_payments")
@@ -137,7 +108,13 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
             }
           }
 
-          return { ...unit, tenant, rental_contract: rentalContract, outstanding_rent: outstandingRent };
+          return {
+            ...unit,
+            tenant,
+            rental_contract: rentalContract,
+            outstanding_rent: outstandingRent,
+            status: unitStatus
+          };
         })
       );
 
@@ -149,32 +126,6 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     }
   }
 
-  async function loadContracts() {
-    try {
-      const { data: contracts } = await supabase
-        .from("rental_contracts")
-        .select("id, property_id, base_rent")
-        .eq("property_id", propertyId);
-
-      if (contracts) {
-        const contractsWithTenants: RentalContractWithTenants[] = [];
-        for (const contract of contracts) {
-          const { data: tenants } = await supabase
-            .from("tenants")
-            .select("id, first_name, last_name")
-            .eq("contract_id", contract.id);
-
-          contractsWithTenants.push({
-            ...contract,
-            tenants: tenants || [],
-          });
-        }
-        setAvailableContracts(contractsWithTenants);
-      }
-    } catch (error) {
-      console.error("Error loading contracts:", error);
-    }
-  }
 
   async function handleSaveUnit(e: React.FormEvent) {
     e.preventDefault();
@@ -190,7 +141,6 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
         area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
         rooms: formData.rooms ? parseInt(formData.rooms) : null,
         status: formData.status,
-        tenant_id: formData.tenant_id || null,
         notes: formData.notes,
         mea: formData.mea || null,
         location: formData.location || null,
@@ -230,7 +180,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       setShowModal(false);
       setEditingUnit(null);
       resetForm();
-      loadData();
+      loadUnits();
     } catch (error) {
       console.error("Error saving unit:", error);
       alert("Fehler beim Speichern der Einheit");
@@ -245,7 +195,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       const { error } = await supabase.from("property_units").delete().eq("id", unit.id);
 
       if (error) throw error;
-      loadData();
+      loadUnits();
     } catch (error) {
       console.error("Error deleting unit:", error);
     }
@@ -260,7 +210,6 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       area_sqm: unit.area_sqm ? unit.area_sqm.toString() : "",
       rooms: unit.rooms ? unit.rooms.toString() : "",
       status: unit.status,
-      tenant_id: unit.tenant_id || "",
       notes: unit.notes || "",
       mea: unit.mea || "",
       location: unit.location || "",
@@ -276,7 +225,6 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       area_sqm: "",
       rooms: "",
       status: "vacant",
-      tenant_id: "",
       notes: "",
       mea: "",
       location: "",
@@ -312,19 +260,6 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       self_occupied: "bg-purple-100 text-purple-700",
     };
     return colors[status] || "bg-gray-100 text-gray-700";
-  };
-
-  const getTenantOptions = () => {
-    const options: Array<{ value: string; label: string }> = [];
-    availableContracts.forEach((contract) => {
-      contract.tenants.forEach((tenant) => {
-        options.push({
-          value: tenant.id,
-          label: `${tenant.first_name} ${tenant.last_name}`,
-        });
-      });
-    });
-    return options;
   };
 
   if (loading) {
@@ -627,26 +562,11 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mieter (aus Mietverhältnissen)
-                  </label>
-                  <select
-                    value={formData.tenant_id}
-                    onChange={(e) =>
-                      setFormData({ ...formData, tenant_id: e.target.value })
-                    }
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  >
-                    <option value="">Kein Mieter</option>
-                    {getTenantOptions().map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Die Miete wird automatisch aus dem Mietverhältnis übernommen
-                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-900">
+                      <strong>Hinweis:</strong> Mieter werden einer Einheit über die Mieterdetails zugeordnet. Öffnen Sie die Mieterdetails und wählen Sie dort die gewünschte Einheit aus.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="col-span-2">
