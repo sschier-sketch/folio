@@ -29,6 +29,7 @@ const translations = {
     "nav.tickets": "Tickets",
     "nav.financial": "Finanzen",
     "nav.documents": "Dokumente",
+    "nav.templates": "Vorlagen",
     "nav.billing": "Abrechnungen",
     "nav.account": "Account",
     "nav.languages": "Sprachen",

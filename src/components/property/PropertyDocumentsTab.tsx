@@ -701,28 +701,28 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
 
             <div className="p-6 space-y-4">
               <p className="text-gray-600">
-                Für Ihre Immobilie ist zwingend ein Bedarfsausweis erforderlich, mit objego erhalten Sie 20% Rabatt beliebig viele Energieausweise.
+                Für Ihre Immobilie ist zwingend nach <strong>§80 GEG – Energieausweispflicht</strong> ein Bedarfs- oder Verbrauchausweis erforderlich, mit rentably erhalten Sie 20% Rabatt beliebig viele Energieausweise.
               </p>
 
               <p className="text-gray-600">
-                Kopieren Sie den Code und füllen Sie bei unserem Partner McEnergieausweis das Formular aus. Am Ende des Formulars geben Sie den Code ein. Sie können diesen Code jederzeit in objego einsehen und kopieren, der Code ist bis zum 31.12.2025 gültig.
+                Kopieren Sie den Code und füllen Sie bei unserem Partner McEnergieausweis das Formular aus. Am Ende des Formulars geben Sie den Code ein. Sie können diesen Code jederzeit in rentably einsehen und kopieren, der Code ist bis zum 31.12.2026 gültig.
               </p>
 
               <div className="text-center my-6">
                 <img
-                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='80' viewBox='0 0 300 80'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' font-weight='bold' fill='%2300b8a9'%3EMcEnergieausweis%3C/text%3E%3Ctext x='50%25' y='75%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='12' fill='%23666'%3EMcMakler Gruppe%3C/text%3E%3C/svg%3E"
+                  src="/mcmakler_energieausweis_logo_rgb.svg"
                   alt="McEnergieausweis Logo"
-                  className="mx-auto"
+                  className="mx-auto h-20"
                 />
               </div>
 
               <div className="bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg p-6 text-center">
                 <div className="text-3xl font-bold text-blue-600 mb-3 tracking-wider">
-                  OBJ-736AD6
+                  RET-736AD5
                 </div>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText("OBJ-736AD6");
+                    navigator.clipboard.writeText("RET-736AD5");
                     setCopiedCode(true);
                     setTimeout(() => setCopiedCode(false), 2000);
                   }}
@@ -750,7 +750,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg font-medium hover:bg-teal-600 transition-colors"
               >
-                Zum Bedarfsausweis
+                Zu McEnergieausweis
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>

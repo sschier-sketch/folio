@@ -21,6 +21,7 @@ import {
   Shield,
   FileText,
   Calculator,
+  Files,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -36,6 +37,7 @@ import SettingsView from "./SettingsView";
 import ReferralProgramView from "./ReferralProgramView";
 import FeedbackListView from "./FeedbackListView";
 import DocumentsView from "./DocumentsView";
+import TemplatesView from "./TemplatesView";
 import BillingView from "./BillingView";
 import Footer from "./Footer";
 type View =
@@ -46,6 +48,7 @@ type View =
   | "payments"
   | "financial"
   | "documents"
+  | "templates"
   | "billing"
   | "settings-profile"
   | "settings-users"
@@ -76,6 +79,7 @@ export default function Dashboard() {
     { id: "tickets", labelKey: "nav.tickets", icon: MessageSquare },
     { id: "financial", labelKey: "nav.financial", icon: TrendingUp },
     { id: "documents", labelKey: "nav.documents", icon: FileText },
+    { id: "templates", labelKey: "nav.templates", icon: Files },
     { id: "billing", labelKey: "nav.billing", icon: Calculator },
   ];
   useEffect(() => {
@@ -387,6 +391,7 @@ export default function Dashboard() {
             {currentView === "tickets" && <TicketsView />}{" "}
             {currentView === "financial" && <FinancesView />}{" "}
             {currentView === "documents" && <DocumentsView />}{" "}
+            {currentView === "templates" && <TemplatesView />}{" "}
             {currentView === "billing" && <BillingView />}{" "}
             {currentView === "settings-profile" && (
               <SettingsView activeTab="profile" />

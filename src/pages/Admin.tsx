@@ -14,10 +14,12 @@ import {
   XCircle,
   ArrowLeft,
   MessageSquare,
+  FileText,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
 import { AdminEmailTemplatesView } from "../components/AdminEmailTemplatesView";
+import { AdminTemplatesView } from "../components/AdminTemplatesView";
 interface UserData {
   id: string;
   email: string;
@@ -37,7 +39,7 @@ export function Admin() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "tickets" | "templates"
+    "overview" | "users" | "tickets" | "templates" | "document_templates"
   >("overview");
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -205,6 +207,13 @@ export function Admin() {
           >
             {" "}
             <Mail className="w-4 h-4 inline mr-2" /> E-Mail Templates{" "}
+          </button>{" "}
+          <button
+            onClick={() => setActiveTab("document_templates")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "document_templates" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
+          >
+            {" "}
+            <FileText className="w-4 h-4 inline mr-2" /> Dokument-Vorlagen{" "}
           </button>{" "}
         </div>{" "}
         {activeTab === "overview" && (
@@ -418,6 +427,7 @@ export function Admin() {
         )}{" "}
         {activeTab === "tickets" && <AdminTicketsView />}{" "}
         {activeTab === "templates" && <AdminEmailTemplatesView />}{" "}
+        {activeTab === "document_templates" && <AdminTemplatesView />}{" "}
       </div>{" "}
     </div>
   );
