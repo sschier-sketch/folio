@@ -287,25 +287,25 @@ export function AdminTemplatesView() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <button
                         onClick={() => handleDownload(template)}
                         disabled={downloading === template.id}
-                        className="text-blue-600 hover:text-blue-900 transition-colors disabled:opacity-50"
+                        className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Vorlage herunterladen"
                       >
                         {downloading === template.id ? (
-                          <Loader className="w-4 h-4 animate-spin" />
+                          <Loader className="w-5 h-5 animate-spin" />
                         ) : (
-                          <Download className="w-4 h-4" />
+                          <Download className="w-5 h-5" />
                         )}
                       </button>
                       <button
                         onClick={() => handleDelete(template)}
-                        className="text-red-600 hover:text-red-900 transition-colors"
+                        className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                         title="Vorlage löschen"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </div>
                   </td>
