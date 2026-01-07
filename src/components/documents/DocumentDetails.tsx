@@ -112,7 +112,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
           description: data.description || "",
         });
 
-        if (data.file_type === "application/pdf") {
+        if (data.file_type === "application/pdf" || data.file_type.startsWith("image/")) {
           loadPreview(data.file_path);
         }
       }
@@ -164,6 +164,13 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                 .eq("id", assoc.association_id)
                 .maybeSingle();
               name = (contract as any)?.tenants?.name || "Unbekannt";
+            } else if (assoc.association_type === "tenant") {
+              const { data: tenant } = await supabase
+                .from("tenants")
+                .select("name")
+                .eq("id", assoc.association_id)
+                .maybeSingle();
+              name = tenant?.name || "Unbekannt";
             }
 
             return { ...assoc, name };
@@ -616,14 +623,22 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                   title="PDF Vorschau"
                 />
               </div>
+            ) : previewUrl && document.file_type.startsWith("image/") ? (
+              <div className="bg-gray-50 rounded-lg overflow-hidden">
+                <img
+                  src={previewUrl}
+                  alt={document.file_name}
+                  className="w-full h-auto max-h-[600px] object-contain"
+                />
+              </div>
             ) : (
               <div className="bg-gray-50 rounded-lg p-6 aspect-video flex items-center justify-center">
                 <div className="text-center">
                   <FileText className="w-16 h-16 text-gray-400 mx-auto mb-3" />
                   <p className="text-sm text-gray-500">Vorschau nicht verfügbar</p>
                   <p className="text-xs text-gray-400 mt-1">
-                    {document.file_type === "application/pdf"
-                      ? "PDF wird geladen..."
+                    {document.file_type === "application/pdf" || document.file_type.startsWith("image/")
+                      ? "Vorschau wird geladen..."
                       : "Laden Sie die Datei herunter, um sie anzuzeigen"}
                   </p>
                 </div>

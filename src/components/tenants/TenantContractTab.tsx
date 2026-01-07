@@ -3,6 +3,7 @@ import { FileText, Upload, Download, Lock, X, Trash2, Eye, Calendar, Plus } from
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
+import DocumentDetails from "../documents/DocumentDetails";
 
 interface TenantContractTabProps {
   tenantId: string;
@@ -40,6 +41,7 @@ export default function TenantContractTab({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
@@ -241,8 +243,27 @@ export default function TenantContractTab({
     }
   }
 
+  function handleViewDocument(documentId: string) {
+    setSelectedDocumentId(documentId);
+  }
+
+  function handleBackFromDetails() {
+    setSelectedDocumentId(null);
+    loadDocuments();
+  }
+
   const getDocumentTypeLabel = (type: string) => {
     switch (type) {
+      case "contract":
+        return "Vertrag";
+      case "rental_agreement":
+        return "Mietvertrag";
+      case "invoice":
+        return "Rechnung";
+      case "receipt":
+        return "Quittung";
+      case "report":
+        return "Bericht";
       case "main_contract":
         return "Hauptvertrag";
       case "amendment":
@@ -275,6 +296,16 @@ export default function TenantContractTab({
       year: "numeric",
     });
   };
+
+  if (selectedDocumentId) {
+    return (
+      <DocumentDetails
+        documentId={selectedDocumentId}
+        onBack={handleBackFromDetails}
+        onUpdate={loadDocuments}
+      />
+    );
+  }
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
@@ -385,7 +416,11 @@ export default function TenantContractTab({
               </thead>
               <tbody>
                 {documents.map((doc) => (
-                  <tr key={doc.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr
+                    key={doc.id}
+                    className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleViewDocument(doc.id)}
+                  >
                     <td className="py-4 px-6 text-sm text-gray-700">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-gray-400" />
@@ -416,14 +451,30 @@ export default function TenantContractTab({
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => handleDownload(doc.file_path, doc.file_name)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDocument(doc.id);
+                          }}
+                          className="text-primary-blue hover:text-blue-700 transition-colors"
+                          title="Ansehen"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownload(doc.file_path, doc.file_name);
+                          }}
                           className="text-primary-blue hover:text-blue-700 transition-colors"
                           title="Herunterladen"
                         >
                           <Download className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(doc.id, doc.file_path)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(doc.id, doc.file_path);
+                          }}
                           className="text-red-500 hover:text-red-700 transition-colors"
                           title="Löschen"
                         >
