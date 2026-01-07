@@ -554,7 +554,7 @@ export default function TenantModal({
           </select>
         </div>
 
-        {units.length > 0 && (
+        {(units.length > 0 || tenant) && (
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-400 mb-1">
               Mieteinheit (Optional)
