@@ -22,6 +22,7 @@ interface TenantOverviewTabProps {
 interface Tenant {
   id: string;
   property_id: string | null;
+  unit_id: string | null;
   salutation: string | null;
   first_name: string;
   last_name: string;
@@ -54,6 +55,8 @@ export default function TenantOverviewTab({
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [property, setProperty] = useState<Property | null>(null);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [units, setUnits] = useState<{ id: string; unit_number: string }[]>([]);
+  const [currentUnit, setCurrentUnit] = useState<{ id: string; unit_number: string } | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Tenant | null>(null);
 
@@ -62,6 +65,30 @@ export default function TenantOverviewTab({
       loadData();
     }
   }, [user, tenantId]);
+
+  useEffect(() => {
+    if (formData?.property_id) {
+      loadUnits(formData.property_id);
+    } else {
+      setUnits([]);
+    }
+  }, [formData?.property_id]);
+
+  async function loadUnits(propertyId: string) {
+    try {
+      const { data } = await supabase
+        .from("property_units")
+        .select("id, unit_number")
+        .eq("property_id", propertyId)
+        .order("unit_number");
+
+      if (data) {
+        setUnits(data);
+      }
+    } catch (error) {
+      console.error("Error loading units:", error);
+    }
+  }
 
   async function loadData() {
     try {
@@ -84,6 +111,18 @@ export default function TenantOverviewTab({
             .maybeSingle();
 
           if (propertyData) setProperty(propertyData);
+
+          await loadUnits(tenantRes.data.property_id);
+
+          if (tenantRes.data.unit_id) {
+            const { data: unitData } = await supabase
+              .from("property_units")
+              .select("id, unit_number")
+              .eq("id", tenantRes.data.unit_id)
+              .maybeSingle();
+
+            if (unitData) setCurrentUnit(unitData);
+          }
         }
       }
 
@@ -109,6 +148,7 @@ export default function TenantOverviewTab({
         .from("tenants")
         .update({
           property_id: formData.property_id,
+          unit_id: formData.unit_id || null,
           salutation: formData.salutation,
           first_name: formData.first_name,
           last_name: formData.last_name,
@@ -136,13 +176,22 @@ export default function TenantOverviewTab({
           .eq("tenant_id", tenant.id)
           .maybeSingle();
 
-        if (!existingContract) {
+        if (existingContract) {
+          await supabase
+            .from("rental_contracts")
+            .update({
+              property_id: formData.property_id,
+              unit_id: formData.unit_id || null,
+            })
+            .eq("id", existingContract.id);
+        } else {
           const { error: contractError } = await supabase
             .from("rental_contracts")
             .insert([
               {
                 tenant_id: tenant.id,
                 property_id: formData.property_id,
+                unit_id: formData.unit_id || null,
                 user_id: user.id,
                 rent_type: "flat_rate",
                 flat_rate_amount: 0,
@@ -294,25 +343,51 @@ export default function TenantOverviewTab({
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">Immobilie</div>
                 {isEditing && formData ? (
-                  <select
-                    value={formData.property_id || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, property_id: e.target.value || null })
-                    }
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  >
-                    <option value="">Bitte wählen...</option>
-                    {properties.map((prop) => (
-                      <option key={prop.id} value={prop.id}>
-                        {prop.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="space-y-2">
+                    <select
+                      value={formData.property_id || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, property_id: e.target.value || null, unit_id: null })
+                      }
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    >
+                      <option value="">Bitte wählen...</option>
+                      {properties.map((prop) => (
+                        <option key={prop.id} value={prop.id}>
+                          {prop.name}
+                        </option>
+                      ))}
+                    </select>
+                    {units.length > 0 && (
+                      <div>
+                        <div className="text-xs text-gray-400 mb-1">Mieteinheit (Optional)</div>
+                        <select
+                          value={formData.unit_id || ""}
+                          onChange={(e) =>
+                            setFormData({ ...formData, unit_id: e.target.value || null })
+                          }
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                        >
+                          <option value="">Keine Einheit zuweisen</option>
+                          {units.map((unit) => (
+                            <option key={unit.id} value={unit.id}>
+                              {unit.unit_number}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <div className="font-semibold text-dark">
                       {property?.name || "Keine Immobilie zugeordnet"}
                     </div>
+                    {currentUnit && (
+                      <div className="text-sm text-gray-600">
+                        Einheit: {currentUnit.unit_number}
+                      </div>
+                    )}
                     {property?.address && (
                       <div className="text-sm text-gray-600">{property.address}</div>
                     )}
