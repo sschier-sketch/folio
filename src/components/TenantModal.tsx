@@ -1341,10 +1341,27 @@ export default function TenantModal({
           {!tenant && renderStepIndicator()}
 
           <div className="mb-6">
-            {currentStep === 1 && renderStep1()}
-            {currentStep === 2 && renderStep2()}
-            {currentStep === 3 && renderStep3()}
-            {currentStep === 4 && renderStep4()}
+            {tenant ? (
+              <div className="space-y-8">
+                {renderStep1()}
+                <div className="border-t border-gray-200 pt-6">
+                  {renderStep2()}
+                </div>
+                <div className="border-t border-gray-200 pt-6">
+                  {renderStep3()}
+                </div>
+                <div className="border-t border-gray-200 pt-6">
+                  {renderStep4()}
+                </div>
+              </div>
+            ) : (
+              <>
+                {currentStep === 1 && renderStep1()}
+                {currentStep === 2 && renderStep2()}
+                {currentStep === 3 && renderStep3()}
+                {currentStep === 4 && renderStep4()}
+              </>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-gray-100">

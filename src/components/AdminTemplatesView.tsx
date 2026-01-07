@@ -196,7 +196,7 @@ export function AdminTemplatesView() {
         </div>
         <button
           onClick={() => setShowUploadModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
         >
           <Plus className="w-5 h-5" />
           Vorlage hochladen
@@ -214,7 +214,7 @@ export function AdminTemplatesView() {
           </p>
           <button
             onClick={() => setShowUploadModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-5 h-5" />
             Erste Vorlage hochladen
@@ -283,7 +283,7 @@ export function AdminTemplatesView() {
                       <button
                         onClick={() => handleDownload(template)}
                         disabled={downloading === template.id}
-                        className="p-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Vorlage herunterladen"
                       >
                         {downloading === template.id ? (
@@ -294,7 +294,7 @@ export function AdminTemplatesView() {
                       </button>
                       <button
                         onClick={() => handleDelete(template)}
-                        className="p-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-full font-medium hover:bg-red-600 transition-colors"
                         title="Vorlage löschen"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -454,7 +454,7 @@ export function AdminTemplatesView() {
                 disabled={
                   !uploadData.title || !selectedFile || uploading
                 }
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {uploading ? (
                   <>
