@@ -316,7 +316,7 @@ export default function Dashboard() {
                 setCurrentView("referral");
                 setShowMobileMenu(false);
               }}
-              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full p-4 text-white cursor-pointer hover:transition-shadow"
+              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 text-white cursor-pointer hover:transition-shadow"
             >
               {" "}
               <div className="flex items-center gap-3 mb-3">
@@ -360,7 +360,7 @@ export default function Dashboard() {
             </nav>{" "}
             <div
               onClick={() => setCurrentView("referral")}
-              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full p-4 text-white cursor-pointer hover:transition-shadow"
+              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 text-white cursor-pointer hover:transition-shadow"
             >
               {" "}
               <div className="flex items-center gap-3 mb-3">

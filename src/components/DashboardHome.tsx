@@ -580,10 +580,7 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
             {upcomingTasks.map((task, index) => (
               <div
                 key={task.id}
-                className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                onClick={() => {
-                  navigate(`/dashboard/properties/${task.property_id}?tab=maintenance`);
-                }}
+                className="p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
