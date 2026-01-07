@@ -32,12 +32,14 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
   });
 
   const meterTypes = [
-    { value: "strom", label: "Strom", units: ["kWh", "MWh"] },
-    { value: "gas", label: "Gas", units: ["kWh", "m³"] },
-    { value: "heizung", label: "Heizung", units: ["kWh", "MWh"] },
-    { value: "warmwasser", label: "Warmwasser", units: ["m³", "l"] },
-    { value: "kaltwasser", label: "Kaltwasser", units: ["m³", "l"] },
-    { value: "sonstiges", label: "Sonstiges", units: ["Einheiten"] }
+    { value: "strom", label: "Strom", units: ["kWh", "MWh", "Wh"], defaultUnit: "kWh" },
+    { value: "gas", label: "Gas", units: ["kWh", "m³", "MWh"], defaultUnit: "kWh" },
+    { value: "heizung", label: "Heizung", units: ["kWh", "MWh", "Wh", "MJ", "GJ"], defaultUnit: "kWh" },
+    { value: "fernwaerme", label: "Fernwärme", units: ["kWh", "MWh", "MJ", "GJ"], defaultUnit: "kWh" },
+    { value: "warmwasser", label: "Warmwasser", units: ["m³", "Liter"], defaultUnit: "m³" },
+    { value: "kaltwasser", label: "Kaltwasser", units: ["m³", "Liter"], defaultUnit: "m³" },
+    { value: "wasser_gesamt", label: "Wasser (Gesamt)", units: ["m³", "Liter"], defaultUnit: "m³" },
+    { value: "sonstiges", label: "Sonstiges", units: ["Wh", "kWh", "MWh", "MJ", "GJ", "m³", "Liter", "Sonstiges"], defaultUnit: "Sonstiges" }
   ];
 
   const readingIntervals = [
@@ -45,6 +47,7 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
     { value: "quarterly", label: "Quartalsweise" },
     { value: "halfyearly", label: "Halbjährlich" },
     { value: "yearly", label: "Jährlich" },
+    { value: "on_demand", label: "Bei Bedarf" },
     { value: "manual", label: "Manuell" }
   ];
 
@@ -63,10 +66,10 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
   }, [formData.property_id]);
 
   useEffect(() => {
-    if (formData.meter_type) {
+    if (formData.meter_type && !meter) {
       const meterType = meterTypes.find(t => t.value === formData.meter_type);
-      if (meterType && !formData.unit_of_measurement) {
-        setFormData(prev => ({ ...prev, unit_of_measurement: meterType.units[0] }));
+      if (meterType) {
+        setFormData(prev => ({ ...prev, unit_of_measurement: meterType.defaultUnit }));
       }
     }
   }, [formData.meter_type]);

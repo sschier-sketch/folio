@@ -3,14 +3,12 @@ import {
   FileText,
   Calculator,
   Gauge,
-  Eye,
   Download,
   History,
 } from "lucide-react";
 import BillingOverview from "./billing/BillingOverview";
 import OperatingCostsView from "./billing/OperatingCostsView";
 import MetersView from "./billing/MetersView";
-import BillingPreview from "./billing/BillingPreview";
 import BillingExportView from "./billing/BillingExportView";
 import BillingHistoryView from "./billing/BillingHistoryView";
 
@@ -18,7 +16,6 @@ type Tab =
   | "overview"
   | "operating-costs"
   | "meters"
-  | "preview"
   | "export"
   | "history";
 
@@ -33,7 +30,6 @@ export default function BillingView() {
       icon: Calculator,
     },
     { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },
-    { id: "preview" as Tab, label: "Vorschau", icon: Eye },
     { id: "export" as Tab, label: "Export", icon: Download, premium: true },
     { id: "history" as Tab, label: "Historie", icon: History, premium: true },
   ];
@@ -78,7 +74,6 @@ export default function BillingView() {
         {activeTab === "overview" && <BillingOverview />}
         {activeTab === "operating-costs" && <OperatingCostsView />}
         {activeTab === "meters" && <MetersView />}
-        {activeTab === "preview" && <BillingPreview />}
         {activeTab === "export" && <BillingExportView />}
         {activeTab === "history" && <BillingHistoryView />}
       </div>

@@ -46,8 +46,10 @@ export default function MetersManagementView({
     { value: "strom", label: "Strom" },
     { value: "gas", label: "Gas" },
     { value: "heizung", label: "Heizung" },
+    { value: "fernwaerme", label: "Fernwärme" },
     { value: "warmwasser", label: "Warmwasser" },
     { value: "kaltwasser", label: "Kaltwasser" },
+    { value: "wasser_gesamt", label: "Wasser (Gesamt)" },
     { value: "sonstiges", label: "Sonstiges" }
   ];
 
