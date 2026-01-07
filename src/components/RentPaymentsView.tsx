@@ -13,6 +13,7 @@ interface RentPayment {
   property: { name: string; address: string } | null;
   rental_contract: {
     tenants: Array<{ first_name: string; last_name: string }>;
+    rent_due_day: number;
   } | null;
 }
 export default function RentPaymentsView() {
@@ -65,7 +66,7 @@ export default function RentPaymentsView() {
       let query = supabase
         .from("rent_payments")
         .select(
-          ` *, property:properties(name, address), rental_contract:rental_contracts( tenants(first_name, last_name) ) `,
+          ` *, property:properties(name, address), rental_contract:rental_contracts( tenants(first_name, last_name), rent_due_day ) `,
         )
         .eq("user_id", user.id)
         .order("due_date", { ascending: true });
@@ -139,11 +140,24 @@ export default function RentPaymentsView() {
       day: "numeric",
     });
   };
+  const isOverdue = (payment: RentPayment) => {
+    if (payment.paid) return false;
+    const dueDate = new Date(payment.due_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
+    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff > 1;
+  };
+
   const totalUnpaid = payments
-    .filter((p) => !p.paid)
+    .filter((p) => !p.paid && !isOverdue(p))
     .reduce((sum, p) => sum + Number(p.amount), 0);
   const totalPaid = payments
     .filter((p) => p.paid)
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalOverdue = payments
+    .filter((p) => isOverdue(p))
     .reduce((sum, p) => sum + Number(p.amount), 0);
   if (loading) {
     return (
@@ -162,11 +176,17 @@ export default function RentPaymentsView() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg p-6 border border-gray-100">
           <div className="text-sm text-gray-400 mb-1">Ausstehend</div>
           <div className="text-2xl font-bold text-orange-600">
             {formatCurrency(totalUnpaid)}
+          </div>
+        </div>
+        <div className="bg-white rounded-lg p-6 border border-gray-100">
+          <div className="text-sm text-gray-400 mb-1">Überfällig</div>
+          <div className="text-2xl font-bold text-red-600">
+            {formatCurrency(totalOverdue)}
           </div>
         </div>
         <div className="bg-white rounded-lg p-6 border border-gray-100">
@@ -178,7 +198,7 @@ export default function RentPaymentsView() {
         <div className="bg-white rounded-lg p-6 border border-gray-100">
           <div className="text-sm text-gray-400 mb-1">Gesamt</div>
           <div className="text-2xl font-bold text-dark">
-            {formatCurrency(totalUnpaid + totalPaid)}
+            {formatCurrency(totalUnpaid + totalPaid + totalOverdue)}
           </div>
         </div>
       </div>
@@ -391,6 +411,10 @@ export default function RentPaymentsView() {
                       {payment.paid ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                           <Check className="w-3 h-3" /> Bezahlt
+                        </span>
+                      ) : isOverdue(payment) ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <X className="w-3 h-3" /> Überfällig
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">

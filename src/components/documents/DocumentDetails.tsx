@@ -112,7 +112,16 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
           description: data.description || "",
         });
 
-        if (data.file_type === "application/pdf" || data.file_type.startsWith("image/")) {
+        const supportedPreviewTypes = [
+          "application/pdf",
+          "image/png",
+          "image/jpg",
+          "image/jpeg",
+          "image/heic",
+          "image/heif"
+        ];
+
+        if (supportedPreviewTypes.some(type => data.file_type.includes(type)) || data.file_type.startsWith("image/")) {
           loadPreview(data.file_path);
         }
       }
@@ -623,12 +632,12 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                   title="PDF Vorschau"
                 />
               </div>
-            ) : previewUrl && document.file_type.startsWith("image/") ? (
-              <div className="bg-gray-50 rounded-lg overflow-hidden">
+            ) : previewUrl && (document.file_type.startsWith("image/") || document.file_type.includes("heic") || document.file_type.includes("heif")) ? (
+              <div className="bg-gray-50 rounded-lg overflow-hidden p-4">
                 <img
                   src={previewUrl}
                   alt={document.file_name}
-                  className="w-full h-auto max-h-[600px] object-contain"
+                  className="w-full h-auto max-h-[600px] object-contain mx-auto"
                 />
               </div>
             ) : (
@@ -636,10 +645,14 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                 <div className="text-center">
                   <FileText className="w-16 h-16 text-gray-400 mx-auto mb-3" />
                   <p className="text-sm text-gray-500">Vorschau nicht verfügbar</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {document.file_type === "application/pdf" || document.file_type.startsWith("image/")
-                      ? "Vorschau wird geladen..."
-                      : "Laden Sie die Datei herunter, um sie anzuzeigen"}
+                  <p className="text-xs text-gray-400 mt-1 max-w-md">
+                    Vorschau ist nur für folgende Dateitypen verfügbar:
+                  </p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    PDF, PNG, JPG, JPEG, HEIC
+                  </p>
+                  <p className="text-xs text-gray-500 mt-3">
+                    Laden Sie die Datei herunter, um sie anzuzeigen
                   </p>
                 </div>
               </div>

@@ -25,6 +25,8 @@ interface Stats {
   averageYield: number;
   totalMonthlyExpenses: number;
   monthlySurplus: number;
+  unpaidRent: number;
+  overdueRent: number;
 }
 
 interface MaintenanceTask {
@@ -67,6 +69,8 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
     averageYield: 0,
     totalMonthlyExpenses: 0,
     monthlySurplus: 0,
+    unpaidRent: 0,
+    overdueRent: 0,
   });
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -83,7 +87,7 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
   const loadStats = async () => {
     if (!user) return;
     try {
-      const [propertiesRes, tenantsRes, contractsRes, loansRes] =
+      const [propertiesRes, tenantsRes, contractsRes, loansRes, paymentsRes] =
         await Promise.all([
           supabase
             .from("properties")
@@ -102,6 +106,11 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
             .from("loans")
             .select("monthly_payment")
             .eq("user_id", user.id),
+          supabase
+            .from("rent_payments")
+            .select("amount, paid, due_date")
+            .eq("user_id", user.id)
+            .eq("paid", false),
         ]);
       const propertiesCount = propertiesRes.data?.length || 0;
       const tenantsCount = tenantsRes.data?.length || 0;
@@ -120,6 +129,25 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
       const averageYield =
         totalPropertyValue > 0 ? (annualRent / totalPropertyValue) * 100 : 0;
       const monthlySurplus = totalMonthlyRent - totalMonthlyExpenses;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let unpaidRent = 0;
+      let overdueRent = 0;
+
+      paymentsRes.data?.forEach((payment) => {
+        const dueDate = new Date(payment.due_date);
+        dueDate.setHours(0, 0, 0, 0);
+        const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (daysDiff > 1) {
+          overdueRent += Number(payment.amount);
+        } else {
+          unpaidRent += Number(payment.amount);
+        }
+      });
+
       setStats({
         propertiesCount,
         tenantsCount,
@@ -128,6 +156,8 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
         averageYield,
         totalMonthlyExpenses,
         monthlySurplus,
+        unpaidRent,
+        overdueRent,
       });
     } catch (error) {
       console.error("Error loading stats:", error);
@@ -338,9 +368,25 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
             {" "}
             {formatCurrency(stats.totalMonthlyRent)}{" "}
           </div>{" "}
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-gray-400 mb-2">
             {t("dashboard.rent.monthly")}
-          </div>{" "}
+          </div>
+          {(stats.unpaidRent > 0 || stats.overdueRent > 0) && (
+            <div className="flex items-center gap-3 text-xs pt-2 border-t border-gray-100">
+              {stats.unpaidRent > 0 && (
+                <div className="flex items-center gap-1">
+                  <span className="text-orange-600 font-medium">Offen:</span>
+                  <span className="text-gray-600">{formatCurrency(stats.unpaidRent)}</span>
+                </div>
+              )}
+              {stats.overdueRent > 0 && (
+                <div className="flex items-center gap-1">
+                  <span className="text-red-600 font-medium">Überfällig:</span>
+                  <span className="text-gray-600">{formatCurrency(stats.overdueRent)}</span>
+                </div>
+              )}
+            </div>
+          )}{" "}
         </div>{" "}
         <div className="bg-white rounded-lg p-6">
           {" "}

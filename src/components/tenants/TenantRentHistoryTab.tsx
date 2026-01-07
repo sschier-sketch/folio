@@ -34,6 +34,9 @@ interface Contract {
   graduated_rent_new_amount: number;
   index_first_increase_date: string;
   auto_create_rent_increase_tickets: boolean;
+  is_sublet: boolean;
+  vat_applicable: boolean;
+  rent_due_day: number;
 }
 
 export default function TenantRentHistoryTab({
@@ -57,6 +60,9 @@ export default function TenantRentHistoryTab({
     graduated_rent_new_amount: "",
     index_first_increase_date: "",
     auto_create_rent_increase_tickets: false,
+    is_sublet: false,
+    vat_applicable: false,
+    rent_due_day: 1,
   });
 
   useEffect(() => {
@@ -91,6 +97,9 @@ export default function TenantRentHistoryTab({
           graduated_rent_new_amount: contractData.graduated_rent_new_amount?.toString() || "",
           index_first_increase_date: contractData.index_first_increase_date || "",
           auto_create_rent_increase_tickets: contractData.auto_create_rent_increase_tickets || false,
+          is_sublet: contractData.is_sublet || false,
+          vat_applicable: contractData.vat_applicable || false,
+          rent_due_day: contractData.rent_due_day || 1,
         });
 
         const { data: historyData } = await supabase
@@ -150,6 +159,9 @@ export default function TenantRentHistoryTab({
           graduated_rent_new_amount: editData.rent_increase_type === "graduated" ? parseFloat(editData.graduated_rent_new_amount) || null : null,
           index_first_increase_date: editData.rent_increase_type === "index" ? editData.index_first_increase_date || null : null,
           auto_create_rent_increase_tickets: editData.rent_increase_type !== "none" ? editData.auto_create_rent_increase_tickets : false,
+          is_sublet: editData.is_sublet,
+          vat_applicable: editData.vat_applicable,
+          rent_due_day: editData.rent_due_day,
         })
         .eq("id", contract.id);
 
@@ -476,6 +488,60 @@ export default function TenantRentHistoryTab({
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h4 className="text-sm font-semibold text-gray-700 mb-4">Zusätzliche Informationen</h4>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Mietfälligkeit (Tag im Monat)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="31"
+                    value={editData.rent_due_day}
+                    onChange={(e) =>
+                      setEditData({ ...editData, rent_due_day: parseInt(e.target.value) || 1 })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Der Tag im Monat, an dem die Miete fällig wird (z.B. 1 = am 1. des Monats).
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editData.is_sublet}
+                    onChange={(e) =>
+                      setEditData({ ...editData, is_sublet: e.target.checked })
+                    }
+                    className="w-4 h-4 text-primary-blue"
+                  />
+                  <label className="text-sm text-gray-700">
+                    Untermietverhältnis
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editData.vat_applicable}
+                    onChange={(e) =>
+                      setEditData({ ...editData, vat_applicable: e.target.checked })
+                    }
+                    className="w-4 h-4 text-primary-blue"
+                  />
+                  <label className="text-sm text-gray-700">
+                    Mehrwertsteuer berechnen
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
