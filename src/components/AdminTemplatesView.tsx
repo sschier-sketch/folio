@@ -221,29 +221,23 @@ export function AdminTemplatesView() {
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg overflow-hidden">
-          <table className="w-full">
+        <div className="bg-white rounded-lg overflow-x-auto">
+          <table className="w-full min-w-[1000px]">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Titel
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Titel & Beschreibung
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Kategorie
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Dateiname
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Datei
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Größe
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Premium
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Downloads
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Aktionen
                 </th>
               </tr>
@@ -251,47 +245,45 @@ export function AdminTemplatesView() {
             <tbody className="bg-white divide-y divide-gray-200">
               {templates.map((template) => (
                 <tr key={template.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                  <td className="px-4 py-4">
+                    <div className="text-sm font-medium text-gray-900 mb-1">
                       {template.title}
                     </div>
                     {template.description && (
-                      <div className="text-sm text-gray-500">
+                      <div className="text-xs text-gray-500 max-w-xs truncate">
                         {template.description}
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-4 text-sm text-gray-500">
                     {getCategoryLabel(template.category)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {template.file_name}
+                  <td className="px-4 py-4">
+                    <div className="text-sm text-gray-900">{template.file_name}</div>
+                    <div className="text-xs text-gray-500">{formatFileSize(template.file_size)}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatFileSize(template.file_size)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {template.is_premium ? (
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded font-medium">
-                        Ja
+                  <td className="px-4 py-4">
+                    <div className="flex flex-col gap-1">
+                      {template.is_premium ? (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded font-medium inline-flex items-center justify-center">
+                          Premium
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-medium inline-flex items-center justify-center">
+                          Gratis
+                        </span>
+                      )}
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded font-medium inline-flex items-center justify-center">
+                        {template.download_count} DL
                       </span>
-                    ) : (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-medium">
-                        Nein
-                      </span>
-                    )}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded font-medium">
-                      {template.download_count}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex items-center gap-3">
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleDownload(template)}
                         disabled={downloading === template.id}
-                        className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Vorlage herunterladen"
                       >
                         {downloading === template.id ? (
@@ -302,7 +294,7 @@ export function AdminTemplatesView() {
                       </button>
                       <button
                         onClick={() => handleDelete(template)}
-                        className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                        className="p-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
                         title="Vorlage löschen"
                       >
                         <Trash2 className="w-5 h-5" />
