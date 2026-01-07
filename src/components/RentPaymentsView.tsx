@@ -3,12 +3,21 @@ import { Check, X, Filter, Lock, Building2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
+interface PartialPayment {
+  amount: number;
+  date: string;
+  note?: string;
+}
+
 interface RentPayment {
   id: string;
   due_date: string;
   amount: number;
   paid: boolean;
   paid_date: string | null;
+  paid_amount: number;
+  payment_status: 'paid' | 'partial' | 'unpaid';
+  partial_payments: PartialPayment[];
   notes: string;
   property: { name: string; address: string } | null;
   rental_contract: {
@@ -30,6 +39,11 @@ export default function RentPaymentsView() {
   );
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [showPartialPaymentModal, setShowPartialPaymentModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<RentPayment | null>(null);
+  const [partialAmount, setPartialAmount] = useState("");
+  const [partialDate, setPartialDate] = useState(new Date().toISOString().split('T')[0]);
+  const [partialNote, setPartialNote] = useState("");
   useEffect(() => {
     loadData();
   }, [user]);
@@ -118,13 +132,74 @@ export default function RentPaymentsView() {
     try {
       const { error } = await supabase
         .from("rent_payments")
-        .update({ paid: false, paid_date: null })
+        .update({
+          paid: false,
+          paid_date: null,
+          paid_amount: 0,
+          payment_status: 'unpaid',
+          partial_payments: []
+        })
         .eq("id", paymentId);
       if (error) throw error;
       loadPayments();
     } catch (error) {
       console.error("Error marking payment as unpaid:", error);
       alert("Fehler beim Markieren der Zahlung");
+    }
+  };
+
+  const handlePartialPayment = async () => {
+    if (!selectedPayment || !partialAmount) return;
+
+    const amount = parseFloat(partialAmount);
+    if (isNaN(amount) || amount <= 0) {
+      alert("Bitte geben Sie einen gültigen Betrag ein");
+      return;
+    }
+
+    const currentPaidAmount = selectedPayment.paid_amount || 0;
+    const newPaidAmount = currentPaidAmount + amount;
+    const remainingAmount = selectedPayment.amount;
+
+    if (newPaidAmount > remainingAmount) {
+      alert("Der Teilzahlungsbetrag überschreitet den ausstehenden Betrag");
+      return;
+    }
+
+    try {
+      const newPartialPayment: PartialPayment = {
+        amount,
+        date: partialDate,
+        note: partialNote || undefined
+      };
+
+      const existingPartialPayments = selectedPayment.partial_payments || [];
+      const updatedPartialPayments = [...existingPartialPayments, newPartialPayment];
+
+      const newPaymentStatus = newPaidAmount >= remainingAmount ? 'paid' : 'partial';
+
+      const { error } = await supabase
+        .from("rent_payments")
+        .update({
+          paid_amount: newPaidAmount,
+          payment_status: newPaymentStatus,
+          paid: newPaymentStatus === 'paid',
+          paid_date: newPaymentStatus === 'paid' ? partialDate : null,
+          partial_payments: updatedPartialPayments
+        })
+        .eq("id", selectedPayment.id);
+
+      if (error) throw error;
+
+      setShowPartialPaymentModal(false);
+      setSelectedPayment(null);
+      setPartialAmount("");
+      setPartialDate(new Date().toISOString().split('T')[0]);
+      setPartialNote("");
+      loadPayments();
+    } catch (error) {
+      console.error("Error recording partial payment:", error);
+      alert("Fehler beim Erfassen der Teilzahlung");
     }
   };
   const formatCurrency = (value: number) => {
@@ -414,13 +489,22 @@ export default function RentPaymentsView() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark">
-                      {formatCurrency(payment.amount)}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
+                      <div className="font-medium">{formatCurrency(payment.amount)}</div>
+                      {payment.payment_status === 'partial' && (
+                        <div className="text-xs text-gray-500">
+                          Gezahlt: {formatCurrency(payment.paid_amount || 0)}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {payment.paid ? (
+                      {payment.payment_status === 'paid' ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                           <Check className="w-3 h-3" /> Bezahlt
+                        </span>
+                      ) : payment.payment_status === 'partial' ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <Check className="w-3 h-3" /> Teilzahlung
                         </span>
                       ) : isOverdue(payment) ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -433,7 +517,7 @@ export default function RentPaymentsView() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {payment.paid ? (
+                      {payment.payment_status === 'paid' ? (
                         <button
                           onClick={() => handleMarkAsUnpaid(payment.id)}
                           className="text-orange-600 hover:text-orange-700 font-medium transition-colors"
@@ -441,12 +525,23 @@ export default function RentPaymentsView() {
                           Als unbezahlt markieren
                         </button>
                       ) : (
-                        <button
-                          onClick={() => handleMarkAsPaid(payment.id)}
-                          className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
-                        >
-                          Als bezahlt markieren
-                        </button>
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => handleMarkAsPaid(payment.id)}
+                            className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors text-left"
+                          >
+                            Als bezahlt markieren
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedPayment(payment);
+                              setShowPartialPaymentModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-700 font-medium transition-colors text-left"
+                          >
+                            Teilzahlung erfassen
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -456,6 +551,126 @@ export default function RentPaymentsView() {
           </div>
         )}
       </div>
+
+      {showPartialPaymentModal && selectedPayment && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="bg-gray-50 px-6 py-4 flex justify-between items-center rounded-t-lg">
+              <h3 className="text-xl font-bold text-dark">Teilzahlung erfassen</h3>
+              <button
+                onClick={() => {
+                  setShowPartialPaymentModal(false);
+                  setSelectedPayment(null);
+                  setPartialAmount("");
+                  setPartialNote("");
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Fälligkeitsdatum:</span>
+                  <span className="font-medium">{formatDate(selectedPayment.due_date)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Gesamtbetrag:</span>
+                  <span className="font-medium">{formatCurrency(selectedPayment.amount)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Bereits gezahlt:</span>
+                  <span className="font-medium">{formatCurrency(selectedPayment.paid_amount || 0)}</span>
+                </div>
+                <div className="flex justify-between text-sm border-t border-gray-200 pt-2">
+                  <span className="text-gray-600 font-medium">Noch offen:</span>
+                  <span className="font-bold text-orange-600">
+                    {formatCurrency(selectedPayment.amount - (selectedPayment.paid_amount || 0))}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Teilzahlungsbetrag *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={partialAmount}
+                  onChange={(e) => setPartialAmount(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Zahlungsdatum *
+                </label>
+                <input
+                  type="date"
+                  value={partialDate}
+                  onChange={(e) => setPartialDate(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Notiz (optional)
+                </label>
+                <textarea
+                  value={partialNote}
+                  onChange={(e) => setPartialNote(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  rows={3}
+                  placeholder="Optionale Notiz zur Teilzahlung..."
+                />
+              </div>
+
+              {selectedPayment.partial_payments && selectedPayment.partial_payments.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Bisherige Teilzahlungen</h4>
+                  <div className="space-y-2">
+                    {selectedPayment.partial_payments.map((pp, idx) => (
+                      <div key={idx} className="flex justify-between text-sm bg-gray-50 p-2 rounded">
+                        <span className="text-gray-600">{formatDate(pp.date)}</span>
+                        <span className="font-medium">{formatCurrency(pp.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-gray-50 px-6 py-4 flex gap-3 rounded-b-lg">
+              <button
+                onClick={() => {
+                  setShowPartialPaymentModal(false);
+                  setSelectedPayment(null);
+                  setPartialAmount("");
+                  setPartialNote("");
+                }}
+                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={handlePartialPayment}
+                disabled={!partialAmount || !partialDate}
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Teilzahlung speichern
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

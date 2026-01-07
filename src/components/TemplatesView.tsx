@@ -67,6 +67,7 @@ export default function TemplatesView() {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -150,6 +151,9 @@ export default function TemplatesView() {
   };
 
   const filteredTemplates = templates.filter(template => {
+    if (selectedCategory && template.category !== selectedCategory) {
+      return false;
+    }
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -185,8 +189,8 @@ export default function TemplatesView() {
       </div>
 
       {templates.length > 0 && (
-        <div className="mb-6">
-          <div className="relative">
+        <div className="mb-6 space-y-4">
+          <div className="relative max-w-2xl">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -195,6 +199,31 @@ export default function TemplatesView() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                selectedCategory === null
+                  ? "bg-primary-blue text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Alle Kategorien
+            </button>
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.category}
+                onClick={() => setSelectedCategory(cat.category)}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedCategory === cat.category
+                    ? "bg-primary-blue text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {cat.title}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -208,6 +237,25 @@ export default function TemplatesView() {
           <p className="text-gray-400">
             Vorlagen werden von Administratoren hochgeladen und stehen Ihnen dann hier zur Verfügung.
           </p>
+        </div>
+      ) : filteredTemplates.length === 0 ? (
+        <div className="bg-white rounded-lg p-12 text-center">
+          <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-dark mb-2">
+            Keine Vorlagen gefunden
+          </h3>
+          <p className="text-gray-400 mb-6">
+            Es wurden keine Vorlagen gefunden, die Ihren Suchkriterien entsprechen.
+          </p>
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setSelectedCategory(null);
+            }}
+            className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+          >
+            Filter zurücksetzen
+          </button>
         </div>
       ) : (
         <div className="space-y-8">
