@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Trash2, Upload, X, FileText, Loader } from "lucide-react";
+import { Plus, Trash2, Upload, X, FileText, Loader, Download } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -14,6 +14,8 @@ interface Template {
   file_type: string;
   is_premium: boolean;
   created_at: string;
+  updated_at: string;
+  download_count: number;
 }
 
 const CATEGORIES = [
@@ -31,6 +33,7 @@ export function AdminTemplatesView() {
   const [loading, setLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [downloading, setDownloading] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [uploadData, setUploadData] = useState({
@@ -137,6 +140,32 @@ export function AdminTemplatesView() {
     }
   }
 
+  async function handleDownload(template: Template) {
+    try {
+      setDownloading(template.id);
+
+      const { data, error } = await supabase.storage
+        .from("templates")
+        .download(template.file_path);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = template.file_name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading template:", error);
+      alert("Fehler beim Herunterladen der Vorlage");
+    } finally {
+      setDownloading(null);
+    }
+  }
+
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + " B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
@@ -209,6 +238,9 @@ export function AdminTemplatesView() {
                   Premium
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Downloads
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aktionen
                 </th>
               </tr>
@@ -246,13 +278,33 @@ export function AdminTemplatesView() {
                       </span>
                     )}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded font-medium">
+                      {template.download_count}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button
-                      onClick={() => handleDelete(template)}
-                      className="text-red-600 hover:text-red-900 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleDownload(template)}
+                        disabled={downloading === template.id}
+                        className="text-blue-600 hover:text-blue-900 transition-colors disabled:opacity-50"
+                        title="Vorlage herunterladen"
+                      >
+                        {downloading === template.id ? (
+                          <Loader className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(template)}
+                        className="text-red-600 hover:text-red-900 transition-colors"
+                        title="Vorlage löschen"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
