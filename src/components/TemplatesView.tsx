@@ -252,7 +252,7 @@ export default function TemplatesView() {
               setSearchQuery("");
               setSelectedCategory(null);
             }}
-            className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
           >
             Filter zurücksetzen
           </button>

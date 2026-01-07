@@ -259,7 +259,7 @@ export default function OperatingCostsView() {
               </h3>
               <button
                 onClick={() => setShowAddCostModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Kosten hinzufügen
@@ -274,7 +274,7 @@ export default function OperatingCostsView() {
                 </p>
                 <button
                   onClick={() => setShowAddCostModal(true)}
-                  className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                  className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
                 >
                   Erste Kosten hinzufügen
                 </button>
@@ -448,7 +448,7 @@ export default function OperatingCostsView() {
               </button>
               <button
                 onClick={handleAddCost}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
                 disabled={
                   !costFormData.cost_type_id || !costFormData.amount
                 }
@@ -554,7 +554,7 @@ export default function OperatingCostsView() {
               </button>
               <button
                 onClick={handleAddType}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
                 disabled={!typeFormData.name}
               >
                 Erstellen

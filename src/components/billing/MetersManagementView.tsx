@@ -234,7 +234,7 @@ export default function MetersManagementView({
         </p>
         <button
           onClick={onAddMeter}
-          className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+          className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
         >
           Ersten Zähler hinzufügen
         </button>

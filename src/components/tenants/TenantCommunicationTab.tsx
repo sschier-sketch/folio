@@ -104,7 +104,7 @@ export default function TenantCommunicationTab({
                 Mietverhältnis
               </p>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
               <Plus className="w-4 h-4" />
               Eintrag hinzufügen
             </button>
@@ -122,7 +122,7 @@ export default function TenantCommunicationTab({
                 Erfassen Sie Nachrichten, versendete Dokumente oder interne
                 Notizen
               </p>
-              <button className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+              <button className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
                 Ersten Eintrag erstellen
               </button>
             </div>

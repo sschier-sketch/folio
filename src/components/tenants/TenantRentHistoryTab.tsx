@@ -246,7 +246,7 @@ export default function TenantRentHistoryTab({
               </button>
               <button
                 onClick={handleSaveRent}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
               >
                 <Save className="w-4 h-4" />
                 Speichern
@@ -655,7 +655,7 @@ export default function TenantRentHistoryTab({
                 </span>
               </div>
             </div>
-            <button className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+            <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
               Jetzt upgraden
             </button>
           </div>

@@ -631,7 +631,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
                         setSelectedProperty(property);
                         setShowDetails(true);
                       }}
-                      className="w-full px-4 py-2 bg-gray-50 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                      className="w-full px-4 py-2 bg-gray-50 text-gray-700 rounded-full font-medium hover:bg-gray-100 transition-colors"
                     >
                       Details ansehen
                     </button>
@@ -828,7 +828,7 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
                   }
                 }}
                 disabled={!newLabelText.trim()}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Hinzufügen
               </button>

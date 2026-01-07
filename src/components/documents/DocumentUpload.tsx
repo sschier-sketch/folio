@@ -376,7 +376,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           <p className="text-xs text-gray-400 mb-4">Maximale Dateigröße: 50MB</p>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+            className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
           >
             <Upload className="w-4 h-4" />
             Dateien auswählen
@@ -742,7 +742,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                   Erweiterte Kategorisierung und Metadaten
                 </li>
               </ul>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">
                 Jetzt auf Pro upgraden
               </button>
             </div>

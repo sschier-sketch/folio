@@ -116,7 +116,7 @@ export default function TenantHandoverTab({
             <button
               onClick={() => setShowModal(true)}
               disabled={!contractId}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4" />
               Neues Protokoll
@@ -138,7 +138,7 @@ export default function TenantHandoverTab({
               <button
                 onClick={() => setShowModal(true)}
                 disabled={!contractId}
-                className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Erstes Protokoll erstellen
               </button>

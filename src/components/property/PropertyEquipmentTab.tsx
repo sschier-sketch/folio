@@ -452,7 +452,7 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         <button
           type="submit"
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
         >
           <Save className="w-5 h-5" />
           {saving ? "Speichert..." : "Speichern"}

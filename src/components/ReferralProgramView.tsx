@@ -139,7 +139,7 @@ export default function ReferralProgramView() {
               </div>{" "}
               <button
                 onClick={handleCopyCode}
-                className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-full font-medium transition-colors flex items-center gap-2"
               >
                 {" "}
                 {copied ? (
@@ -169,7 +169,7 @@ export default function ReferralProgramView() {
               </p>{" "}
               <button
                 onClick={handleCopyReferralCode}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-full font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
               >
                 {" "}
                 <Share2 className="w-4 h-4" /> Teilen{" "}

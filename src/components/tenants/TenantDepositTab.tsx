@@ -281,7 +281,7 @@ export default function TenantDepositTab({
               </button>
               <button
                 onClick={handleSaveDeposit}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
               >
                 <Save className="w-4 h-4" />
                 Speichern
@@ -437,7 +437,7 @@ export default function TenantDepositTab({
                 </span>
               </div>
             </div>
-            <button className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+            <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
               Jetzt upgraden
             </button>
           </div>
@@ -450,7 +450,7 @@ export default function TenantDepositTab({
             </h3>
             <button
               onClick={() => setShowTransactionModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
             >
               <Plus className="w-4 h-4" />
               Transaktion erfassen

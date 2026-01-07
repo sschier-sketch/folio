@@ -182,7 +182,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
               <span className="text-sm text-gray-600">Visuelle Auswertungen und Diagramme</span>
             </div>
           </div>
-          <button className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+          <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
             Jetzt auf Pro upgraden
           </button>
         </div>

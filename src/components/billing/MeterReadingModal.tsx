@@ -427,7 +427,7 @@ export default function MeterReadingModal({ meter, onClose, onSuccess }: MeterRe
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading
                 ? uploadingPhotos

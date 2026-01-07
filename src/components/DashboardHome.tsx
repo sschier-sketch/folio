@@ -552,7 +552,7 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
           </div>{" "}
           <button
             onClick={handleCopyPortalLink}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-full font-medium transition-colors"
           >
             {" "}
             {copied ? (

@@ -171,7 +171,7 @@ export default function IndexRentView() {
         <button
           onClick={processCalculations}
           disabled={processing}
-          className="px-6 py-3 bg-[#008CFF] text-white rounded-lg font-medium hover:bg-[#0073CC] transition-colors disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-3 bg-[#008CFF] text-white rounded-full font-medium hover:bg-[#0073CC] transition-colors disabled:opacity-50 flex items-center gap-2"
         >
           <TrendingUp className="w-5 h-5" />
           {processing ? "Verarbeite..." : "Berechnungen durchführen"}
@@ -292,7 +292,7 @@ export default function IndexRentView() {
                 {calc.status !== "applied" && (
                   <button
                     onClick={() => markAsApplied(calc.id)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                    className="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-medium hover:bg-green-700 transition-colors"
                   >
                     Als angewendet markieren
                   </button>

@@ -263,7 +263,7 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
               <span className="text-sm text-gray-600">Schneller Zugriff auf alle wichtigen Kontakte</span>
             </div>
           </div>
-          <button className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+          <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
             Jetzt auf Pro upgraden
           </button>
         </div>
@@ -290,7 +290,7 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Kontakt hinzufügen
@@ -306,7 +306,7 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
           </p>
           <button
             onClick={openAddModal}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Ersten Kontakt hinzufügen
@@ -607,7 +607,7 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
                 >
                   {editingContact ? "Speichern" : "Hinzufügen"}
                 </button>

@@ -1388,7 +1388,7 @@ export default function TenantModal({
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-[#008CFF] text-white rounded-lg font-medium hover:bg-[#0073CC] transition-colors disabled:opacity-50"
+                className="flex-1 px-6 py-3 bg-[#008CFF] text-white rounded-full font-medium hover:bg-[#0073CC] transition-colors disabled:opacity-50"
               >
                 {loading ? "Speichern..." : "Speichern"}
               </button>
@@ -1396,7 +1396,7 @@ export default function TenantModal({
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex-1 px-6 py-3 bg-[#008CFF] text-white rounded-lg font-medium hover:bg-[#0073CC] transition-colors"
+                className="flex-1 px-6 py-3 bg-[#008CFF] text-white rounded-full font-medium hover:bg-[#0073CC] transition-colors"
               >
                 Weiter
               </button>

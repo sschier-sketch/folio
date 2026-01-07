@@ -329,7 +329,7 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                   Rechtssichere Aufbewahrung mit Änderungsverlauf
                 </li>
               </ul>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">
                 Jetzt auf Pro upgraden
               </button>
             </div>

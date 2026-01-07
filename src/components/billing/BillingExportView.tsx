@@ -45,7 +45,7 @@ export default function BillingExportView() {
                   Verbrauchsübersicht
                 </li>
               </ul>
-              <button className="w-full px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+              <button className="w-full px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
                 PDF erstellen
               </button>
             </div>
@@ -74,7 +74,7 @@ export default function BillingExportView() {
                   ZIP-Download
                 </li>
               </ul>
-              <button className="w-full px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition-colors">
+              <button className="w-full px-4 py-2 bg-emerald-500 text-white rounded-full font-medium hover:bg-emerald-600 transition-colors">
                 Alle exportieren
               </button>
             </div>
@@ -96,7 +96,7 @@ export default function BillingExportView() {
                 <p className="text-sm text-gray-400 mb-2">
                   Ziehen Sie Ihr Logo hierher oder klicken Sie zum Auswählen
                 </p>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
                   Datei auswählen
                 </button>
               </div>

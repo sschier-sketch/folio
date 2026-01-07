@@ -159,7 +159,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
             property_id: propertyId,
             user_id: user.id,
             event_type: "unit_updated",
-            event_description: `Einheit ${formData.unit_number} wurde aktualisiert`,
+            event_description: `Einheiten: Einheit ${formData.unit_number} wurde aktualisiert`,
           },
         ]);
       } else {
@@ -172,7 +172,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
             property_id: propertyId,
             user_id: user.id,
             event_type: "unit_created",
-            event_description: `Einheit ${formData.unit_number} wurde angelegt`,
+            event_description: `Einheiten: Einheit ${formData.unit_number} wurde angelegt`,
           },
         ]);
       }
@@ -195,6 +195,18 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       const { error } = await supabase.from("property_units").delete().eq("id", unit.id);
 
       if (error) throw error;
+
+      if (user) {
+        await supabase.from("property_history").insert([
+          {
+            property_id: propertyId,
+            user_id: user.id,
+            event_type: "unit_deleted",
+            event_description: `Einheiten: Einheit ${unit.unit_number} wurde gelöscht`,
+          },
+        ]);
+      }
+
       loadUnits();
     } catch (error) {
       console.error("Error deleting unit:", error);
@@ -282,7 +294,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
               resetForm();
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-4 h-4" />
             Einheit hinzufügen
@@ -299,7 +311,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                 resetForm();
                 setShowModal(true);
               }}
-              className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
+              className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Erste Einheit hinzufügen
@@ -598,7 +610,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
                 >
                   {editingUnit ? "Speichern" : "Hinzufügen"}
                 </button>

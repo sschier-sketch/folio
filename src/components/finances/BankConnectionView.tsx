@@ -58,7 +58,7 @@ export default function BankConnectionView() {
             </div>
           </div>
 
-          <button className="w-full px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors flex items-center justify-center gap-2">
+          <button className="w-full px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors flex items-center justify-center gap-2">
             <Plus className="w-5 h-5" />
             Bankkonto verbinden
           </button>

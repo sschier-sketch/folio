@@ -351,7 +351,7 @@ export default function TenantContractTab({
               </span>
             </div>
           </div>
-          <button className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+          <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
             Jetzt upgraden
           </button>
         </div>
@@ -373,7 +373,7 @@ export default function TenantContractTab({
           </div>
           <button
             onClick={() => setShowUploadModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
           >
             <Upload className="w-4 h-4" />
             Dokument hochladen
@@ -386,7 +386,7 @@ export default function TenantContractTab({
             <p className="text-gray-400 mb-4">Keine Dokumente vorhanden</p>
             <button
               onClick={() => setShowUploadModal(true)}
-              className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
+              className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
             >
               <Upload className="w-4 h-4" />
               Erstes Dokument hochladen
@@ -568,7 +568,7 @@ export default function TenantContractTab({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                    className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
                   >
                     Datei auswählen
                   </button>

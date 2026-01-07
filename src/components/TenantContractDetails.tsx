@@ -114,7 +114,7 @@ export default function TenantContractDetails({
         <p className="text-gray-400 mb-4">Mietverhältnis nicht gefunden</p>
         <button
           onClick={onBack}
-          className="px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+          className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
         >
           Zurück zur Übersicht
         </button>

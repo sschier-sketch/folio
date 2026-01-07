@@ -151,7 +151,7 @@ export default function BillingOverview() {
           </h2>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-4 h-4" />
             Neue Abrechnung
@@ -171,7 +171,7 @@ export default function BillingOverview() {
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-6 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
+              className="px-6 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Neue Abrechnung erstellen
@@ -316,7 +316,7 @@ export default function BillingOverview() {
               </button>
               <button
                 onClick={handleCreate}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
                 disabled={
                   !formData.property_id ||
                   !formData.name ||

@@ -49,8 +49,11 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
+      case "property_updated":
+        return <Home className="w-5 h-5 text-primary-blue" />;
       case "unit_created":
       case "unit_updated":
+      case "unit_deleted":
         return <Home className="w-5 h-5 text-primary-blue" />;
       case "equipment_updated":
         return <FileCheck className="w-5 h-5 text-primary-blue" />;
@@ -71,8 +74,10 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
 
   const getEventTypeLabel = (eventType: string) => {
     const labels: Record<string, string> = {
+      property_updated: "Immobilie aktualisiert",
       unit_created: "Einheit angelegt",
       unit_updated: "Einheit aktualisiert",
+      unit_deleted: "Einheit gelöscht",
       equipment_updated: "Ausstattung aktualisiert",
       tenant_change: "Mieterwechsel",
       rent_increase: "Mieterhöhung",
@@ -117,7 +122,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
               <span className="text-sm text-gray-600">Änderungsprotokoll (wer / wann)</span>
             </div>
           </div>
-          <button className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+          <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
             Jetzt auf Pro upgraden
           </button>
         </div>

@@ -279,7 +279,7 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
               <span className="text-sm text-gray-600">Verknüpfung mit Ausgaben und Belegen</span>
             </div>
           </div>
-          <button className="px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors">
+          <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
             Jetzt auf Pro upgraden
           </button>
         </div>
@@ -306,7 +306,7 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Aufgabe hinzufügen
@@ -344,7 +344,7 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
           </p>
           <button
             onClick={openAddModal}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Erste Aufgabe hinzufügen
@@ -623,7 +623,7 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
                 >
                   {editingTask ? "Speichern" : "Hinzufügen"}
                 </button>

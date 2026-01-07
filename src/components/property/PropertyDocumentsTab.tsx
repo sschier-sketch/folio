@@ -508,7 +508,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
               </span>
             </div>
           </div>
-          <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+          <button className="px-6 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors">
             Jetzt auf Pro upgraden
           </button>
         </div>
@@ -536,7 +536,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           </div>
           <button
             onClick={() => setShowUploadModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Dokument hochladen
@@ -589,7 +589,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           </p>
           <button
             onClick={() => setShowUploadModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
           >
             <Upload className="w-4 h-4" />
             Erstes Dokument hochladen
@@ -670,7 +670,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                           </p>
                           <button
                             onClick={() => setShowEnergyModal(true)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors text-sm"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-full font-medium hover:bg-amber-700 transition-colors text-sm"
                           >
                             <FileCheck className="w-4 h-4" />
                             Energieausweis erstellen lassen
@@ -726,7 +726,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                     setCopiedCode(true);
                     setTimeout(() => setCopiedCode(false), 2000);
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
                 >
                   {copiedCode ? (
                     <>
@@ -748,7 +748,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                 href="https://mcenergieausweis.de"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
               >
                 Zu McEnergieausweis
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -879,7 +879,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                 </p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
                 >
                   <Upload className="w-4 h-4" />
                   Dateien auswählen
