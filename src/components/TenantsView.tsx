@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Plus, Users, Building, Calendar, DollarSign, Eye } from "lucide-react";
+import { Plus, Users, Building, Calendar, DollarSign, Eye, Download, FileText, FileDown, FileSpreadsheet } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import TenantContractDetails from "./TenantContractDetails";
 import TenantModal from "./TenantModal";
+import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
 
 interface Property {
   id: string;
@@ -51,6 +52,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
   const [loading, setLoading] = useState(true);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   const [showTenantModal, setShowTenantModal] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [filters, setFilters] = useState({
     property_id: "",
     status: "",
@@ -159,6 +161,79 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
     return true;
   });
 
+  const handleExport = async (format: 'pdf' | 'csv' | 'excel') => {
+    if (!user) return;
+
+    try {
+      setShowExportMenu(false);
+
+      const exportData = await Promise.all(
+        filteredTenants.map(async (tenant) => {
+          const { data: contracts } = await supabase
+            .from("rental_contracts")
+            .select(`
+              id,
+              start_date,
+              end_date,
+              monthly_rent,
+              total_rent,
+              base_rent,
+              additional_costs,
+              deposit,
+              status,
+              rent_type,
+              is_sublet,
+              vat_applicable,
+              property_units (
+                unit_number
+              )
+            `)
+            .eq("tenant_id", tenant.id)
+            .order("start_date", { ascending: false });
+
+          const { data: property } = await supabase
+            .from("properties")
+            .select("name, address")
+            .eq("id", tenant.property_id)
+            .maybeSingle();
+
+          return {
+            tenant: {
+              name: tenant.name,
+              email: tenant.email || "",
+              phone: tenant.phone || "",
+              property: property?.name || "",
+              address: property?.address || "",
+            },
+            contracts: contracts?.map((c) => ({
+              start_date: c.start_date,
+              end_date: c.end_date || "Unbefristet",
+              monthly_rent: c.monthly_rent || c.base_rent,
+              total_rent: c.total_rent,
+              deposit: c.deposit,
+              status: c.status,
+              rent_type: c.rent_type,
+              unit_number: c.property_units?.unit_number || "",
+              is_sublet: c.is_sublet,
+              vat_applicable: c.vat_applicable,
+            })) || [],
+          };
+        })
+      );
+
+      if (format === 'pdf') {
+        await exportToPDF(exportData, 'tenants');
+      } else if (format === 'csv') {
+        exportToCSV(exportData, 'tenants');
+      } else if (format === 'excel') {
+        exportToExcel(exportData, 'tenants');
+      }
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      alert("Fehler beim Exportieren der Daten");
+    }
+  };
+
   if (selectedTenantId) {
     return (
       <TenantContractDetails
@@ -192,13 +267,50 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
             Verwalten Sie Ihre Mietverhältnisse und Mieter
           </p>
         </div>
-        <button
-          onClick={() => setShowTenantModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Mietverhältnis anlegen
-        </button>
+        <div className="flex items-center gap-3">
+          {tenants.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-full font-medium hover:bg-gray-50 transition-colors"
+              >
+                <Download className="w-5 h-5" /> Exportieren
+              </button>
+              {showExportMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <button
+                    onClick={() => handleExport('pdf')}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <FileText className="w-4 h-4" />
+                    PDF exportieren
+                  </button>
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    CSV exportieren
+                  </button>
+                  <button
+                    onClick={() => handleExport('excel')}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    Excel exportieren
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          <button
+            onClick={() => setShowTenantModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-primary-blue transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Mietverhältnis anlegen
+          </button>
+        </div>
       </div>
 
       {tenants.length === 0 ? (

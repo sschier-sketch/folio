@@ -56,6 +56,8 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
   const [isDragging, setIsDragging] = useState(false);
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
+  const [showEnergyModal, setShowEnergyModal] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
     if (user && isPro) {
@@ -596,9 +598,11 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {categories.map((category) => {
-            if (category.documents.length === 0) return null;
-
             const Icon = category.icon;
+            const hasDocuments = category.documents.length > 0;
+            const isEnergyCertificate = category.id === "certificates";
+
+            if (!hasDocuments && !isEnergyCertificate) return null;
 
             return (
               <div key={category.id} className="bg-white rounded-lg">
@@ -610,7 +614,8 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                   </div>
                 </div>
                 <div className="p-4 space-y-2">
-                  {category.documents.map((doc) => (
+                  {hasDocuments ? (
+                    category.documents.map((doc) => (
                     <div
                       key={doc.id}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -651,11 +656,107 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                         </button>
                       </div>
                     </div>
-                  ))}
+                  ))
+                  ) : isEnergyCertificate ? (
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-amber-900 mb-1">
+                            Energieausweis fehlt
+                          </h5>
+                          <p className="text-sm text-amber-800 mb-3">
+                            Für Ihre Immobilie ist zwingend ein Bedarfsausweis erforderlich. Mit unserem Partner McEnergieausweis erhalten Sie 20% Rabatt.
+                          </p>
+                          <button
+                            onClick={() => setShowEnergyModal(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors text-sm"
+                          >
+                            <FileCheck className="w-4 h-4" />
+                            Energieausweis erstellen lassen
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {showEnergyModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full max-w-2xl">
+            <div className="border-b px-6 py-4 flex justify-between items-center">
+              <h3 className="text-2xl font-bold text-dark">Bedarfsausweis mit 20% Rabatt</h3>
+              <button
+                onClick={() => setShowEnergyModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <p className="text-gray-600">
+                Für Ihre Immobilie ist zwingend ein Bedarfsausweis erforderlich, mit objego erhalten Sie 20% Rabatt beliebig viele Energieausweise.
+              </p>
+
+              <p className="text-gray-600">
+                Kopieren Sie den Code und füllen Sie bei unserem Partner McEnergieausweis das Formular aus. Am Ende des Formulars geben Sie den Code ein. Sie können diesen Code jederzeit in objego einsehen und kopieren, der Code ist bis zum 31.12.2025 gültig.
+              </p>
+
+              <div className="text-center my-6">
+                <img
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='80' viewBox='0 0 300 80'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' font-weight='bold' fill='%2300b8a9'%3EMcEnergieausweis%3C/text%3E%3Ctext x='50%25' y='75%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='12' fill='%23666'%3EMcMakler Gruppe%3C/text%3E%3C/svg%3E"
+                  alt="McEnergieausweis Logo"
+                  className="mx-auto"
+                />
+              </div>
+
+              <div className="bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg p-6 text-center">
+                <div className="text-3xl font-bold text-blue-600 mb-3 tracking-wider">
+                  OBJ-736AD6
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText("OBJ-736AD6");
+                    setCopiedCode(true);
+                    setTimeout(() => setCopiedCode(false), 2000);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  {copiedCode ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Code kopiert
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4" />
+                      Code kopieren
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="border-t px-6 py-4 flex justify-end">
+              <a
+                href="https://mcenergieausweis.de"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-lg font-medium hover:bg-teal-600 transition-colors"
+              >
+                Zum Bedarfsausweis
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
         </div>
       )}
 

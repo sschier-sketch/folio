@@ -132,6 +132,8 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      const twoYearsAgo = new Date(today);
+      twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
 
       let unpaidRent = 0;
       let overdueRent = 0;
@@ -140,6 +142,14 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
         const dueDate = new Date(payment.due_date);
         dueDate.setHours(0, 0, 0, 0);
         const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (dueDate < twoYearsAgo) {
+          return;
+        }
+
+        if (dueDate > today) {
+          return;
+        }
 
         if (daysDiff > 1) {
           overdueRent += Number(payment.amount);
@@ -368,21 +378,21 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
             {" "}
             {formatCurrency(stats.totalMonthlyRent)}{" "}
           </div>{" "}
-          <div className="text-sm text-gray-400 mb-2">
+          <div className="text-sm text-gray-400">
             {t("dashboard.rent.monthly")}
           </div>
           {(stats.unpaidRent > 0 || stats.overdueRent > 0) && (
-            <div className="flex items-center gap-3 text-xs pt-2 border-t border-gray-100">
+            <div className="mt-3 pt-3 border-t border-gray-100 space-y-1.5">
               {stats.unpaidRent > 0 && (
-                <div className="flex items-center gap-1">
-                  <span className="text-orange-600 font-medium">Offen:</span>
-                  <span className="text-gray-600">{formatCurrency(stats.unpaidRent)}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-orange-600 font-medium">Offen</span>
+                  <span className="text-xs text-gray-700 font-semibold">{formatCurrency(stats.unpaidRent)}</span>
                 </div>
               )}
               {stats.overdueRent > 0 && (
-                <div className="flex items-center gap-1">
-                  <span className="text-red-600 font-medium">Überfällig:</span>
-                  <span className="text-gray-600">{formatCurrency(stats.overdueRent)}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-red-600 font-medium">Überfällig</span>
+                  <span className="text-xs text-gray-700 font-semibold">{formatCurrency(stats.overdueRent)}</span>
                 </div>
               )}
             </div>
@@ -565,13 +575,6 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-dark">Anstehende Wartungsaufgaben</h2>
-            <button
-              onClick={() => setShowTasksCard(false)}
-              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Schließen"
-            >
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
           </div>
           <div className="bg-white rounded-lg">
             {upcomingTasks.map((task, index) => (

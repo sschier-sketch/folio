@@ -150,8 +150,18 @@ export default function RentPaymentsView() {
     return daysDiff > 1;
   };
 
+  const isPending = (payment: RentPayment) => {
+    if (payment.paid) return false;
+    const dueDate = new Date(payment.due_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
+    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff >= -1 && daysDiff <= 1;
+  };
+
   const totalUnpaid = payments
-    .filter((p) => !p.paid && !isOverdue(p))
+    .filter((p) => isPending(p))
     .reduce((sum, p) => sum + Number(p.amount), 0);
   const totalPaid = payments
     .filter((p) => p.paid)
