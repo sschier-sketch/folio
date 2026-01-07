@@ -43,6 +43,7 @@ interface PropertyDetailsProps {
   property: Property;
   onBack: () => void;
   onNavigateToTenant?: (tenantId: string) => void;
+  initialTab?: Tab;
 }
 
 type Tab =
@@ -55,18 +56,20 @@ type Tab =
   | "maintenance"
   | "metrics";
 
-export default function PropertyDetails({ property, onBack, onNavigateToTenant }: PropertyDetailsProps) {
+export default function PropertyDetails({ property, onBack, onNavigateToTenant, initialTab }: PropertyDetailsProps) {
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') as Tab | null;
-  const [activeTab, setActiveTab] = useState<Tab>(tabFromUrl || "overview");
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab || tabFromUrl || "overview");
   const [photoUrl, setPhotoUrl] = useState<string | null>(property.photo_url || null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    if (tabFromUrl) {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    } else if (tabFromUrl) {
       setActiveTab(tabFromUrl);
     }
-  }, [tabFromUrl]);
+  }, [tabFromUrl, initialTab]);
 
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

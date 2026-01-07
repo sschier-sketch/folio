@@ -55,9 +55,10 @@ interface RentIncrease {
 
 interface DashboardHomeProps {
   onNavigateToTenant?: (tenantId: string) => void;
+  onNavigateToProperty?: (propertyId: string, tab?: string) => void;
 }
 
-export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps = {}) {
+export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty }: DashboardHomeProps = {}) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -580,7 +581,12 @@ export default function DashboardHome({ onNavigateToTenant }: DashboardHomeProps
             {upcomingTasks.map((task, index) => (
               <div
                 key={task.id}
-                className="p-4 hover:bg-gray-50 transition-colors"
+                className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() => {
+                  if (onNavigateToProperty) {
+                    onNavigateToProperty(task.property_id, "maintenance");
+                  }
+                }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">

@@ -35,6 +35,9 @@ interface Property {
 }
 
 interface PropertiesViewProps {
+  selectedPropertyId?: string | null;
+  selectedPropertyTab?: string | null;
+  onClearSelection?: () => void;
   onNavigateToTenant?: (tenantId: string) => void;
 }
 
@@ -55,7 +58,7 @@ const LABEL_COLORS = {
   pink: { bg: "bg-pink-100", text: "text-pink-700", hover: "hover:bg-pink-200" },
 };
 
-export default function PropertiesView({ onNavigateToTenant }: PropertiesViewProps = {}) {
+export default function PropertiesView({ selectedPropertyId: externalSelectedPropertyId, selectedPropertyTab, onClearSelection, onNavigateToTenant }: PropertiesViewProps = {}) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -78,6 +81,16 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
   useEffect(() => {
     loadProperties();
   }, [user]);
+
+  useEffect(() => {
+    if (externalSelectedPropertyId && properties.length > 0) {
+      const property = properties.find(p => p.id === externalSelectedPropertyId);
+      if (property) {
+        setSelectedProperty(property);
+        setShowDetails(true);
+      }
+    }
+  }, [externalSelectedPropertyId, properties]);
 
   const loadProperties = async () => {
     if (!user) return;
@@ -306,10 +319,14 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
     return (
       <PropertyDetails
         property={selectedProperty}
+        initialTab={selectedPropertyTab as any}
         onBack={() => {
           setShowDetails(false);
           setSelectedProperty(null);
           loadProperties();
+          if (onClearSelection) {
+            onClearSelection();
+          }
         }}
         onNavigateToTenant={onNavigateToTenant}
       />

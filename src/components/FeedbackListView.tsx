@@ -158,8 +158,7 @@ export default function FeedbackListView() {
     );
   }
   return (
-    <div className="space-y-6">
-      {" "}
+    <div>
       <div className="mb-8">
         {" "}
         <h1 className="text-3xl font-bold text-dark mb-2">

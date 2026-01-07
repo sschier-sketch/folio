@@ -61,6 +61,8 @@ export default function Dashboard() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [selectedPropertyTab, setSelectedPropertyTab] = useState<string | null>(null);
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
@@ -71,6 +73,13 @@ export default function Dashboard() {
     setSelectedTenantId(tenantId);
     setCurrentView("tenants");
   };
+
+  const handleNavigateToProperty = (propertyId: string, tab?: string) => {
+    setSelectedPropertyId(propertyId);
+    setSelectedPropertyTab(tab || null);
+    setCurrentView("properties");
+  };
+
   const navigation = [
     { id: "home", labelKey: "nav.overview", icon: Home },
     { id: "properties", labelKey: "nav.properties", icon: Building2 },
@@ -384,8 +393,8 @@ export default function Dashboard() {
           </aside>{" "}
           <main className="flex-1 min-w-0">
             {" "}
-            {currentView === "home" && <DashboardHome onNavigateToTenant={handleNavigateToTenant} />}{" "}
-            {currentView === "properties" && <PropertiesView onNavigateToTenant={handleNavigateToTenant} />}{" "}
+            {currentView === "home" && <DashboardHome onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} />}{" "}
+            {currentView === "properties" && <PropertiesView selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
             {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} />}{" "}
             {currentView === "payments" && <RentPaymentsView />}{" "}
             {currentView === "tickets" && <TicketsView />}{" "}
