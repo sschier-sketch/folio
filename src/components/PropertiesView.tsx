@@ -25,6 +25,7 @@ interface Property {
   size_sqm: number | null;
   parking_spot_number?: string;
   description: string;
+  photo_url?: string | null;
   labels?: PropertyLabel[];
   units?: {
     total: number;
@@ -526,8 +527,16 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Building2 className="w-6 h-6 text-primary-blue" />
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-primary-blue/10 flex items-center justify-center flex-shrink-0">
+                        {property.photo_url ? (
+                          <img
+                            src={property.photo_url}
+                            alt={property.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Building2 className="w-6 h-6 text-primary-blue" />
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -662,8 +671,16 @@ export default function PropertiesView({ onNavigateToTenant }: PropertiesViewPro
                         <tr key={property.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                <Building2 className="w-5 h-5 text-primary-blue" />
+                              <div className="w-10 h-10 rounded-full overflow-hidden bg-primary-blue/10 flex items-center justify-center flex-shrink-0">
+                                {property.photo_url ? (
+                                  <img
+                                    src={property.photo_url}
+                                    alt={property.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <Building2 className="w-5 h-5 text-primary-blue" />
+                                )}
                               </div>
                               <div>
                                 <div className="font-semibold text-dark">{property.name}</div>

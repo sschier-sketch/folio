@@ -125,10 +125,6 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
         return "Endet bald";
       case "terminated":
         return "Gekündigt";
-      case "vacant":
-        return "Leer";
-      case "moving_out":
-        return "Auszug";
       default:
         return status;
     }
@@ -142,13 +138,26 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
         return "bg-amber-100 text-amber-700";
       case "terminated":
         return "bg-red-100 text-red-700";
-      case "vacant":
-        return "bg-gray-100 text-gray-700";
-      case "moving_out":
-        return "bg-orange-100 text-orange-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
+  };
+
+  const getTenantStatus = (tenant: TenantWithDetails): string => {
+    if (!tenant.move_out_date) {
+      return "active";
+    }
+
+    const moveOutDate = new Date(tenant.move_out_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    moveOutDate.setHours(0, 0, 0, 0);
+
+    if (moveOutDate < today) {
+      return "terminated";
+    }
+
+    return "ending_soon";
   };
 
   const filteredTenants = tenants.filter((tenant) => {
@@ -156,9 +165,9 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
       return false;
     }
 
-    if (filters.status && tenant.contracts && tenant.contracts.length > 0) {
-      const currentContract = tenant.contracts[0];
-      if (currentContract.status !== filters.status) {
+    if (filters.status) {
+      const tenantStatus = getTenantStatus(tenant);
+      if (tenantStatus !== filters.status) {
         return false;
       }
     }
@@ -376,7 +385,6 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                   <option value="active">Aktiv</option>
                   <option value="ending_soon">Endet bald</option>
                   <option value="terminated">Gekündigt</option>
-                  <option value="vacant">Leer</option>
                 </select>
               </div>
 
@@ -495,10 +503,10 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                           {currentContract ? (
                             <span
                               className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
-                                tenant.move_out_date ? "moving_out" : currentContract.status
+                                getTenantStatus(tenant)
                               )}`}
                             >
-                              {getStatusLabel(tenant.move_out_date ? "moving_out" : currentContract.status)}
+                              {getStatusLabel(getTenantStatus(tenant))}
                             </span>
                           ) : (
                             <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">

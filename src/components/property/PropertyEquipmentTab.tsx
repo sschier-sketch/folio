@@ -66,7 +66,22 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         setFormData(equipmentData);
         setOriginalData(equipmentData);
       } else {
-        setOriginalData(formData);
+        setOriginalData({
+          heating_type: "",
+          energy_source: "",
+          construction_type: "",
+          roof_type: "",
+          parking_spots: "0",
+          parking_type: "",
+          elevator: false,
+          balcony_terrace: false,
+          garden: false,
+          basement: false,
+          fitted_kitchen: false,
+          wg_suitable: false,
+          equipment_notes: "",
+          special_features: "",
+        });
       }
     } catch (error) {
       console.error("Error loading equipment:", error);

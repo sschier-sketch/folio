@@ -626,7 +626,12 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                           <p className="text-sm font-medium text-dark truncate">
                             {doc.file_name}
                           </p>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                          {doc.description && (
+                            <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
+                              {doc.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                             <span>{formatFileSize(doc.file_size)}</span>
                             <span>•</span>
                             <span>{formatDate(doc.upload_date)}</span>
