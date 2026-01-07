@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, Download, Plus, X, Gauge, Building2, User, Calendar } from "lucide-react";
+import { Search, Filter, Download, Plus, Gauge, Edit2, Activity } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -40,6 +40,7 @@ export default function MetersManagementView({
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterProperty, setFilterProperty] = useState("all");
+  const [filterPeriod, setFilterPeriod] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
   const meterTypes = [
@@ -96,6 +97,17 @@ export default function MetersManagementView({
   const filteredMeters = meters.filter(meter => {
     if (filterType !== "all" && meter.meter_type !== filterType) return false;
     if (filterProperty !== "all" && meter.property?.id !== filterProperty) return false;
+
+    if (filterPeriod !== "all" && meter.last_reading_date) {
+      const now = new Date();
+      const lastReading = new Date(meter.last_reading_date);
+      const daysDiff = Math.floor((now.getTime() - lastReading.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (filterPeriod === "7days" && daysDiff > 7) return false;
+      if (filterPeriod === "30days" && daysDiff > 30) return false;
+      if (filterPeriod === "90days" && daysDiff > 90) return false;
+      if (filterPeriod === "365days" && daysDiff > 365) return false;
+    }
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -244,7 +256,7 @@ export default function MetersManagementView({
 
       {showFilters && (
         <div className="bg-white rounded-lg p-4 border border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Zählertyp
@@ -281,11 +293,29 @@ export default function MetersManagementView({
               </select>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Zeitraum
+              </label>
+              <select
+                value={filterPeriod}
+                onChange={(e) => setFilterPeriod(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="all">Alle Zeiträume</option>
+                <option value="7days">Letzte 7 Tage</option>
+                <option value="30days">Letzte 30 Tage</option>
+                <option value="90days">Letzte 90 Tage</option>
+                <option value="365days">Letztes Jahr</option>
+              </select>
+            </div>
+
             <div className="flex items-end">
               <button
                 onClick={() => {
                   setFilterType("all");
                   setFilterProperty("all");
+                  setFilterPeriod("all");
                   setSearchQuery("");
                 }}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors"
@@ -357,18 +387,15 @@ export default function MetersManagementView({
                   </td>
                   <td className="px-6 py-4">
                     {meter.property ? (
-                      <div className="flex items-start gap-2">
-                        <Building2 className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <div className="text-sm font-medium text-dark">
-                            {meter.property.name}
-                          </div>
-                          {meter.unit && (
-                            <div className="text-xs text-gray-500">
-                              Einheit: {meter.unit.unit_number}
-                            </div>
-                          )}
+                      <div>
+                        <div className="text-sm font-medium text-dark">
+                          {meter.property.name}
                         </div>
+                        {meter.unit && (
+                          <div className="text-xs text-gray-500">
+                            Einheit: {meter.unit.unit_number}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <span className="text-gray-400 italic text-sm">-</span>
@@ -376,12 +403,9 @@ export default function MetersManagementView({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {meter.tenant ? (
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-dark">
-                          {meter.tenant.first_name} {meter.tenant.last_name}
-                        </span>
-                      </div>
+                      <span className="text-sm text-dark">
+                        {meter.tenant.first_name} {meter.tenant.last_name}
+                      </span>
                     ) : (
                       <span className="text-gray-400 italic text-sm">-</span>
                     )}
@@ -393,8 +417,7 @@ export default function MetersManagementView({
                           {meter.last_reading_value} {meter.unit_of_measurement}
                         </div>
                         {meter.last_reading_date && (
-                          <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                            <Calendar className="w-3 h-3" />
+                          <div className="text-xs text-gray-500 mt-1">
                             {formatDate(meter.last_reading_date)}
                           </div>
                         )}
@@ -405,19 +428,21 @@ export default function MetersManagementView({
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm">
+                  <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => onAddReading(meter)}
-                        className="text-primary-blue hover:text-blue-700 font-medium transition-colors"
+                        className="p-2 text-primary-blue hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Stand erfassen"
                       >
-                        Stand erfassen
+                        <Activity className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onEditMeter(meter)}
-                        className="text-gray-600 hover:text-gray-800 font-medium transition-colors"
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Bearbeiten"
                       >
-                        Bearbeiten
+                        <Edit2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
