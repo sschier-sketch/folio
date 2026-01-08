@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MessageSquare, Plus, FileText, Calendar, Lock } from "lucide-react";
+import { MessageSquare, Plus, FileText, Calendar, Lock, Wrench, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -16,6 +16,9 @@ interface Communication {
   content: string;
   is_internal: boolean;
   created_at: string;
+  is_ticket?: boolean;
+  ticket_status?: string;
+  ticket_category?: string;
 }
 
 export default function TenantCommunicationTab({
@@ -25,6 +28,13 @@ export default function TenantCommunicationTab({
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [communications, setCommunications] = useState<Communication[]>([]);
+  const [showNewEntry, setShowNewEntry] = useState(false);
+  const [newEntryForm, setNewEntryForm] = useState({
+    type: "message",
+    subject: "",
+    content: "",
+    is_internal: false,
+  });
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
@@ -37,15 +47,81 @@ export default function TenantCommunicationTab({
   async function loadCommunications() {
     try {
       setLoading(true);
-      const { data } = await supabase
+
+      const { data: commsData } = await supabase
         .from("tenant_communications")
         .select("*")
-        .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false });
+        .eq("tenant_id", tenantId);
 
-      if (data) setCommunications(data);
+      const { data: ticketsData } = await supabase
+        .from("tickets")
+        .select("*")
+        .eq("tenant_id", tenantId);
+
+      const allCommunications: Communication[] = [];
+
+      if (commsData) {
+        allCommunications.push(...commsData);
+      }
+
+      if (ticketsData) {
+        allCommunications.push(
+          ...ticketsData.map((ticket) => ({
+            id: ticket.id,
+            communication_type: "ticket",
+            subject: ticket.subject,
+            content: `Ticket ${ticket.ticket_number} - ${ticket.category}`,
+            is_internal: false,
+            created_at: ticket.created_at,
+            is_ticket: true,
+            ticket_status: ticket.status,
+            ticket_category: ticket.category,
+          }))
+        );
+      }
+
+      allCommunications.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setCommunications(allCommunications);
     } catch (error) {
       console.error("Error loading communications:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSaveEntry() {
+    if (!user || !newEntryForm.subject.trim()) return;
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.from("tenant_communications").insert([
+        {
+          user_id: user.id,
+          tenant_id: tenantId,
+          communication_type: newEntryForm.type,
+          subject: newEntryForm.subject,
+          content: newEntryForm.content,
+          is_internal: newEntryForm.is_internal,
+        },
+      ]);
+
+      if (error) throw error;
+
+      setNewEntryForm({
+        type: "message",
+        subject: "",
+        content: "",
+        is_internal: false,
+      });
+      setShowNewEntry(false);
+      loadCommunications();
+    } catch (error) {
+      console.error("Error saving entry:", error);
+      alert("Fehler beim Speichern des Eintrags");
     } finally {
       setLoading(false);
     }
@@ -59,6 +135,8 @@ export default function TenantCommunicationTab({
         return FileText;
       case "note":
         return FileText;
+      case "ticket":
+        return Wrench;
       default:
         return MessageSquare;
     }
@@ -72,6 +150,8 @@ export default function TenantCommunicationTab({
         return "Dokument versendet";
       case "note":
         return "Notiz";
+      case "ticket":
+        return "Mieter-Anfrage";
       default:
         return type;
     }
@@ -85,9 +165,21 @@ export default function TenantCommunicationTab({
         return "bg-emerald-100 text-emerald-700";
       case "note":
         return "bg-gray-100 text-gray-700";
+      case "ticket":
+        return "bg-amber-100 text-amber-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
+  };
+
+  const getTicketStatusLabel = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      open: "Offen",
+      in_progress: "In Bearbeitung",
+      resolved: "Gelöst",
+      closed: "Geschlossen",
+    };
+    return statusMap[status] || status;
   };
 
   return (
@@ -104,7 +196,10 @@ export default function TenantCommunicationTab({
                 Mietverhältnis
               </p>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
+            <button
+              onClick={() => setShowNewEntry(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
+            >
               <Plus className="w-4 h-4" />
               Eintrag hinzufügen
             </button>
@@ -122,7 +217,10 @@ export default function TenantCommunicationTab({
                 Erfassen Sie Nachrichten, versendete Dokumente oder interne
                 Notizen
               </p>
-              <button className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
+              <button
+                onClick={() => setShowNewEntry(true)}
+                className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
+              >
                 Ersten Eintrag erstellen
               </button>
             </div>
@@ -174,6 +272,13 @@ export default function TenantCommunicationTab({
                             {comm.content}
                           </div>
                         )}
+                        {comm.is_ticket && comm.ticket_status && (
+                          <div className="mt-2">
+                            <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                              Status: {getTicketStatusLabel(comm.ticket_status)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -189,13 +294,118 @@ export default function TenantCommunicationTab({
             <div className="text-sm text-blue-900">
               <p className="font-semibold mb-1">Mieterportal:</p>
               <p>
-                In Zukunft wird die Kommunikation direkt mit dem Mieterportal
-                verknüpft. Mieter können dann Nachrichten senden und empfangen,
-                Dokumente einsehen und Tickets erstellen.
+                Mieter-Anfragen aus dem Mieterportal werden automatisch hier
+                angezeigt und können direkt bearbeitet werden.
               </p>
             </div>
           </div>
         </div>
+
+        {showNewEntry && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg w-full max-w-2xl">
+              <div className="border-b px-6 py-4 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-dark">
+                  Neuer Eintrag
+                </h2>
+                <button
+                  onClick={() => setShowNewEntry(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Typ
+                  </label>
+                  <select
+                    value={newEntryForm.type}
+                    onChange={(e) =>
+                      setNewEntryForm({ ...newEntryForm, type: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  >
+                    <option value="message">Nachricht</option>
+                    <option value="document_sent">Dokument versendet</option>
+                    <option value="note">Notiz</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Betreff *
+                  </label>
+                  <input
+                    type="text"
+                    value={newEntryForm.subject}
+                    onChange={(e) =>
+                      setNewEntryForm({ ...newEntryForm, subject: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="z.B. Miete für Januar erhalten"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Inhalt
+                  </label>
+                  <textarea
+                    value={newEntryForm.content}
+                    onChange={(e) =>
+                      setNewEntryForm({ ...newEntryForm, content: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
+                    rows={5}
+                    placeholder="Details..."
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="is_internal"
+                    checked={newEntryForm.is_internal}
+                    onChange={(e) =>
+                      setNewEntryForm({
+                        ...newEntryForm,
+                        is_internal: e.target.checked,
+                      })
+                    }
+                    className="w-4 h-4 text-primary-blue focus:ring-primary-blue border-gray-300 rounded"
+                  />
+                  <label
+                    htmlFor="is_internal"
+                    className="text-sm font-medium text-gray-600"
+                  >
+                    Interner Eintrag (nur für Vermieter sichtbar)
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewEntry(false)}
+                    className="flex-1 px-4 py-2 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveEntry}
+                    disabled={loading || !newEntryForm.subject.trim()}
+                    className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? "Speichern..." : "Eintrag speichern"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PremiumFeatureGuard>
   );

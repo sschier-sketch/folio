@@ -34,7 +34,7 @@ export default function TenantPortalDocuments({
         .select("*")
         .eq("property_id", propertyId)
         .eq("shared_with_tenant", true)
-        .order("upload_date", { ascending: false });
+        .order("uploaded_at", { ascending: false });
 
       if (error) throw error;
       setDocuments(data || []);

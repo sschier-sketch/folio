@@ -44,7 +44,7 @@ export default function TenantPortalDashboard({
           `
           *,
           property:properties(name, address),
-          unit:property_units(name, rental_area),
+          unit:property_units!tenants_unit_id_fkey(name, rental_area),
           rental_contract:rental_contracts(*)
         `
         )

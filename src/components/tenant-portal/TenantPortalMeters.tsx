@@ -74,12 +74,14 @@ export default function TenantPortalMeters({
 
   const loadReadings = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("meter_readings")
         .select("*, meter:meters(*)")
-        .eq("reported_by_tenant", true)
-        .order("reading_date", { ascending: false })
+        .in("meter_id", meters.map(m => m.id))
+        .order("date", { ascending: false })
         .limit(20);
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setReadings(data || []);
