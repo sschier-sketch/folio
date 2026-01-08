@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Gauge, Plus, Camera, Calendar } from "lucide-react";
+import { Gauge, Plus, Camera, Calendar, Upload, X as XIcon, Image as ImageIcon } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
 interface Meter {
@@ -42,6 +42,7 @@ export default function TenantPortalMeters({
     reading_date: new Date().toISOString().split("T")[0],
     notes: "",
   });
+  const [photos, setPhotos] = useState<File[]>([]);
 
   useEffect(() => {
     loadMeters();
@@ -95,13 +96,31 @@ export default function TenantPortalMeters({
     setLoading(true);
 
     try {
+      const photoData = [];
+
+      for (const file of photos) {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+
+        photoData.push({
+          filename: file.name,
+          data: base64,
+          size: file.size,
+          type: file.type,
+          uploaded_at: new Date().toISOString(),
+        });
+      }
+
       const { error } = await supabase.from("meter_readings").insert([
         {
           meter_id: newReadingForm.meter_id,
-          reading_value: parseFloat(newReadingForm.reading_value),
-          reading_date: newReadingForm.reading_date,
-          notes: newReadingForm.notes || null,
-          reported_by_tenant: true,
+          value: parseFloat(newReadingForm.reading_value),
+          date: newReadingForm.reading_date,
+          note: newReadingForm.notes || null,
+          photos: photoData.length > 0 ? photoData : null,
         },
       ]);
 
@@ -113,6 +132,7 @@ export default function TenantPortalMeters({
         reading_date: new Date().toISOString().split("T")[0],
         notes: "",
       });
+      setPhotos([]);
       setShowNewReading(false);
       loadReadings();
     } catch (error) {
@@ -121,6 +141,23 @@ export default function TenantPortalMeters({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const imageFiles = files.filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    if (imageFiles.length !== files.length) {
+      alert("Bitte wählen Sie nur Bilddateien aus");
+    }
+
+    setPhotos((prev) => [...prev, ...imageFiles].slice(0, 3));
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const getMeterTypeLabel = (type: string) => {
@@ -365,6 +402,52 @@ export default function TenantPortalMeters({
                   rows={3}
                   placeholder="Optionale Anmerkungen..."
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-2">
+                  Fotos (max. 3)
+                </label>
+                <div className="space-y-3">
+                  <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-blue hover:bg-blue-50 transition-colors">
+                    <Camera className="w-5 h-5 text-gray-400" />
+                    <span className="text-sm text-gray-600">
+                      Fotos aufnehmen/auswählen
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      capture="environment"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                      disabled={photos.length >= 3}
+                    />
+                  </label>
+
+                  {photos.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {photos.map((file, index) => (
+                        <div
+                          key={index}
+                          className="relative group border border-gray-200 rounded-lg p-2 flex items-center gap-2"
+                        >
+                          <ImageIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <span className="text-xs text-gray-600 truncate flex-1">
+                            {file.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removePhoto(index)}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <XIcon className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">

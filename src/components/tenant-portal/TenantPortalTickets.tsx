@@ -7,6 +7,9 @@ import {
   XCircle,
   AlertCircle,
   ArrowLeft,
+  Upload,
+  X as XIcon,
+  Image as ImageIcon,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
@@ -53,6 +56,7 @@ export default function TenantPortalTickets({
     priority: "medium",
     message: "",
   });
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   useEffect(() => {
     loadTickets();
@@ -120,6 +124,23 @@ export default function TenantPortalTickets({
       if (ticketError) throw ticketError;
 
       if (ticket && newTicketForm.message.trim()) {
+        const attachmentData = [];
+
+        for (const file of attachments) {
+          const reader = new FileReader();
+          const base64 = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+
+          attachmentData.push({
+            filename: file.name,
+            data: base64,
+            size: file.size,
+            type: file.type,
+          });
+        }
+
         const { error: messageError } = await supabase
           .from("ticket_messages")
           .insert([
@@ -129,6 +150,7 @@ export default function TenantPortalTickets({
               sender_name: tenantEmail,
               sender_email: tenantEmail,
               message: newTicketForm.message,
+              attachments: attachmentData,
             },
           ]);
 
@@ -141,6 +163,7 @@ export default function TenantPortalTickets({
         priority: "medium",
         message: "",
       });
+      setAttachments([]);
       setShowNewTicket(false);
       loadTickets();
     } catch (error) {
@@ -149,6 +172,23 @@ export default function TenantPortalTickets({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const imageFiles = files.filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    if (imageFiles.length !== files.length) {
+      alert("Bitte wählen Sie nur Bilddateien aus");
+    }
+
+    setAttachments((prev) => [...prev, ...imageFiles].slice(0, 5));
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSendMessage = async (ticketId: string, message: string) => {
@@ -474,6 +514,51 @@ export default function TenantPortalTickets({
                   placeholder="Beschreiben Sie Ihr Anliegen..."
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-2">
+                  Bilder anhängen (max. 5)
+                </label>
+                <div className="space-y-3">
+                  <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-blue hover:bg-blue-50 transition-colors">
+                    <Upload className="w-5 h-5 text-gray-400" />
+                    <span className="text-sm text-gray-600">
+                      Bilder auswählen
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
+                      disabled={attachments.length >= 5}
+                    />
+                  </label>
+
+                  {attachments.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {attachments.map((file, index) => (
+                        <div
+                          key={index}
+                          className="relative group border border-gray-200 rounded-lg p-2 flex items-center gap-2"
+                        >
+                          <ImageIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <span className="text-xs text-gray-600 truncate flex-1">
+                            {file.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeAttachment(index)}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <XIcon className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">

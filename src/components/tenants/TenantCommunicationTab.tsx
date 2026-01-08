@@ -29,6 +29,9 @@ export default function TenantCommunicationTab({
   const [loading, setLoading] = useState(true);
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [showNewEntry, setShowNewEntry] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [ticketMessages, setTicketMessages] = useState<any[]>([]);
+  const [newReply, setNewReply] = useState("");
   const [newEntryForm, setNewEntryForm] = useState({
     type: "message",
     subject: "",
@@ -127,6 +130,79 @@ export default function TenantCommunicationTab({
     }
   }
 
+  async function loadTicketDetails(ticketId: string) {
+    try {
+      const { data: ticket } = await supabase
+        .from("tickets")
+        .select("*")
+        .eq("id", ticketId)
+        .single();
+
+      const { data: messages } = await supabase
+        .from("ticket_messages")
+        .select("*")
+        .eq("ticket_id", ticketId)
+        .order("created_at", { ascending: true });
+
+      setSelectedTicket(ticket);
+      setTicketMessages(messages || []);
+    } catch (error) {
+      console.error("Error loading ticket details:", error);
+    }
+  }
+
+  async function handleTicketReply() {
+    if (!user || !selectedTicket || !newReply.trim()) return;
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.from("ticket_messages").insert([
+        {
+          ticket_id: selectedTicket.id,
+          sender_type: "landlord",
+          sender_name: user.email,
+          sender_email: user.email,
+          message: newReply,
+        },
+      ]);
+
+      if (error) throw error;
+
+      await supabase
+        .from("tickets")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", selectedTicket.id);
+
+      setNewReply("");
+      loadTicketDetails(selectedTicket.id);
+      loadCommunications();
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      alert("Fehler beim Senden der Antwort");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleStatusChange(newStatus: string) {
+    if (!selectedTicket) return;
+
+    try {
+      const { error } = await supabase
+        .from("tickets")
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq("id", selectedTicket.id);
+
+      if (error) throw error;
+
+      setSelectedTicket({ ...selectedTicket, status: newStatus });
+      loadCommunications();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Fehler beim Aktualisieren des Status");
+    }
+  }
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "message":
@@ -192,8 +268,7 @@ export default function TenantCommunicationTab({
                 Kommunikationshistorie
               </h3>
               <p className="text-sm text-gray-400 mt-1">
-                Alle Nachrichten, Dokumente und Notizen zu diesem
-                Mietverhältnis
+                Alle Nachrichten von Ihnen oder dem Mieter zentral verwaltet
               </p>
             </div>
             <button
@@ -232,9 +307,12 @@ export default function TenantCommunicationTab({
                   return (
                     <div
                       key={comm.id}
-                      className="relative pl-8 pb-4 border-l-2 border-gray-200 last:border-0"
+                      className={`relative pl-8 pb-4 border-l-2 border-gray-200 last:border-0 ${
+                        comm.is_ticket ? "cursor-pointer hover:bg-gray-50 -mx-6 px-14 py-4" : ""
+                      }`}
+                      onClick={() => comm.is_ticket && loadTicketDetails(comm.id)}
                     >
-                      <div className="absolute left-0 top-0 -translate-x-1/2 w-4 h-4 bg-primary-blue rounded-full"></div>
+                      <div className="absolute left-6 top-4 -translate-x-1/2 w-4 h-4 bg-primary-blue rounded-full"></div>
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <Calendar className="w-4 h-4 text-gray-400" />
@@ -273,9 +351,12 @@ export default function TenantCommunicationTab({
                           </div>
                         )}
                         {comm.is_ticket && comm.ticket_status && (
-                          <div className="mt-2">
+                          <div className="mt-2 flex items-center gap-2">
                             <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
                               Status: {getTicketStatusLabel(comm.ticket_status)}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              Klicken zum Bearbeiten
                             </span>
                           </div>
                         )}
@@ -403,6 +484,132 @@ export default function TenantCommunicationTab({
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {selectedTicket && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+              <div className="border-b px-6 py-4 flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-dark">
+                    Ticket #{selectedTicket.ticket_number}
+                  </h2>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {selectedTicket.subject}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedTicket(null);
+                    setTicketMessages([]);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="p-6 border-b">
+                <div className="flex items-center gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Status
+                    </label>
+                    <select
+                      value={selectedTicket.status}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    >
+                      <option value="open">Offen</option>
+                      <option value="in_progress">In Bearbeitung</option>
+                      <option value="resolved">Gelöst</option>
+                      <option value="closed">Geschlossen</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Priorität
+                    </label>
+                    <span className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium inline-block">
+                      {selectedTicket.priority === "high"
+                        ? "Hoch"
+                        : selectedTicket.priority === "medium"
+                        ? "Mittel"
+                        : "Niedrig"}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Kategorie
+                    </label>
+                    <span className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium inline-block">
+                      {selectedTicket.category === "maintenance"
+                        ? "Wartung"
+                        : selectedTicket.category === "repair"
+                        ? "Reparatur"
+                        : selectedTicket.category === "complaint"
+                        ? "Beschwerde"
+                        : "Allgemein"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {ticketMessages.length === 0 ? (
+                  <p className="text-center text-gray-400">
+                    Keine Nachrichten vorhanden
+                  </p>
+                ) : (
+                  ticketMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex ${
+                        msg.sender_type === "tenant"
+                          ? "justify-start"
+                          : "justify-end"
+                      }`}
+                    >
+                      <div
+                        className={`max-w-[70%] rounded-lg p-4 ${
+                          msg.sender_type === "tenant"
+                            ? "bg-gray-100 text-dark"
+                            : "bg-primary-blue text-white"
+                        }`}
+                      >
+                        <div className="text-xs opacity-75 mb-1">
+                          {msg.sender_name} •{" "}
+                          {new Date(msg.created_at).toLocaleString("de-DE")}
+                        </div>
+                        <div className="whitespace-pre-wrap">{msg.message}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {selectedTicket.status !== "closed" && (
+                <div className="border-t p-6">
+                  <textarea
+                    value={newReply}
+                    onChange={(e) => setNewReply(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
+                    rows={3}
+                    placeholder="Ihre Antwort..."
+                  />
+                  <div className="flex justify-end mt-3">
+                    <button
+                      onClick={handleTicketReply}
+                      disabled={loading || !newReply.trim()}
+                      className="px-6 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    >
+                      {loading ? "Senden..." : "Antwort senden"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
