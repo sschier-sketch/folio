@@ -97,21 +97,28 @@ export default function MieterportalView() {
         }
       );
 
-      if (error) throw error;
+      if (error) {
+        console.error("Function invoke error:", error);
+        throw error;
+      }
 
-      if (data.success) {
+      if (data?.success) {
         alert(
           `Aktivierungslink wurde erfolgreich an ${tenant.email} gesendet!`
         );
+      } else if (data?.error) {
+        const errorMsg = data.details
+          ? `${data.error}\n\nDetails: ${data.details}${data.instructions ? `\n\n${data.instructions}` : ''}`
+          : data.error;
+        throw new Error(errorMsg);
       } else {
-        throw new Error(data.error || "Fehler beim Senden der E-Mail");
+        throw new Error("Fehler beim Senden der E-Mail");
       }
     } catch (error) {
       console.error("Error sending activation link:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unbekannter Fehler";
       alert(
-        `Fehler beim Senden des Aktivierungslinks: ${
-          error instanceof Error ? error.message : "Unbekannter Fehler"
-        }`
+        `Fehler beim Senden des Aktivierungslinks:\n\n${errorMessage}\n\nBitte überprüfen Sie die Konsole für weitere Details.`
       );
     } finally {
       setSendingInvite(false);

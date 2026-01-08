@@ -40,7 +40,6 @@ Deno.serve(async (req: Request) => {
     let finalHtml = html || '';
     let finalText = text || '';
 
-    // If templateKey is provided, load template from database
     if (templateKey) {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -68,7 +67,6 @@ Deno.serve(async (req: Request) => {
       finalHtml = template.body_html;
       finalText = template.body_text;
 
-      // Replace variables in template
       if (variables) {
         finalSubject = replaceVariables(finalSubject, variables);
         finalHtml = replaceVariables(finalHtml, variables);
@@ -76,7 +74,6 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Validierung
     if (!to || !finalSubject || !finalHtml) {
       return new Response(
         JSON.stringify({
@@ -92,8 +89,21 @@ Deno.serve(async (req: Request) => {
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
     if (!RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not configured');
+      console.error('RESEND_API_KEY is not configured');
+      return new Response(
+        JSON.stringify({
+          error: 'E-Mail-Versand nicht konfiguriert',
+          details: 'RESEND_API_KEY fehlt. Bitte konfigurieren Sie den API-Key in den Supabase Edge Function Secrets.',
+          instructions: 'Siehe EMAIL_SETUP.md für Anweisungen zur Konfiguration.'
+        }),
+        {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
+
+    console.log('Sending email to:', to, 'Subject:', finalSubject);
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -113,8 +123,23 @@ Deno.serve(async (req: Request) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Resend API error:', data);
-      throw new Error(data.message || 'Failed to send email via Resend');
+      console.error('Resend API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: data
+      });
+      return new Response(
+        JSON.stringify({
+          error: 'Fehler beim E-Mail-Versand',
+          details: data.message || 'Failed to send email via Resend',
+          resendStatus: response.status,
+          resendData: data
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     console.log('Email sent successfully via Resend:', {
