@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Users, Check, X, Send, ExternalLink } from "lucide-react";
+import { Users, Check, X, Send, ExternalLink, LogIn } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 interface Tenant {
   id: string;
@@ -24,10 +25,12 @@ interface Tenant {
 export default function MieterportalView() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [sendingInvite, setSendingInvite] = useState(false);
+  const [impersonating, setImpersonating] = useState<string | null>(null);
 
   useEffect(() => {
     loadTenants();
@@ -112,6 +115,33 @@ export default function MieterportalView() {
       );
     } finally {
       setSendingInvite(false);
+    }
+  };
+
+  const handleImpersonateTenant = async (tenant: Tenant) => {
+    if (!user) return;
+
+    setImpersonating(tenant.id);
+    try {
+      const token = crypto.randomUUID();
+
+      const { error } = await supabase
+        .from("tenant_impersonation_tokens")
+        .insert({
+          tenant_id: tenant.id,
+          created_by: user.id,
+          token: token,
+        });
+
+      if (error) throw error;
+
+      const impersonationUrl = `${window.location.origin}/tenant-portal/${user.id}?token=${token}`;
+      window.open(impersonationUrl, "_blank");
+    } catch (error) {
+      console.error("Error creating impersonation token:", error);
+      alert("Fehler beim Erstellen des Anmeldelinks");
+    } finally {
+      setImpersonating(null);
     }
   };
 
@@ -277,6 +307,17 @@ export default function MieterportalView() {
                               >
                                 <Send className="w-4 h-4" />
                                 Einladung senden
+                              </button>
+                            )}
+                            {tenant.portal_activated_at && (
+                              <button
+                                onClick={() => handleImpersonateTenant(tenant)}
+                                disabled={impersonating === tenant.id}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
+                                title="Als Mieter anmelden"
+                              >
+                                <LogIn className="w-4 h-4" />
+                                Als Mieter anmelden
                               </button>
                             )}
                             <button

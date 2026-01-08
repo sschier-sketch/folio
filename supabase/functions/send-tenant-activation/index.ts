@@ -24,6 +24,8 @@ Deno.serve(async (req: Request) => {
   try {
     const { tenantId, userId }: ActivationRequest = await req.json();
 
+    console.log("Processing activation request:", { tenantId, userId });
+
     if (!tenantId || !userId) {
       return new Response(
         JSON.stringify({
@@ -46,7 +48,22 @@ Deno.serve(async (req: Request) => {
       .eq("id", tenantId)
       .maybeSingle();
 
-    if (tenantError || !tenant) {
+    if (tenantError) {
+      console.error("Error fetching tenant:", tenantError);
+      return new Response(
+        JSON.stringify({
+          error: "Error fetching tenant data",
+          details: tenantError.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!tenant) {
+      console.error("Tenant not found:", tenantId);
       return new Response(
         JSON.stringify({
           error: "Tenant not found",
@@ -76,7 +93,22 @@ Deno.serve(async (req: Request) => {
       .eq("id", userId)
       .maybeSingle();
 
-    if (landlordError || !landlord) {
+    if (landlordError) {
+      console.error("Error fetching landlord:", landlordError);
+      return new Response(
+        JSON.stringify({
+          error: "Error fetching landlord data",
+          details: landlordError.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!landlord) {
+      console.error("Landlord not found:", userId);
       return new Response(
         JSON.stringify({
           error: "Landlord not found",
@@ -118,10 +150,14 @@ Deno.serve(async (req: Request) => {
     const emailData = await emailResponse.json();
 
     if (!emailResponse.ok) {
-      console.error("Failed to send email:", emailData);
+      console.error("Failed to send email:", {
+        status: emailResponse.status,
+        data: emailData,
+      });
       return new Response(
         JSON.stringify({
           error: "Failed to send activation email",
+          status: emailResponse.status,
           details: emailData,
         }),
         {

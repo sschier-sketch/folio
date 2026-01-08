@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LogIn, Key, Mail } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import {
@@ -21,6 +21,66 @@ export default function TenantLogin({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+
+    if (token) {
+      handleTokenLogin(token);
+    }
+  }, []);
+
+  const handleTokenLogin = async (token: string) => {
+    setLoading(true);
+    setError("");
+    try {
+      const { data: tokenData, error: tokenError } = await supabase
+        .from("tenant_impersonation_tokens")
+        .select("*, tenants(*)")
+        .eq("token", token)
+        .is("used_at", null)
+        .maybeSingle();
+
+      if (tokenError || !tokenData) {
+        setError(
+          "Ungültiger oder abgelaufener Anmeldelink. Bitte verwenden Sie einen neuen Link."
+        );
+        window.history.replaceState({}, "", window.location.pathname);
+        setLoading(false);
+        return;
+      }
+
+      if (new Date(tokenData.expires_at) < new Date()) {
+        setError("Dieser Anmeldelink ist abgelaufen. Bitte verwenden Sie einen neuen Link.");
+        window.history.replaceState({}, "", window.location.pathname);
+        setLoading(false);
+        return;
+      }
+
+      const tenant = tokenData.tenants;
+
+      await supabase
+        .from("tenant_impersonation_tokens")
+        .update({ used_at: new Date().toISOString() })
+        .eq("token", token);
+
+      await supabase
+        .from("tenants")
+        .update({ last_login: new Date().toISOString() })
+        .eq("id", tenant.id);
+
+      window.history.replaceState({}, "", window.location.pathname);
+
+      onLoginSuccess(tenant.id, tenant.email);
+    } catch (err) {
+      console.error("Token login error:", err);
+      setError("Ein Fehler ist beim automatischen Login aufgetreten.");
+      window.history.replaceState({}, "", window.location.pathname);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -171,6 +231,24 @@ export default function TenantLogin({
       setLoading(false);
     }
   };
+  if (loading && !mode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-md w-full max-w-md p-8">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-blue/10 rounded-full mb-4">
+              <LogIn className="w-8 h-8 text-primary-blue animate-pulse" />
+            </div>
+            <h1 className="text-2xl font-bold text-dark mb-2">Anmeldung läuft...</h1>
+            <p className="text-gray-400">
+              Sie werden automatisch angemeldet. Bitte warten Sie einen Moment.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       {" "}
