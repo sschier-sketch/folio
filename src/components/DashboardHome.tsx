@@ -581,7 +581,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             {upcomingTasks.map((task, index) => (
               <div
                 key={task.id}
-                className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                className="p-4 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => {
                   if (onNavigateToProperty) {
                     onNavigateToProperty(task.property_id, "maintenance");

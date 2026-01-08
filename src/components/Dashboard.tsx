@@ -309,6 +309,13 @@ export default function Dashboard() {
                   <button
                     key={item.id}
                     onClick={() => {
+                      if (item.id === "properties") {
+                        setSelectedPropertyId(null);
+                        setSelectedPropertyTab(null);
+                      }
+                      if (item.id === "tenants") {
+                        setSelectedTenantId(null);
+                      }
                       setCurrentView(item.id as View);
                       setShowMobileMenu(false);
                     }}
@@ -358,7 +365,16 @@ export default function Dashboard() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setCurrentView(item.id as View)}
+                    onClick={() => {
+                      if (item.id === "properties") {
+                        setSelectedPropertyId(null);
+                        setSelectedPropertyTab(null);
+                      }
+                      if (item.id === "tenants") {
+                        setSelectedTenantId(null);
+                      }
+                      setCurrentView(item.id as View);
+                    }}
                     className={`w-full px-4 py-3 rounded transition-colors text-left ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
                   >
                     {" "}

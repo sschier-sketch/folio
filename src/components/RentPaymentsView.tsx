@@ -246,18 +246,7 @@ export default function RentPaymentsView() {
     return daysDiff >= -1 && daysDiff <= 1;
   };
 
-  const getFilteredPayments = () => {
-    switch (filterStatus) {
-      case "paid":
-        return payments.filter((p) => p.payment_status === 'paid');
-      case "unpaid":
-        return payments.filter((p) => p.payment_status !== 'paid');
-      default:
-        return payments;
-    }
-  };
-
-  const filteredPayments = getFilteredPayments();
+  const filteredPayments = payments;
 
   const totalPaid = filteredPayments
     .reduce((sum, p) => sum + Number(p.paid_amount || 0), 0);
