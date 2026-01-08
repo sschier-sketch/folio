@@ -43,35 +43,53 @@ export default function TenantPortalDashboard({
         .select(
           `
           *,
-          property:properties(name, address),
-          unit:property_units!tenants_unit_id_fkey(name, rental_area),
-          rental_contract:rental_contracts(*)
+          property:properties(name, address, street, house_number, city, zip),
+          unit:property_units!tenants_unit_id_fkey(name, rental_area)
         `
         )
         .eq("id", tenantId)
         .maybeSingle();
 
-      if (tenantError) throw tenantError;
-
-      if (tenant && tenant.rental_contract) {
-        const contract = Array.isArray(tenant.rental_contract)
-          ? tenant.rental_contract[0]
-          : tenant.rental_contract;
-
-        setTenantData({
-          tenant_name: `${tenant.first_name} ${tenant.last_name}`,
-          property_name: tenant.property?.name || "",
-          property_address: tenant.property?.address || "",
-          unit_name: tenant.unit?.name || "",
-          move_in_date: contract?.contract_start || tenant.move_in_date || "",
-          move_out_date: contract?.contract_end || tenant.move_out_date,
-          rental_area: tenant.unit?.rental_area || null,
-          cold_rent: parseFloat(contract?.cold_rent || contract?.base_rent || 0),
-          operating_costs: parseFloat(contract?.operating_costs || 0),
-          heating_costs: parseFloat(contract?.heating_costs || 0),
-          warm_rent: parseFloat(contract?.total_rent || 0),
-        });
+      if (tenantError) {
+        console.error("Error loading tenant:", tenantError);
+        throw tenantError;
       }
+
+      if (!tenant) {
+        console.error("No tenant found");
+        return;
+      }
+
+      const { data: contracts, error: contractError } = await supabase
+        .from("rental_contracts")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .order("contract_start", { ascending: false })
+        .limit(1);
+
+      if (contractError) {
+        console.error("Error loading contract:", contractError);
+      }
+
+      const contract = contracts && contracts.length > 0 ? contracts[0] : null;
+
+      const propertyAddress = tenant.property
+        ? `${tenant.property.street || ""} ${tenant.property.house_number || ""}, ${tenant.property.zip || ""} ${tenant.property.city || ""}`
+        : tenant.property?.address || "";
+
+      setTenantData({
+        tenant_name: `${tenant.first_name} ${tenant.last_name}`,
+        property_name: tenant.property?.name || "Keine Immobilie",
+        property_address: propertyAddress,
+        unit_name: tenant.unit?.name || "Keine Einheit",
+        move_in_date: contract?.contract_start || tenant.move_in_date || "",
+        move_out_date: contract?.contract_end || tenant.move_out_date || null,
+        rental_area: tenant.unit?.rental_area || null,
+        cold_rent: parseFloat(contract?.cold_rent || contract?.base_rent || "0"),
+        operating_costs: parseFloat(contract?.operating_costs || "0"),
+        heating_costs: parseFloat(contract?.heating_costs || "0"),
+        warm_rent: parseFloat(contract?.total_rent || contract?.warm_rent || "0"),
+      });
     } catch (error) {
       console.error("Error loading tenant data:", error);
     } finally {
@@ -128,7 +146,7 @@ export default function TenantPortalDashboard({
         .from("tickets")
         .select("id")
         .eq("tenant_id", tenantId)
-        .in("status", ["open", "in_progress"]);
+        .eq("status", "open");
 
       setOpenTicketsCount(tickets?.length || 0);
     } catch (error) {
