@@ -305,26 +305,24 @@ export default function MieterportalView() {
                       <div className="flex items-center justify-end gap-2">
                         {contract?.portal_access_enabled ? (
                           <>
+                            <button
+                              onClick={() => handleImpersonateTenant(tenant)}
+                              disabled={impersonating === tenant.id}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
+                              title="Als Mieter anmelden"
+                            >
+                              <LogIn className="w-4 h-4" />
+                              Als Mieter anmelden
+                            </button>
                             {!tenant.portal_activated_at && (
                               <button
                                 onClick={() => handleSendActivationLink(tenant)}
                                 disabled={sendingInvite}
                                 className="inline-flex items-center gap-1 px-3 py-1.5 text-primary-blue hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
-                                title="Aktivierungslink senden"
+                                title="Aktivierungslink per E-Mail senden"
                               >
                                 <Send className="w-4 h-4" />
-                                Einladung senden
-                              </button>
-                            )}
-                            {tenant.portal_activated_at && (
-                              <button
-                                onClick={() => handleImpersonateTenant(tenant)}
-                                disabled={impersonating === tenant.id}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
-                                title="Als Mieter anmelden"
-                              >
-                                <LogIn className="w-4 h-4" />
-                                Als Mieter anmelden
+                                E-Mail senden
                               </button>
                             )}
                             <button
@@ -373,14 +371,14 @@ export default function MieterportalView() {
           <div className="flex-shrink-0">
             <ExternalLink className="w-5 h-5 text-amber-600" />
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="text-sm font-semibold text-amber-900 mb-1">
               Portal-Link für Ihre Mieter
             </h3>
-            <p className="text-sm text-amber-800 mb-2">
-              Ihre Mieter können sich über diesen Link anmelden:
+            <p className="text-sm text-amber-800 mb-3">
+              Teilen Sie diesen Link mit Ihren Mietern. Beim ersten Besuch können sie sich selbst ein Passwort einrichten:
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-3">
               <code className="text-sm bg-white px-3 py-2 rounded border border-amber-300 flex-1">
                 {window.location.origin}/tenant-portal/{user?.id}
               </code>
@@ -391,10 +389,14 @@ export default function MieterportalView() {
                   );
                   alert("Link kopiert!");
                 }}
-                className="px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium"
+                className="px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium whitespace-nowrap"
               >
                 Kopieren
               </button>
+            </div>
+            <div className="text-xs text-amber-700 space-y-1">
+              <p>💡 <strong>Tipp:</strong> Mit "Als Mieter anmelden" können Sie auch selbst das Portal als Mieter testen</p>
+              <p>📧 <strong>Optional:</strong> Versenden Sie eine E-Mail-Einladung (erfordert E-Mail-Konfiguration)</p>
             </div>
           </div>
         </div>

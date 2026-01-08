@@ -60,14 +60,19 @@ export default function TenantLogin({
 
       const tenant = tokenData.tenants;
 
+      const now = new Date().toISOString();
+
       await supabase
         .from("tenant_impersonation_tokens")
-        .update({ used_at: new Date().toISOString() })
+        .update({ used_at: now })
         .eq("token", token);
 
       await supabase
         .from("tenants")
-        .update({ last_login: new Date().toISOString() })
+        .update({
+          last_login: now,
+          portal_activated_at: tenant.portal_activated_at || now
+        })
         .eq("id", tenant.id);
 
       window.history.replaceState({}, "", window.location.pathname);
@@ -122,9 +127,13 @@ export default function TenantLogin({
         setLoading(false);
         return;
       }
+      const now = new Date().toISOString();
       await supabase
         .from("tenants")
-        .update({ last_login: new Date().toISOString() })
+        .update({
+          last_login: now,
+          portal_activated_at: tenants.portal_activated_at || now
+        })
         .eq("id", tenants.id);
       onLoginSuccess(tenants.id, tenants.email);
     } catch (err) {
@@ -163,12 +172,14 @@ export default function TenantLogin({
       }
       const salt = generateSalt();
       const hash = await hashPassword(password, salt);
+      const now = new Date().toISOString();
       const { error: updateError } = await supabase
         .from("tenants")
         .update({
           password_hash: hash,
           password_salt: salt,
-          last_login: new Date().toISOString(),
+          last_login: now,
+          portal_activated_at: tenant.portal_activated_at || now,
         })
         .eq("id", tenant.id);
       if (updateError) throw updateError;
