@@ -29,7 +29,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { useNavigate } from "react-router-dom";
 import PropertiesView from "./PropertiesView";
 import TenantsView from "./TenantsView";
-import TicketsView from "./TicketsView";
+import MieterportalView from "./MieterportalView";
 import DashboardHome from "./DashboardHome";
 import RentPaymentsView from "./RentPaymentsView";
 import FinancesView from "./FinancesView";
@@ -44,7 +44,7 @@ type View =
   | "home"
   | "properties"
   | "tenants"
-  | "tickets"
+  | "mieterportal"
   | "payments"
   | "financial"
   | "documents"
@@ -85,7 +85,7 @@ export default function Dashboard() {
     { id: "properties", labelKey: "nav.properties", icon: Building2 },
     { id: "tenants", labelKey: "nav.tenants", icon: Users },
     { id: "payments", labelKey: "nav.payments", icon: Wallet },
-    { id: "tickets", labelKey: "nav.tickets", icon: MessageSquare },
+    { id: "mieterportal", labelKey: "nav.mieterportal", icon: MessageSquare },
     { id: "financial", labelKey: "nav.financial", icon: TrendingUp },
     { id: "documents", labelKey: "nav.documents", icon: FileText },
     { id: "templates", labelKey: "nav.templates", icon: Files },
@@ -413,7 +413,7 @@ export default function Dashboard() {
             {currentView === "properties" && <PropertiesView selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
             {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} />}{" "}
             {currentView === "payments" && <RentPaymentsView />}{" "}
-            {currentView === "tickets" && <TicketsView />}{" "}
+            {currentView === "mieterportal" && <MieterportalView />}{" "}
             {currentView === "financial" && <FinancesView />}{" "}
             {currentView === "documents" && <DocumentsView />}{" "}
             {currentView === "templates" && <TemplatesView />}{" "}
