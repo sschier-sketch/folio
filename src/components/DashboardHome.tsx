@@ -250,8 +250,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           base_rent,
           rent_type,
           graduated_rent_schedule,
-          index_base_rent,
-          index_base_date,
+          index_first_increase_date,
           tenants (
             id,
             first_name,
@@ -283,10 +282,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               increase_type: "Staffelmiete",
             });
           }
-        } else if (contract.rent_type === "indexed" && contract.index_base_date) {
-          const baseDate = new Date(contract.index_base_date);
-          const nextReviewDate = new Date(baseDate);
-          nextReviewDate.setFullYear(nextReviewDate.getFullYear() + 1);
+        } else if (contract.rent_type === "indexed" && contract.index_first_increase_date) {
+          const firstIncreaseDate = new Date(contract.index_first_increase_date);
+          const nextReviewDate = new Date(firstIncreaseDate);
 
           while (nextReviewDate < today) {
             nextReviewDate.setFullYear(nextReviewDate.getFullYear() + 1);
@@ -782,8 +780,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                         )}
                       </div>
                       <div className="text-sm text-gray-400 flex items-center gap-2">
-                        <span>{ticket.tenants.name}</span>
-                        <span>•</span>
+                        {ticket.tenants && <span>{ticket.tenants.name}</span>}
+                        {ticket.tenants && <span>•</span>}
                         <span>{new Date(ticket.created_at).toLocaleDateString("de-DE")}</span>
                       </div>
                     </div>
