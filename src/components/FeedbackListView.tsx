@@ -152,8 +152,7 @@ export default function FeedbackListView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        {" "}
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>{" "}
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     );
   }
@@ -167,25 +166,20 @@ export default function FeedbackListView() {
           <p className="text-gray-400">{t("feedback.description")}</p>
         </div>
       </div>
-      <div className="bg-white rounded shadow-sm p-6 mb-8">
-        {" "}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
         <h2 className="text-xl font-semibold text-dark mb-4">
           {t("feedback.submit")}
-        </h2>{" "}
+        </h2>
         {successMessage && (
           <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm">
-            {" "}
-            {successMessage}{" "}
+            {successMessage}
           </div>
-        )}{" "}
+        )}
         <form onSubmit={handleSubmitFeedback} className="space-y-4">
-          {" "}
           <div>
-            {" "}
             <label className="block text-sm font-medium text-gray-400 mb-2">
-              {" "}
-              {t("settings.feedback.idea")}{" "}
-            </label>{" "}
+              {t("settings.feedback.idea")}
+            </label>
             <textarea
               value={newFeedback}
               onChange={(e) => setNewFeedback(e.target.value)}
@@ -193,23 +187,20 @@ export default function FeedbackListView() {
               rows={4}
               placeholder={t("settings.feedback.idea.placeholder")}
               required
-            />{" "}
-          </div>{" "}
+            />
+          </div>
           <div className="flex items-center gap-6">
-            {" "}
             <label className="flex items-center gap-3 cursor-pointer">
-              {" "}
               <input
                 type="checkbox"
                 checked={willingToPay}
                 onChange={(e) => setWillingToPay(e.target.checked)}
                 className="w-5 h-5 text-primary-blue rounded focus:ring-2 focus:ring-blue-500"
-              />{" "}
+              />
               <span className="text-sm font-medium text-gray-400">
-                {" "}
-                {t("settings.feedback.willing_to_pay")}{" "}
-              </span>{" "}
-            </label>{" "}
+                {t("settings.feedback.willing_to_pay")}
+              </span>
+            </label>
             {willingToPay && (
               <input
                 type="text"
@@ -218,138 +209,115 @@ export default function FeedbackListView() {
                 className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 placeholder={t("settings.feedback.amount.placeholder")}
               />
-            )}{" "}
-          </div>{" "}
+            )}
+          </div>
           <button
             type="submit"
             disabled={submitting || !newFeedback.trim()}
             className="w-full py-3 bg-primary-blue text-white rounded-full hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
-            {" "}
             {submitting
               ? language === "de"
                 ? "Wird gesendet..."
                 : "Submitting..."
-              : t("settings.feedback.submit")}{" "}
-          </button>{" "}
-        </form>{" "}
-      </div>{" "}
+              : t("settings.feedback.submit")}
+          </button>
+        </form>
+      </div>
       <div className="flex gap-3 mb-6">
-        {" "}
         <button
           onClick={() => setFilter("all")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${filter === "all" ? "bg-primary-blue text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}
         >
-          {" "}
-          <Filter className="w-4 h-4" /> {t("feedback.filter.all")}{" "}
-        </button>{" "}
+          <Filter className="w-4 h-4" /> {t("feedback.filter.all")}
+        </button>
         <button
           onClick={() => setFilter("top")}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === "top" ? "bg-primary-blue text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}
         >
-          {" "}
-          {t("feedback.filter.top")}{" "}
-        </button>{" "}
+          {t("feedback.filter.top")}
+        </button>
         <button
           onClick={() => setFilter("new")}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === "new" ? "bg-primary-blue text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}
         >
-          {" "}
-          {t("feedback.filter.new")}{" "}
-        </button>{" "}
+          {t("feedback.filter.new")}
+        </button>
         <button
           onClick={() => setFilter("mine")}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === "mine" ? "bg-primary-blue text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}
         >
-          {" "}
-          {t("feedback.filter.mine")}{" "}
-        </button>{" "}
-      </div>{" "}
+          {t("feedback.filter.mine")}
+        </button>
+      </div>
       {feedbackList.length === 0 ? (
-        <div className="bg-white rounded shadow-sm p-12 text-center">
-          {" "}
+        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
           <h3 className="text-xl font-semibold text-dark mb-2">
-            {" "}
-            {t("feedback.no_feedback")}{" "}
-          </h3>{" "}
-          <p className="text-gray-400">{t("feedback.submit_first")}</p>{" "}
+            {t("feedback.no_feedback")}
+          </h3>
+          <p className="text-gray-400">{t("feedback.submit_first")}</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {" "}
           {feedbackList.map((feedback) => (
             <div
               key={feedback.id}
-              className="bg-white rounded shadow-sm p-6 hover:transition-shadow"
+              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
             >
-              {" "}
               <div className="flex gap-4">
-                {" "}
                 <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                  {" "}
                   <button
                     onClick={() => handleVote(feedback.id, "up")}
                     className={`p-2 rounded-lg transition-colors ${feedback.user_vote === "up" ? "bg-emerald-100 text-emerald-600" : "bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600"}`}
                   >
-                    {" "}
-                    <ThumbsUp className="w-5 h-5" />{" "}
-                  </button>{" "}
+                    <ThumbsUp className="w-5 h-5" />
+                  </button>
                   <div className="text-center">
-                    {" "}
                     <div className="text-2xl font-bold text-dark">
-                      {" "}
-                      {feedback.upvotes - feedback.downvotes}{" "}
-                    </div>{" "}
+                      {feedback.upvotes - feedback.downvotes}
+                    </div>
                     <div className="text-xs text-gray-300">
                       {t("feedback.votes")}
-                    </div>{" "}
-                  </div>{" "}
+                    </div>
+                  </div>
                   <button
                     onClick={() => handleVote(feedback.id, "down")}
                     className={`p-2 rounded-lg transition-colors ${feedback.user_vote === "down" ? "bg-red-100 text-red-600" : "bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600"}`}
                   >
-                    {" "}
-                    <ThumbsDown className="w-5 h-5" />{" "}
-                  </button>{" "}
-                </div>{" "}
+                    <ThumbsDown className="w-5 h-5" />
+                  </button>
+                </div>
                 <div className="flex-1">
-                  {" "}
                   <div className="flex items-start justify-between mb-3">
-                    {" "}
                     <div className="flex items-center gap-3">
-                      {" "}
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(feedback.status)}`}
                       >
-                        {" "}
-                        {getStatusText(feedback.status)}{" "}
-                      </span>{" "}
+                        {getStatusText(feedback.status)}
+                      </span>
                       <span className="text-sm text-gray-300">
-                        {" "}
-                        {formatDate(feedback.created_at)}{" "}
-                      </span>{" "}
+                        {formatDate(feedback.created_at)}
+                      </span>
                       {feedback.willing_to_pay && (
                         <span className="px-3 py-1 bg-primary-blue/5 text-primary-blue rounded-full text-xs font-medium">
-                          {" "}
                           {language === "de"
                             ? "Zahlungsbereit"
-                            : "Willing to Pay"}{" "}
+                            : "Willing to Pay"}
                           {feedback.payment_amount &&
-                            ` (${feedback.payment_amount})`}{" "}
+                            ` (${feedback.payment_amount})`}
                         </span>
-                      )}{" "}
-                    </div>{" "}
-                  </div>{" "}
+                      )}
+                    </div>
+                  </div>
                   <p className="text-dark text-lg leading-relaxed whitespace-pre-wrap">
-                    {" "}
-                    {feedback.feedback_text}{" "}
-                  </p>{" "}
-                </div>{" "}
-              </div>{" "}
+                    {feedback.feedback_text}
+                  </p>
+                </div>
+              </div>
             </div>
-          ))}{" "}
+          ))}
         </div>
-      )}{" "}
+      )}
     </div>
   );
 }
