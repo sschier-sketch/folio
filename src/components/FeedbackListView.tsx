@@ -159,13 +159,14 @@ export default function FeedbackListView() {
   }
   return (
     <div>
-      <div className="mb-8">
-        {" "}
-        <h1 className="text-3xl font-bold text-dark mb-2">
-          {t("feedback.title")}
-        </h1>{" "}
-        <p className="text-gray-400">{t("feedback.description")}</p>{" "}
-      </div>{" "}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-dark mb-2">
+            {t("feedback.title")}
+          </h1>
+          <p className="text-gray-400">{t("feedback.description")}</p>
+        </div>
+      </div>
       <div className="bg-white rounded shadow-sm p-6 mb-8">
         {" "}
         <h2 className="text-xl font-semibold text-dark mb-4">

@@ -91,9 +91,9 @@ export default function RentPaymentsView() {
         query = query.eq("contract_id", filterContract);
       }
       if (filterStatus === "paid") {
-        query = query.eq("paid", true);
+        query = query.eq("payment_status", "paid");
       } else if (filterStatus === "unpaid") {
-        query = query.eq("paid", false);
+        query = query.in("payment_status", ["unpaid", "partial"]);
         if (!endDate) {
           const today = new Date().toISOString().split("T")[0];
           query = query.lte("due_date", today);
