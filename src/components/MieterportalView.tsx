@@ -80,14 +80,36 @@ export default function MieterportalView() {
   };
 
   const handleSendActivationLink = async (tenant: Tenant) => {
+    if (!user) return;
+
     setSendingInvite(true);
     try {
-      alert(
-        `Aktivierungslink würde an ${tenant.email} gesendet.\n\nPortal-Link: ${window.location.origin}/tenant-portal/${user?.id}`
+      const { data, error } = await supabase.functions.invoke(
+        "send-tenant-activation",
+        {
+          body: {
+            tenantId: tenant.id,
+            userId: user.id,
+          },
+        }
       );
+
+      if (error) throw error;
+
+      if (data.success) {
+        alert(
+          `Aktivierungslink wurde erfolgreich an ${tenant.email} gesendet!`
+        );
+      } else {
+        throw new Error(data.error || "Fehler beim Senden der E-Mail");
+      }
     } catch (error) {
       console.error("Error sending activation link:", error);
-      alert("Fehler beim Senden des Aktivierungslinks");
+      alert(
+        `Fehler beim Senden des Aktivierungslinks: ${
+          error instanceof Error ? error.message : "Unbekannter Fehler"
+        }`
+      );
     } finally {
       setSendingInvite(false);
     }

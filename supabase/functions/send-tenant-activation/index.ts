@@ -1,0 +1,166 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.4";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Client-Info, Apikey",
+};
+
+interface ActivationRequest {
+  tenantId: string;
+  userId: string;
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 200,
+      headers: corsHeaders,
+    });
+  }
+
+  try {
+    const { tenantId, userId }: ActivationRequest = await req.json();
+
+    if (!tenantId || !userId) {
+      return new Response(
+        JSON.stringify({
+          error: "Missing required fields: tenantId and userId",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: tenant, error: tenantError } = await supabase
+      .from("tenants")
+      .select("first_name, last_name, email")
+      .eq("id", tenantId)
+      .maybeSingle();
+
+    if (tenantError || !tenant) {
+      return new Response(
+        JSON.stringify({
+          error: "Tenant not found",
+        }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!tenant.email) {
+      return new Response(
+        JSON.stringify({
+          error: "Tenant has no email address",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { data: landlord, error: landlordError } = await supabase
+      .from("users")
+      .select("email, first_name, last_name")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (landlordError || !landlord) {
+      return new Response(
+        JSON.stringify({
+          error: "Landlord not found",
+        }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const origin = req.headers.get("origin") || "http://localhost:5173";
+    const portalLink = `${origin}/tenant-portal/${userId}`;
+
+    const landlordName = landlord.first_name && landlord.last_name
+      ? `${landlord.first_name} ${landlord.last_name}`
+      : landlord.email;
+
+    const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`;
+    const emailResponse = await fetch(sendEmailUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseKey}`,
+      },
+      body: JSON.stringify({
+        to: tenant.email,
+        templateKey: "tenant_portal_activation",
+        variables: {
+          tenant_name: `${tenant.first_name} ${tenant.last_name}`,
+          tenant_email: tenant.email,
+          portal_link: portalLink,
+          landlord_name: landlordName,
+          landlord_email: landlord.email,
+        },
+      }),
+    });
+
+    const emailData = await emailResponse.json();
+
+    if (!emailResponse.ok) {
+      console.error("Failed to send email:", emailData);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to send activation email",
+          details: emailData,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log("Tenant activation email sent successfully:", {
+      tenantId,
+      email: tenant.email,
+      portalLink,
+    });
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Activation email sent successfully",
+        recipient: tenant.email,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    console.error("Error sending tenant activation email:", error);
+
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error
+          ? error.message
+          : "Failed to send activation email",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+});
