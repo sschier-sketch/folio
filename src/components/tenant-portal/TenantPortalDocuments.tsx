@@ -4,10 +4,10 @@ import { supabase } from "../../lib/supabase";
 
 interface Document {
   id: string;
-  name: string;
+  document_name: string;
   document_type: string;
-  file_path: string;
-  upload_date: string;
+  file_url: string;
+  uploaded_at: string;
   notes: string | null;
 }
 
@@ -68,41 +68,54 @@ export default function TenantPortalDocuments({
   };
 
   const handleDownload = async (document: Document) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from("property-documents")
-        .download(document.file_path);
-
-      if (error) throw error;
-
-      const url = window.URL.createObjectURL(data);
+    if (document.file_url.startsWith('data:')) {
       const a = window.document.createElement("a");
-      a.href = url;
-      a.download = document.name;
+      a.href = document.file_url;
+      a.download = document.document_name;
       window.document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
       window.document.body.removeChild(a);
-    } catch (error) {
-      console.error("Error downloading document:", error);
-      alert("Fehler beim Herunterladen des Dokuments");
+    } else {
+      try {
+        const { data, error } = await supabase.storage
+          .from("property-documents")
+          .download(document.file_url);
+
+        if (error) throw error;
+
+        const url = window.URL.createObjectURL(data);
+        const a = window.document.createElement("a");
+        a.href = url;
+        a.download = document.document_name;
+        window.document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        window.document.body.removeChild(a);
+      } catch (error) {
+        console.error("Error downloading document:", error);
+        alert("Fehler beim Herunterladen des Dokuments");
+      }
     }
   };
 
   const handleView = async (document: Document) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from("property-documents")
-        .createSignedUrl(document.file_path, 3600);
+    if (document.file_url.startsWith('data:')) {
+      window.open(document.file_url, "_blank");
+    } else {
+      try {
+        const { data, error } = await supabase.storage
+          .from("property-documents")
+          .createSignedUrl(document.file_url, 3600);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      if (data.signedUrl) {
-        window.open(data.signedUrl, "_blank");
+        if (data.signedUrl) {
+          window.open(data.signedUrl, "_blank");
+        }
+      } catch (error) {
+        console.error("Error viewing document:", error);
+        alert("Fehler beim Öffnen des Dokuments");
       }
-    } catch (error) {
-      console.error("Error viewing document:", error);
-      alert("Fehler beim Öffnen des Dokuments");
     }
   };
 
@@ -151,7 +164,7 @@ export default function TenantPortalDocuments({
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-lg font-semibold text-dark">
-                    {document.name}
+                    {document.document_name}
                   </h3>
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${getDocumentTypeColor(document.document_type)}`}
@@ -160,7 +173,7 @@ export default function TenantPortalDocuments({
                   </span>
                 </div>
                 <p className="text-sm text-gray-400 mb-2">
-                  Hochgeladen am {formatDate(document.upload_date)}
+                  Hochgeladen am {formatDate(document.uploaded_at)}
                 </p>
                 {document.notes && (
                   <p className="text-sm text-gray-400 mt-2">

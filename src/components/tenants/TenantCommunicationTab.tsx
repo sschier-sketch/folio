@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MessageSquare, Plus, FileText, Calendar, Lock, Wrench, X } from "lucide-react";
+import { MessageSquare, Plus, FileText, Calendar, Lock, Wrench, X, Upload, File as FileIcon } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -38,14 +38,32 @@ export default function TenantCommunicationTab({
     content: "",
     is_internal: false,
   });
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [sharedWithTenant, setSharedWithTenant] = useState(false);
+  const [tenant, setTenant] = useState<any>(null);
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
       loadCommunications();
+      loadTenant();
     } else {
       setLoading(false);
     }
   }, [user, tenantId, isPremium]);
+
+  async function loadTenant() {
+    try {
+      const { data } = await supabase
+        .from("tenants")
+        .select("*")
+        .eq("id", tenantId)
+        .single();
+
+      if (data) setTenant(data);
+    } catch (error) {
+      console.error("Error loading tenant:", error);
+    }
+  }
 
   async function loadCommunications() {
     try {
@@ -97,10 +115,36 @@ export default function TenantCommunicationTab({
   }
 
   async function handleSaveEntry() {
-    if (!user || !newEntryForm.subject.trim()) return;
+    if (!user || !newEntryForm.subject.trim() || !tenant) return;
 
     try {
       setLoading(true);
+
+      if (attachedFile) {
+        const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(attachedFile);
+        });
+
+        const { error: docError } = await supabase
+          .from("property_documents")
+          .insert([
+            {
+              property_id: tenant.property_id,
+              user_id: user.id,
+              document_name: attachedFile.name,
+              document_type: "letter",
+              file_url: base64,
+              file_size: attachedFile.size,
+              shared_with_tenant: sharedWithTenant,
+              unit_id: tenant.unit_id || null,
+            },
+          ]);
+
+        if (docError) throw docError;
+      }
+
       const { error } = await supabase.from("tenant_communications").insert([
         {
           user_id: user.id,
@@ -120,6 +164,8 @@ export default function TenantCommunicationTab({
         content: "",
         is_internal: false,
       });
+      setAttachedFile(null);
+      setSharedWithTenant(false);
       setShowNewEntry(false);
       loadCommunications();
     } catch (error) {
@@ -276,7 +322,7 @@ export default function TenantCommunicationTab({
               className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Eintrag hinzufügen
+              Nachricht versenden
             </button>
           </div>
 
@@ -387,7 +433,7 @@ export default function TenantCommunicationTab({
             <div className="bg-white rounded-lg w-full max-w-2xl">
               <div className="border-b px-6 py-4 flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-dark">
-                  Neuer Eintrag
+                  Nachricht versenden
                 </h2>
                 <button
                   onClick={() => setShowNewEntry(false)}
@@ -443,6 +489,67 @@ export default function TenantCommunicationTab({
                     rows={5}
                     placeholder="Details..."
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Dokument anhängen (optional)
+                  </label>
+                  <div className="space-y-3">
+                    {!attachedFile ? (
+                      <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-blue hover:bg-blue-50 transition-colors">
+                        <Upload className="w-5 h-5 text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          Dokument auswählen
+                        </span>
+                        <input
+                          type="file"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setAttachedFile(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    ) : (
+                      <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                        <FileIcon className="w-5 h-5 text-gray-400" />
+                        <span className="text-sm text-gray-600 flex-1">
+                          {attachedFile.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAttachedFile(null);
+                            setSharedWithTenant(false);
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+
+                    {attachedFile && (
+                      <div className="flex items-center gap-2 ml-4">
+                        <input
+                          type="checkbox"
+                          id="shared_with_tenant"
+                          checked={sharedWithTenant}
+                          onChange={(e) => setSharedWithTenant(e.target.checked)}
+                          className="rounded border-gray-300 text-primary-blue focus:ring-primary-blue"
+                        />
+                        <label
+                          htmlFor="shared_with_tenant"
+                          className="text-sm text-gray-600 cursor-pointer"
+                        >
+                          Im Mieterportal unter "Dokumente" anzeigen
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">

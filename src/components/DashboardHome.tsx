@@ -53,6 +53,19 @@ interface RentIncrease {
   increase_type: string;
 }
 
+interface OpenTicket {
+  id: string;
+  ticket_number: string;
+  subject: string;
+  status: string;
+  priority: string;
+  created_at: string;
+  tenant_id: string;
+  tenants: {
+    name: string;
+  };
+}
+
 interface DashboardHomeProps {
   onNavigateToTenant?: (tenantId: string) => void;
   onNavigateToProperty?: (propertyId: string, tab?: string) => void;
@@ -77,13 +90,16 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const [copied, setCopied] = useState(false);
   const [upcomingTasks, setUpcomingTasks] = useState<MaintenanceTask[]>([]);
   const [rentIncreases, setRentIncreases] = useState<RentIncrease[]>([]);
+  const [openTickets, setOpenTickets] = useState<OpenTicket[]>([]);
   const [showTasksCard, setShowTasksCard] = useState(true);
+  const [showTicketsCard, setShowTicketsCard] = useState(true);
   const [showRentIncreasesCard, setShowRentIncreasesCard] = useState(true);
 
   useEffect(() => {
     loadStats();
     loadUpcomingTasks();
     loadUpcomingRentIncreases();
+    loadOpenTickets();
   }, [user]);
   const loadStats = async () => {
     if (!user) return;
@@ -294,6 +310,30 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       ));
     } catch (error) {
       console.error("Error loading rent increases:", error);
+    }
+  };
+
+  const loadOpenTickets = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("tickets")
+        .select(`
+          *,
+          tenants (
+            name
+          )
+        `)
+        .eq("user_id", user.id)
+        .neq("status", "closed")
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      setOpenTickets(data || []);
+    } catch (error) {
+      console.error("Error loading open tickets:", error);
     }
   };
 
@@ -666,6 +706,85 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                             </span>
                           </>
                         )}
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {openTickets.length > 0 && showTicketsCard && (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-dark">Offene Mieter-Anfragen</h2>
+            <button
+              onClick={() => setShowTicketsCard(false)}
+              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Schließen"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+          <div className="bg-white rounded-lg">
+            {openTickets.map((ticket, index) => (
+              <div
+                key={ticket.id}
+                className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                  index !== openTickets.length - 1 ? "border-b border-gray-100" : ""
+                }`}
+                onClick={() => {
+                  if (onNavigateToTenant) {
+                    navigate(`/dashboard/tenants/${ticket.tenant_id}?tab=communication`);
+                  }
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      ticket.priority === "high"
+                        ? "bg-red-100"
+                        : ticket.priority === "medium"
+                        ? "bg-amber-100"
+                        : "bg-gray-100"
+                    }`}>
+                      <AlertCircle className={`w-5 h-5 ${
+                        ticket.priority === "high"
+                          ? "text-red-600"
+                          : ticket.priority === "medium"
+                          ? "text-amber-600"
+                          : "text-gray-600"
+                      }`} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-dark">{ticket.subject}</h3>
+                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-medium">
+                          #{ticket.ticket_number}
+                        </span>
+                        {ticket.status === "open" && (
+                          <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded font-medium">
+                            Offen
+                          </span>
+                        )}
+                        {ticket.status === "in_progress" && (
+                          <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded font-medium">
+                            In Bearbeitung
+                          </span>
+                        )}
+                        {ticket.status === "resolved" && (
+                          <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded font-medium">
+                            Gelöst
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-400 flex items-center gap-2">
+                        <span>{ticket.tenants.name}</span>
+                        <span>•</span>
+                        <span>{new Date(ticket.created_at).toLocaleDateString("de-DE")}</span>
                       </div>
                     </div>
                   </div>
