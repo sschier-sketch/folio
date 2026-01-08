@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Download, FileText, Loader, Search, Lock, Calendar, File } from "lucide-react";
+import { Download, FileText, Loader, Search, Lock, Calendar, File, FileEdit } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
+import AutomaticTemplateWizard from "./AutomaticTemplateWizard";
 
 interface Template {
   id: string;
@@ -68,6 +69,7 @@ export default function TemplatesView() {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -182,11 +184,28 @@ export default function TemplatesView() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-dark mb-2">Vorlagen</h1>
-        <p className="text-gray-400">
-          Professionelle Dokumente für Ihre Immobilienverwaltung
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-dark mb-2">Vorlagen</h1>
+            <p className="text-gray-400">
+              Professionelle Dokumente für Ihre Immobilienverwaltung
+            </p>
+          </div>
+          <button
+            onClick={() => setShowWizard(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+          >
+            <FileEdit className="w-5 h-5" />
+            Automatische Vorlage verwenden
+          </button>
+        </div>
       </div>
+
+      {showWizard && (
+        <AutomaticTemplateWizard
+          onClose={() => setShowWizard(false)}
+        />
+      )}
 
       {templates.length > 0 && (
         <div className="mb-6 space-y-4">

@@ -39,7 +39,6 @@ export default function TenantCommunicationTab({
     is_internal: false,
   });
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [sharedWithTenant, setSharedWithTenant] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
 
   useEffect(() => {
@@ -137,7 +136,7 @@ export default function TenantCommunicationTab({
               document_type: "letter",
               file_url: base64,
               file_size: attachedFile.size,
-              shared_with_tenant: sharedWithTenant,
+              shared_with_tenant: false,
               unit_id: tenant.unit_id || null,
             },
           ]);
@@ -165,7 +164,6 @@ export default function TenantCommunicationTab({
         is_internal: false,
       });
       setAttachedFile(null);
-      setSharedWithTenant(false);
       setShowNewEntry(false);
       loadCommunications();
     } catch (error) {
@@ -529,24 +527,6 @@ export default function TenantCommunicationTab({
                         >
                           <X className="w-4 h-4" />
                         </button>
-                      </div>
-                    )}
-
-                    {attachedFile && (
-                      <div className="flex items-center gap-2 ml-4">
-                        <input
-                          type="checkbox"
-                          id="shared_with_tenant"
-                          checked={sharedWithTenant}
-                          onChange={(e) => setSharedWithTenant(e.target.checked)}
-                          className="rounded border-gray-300 text-primary-blue focus:ring-primary-blue"
-                        />
-                        <label
-                          htmlFor="shared_with_tenant"
-                          className="text-sm text-gray-600 cursor-pointer"
-                        >
-                          Im Mieterportal unter "Dokumente" anzeigen
-                        </label>
                       </div>
                     )}
                   </div>
