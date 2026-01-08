@@ -51,6 +51,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
   const [selectedDocType, setSelectedDocType] = useState("floor_plan");
   const [selectedUnitId, setSelectedUnitId] = useState("");
   const [uploadDescription, setUploadDescription] = useState("");
+  const [sharedWithTenant, setSharedWithTenant] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -257,6 +258,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           file_type: uploadFile.file.type,
           document_type: selectedDocType,
           description: uploadDescription || null,
+          shared_with_tenant: sharedWithTenant,
         })
         .select()
         .single();
@@ -324,6 +326,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           setSelectedDocType("floor_plan");
           setSelectedUnitId("");
           setUploadDescription("");
+          setSharedWithTenant(false);
           loadDocuments();
         }, 1000);
       }
@@ -777,6 +780,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                   setSelectedDocType("floor_plan");
                   setSelectedUnitId("");
                   setUploadDescription("");
+                  setSharedWithTenant(false);
                 }}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
@@ -864,6 +868,29 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                   </p>
                 </div>
               )}
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="shared_with_tenant"
+                    checked={sharedWithTenant}
+                    onChange={(e) => setSharedWithTenant(e.target.checked)}
+                    className="mt-1 rounded border-gray-300 text-primary-blue focus:ring-primary-blue"
+                  />
+                  <div className="flex-1">
+                    <label
+                      htmlFor="shared_with_tenant"
+                      className="text-sm font-medium text-gray-900 cursor-pointer"
+                    >
+                      Im Mieterportal unter "Dokumente" anzeigen
+                    </label>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Wenn aktiviert, können Mieter der ausgewählten Einheit dieses Dokument in ihrem Portal einsehen
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               <div
                 onDrop={handleDrop}

@@ -84,11 +84,45 @@ export default function TenantPortalDashboard({
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      const { data: documents } = await supabase
-        .from("property_documents")
-        .select("id")
-        .eq("shared_with_tenant", true)
-        .gte("created_at", sevenDaysAgo.toISOString());
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("property_id, unit_id")
+        .eq("id", tenantId)
+        .maybeSingle();
+
+      if (tenant) {
+        const { data: propertyAssociations } = await supabase
+          .from("document_associations")
+          .select("document_id")
+          .eq("association_type", "property")
+          .eq("association_id", tenant.property_id);
+
+        const propertyDocIds = propertyAssociations?.map(a => a.document_id) || [];
+
+        let unitDocIds: string[] = [];
+        if (tenant.unit_id) {
+          const { data: unitAssociations } = await supabase
+            .from("document_associations")
+            .select("document_id")
+            .eq("association_type", "unit")
+            .eq("association_id", tenant.unit_id);
+
+          unitDocIds = unitAssociations?.map(a => a.document_id) || [];
+        }
+
+        const allDocIds = [...new Set([...propertyDocIds, ...unitDocIds])];
+
+        if (allDocIds.length > 0) {
+          const { data: documents } = await supabase
+            .from("documents")
+            .select("id")
+            .in("id", allDocIds)
+            .eq("shared_with_tenant", true)
+            .gte("created_at", sevenDaysAgo.toISOString());
+
+          setNewDocumentsCount(documents?.length || 0);
+        }
+      }
 
       const { data: tickets } = await supabase
         .from("tickets")
@@ -96,7 +130,6 @@ export default function TenantPortalDashboard({
         .eq("tenant_id", tenantId)
         .in("status", ["open", "in_progress"]);
 
-      setNewDocumentsCount(documents?.length || 0);
       setOpenTicketsCount(tickets?.length || 0);
     } catch (error) {
       console.error("Error loading notifications:", error);

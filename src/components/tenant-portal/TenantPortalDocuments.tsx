@@ -4,11 +4,12 @@ import { supabase } from "../../lib/supabase";
 
 interface Document {
   id: string;
-  document_name: string;
+  file_name: string;
+  file_path: string;
   document_type: string;
-  file_url: string;
-  uploaded_at: string;
-  notes: string | null;
+  file_size: number;
+  description: string | null;
+  upload_date: string;
 }
 
 interface TenantPortalDocumentsProps {
@@ -29,15 +30,52 @@ export default function TenantPortalDocuments({
 
   const loadDocuments = async () => {
     try {
-      const { data, error } = await supabase
-        .from("property_documents")
-        .select("*")
-        .eq("property_id", propertyId)
-        .eq("shared_with_tenant", true)
-        .order("uploaded_at", { ascending: false });
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("property_id, unit_id")
+        .eq("id", tenantId)
+        .maybeSingle();
 
-      if (error) throw error;
-      setDocuments(data || []);
+      if (!tenant) {
+        setDocuments([]);
+        return;
+      }
+
+      const { data: propertyAssociations } = await supabase
+        .from("document_associations")
+        .select("document_id")
+        .eq("association_type", "property")
+        .eq("association_id", tenant.property_id);
+
+      const propertyDocIds = propertyAssociations?.map(a => a.document_id) || [];
+
+      let unitDocIds: string[] = [];
+      if (tenant.unit_id) {
+        const { data: unitAssociations } = await supabase
+          .from("document_associations")
+          .select("document_id")
+          .eq("association_type", "unit")
+          .eq("association_id", tenant.unit_id);
+
+        unitDocIds = unitAssociations?.map(a => a.document_id) || [];
+      }
+
+      const allDocIds = [...new Set([...propertyDocIds, ...unitDocIds])];
+
+      if (allDocIds.length > 0) {
+        const { data, error } = await supabase
+          .from("documents")
+          .select("*")
+          .in("id", allDocIds)
+          .eq("shared_with_tenant", true)
+          .eq("is_archived", false)
+          .order("upload_date", { ascending: false });
+
+        if (error) throw error;
+        setDocuments(data || []);
+      } else {
+        setDocuments([]);
+      }
     } catch (error) {
       console.error("Error loading documents:", error);
     } finally {
@@ -47,10 +85,22 @@ export default function TenantPortalDocuments({
 
   const getDocumentTypeLabel = (type: string) => {
     const types: { [key: string]: string } = {
-      contract: "Mietvertrag",
-      billing: "Abrechnung",
-      letter: "Schreiben",
-      protocol: "Protokoll",
+      floor_plan: "Grundriss",
+      energy_certificate: "Energieausweis",
+      insurance: "Versicherung",
+      property_deed: "Grundbuchauszug",
+      rental_agreement: "Mietvertrag",
+      utility_bill: "Nebenkostenabrechnung",
+      maintenance: "Wartung",
+      photo: "Foto",
+      blueprint: "Bauplan",
+      expose: "Exposé",
+      contract: "Vertrag",
+      invoice: "Rechnung",
+      bill: "Abrechnung",
+      receipt: "Beleg",
+      report: "Bericht",
+      automatische_vorlage: "Automatische Vorlage",
       other: "Sonstiges",
     };
     return types[type] || type;
@@ -58,64 +108,57 @@ export default function TenantPortalDocuments({
 
   const getDocumentTypeColor = (type: string) => {
     const colors: { [key: string]: string } = {
+      floor_plan: "bg-blue-100 text-blue-700",
+      energy_certificate: "bg-emerald-100 text-emerald-700",
+      rental_agreement: "bg-blue-100 text-blue-700",
       contract: "bg-blue-100 text-blue-700",
-      billing: "bg-emerald-100 text-emerald-700",
-      letter: "bg-amber-100 text-amber-700",
-      protocol: "bg-purple-100 text-purple-700",
+      utility_bill: "bg-emerald-100 text-emerald-700",
+      invoice: "bg-orange-100 text-orange-700",
+      bill: "bg-orange-100 text-orange-700",
+      receipt: "bg-orange-100 text-orange-700",
+      maintenance: "bg-slate-100 text-slate-700",
+      automatische_vorlage: "bg-purple-100 text-purple-700",
       other: "bg-gray-100 text-gray-700",
     };
     return colors[type] || colors.other;
   };
 
   const handleDownload = async (document: Document) => {
-    if (document.file_url.startsWith('data:')) {
+    try {
+      const { data, error } = await supabase.storage
+        .from("documents")
+        .download(document.file_path);
+
+      if (error) throw error;
+
+      const url = window.URL.createObjectURL(data);
       const a = window.document.createElement("a");
-      a.href = document.file_url;
-      a.download = document.document_name;
+      a.href = url;
+      a.download = document.file_name;
       window.document.body.appendChild(a);
       a.click();
+      window.URL.revokeObjectURL(url);
       window.document.body.removeChild(a);
-    } else {
-      try {
-        const { data, error } = await supabase.storage
-          .from("property-documents")
-          .download(document.file_url);
-
-        if (error) throw error;
-
-        const url = window.URL.createObjectURL(data);
-        const a = window.document.createElement("a");
-        a.href = url;
-        a.download = document.document_name;
-        window.document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        window.document.body.removeChild(a);
-      } catch (error) {
-        console.error("Error downloading document:", error);
-        alert("Fehler beim Herunterladen des Dokuments");
-      }
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      alert("Fehler beim Herunterladen des Dokuments");
     }
   };
 
   const handleView = async (document: Document) => {
-    if (document.file_url.startsWith('data:')) {
-      window.open(document.file_url, "_blank");
-    } else {
-      try {
-        const { data, error } = await supabase.storage
-          .from("property-documents")
-          .createSignedUrl(document.file_url, 3600);
+    try {
+      const { data, error } = await supabase.storage
+        .from("documents")
+        .createSignedUrl(document.file_path, 3600);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        if (data.signedUrl) {
-          window.open(data.signedUrl, "_blank");
-        }
-      } catch (error) {
-        console.error("Error viewing document:", error);
-        alert("Fehler beim Öffnen des Dokuments");
+      if (data.signedUrl) {
+        window.open(data.signedUrl, "_blank");
       }
+    } catch (error) {
+      console.error("Error viewing document:", error);
+      alert("Fehler beim Öffnen des Dokuments");
     }
   };
 
@@ -164,7 +207,7 @@ export default function TenantPortalDocuments({
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-lg font-semibold text-dark">
-                    {document.document_name}
+                    {document.file_name}
                   </h3>
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${getDocumentTypeColor(document.document_type)}`}
@@ -173,11 +216,11 @@ export default function TenantPortalDocuments({
                   </span>
                 </div>
                 <p className="text-sm text-gray-400 mb-2">
-                  Hochgeladen am {formatDate(document.uploaded_at)}
+                  Hochgeladen am {formatDate(document.upload_date)}
                 </p>
-                {document.notes && (
+                {document.description && (
                   <p className="text-sm text-gray-400 mt-2">
-                    {document.notes}
+                    {document.description}
                   </p>
                 )}
               </div>
