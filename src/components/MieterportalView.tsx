@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, Check, X, Send, ExternalLink, LogIn } from "lucide-react";
+import { Users, Check, X, Send, ExternalLink, LogIn, Building2, Activity, Clock } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -253,22 +253,44 @@ export default function MieterportalView() {
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Mieter
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Mieter
+                    </span>
+                  </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Immobilie
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Immobilie
+                    </span>
+                  </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Status
+                    </span>
+                  </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Letzter Login
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Letzter Login
+                    </span>
+                  </div>
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aktionen
+                <th className="px-6 py-4 text-right">
+                  <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Aktionen
+                  </span>
                 </th>
               </tr>
             </thead>
@@ -279,50 +301,60 @@ export default function MieterportalView() {
                   : tenant.rental_contract;
 
                 return (
-                  <tr key={tenant.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={tenant.id} className="hover:bg-blue-50/30 transition-colors border-b border-gray-100 last:border-0">
+                    <td className="px-6 py-4">
                       <div>
-                        <div className="font-medium text-dark">
+                        <div className="font-semibold text-dark text-sm">
                           {tenant.first_name} {tenant.last_name}
                         </div>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-xs text-gray-500 mt-0.5">
                           {tenant.email}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-dark">
-                        {tenant.property?.name}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <span className="text-sm font-medium text-dark">
+                          {tenant.property?.name}
+                        </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4">
                       {getStatusBadge(tenant)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                      {formatDate(tenant.last_login)}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          {formatDate(tenant.last_login)}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         {contract?.portal_access_enabled ? (
                           <>
                             <button
                               onClick={() => handleImpersonateTenant(tenant)}
                               disabled={impersonating === tenant.id}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                               title="Als Mieter anmelden"
                             >
                               <LogIn className="w-4 h-4" />
-                              Als Mieter anmelden
+                              <span className="hidden xl:inline">Anmelden</span>
                             </button>
                             {!tenant.portal_activated_at && (
                               <button
                                 onClick={() => handleSendActivationLink(tenant)}
                                 disabled={sendingInvite}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 text-primary-blue hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                 title="Aktivierungslink per E-Mail senden"
                               >
                                 <Send className="w-4 h-4" />
-                                E-Mail senden
+                                <span className="hidden xl:inline">E-Mail</span>
                               </button>
                             )}
                             <button
@@ -333,11 +365,11 @@ export default function MieterportalView() {
                                   true
                                 )
                               }
-                              className="inline-flex items-center gap-1 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all hover:shadow-sm"
                               title="Zugang deaktivieren"
                             >
                               <X className="w-4 h-4" />
-                              Deaktivieren
+                              <span className="hidden xl:inline">Deaktivieren</span>
                             </button>
                           </>
                         ) : (
@@ -349,11 +381,11 @@ export default function MieterportalView() {
                                 false
                               )
                             }
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all hover:shadow-md"
                             title="Zugang aktivieren"
                           >
                             <Check className="w-4 h-4" />
-                            Aktivieren
+                            <span>Aktivieren</span>
                           </button>
                         )}
                       </div>
