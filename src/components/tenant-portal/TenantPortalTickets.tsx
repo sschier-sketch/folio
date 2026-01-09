@@ -10,6 +10,9 @@ import {
   Upload,
   X as XIcon,
   Image as ImageIcon,
+  Eye,
+  Calendar,
+  Tag,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
@@ -222,15 +225,15 @@ export default function TenantPortalTickets({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "open":
-        return <AlertCircle className="w-5 h-5 text-primary-blue" />;
+        return <AlertCircle className="w-4 h-4 text-primary-blue" />;
       case "in_progress":
-        return <Clock className="w-5 h-5 text-amber-600" />;
+        return <Clock className="w-4 h-4 text-amber-600" />;
       case "resolved":
-        return <CheckCircle className="w-5 h-5 text-emerald-600" />;
+        return <CheckCircle className="w-4 h-4 text-emerald-600" />;
       case "closed":
-        return <XCircle className="w-5 h-5 text-gray-400" />;
+        return <XCircle className="w-4 h-4 text-gray-400" />;
       default:
-        return <MessageSquare className="w-5 h-5 text-gray-400" />;
+        return <MessageSquare className="w-4 h-4 text-gray-400" />;
     }
   };
 
@@ -284,7 +287,22 @@ export default function TenantPortalTickets({
               <p className="text-gray-400">{selectedTicket.subject}</p>
             </div>
             <div className="flex items-center gap-2">
-              {getStatusIcon(selectedTicket.status)}
+              <div className="w-5 h-5">
+                {(() => {
+                  switch (selectedTicket.status) {
+                    case "open":
+                      return <AlertCircle className="w-5 h-5 text-primary-blue" />;
+                    case "in_progress":
+                      return <Clock className="w-5 h-5 text-amber-600" />;
+                    case "resolved":
+                      return <CheckCircle className="w-5 h-5 text-emerald-600" />;
+                    case "closed":
+                      return <XCircle className="w-5 h-5 text-gray-400" />;
+                    default:
+                      return <MessageSquare className="w-5 h-5 text-gray-400" />;
+                  }
+                })()}
+              </div>
               <span className="text-sm font-medium text-gray-600">
                 {getStatusText(selectedTicket.status)}
               </span>
@@ -378,44 +396,101 @@ export default function TenantPortalTickets({
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {tickets.map((ticket) => (
-            <div
-              key={ticket.id}
-              onClick={() => setSelectedTicket(ticket)}
-              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-sm font-mono text-gray-400">
-                      #{ticket.ticket_number}
-                    </span>
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}
-                    >
-                      {getPriorityText(ticket.priority)}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-dark mb-1">
-                    {ticket.subject}
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    Erstellt am{" "}
-                    {new Date(ticket.created_at).toLocaleDateString("de-DE")} •
-                    Aktualisiert am{" "}
-                    {new Date(ticket.updated_at).toLocaleDateString("de-DE")}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(ticket.status)}
-                  <span className="text-sm font-medium text-gray-600">
-                    {getStatusText(ticket.status)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="bg-white rounded-lg">
+          <div className="p-6 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-dark">
+              Übersicht ({tickets.length})
+            </h3>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                    Ticket-Nr.
+                  </th>
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                    Betreff
+                  </th>
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                    Erstellt am
+                  </th>
+                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                    Priorität
+                  </th>
+                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                    Status
+                  </th>
+                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                    Details
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {tickets.map((ticket) => (
+                  <tr
+                    key={ticket.id}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => setSelectedTicket(ticket)}
+                  >
+                    <td className="py-4 px-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-gray-400" />
+                        <span className="font-mono text-gray-700">
+                          #{ticket.ticket_number}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-sm">
+                      <div className="font-medium text-dark">
+                        {ticket.subject}
+                      </div>
+                      <div className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                        <Tag className="w-3 h-3" />
+                        {ticket.category === "general" && "Allgemein"}
+                        {ticket.category === "maintenance" && "Wartung"}
+                        {ticket.category === "repair" && "Reparatur"}
+                        {ticket.category === "complaint" && "Beschwerde"}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-sm text-gray-700">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        {new Date(ticket.created_at).toLocaleDateString("de-DE")}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}
+                      >
+                        {getPriorityText(ticket.priority)}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {getStatusIcon(ticket.status)}
+                        <span className="text-xs font-medium text-gray-700">
+                          {getStatusText(ticket.status)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTicket(ticket);
+                        }}
+                        className="text-primary-blue hover:text-blue-700 transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
