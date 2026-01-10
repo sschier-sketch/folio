@@ -750,9 +750,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                   index !== openTickets.length - 1 ? "border-b border-gray-100" : ""
                 }`}
                 onClick={() => {
-                  if (onNavigateToTenant) {
-                    navigate(`/dashboard/tenants/${ticket.tenant_id}?tab=communication`);
-                  }
+                  window.location.href = `/dashboard?view=tickets&ticketId=${ticket.id}`;
                 }}
               >
                 <div className="flex items-center justify-between">

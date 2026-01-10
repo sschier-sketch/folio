@@ -35,7 +35,12 @@ interface Ticket {
   properties?: { name: string };
   tenants?: { first_name: string; last_name: string } | null;
 }
-export default function TicketsView() {
+
+interface TicketsViewProps {
+  initialTicketId?: string | null;
+}
+
+export default function TicketsView({ initialTicketId }: TicketsViewProps) {
   const { user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -45,9 +50,20 @@ export default function TicketsView() {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+
   useEffect(() => {
     loadData();
   }, [user]);
+
+  useEffect(() => {
+    if (initialTicketId && tickets.length > 0) {
+      const ticket = tickets.find(t => t.id === initialTicketId);
+      if (ticket) {
+        setSelectedTicket(ticket);
+        setShowDetails(true);
+      }
+    }
+  }, [initialTicketId, tickets]);
   const loadData = async () => {
     if (!user) return;
     try {

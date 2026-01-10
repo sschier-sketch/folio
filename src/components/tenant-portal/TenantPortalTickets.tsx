@@ -68,6 +68,7 @@ export default function TenantPortalTickets({
     message: "",
   });
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [sendEmailCopy, setSendEmailCopy] = useState(false);
 
   useEffect(() => {
     loadTickets();
@@ -168,6 +169,57 @@ export default function TenantPortalTickets({
         if (messageError) throw messageError;
       }
 
+      if (sendEmailCopy && ticket) {
+        try {
+          const { data: landlordProfile } = await supabase
+            .from("account_profiles")
+            .select("first_name, last_name")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+          const landlordName = landlordProfile
+            ? `${landlordProfile.first_name} ${landlordProfile.last_name}`.trim()
+            : "Ihr Vermieter";
+
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #2563eb;">Kopie Ihrer Anfrage</h2>
+              <p>Hallo,</p>
+              <p>hier ist eine Kopie Ihrer soeben erstellten Anfrage an ${landlordName}:</p>
+              <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Ticket-Nummer:</strong> ${ticket.ticket_number}</p>
+                <p><strong>Betreff:</strong> ${newTicketForm.subject}</p>
+                <p><strong>Kategorie:</strong> ${newTicketForm.category}</p>
+                <p><strong>Priorität:</strong> ${newTicketForm.priority}</p>
+                <p><strong>Nachricht:</strong></p>
+                <p style="white-space: pre-wrap;">${newTicketForm.message}</p>
+              </div>
+              <p>Sie werden per E-Mail benachrichtigt, sobald ${landlordName} auf Ihre Anfrage antwortet.</p>
+              <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                Diese E-Mail wurde automatisch generiert. Bitte antworten Sie nicht auf diese E-Mail.
+              </p>
+            </div>
+          `;
+
+          await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                to: tenantEmail,
+                subject: `Kopie Ihrer Anfrage: ${newTicketForm.subject}`,
+                html: emailHtml,
+              }),
+            }
+          );
+        } catch (emailError) {
+          console.error("Error sending email copy:", emailError);
+        }
+      }
+
       setNewTicketForm({
         subject: "",
         category: "general",
@@ -175,6 +227,7 @@ export default function TenantPortalTickets({
         message: "",
       });
       setAttachments([]);
+      setSendEmailCopy(false);
       setShowNewTicket(false);
       loadTickets();
     } catch (error) {
@@ -669,6 +722,20 @@ export default function TenantPortalTickets({
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sendEmailCopy}
+                    onChange={(e) => setSendEmailCopy(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-primary-blue focus:ring-primary-blue"
+                  />
+                  <span className="text-sm text-gray-600">
+                    Kopie dieser Anfrage per E-Mail an {tenantEmail} senden
+                  </span>
+                </label>
               </div>
 
               <div className="flex gap-3 pt-4">

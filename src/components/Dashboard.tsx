@@ -39,6 +39,7 @@ import FeedbackListView from "./FeedbackListView";
 import DocumentsView from "./DocumentsView";
 import TemplatesView from "./TemplatesView";
 import BillingView from "./BillingView";
+import TicketsView from "./TicketsView";
 import Footer from "./Footer";
 type View =
   | "home"
@@ -50,6 +51,7 @@ type View =
   | "documents"
   | "templates"
   | "billing"
+  | "tickets"
   | "settings-profile"
   | "settings-users"
   | "settings-billing"
@@ -63,6 +65,7 @@ export default function Dashboard() {
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedPropertyTab, setSelectedPropertyTab] = useState<string | null>(null);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
@@ -111,6 +114,14 @@ export default function Dashboard() {
       window.history.replaceState({}, "", "/dashboard");
       setTimeout(() => setShowSuccessMessage(false), 5000);
     }
+
+    const view = urlParams.get("view");
+    const ticketId = urlParams.get("ticketId");
+    if (view === "tickets" && ticketId) {
+      setCurrentView("tickets");
+      setSelectedTicketId(ticketId);
+      window.history.replaceState({}, "", "/dashboard");
+    }
   }, []);
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -138,6 +149,28 @@ export default function Dashboard() {
             </div>{" "}
             <div className="flex items-center gap-4">
               {" "}
+              <div className="flex gap-2 border border-gray-200 rounded-lg p-1">
+                <button
+                  onClick={() => setLanguage("de")}
+                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                    language === "de"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  DE
+                </button>
+                <button
+                  onClick={() => setLanguage("en")}
+                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                    language === "en"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
               <div className="relative" ref={dropdownRef}>
                 {" "}
                 <button
@@ -194,34 +227,6 @@ export default function Dashboard() {
                       </span>{" "}
                     </button>{" "}
                     <div className="border-t my-2"></div>{" "}
-                    <div className="px-4 py-2">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Languages className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-400">Sprache</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setLanguage("de")}
-                          className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                            language === "de"
-                              ? "bg-blue-600 text-white"
-                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                          }`}
-                        >
-                          DE
-                        </button>
-                        <button
-                          onClick={() => setLanguage("en")}
-                          className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                            language === "en"
-                              ? "bg-blue-600 text-white"
-                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                          }`}
-                        >
-                          EN
-                        </button>
-                      </div>
-                    </div>
                     <button
                       onClick={() => {
                         setCurrentView("feedback");
@@ -435,6 +440,7 @@ export default function Dashboard() {
             {currentView === "documents" && <DocumentsView />}{" "}
             {currentView === "templates" && <TemplatesView />}{" "}
             {currentView === "billing" && <BillingView />}{" "}
+            {currentView === "tickets" && <TicketsView initialTicketId={selectedTicketId} />}{" "}
             {currentView === "settings-profile" && (
               <SettingsView activeTab="profile" />
             )}{" "}
