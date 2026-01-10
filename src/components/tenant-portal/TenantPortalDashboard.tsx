@@ -43,7 +43,7 @@ export default function TenantPortalDashboard({
         .select(
           `
           *,
-          property:properties(name, address, street, house_number, city, zip),
+          property:properties(name, address, street, city, zip_code),
           unit:property_units!tenants_unit_id_fkey(name, rental_area)
         `
         )
@@ -74,7 +74,7 @@ export default function TenantPortalDashboard({
       const contract = contracts && contracts.length > 0 ? contracts[0] : null;
 
       const propertyAddress = tenant.property
-        ? `${tenant.property.street || ""} ${tenant.property.house_number || ""}, ${tenant.property.zip || ""} ${tenant.property.city || ""}`
+        ? `${tenant.property.street || ""}, ${tenant.property.zip_code || ""} ${tenant.property.city || ""}`.trim()
         : tenant.property?.address || "";
 
       const coldRent = parseFloat(contract?.cold_rent || contract?.base_rent || "0");
