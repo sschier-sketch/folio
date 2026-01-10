@@ -16,6 +16,8 @@ import {
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import ProfileCompletionCard from "./profile/ProfileCompletionCard";
+import ProfileWizard from "./profile/ProfileWizard";
 
 interface Stats {
   propertiesCount: number;
@@ -94,6 +96,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const [showTasksCard, setShowTasksCard] = useState(true);
   const [showTicketsCard, setShowTicketsCard] = useState(true);
   const [showRentIncreasesCard, setShowRentIncreasesCard] = useState(true);
+  const [showProfileWizard, setShowProfileWizard] = useState(false);
+  const [profileRefreshTrigger, setProfileRefreshTrigger] = useState(0);
 
   useEffect(() => {
     loadStats();
@@ -362,14 +366,25 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   }
   return (
     <div>
-      {" "}
       <div className="mb-8">
-        {" "}
         <h1 className="text-3xl font-bold text-dark mb-2">
           {t("dashboard.overview")}
-        </h1>{" "}
-        <p className="text-gray-400">{t("dashboard.welcome")}</p>{" "}
-      </div>{" "}
+        </h1>
+        <p className="text-gray-400">{t("dashboard.welcome")}</p>
+      </div>
+
+      <div className="mb-8" key={profileRefreshTrigger}>
+        <ProfileCompletionCard
+          onStartWizard={() => setShowProfileWizard(true)}
+        />
+      </div>
+
+      <ProfileWizard
+        isOpen={showProfileWizard}
+        onClose={() => setShowProfileWizard(false)}
+        onComplete={() => setProfileRefreshTrigger((prev) => prev + 1)}
+      />
+      {" "}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {" "}
         <div className="bg-white rounded-lg p-6">

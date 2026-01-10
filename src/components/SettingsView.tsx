@@ -17,6 +17,7 @@ import { stripeProducts } from "../stripe-config";
 import { SubscriptionCard } from "./subscription/SubscriptionCard";
 import { SubscriptionStatus } from "./subscription/SubscriptionStatus";
 import { useSubscription } from "../hooks/useSubscription";
+import ProfileManagement from "./profile/ProfileManagement";
 interface UserSettings {
   role: string;
   can_invite_users: boolean;
@@ -390,7 +391,11 @@ export default function SettingsView({
                 </button>{" "}
               </div>{" "}
             </div>{" "}
-          </div>{" "}
+          </div>
+
+          <div className="mt-8 pt-8 border-t">
+            <ProfileManagement />
+          </div>
         </div>
       )}{" "}
       {activeTab === "billing" && (
