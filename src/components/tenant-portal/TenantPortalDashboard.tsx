@@ -44,7 +44,7 @@ export default function TenantPortalDashboard({
           `
           *,
           property:properties(name, address, street, city, zip_code),
-          unit:property_units!tenants_unit_id_fkey(name, rental_area)
+          unit:property_units!tenants_unit_id_fkey(unit_number, area_sqm)
         `
         )
         .eq("id", tenantId)
@@ -86,10 +86,10 @@ export default function TenantPortalDashboard({
         tenant_name: `${tenant.first_name} ${tenant.last_name}`,
         property_name: tenant.property?.name || "Keine Immobilie",
         property_address: propertyAddress,
-        unit_name: tenant.unit?.name || "Keine Einheit",
+        unit_name: tenant.unit?.unit_number || "Keine Einheit",
         move_in_date: contract?.contract_start || tenant.move_in_date || "",
         move_out_date: contract?.contract_end || tenant.move_out_date || null,
-        rental_area: tenant.unit?.rental_area || null,
+        rental_area: tenant.unit?.area_sqm || null,
         cold_rent: coldRent,
         operating_costs: operatingCosts,
         heating_costs: heatingCosts,
