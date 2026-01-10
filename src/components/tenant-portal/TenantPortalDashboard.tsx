@@ -189,7 +189,7 @@ export default function TenantPortalDashboard({
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-md p-6 border border-gray-100">
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
           <div className="w-12 h-12 bg-primary-blue rounded-lg flex items-center justify-center">
             <Home className="w-6 h-6 text-white" />
@@ -247,25 +247,25 @@ export default function TenantPortalDashboard({
             Monatliche Miete
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200">
+            <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Kaltmiete</label>
               <p className="text-2xl font-bold text-dark">
                 {formatCurrency(tenantData.cold_rent)}
               </p>
             </div>
-            <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200">
+            <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Betriebskosten</label>
               <p className="text-2xl font-bold text-dark">
                 {formatCurrency(tenantData.operating_costs)}
               </p>
             </div>
-            <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200">
+            <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Heizkosten</label>
               <p className="text-2xl font-bold text-dark">
                 {formatCurrency(tenantData.heating_costs)}
               </p>
             </div>
-            <div className="bg-gradient-to-br from-primary-blue to-blue-600 rounded-lg p-5 shadow-md">
+            <div className="bg-primary-blue rounded-lg p-5 border border-blue-600">
               <label className="text-xs font-semibold text-blue-100 uppercase tracking-wider block mb-2">Warmmiete</label>
               <p className="text-2xl font-bold text-white">
                 {formatCurrency(tenantData.warm_rent)}
@@ -276,13 +276,13 @@ export default function TenantPortalDashboard({
       </div>
 
       {(newDocumentsCount > 0 || openTicketsCount > 0 || unreadMessagesCount > 0) && (
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-dark mb-4">Neu für dich</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {newDocumentsCount > 0 && (
               <button
                 onClick={() => onNavigateToTab("documents")}
-                className="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 text-left hover:shadow-md transition-all border-2 border-transparent hover:border-primary-blue"
+                className="relative bg-blue-50 rounded-lg p-6 text-left hover:bg-blue-100 transition-colors border border-blue-200"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-12 h-12 bg-primary-blue rounded-lg flex items-center justify-center">

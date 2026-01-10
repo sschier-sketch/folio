@@ -325,72 +325,6 @@ export default function SettingsView({
                 <div> {getRoleBadge(userSettings.role)} </div>{" "}
               </div>
             )}{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                {" "}
-                Aktueller Tarif{" "}
-              </label>{" "}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                {" "}
-                <div className="flex items-center gap-3">
-                  {" "}
-                  <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
-                    {" "}
-                    <CreditCard className="w-5 h-5 text-primary-blue" />{" "}
-                  </div>{" "}
-                  <div>
-                    {" "}
-                    <div className="font-semibold text-dark">
-                      {" "}
-                      {subscription?.status === "active" ? "Pro" : "Basic"}{" "}
-                    </div>{" "}
-                    <div className="text-sm text-gray-400">
-                      {" "}
-                      {subscription?.status === "active"
-                        ? "Alle Funktionen freigeschaltet"
-                        : "Basis-Funktionen"}{" "}
-                    </div>{" "}
-                  </div>{" "}
-                </div>{" "}
-                {subscription?.status !== "active" && (
-                  <button
-                    onClick={() => setActiveTab("billing")}
-                    className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
-                  >
-                    {" "}
-                    Auf Pro upgraden{" "}
-                  </button>
-                )}{" "}
-              </div>{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                {" "}
-                <div className="flex items-center gap-2">
-                  {" "}
-                  <Globe className="w-4 h-4" /> {t("settings.language")}{" "}
-                </div>{" "}
-              </label>{" "}
-              <div className="flex gap-3">
-                {" "}
-                <button
-                  onClick={() => setLanguage("de")}
-                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${language === "de" ? "bg-primary-blue text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}
-                >
-                  {" "}
-                  Deutsch{" "}
-                </button>{" "}
-                <button
-                  onClick={() => setLanguage("en")}
-                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${language === "en" ? "bg-primary-blue text-white" : "bg-white text-gray-400 hover:bg-gray-50"}`}
-                >
-                  {" "}
-                  English{" "}
-                </button>{" "}
-              </div>{" "}
-            </div>{" "}
           </div>
 
           <div className="mt-8 pt-8 border-t">
@@ -535,113 +469,33 @@ export default function SettingsView({
             </div>{" "}
           </div>{" "}
           <div className="bg-white rounded shadow-sm p-6">
-            {" "}
-            <h3 className="text-lg font-semibold text-dark mb-6">
-              {t("settings.billing.company")}
-            </h3>{" "}
-            {successMessage && (
-              <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm">
-                {" "}
-                {successMessage}{" "}
+            <h3 className="text-lg font-semibold text-dark mb-4">Aktueller Tarif</h3>
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                  <CreditCard className="w-5 h-5 text-primary-blue" />
+                </div>
+                <div>
+                  <div className="font-semibold text-dark">
+                    {subscription?.status === "active" ? "Pro" : "Basic"}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {subscription?.status === "active"
+                      ? "Alle Funktionen freigeschaltet"
+                      : "Basis-Funktionen"}
+                  </div>
+                </div>
               </div>
-            )}{" "}
-            <div className="space-y-4 max-w-2xl">
-              {" "}
-              <div>
-                {" "}
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  {" "}
-                  {t("settings.billing.name")}{" "}
-                </label>{" "}
-                <input
-                  type="text"
-                  value={billingInfo?.company_name || ""}
-                  onChange={(e) =>
-                    setBillingInfo({
-                      ...billingInfo!,
-                      company_name: e.target.value,
-                    })
-                  }
-                  onBlur={() =>
-                    handleUpdateBillingInfo({
-                      company_name: billingInfo?.company_name,
-                    })
-                  }
-                  placeholder={
-                    language === "de" ? "Musterfirma GmbH" : "Company Name Ltd."
-                  }
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                />{" "}
-              </div>{" "}
-              <div>
-                {" "}
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  {" "}
-                  {t("settings.billing.vat")}{" "}
-                </label>{" "}
-                <input
-                  type="text"
-                  value={billingInfo?.vat_id || ""}
-                  onChange={(e) =>
-                    setBillingInfo({ ...billingInfo!, vat_id: e.target.value })
-                  }
-                  onBlur={() =>
-                    handleUpdateBillingInfo({ vat_id: billingInfo?.vat_id })
-                  }
-                  placeholder="DE123456789"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                />{" "}
-              </div>{" "}
-              <div>
-                {" "}
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  {" "}
-                  {t("settings.billing.address")}{" "}
-                </label>{" "}
-                <textarea
-                  value={billingInfo?.billing_address || ""}
-                  onChange={(e) =>
-                    setBillingInfo({
-                      ...billingInfo!,
-                      billing_address: e.target.value,
-                    })
-                  }
-                  onBlur={() =>
-                    handleUpdateBillingInfo({
-                      billing_address: billingInfo?.billing_address,
-                    })
-                  }
-                  placeholder={
-                    language === "de"
-                      ? "Musterstraße 123\n12345 Musterstadt\nDeutschland"
-                      : "123 Example St\n12345 Example City\nGermany"
-                  }
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
-                />{" "}
-              </div>{" "}
-              <div>
-                {" "}
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  {" "}
-                  {t("settings.billing.payment")}{" "}
-                </label>{" "}
-                <div className="flex items-center gap-2">
-                  {" "}
-                  <CreditCard className="w-5 h-5 text-gray-300" />{" "}
-                  <span className="text-gray-400">
-                    {" "}
-                    {billingInfo?.payment_method === "none" ||
-                    !billingInfo?.payment_method
-                      ? language === "de"
-                        ? "Noch keine Zahlungsart hinterlegt"
-                        : "No payment method added yet"
-                      : billingInfo?.payment_method}{" "}
-                  </span>{" "}
-                </div>{" "}
-              </div>{" "}
-            </div>{" "}
-          </div>{" "}
+              {subscription?.status !== "active" && (
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue/90 transition-colors"
+                >
+                  Auf Pro upgraden
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}{" "}
       {activeTab === "feedback" && (

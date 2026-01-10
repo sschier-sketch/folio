@@ -45,12 +45,14 @@ export default function ProfileWizard({ isOpen, onClose, onComplete }: ProfileWi
   }, [isOpen]);
 
   useEffect(() => {
-    if (formData.first_name && formData.last_name && !formData.document_sender_name) {
+    if (!formData.first_name || !formData.last_name) return;
+
+    if (!formData.document_sender_name || formData.document_sender_name.trim() === "") {
       const defaultSender = formData.company_name || `${formData.first_name} ${formData.last_name}`;
       setFormData((prev) => ({ ...prev, document_sender_name: defaultSender }));
     }
 
-    if (formData.first_name && formData.last_name && !formData.document_signature) {
+    if (!formData.document_signature || formData.document_signature.trim() === "") {
       const defaultSignature = `Viele Grüße\n${formData.first_name} ${formData.last_name}`;
       setFormData((prev) => ({ ...prev, document_signature: defaultSignature }));
     }

@@ -194,17 +194,34 @@ export default function Dashboard() {
                       </span>{" "}
                     </button>{" "}
                     <div className="border-t my-2"></div>{" "}
-                    <button
-                      onClick={() => {
-                        setLanguage(language === "de" ? "en" : "de");
-                        setShowSettingsDropdown(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-gray-400 hover:bg-gray-50 transition-colors"
-                    >
-                      {" "}
-                      <Languages className="w-4 h-4" />{" "}
-                      <span className="text-sm">{t("nav.languages")}</span>{" "}
-                    </button>{" "}
+                    <div className="px-4 py-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Languages className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-400">Sprache</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setLanguage("de")}
+                          className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                            language === "de"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
+                        >
+                          DE
+                        </button>
+                        <button
+                          onClick={() => setLanguage("en")}
+                          className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                            language === "en"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
+                        >
+                          EN
+                        </button>
+                      </div>
+                    </div>
                     <button
                       onClick={() => {
                         setCurrentView("feedback");

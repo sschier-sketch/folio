@@ -27,12 +27,20 @@ interface Ticket {
   updated_at: string;
 }
 
+interface Attachment {
+  filename: string;
+  data: string;
+  size: number;
+  type: string;
+}
+
 interface TicketMessage {
   id: string;
   sender_type: string;
   sender_name: string;
   message: string;
   created_at: string;
+  attachments?: Attachment[] | null;
 }
 
 interface TenantPortalTicketsProps {
@@ -330,6 +338,33 @@ export default function TenantPortalTickets({
                       {new Date(msg.created_at).toLocaleString("de-DE")}
                     </div>
                     <div className="whitespace-pre-wrap">{msg.message}</div>
+                    {msg.attachments && msg.attachments.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {msg.attachments.map((attachment, idx) => (
+                          <div key={idx}>
+                            {attachment.type.startsWith("image/") ? (
+                              <div className="mt-2">
+                                <img
+                                  src={attachment.data}
+                                  alt={attachment.filename}
+                                  className="max-w-full rounded border border-gray-200"
+                                  style={{ maxHeight: "300px" }}
+                                />
+                                <p className="text-xs opacity-75 mt-1">{attachment.filename}</p>
+                              </div>
+                            ) : (
+                              <a
+                                href={attachment.data}
+                                download={attachment.filename}
+                                className="inline-flex items-center gap-2 text-xs underline opacity-75 hover:opacity-100"
+                              >
+                                📎 {attachment.filename}
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

@@ -17,12 +17,20 @@ interface Ticket {
   properties?: { name: string };
   tenants?: { first_name: string; last_name: string } | null;
 }
+interface Attachment {
+  filename: string;
+  data: string;
+  size: number;
+  type: string;
+}
+
 interface Message {
   id: string;
   sender_type: string;
   sender_name: string;
   message: string;
   created_at: string;
+  attachments?: Attachment[] | null;
 }
 interface TicketDetailsProps {
   ticket: Ticket;
@@ -357,7 +365,34 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
                   </div>{" "}
                   <div className="text-sm whitespace-pre-wrap">
                     {message.message}
-                  </div>{" "}
+                  </div>
+                  {message.attachments && message.attachments.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {message.attachments.map((attachment, idx) => (
+                        <div key={idx}>
+                          {attachment.type.startsWith("image/") ? (
+                            <div className="mt-2">
+                              <img
+                                src={attachment.data}
+                                alt={attachment.filename}
+                                className="max-w-full rounded border border-gray-200"
+                                style={{ maxHeight: "300px" }}
+                              />
+                              <p className="text-xs opacity-75 mt-1">{attachment.filename}</p>
+                            </div>
+                          ) : (
+                            <a
+                              href={attachment.data}
+                              download={attachment.filename}
+                              className="inline-flex items-center gap-2 text-xs underline opacity-75 hover:opacity-100"
+                            >
+                              📎 {attachment.filename}
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}{" "}
                 </div>{" "}
               </div>
             ))}{" "}
