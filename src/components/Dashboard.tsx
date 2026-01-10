@@ -156,12 +156,12 @@ export default function Dashboard() {
             </div>{" "}
             <div className="flex items-center gap-4">
               {" "}
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <button
                   onClick={() => setLanguage("de")}
-                  className={`w-9 h-9 rounded-full overflow-hidden transition-all ${
+                  className={`w-7 h-7 rounded-full overflow-hidden transition-all ${
                     language === "de"
-                      ? "ring-2 ring-blue-600 ring-offset-2"
+                      ? "ring-2 ring-blue-600 ring-offset-1"
                       : "opacity-60 hover:opacity-100"
                   }`}
                   title="Deutsch"
@@ -174,9 +174,9 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={() => setLanguage("en")}
-                  className={`w-9 h-9 rounded-full overflow-hidden transition-all ${
+                  className={`w-7 h-7 rounded-full overflow-hidden transition-all ${
                     language === "en"
-                      ? "ring-2 ring-blue-600 ring-offset-2"
+                      ? "ring-2 ring-blue-600 ring-offset-1"
                       : "opacity-60 hover:opacity-100"
                   }`}
                   title="English"
