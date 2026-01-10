@@ -77,6 +77,11 @@ export default function TenantPortalDashboard({
         ? `${tenant.property.street || ""} ${tenant.property.house_number || ""}, ${tenant.property.zip || ""} ${tenant.property.city || ""}`
         : tenant.property?.address || "";
 
+      const coldRent = parseFloat(contract?.cold_rent || contract?.base_rent || "0");
+      const operatingCosts = parseFloat(contract?.operating_costs || "0");
+      const heatingCosts = parseFloat(contract?.heating_costs || "0");
+      const warmRent = coldRent + operatingCosts + heatingCosts;
+
       setTenantData({
         tenant_name: `${tenant.first_name} ${tenant.last_name}`,
         property_name: tenant.property?.name || "Keine Immobilie",
@@ -85,10 +90,10 @@ export default function TenantPortalDashboard({
         move_in_date: contract?.contract_start || tenant.move_in_date || "",
         move_out_date: contract?.contract_end || tenant.move_out_date || null,
         rental_area: tenant.unit?.rental_area || null,
-        cold_rent: parseFloat(contract?.cold_rent || contract?.base_rent || "0"),
-        operating_costs: parseFloat(contract?.operating_costs || "0"),
-        heating_costs: parseFloat(contract?.heating_costs || "0"),
-        warm_rent: parseFloat(contract?.total_rent || contract?.warm_rent || "0"),
+        cold_rent: coldRent,
+        operating_costs: operatingCosts,
+        heating_costs: heatingCosts,
+        warm_rent: warmRent,
       });
     } catch (error) {
       console.error("Error loading tenant data:", error);
@@ -184,79 +189,85 @@ export default function TenantPortalDashboard({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-dark mb-4 flex items-center gap-2">
-          <Home className="w-5 h-5" />
-          Meine Mietdaten
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm text-gray-400">Mieter</label>
-            <p className="text-dark font-medium">{tenantData.tenant_name}</p>
+      <div className="bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-md p-6 border border-gray-100">
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+          <div className="w-12 h-12 bg-primary-blue rounded-lg flex items-center justify-center">
+            <Home className="w-6 h-6 text-white" />
           </div>
-          <div>
-            <label className="text-sm text-gray-400">Immobilie</label>
-            <p className="text-dark font-medium">{tenantData.property_name}</p>
+          <h2 className="text-2xl font-bold text-dark">
+            Meine Mietdaten
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-6">
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Mieter</label>
+            <p className="text-dark font-semibold text-lg">{tenantData.tenant_name}</p>
           </div>
-          <div>
-            <label className="text-sm text-gray-400">Adresse</label>
-            <p className="text-dark font-medium">
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Immobilie</label>
+            <p className="text-dark font-semibold text-lg">{tenantData.property_name}</p>
+          </div>
+          <div className="space-y-1 md:col-span-2">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Adresse</label>
+            <p className="text-dark font-semibold text-lg">
               {tenantData.property_address}
             </p>
           </div>
-          <div>
-            <label className="text-sm text-gray-400">Einheit</label>
-            <p className="text-dark font-medium">{tenantData.unit_name}</p>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Einheit</label>
+            <p className="text-dark font-semibold text-lg">{tenantData.unit_name}</p>
           </div>
-          <div>
-            <label className="text-sm text-gray-400">Einzugsdatum</label>
-            <p className="text-dark font-medium">
+          {tenantData.rental_area && (
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Mietfläche</label>
+              <p className="text-dark font-semibold text-lg">
+                {tenantData.rental_area} m²
+              </p>
+            </div>
+          )}
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Einzugsdatum</label>
+            <p className="text-dark font-semibold text-lg">
               {formatDate(tenantData.move_in_date)}
             </p>
           </div>
-          <div>
-            <label className="text-sm text-gray-400">Auszugsdatum</label>
-            <p className="text-dark font-medium">
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Auszugsdatum</label>
+            <p className="text-dark font-semibold text-lg">
               {tenantData.move_out_date
                 ? formatDate(tenantData.move_out_date)
                 : "Unbefristet"}
             </p>
           </div>
-          {tenantData.rental_area && (
-            <div>
-              <label className="text-sm text-gray-400">Mietfläche</label>
-              <p className="text-dark font-medium">
-                {tenantData.rental_area} m²
-              </p>
-            </div>
-          )}
         </div>
-        <div className="mt-6 pt-6 border-t border-gray-100">
-          <h3 className="text-lg font-semibold text-dark mb-4">
+
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <h3 className="text-lg font-bold text-dark mb-4">
             Monatliche Miete
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <label className="text-sm text-gray-400">Kaltmiete</label>
-              <p className="text-xl font-bold text-dark">
+            <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Kaltmiete</label>
+              <p className="text-2xl font-bold text-dark">
                 {formatCurrency(tenantData.cold_rent)}
               </p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <label className="text-sm text-gray-400">Betriebskosten</label>
-              <p className="text-xl font-bold text-dark">
+            <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Betriebskosten</label>
+              <p className="text-2xl font-bold text-dark">
                 {formatCurrency(tenantData.operating_costs)}
               </p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <label className="text-sm text-gray-400">Heizkosten</label>
-              <p className="text-xl font-bold text-dark">
+            <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Heizkosten</label>
+              <p className="text-2xl font-bold text-dark">
                 {formatCurrency(tenantData.heating_costs)}
               </p>
             </div>
-            <div className="bg-primary-blue/10 rounded-lg p-4">
-              <label className="text-sm text-primary-blue">Warmmiete</label>
-              <p className="text-xl font-bold text-primary-blue">
+            <div className="bg-gradient-to-br from-primary-blue to-blue-600 rounded-lg p-5 shadow-md">
+              <label className="text-xs font-semibold text-blue-100 uppercase tracking-wider block mb-2">Warmmiete</label>
+              <p className="text-2xl font-bold text-white">
                 {formatCurrency(tenantData.warm_rent)}
               </p>
             </div>
@@ -264,77 +275,88 @@ export default function TenantPortalDashboard({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {newDocumentsCount > 0 && (
-          <button
-            onClick={() => onNavigateToTab("documents")}
-            className="bg-white rounded-lg shadow-sm p-6 text-left hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <FileText className="w-8 h-8 text-primary-blue" />
-              <span className="bg-primary-blue text-white text-xs font-bold px-2 py-1 rounded-full">
-                {newDocumentsCount}
-              </span>
-            </div>
-            <h3 className="font-semibold text-dark">Neue Dokumente</h3>
-            <p className="text-sm text-gray-400 mt-1">
-              Sie haben neue Dokumente erhalten
-            </p>
-          </button>
-        )}
+      {(newDocumentsCount > 0 || openTicketsCount > 0 || unreadMessagesCount > 0) && (
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-dark mb-4">Neu für dich</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {newDocumentsCount > 0 && (
+              <button
+                onClick={() => onNavigateToTab("documents")}
+                className="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 text-left hover:shadow-md transition-all border-2 border-transparent hover:border-primary-blue"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-primary-blue rounded-lg flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="bg-primary-blue text-white text-sm font-bold px-3 py-1 rounded-full">
+                    {newDocumentsCount}
+                  </span>
+                </div>
+                <h3 className="font-bold text-dark text-lg mb-1">Neue Dokumente</h3>
+                <p className="text-sm text-gray-600">
+                  Sie haben neue Dokumente erhalten
+                </p>
+              </button>
+            )}
 
-        {openTicketsCount > 0 && (
-          <button
-            onClick={() => onNavigateToTab("tickets")}
-            className="bg-white rounded-lg shadow-sm p-6 text-left hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <Wrench className="w-8 h-8 text-amber-600" />
-              <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                {openTicketsCount}
-              </span>
-            </div>
-            <h3 className="font-semibold text-dark">Offene Tickets</h3>
-            <p className="text-sm text-gray-400 mt-1">
-              Ihre Anfragen werden bearbeitet
-            </p>
-          </button>
-        )}
+            {openTicketsCount > 0 && (
+              <button
+                onClick={() => onNavigateToTab("tickets")}
+                className="relative bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-6 text-left hover:shadow-md transition-all border-2 border-transparent hover:border-amber-600"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center">
+                    <Wrench className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="bg-amber-600 text-white text-sm font-bold px-3 py-1 rounded-full">
+                    {openTicketsCount}
+                  </span>
+                </div>
+                <h3 className="font-bold text-dark text-lg mb-1">Ticket-Updates</h3>
+                <p className="text-sm text-gray-600">
+                  Ihre Anfragen werden bearbeitet
+                </p>
+              </button>
+            )}
 
-        {unreadMessagesCount > 0 && (
-          <button
-            onClick={() => onNavigateToTab("messages")}
-            className="bg-white rounded-lg shadow-sm p-6 text-left hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <MessageSquare className="w-8 h-8 text-emerald-600" />
-              <span className="bg-emerald-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                {unreadMessagesCount}
-              </span>
-            </div>
-            <h3 className="font-semibold text-dark">Neue Nachrichten</h3>
-            <p className="text-sm text-gray-400 mt-1">
-              Sie haben ungelesene Nachrichten
-            </p>
-          </button>
-        )}
-      </div>
+            {unreadMessagesCount > 0 && (
+              <button
+                onClick={() => onNavigateToTab("messages")}
+                className="relative bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 text-left hover:shadow-md transition-all border-2 border-transparent hover:border-emerald-600"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
+                    <MessageSquare className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="bg-emerald-600 text-white text-sm font-bold px-3 py-1 rounded-full">
+                    {unreadMessagesCount}
+                  </span>
+                </div>
+                <h3 className="font-bold text-dark text-lg mb-1">Neue Nachrichten</h3>
+                <p className="text-sm text-gray-600">
+                  Sie haben ungelesene Nachrichten
+                </p>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-dark mb-4">
+        <h2 className="text-lg font-bold text-dark mb-4">
           Schnellaktionen
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => onNavigateToTab("tickets")}
-            className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-primary-blue hover:bg-primary-blue/5 transition-colors text-left"
+            className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-red-50 to-red-100 rounded-lg hover:shadow-lg transition-all border-2 border-transparent hover:border-red-500"
           >
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Wrench className="w-5 h-5 text-red-600" />
+            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+              <Wrench className="w-7 h-7 text-white" />
             </div>
-            <div>
-              <h3 className="font-semibold text-dark">Schaden melden</h3>
-              <p className="text-sm text-gray-400">
+            <div className="flex-1 text-left">
+              <h3 className="font-bold text-dark text-lg mb-1">Schaden melden</h3>
+              <p className="text-sm text-gray-600">
                 Neue Anfrage erstellen
               </p>
             </div>
@@ -342,14 +364,14 @@ export default function TenantPortalDashboard({
 
           <button
             onClick={() => onNavigateToTab("meters")}
-            className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-primary-blue hover:bg-primary-blue/5 transition-colors text-left"
+            className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:shadow-lg transition-all border-2 border-transparent hover:border-blue-500"
           >
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Gauge className="w-5 h-5 text-blue-600" />
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+              <Gauge className="w-7 h-7 text-white" />
             </div>
-            <div>
-              <h3 className="font-semibold text-dark">Zählerstand melden</h3>
-              <p className="text-sm text-gray-400">
+            <div className="flex-1 text-left">
+              <h3 className="font-bold text-dark text-lg mb-1">Zählerstand melden</h3>
+              <p className="text-sm text-gray-600">
                 Aktuellen Stand übermitteln
               </p>
             </div>
