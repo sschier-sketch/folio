@@ -117,9 +117,16 @@ export default function Dashboard() {
 
     const view = urlParams.get("view");
     const ticketId = urlParams.get("ticketId");
+    const tenantId = urlParams.get("tenantId");
+    const tab = urlParams.get("tab");
+
     if (view === "tickets" && ticketId) {
       setCurrentView("tickets");
       setSelectedTicketId(ticketId);
+      window.history.replaceState({}, "", "/dashboard");
+    } else if (view === "tenants" && tenantId) {
+      setCurrentView("tenants");
+      setSelectedTenantId(tenantId);
       window.history.replaceState({}, "", "/dashboard");
     }
   }, []);
@@ -149,26 +156,38 @@ export default function Dashboard() {
             </div>{" "}
             <div className="flex items-center gap-4">
               {" "}
-              <div className="flex gap-2 border border-gray-200 rounded-lg p-1">
+              <div className="flex gap-2">
                 <button
                   onClick={() => setLanguage("de")}
-                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                  className={`w-9 h-9 rounded-full overflow-hidden transition-all ${
                     language === "de"
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "ring-2 ring-blue-600 ring-offset-2"
+                      : "opacity-60 hover:opacity-100"
                   }`}
+                  title="Deutsch"
                 >
-                  DE
+                  <svg viewBox="0 0 36 36" className="w-full h-full">
+                    <path fill="#000" d="M0 0h36v12H0z"/>
+                    <path fill="#D00" d="M0 12h36v12H0z"/>
+                    <path fill="#FFCE00" d="M0 24h36v12H0z"/>
+                  </svg>
                 </button>
                 <button
                   onClick={() => setLanguage("en")}
-                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                  className={`w-9 h-9 rounded-full overflow-hidden transition-all ${
                     language === "en"
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "ring-2 ring-blue-600 ring-offset-2"
+                      : "opacity-60 hover:opacity-100"
                   }`}
+                  title="English"
                 >
-                  EN
+                  <svg viewBox="0 0 36 36" className="w-full h-full">
+                    <path fill="#012169" d="M0 0h36v36H0z"/>
+                    <path d="M4 0 L0 2 L0 4 L4 6 L4 0z M32 0 L36 2 L36 4 L32 6 L32 0z M4 30 L0 32 L0 34 L4 36 L4 30z M32 30 L36 32 L36 34 L32 36 L32 30z" fill="#FFF"/>
+                    <path d="M36 0v4L21 18L36 32v4h-4L17 21L2 36H0v-2L15 20L0 6V2h2L17 17L32 2h4z" fill="#C8102E"/>
+                    <path d="M15 0v36h6V0h-6zM0 12v12h36V12H0z" fill="#FFF"/>
+                    <path d="M0 14v8h36v-8H0zM16 0v36h4V0h-4z" fill="#C8102E"/>
+                  </svg>
                 </button>
               </div>
               <div className="relative" ref={dropdownRef}>

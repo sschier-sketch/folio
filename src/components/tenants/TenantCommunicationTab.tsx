@@ -519,10 +519,7 @@ export default function TenantCommunicationTab({
                         </span>
                         <button
                           type="button"
-                          onClick={() => {
-                            setAttachedFile(null);
-                            setSharedWithTenant(false);
-                          }}
+                          onClick={() => setAttachedFile(null)}
                           className="text-red-500 hover:text-red-700"
                         >
                           <X className="w-4 h-4" />
@@ -671,6 +668,33 @@ export default function TenantCommunicationTab({
                           {new Date(msg.created_at).toLocaleString("de-DE")}
                         </div>
                         <div className="whitespace-pre-wrap">{msg.message}</div>
+                        {msg.attachments && msg.attachments.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {msg.attachments.map((attachment: any, idx: number) => (
+                              <div key={idx}>
+                                {attachment.type.startsWith("image/") ? (
+                                  <div className="mt-2">
+                                    <img
+                                      src={attachment.data}
+                                      alt={attachment.filename}
+                                      className="max-w-full rounded border border-gray-200"
+                                      style={{ maxHeight: "300px" }}
+                                    />
+                                    <p className="text-xs opacity-75 mt-1">{attachment.filename}</p>
+                                  </div>
+                                ) : (
+                                  <a
+                                    href={attachment.data}
+                                    download={attachment.filename}
+                                    className="inline-flex items-center gap-2 text-xs underline opacity-75 hover:opacity-100"
+                                  >
+                                    📎 {attachment.filename}
+                                  </a>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))
