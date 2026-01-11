@@ -42,6 +42,7 @@ export default function TenantContractTab({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+  const [shareWithTenant, setShareWithTenant] = useState(false);
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
@@ -150,6 +151,7 @@ export default function TenantContractTab({
               file_size: uploadFile.file.size,
               category: "tenant",
               description: uploadDescription || null,
+              shared_with_tenant: shareWithTenant,
             },
           ])
           .select()
@@ -197,6 +199,7 @@ export default function TenantContractTab({
       setUploadFiles([]);
       setUploadDescription("");
       setSelectedDocType("contract");
+      setShareWithTenant(false);
     }
   }
 
@@ -537,6 +540,23 @@ export default function TenantContractTab({
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="z.B. Mietvertrag vom 01.01.2024"
                 />
+              </div>
+
+              <div className="flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="share_with_tenant"
+                  checked={shareWithTenant}
+                  onChange={(e) => setShareWithTenant(e.target.checked)}
+                  className="w-4 h-4 text-primary-blue focus:ring-primary-blue border-gray-300 rounded"
+                />
+                <label
+                  htmlFor="share_with_tenant"
+                  className="text-sm font-medium text-gray-700 flex items-center gap-2"
+                >
+                  <Lock className="w-4 h-4" />
+                  Im Mieterportal anzeigen (Dokument wird für Mieter sichtbar und downloadbar)
+                </label>
               </div>
 
               <div>

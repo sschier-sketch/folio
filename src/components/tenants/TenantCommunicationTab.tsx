@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MessageSquare, Plus, FileText, Calendar, Lock, Wrench, X, Upload, File as FileIcon } from "lucide-react";
+import { MessageSquare, Plus, FileText, Calendar, Lock, Wrench, X, Upload, File as FileIcon, Trash2, Mail } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -19,6 +19,11 @@ interface Communication {
   is_ticket?: boolean;
   ticket_status?: string;
   ticket_category?: string;
+  is_deleted?: boolean;
+  deleted_at?: string;
+  attachment_id?: string;
+  attachment_name?: string;
+  attachment_path?: string;
 }
 
 export default function TenantCommunicationTab({
@@ -37,9 +42,11 @@ export default function TenantCommunicationTab({
     subject: "",
     content: "",
     is_internal: false,
+    send_email: false,
   });
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [tenant, setTenant] = useState<any>(null);
+  const [attachmentDocId, setAttachmentDocId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
@@ -81,7 +88,31 @@ export default function TenantCommunicationTab({
       const allCommunications: Communication[] = [];
 
       if (commsData) {
-        allCommunications.push(...commsData);
+        for (const comm of commsData) {
+          const { data: associations } = await supabase
+            .from("document_associations")
+            .select(`
+              document_id,
+              documents(
+                id,
+                file_name,
+                file_path
+              )
+            `)
+            .eq("association_type", "tenant")
+            .eq("association_id", tenantId);
+
+          const doc = associations?.find((assoc: any) => {
+            return assoc.documents && comm.created_at;
+          })?.documents;
+
+          allCommunications.push({
+            ...comm,
+            attachment_id: doc?.id,
+            attachment_name: doc?.file_name,
+            attachment_path: doc?.file_path,
+          });
+        }
       }
 
       if (ticketsData) {
@@ -119,6 +150,8 @@ export default function TenantCommunicationTab({
     try {
       setLoading(true);
 
+      let documentId = null;
+
       if (attachedFile) {
         const fileName = `${Date.now()}_${attachedFile.name}`;
         const filePath = `${user.id}/${fileName}`;
@@ -131,10 +164,6 @@ export default function TenantCommunicationTab({
           });
 
         if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from("documents")
-          .getPublicUrl(filePath);
 
         const { data: document, error: docError } = await supabase
           .from("documents")
@@ -156,6 +185,8 @@ export default function TenantCommunicationTab({
 
         if (docError) throw docError;
 
+        documentId = document.id;
+
         if (document && tenant.property_id) {
           await supabase.from("document_associations").insert([
             {
@@ -168,24 +199,61 @@ export default function TenantCommunicationTab({
         }
       }
 
-      const { error } = await supabase.from("tenant_communications").insert([
-        {
-          user_id: user.id,
-          tenant_id: tenantId,
-          communication_type: newEntryForm.type,
-          subject: newEntryForm.subject,
-          content: newEntryForm.content,
-          is_internal: newEntryForm.is_internal,
-        },
-      ]);
+      const { data: newComm, error } = await supabase
+        .from("tenant_communications")
+        .insert([
+          {
+            user_id: user.id,
+            tenant_id: tenantId,
+            communication_type: newEntryForm.type,
+            subject: newEntryForm.subject,
+            content: newEntryForm.content,
+            is_internal: newEntryForm.is_internal,
+          },
+        ])
+        .select()
+        .single();
 
       if (error) throw error;
+
+      if (newEntryForm.send_email && tenant.email && !newEntryForm.is_internal) {
+        try {
+          let emailContent = `${newEntryForm.content}`;
+
+          if (attachedFile && documentId) {
+            const { data: { publicUrl } } = supabase.storage
+              .from("documents")
+              .getPublicUrl(`${user.id}/${Date.now()}_${attachedFile.name}`);
+
+            emailContent += `\n\nAnhang: ${attachedFile.name}`;
+          }
+
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+              to: tenant.email,
+              subject: "Neue Nachricht von Ihrem Vermieter",
+              html: `
+                <h2>${newEntryForm.subject}</h2>
+                <p>${emailContent.replace(/\n/g, "<br>")}</p>
+              `,
+            }),
+          });
+        } catch (emailError) {
+          console.error("Error sending email:", emailError);
+        }
+      }
 
       setNewEntryForm({
         type: "message",
         subject: "",
         content: "",
         is_internal: false,
+        send_email: false,
       });
       setAttachedFile(null);
       setShowNewEntry(false);
@@ -195,6 +263,28 @@ export default function TenantCommunicationTab({
       alert("Fehler beim Speichern des Eintrags");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDeleteCommunication(commId: string) {
+    if (!user || !confirm("Möchten Sie diese Nachricht wirklich löschen?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("tenant_communications")
+        .update({
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+          deleted_by: user.id,
+        })
+        .eq("id", commId);
+
+      if (error) throw error;
+
+      loadCommunications();
+    } catch (error) {
+      console.error("Error deleting communication:", error);
+      alert("Fehler beim Löschen der Nachricht");
     }
   }
 
@@ -377,7 +467,7 @@ export default function TenantCommunicationTab({
                       key={comm.id}
                       className={`relative pl-8 pb-4 border-l-2 border-gray-200 last:border-0 ${
                         comm.is_ticket ? "cursor-pointer hover:bg-gray-50 -mx-6 px-14 py-4" : ""
-                      }`}
+                      } ${comm.is_deleted ? "opacity-60" : ""}`}
                       onClick={() => comm.is_ticket && loadTicketDetails(comm.id)}
                     >
                       <div className="absolute left-6 top-4 -translate-x-1/2 w-4 h-4 bg-primary-blue rounded-full"></div>
@@ -409,13 +499,43 @@ export default function TenantCommunicationTab({
                               Intern
                             </span>
                           )}
+                          {comm.is_deleted && (
+                            <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-medium">
+                              Gelöscht
+                            </span>
+                          )}
+                          {!comm.is_ticket && !comm.is_deleted && (
+                            <button
+                              onClick={() => handleDeleteCommunication(comm.id)}
+                              className="ml-auto p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                              title="Nachricht löschen"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                         <div className="font-semibold text-dark mb-1">
-                          {comm.subject}
+                          {comm.is_deleted ? "[Gelöschte Nachricht]" : comm.subject}
                         </div>
-                        {comm.content && (
+                        {comm.content && !comm.is_deleted && (
                           <div className="text-sm text-gray-600 whitespace-pre-wrap">
                             {comm.content}
+                          </div>
+                        )}
+                        {comm.attachment_name && comm.attachment_path && !comm.is_deleted && (
+                          <div className="mt-2 flex items-center gap-2 text-sm">
+                            <FileIcon className="w-4 h-4 text-gray-400" />
+                            <button
+                              onClick={async () => {
+                                const { data } = supabase.storage
+                                  .from("documents")
+                                  .getPublicUrl(comm.attachment_path!);
+                                window.open(data.publicUrl, "_blank");
+                              }}
+                              className="text-primary-blue hover:underline"
+                            >
+                              {comm.attachment_name}
+                            </button>
                           </div>
                         )}
                         {comm.is_ticket && comm.ticket_status && (
@@ -553,25 +673,51 @@ export default function TenantCommunicationTab({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="is_internal"
-                    checked={newEntryForm.is_internal}
-                    onChange={(e) =>
-                      setNewEntryForm({
-                        ...newEntryForm,
-                        is_internal: e.target.checked,
-                      })
-                    }
-                    className="w-4 h-4 text-primary-blue focus:ring-primary-blue border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="is_internal"
-                    className="text-sm font-medium text-gray-600"
-                  >
-                    Interner Eintrag (nur für Vermieter sichtbar)
-                  </label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="is_internal"
+                      checked={newEntryForm.is_internal}
+                      onChange={(e) =>
+                        setNewEntryForm({
+                          ...newEntryForm,
+                          is_internal: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4 text-primary-blue focus:ring-primary-blue border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor="is_internal"
+                      className="text-sm font-medium text-gray-600"
+                    >
+                      Interner Eintrag (nur für Vermieter sichtbar)
+                    </label>
+                  </div>
+
+                  {!newEntryForm.is_internal && tenant?.email && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="send_email"
+                        checked={newEntryForm.send_email}
+                        onChange={(e) =>
+                          setNewEntryForm({
+                            ...newEntryForm,
+                            send_email: e.target.checked,
+                          })
+                        }
+                        className="w-4 h-4 text-primary-blue focus:ring-primary-blue border-gray-300 rounded"
+                      />
+                      <label
+                        htmlFor="send_email"
+                        className="text-sm font-medium text-gray-600 flex items-center gap-2"
+                      >
+                        <Mail className="w-4 h-4" />
+                        Auch per E-Mail an {tenant.email} senden
+                      </label>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-3 pt-4">

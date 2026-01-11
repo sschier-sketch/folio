@@ -567,7 +567,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           <div className="grid grid-cols-2 gap-4">
             {" "}
             <button
-              onClick={() => onNavigateToProperty && navigate('/dashboard?view=properties')}
+              onClick={() => window.location.href = '/dashboard?view=properties'}
               className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
@@ -580,7 +580,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               </span>{" "}
             </button>{" "}
             <button
-              onClick={() => navigate('/dashboard?view=tenants')}
+              onClick={() => window.location.href = '/dashboard?view=tenants'}
               className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
@@ -593,7 +593,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               </span>{" "}
             </button>{" "}
             <button
-              onClick={() => navigate('/dashboard?view=payments')}
+              onClick={() => window.location.href = '/dashboard?view=payments'}
               className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
@@ -606,7 +606,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               </span>{" "}
             </button>{" "}
             <button
-              onClick={() => navigate('/dashboard?view=financial')}
+              onClick={() => window.location.href = '/dashboard?view=financial'}
               className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
