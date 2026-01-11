@@ -41,7 +41,7 @@ export default function RentPaymentsView() {
   const [filterProperty, setFilterProperty] = useState("all");
   const [filterContract, setFilterContract] = useState("all");
   const [filterStatus, setFilterStatus] = useState<"all" | "paid" | "unpaid">(
-    "unpaid",
+    "all",
   );
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -108,10 +108,6 @@ export default function RentPaymentsView() {
         query = query.eq("payment_status", "paid");
       } else if (filterStatus === "unpaid") {
         query = query.in("payment_status", ["unpaid", "partial"]);
-        if (!endDate) {
-          const today = new Date().toISOString().split("T")[0];
-          query = query.lte("due_date", today);
-        }
       }
       if (startDate) {
         query = query.gte("due_date", startDate);
