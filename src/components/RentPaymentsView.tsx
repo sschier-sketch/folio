@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins } from "lucide-react";
+import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
+import DunningView from "./finances/DunningView";
 interface PartialPayment {
   amount: number;
   date: string;
@@ -28,6 +29,7 @@ interface RentPayment {
 export default function RentPaymentsView() {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
+  const [activeTab, setActiveTab] = useState<"payments" | "dunning">("payments");
   const [payments, setPayments] = useState<RentPayment[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
@@ -277,6 +279,42 @@ export default function RentPaymentsView() {
           Verwalten Sie ausstehende und bezahlte Mieten
         </p>
       </div>
+
+      <div className="bg-white rounded-lg overflow-hidden">
+        <div className="border-b border-gray-200">
+          <nav className="flex">
+            <button
+              onClick={() => setActiveTab("payments")}
+              className={`px-6 py-4 text-sm font-medium transition-colors ${
+                activeTab === "payments"
+                  ? "text-primary-blue border-b-2 border-primary-blue"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4" />
+                Mieteingänge
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab("dunning")}
+              className={`px-6 py-4 text-sm font-medium transition-colors ${
+                activeTab === "dunning"
+                  ? "text-primary-blue border-b-2 border-primary-blue"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                Mahnwesen
+              </div>
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      {activeTab === "payments" ? (
+        <div className="space-y-6">{/* Existing content moved here */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg p-6">
@@ -697,6 +735,10 @@ export default function RentPaymentsView() {
             </div>
           </div>
         </div>
+      )}
+        </div>
+      ) : (
+        <DunningView payments={payments} onReloadPayments={loadPayments} />
       )}
     </div>
   );

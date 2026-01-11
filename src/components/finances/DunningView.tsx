@@ -1,196 +1,477 @@
-import { Bell, AlertTriangle, Send, CheckCircle, TrendingUp } from "lucide-react";
-import { PremiumFeatureGuard } from "../PremiumFeatureGuard";
+import { useState, useEffect } from "react";
+import { Bell, AlertTriangle, Send, CheckCircle, TrendingUp, Mail } from "lucide-react";
+import { supabase } from "../../lib/supabase";
+import { useAuth } from "../../contexts/AuthContext";
 
-export default function DunningView() {
+interface RentPayment {
+  id: string;
+  due_date: string;
+  amount: number;
+  paid: boolean;
+  paid_amount: number;
+  payment_status: 'paid' | 'partial' | 'unpaid';
+  days_overdue: number;
+  dunning_level: number;
+  last_reminder_sent: string | null;
+  property: { name: string; address: string } | null;
+  rental_contract: {
+    tenants: Array<{ first_name: string; last_name: string; email: string }>;
+    rent_due_day: number;
+  } | null;
+  property_units?: { unit_number: string } | null;
+}
+
+interface DunningViewProps {
+  payments: RentPayment[];
+  onReloadPayments: () => void;
+}
+
+interface DunningStats {
+  openItems: number;
+  remindersSent: number;
+  successfullyCollected: number;
+}
+
+interface DunningReminderHistory {
+  id: string;
+  dunning_level: number;
+  sent_at: string;
+  status: string;
+}
+
+export default function DunningView({ payments, onReloadPayments }: DunningViewProps) {
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DunningStats>({
+    openItems: 0,
+    remindersSent: 0,
+    successfullyCollected: 0,
+  });
+  const [remindersHistory, setRemindersHistory] = useState<Record<string, DunningReminderHistory[]>>({});
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+
+  useEffect(() => {
+    calculateStats();
+    loadRemindersHistory();
+  }, [payments]);
+
+  const calculateStats = () => {
+    const openItems = payments.filter(p => !p.paid && p.days_overdue > 0).length;
+    const successfullyCollected = payments.filter(p => p.paid && p.dunning_level > 0).length;
+
+    setStats({
+      openItems,
+      remindersSent: 0,
+      successfullyCollected,
+    });
+  };
+
+  const loadRemindersHistory = async () => {
+    if (!user || payments.length === 0) return;
+
+    const paymentIds = payments.map(p => p.id);
+    const { data } = await supabase
+      .from("rent_payment_reminders")
+      .select("*")
+      .in("rent_payment_id", paymentIds)
+      .order("sent_at", { ascending: false });
+
+    if (data) {
+      const grouped = data.reduce((acc: Record<string, DunningReminderHistory[]>, reminder: any) => {
+        if (!acc[reminder.rent_payment_id]) {
+          acc[reminder.rent_payment_id] = [];
+        }
+        acc[reminder.rent_payment_id].push(reminder);
+        return acc;
+      }, {});
+      setRemindersHistory(grouped);
+
+      const totalSent = data.length;
+      setStats(prev => ({ ...prev, remindersSent: totalSent }));
+    }
+  };
+
+  const getDunningLevel = (payment: RentPayment): number => {
+    if (payment.paid || payment.days_overdue <= 0) return 0;
+
+    if (payment.days_overdue >= 3 && payment.days_overdue < 10) return 1;
+    if (payment.days_overdue >= 10 && payment.days_overdue < 20) return 2;
+    if (payment.days_overdue >= 20) return 3;
+
+    return 0;
+  };
+
+  const getDunningLevelInfo = (level: number) => {
+    switch (level) {
+      case 1:
+        return {
+          label: "Stufe 1",
+          color: "bg-blue-100 text-blue-700",
+          borderColor: "border-blue-500",
+          bgColor: "bg-blue-50",
+          title: "Freundliche Erinnerung",
+          description: "Höflicher Ton, Hinweis auf möglicherweise vergessene Überweisung."
+        };
+      case 2:
+        return {
+          label: "Stufe 2",
+          color: "bg-amber-100 text-amber-700",
+          borderColor: "border-amber-500",
+          bgColor: "bg-amber-50",
+          title: "Formelle Zahlungsaufforderung",
+          description: "Formeller Ton, Fristsetzung, Hinweis auf mögliche Konsequenzen."
+        };
+      case 3:
+        return {
+          label: "Stufe 3",
+          color: "bg-red-100 text-red-700",
+          borderColor: "border-red-500",
+          bgColor: "bg-red-50",
+          title: "Mahnung",
+          description: "Offizielle Mahnung mit Mahngebühren und rechtlichen Hinweisen."
+        };
+      default:
+        return {
+          label: "Erledigt",
+          color: "bg-emerald-100 text-emerald-700",
+          borderColor: "border-emerald-500",
+          bgColor: "bg-emerald-50",
+          title: "Zahlung eingegangen",
+          description: "Ausstehende Miete wurde vollständig bezahlt."
+        };
+    }
+  };
+
+  const handleSendReminder = async (payment: RentPayment, level: number) => {
+    if (!user || !payment.rental_contract?.tenants[0]?.email) {
+      alert("Keine E-Mail-Adresse für den Mieter hinterlegt");
+      return;
+    }
+
+    setSendingReminder(payment.id);
+
+    try {
+      const tenant = payment.rental_contract.tenants[0];
+      const tenantEmail = tenant.email;
+      const tenantName = `${tenant.first_name} ${tenant.last_name}`;
+      const propertyName = payment.property?.name || "Ihre Immobilie";
+      const unitNumber = payment.property_units?.unit_number || "";
+
+      let subject = "";
+      let message = "";
+
+      switch (level) {
+        case 1:
+          subject = "Freundliche Erinnerung: Mietezahlung";
+          message = `Sehr geehrte/r ${tenantName},\n\nwir möchten Sie freundlich daran erinnern, dass die Miete für ${propertyName}${unitNumber ? ` (Einheit ${unitNumber})` : ""} in Höhe von ${formatCurrency(payment.amount)} zum ${formatDate(payment.due_date)} fällig war.\n\nMöglicherweise haben Sie die Überweisung vergessen. Bitte überweisen Sie den Betrag zeitnah.\n\nMit freundlichen Grüßen`;
+          break;
+        case 2:
+          subject = "Zahlungsaufforderung: Ausstehende Miete";
+          message = `Sehr geehrte/r ${tenantName},\n\ntrotz freundlicher Erinnerung ist die Miete für ${propertyName}${unitNumber ? ` (Einheit ${unitNumber})` : ""} in Höhe von ${formatCurrency(payment.amount)} noch nicht eingegangen.\n\nWir fordern Sie hiermit formell auf, den Betrag innerhalb von 7 Tagen zu überweisen. Andernfalls müssen wir weitere Schritte einleiten.\n\nMit freundlichen Grüßen`;
+          break;
+        case 3:
+          const mahngebuehr = 5.00;
+          const totalAmount = payment.amount - payment.paid_amount + mahngebuehr;
+          subject = "MAHNUNG: Überfällige Mietzahlung";
+          message = `Sehr geehrte/r ${tenantName},\n\ntrotz mehrfacher Erinnerung ist die Miete für ${propertyName}${unitNumber ? ` (Einheit ${unitNumber})` : ""} in Höhe von ${formatCurrency(payment.amount)} noch nicht eingegangen.\n\nWir mahnen Sie hiermit offiziell und fordern Sie auf, den ausstehenden Betrag zzgl. Mahngebühren in Höhe von ${formatCurrency(mahngebuehr)} (Gesamt: ${formatCurrency(totalAmount)}) innerhalb von 5 Tagen zu überweisen.\n\nBei weiterer Nichtzahlung behalten wir uns rechtliche Schritte vor.\n\nMit freundlichen Grüßen`;
+          break;
+      }
+
+      const { data: reminderData, error: reminderError } = await supabase
+        .from("rent_payment_reminders")
+        .insert({
+          user_id: user.id,
+          rent_payment_id: payment.id,
+          dunning_level: level,
+          recipient_email: tenantEmail,
+          subject,
+          message,
+          status: 'sent'
+        })
+        .select()
+        .single();
+
+      if (reminderError) throw reminderError;
+
+      await supabase
+        .from("rent_payments")
+        .update({
+          dunning_level: level,
+          last_reminder_sent: new Date().toISOString()
+        })
+        .eq("id", payment.id);
+
+      alert(`${level === 3 ? 'Mahnung' : 'Erinnerung'} wurde erfolgreich versendet`);
+
+      onReloadPayments();
+      loadRemindersHistory();
+    } catch (error) {
+      console.error("Error sending reminder:", error);
+      alert("Fehler beim Versenden der Erinnerung");
+    } finally {
+      setSendingReminder(null);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("de-DE", {
+      style: "currency",
+      currency: "EUR",
+    }).format(value);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("de-DE", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const overduePayments = payments
+    .filter(p => !p.paid && p.days_overdue > 0)
+    .map(p => ({
+      ...p,
+      suggestedLevel: getDunningLevel(p)
+    }))
+    .sort((a, b) => b.days_overdue - a.days_overdue);
+
+  const recentlyPaidAfterReminder = payments
+    .filter(p => p.paid && p.dunning_level > 0)
+    .slice(0, 3);
+
   return (
-    <PremiumFeatureGuard featureName="Offene Posten & Mahnwesen">
-      <div className="space-y-6">
-        <div className="bg-white rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-              <Bell className="w-6 h-6 text-amber-600" />
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+            <Bell className="w-6 h-6 text-amber-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-dark">
+              Intelligentes Mahnwesen
+            </h3>
+            <p className="text-sm text-gray-400">
+              Automatische Erkennung und Eskalation offener Posten
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-amber-50 rounded-lg p-4">
+            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-dark">
-                Intelligentes Mahnwesen
-              </h3>
-              <p className="text-sm text-gray-400">
-                Automatische Erkennung und Eskalation offener Posten
+            <div className="text-2xl font-bold text-dark mb-1">{stats.openItems}</div>
+            <div className="text-sm text-gray-600">Offene Posten</div>
+          </div>
+
+          <div className="bg-blue-50 rounded-lg p-4">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
+              <Send className="w-5 h-5 text-primary-blue" />
+            </div>
+            <div className="text-2xl font-bold text-dark mb-1">{stats.remindersSent}</div>
+            <div className="text-sm text-gray-600">
+              Erinnerungen versendet
+            </div>
+          </div>
+
+          <div className="bg-emerald-50 rounded-lg p-4">
+            <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mb-3">
+              <CheckCircle className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div className="text-2xl font-bold text-dark mb-1">{stats.successfullyCollected}</div>
+            <div className="text-sm text-gray-600">
+              Erfolgreich eingezogen
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-dark mb-4">
+          Automatische Erkennung
+        </h3>
+
+        {overduePayments.length === 0 ? (
+          <div className="text-center py-12">
+            <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+            <p className="text-gray-600">Keine offenen Posten gefunden</p>
+            <p className="text-sm text-gray-400 mt-1">Alle Mieten sind auf dem neuesten Stand</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {overduePayments.map((payment) => {
+              const levelInfo = getDunningLevelInfo(payment.suggestedLevel);
+              const tenant = payment.rental_contract?.tenants[0];
+              const tenantName = tenant ? `${tenant.first_name} ${tenant.last_name}` : "Unbekannt";
+              const unitInfo = payment.property_units?.unit_number
+                ? `Einheit ${payment.property_units.unit_number}`
+                : payment.property?.name || "Unbekannt";
+              const outstandingAmount = payment.amount - payment.paid_amount;
+
+              return (
+                <div
+                  key={payment.id}
+                  className={`border-l-4 ${levelInfo.borderColor} ${levelInfo.bgColor} rounded-r-lg p-4`}
+                >
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className={`w-5 h-5 mt-0.5 ${payment.suggestedLevel === 3 ? 'text-red-600' : payment.suggestedLevel === 2 ? 'text-amber-600' : 'text-blue-600'}`} />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-dark">
+                          {unitInfo} - {tenantName}
+                        </h4>
+                        <span className={`text-xs ${levelInfo.color} px-2 py-1 rounded`}>
+                          {levelInfo.label}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {payment.payment_status === 'partial' ? (
+                          <>Teilzahlung erkannt: {formatCurrency(payment.paid_amount)} von {formatCurrency(payment.amount)} eingegangen. Fehlbetrag: {formatCurrency(outstandingAmount)}</>
+                        ) : payment.days_overdue >= 30 ? (
+                          <>Zahlung seit {Math.floor(payment.days_overdue / 30)} Monat{Math.floor(payment.days_overdue / 30) > 1 ? 'en' : ''} ausstehend. Gesamtbetrag: {formatCurrency(outstandingAmount)}</>
+                        ) : (
+                          <>Zahlung seit {payment.days_overdue} Tag{payment.days_overdue > 1 ? 'en' : ''} überfällig. Betrag: {formatCurrency(outstandingAmount)}</>
+                        )}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                        <span>Fällig: {formatDate(payment.due_date)}</span>
+                        {payment.last_reminder_sent && (
+                          <>
+                            <span>•</span>
+                            <span>Letzte Erinnerung: {formatDate(payment.last_reminder_sent)}</span>
+                          </>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleSendReminder(payment, payment.suggestedLevel)}
+                        disabled={sendingReminder === payment.id}
+                        className={`text-sm font-medium hover:underline flex items-center gap-2 ${
+                          payment.suggestedLevel === 3 ? 'text-red-600' :
+                          payment.suggestedLevel === 2 ? 'text-amber-600' :
+                          'text-primary-blue'
+                        } disabled:opacity-50`}
+                      >
+                        <Mail className="w-4 h-4" />
+                        {sendingReminder === payment.id ? (
+                          'Wird gesendet...'
+                        ) : payment.suggestedLevel === 3 ? (
+                          'Mahnung versenden'
+                        ) : payment.suggestedLevel === 2 ? (
+                          'Zahlungsaufforderung senden'
+                        ) : (
+                          'Freundliche Erinnerung senden'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {recentlyPaidAfterReminder.map((payment) => {
+              const tenant = payment.rental_contract?.tenants[0];
+              const tenantName = tenant ? `${tenant.first_name} ${tenant.last_name}` : "Unbekannt";
+              const unitInfo = payment.property_units?.unit_number
+                ? `Einheit ${payment.property_units.unit_number}`
+                : payment.property?.name || "Unbekannt";
+              const levelInfo = getDunningLevelInfo(0);
+
+              return (
+                <div
+                  key={payment.id}
+                  className={`border-l-4 ${levelInfo.borderColor} ${levelInfo.bgColor} rounded-r-lg p-4`}
+                >
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-dark">
+                          {unitInfo} - {tenantName}
+                        </h4>
+                        <span className={`text-xs ${levelInfo.color} px-2 py-1 rounded`}>
+                          {levelInfo.label}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Nach {payment.dunning_level === 1 ? 'freundlicher Erinnerung' : payment.dunning_level === 2 ? 'Zahlungsaufforderung' : 'Mahnung'} wurde die ausstehende Miete vollständig bezahlt.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-dark mb-4">
+          Eskalationsstufen
+        </h3>
+
+        <div className="space-y-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+              <span className="text-sm font-semibold text-primary-blue">
+                1
+              </span>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-dark mb-1">
+                Freundliche Erinnerung
+              </h4>
+              <p className="text-sm text-gray-600">
+                Automatisch nach 3 Tagen Zahlungsverzug. Höflicher Ton,
+                Hinweis auf möglicherweise vergessene Überweisung.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-amber-50 rounded-lg p-4">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-3">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
-              </div>
-              <div className="text-2xl font-bold text-dark mb-1">3</div>
-              <div className="text-sm text-gray-600">Offene Posten</div>
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
+              <span className="text-sm font-semibold text-amber-600">2</span>
             </div>
-
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
-                <Send className="w-5 h-5 text-primary-blue" />
-              </div>
-              <div className="text-2xl font-bold text-dark mb-1">5</div>
-              <div className="text-sm text-gray-600">
-                Erinnerungen versendet
-              </div>
-            </div>
-
-            <div className="bg-emerald-50 rounded-lg p-4">
-              <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mb-3">
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-              </div>
-              <div className="text-2xl font-bold text-dark mb-1">12</div>
-              <div className="text-sm text-gray-600">
-                Erfolgreich eingezogen
-              </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-dark mb-1">
+                Formelle Zahlungsaufforderung
+              </h4>
+              <p className="text-sm text-gray-600">
+                Nach 10 Tagen ohne Reaktion. Formeller Ton, Fristsetzung,
+                Hinweis auf mögliche Konsequenzen.
+              </p>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-dark mb-4">
-            Automatische Erkennung
-          </h3>
-
-          <div className="space-y-3">
-            <div className="border-l-4 border-amber-500 bg-amber-50 rounded-r-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-dark">
-                      Einheit 3 - Teilzahlung erkannt
-                    </h4>
-                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">
-                      Stufe 1
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Nur 450 € von 850 € eingegangen. Fehlbetrag: 400 €
-                  </p>
-                  <button className="text-sm text-primary-blue font-medium hover:underline">
-                    Freundliche Erinnerung senden
-                  </button>
-                </div>
-              </div>
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+              <span className="text-sm font-semibold text-red-600">3</span>
             </div>
-
-            <div className="border-l-4 border-red-500 bg-red-50 rounded-r-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-dark">
-                      Einheit 7 - Miete fehlt
-                    </h4>
-                    <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                      Stufe 3
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Zahlung seit 3 Monaten ausstehend. Gesamtbetrag: 2.550 €
-                  </p>
-                  <button className="text-sm text-red-600 font-medium hover:underline">
-                    Mahnung versenden
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-l-4 border-emerald-500 bg-emerald-50 rounded-r-lg p-4">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5" />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-dark">
-                      Einheit 2 - Zahlung eingegangen
-                    </h4>
-                    <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">
-                      Erledigt
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Nach freundlicher Erinnerung wurde die ausstehende Miete
-                    vollständig bezahlt.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-dark mb-4">
-            Eskalationsstufen
-          </h3>
-
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                <span className="text-sm font-semibold text-primary-blue">
-                  1
-                </span>
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-dark mb-1">
-                  Freundliche Erinnerung
-                </h4>
-                <p className="text-sm text-gray-600">
-                  Automatisch nach 3 Tagen Zahlungsverzug. Höflicher Ton,
-                  Hinweis auf möglicherweise vergessene Überweisung.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
-                <span className="text-sm font-semibold text-amber-600">2</span>
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-dark mb-1">
-                  Formelle Zahlungsaufforderung
-                </h4>
-                <p className="text-sm text-gray-600">
-                  Nach 10 Tagen ohne Reaktion. Formeller Ton, Fristsetzung,
-                  Hinweis auf mögliche Konsequenzen.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-                <span className="text-sm font-semibold text-red-600">3</span>
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-dark mb-1">Mahnung</h4>
-                <p className="text-sm text-gray-600">
-                  Nach 20 Tagen. Offizielle Mahnung mit Mahngebühren,
-                  rechtlichen Hinweisen und letzter Frist vor weiteren
-                  Schritten.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <TrendingUp className="w-5 h-5 text-primary-blue mt-0.5" />
-            <div className="text-sm text-blue-900">
-              <p className="font-semibold mb-1">Erfolgsquote:</p>
-              <p>
-                Im Durchschnitt werden 85% der offenen Posten nach der ersten
-                freundlichen Erinnerung beglichen. Nur 5% erreichen die dritte
-                Eskalationsstufe.
+            <div className="flex-1">
+              <h4 className="font-semibold text-dark mb-1">Mahnung</h4>
+              <p className="text-sm text-gray-600">
+                Nach 20 Tagen. Offizielle Mahnung mit Mahngebühren,
+                rechtlichen Hinweisen und letzter Frist vor weiteren
+                Schritten.
               </p>
             </div>
           </div>
         </div>
       </div>
-    </PremiumFeatureGuard>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <TrendingUp className="w-5 h-5 text-primary-blue mt-0.5" />
+          <div className="text-sm text-blue-900">
+            <p className="font-semibold mb-1">Erfolgsquote:</p>
+            <p>
+              Im Durchschnitt werden 85% der offenen Posten nach der ersten
+              freundlichen Erinnerung beglichen. Nur 5% erreichen die dritte
+              Eskalationsstufe.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
