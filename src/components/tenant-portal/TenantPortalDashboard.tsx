@@ -277,7 +277,7 @@ export default function TenantPortalDashboard({
 
       {(newDocumentsCount > 0 || openTicketsCount > 0 || unreadMessagesCount > 0) && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-dark mb-4">Neu für dich</h2>
+          <h2 className="text-lg font-semibold text-dark mb-4">Updates</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {newDocumentsCount > 0 && (
               <button
@@ -342,16 +342,16 @@ export default function TenantPortalDashboard({
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg p-6">
         <h2 className="text-lg font-bold text-dark mb-4">
           Schnellaktionen
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => onNavigateToTab("tickets")}
-            className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-red-50 to-red-100 rounded-lg hover:shadow-lg transition-all border-2 border-transparent hover:border-red-500"
+            className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-red-50 to-red-100 rounded-lg hover:bg-gradient-to-br hover:from-red-100 hover:to-red-200 transition-all"
           >
-            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
               <Wrench className="w-7 h-7 text-white" />
             </div>
             <div className="flex-1 text-left">
@@ -364,9 +364,9 @@ export default function TenantPortalDashboard({
 
           <button
             onClick={() => onNavigateToTab("meters")}
-            className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:shadow-lg transition-all border-2 border-transparent hover:border-blue-500"
+            className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:bg-gradient-to-br hover:from-blue-100 hover:to-blue-200 transition-all"
           >
-            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
               <Gauge className="w-7 h-7 text-white" />
             </div>
             <div className="flex-1 text-left">

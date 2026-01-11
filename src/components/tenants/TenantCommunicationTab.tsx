@@ -120,28 +120,52 @@ export default function TenantCommunicationTab({
       setLoading(true);
 
       if (attachedFile) {
-        const base64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(attachedFile);
-        });
+        const fileName = `${Date.now()}_${attachedFile.name}`;
+        const filePath = `${user.id}/${fileName}`;
 
-        const { error: docError } = await supabase
-          .from("property_documents")
+        const { error: uploadError } = await supabase.storage
+          .from("documents")
+          .upload(filePath, attachedFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("documents")
+          .getPublicUrl(filePath);
+
+        const { data: document, error: docError } = await supabase
+          .from("documents")
           .insert([
             {
-              property_id: tenant.property_id,
               user_id: user.id,
-              document_name: attachedFile.name,
-              document_type: "letter",
-              file_url: base64,
+              file_name: attachedFile.name,
+              file_path: filePath,
               file_size: attachedFile.size,
+              file_type: attachedFile.type,
+              document_type: "other",
+              category: "communication",
+              description: `Anhang zu: ${newEntryForm.subject}`,
               shared_with_tenant: false,
-              unit_id: tenant.unit_id || null,
             },
-          ]);
+          ])
+          .select()
+          .single();
 
         if (docError) throw docError;
+
+        if (document && tenant.property_id) {
+          await supabase.from("document_associations").insert([
+            {
+              document_id: document.id,
+              association_type: "tenant",
+              association_id: tenantId,
+              created_by: user.id,
+            },
+          ]);
+        }
       }
 
       const { error } = await supabase.from("tenant_communications").insert([

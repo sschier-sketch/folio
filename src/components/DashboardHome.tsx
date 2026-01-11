@@ -12,6 +12,9 @@ import {
   AlertCircle,
   ChevronRight,
   X,
+  Plus,
+  Receipt,
+  BarChart3,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -556,32 +559,65 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             </div>{" "}
           </div>{" "}
         </div>{" "}
-        <div className="bg-gradient-to-br from-blue-500 to-primary-blue rounded-xl p-6 text-white">
+        <div className="lg:col-span-2 bg-white rounded-xl p-6">
           {" "}
-          <h3 className="text-lg font-semibold mb-4">
+          <h3 className="text-lg font-semibold mb-4 text-dark">
             {t("dashboard.quickstart")}
           </h3>{" "}
-          <p className="text-primary-blue/20 mb-4">
+          <div className="grid grid-cols-2 gap-4">
             {" "}
-            {t("dashboard.quickstart.description")}{" "}
-          </p>{" "}
-          <div className="space-y-2 text-sm">
-            {" "}
-            <div className="flex items-center gap-2">
+            <button
+              onClick={() => onNavigateToProperty && navigate('/dashboard?view=properties')}
+              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all group"
+            >
               {" "}
-              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>{" "}
-              <span>{t("dashboard.quickstart.property")}</span>{" "}
-            </div>{" "}
-            <div className="flex items-center gap-2">
+              <div className="w-14 h-14 bg-primary-blue rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                {" "}
+                <Building2 className="w-7 h-7 text-white" />{" "}
+              </div>{" "}
+              <span className="text-sm font-semibold text-dark text-center">
+                Neue Immobilie anlegen
+              </span>{" "}
+            </button>{" "}
+            <button
+              onClick={() => navigate('/dashboard?view=tenants')}
+              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl hover:shadow-md transition-all group"
+            >
               {" "}
-              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>{" "}
-              <span>{t("dashboard.quickstart.tenant")}</span>{" "}
-            </div>{" "}
-            <div className="flex items-center gap-2">
+              <div className="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                {" "}
+                <Users className="w-7 h-7 text-white" />{" "}
+              </div>{" "}
+              <span className="text-sm font-semibold text-dark text-center">
+                Neues Mietverhältnis anlegen
+              </span>{" "}
+            </button>{" "}
+            <button
+              onClick={() => navigate('/dashboard?view=payments')}
+              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl hover:shadow-md transition-all group"
+            >
               {" "}
-              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>{" "}
-              <span>{t("dashboard.quickstart.contract")}</span>{" "}
-            </div>{" "}
+              <div className="w-14 h-14 bg-amber-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                {" "}
+                <Receipt className="w-7 h-7 text-white" />{" "}
+              </div>{" "}
+              <span className="text-sm font-semibold text-dark text-center">
+                Mieteingänge prüfen
+              </span>{" "}
+            </button>{" "}
+            <button
+              onClick={() => navigate('/dashboard?view=financial')}
+              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl hover:shadow-md transition-all group"
+            >
+              {" "}
+              <div className="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                {" "}
+                <BarChart3 className="w-7 h-7 text-white" />{" "}
+              </div>{" "}
+              <span className="text-sm font-semibold text-dark text-center">
+                Finanzübersicht
+              </span>{" "}
+            </button>{" "}
           </div>{" "}
         </div>{" "}
         <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white">
@@ -676,15 +712,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
 
       {rentIncreases.length > 0 && showRentIncreasesCard && (
         <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <h2 className="text-xl font-bold text-dark">Anstehende Mieterhöhungen</h2>
-            <button
-              onClick={() => setShowRentIncreasesCard(false)}
-              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Schließen"
-            >
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
           </div>
           <div className="bg-white rounded-lg">
             {rentIncreases.map((increase, index) => (
@@ -732,15 +761,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
 
       {openTickets.length > 0 && showTicketsCard && (
         <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <h2 className="text-xl font-bold text-dark">Offene Mieter-Anfragen</h2>
-            <button
-              onClick={() => setShowTicketsCard(false)}
-              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Schließen"
-            >
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
           </div>
           <div className="bg-white rounded-lg">
             {openTickets.map((ticket, index) => (

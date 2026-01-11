@@ -156,12 +156,12 @@ export default function Dashboard() {
             </div>{" "}
             <div className="flex items-center gap-4">
               {" "}
-              <div className="flex gap-1.5">
+              <div className="flex gap-1">
                 <button
                   onClick={() => setLanguage("de")}
-                  className={`w-7 h-7 rounded-full overflow-hidden transition-all ${
+                  className={`w-3.5 h-3.5 rounded-full overflow-hidden transition-all ${
                     language === "de"
-                      ? "ring-2 ring-blue-600 ring-offset-1"
+                      ? "ring-1 ring-blue-600 ring-offset-1"
                       : "opacity-60 hover:opacity-100"
                   }`}
                   title="Deutsch"
@@ -174,9 +174,9 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={() => setLanguage("en")}
-                  className={`w-7 h-7 rounded-full overflow-hidden transition-all ${
+                  className={`w-3.5 h-3.5 rounded-full overflow-hidden transition-all ${
                     language === "en"
-                      ? "ring-2 ring-blue-600 ring-offset-1"
+                      ? "ring-1 ring-blue-600 ring-offset-1"
                       : "opacity-60 hover:opacity-100"
                   }`}
                   title="English"
@@ -299,34 +299,24 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
         {" "}
         {showSuccessMessage && (
-          <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-center gap-3">
             {" "}
-            <div className="flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-emerald-600" />{" "}
+            <div>
               {" "}
-              <CheckCircle className="w-5 h-5 text-emerald-600" />{" "}
-              <div>
+              <p className="text-emerald-900 font-medium">
                 {" "}
-                <p className="text-emerald-900 font-medium">
-                  {" "}
-                  {language === "de"
-                    ? "Zahlung erfolgreich!"
-                    : "Payment successful!"}{" "}
-                </p>{" "}
-                <p className="text-emerald-700 text-sm">
-                  {" "}
-                  {language === "de"
-                    ? "Ihr Abonnement wurde erfolgreich aktiviert."
-                    : "Your subscription has been activated successfully."}{" "}
-                </p>{" "}
-              </div>{" "}
+                {language === "de"
+                  ? "Zahlung erfolgreich!"
+                  : "Payment successful!"}{" "}
+              </p>{" "}
+              <p className="text-emerald-700 text-sm">
+                {" "}
+                {language === "de"
+                  ? "Ihr Abonnement wurde erfolgreich aktiviert."
+                  : "Your subscription has been activated successfully."}{" "}
+              </p>{" "}
             </div>{" "}
-            <button
-              onClick={() => setShowSuccessMessage(false)}
-              className="text-emerald-600 hover:text-emerald-700"
-            >
-              {" "}
-              <X className="w-5 h-5" />{" "}
-            </button>{" "}
           </div>
         )}{" "}
         {/* Mobile Menu Overlay */}{" "}
