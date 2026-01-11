@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Bell, Calendar } from "lucide-react";
+import { X, Bell, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../hooks/useAuth";
 import { useSubscription } from "../hooks/useSubscription";
@@ -19,24 +19,28 @@ interface SystemUpdatesModalProps {
   onClose: () => void;
 }
 
+const UPDATES_PER_PAGE = 5;
+
 export default function SystemUpdatesModal({
   isOpen,
   onClose,
 }: SystemUpdatesModalProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
-  const [updates, setUpdates] = useState<SystemUpdate[]>([]);
+  const [allUpdates, setAllUpdates] = useState<SystemUpdate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (isOpen && user) {
       loadUpdates();
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, isPremium]);
 
   async function loadUpdates() {
     if (!user) return;
 
+    setLoading(true);
     try {
       const { data: viewedUpdates } = await supabase
         .from("user_update_views")
@@ -49,8 +53,7 @@ export default function SystemUpdatesModal({
         .from("system_updates")
         .select("*")
         .eq("is_published", true)
-        .order("published_at", { ascending: false })
-        .limit(20);
+        .order("published_at", { ascending: false });
 
       if (error) throw error;
 
@@ -65,7 +68,8 @@ export default function SystemUpdatesModal({
           is_new: !viewedIds.includes(update.id),
         }));
 
-      setUpdates(filteredUpdates);
+      setAllUpdates(filteredUpdates);
+      setCurrentPage(1);
 
       const newUpdateIds = filteredUpdates
         .filter((u) => u.is_new)
@@ -93,6 +97,11 @@ export default function SystemUpdatesModal({
       day: "numeric",
     });
   };
+
+  const totalPages = Math.ceil(allUpdates.length / UPDATES_PER_PAGE);
+  const startIndex = (currentPage - 1) * UPDATES_PER_PAGE;
+  const endIndex = startIndex + UPDATES_PER_PAGE;
+  const currentUpdates = allUpdates.slice(startIndex, endIndex);
 
   if (!isOpen) return null;
 
@@ -126,7 +135,7 @@ export default function SystemUpdatesModal({
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
             </div>
-          ) : updates.length === 0 ? (
+          ) : allUpdates.length === 0 ? (
             <div className="text-center py-12">
               <Bell className="w-16 h-16 text-gray-200 mx-auto mb-4" />
               <h4 className="text-lg font-semibold text-dark mb-2">
@@ -138,7 +147,7 @@ export default function SystemUpdatesModal({
             </div>
           ) : (
             <div className="space-y-4">
-              {updates.map((update) => (
+              {currentUpdates.map((update) => (
                 <div
                   key={update.id}
                   className={`p-4 rounded-lg border-2 ${
@@ -158,22 +167,11 @@ export default function SystemUpdatesModal({
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      {update.version && (
-                        <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600">
-                          v{update.version}
-                        </span>
-                      )}
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          update.update_type === "premium"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-blue-100 text-blue-700"
-                        }`}
-                      >
-                        {update.update_type === "premium" ? "Premium" : "Free"}
+                    {update.version && (
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 ml-4">
+                        v{update.version}
                       </span>
-                    </div>
+                    )}
                   </div>
                   <p className="text-gray-600 text-sm mb-3 whitespace-pre-wrap">
                     {update.content}
@@ -187,6 +185,32 @@ export default function SystemUpdatesModal({
             </div>
           )}
         </div>
+
+        {!loading && totalPages > 1 && (
+          <div className="p-4 border-t border-gray-200 flex items-center justify-between">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-400 hover:text-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Zurück
+            </button>
+            <span className="text-sm text-gray-400">
+              Seite {currentPage} von {totalPages}
+            </span>
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+              }
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-400 hover:text-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Weiter
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
