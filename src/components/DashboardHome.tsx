@@ -27,6 +27,7 @@ interface Stats {
   monthlySurplus: number;
   unpaidRent: number;
   overdueRent: number;
+  occupancyRate: number;
 }
 
 interface MaintenanceTask {
@@ -86,6 +87,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
     monthlySurplus: 0,
     unpaidRent: 0,
     overdueRent: 0,
+    occupancyRate: 0,
   });
   const [loading, setLoading] = useState(true);
   const [upcomingTasks, setUpcomingTasks] = useState<MaintenanceTask[]>([]);
@@ -177,6 +179,15 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         }
       });
 
+      const { data: unitsData } = await supabase
+        .from("property_units")
+        .select("id, rental_contract_id")
+        .eq("user_id", user.id);
+
+      const totalUnits = unitsData?.length || 0;
+      const rentedUnits = unitsData?.filter(u => u.rental_contract_id).length || 0;
+      const occupancyRate = totalUnits > 0 ? Math.round((rentedUnits / totalUnits) * 100) : 100;
+
       setStats({
         propertiesCount,
         tenantsCount,
@@ -187,6 +198,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         monthlySurplus,
         unpaidRent,
         overdueRent,
+        occupancyRate,
       });
     } catch (error) {
       console.error("Error loading stats:", error);
@@ -390,8 +402,17 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           <div className="text-3xl font-bold text-dark mb-1">
             {stats.propertiesCount}
           </div>{" "}
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-gray-400 mb-2">
             {t("dashboard.properties")}
+          </div>{" "}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-emerald-500 h-2 rounded-full transition-all"
+                style={{ width: `${stats.occupancyRate}%` }}
+              ></div>
+            </div>
+            <span className="text-xs font-medium text-gray-600">{stats.occupancyRate}%</span>
           </div>{" "}
         </div>{" "}
         <div className="bg-white rounded-lg p-6">
