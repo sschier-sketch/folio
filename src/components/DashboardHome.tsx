@@ -5,14 +5,9 @@ import {
   Users,
   TrendingUp,
   Euro,
-  ExternalLink,
-  Copy,
-  Check,
   Wrench,
   AlertCircle,
   ChevronRight,
-  X,
-  Plus,
   Receipt,
   BarChart3,
 } from "lucide-react";
@@ -93,7 +88,6 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
     overdueRent: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
   const [upcomingTasks, setUpcomingTasks] = useState<MaintenanceTask[]>([]);
   const [rentIncreases, setRentIncreases] = useState<RentIncrease[]>([]);
   const [openTickets, setOpenTickets] = useState<OpenTicket[]>([]);
@@ -341,13 +335,6 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
     } catch (error) {
       console.error("Error loading open tickets:", error);
     }
-  };
-
-  const handleCopyPortalLink = () => {
-    const portalUrl = `${window.location.origin}/portal/${user?.id}`;
-    navigator.clipboard.writeText(portalUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -620,48 +607,6 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               </span>{" "}
             </button>{" "}
           </div>{" "}
-        </div>{" "}
-      </div>{" "}
-
-      <div className="mb-6">
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white">
-          {" "}
-          <div className="flex items-center gap-2 mb-3">
-            {" "}
-            <ExternalLink className="w-5 h-5" />{" "}
-            <h3 className="text-lg font-semibold">
-              {t("dashboard.portal.title")}
-            </h3>{" "}
-          </div>{" "}
-          <p className="text-emerald-100 text-sm mb-4">
-            {" "}
-            {t("dashboard.portal.description")}{" "}
-          </p>{" "}
-          <div className="bg-white/20 rounded-lg p-3 mb-3">
-            {" "}
-            <div className="text-xs font-mono text-white/90 break-all">
-              {" "}
-              {window.location.origin}/portal/{user?.id}{" "}
-            </div>{" "}
-          </div>{" "}
-          <button
-            onClick={handleCopyPortalLink}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-full font-medium transition-colors"
-          >
-            {" "}
-            {copied ? (
-              <>
-                {" "}
-                <Check className="w-4 h-4" />{" "}
-                {t("dashboard.portal.copied")}{" "}
-              </>
-            ) : (
-              <>
-                {" "}
-                <Copy className="w-4 h-4" /> {t("dashboard.portal.copy")}{" "}
-              </>
-            )}{" "}
-          </button>{" "}
         </div>{" "}
       </div>{" "}
 
