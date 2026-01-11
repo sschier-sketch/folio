@@ -621,6 +621,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             </button>{" "}
           </div>{" "}
         </div>{" "}
+      </div>{" "}
+
+      <div className="mb-6">
         <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white">
           {" "}
           <div className="flex items-center gap-2 mb-3">
