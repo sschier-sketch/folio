@@ -24,10 +24,10 @@ interface RentPayment {
   dunning_level?: number;
   last_reminder_sent?: string | null;
   property: { name: string; address: string } | null;
-  unit?: { unit_number: string } | null;
   rental_contract: {
     tenants: Array<{ first_name: string; last_name: string; email: string }>;
     rent_due_day: number;
+    unit?: { unit_number: string } | null;
   } | null;
 }
 export default function RentPaymentsView() {
@@ -89,9 +89,9 @@ export default function RentPaymentsView() {
           `
           *,
           property:properties(name, address),
-          unit:property_units(unit_number),
           rental_contract:rental_contracts(
             rent_due_day,
+            unit:property_units(unit_number),
             tenants!contract_id(first_name, last_name, email)
           )
           `
@@ -116,6 +116,9 @@ export default function RentPaymentsView() {
         query = query.lte("due_date", endDate);
       }
       const { data, error } = await query;
+
+      console.log('RentPayments Query Result:', { data, error, filters: { filterStatus, filterProperty, filterContract, startDate, endDate } });
+
       if (error) throw error;
 
       setPayments(data || []);
