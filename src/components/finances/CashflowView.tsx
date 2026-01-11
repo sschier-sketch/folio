@@ -20,36 +20,55 @@ interface MonthlyData {
 export default function CashflowView() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<"monthly" | "yearly">("monthly");
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [timePeriod, setTimePeriod] = useState<"current" | "last" | "last3">("current");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     if (user) {
       loadCashflowData();
     }
-  }, [user, selectedYear]);
+  }, [user, timePeriod, startDate, endDate]);
 
   async function loadCashflowData() {
     try {
       setLoading(true);
 
-      const startDate = `${selectedYear}-01-01`;
-      const endDate = `${selectedYear}-12-31`;
+      let filterStartDate = startDate;
+      let filterEndDate = endDate;
+
+      if (!startDate || !endDate) {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+
+        if (timePeriod === "current") {
+          filterStartDate = `${currentYear}-01-01`;
+          filterEndDate = `${currentYear}-12-31`;
+        } else if (timePeriod === "last") {
+          filterStartDate = `${currentYear - 1}-01-01`;
+          filterEndDate = `${currentYear - 1}-12-31`;
+        } else if (timePeriod === "last3") {
+          const threeMonthsAgo = new Date(now);
+          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+          filterStartDate = threeMonthsAgo.toISOString().split("T")[0];
+          filterEndDate = now.toISOString().split("T")[0];
+        }
+      }
 
       const [paymentsRes, expensesRes] = await Promise.all([
         supabase
           .from("rent_payments")
           .select("*")
-          .gte("due_date", startDate)
-          .lte("due_date", endDate)
-          .eq("status", "paid"),
+          .gte("due_date", filterStartDate)
+          .lte("due_date", filterEndDate)
+          .eq("payment_status", "paid"),
         supabase
           .from("expenses")
           .select("*")
-          .gte("expense_date", startDate)
-          .lte("expense_date", endDate)
-          .eq("payment_status", "paid"),
+          .gte("expense_date", filterStartDate)
+          .lte("expense_date", filterEndDate)
+          .eq("status", "paid"),
       ]);
 
       const payments = paymentsRes.data || [];
@@ -72,13 +91,24 @@ export default function CashflowView() {
 
       const data: MonthlyData[] = [];
 
+      const start = new Date(filterStartDate);
+      const end = new Date(filterEndDate);
+      const startYear = start.getFullYear();
+      const endYear = end.getFullYear();
+
       for (let month = 0; month < 12; month++) {
         const monthIncome = payments
-          .filter((p) => new Date(p.due_date).getMonth() === month)
+          .filter((p) => {
+            const date = new Date(p.due_date);
+            return date.getMonth() === month && date >= start && date <= end;
+          })
           .reduce((sum, p) => sum + p.amount, 0);
 
         const monthExpenses = expenses
-          .filter((e) => new Date(e.expense_date).getMonth() === month)
+          .filter((e) => {
+            const date = new Date(e.expense_date);
+            return date.getMonth() === month && date >= start && date <= end;
+          })
           .reduce((sum, e) => sum + e.amount, 0);
 
         data.push({
@@ -115,42 +145,48 @@ export default function CashflowView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <div className="flex items-center gap-4">
           <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            value={timePeriod}
+            onChange={(e) => {
+              setTimePeriod(e.target.value as "current" | "last" | "last3");
+              setStartDate("");
+              setEndDate("");
+            }}
             className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
           >
-            {[2024, 2023, 2022, 2021].map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
+            <option value="current">Aktuelles Jahr</option>
+            <option value="last">Letztes Jahr</option>
+            <option value="last3">Letzte 3 Monate</option>
           </select>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setViewMode("monthly")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              viewMode === "monthly"
-                ? "bg-primary-blue text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            Monatlich
-          </button>
-          <button
-            onClick={() => setViewMode("yearly")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              viewMode === "yearly"
-                ? "bg-primary-blue text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            Jährlich
-          </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">Von:</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                if (e.target.value) setTimePeriod("current");
+              }}
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">Bis:</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                if (e.target.value) setTimePeriod("current");
+              }}
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -210,7 +246,7 @@ export default function CashflowView() {
 
       <div className="bg-white rounded-lg p-6">
         <h3 className="text-lg font-semibold text-dark mb-6">
-          Cashflow-Übersicht {selectedYear}
+          Cashflow-Übersicht {new Date().getFullYear()}
         </h3>
 
         <div className="space-y-4">
@@ -266,7 +302,7 @@ export default function CashflowView() {
           <div className="text-sm text-blue-900">
             <p className="font-semibold mb-1">Cashflow-Analyse:</p>
             <p>
-              Im Jahr {selectedYear} haben Sie einen{" "}
+              Im ausgewählten Zeitraum haben Sie einen{" "}
               {totalCashflow >= 0 ? "positiven" : "negativen"} Cashflow von{" "}
               <span className="font-semibold">
                 {totalCashflow.toFixed(2)} €
