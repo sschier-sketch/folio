@@ -60,7 +60,15 @@ export default function TenantPortalDocuments({
         unitDocIds = unitAssociations?.map(a => a.document_id) || [];
       }
 
-      const allDocIds = [...new Set([...propertyDocIds, ...unitDocIds])];
+      const { data: tenantAssociations } = await supabase
+        .from("document_associations")
+        .select("document_id")
+        .eq("association_type", "tenant")
+        .eq("association_id", tenantId);
+
+      const tenantDocIds = tenantAssociations?.map(a => a.document_id) || [];
+
+      const allDocIds = [...new Set([...propertyDocIds, ...unitDocIds, ...tenantDocIds])];
 
       if (allDocIds.length > 0) {
         const { data, error } = await supabase

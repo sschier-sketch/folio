@@ -22,11 +22,14 @@ import {
   FileText,
   Calculator,
   Files,
+  Bell,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
+import { useSubscription } from "../hooks/useSubscription";
 import PropertiesView from "./PropertiesView";
 import TenantsView from "./TenantsView";
 import MieterportalView from "./MieterportalView";
@@ -41,6 +44,7 @@ import TemplatesView from "./TemplatesView";
 import BillingView from "./BillingView";
 import TicketsView from "./TicketsView";
 import Footer from "./Footer";
+import SystemUpdatesModal from "./SystemUpdatesModal";
 type View =
   | "home"
   | "properties"
@@ -66,9 +70,12 @@ export default function Dashboard() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedPropertyTab, setSelectedPropertyTab] = useState<string | null>(null);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [showUpdatesModal, setShowUpdatesModal] = useState(false);
+  const [hasNewUpdates, setHasNewUpdates] = useState(false);
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
+  const { isPremium } = useSubscription();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -130,6 +137,42 @@ export default function Dashboard() {
       window.history.replaceState({}, "", "/dashboard");
     }
   }, []);
+
+  useEffect(() => {
+    async function checkForNewUpdates() {
+      if (!user) return;
+
+      try {
+        const { data: viewedUpdates } = await supabase
+          .from("user_update_views")
+          .select("update_id")
+          .eq("user_id", user.id);
+
+        const viewedIds = viewedUpdates?.map((v) => v.update_id) || [];
+
+        const { data: updatesData } = await supabase
+          .from("system_updates")
+          .select("id, update_type")
+          .eq("is_published", true);
+
+        const relevantUpdates = (updatesData || []).filter(
+          (update) =>
+            update.update_type === "free" ||
+            (update.update_type === "premium" && isPremium)
+        );
+
+        const hasNew = relevantUpdates.some(
+          (update) => !viewedIds.includes(update.id)
+        );
+
+        setHasNewUpdates(hasNew);
+      } catch (error) {
+        console.error("Error checking for new updates:", error);
+      }
+    }
+
+    checkForNewUpdates();
+  }, [user, isPremium]);
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {" "}
@@ -190,6 +233,16 @@ export default function Dashboard() {
                   </svg>
                 </button>
               </div>
+              <button
+                onClick={() => setShowUpdatesModal(true)}
+                className="relative p-2 text-gray-400 hover:text-dark transition-colors rounded-lg hover:bg-gray-50"
+                title="Updates"
+              >
+                <Bell className="w-5 h-5" />
+                {hasNewUpdates && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                )}
+              </button>
               <div className="relative" ref={dropdownRef}>
                 {" "}
                 <button
@@ -479,6 +532,13 @@ export default function Dashboard() {
         </div>{" "}
       </div>{" "}
       <Footer />{" "}
+      <SystemUpdatesModal
+        isOpen={showUpdatesModal}
+        onClose={() => {
+          setShowUpdatesModal(false);
+          setHasNewUpdates(false);
+        }}
+      />
     </div>
   );
 }

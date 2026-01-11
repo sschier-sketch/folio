@@ -15,11 +15,13 @@ import {
   ArrowLeft,
   MessageSquare,
   FileText,
+  Bell,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
 import { AdminEmailTemplatesView } from "../components/AdminEmailTemplatesView";
 import { AdminTemplatesView } from "../components/AdminTemplatesView";
+import AdminSystemUpdatesView from "../components/AdminSystemUpdatesView";
 interface UserData {
   id: string;
   email: string;
@@ -39,7 +41,7 @@ export function Admin() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "tickets" | "templates" | "document_templates"
+    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates"
   >("overview");
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -214,6 +216,13 @@ export function Admin() {
           >
             {" "}
             <FileText className="w-4 h-4 inline mr-2" /> Dokument-Vorlagen{" "}
+          </button>{" "}
+          <button
+            onClick={() => setActiveTab("system_updates")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "system_updates" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
+          >
+            {" "}
+            <Bell className="w-4 h-4 inline mr-2" /> System-Updates{" "}
           </button>{" "}
         </div>{" "}
         {activeTab === "overview" && (
@@ -428,6 +437,7 @@ export function Admin() {
         {activeTab === "tickets" && <AdminTicketsView />}{" "}
         {activeTab === "templates" && <AdminEmailTemplatesView />}{" "}
         {activeTab === "document_templates" && <AdminTemplatesView />}{" "}
+        {activeTab === "system_updates" && <AdminSystemUpdatesView />}{" "}
       </div>{" "}
     </div>
   );
