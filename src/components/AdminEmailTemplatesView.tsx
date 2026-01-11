@@ -75,11 +75,33 @@ export function AdminEmailTemplatesView() {
       setSaving(false);
     }
   }
+  function getVariableLabel(variable: string): string {
+    const labels: Record<string, string> = {
+      tenant_name: "Mieter Name",
+      tenant_email: "Mieter E-Mail",
+      portal_link: "Portal Link",
+      landlord_name: "Vermieter Name",
+      landlord_email: "Vermieter E-Mail",
+      property_address: "Immobilien Adresse",
+      property_name: "Immobilien Name",
+      contract_start: "Vertragsbeginn",
+      contract_end: "Vertragsende",
+      rent_amount: "Miete Betrag",
+      ticket_number: "Ticket Nummer",
+      ticket_subject: "Ticket Betreff",
+      ticket_message: "Ticket Nachricht",
+      reply_message: "Antwort Nachricht",
+      reset_link: "Passwort zurücksetzen Link",
+      user_email: "Benutzer E-Mail",
+    };
+    return labels[variable] || variable;
+  }
+
   function replaceVariables(content: string, variables: string[]): string {
     let result = content;
     variables.forEach((variable) => {
       const placeholder = `{{${variable}}}`;
-      const exampleValue = `[${variable}]`;
+      const exampleValue = `[${getVariableLabel(variable)}]`;
       result = result.replace(new RegExp(placeholder, "g"), exampleValue);
     });
     return result;
@@ -253,10 +275,13 @@ export function AdminEmailTemplatesView() {
                         {editedTemplate.variables.map((variable) => (
                           <span
                             key={variable}
-                            className="inline-flex items-center px-3 py-1 bg-primary-blue/10 text-primary-blue text-xs font-mono rounded-full"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-blue/10 text-primary-blue text-xs rounded-full"
+                            title={`{{${variable}}}`}
                           >
                             {" "}
-                            {`{{${variable}}}`}{" "}
+                            <span className="font-mono">{`{{${variable}}}`}</span>
+                            <span className="text-gray-500">—</span>
+                            <span className="font-medium">{getVariableLabel(variable)}</span>
                           </span>
                         ))}{" "}
                       </div>{" "}

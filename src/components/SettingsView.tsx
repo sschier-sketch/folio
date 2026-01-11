@@ -271,24 +271,34 @@ export default function SettingsView({
             : "Manage your settings and preferences."}{" "}
         </p>{" "}
       </div>{" "}
-      <div className="mb-6 border-b">
-        {" "}
-        <nav className="flex gap-1">
-          {" "}
-          {tabs
-            .filter((tab) => tab.show !== false)
-            .map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-3 font-medium border-b-2 transition-colors ${activeTab === tab.id ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark hover:"}`}
-              >
-                {" "}
-                <tab.icon className="w-5 h-5" /> {tab.label}{" "}
-              </button>
-            ))}{" "}
-        </nav>{" "}
-      </div>{" "}
+      <div className="bg-white rounded-lg mb-6">
+        <div className="overflow-x-auto">
+          <div className="flex">
+            {tabs
+              .filter((tab) => tab.show !== false)
+              .map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? "text-primary-blue"
+                        : "text-gray-400 hover:text-dark"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {tab.label}
+                    {activeTab === tab.id && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+                    )}
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      </div>
       {activeTab === "profile" && (
         <div className="bg-white rounded shadow-sm p-6">
           {" "}

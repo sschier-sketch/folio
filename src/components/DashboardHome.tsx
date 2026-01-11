@@ -28,6 +28,9 @@ interface Stats {
   unpaidRent: number;
   overdueRent: number;
   occupancyRate: number;
+  rentedUnits: number;
+  totalUnits: number;
+  tenantsMovingOutSoon: number;
 }
 
 interface MaintenanceTask {
@@ -88,6 +91,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
     unpaidRent: 0,
     overdueRent: 0,
     occupancyRate: 0,
+    rentedUnits: 0,
+    totalUnits: 0,
+    tenantsMovingOutSoon: 0,
   });
   const [loading, setLoading] = useState(true);
   const [upcomingTasks, setUpcomingTasks] = useState<MaintenanceTask[]>([]);
@@ -181,12 +187,25 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
 
       const { data: unitsData } = await supabase
         .from("property_units")
-        .select("id, rental_contract_id")
+        .select("id, rental_contract_id, status")
         .eq("user_id", user.id);
 
       const totalUnits = unitsData?.length || 0;
-      const rentedUnits = unitsData?.filter(u => u.rental_contract_id).length || 0;
+      const rentedUnits = unitsData?.filter(u => u.status === 'rented').length || 0;
       const occupancyRate = totalUnits > 0 ? Math.round((rentedUnits / totalUnits) * 100) : 100;
+
+      const ninetyDaysFromNow = new Date();
+      ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
+
+      const { data: movingOutContracts } = await supabase
+        .from("rental_contracts")
+        .select("id")
+        .eq("user_id", user.id)
+        .not("contract_end", "is", null)
+        .lte("contract_end", ninetyDaysFromNow.toISOString().split("T")[0])
+        .gte("contract_end", new Date().toISOString().split("T")[0]);
+
+      const tenantsMovingOutSoon = movingOutContracts?.length || 0;
 
       setStats({
         propertiesCount,
@@ -199,6 +218,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         unpaidRent,
         overdueRent,
         occupancyRate,
+        rentedUnits,
+        totalUnits,
+        tenantsMovingOutSoon,
       });
     } catch (error) {
       console.error("Error loading stats:", error);
@@ -405,14 +427,19 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           <div className="text-sm text-gray-400 mb-2">
             {t("dashboard.properties")}
           </div>{" "}
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-emerald-500 h-2 rounded-full transition-all"
-                style={{ width: `${stats.occupancyRate}%` }}
-              ></div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-emerald-500 h-2 rounded-full transition-all"
+                  style={{ width: `${stats.occupancyRate}%` }}
+                ></div>
+              </div>
+              <span className="text-xs font-medium text-gray-600">{stats.occupancyRate}%</span>
             </div>
-            <span className="text-xs font-medium text-gray-600">{stats.occupancyRate}%</span>
+            <div className="text-xs text-gray-500">
+              {stats.rentedUnits} von {stats.totalUnits} {stats.totalUnits === 1 ? 'Einheit' : 'Einheiten'} vermietet
+            </div>
           </div>{" "}
         </div>{" "}
         <div className="bg-white rounded-lg p-6">
@@ -427,9 +454,19 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           <div className="text-3xl font-bold text-dark mb-1">
             {stats.tenantsCount}
           </div>{" "}
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-gray-400 mb-2">
             {t("dashboard.tenants.active")}
-          </div>{" "}
+          </div>
+          {stats.tenantsMovingOutSoon > 0 && (
+            <div className="pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-2 text-xs text-amber-600">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span className="font-medium">
+                  {stats.tenantsMovingOutSoon} {stats.tenantsMovingOutSoon === 1 ? 'Mieter zieht' : 'Mieter ziehen'} in den nächsten 90 Tagen aus
+                </span>
+              </div>
+            </div>
+          )}{" "}
         </div>{" "}
         <div className="bg-white rounded-lg p-6">
           {" "}

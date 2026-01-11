@@ -287,36 +287,38 @@ export default function RentPaymentsView() {
         </p>
       </div>
 
-      <div className="bg-white rounded-lg overflow-hidden">
-        <div className="border-b border-gray-200">
-          <nav className="flex">
+      <div className="bg-white rounded-lg mb-6">
+        <div className="overflow-x-auto">
+          <div className="flex">
             <button
               onClick={() => setActiveTab("payments")}
-              className={`px-6 py-4 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
                 activeTab === "payments"
-                  ? "text-primary-blue border-b-2 border-primary-blue"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "text-primary-blue"
+                  : "text-gray-400 hover:text-dark"
               }`}
             >
-              <div className="flex items-center gap-2">
-                <Coins className="w-4 h-4" />
-                Mieteingänge
-              </div>
+              <Coins className="w-5 h-5" />
+              Mieteingänge
+              {activeTab === "payments" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+              )}
             </button>
             <button
               onClick={() => setActiveTab("dunning")}
-              className={`px-6 py-4 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
                 activeTab === "dunning"
-                  ? "text-primary-blue border-b-2 border-primary-blue"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "text-primary-blue"
+                  : "text-gray-400 hover:text-dark"
               }`}
             >
-              <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4" />
-                Mahnwesen
-              </div>
+              <Bell className="w-5 h-5" />
+              Mahnwesen
+              {activeTab === "dunning" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+              )}
             </button>
-          </nav>
+          </div>
         </div>
       </div>
 

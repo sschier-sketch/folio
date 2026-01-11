@@ -51,34 +51,39 @@ export default function FinancesView() {
         </p>
       </div>
 
-      <div>
-        <div className="flex gap-1 overflow-x-auto">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isDisabled = tab.id === "bank";
-            return (
-              <button
-                key={tab.id}
-                onClick={() => !isDisabled && setActiveTab(tab.id)}
-                disabled={isDisabled}
-                className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors whitespace-nowrap ${
-                  isDisabled
-                    ? "text-gray-300 cursor-not-allowed opacity-50"
-                    : activeTab === tab.id
-                    ? "text-primary-blue border-b-2 border-primary-blue"
-                    : "text-gray-400 hover:text-gray-600"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-                {tab.premium && (
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded">
-                    Premium
-                  </span>
-                )}
-              </button>
-            );
-          })}
+      <div className="bg-white rounded-lg mb-6">
+        <div className="overflow-x-auto">
+          <div className="flex">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isDisabled = tab.id === "bank";
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => !isDisabled && setActiveTab(tab.id)}
+                  disabled={isDisabled}
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+                    isDisabled
+                      ? "text-gray-300 cursor-not-allowed opacity-50"
+                      : activeTab === tab.id
+                      ? "text-primary-blue"
+                      : "text-gray-400 hover:text-dark"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {tab.label}
+                  {tab.premium && (
+                    <span className="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded font-medium">
+                      Pro
+                    </span>
+                  )}
+                  {activeTab === tab.id && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
