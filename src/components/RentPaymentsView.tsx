@@ -24,7 +24,7 @@ interface RentPayment {
   dunning_level?: number;
   last_reminder_sent?: string | null;
   property: { name: string; address: string } | null;
-  property_units?: { unit_number: string } | null;
+  unit?: { unit_number: string } | null;
   rental_contract: {
     tenants: Array<{ first_name: string; last_name: string; email: string }>;
     rent_due_day: number;
@@ -86,7 +86,15 @@ export default function RentPaymentsView() {
       let query = supabase
         .from("rent_payments")
         .select(
-          ` *, property:properties(name, address), property_units(unit_number), rental_contract:rental_contracts( tenants(first_name, last_name, email), rent_due_day ) `,
+          `
+          *,
+          property:properties(name, address),
+          unit:property_units(unit_number),
+          rental_contract:rental_contracts(
+            tenants(first_name, last_name, email),
+            rent_due_day
+          )
+          `
         )
         .eq("user_id", user.id)
         .order("due_date", { ascending: true });

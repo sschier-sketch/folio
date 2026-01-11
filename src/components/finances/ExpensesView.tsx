@@ -130,23 +130,40 @@ export default function ExpensesView() {
           .from('documents')
           .insert({
             user_id: user.id,
-            property_id: formData.property_id,
-            unit_id: formData.unit_id || null,
             file_name: uploadedFile.name,
             file_path: uploadData.path,
             file_type: uploadedFile.type,
             file_size: uploadedFile.size,
             document_type: 'receipt',
-            upload_date: new Date().toISOString()
+            category: 'expense',
+            description: formData.description || 'Ausgabenbeleg'
           })
           .select()
           .single();
 
         if (docError) throw docError;
         documentId = docData.id;
+
+        if (documentId && formData.property_id) {
+          await supabase.from('document_associations').insert({
+            document_id: documentId,
+            association_type: 'property',
+            association_id: formData.property_id,
+            created_by: user.id
+          });
+
+          if (formData.unit_id) {
+            await supabase.from('document_associations').insert({
+              document_id: documentId,
+              association_type: 'unit',
+              association_id: formData.unit_id,
+              created_by: user.id
+            });
+          }
+        }
       }
 
-      const { error } = await supabase.from("expenses").insert({
+      const { data: expenseData, error } = await supabase.from("expenses").insert({
         user_id: user.id,
         property_id: formData.property_id,
         unit_id: formData.unit_id || null,
@@ -165,9 +182,18 @@ export default function ExpensesView() {
         vat_rate: parseFloat(formData.vat_rate),
         due_date: formData.due_date || null,
         document_id: documentId,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      if (documentId && expenseData?.id) {
+        await supabase.from('document_associations').insert({
+          document_id: documentId,
+          association_type: 'expense',
+          association_id: expenseData.id,
+          created_by: user.id
+        });
+      }
 
       alert("Ausgabe erfolgreich gespeichert!");
       setShowAddModal(false);
