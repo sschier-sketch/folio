@@ -23,6 +23,9 @@ import {
   Calculator,
   Files,
   Bell,
+  KeyRound,
+  ExternalLink,
+  Copy,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -72,6 +75,7 @@ export default function Dashboard() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [showUpdatesModal, setShowUpdatesModal] = useState(false);
   const [hasNewUpdates, setHasNewUpdates] = useState(false);
+  const [copiedPortalUrl, setCopiedPortalUrl] = useState(false);
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
@@ -88,6 +92,17 @@ export default function Dashboard() {
     setSelectedPropertyId(propertyId);
     setSelectedPropertyTab(tab || null);
     setCurrentView("properties");
+  };
+
+  const handleCopyPortalUrl = () => {
+    const portalUrl = `${window.location.origin}/mieterportal`;
+    navigator.clipboard.writeText(portalUrl);
+    setCopiedPortalUrl(true);
+    setTimeout(() => setCopiedPortalUrl(false), 2000);
+  };
+
+  const handleOpenPortal = () => {
+    window.open("/mieterportal", "_blank");
   };
 
   const navigation = [
@@ -418,6 +433,42 @@ export default function Dashboard() {
                 );
               })}{" "}
             </nav>{" "}
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+              {" "}
+              <div className="flex items-center gap-3 mb-3">
+                {" "}
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  {" "}
+                  <KeyRound className="w-5 h-5" />{" "}
+                </div>{" "}
+                <h3 className="font-semibold">Mieterportal</h3>{" "}
+              </div>{" "}
+              <p className="text-blue-50 text-sm mb-3">
+                Teilen Sie den Zugang mit Ihren Mietern
+              </p>{" "}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCopyPortalUrl}
+                  className="flex-1 bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  {copiedPortalUrl ? (
+                    <>
+                      <CheckCircle className="w-4 h-4" /> Kopiert!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" /> Link
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleOpenPortal}
+                  className="flex-1 bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" /> Öffnen
+                </button>
+              </div>{" "}
+            </div>{" "}
             <div
               onClick={() => {
                 setCurrentView("referral");
@@ -481,6 +532,42 @@ export default function Dashboard() {
                 );
               })}{" "}
             </nav>{" "}
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+              {" "}
+              <div className="flex items-center gap-3 mb-3">
+                {" "}
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  {" "}
+                  <KeyRound className="w-5 h-5" />{" "}
+                </div>{" "}
+                <h3 className="font-semibold">Mieterportal</h3>{" "}
+              </div>{" "}
+              <p className="text-blue-50 text-sm mb-3">
+                Teilen Sie den Zugang mit Ihren Mietern
+              </p>{" "}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCopyPortalUrl}
+                  className="flex-1 bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  {copiedPortalUrl ? (
+                    <>
+                      <CheckCircle className="w-4 h-4" /> Kopiert!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" /> Link
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleOpenPortal}
+                  className="flex-1 bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" /> Öffnen
+                </button>
+              </div>{" "}
+            </div>{" "}
             <div
               onClick={() => setCurrentView("referral")}
               className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 text-white cursor-pointer hover:transition-shadow"
