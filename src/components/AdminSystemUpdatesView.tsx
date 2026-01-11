@@ -195,15 +195,6 @@ export default function AdminSystemUpdatesView() {
                   <h3 className="text-lg font-semibold text-dark">
                     {update.title}
                   </h3>
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      update.update_type === "premium"
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-blue-100 text-blue-700"
-                    }`}
-                  >
-                    {update.update_type === "premium" ? "Premium" : "Free"}
-                  </span>
                   {update.version && (
                     <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600">
                       v{update.version}
@@ -324,40 +315,19 @@ export default function AdminSystemUpdatesView() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">
-                    Typ
-                  </label>
-                  <select
-                    value={formData.update_type}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        update_type: e.target.value as "free" | "premium",
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  >
-                    <option value="free">Free</option>
-                    <option value="premium">Premium</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">
-                    Version (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.version}
-                    onChange={(e) =>
-                      setFormData({ ...formData, version: e.target.value })
-                    }
-                    placeholder="1.2.0"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-dark mb-2">
+                  Version (optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.version}
+                  onChange={(e) =>
+                    setFormData({ ...formData, version: e.target.value })
+                  }
+                  placeholder="1.2.0"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
               </div>
 
               <div className="flex items-center gap-2">
