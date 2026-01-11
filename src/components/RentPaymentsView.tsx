@@ -91,8 +91,8 @@ export default function RentPaymentsView() {
           property:properties(name, address),
           unit:property_units(unit_number),
           rental_contract:rental_contracts(
-            tenants(first_name, last_name, email),
-            rent_due_day
+            rent_due_day,
+            tenants!contract_id(first_name, last_name, email)
           )
           `
         )

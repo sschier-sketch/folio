@@ -73,7 +73,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         supabase.from("properties").select("id, name").order("name"),
         supabase
           .from("rental_contracts")
-          .select("id, tenants(first_name, last_name)")
+          .select("id, tenants!contract_id(first_name, last_name)")
           .order("contract_start", { ascending: false }),
         supabase.from("property_units").select("id, unit_number, property_id").order("unit_number"),
         supabase.from("tenants").select("id, first_name, last_name").order("last_name"),
