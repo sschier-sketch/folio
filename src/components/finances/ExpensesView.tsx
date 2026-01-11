@@ -13,6 +13,10 @@ interface Expense {
   category_id: string;
   property_id: string;
   tenant_id: string | null;
+  unit_id: string | null;
+  recipient: string | null;
+  is_apportionable: boolean;
+  due_date: string | null;
 }
 
 interface Property {
@@ -31,24 +35,35 @@ interface Tenant {
   name: string;
 }
 
+interface Unit {
+  id: string;
+  unit_number: string;
+  property_id: string;
+}
+
 export default function ExpensesView() {
   const { user } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
 
   const [formData, setFormData] = useState({
     property_id: "",
+    unit_id: "",
     tenant_id: "",
     category_id: "",
     amount: "",
     expense_date: new Date().toISOString().split("T")[0],
     description: "",
+    recipient: "",
     notes: "",
     payment_status: "pending",
+    is_apportionable: false,
+    due_date: "",
   });
 
   useEffect(() => {
@@ -61,7 +76,7 @@ export default function ExpensesView() {
     try {
       setLoading(true);
 
-      const [expensesRes, propertiesRes, categoriesRes, tenantsRes] =
+      const [expensesRes, propertiesRes, categoriesRes, tenantsRes, unitsRes] =
         await Promise.all([
           supabase
             .from("expenses")
@@ -70,12 +85,14 @@ export default function ExpensesView() {
           supabase.from("properties").select("id, name").order("name"),
           supabase.from("expense_categories").select("*").order("name"),
           supabase.from("tenants").select("id, name").order("name"),
+          supabase.from("property_units").select("id, unit_number, property_id").order("unit_number"),
         ]);
 
       if (expensesRes.data) setExpenses(expensesRes.data);
       if (propertiesRes.data) setProperties(propertiesRes.data);
       if (categoriesRes.data) setCategories(categoriesRes.data);
       if (tenantsRes.data) setTenants(tenantsRes.data);
+      if (unitsRes.data) setUnits(unitsRes.data);
     } catch (error) {
       console.error("Error loading expenses:", error);
     } finally {
@@ -90,13 +107,17 @@ export default function ExpensesView() {
       const { error } = await supabase.from("expenses").insert({
         user_id: user.id,
         property_id: formData.property_id,
+        unit_id: formData.unit_id || null,
         tenant_id: formData.tenant_id || null,
         category_id: formData.category_id,
         amount: parseFloat(formData.amount) || 0,
         expense_date: formData.expense_date,
         description: formData.description,
+        recipient: formData.recipient || null,
         notes: formData.notes,
         payment_status: formData.payment_status,
+        is_apportionable: formData.is_apportionable,
+        due_date: formData.due_date || null,
       });
 
       if (error) throw error;
@@ -104,13 +125,17 @@ export default function ExpensesView() {
       setShowAddModal(false);
       setFormData({
         property_id: "",
+        unit_id: "",
         tenant_id: "",
         category_id: "",
         amount: "",
         expense_date: new Date().toISOString().split("T")[0],
         description: "",
+        recipient: "",
         notes: "",
         payment_status: "pending",
+        is_apportionable: false,
+        due_date: "",
       });
       loadData();
     } catch (error) {
@@ -355,18 +380,20 @@ export default function ExpensesView() {
                   Einheit (optional)
                 </label>
                 <select
-                  value={formData.tenant_id}
+                  value={formData.unit_id}
                   onChange={(e) =>
-                    setFormData({ ...formData, tenant_id: e.target.value })
+                    setFormData({ ...formData, unit_id: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   <option value="">Keine Einheit</option>
-                  {tenants.map((tenant) => (
-                    <option key={tenant.id} value={tenant.id}>
-                      {tenant.name}
-                    </option>
-                  ))}
+                  {units
+                    .filter(u => !formData.property_id || u.property_id === formData.property_id)
+                    .map((unit) => (
+                      <option key={unit.id} value={unit.id}>
+                        Einheit {unit.unit_number}
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -441,6 +468,35 @@ export default function ExpensesView() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Empfänger/Lieferant (optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.recipient}
+                  onChange={(e) =>
+                    setFormData({ ...formData, recipient: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. Firma Müller GmbH"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Fälligkeitsdatum (optional)
+                </label>
+                <input
+                  type="date"
+                  value={formData.due_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, due_date: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Notizen (optional)
                 </label>
                 <textarea
@@ -452,6 +508,21 @@ export default function ExpensesView() {
                   rows={3}
                   placeholder="Zusätzliche Informationen..."
                 />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="is_apportionable"
+                  checked={formData.is_apportionable}
+                  onChange={(e) =>
+                    setFormData({ ...formData, is_apportionable: e.target.checked })
+                  }
+                  className="w-4 h-4 text-primary-blue border-gray-300 rounded focus:ring-2 focus:ring-primary-blue"
+                />
+                <label htmlFor="is_apportionable" className="text-sm font-medium text-gray-700">
+                  Umlagefähig (für Nebenkostenabrechnung)
+                </label>
               </div>
 
               <div>

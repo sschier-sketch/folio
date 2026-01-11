@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { Bell, AlertTriangle, Send, CheckCircle, TrendingUp, Mail } from "lucide-react";
+import { Bell, AlertTriangle, Send, CheckCircle, TrendingUp, Mail, FileText, Clock } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import DunningTemplates from "./DunningTemplates";
+import DunningHistory from "./DunningHistory";
 
 interface RentPayment {
   id: string;
@@ -41,6 +43,7 @@ interface DunningReminderHistory {
 
 export default function DunningView({ payments, onReloadPayments }: DunningViewProps) {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<"overview" | "templates" | "history">("overview");
   const [stats, setStats] = useState<DunningStats>({
     openItems: 0,
     remindersSent: 0,
@@ -150,31 +153,43 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
     setSendingReminder(payment.id);
 
     try {
+      const { data: template } = await supabase
+        .from("dunning_email_templates")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("dunning_level", level)
+        .single();
+
+      if (!template) {
+        alert("Kein Template gefunden. Bitte konfigurieren Sie die Email-Templates.");
+        setSendingReminder(null);
+        return;
+      }
+
       const tenant = payment.rental_contract.tenants[0];
       const tenantEmail = tenant.email;
       const tenantName = `${tenant.first_name} ${tenant.last_name}`;
       const propertyName = payment.property?.name || "Ihre Immobilie";
       const unitNumber = payment.property_units?.unit_number || "";
+      const propertyNameFull = `${propertyName}${unitNumber ? ` (Einheit ${unitNumber})` : ""}`;
 
-      let subject = "";
-      let message = "";
+      const mahngebuehr = 5.00;
+      const outstandingAmount = payment.amount - payment.paid_amount;
+      const totalAmount = outstandingAmount + mahngebuehr;
 
-      switch (level) {
-        case 1:
-          subject = "Freundliche Erinnerung: Mietezahlung";
-          message = `Sehr geehrte/r ${tenantName},\n\nwir möchten Sie freundlich daran erinnern, dass die Miete für ${propertyName}${unitNumber ? ` (Einheit ${unitNumber})` : ""} in Höhe von ${formatCurrency(payment.amount)} zum ${formatDate(payment.due_date)} fällig war.\n\nMöglicherweise haben Sie die Überweisung vergessen. Bitte überweisen Sie den Betrag zeitnah.\n\nMit freundlichen Grüßen`;
-          break;
-        case 2:
-          subject = "Zahlungsaufforderung: Ausstehende Miete";
-          message = `Sehr geehrte/r ${tenantName},\n\ntrotz freundlicher Erinnerung ist die Miete für ${propertyName}${unitNumber ? ` (Einheit ${unitNumber})` : ""} in Höhe von ${formatCurrency(payment.amount)} noch nicht eingegangen.\n\nWir fordern Sie hiermit formell auf, den Betrag innerhalb von 7 Tagen zu überweisen. Andernfalls müssen wir weitere Schritte einleiten.\n\nMit freundlichen Grüßen`;
-          break;
-        case 3:
-          const mahngebuehr = 5.00;
-          const totalAmount = payment.amount - payment.paid_amount + mahngebuehr;
-          subject = "MAHNUNG: Überfällige Mietzahlung";
-          message = `Sehr geehrte/r ${tenantName},\n\ntrotz mehrfacher Erinnerung ist die Miete für ${propertyName}${unitNumber ? ` (Einheit ${unitNumber})` : ""} in Höhe von ${formatCurrency(payment.amount)} noch nicht eingegangen.\n\nWir mahnen Sie hiermit offiziell und fordern Sie auf, den ausstehenden Betrag zzgl. Mahngebühren in Höhe von ${formatCurrency(mahngebuehr)} (Gesamt: ${formatCurrency(totalAmount)}) innerhalb von 5 Tagen zu überweisen.\n\nBei weiterer Nichtzahlung behalten wir uns rechtliche Schritte vor.\n\nMit freundlichen Grüßen`;
-          break;
-      }
+      let subject = template.subject
+        .replace(/\[TENANT_NAME\]/g, tenantName)
+        .replace(/\[PROPERTY_NAME\]/g, propertyNameFull)
+        .replace(/\[AMOUNT\]/g, formatCurrency(outstandingAmount))
+        .replace(/\[DUE_DATE\]/g, formatDate(payment.due_date))
+        .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount));
+
+      let message = template.message
+        .replace(/\[TENANT_NAME\]/g, tenantName)
+        .replace(/\[PROPERTY_NAME\]/g, propertyNameFull)
+        .replace(/\[AMOUNT\]/g, formatCurrency(outstandingAmount))
+        .replace(/\[DUE_DATE\]/g, formatDate(payment.due_date))
+        .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount));
 
       const { data: reminderData, error: reminderError } = await supabase
         .from("rent_payment_reminders")
@@ -241,7 +256,55 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg p-6">
+      <div className="bg-white rounded-lg overflow-hidden">
+        <div className="border-b border-gray-200">
+          <nav className="flex">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`px-6 py-4 text-sm font-medium transition-colors ${
+                activeTab === "overview"
+                  ? "text-primary-blue border-b-2 border-primary-blue"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                Übersicht
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab("templates")}
+              className={`px-6 py-4 text-sm font-medium transition-colors ${
+                activeTab === "templates"
+                  ? "text-primary-blue border-b-2 border-primary-blue"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Email-Templates
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab("history")}
+              className={`px-6 py-4 text-sm font-medium transition-colors ${
+                activeTab === "history"
+                  ? "text-primary-blue border-b-2 border-primary-blue"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Historie
+              </div>
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      {activeTab === "overview" && (
+        <>
+          <div className="bg-white rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
             <Bell className="w-6 h-6 text-amber-600" />
@@ -472,6 +535,12 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
           </div>
         </div>
       </div>
+        </>
+      )}
+
+      {activeTab === "templates" && <DunningTemplates />}
+
+      {activeTab === "history" && <DunningHistory />}
     </div>
   );
 }
