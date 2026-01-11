@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Plus, TrendingDown, Trash2, Building, Tag } from "lucide-react";
+import { Plus, TrendingDown, Trash2, Building, Tag, Upload, X, Filter, Edit, FileText } from "lucide-react";
 import { supabase } from "../../lib/supabase";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface Expense {
   id: string;
