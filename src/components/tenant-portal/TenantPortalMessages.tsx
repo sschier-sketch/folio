@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Send, FileText, Download } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
 interface Message {
@@ -8,6 +8,9 @@ interface Message {
   content: string;
   communication_type: string;
   created_at: string;
+  attachment_id?: string;
+  attachment_name?: string;
+  attachment_path?: string;
 }
 
 interface TenantPortalMessagesProps {
@@ -28,15 +31,46 @@ export default function TenantPortalMessages({
 
   const loadMessages = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: commsData, error } = await supabase
         .from("tenant_communications")
         .select("*")
         .eq("tenant_id", tenantId)
         .eq("is_internal", false)
+        .eq("is_deleted", false)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setMessages(data || []);
+
+      const messagesWithAttachments = [];
+      if (commsData) {
+        for (const comm of commsData) {
+          const { data: associations } = await supabase
+            .from("document_associations")
+            .select(`
+              document_id,
+              documents(
+                id,
+                file_name,
+                file_path
+              )
+            `)
+            .eq("association_type", "tenant")
+            .eq("association_id", tenantId);
+
+          const doc = associations?.find((assoc: any) => {
+            return assoc.documents && comm.created_at;
+          })?.documents;
+
+          messagesWithAttachments.push({
+            ...comm,
+            attachment_id: doc?.id,
+            attachment_name: doc?.file_name,
+            attachment_path: doc?.file_path,
+          });
+        }
+      }
+
+      setMessages(messagesWithAttachments || []);
     } catch (error) {
       console.error("Error loading messages:", error);
     } finally {
@@ -115,6 +149,28 @@ export default function TenantPortalMessages({
               <p className="text-sm text-dark whitespace-pre-wrap">
                 {message.content}
               </p>
+            </div>
+          )}
+
+          {message.attachment_name && message.attachment_path && (
+            <div className="mt-4 flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <FileText className="w-5 h-5 text-primary-blue" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-dark">{message.attachment_name}</p>
+                <p className="text-xs text-gray-500">Anhang</p>
+              </div>
+              <button
+                onClick={async () => {
+                  const { data } = supabase.storage
+                    .from("documents")
+                    .getPublicUrl(message.attachment_path!);
+                  window.open(data.publicUrl, "_blank");
+                }}
+                className="flex items-center gap-1 px-3 py-1.5 bg-primary-blue text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </button>
             </div>
           )}
         </div>

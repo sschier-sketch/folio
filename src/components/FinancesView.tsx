@@ -55,12 +55,16 @@ export default function FinancesView() {
         <div className="flex gap-1 overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon;
+            const isDisabled = tab.id === "bank";
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => !isDisabled && setActiveTab(tab.id)}
+                disabled={isDisabled}
                 className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
+                  isDisabled
+                    ? "text-gray-300 cursor-not-allowed opacity-50"
+                    : activeTab === tab.id
                     ? "text-primary-blue border-b-2 border-primary-blue"
                     : "text-gray-400 hover:text-gray-600"
                 }`}

@@ -74,9 +74,10 @@ interface OpenTicket {
 interface DashboardHomeProps {
   onNavigateToTenant?: (tenantId: string) => void;
   onNavigateToProperty?: (propertyId: string, tab?: string) => void;
+  onChangeView?: (view: string) => void;
 }
 
-export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty }: DashboardHomeProps = {}) {
+export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty, onChangeView }: DashboardHomeProps = {}) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -567,7 +568,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           <div className="grid grid-cols-2 gap-4">
             {" "}
             <button
-              onClick={() => window.location.href = '/dashboard?view=properties'}
+              onClick={() => onChangeView?.('properties')}
               className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
@@ -580,7 +581,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               </span>{" "}
             </button>{" "}
             <button
-              onClick={() => window.location.href = '/dashboard?view=tenants'}
+              onClick={() => onChangeView?.('tenants')}
               className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
@@ -593,7 +594,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               </span>{" "}
             </button>{" "}
             <button
-              onClick={() => window.location.href = '/dashboard?view=payments'}
+              onClick={() => onChangeView?.('payments')}
               className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
@@ -606,7 +607,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               </span>{" "}
             </button>{" "}
             <button
-              onClick={() => window.location.href = '/dashboard?view=financial'}
+              onClick={() => onChangeView?.('financial')}
               className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
