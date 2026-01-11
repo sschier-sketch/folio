@@ -16,6 +16,7 @@ import {
   MessageSquare,
   FileText,
   Bell,
+  ArrowUpDown,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -26,8 +27,12 @@ interface UserData {
   id: string;
   email: string;
   created_at: string;
+  last_sign_in_at?: string;
   subscription_plan?: string;
   subscription_status?: string;
+  first_name?: string;
+  last_name?: string;
+  company_name?: string;
   properties_count?: number;
   tenants_count?: number;
 }
@@ -51,6 +56,8 @@ export function Admin() {
     monthlyRevenue: 0,
   });
   const [loadingData, setLoadingData] = useState(true);
+  const [sortField, setSortField] = useState<keyof UserData>("created_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   console.log(
     "Admin Component - isAdmin:",
     isAdmin,
@@ -107,6 +114,34 @@ export function Admin() {
     return <Navigate to="/dashboard" replace />;
   }
   console.log("Admin Component - User is admin, rendering admin interface");
+
+  function handleSort(field: keyof UserData) {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  }
+
+  const sortedUsers = [...users].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+
+    if (aValue === undefined || aValue === null) return 1;
+    if (bValue === undefined || bValue === null) return -1;
+
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return sortDirection === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+
+    return sortDirection === "asc"
+      ? (aValue > bValue ? 1 : -1)
+      : (bValue > aValue ? 1 : -1);
+  });
+
   async function handleCancelSubscription(userId: string) {
     if (!confirm("Möchten Sie das Abonnement dieses Nutzers wirklich beenden?"))
       return;
@@ -339,21 +374,77 @@ export function Admin() {
                     {" "}
                     <tr>
                       {" "}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort("email")}
+                      >
                         {" "}
-                        E-Mail{" "}
+                        <div className="flex items-center gap-1">
+                          E-Mail <ArrowUpDown className="w-3 h-3" />
+                        </div>
                       </th>{" "}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort("first_name")}
+                      >
                         {" "}
-                        Registriert{" "}
+                        <div className="flex items-center gap-1">
+                          Vorname <ArrowUpDown className="w-3 h-3" />
+                        </div>
                       </th>{" "}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort("last_name")}
+                      >
                         {" "}
-                        Tarif{" "}
+                        <div className="flex items-center gap-1">
+                          Nachname <ArrowUpDown className="w-3 h-3" />
+                        </div>
                       </th>{" "}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort("company_name")}
+                      >
                         {" "}
-                        Status{" "}
+                        <div className="flex items-center gap-1">
+                          Firma <ArrowUpDown className="w-3 h-3" />
+                        </div>
+                      </th>{" "}
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort("created_at")}
+                      >
+                        {" "}
+                        <div className="flex items-center gap-1">
+                          Registriert <ArrowUpDown className="w-3 h-3" />
+                        </div>
+                      </th>{" "}
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort("last_sign_in_at")}
+                      >
+                        {" "}
+                        <div className="flex items-center gap-1">
+                          Letzter Login <ArrowUpDown className="w-3 h-3" />
+                        </div>
+                      </th>{" "}
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort("subscription_plan")}
+                      >
+                        {" "}
+                        <div className="flex items-center gap-1">
+                          Tarif <ArrowUpDown className="w-3 h-3" />
+                        </div>
+                      </th>{" "}
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort("subscription_status")}
+                      >
+                        {" "}
+                        <div className="flex items-center gap-1">
+                          Status <ArrowUpDown className="w-3 h-3" />
+                        </div>
                       </th>{" "}
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         {" "}
@@ -363,7 +454,7 @@ export function Admin() {
                   </thead>{" "}
                   <tbody className="divide-y divide-slate-200">
                     {" "}
-                    {users.map((user) => (
+                    {sortedUsers.map((user) => (
                       <tr key={user.id} className="hover:bg-gray-50">
                         {" "}
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
@@ -372,9 +463,27 @@ export function Admin() {
                         </td>{" "}
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                           {" "}
+                          {user.first_name || "-"}{" "}
+                        </td>{" "}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                          {" "}
+                          {user.last_name || "-"}{" "}
+                        </td>{" "}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                          {" "}
+                          {user.company_name || "-"}{" "}
+                        </td>{" "}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                          {" "}
                           {new Date(user.created_at).toLocaleDateString(
                             "de-DE",
                           )}{" "}
+                        </td>{" "}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                          {" "}
+                          {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString(
+                            "de-DE",
+                          ) : "-"}{" "}
                         </td>{" "}
                         <td className="px-6 py-4 whitespace-nowrap">
                           {" "}

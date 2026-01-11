@@ -68,7 +68,8 @@ export default function CashflowView() {
           .select("*")
           .gte("expense_date", filterStartDate)
           .lte("expense_date", filterEndDate)
-          .eq("status", "paid"),
+          .eq("is_cashflow_relevant", true)
+          .in("status", ["open", "paid"]),
       ]);
 
       const payments = paymentsRes.data || [];
