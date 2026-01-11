@@ -9,7 +9,7 @@ interface Expense {
   expense_date: string;
   description: string;
   notes: string;
-  payment_status: string;
+  status: string;
   category_id: string;
   property_id: string;
   tenant_id: string | null;
@@ -66,7 +66,7 @@ export default function ExpensesView() {
     description: "",
     recipient: "",
     notes: "",
-    payment_status: "pending",
+    status: "pending",
     is_apportionable: false,
     is_labor_cost: false,
     is_cashflow_relevant: true,
@@ -174,7 +174,7 @@ export default function ExpensesView() {
         description: formData.description,
         recipient: formData.recipient || null,
         notes: formData.notes,
-        payment_status: formData.payment_status,
+        status: formData.status,
         is_apportionable: formData.is_apportionable,
         is_labor_cost: formData.is_labor_cost,
         is_cashflow_relevant: formData.is_cashflow_relevant,
@@ -208,7 +208,7 @@ export default function ExpensesView() {
         description: "",
         recipient: "",
         notes: "",
-        payment_status: "pending",
+        status: "pending",
         is_apportionable: false,
         is_labor_cost: false,
         is_cashflow_relevant: true,
@@ -233,10 +233,10 @@ export default function ExpensesView() {
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const paidExpenses = expenses
-    .filter((e) => e.payment_status === "paid")
+    .filter((e) => e.status === "paid")
     .reduce((sum, e) => sum + e.amount, 0);
   const pendingExpenses = expenses
-    .filter((e) => e.payment_status === "pending")
+    .filter((e) => e.status === "pending")
     .reduce((sum, e) => sum + e.amount, 0);
 
   const getCategoryName = (categoryId: string) => {
@@ -404,7 +404,7 @@ export default function ExpensesView() {
                     <td className="py-4 px-6 text-center">
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
-                          expense.payment_status
+                          expense.status
                         )}`}
                       >
                         {getStatusLabel(expense.payment_status)}
@@ -722,11 +722,11 @@ export default function ExpensesView() {
                   Zahlungsstatus
                 </label>
                 <select
-                  value={formData.payment_status}
+                  value={formData.status}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      payment_status: e.target.value,
+                      status: e.target.value,
                     })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
