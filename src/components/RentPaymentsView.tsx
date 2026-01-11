@@ -133,85 +133,6 @@ export default function RentPaymentsView() {
     }
   };
 
-  const generateMissingPayments = async () => {
-    if (!user) return;
-    try {
-      const { data: allContracts, error: contractsError } = await supabase
-        .from("rental_contracts")
-        .select("id, contract_start, contract_end, total_rent, property_id, user_id")
-        .eq("user_id", user.id);
-
-      if (contractsError) throw contractsError;
-      if (!allContracts || allContracts.length === 0) {
-        alert("Keine Mietverträge gefunden.");
-        return;
-      }
-
-      let totalGenerated = 0;
-
-      for (const contract of allContracts) {
-        const startMonth = new Date(contract.contract_start);
-        startMonth.setDate(1);
-
-        let endMonth = new Date();
-        endMonth.setMonth(endMonth.getMonth() + 3);
-        const oneYearFromStart = new Date(contract.contract_start);
-        oneYearFromStart.setFullYear(oneYearFromStart.getFullYear() + 1);
-
-        if (endMonth < oneYearFromStart) {
-          endMonth = oneYearFromStart;
-        }
-
-        if (contract.contract_end) {
-          const contractEndDate = new Date(contract.contract_end);
-          if (contractEndDate < endMonth) {
-            endMonth = contractEndDate;
-          }
-        }
-
-        let currentMonth = new Date(startMonth);
-        while (currentMonth <= endMonth) {
-          const dueDate = currentMonth.toISOString().split('T')[0];
-
-          const { data: existing } = await supabase
-            .from("rent_payments")
-            .select("id")
-            .eq("contract_id", contract.id)
-            .eq("due_date", dueDate)
-            .maybeSingle();
-
-          if (!existing) {
-            const { error: insertError } = await supabase
-              .from("rent_payments")
-              .insert({
-                contract_id: contract.id,
-                property_id: contract.property_id,
-                tenant_id: null,
-                user_id: user.id,
-                due_date: dueDate,
-                amount: contract.total_rent,
-                paid: false,
-                payment_status: 'unpaid',
-                notes: 'Auto-generated',
-              });
-
-            if (!insertError) {
-              totalGenerated++;
-            }
-          }
-
-          currentMonth.setMonth(currentMonth.getMonth() + 1);
-        }
-      }
-
-      alert(`${totalGenerated} Mieteingänge erfolgreich generiert!`);
-      loadPayments();
-    } catch (error) {
-      console.error("Error generating payments:", error);
-      alert("Fehler beim Generieren der Mieteingänge");
-    }
-  };
-
   const handleMarkAsPaid = async (paymentId: string) => {
     try {
       const payment = payments.find(p => p.id === paymentId);
@@ -564,16 +485,8 @@ export default function RentPaymentsView() {
       <div className="bg-white rounded-lg overflow-hidden">
         {payments.length === 0 ? (
           <div className="p-8 text-center text-gray-600">
-            <p className="mb-4">
-              Keine Mieteingänge gefunden. Mieteingänge werden automatisch
-              generiert, wenn Sie Mietverträge anlegen.
-            </p>
-            <button
-              onClick={generateMissingPayments}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-            >
-              Mieteingänge jetzt generieren
-            </button>
+            Keine Mieteingänge gefunden. Mieteingänge werden automatisch
+            generiert, wenn Sie Mietverträge anlegen.
           </div>
         ) : (
           <div className="overflow-x-auto">
