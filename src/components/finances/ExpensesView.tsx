@@ -66,7 +66,7 @@ export default function ExpensesView() {
     description: "",
     recipient: "",
     notes: "",
-    status: "pending",
+    status: "open",
     is_apportionable: false,
     is_labor_cost: false,
     is_cashflow_relevant: true,
@@ -208,7 +208,7 @@ export default function ExpensesView() {
         description: "",
         recipient: "",
         notes: "",
-        status: "pending",
+        status: "open",
         is_apportionable: false,
         is_labor_cost: false,
         is_cashflow_relevant: true,
@@ -235,8 +235,8 @@ export default function ExpensesView() {
   const paidExpenses = expenses
     .filter((e) => e.status === "paid")
     .reduce((sum, e) => sum + e.amount, 0);
-  const pendingExpenses = expenses
-    .filter((e) => e.status === "pending")
+  const openExpenses = expenses
+    .filter((e) => e.status === "open")
     .reduce((sum, e) => sum + e.amount, 0);
 
   const getCategoryName = (categoryId: string) => {
@@ -313,7 +313,7 @@ export default function ExpensesView() {
             <TrendingDown className="w-6 h-6 text-amber-600" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
-            {pendingExpenses.toFixed(2)} €
+            {openExpenses.toFixed(2)} €
           </div>
           <div className="text-sm text-gray-400">Offen</div>
         </div>
