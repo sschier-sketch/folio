@@ -92,7 +92,7 @@ export default function Dashboard() {
     { id: "financial", labelKey: "nav.financial", icon: TrendingUp },
     { id: "documents", labelKey: "nav.documents", icon: FileText },
     { id: "templates", labelKey: "nav.templates", icon: Files },
-    { id: "billing", labelKey: "nav.billing", icon: Calculator },
+    { id: "billing", labelKey: "nav.billing", icon: Calculator, comingSoon: true },
   ];
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -353,7 +353,14 @@ export default function Dashboard() {
                     className={`w-full px-4 py-3 rounded transition-colors text-left ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
                   >
                     {" "}
-                    <span className="font-medium">{t(item.labelKey)}</span>{" "}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{t(item.labelKey)}</span>
+                      {item.comingSoon && (
+                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">
+                          Demnächst
+                        </span>
+                      )}
+                    </div>{" "}
                   </button>
                 );
               })}{" "}
@@ -409,7 +416,14 @@ export default function Dashboard() {
                     className={`w-full px-4 py-3 rounded transition-colors text-left ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
                   >
                     {" "}
-                    <span className="font-medium">{t(item.labelKey)}</span>{" "}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{t(item.labelKey)}</span>
+                      {item.comingSoon && (
+                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">
+                          Demnächst
+                        </span>
+                      )}
+                    </div>{" "}
                   </button>
                 );
               })}{" "}

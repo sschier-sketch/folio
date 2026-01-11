@@ -77,7 +77,14 @@ export default function TenantCommunicationTab({
 
       const { data: commsData } = await supabase
         .from("tenant_communications")
-        .select("*")
+        .select(`
+          *,
+          documents:attachment_id(
+            id,
+            file_name,
+            file_path
+          )
+        `)
         .eq("tenant_id", tenantId);
 
       const { data: ticketsData } = await supabase
@@ -89,23 +96,7 @@ export default function TenantCommunicationTab({
 
       if (commsData) {
         for (const comm of commsData) {
-          const { data: associations } = await supabase
-            .from("document_associations")
-            .select(`
-              document_id,
-              documents(
-                id,
-                file_name,
-                file_path
-              )
-            `)
-            .eq("association_type", "tenant")
-            .eq("association_id", tenantId);
-
-          const doc = associations?.find((assoc: any) => {
-            return assoc.documents && comm.created_at;
-          })?.documents;
-
+          const doc = (comm as any).documents;
           allCommunications.push({
             ...comm,
             attachment_id: doc?.id,
@@ -177,7 +168,7 @@ export default function TenantCommunicationTab({
               document_type: "other",
               category: "communication",
               description: `Anhang zu: ${newEntryForm.subject}`,
-              shared_with_tenant: false,
+              shared_with_tenant: true,
             },
           ])
           .select()
@@ -209,6 +200,7 @@ export default function TenantCommunicationTab({
             subject: newEntryForm.subject,
             content: newEntryForm.content,
             is_internal: newEntryForm.is_internal,
+            attachment_id: documentId,
           },
         ])
         .select()

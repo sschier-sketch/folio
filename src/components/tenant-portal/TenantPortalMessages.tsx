@@ -33,7 +33,14 @@ export default function TenantPortalMessages({
     try {
       const { data: commsData, error } = await supabase
         .from("tenant_communications")
-        .select("*")
+        .select(`
+          *,
+          documents:attachment_id(
+            id,
+            file_name,
+            file_path
+          )
+        `)
         .eq("tenant_id", tenantId)
         .eq("is_internal", false)
         .eq("is_deleted", false)
@@ -41,36 +48,17 @@ export default function TenantPortalMessages({
 
       if (error) throw error;
 
-      const messagesWithAttachments = [];
-      if (commsData) {
-        for (const comm of commsData) {
-          const { data: associations } = await supabase
-            .from("document_associations")
-            .select(`
-              document_id,
-              documents(
-                id,
-                file_name,
-                file_path
-              )
-            `)
-            .eq("association_type", "tenant")
-            .eq("association_id", tenantId);
+      const messagesWithAttachments = (commsData || []).map((comm: any) => {
+        const doc = comm.documents;
+        return {
+          ...comm,
+          attachment_id: doc?.id,
+          attachment_name: doc?.file_name,
+          attachment_path: doc?.file_path,
+        };
+      });
 
-          const doc = associations?.find((assoc: any) => {
-            return assoc.documents && comm.created_at;
-          })?.documents;
-
-          messagesWithAttachments.push({
-            ...comm,
-            attachment_id: doc?.id,
-            attachment_name: doc?.file_name,
-            attachment_path: doc?.file_path,
-          });
-        }
-      }
-
-      setMessages(messagesWithAttachments || []);
+      setMessages(messagesWithAttachments);
     } catch (error) {
       console.error("Error loading messages:", error);
     } finally {
