@@ -122,12 +122,7 @@ export default function RentPaymentsView() {
       const { data, error } = await query;
       if (error) throw error;
 
-      const validPayments = (data || []).filter(payment =>
-        payment.rental_contract?.tenants &&
-        payment.rental_contract.tenants.length > 0
-      );
-
-      setPayments(validPayments);
+      setPayments(data || []);
     } catch (error) {
       console.error("Error loading payments:", error);
     }
