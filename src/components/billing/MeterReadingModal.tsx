@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, ChevronDown, ChevronUp, Upload, Image as ImageIcon, Trash2, Building2, Gauge, MapPin, User } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { sanitizeFileName } from "../../lib/utils";
 
 interface MeterReadingModalProps {
   meter: any;
@@ -86,7 +87,8 @@ export default function MeterReadingModal({ meter, onClose, onSuccess }: MeterRe
     const uploadedUrls: string[] = [];
 
     for (const photo of photos) {
-      const fileName = `${user!.id}/${Date.now()}_${photo.name}`;
+      const sanitizedPhotoName = sanitizeFileName(photo.name);
+      const fileName = `${user!.id}/${Date.now()}_${sanitizedPhotoName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("meter-photos")

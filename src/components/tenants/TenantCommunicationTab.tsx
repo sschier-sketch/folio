@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumFeatureGuard } from "../PremiumFeatureGuard";
+import { sanitizeFileName } from "../../lib/utils";
 
 interface TenantCommunicationTabProps {
   tenantId: string;
@@ -144,7 +145,8 @@ export default function TenantCommunicationTab({
       let documentId = null;
 
       if (attachedFile) {
-        const fileName = `${Date.now()}_${attachedFile.name}`;
+        const sanitizedFileName = sanitizeFileName(attachedFile.name);
+        const fileName = `${Date.now()}_${sanitizedFileName}`;
         const filePath = `${user.id}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage

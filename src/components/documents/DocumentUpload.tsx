@@ -186,7 +186,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         )
       );
 
-      const fileExt = uploadFile.file.name.split(".").pop();
+      const fileExt = uploadFile.file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'file';
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
