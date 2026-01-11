@@ -63,11 +63,6 @@ export default function TenantLogin({
       const now = new Date().toISOString();
 
       await supabase
-        .from("tenant_impersonation_tokens")
-        .update({ used_at: now })
-        .eq("token", token);
-
-      await supabase
         .from("tenants")
         .update({
           last_login: now,
