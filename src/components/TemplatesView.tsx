@@ -193,7 +193,7 @@ export default function TemplatesView() {
           </div>
           <button
             onClick={() => setShowWizard(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+            className="hidden flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
           >
             <FileEdit className="w-5 h-5" />
             Automatische Vorlage verwenden
@@ -219,30 +219,22 @@ export default function TemplatesView() {
               className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             />
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                selectedCategory === null
-                  ? "bg-primary-blue text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Kategorie filtern
+            </label>
+            <select
+              value={selectedCategory || ""}
+              onChange={(e) => setSelectedCategory(e.target.value || null)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white min-w-[200px]"
             >
-              Alle Kategorien
-            </button>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.category}
-                onClick={() => setSelectedCategory(cat.category)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  selectedCategory === cat.category
-                    ? "bg-primary-blue text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {cat.title}
-              </button>
-            ))}
+              <option value="">Alle Kategorien</option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat.category} value={cat.category}>
+                  {cat.title}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )}

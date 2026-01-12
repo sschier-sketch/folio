@@ -54,7 +54,7 @@ export default function SettingsView({
   const { language, setLanguage, t } = useLanguage();
   const { subscription } = useSubscription();
   const [activeTab, setActiveTab] = useState<
-    "profile" | "billing" | "feedback"
+    "profile" | "billing"
   >(initialTab);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
@@ -71,8 +71,6 @@ export default function SettingsView({
   useEffect(() => {
     if (activeTab === "billing") {
       loadBillingInfo();
-    } else if (activeTab === "feedback") {
-      loadFeedback();
     }
   }, [activeTab]);
   const loadUserSettings = async () => {
@@ -249,11 +247,6 @@ export default function SettingsView({
   const tabs = [
     { id: "profile" as const, label: t("settings.profile"), icon: User },
     { id: "billing" as const, label: t("settings.billing"), icon: CreditCard },
-    {
-      id: "feedback" as const,
-      label: t("settings.feedback.title"),
-      icon: MessageCircle,
-    },
   ];
   return (
     <div>
@@ -262,7 +255,7 @@ export default function SettingsView({
         {" "}
         <h1 className="text-3xl font-bold text-dark mb-2">
           {" "}
-          {t("settings.title")}{" "}
+          Verwaltung{" "}
         </h1>{" "}
         <p className="text-gray-400">
           {" "}

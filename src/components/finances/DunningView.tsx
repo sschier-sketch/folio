@@ -51,6 +51,9 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
   });
   const [remindersHistory, setRemindersHistory] = useState<Record<string, DunningReminderHistory[]>>({});
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [dunningDaysLevel1, setDunningDaysLevel1] = useState(3);
+  const [dunningDaysLevel2, setDunningDaysLevel2] = useState(10);
+  const [dunningDaysLevel3, setDunningDaysLevel3] = useState(20);
 
   useEffect(() => {
     calculateStats();
@@ -96,9 +99,9 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
   const getDunningLevel = (payment: RentPayment): number => {
     if (payment.paid || payment.days_overdue <= 0) return 0;
 
-    if (payment.days_overdue >= 3 && payment.days_overdue < 10) return 1;
-    if (payment.days_overdue >= 10 && payment.days_overdue < 20) return 2;
-    if (payment.days_overdue >= 20) return 3;
+    if (payment.days_overdue >= dunningDaysLevel1 && payment.days_overdue < dunningDaysLevel2) return 1;
+    if (payment.days_overdue >= dunningDaysLevel2 && payment.days_overdue < dunningDaysLevel3) return 2;
+    if (payment.days_overdue >= dunningDaysLevel3) return 3;
 
     return 0;
   };
@@ -345,6 +348,48 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
             <div className="text-2xl font-bold text-dark mb-1">{stats.successfullyCollected}</div>
             <div className="text-sm text-gray-600">
               Erfolgreich eingezogen
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <h4 className="text-sm font-semibold text-dark mb-4">Mahnstufen-Konfiguration</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Stufe 1 ab Tag
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={dunningDaysLevel1}
+                onChange={(e) => setDunningDaysLevel1(parseInt(e.target.value) || 1)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Stufe 2 ab Tag
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={dunningDaysLevel2}
+                onChange={(e) => setDunningDaysLevel2(parseInt(e.target.value) || 1)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Stufe 3 ab Tag
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={dunningDaysLevel3}
+                onChange={(e) => setDunningDaysLevel3(parseInt(e.target.value) || 1)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
             </div>
           </div>
         </div>

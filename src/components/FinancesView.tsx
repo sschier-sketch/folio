@@ -3,7 +3,6 @@ import {
   TrendingUp,
   TrendingDown,
   BarChart3,
-  Receipt,
   CreditCard,
   Lightbulb,
   Calculator,
@@ -11,7 +10,6 @@ import {
 import IncomeView from "./finances/IncomeView";
 import ExpensesView from "./finances/ExpensesView";
 import CashflowView from "./finances/CashflowView";
-import ReceiptsView from "./finances/ReceiptsView";
 import BankConnectionView from "./finances/BankConnectionView";
 import IntelligenceView from "./finances/IntelligenceView";
 import IndexRentView from "./finances/IndexRentView";
@@ -20,7 +18,6 @@ type Tab =
   | "income"
   | "expenses"
   | "cashflow"
-  | "receipts"
   | "indexrent"
   | "intelligence"
   | "bank";
@@ -32,7 +29,6 @@ export default function FinancesView() {
     { id: "income" as Tab, label: "Einnahmen", icon: TrendingUp },
     { id: "expenses" as Tab, label: "Ausgaben", icon: TrendingDown },
     { id: "cashflow" as Tab, label: "Cashflow", icon: BarChart3 },
-    { id: "receipts" as Tab, label: "Belege & Buchungen", icon: Receipt },
     { id: "indexrent" as Tab, label: "Indexmiete", icon: Calculator },
     { id: "intelligence" as Tab, label: "Intelligenz", icon: Lightbulb, premium: true },
     { id: "bank" as Tab, label: "Bankanbindung", icon: CreditCard, premium: true },
@@ -87,7 +83,6 @@ export default function FinancesView() {
         {activeTab === "income" && <IncomeView />}
         {activeTab === "expenses" && <ExpensesView />}
         {activeTab === "cashflow" && <CashflowView />}
-        {activeTab === "receipts" && <ReceiptsView />}
         {activeTab === "indexrent" && <IndexRentView />}
         {activeTab === "intelligence" && <IntelligenceView />}
         {activeTab === "bank" && <BankConnectionView />}

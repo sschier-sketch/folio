@@ -23,6 +23,7 @@ import { AdminTicketsView } from "../components/AdminTicketsView";
 import { AdminEmailTemplatesView } from "../components/AdminEmailTemplatesView";
 import { AdminTemplatesView } from "../components/AdminTemplatesView";
 import AdminSystemUpdatesView from "../components/AdminSystemUpdatesView";
+import { AdminFeedbackView } from "../components/AdminFeedbackView";
 interface UserData {
   id: string;
   email: string;
@@ -46,7 +47,7 @@ export function Admin() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates"
+    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates" | "feedback"
   >("overview");
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -258,6 +259,13 @@ export function Admin() {
           >
             {" "}
             <Bell className="w-4 h-4 inline mr-2" /> System-Updates{" "}
+          </button>{" "}
+          <button
+            onClick={() => setActiveTab("feedback")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "feedback" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
+          >
+            {" "}
+            <MessageSquare className="w-4 h-4 inline mr-2" /> Feedback{" "}
           </button>{" "}
         </div>{" "}
         {activeTab === "overview" && (
@@ -547,6 +555,7 @@ export function Admin() {
         {activeTab === "templates" && <AdminEmailTemplatesView />}{" "}
         {activeTab === "document_templates" && <AdminTemplatesView />}{" "}
         {activeTab === "system_updates" && <AdminSystemUpdatesView />}{" "}
+        {activeTab === "feedback" && <AdminFeedbackView />}{" "}
       </div>{" "}
     </div>
   );

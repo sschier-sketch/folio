@@ -448,18 +448,13 @@ export default function Dashboard() {
               </p>{" "}
               <div>
                 <button
-                  onClick={handleCopyPortalUrl}
-                  className="w-full bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  onClick={() => {
+                    setCurrentView("mieterportal");
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center"
                 >
-                  {copiedPortalUrl ? (
-                    <>
-                      <CheckCircle className="w-4 h-4" /> Kopiert!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" /> Link
-                    </>
-                  )}
+                  Zur Verwaltung
                 </button>
               </div>{" "}
             </div>{" "}
@@ -541,18 +536,13 @@ export default function Dashboard() {
               </p>{" "}
               <div>
                 <button
-                  onClick={handleCopyPortalUrl}
-                  className="w-full bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  onClick={() => {
+                    setCurrentView("mieterportal");
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center"
                 >
-                  {copiedPortalUrl ? (
-                    <>
-                      <CheckCircle className="w-4 h-4" /> Kopiert!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" /> Link
-                    </>
-                  )}
+                  Zur Verwaltung
                 </button>
               </div>{" "}
             </div>{" "}

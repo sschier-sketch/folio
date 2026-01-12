@@ -387,7 +387,7 @@ export default function TenantPortalTickets({
                     className={`max-w-[70%] rounded-lg p-4 ${msg.sender_type === "tenant" ? "bg-primary-blue text-white" : "bg-gray-50 text-dark"}`}
                   >
                     <div className="text-xs opacity-75 mb-1">
-                      {msg.sender_name} •{" "}
+                      {msg.sender_type === "tenant" ? msg.sender_name : "Vermieter/Hausverwaltung"} •{" "}
                       {new Date(msg.created_at).toLocaleString("de-DE")}
                     </div>
                     <div className="whitespace-pre-wrap">{msg.message}</div>
