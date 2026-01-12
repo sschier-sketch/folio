@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Download, Eye } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
 interface Document {
@@ -162,7 +162,8 @@ export default function TenantPortalDocuments({
       {documents.map((document) => (
         <div
           key={document.id}
-          className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+          onClick={() => handleView(document)}
+          className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
         >
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4 flex-1">
@@ -192,14 +193,10 @@ export default function TenantPortalDocuments({
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => handleView(document)}
-                className="p-2 text-gray-400 hover:text-primary-blue hover:bg-blue-50 rounded-lg transition-colors"
-                title="Anzeigen"
-              >
-                <Eye className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => handleDownload(document)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload(document);
+                }}
                 className="p-2 text-gray-400 hover:text-primary-blue hover:bg-blue-50 rounded-lg transition-colors"
                 title="Herunterladen"
               >

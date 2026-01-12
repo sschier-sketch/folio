@@ -360,7 +360,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           )
         `)
         .eq("user_id", user.id)
-        .neq("status", "closed")
+        .in("status", ["open", "in_progress"])
         .order("created_at", { ascending: false })
         .limit(5);
 

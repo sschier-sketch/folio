@@ -55,6 +55,11 @@ export default function ExpensesView() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<string>("");
+  const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [timePeriod, setTimePeriod] = useState<"current" | "last" | "all">("current");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const [formData, setFormData] = useState({
     property_id: "",
@@ -80,22 +85,55 @@ export default function ExpensesView() {
     if (user) {
       loadData();
     }
-  }, [user]);
+  }, [user, selectedProperty, selectedUnit, timePeriod, startDate, endDate]);
 
   async function loadData() {
     try {
       setLoading(true);
 
+      let filterStartDate = startDate;
+      let filterEndDate = endDate;
+
+      if (!startDate || !endDate) {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+
+        if (timePeriod === "current") {
+          filterStartDate = `${currentYear}-01-01`;
+          filterEndDate = `${currentYear}-12-31`;
+        } else if (timePeriod === "last") {
+          filterStartDate = `${currentYear - 1}-01-01`;
+          filterEndDate = `${currentYear - 1}-12-31`;
+        }
+      }
+
+      let expensesQuery = supabase
+        .from("expenses")
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("expense_date", { ascending: false });
+
+      if (selectedProperty) {
+        expensesQuery = expensesQuery.eq("property_id", selectedProperty);
+      }
+
+      if (selectedUnit) {
+        expensesQuery = expensesQuery.eq("unit_id", selectedUnit);
+      }
+
+      if (timePeriod !== "all" && filterStartDate && filterEndDate) {
+        expensesQuery = expensesQuery
+          .gte("expense_date", filterStartDate)
+          .lte("expense_date", filterEndDate);
+      }
+
       const [expensesRes, propertiesRes, categoriesRes, tenantsRes, unitsRes] =
         await Promise.all([
-          supabase
-            .from("expenses")
-            .select("*")
-            .order("expense_date", { ascending: false }),
-          supabase.from("properties").select("id, name").order("name"),
+          expensesQuery,
+          supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
           supabase.from("expense_categories").select("*").order("name"),
-          supabase.from("tenants").select("id, name").order("name"),
-          supabase.from("property_units").select("id, unit_number, property_id").order("unit_number"),
+          supabase.from("tenants").select("id, name").eq("user_id", user!.id).order("name"),
+          supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", user!.id).order("unit_number"),
         ]);
 
       if (expensesRes.data) setExpenses(expensesRes.data);
@@ -287,6 +325,101 @@ export default function ExpensesView() {
 
   return (
     <div className="space-y-6">
+      <div className="bg-white rounded-lg p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Objekt
+            </label>
+            <select
+              value={selectedProperty}
+              onChange={(e) => {
+                setSelectedProperty(e.target.value);
+                setSelectedUnit("");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="">Alle Objekte</option>
+              {properties.map((prop) => (
+                <option key={prop.id} value={prop.id}>
+                  {prop.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Einheit
+            </label>
+            <select
+              value={selectedUnit}
+              onChange={(e) => setSelectedUnit(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              disabled={!selectedProperty}
+            >
+              <option value="">Alle Einheiten</option>
+              {units
+                .filter((u) => !selectedProperty || u.property_id === selectedProperty)
+                .map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    Einheit {unit.unit_number}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Zeitraum
+            </label>
+            <select
+              value={timePeriod}
+              onChange={(e) => {
+                setTimePeriod(e.target.value as "current" | "last" | "all");
+                setStartDate("");
+                setEndDate("");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="current">Aktuelles Jahr</option>
+              <option value="last">Letztes Jahr</option>
+              <option value="all">Alle</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Von
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                if (e.target.value) setTimePeriod("current");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Bis
+            </label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                if (e.target.value) setTimePeriod("current");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">

@@ -18,19 +18,49 @@ interface MonthlyData {
   cashflow: number;
 }
 
+interface Property {
+  id: string;
+  name: string;
+}
+
+interface Unit {
+  id: string;
+  unit_number: string;
+  property_id: string;
+}
+
 export default function CashflowView() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [timePeriod, setTimePeriod] = useState<"current" | "last" | "last3">("current");
+  const [selectedProperty, setSelectedProperty] = useState<string>("");
+  const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     if (user) {
+      loadProperties();
       loadCashflowData();
     }
-  }, [user, timePeriod, startDate, endDate]);
+  }, [user, timePeriod, selectedProperty, selectedUnit, startDate, endDate]);
+
+  async function loadProperties() {
+    try {
+      const [propertiesRes, unitsRes] = await Promise.all([
+        supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
+        supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", user!.id).order("unit_number"),
+      ]);
+
+      if (propertiesRes.data) setProperties(propertiesRes.data);
+      if (unitsRes.data) setUnits(unitsRes.data);
+    } catch (error) {
+      console.error("Error loading properties:", error);
+    }
+  }
 
   async function loadCashflowData() {
     try {
@@ -57,25 +87,54 @@ export default function CashflowView() {
         }
       }
 
+      let paymentsQuery = supabase
+        .from("rent_payments")
+        .select("*, rental_contracts!inner(property_id, unit_id)")
+        .eq("rental_contracts.user_id", user!.id)
+        .gte("due_date", filterStartDate)
+        .lte("due_date", filterEndDate)
+        .eq("payment_status", "paid");
+
+      if (selectedProperty) {
+        paymentsQuery = paymentsQuery.eq("rental_contracts.property_id", selectedProperty);
+      }
+
+      if (selectedUnit) {
+        paymentsQuery = paymentsQuery.eq("rental_contracts.unit_id", selectedUnit);
+      }
+
+      let expensesQuery = supabase
+        .from("expenses")
+        .select("*")
+        .eq("user_id", user!.id)
+        .gte("expense_date", filterStartDate)
+        .lte("expense_date", filterEndDate)
+        .eq("is_cashflow_relevant", true)
+        .in("status", ["open", "paid"]);
+
+      if (selectedProperty) {
+        expensesQuery = expensesQuery.eq("property_id", selectedProperty);
+      }
+
+      if (selectedUnit) {
+        expensesQuery = expensesQuery.eq("unit_id", selectedUnit);
+      }
+
+      let loansQuery = supabase
+        .from("loans")
+        .select("*")
+        .eq("user_id", user!.id)
+        .eq("loan_status", "active")
+        .or(`end_date.gte.${filterStartDate},start_date.lte.${filterEndDate}`);
+
+      if (selectedProperty) {
+        loansQuery = loansQuery.eq("property_id", selectedProperty);
+      }
+
       const [paymentsRes, expensesRes, loansRes] = await Promise.all([
-        supabase
-          .from("rent_payments")
-          .select("*")
-          .gte("due_date", filterStartDate)
-          .lte("due_date", filterEndDate)
-          .eq("payment_status", "paid"),
-        supabase
-          .from("expenses")
-          .select("*")
-          .gte("expense_date", filterStartDate)
-          .lte("expense_date", filterEndDate)
-          .eq("is_cashflow_relevant", true)
-          .in("status", ["open", "paid"]),
-        supabase
-          .from("loans")
-          .select("*")
-          .eq("loan_status", "active")
-          .or(`end_date.gte.${filterStartDate},start_date.lte.${filterEndDate}`),
+        paymentsQuery,
+        expensesQuery,
+        loansQuery,
       ]);
 
       const payments = paymentsRes.data || [];
@@ -101,21 +160,25 @@ export default function CashflowView() {
 
       const start = new Date(filterStartDate);
       const end = new Date(filterEndDate);
-      const startYear = start.getFullYear();
-      const endYear = end.getFullYear();
 
-      for (let month = 0; month < 12; month++) {
+      const currentDate = new Date(start.getFullYear(), start.getMonth(), 1);
+      const endDate = new Date(end.getFullYear(), end.getMonth(), 1);
+
+      while (currentDate <= endDate) {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
         const monthIncome = payments
           .filter((p) => {
             const date = new Date(p.due_date);
-            return date.getMonth() === month && date >= start && date <= end;
+            return date.getFullYear() === year && date.getMonth() === month;
           })
           .reduce((sum, p) => sum + p.amount, 0);
 
         const monthExpenses = expenses
           .filter((e) => {
             const date = new Date(e.expense_date);
-            return date.getMonth() === month && date >= start && date <= end;
+            return date.getFullYear() === year && date.getMonth() === month;
           })
           .reduce((sum, e) => sum + e.amount, 0);
 
@@ -123,8 +186,8 @@ export default function CashflowView() {
           .filter((l) => {
             const loanStart = new Date(l.start_date);
             const loanEnd = new Date(l.end_date);
-            const currentMonth = new Date(start.getFullYear(), month, 1);
-            return currentMonth >= loanStart && currentMonth <= loanEnd;
+            const currentMonthDate = new Date(year, month, 1);
+            return currentMonthDate >= loanStart && currentMonthDate <= loanEnd;
           })
           .reduce((sum, l) => sum + parseFloat(l.monthly_payment || 0), 0);
 
@@ -135,6 +198,8 @@ export default function CashflowView() {
           loanPayments: monthLoanPayments,
           cashflow: monthIncome - monthExpenses - monthLoanPayments,
         });
+
+        currentDate.setMonth(currentDate.getMonth() + 1);
       }
 
       setMonthlyData(data);
@@ -150,10 +215,11 @@ export default function CashflowView() {
   const totalLoanPayments = monthlyData.reduce((sum, m) => sum + m.loanPayments, 0);
   const totalCashflow = totalIncome - totalExpenses - totalLoanPayments;
 
-  const averageIncome = totalIncome / 12;
-  const averageExpenses = totalExpenses / 12;
-  const averageLoanPayments = totalLoanPayments / 12;
-  const averageCashflow = totalCashflow / 12;
+  const monthCount = monthlyData.length || 1;
+  const averageIncome = totalIncome / monthCount;
+  const averageExpenses = totalExpenses / monthCount;
+  const averageLoanPayments = totalLoanPayments / monthCount;
+  const averageCashflow = totalCashflow / monthCount;
 
   const maxValue = Math.max(
     ...monthlyData.map((m) => Math.max(m.income, m.expenses + m.loanPayments))
@@ -165,26 +231,73 @@ export default function CashflowView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-        <div className="flex items-center gap-4">
-          <select
-            value={timePeriod}
-            onChange={(e) => {
-              setTimePeriod(e.target.value as "current" | "last" | "last3");
-              setStartDate("");
-              setEndDate("");
-            }}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-          >
-            <option value="current">Aktuelles Jahr</option>
-            <option value="last">Letztes Jahr</option>
-            <option value="last3">Letzte 3 Monate</option>
-          </select>
-        </div>
+      <div className="bg-white rounded-lg p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Objekt
+            </label>
+            <select
+              value={selectedProperty}
+              onChange={(e) => {
+                setSelectedProperty(e.target.value);
+                setSelectedUnit("");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="">Alle Objekte</option>
+              {properties.map((prop) => (
+                <option key={prop.id} value={prop.id}>
+                  {prop.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Von:</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Einheit
+            </label>
+            <select
+              value={selectedUnit}
+              onChange={(e) => setSelectedUnit(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              disabled={!selectedProperty}
+            >
+              <option value="">Alle Einheiten</option>
+              {units
+                .filter((u) => !selectedProperty || u.property_id === selectedProperty)
+                .map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    Einheit {unit.unit_number}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Zeitraum
+            </label>
+            <select
+              value={timePeriod}
+              onChange={(e) => {
+                setTimePeriod(e.target.value as "current" | "last" | "last3");
+                setStartDate("");
+                setEndDate("");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="current">Aktuelles Jahr</option>
+              <option value="last">Letztes Jahr</option>
+              <option value="last3">Letzte 3 Monate</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Von
+            </label>
             <input
               type="date"
               value={startDate}
@@ -192,11 +305,14 @@ export default function CashflowView() {
                 setStartDate(e.target.value);
                 if (e.target.value) setTimePeriod("current");
               }}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Bis:</label>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Bis
+            </label>
             <input
               type="date"
               value={endDate}
@@ -204,7 +320,7 @@ export default function CashflowView() {
                 setEndDate(e.target.value);
                 if (e.target.value) setTimePeriod("current");
               }}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             />
           </div>
         </div>

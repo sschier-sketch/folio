@@ -21,34 +21,68 @@ interface RentPayment {
   };
 }
 
+interface Property {
+  id: string;
+  name: string;
+}
+
+interface Unit {
+  id: string;
+  unit_number: string;
+  property_id: string;
+}
+
 export default function IncomeView() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [rentPayments, setRentPayments] = useState<RentPayment[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [timePeriod, setTimePeriod] = useState<"current" | "last" | "all">("current");
+  const [selectedProperty, setSelectedProperty] = useState<string>("");
+  const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     if (user) {
+      loadProperties();
       loadRentPayments();
     }
-  }, [user, timePeriod]);
+  }, [user, timePeriod, selectedProperty, selectedUnit, startDate, endDate]);
+
+  async function loadProperties() {
+    try {
+      const [propertiesRes, unitsRes] = await Promise.all([
+        supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
+        supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", user!.id).order("unit_number"),
+      ]);
+
+      if (propertiesRes.data) setProperties(propertiesRes.data);
+      if (unitsRes.data) setUnits(unitsRes.data);
+    } catch (error) {
+      console.error("Error loading properties:", error);
+    }
+  }
 
   async function loadRentPayments() {
     try {
       setLoading(true);
 
-      let filterStartDate = "";
-      let filterEndDate = "";
+      let filterStartDate = startDate;
+      let filterEndDate = endDate;
 
-      const now = new Date();
-      const currentYear = now.getFullYear();
+      if (!startDate || !endDate) {
+        const now = new Date();
+        const currentYear = now.getFullYear();
 
-      if (timePeriod === "current") {
-        filterStartDate = `${currentYear}-01-01`;
-        filterEndDate = `${currentYear}-12-31`;
-      } else if (timePeriod === "last") {
-        filterStartDate = `${currentYear - 1}-01-01`;
-        filterEndDate = `${currentYear - 1}-12-31`;
+        if (timePeriod === "current") {
+          filterStartDate = `${currentYear}-01-01`;
+          filterEndDate = `${currentYear}-12-31`;
+        } else if (timePeriod === "last") {
+          filterStartDate = `${currentYear - 1}-01-01`;
+          filterEndDate = `${currentYear - 1}-12-31`;
+        }
       }
 
       let query = supabase
@@ -56,17 +90,29 @@ export default function IncomeView() {
         .select(`
           *,
           rental_contracts!inner(
+            user_id,
+            property_id,
+            unit_id,
             tenants!inner(first_name, last_name),
             properties!inner(name)
           )
         `)
+        .eq("rental_contracts.user_id", user.id)
         .eq("payment_status", "paid")
-        .order("payment_date", { ascending: false });
+        .order("paid_date", { ascending: false });
 
-      if (timePeriod !== "all") {
+      if (selectedProperty) {
+        query = query.eq("rental_contracts.property_id", selectedProperty);
+      }
+
+      if (selectedUnit) {
+        query = query.eq("rental_contracts.unit_id", selectedUnit);
+      }
+
+      if (timePeriod !== "all" && filterStartDate && filterEndDate) {
         query = query
-          .gte("payment_date", filterStartDate)
-          .lte("payment_date", filterEndDate);
+          .gte("paid_date", filterStartDate)
+          .lte("paid_date", filterEndDate);
       }
 
       const { data, error } = await query;
@@ -101,22 +147,110 @@ export default function IncomeView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-dark">Einnahmen</h2>
-          <p className="text-gray-400 mt-1">
-            Übersicht aller Mieteingänge
-          </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-dark">Einnahmen</h2>
+            <p className="text-gray-400 mt-1">
+              Übersicht aller Mieteingänge
+            </p>
+          </div>
         </div>
-        <select
-          value={timePeriod}
-          onChange={(e) => setTimePeriod(e.target.value as "current" | "last" | "all")}
-          className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-        >
-          <option value="current">Aktuelles Jahr</option>
-          <option value="last">Letztes Jahr</option>
-          <option value="all">Alle</option>
-        </select>
+
+        <div className="bg-white rounded-lg p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Objekt
+              </label>
+              <select
+                value={selectedProperty}
+                onChange={(e) => {
+                  setSelectedProperty(e.target.value);
+                  setSelectedUnit("");
+                }}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="">Alle Objekte</option>
+                {properties.map((prop) => (
+                  <option key={prop.id} value={prop.id}>
+                    {prop.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Einheit
+              </label>
+              <select
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                disabled={!selectedProperty}
+              >
+                <option value="">Alle Einheiten</option>
+                {units
+                  .filter((u) => !selectedProperty || u.property_id === selectedProperty)
+                  .map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      Einheit {unit.unit_number}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Zeitraum
+              </label>
+              <select
+                value={timePeriod}
+                onChange={(e) => {
+                  setTimePeriod(e.target.value as "current" | "last" | "all");
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="current">Aktuelles Jahr</option>
+                <option value="last">Letztes Jahr</option>
+                <option value="all">Alle</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Von
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  if (e.target.value) setTimePeriod("current");
+                }}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bis
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  if (e.target.value) setTimePeriod("current");
+                }}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -192,7 +326,7 @@ export default function IncomeView() {
                 {rentPayments.map((payment) => (
                   <tr key={payment.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {new Date(payment.payment_date || payment.due_date).toLocaleDateString("de-DE", {
+                      {new Date(payment.paid_date || payment.due_date).toLocaleDateString("de-DE", {
                         year: "numeric",
                         month: "short",
                         day: "numeric"
