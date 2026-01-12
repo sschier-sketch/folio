@@ -41,6 +41,7 @@ interface Document {
   description: string | null;
   upload_date: string;
   is_archived: boolean;
+  shared_with_tenant: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -74,6 +75,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
     document_type: "",
     category: "",
     description: "",
+    shared_with_tenant: false,
   });
   const [showAddAssociation, setShowAddAssociation] = useState(false);
   const [newAssociation, setNewAssociation] = useState({
@@ -110,6 +112,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
           document_type: data.document_type,
           category: data.category || "",
           description: data.description || "",
+          shared_with_tenant: data.shared_with_tenant || false,
         });
 
         const supportedPreviewTypes = [
@@ -244,6 +247,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
           document_type: editForm.document_type,
           category: editForm.category || null,
           description: editForm.description || null,
+          shared_with_tenant: editForm.shared_with_tenant,
         })
         .eq("id", documentId);
 
@@ -599,6 +603,27 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                   />
                 </div>
 
+                {associations.some((a) => a.association_type === "tenant") && (
+                  <div className="flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <input
+                      type="checkbox"
+                      id="share_with_tenant_edit"
+                      checked={editForm.shared_with_tenant}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, shared_with_tenant: e.target.checked })
+                      }
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor="share_with_tenant_edit"
+                      className="text-sm font-medium text-gray-700 flex items-center gap-2"
+                    >
+                      <Lock className="w-4 h-4" />
+                      Im Mieterportal anzeigen (Dokument wird für Mieter sichtbar)
+                    </label>
+                  </div>
+                )}
+
                 <div className="flex gap-2">
                   <button
                     onClick={handleSave}
@@ -614,6 +639,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                         document_type: document.document_type,
                         category: document.category || "",
                         description: document.description || "",
+                        shared_with_tenant: document.shared_with_tenant || false,
                       });
                     }}
                     className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"

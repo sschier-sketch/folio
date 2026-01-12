@@ -42,7 +42,7 @@ export default function TenantContractTab({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
-  const [shareWithTenant, setShareWithTenant] = useState(false);
+  const [shareWithTenant, setShareWithTenant] = useState(true);
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
@@ -199,7 +199,7 @@ export default function TenantContractTab({
       setUploadFiles([]);
       setUploadDescription("");
       setSelectedDocType("contract");
-      setShareWithTenant(false);
+      setShareWithTenant(true);
     }
   }
 
