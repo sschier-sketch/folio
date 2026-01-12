@@ -30,81 +30,21 @@ export default function TenantPortalDocuments({
 
   const loadDocuments = async () => {
     try {
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("property_id, unit_id")
-        .eq("id", tenantId)
-        .maybeSingle();
+      console.log("[TenantPortalDocuments] Loading documents for tenant:", tenantId);
 
-      if (!tenant) {
-        console.log("[TenantPortalDocuments] No tenant found for ID:", tenantId);
-        setDocuments([]);
-        return;
+      const { data, error } = await supabase
+        .rpc("get_tenant_documents", { tenant_id_param: tenantId });
+
+      if (error) {
+        console.error("[TenantPortalDocuments] Error loading documents:", error);
+        throw error;
       }
 
-      console.log("[TenantPortalDocuments] Tenant data:", {
-        property_id: tenant.property_id,
-        unit_id: tenant.unit_id
-      });
-
-      const { data: propertyAssociations } = await supabase
-        .from("document_associations")
-        .select("document_id")
-        .eq("association_type", "property")
-        .eq("association_id", tenant.property_id);
-
-      const propertyDocIds = propertyAssociations?.map(a => a.document_id) || [];
-      console.log("[TenantPortalDocuments] Property doc IDs:", propertyDocIds);
-
-      let unitDocIds: string[] = [];
-      if (tenant.unit_id) {
-        const { data: unitAssociations } = await supabase
-          .from("document_associations")
-          .select("document_id")
-          .eq("association_type", "unit")
-          .eq("association_id", tenant.unit_id);
-
-        unitDocIds = unitAssociations?.map(a => a.document_id) || [];
-        console.log("[TenantPortalDocuments] Unit doc IDs:", unitDocIds);
-      }
-
-      const { data: tenantAssociations } = await supabase
-        .from("document_associations")
-        .select("document_id")
-        .eq("association_type", "tenant")
-        .eq("association_id", tenantId);
-
-      const tenantDocIds = tenantAssociations?.map(a => a.document_id) || [];
-      console.log("[TenantPortalDocuments] Tenant doc IDs:", tenantDocIds);
-
-      const allDocIds = [...new Set([...propertyDocIds, ...unitDocIds, ...tenantDocIds])];
-      console.log("[TenantPortalDocuments] All unique doc IDs:", allDocIds);
-
-      if (allDocIds.length > 0) {
-        const { data: allDocs, error: allDocsError } = await supabase
-          .from("documents")
-          .select("id, file_name, shared_with_tenant, is_archived")
-          .in("id", allDocIds);
-
-        console.log("[TenantPortalDocuments] All documents (before filtering):", allDocs);
-
-        const { data, error } = await supabase
-          .from("documents")
-          .select("*")
-          .in("id", allDocIds)
-          .eq("shared_with_tenant", true)
-          .eq("is_archived", false)
-          .order("upload_date", { ascending: false });
-
-        if (error) throw error;
-        console.log("[TenantPortalDocuments] Filtered documents:", data);
-        setDocuments(data || []);
-      } else {
-        console.log("[TenantPortalDocuments] No document IDs found");
-        setDocuments([]);
-      }
+      console.log("[TenantPortalDocuments] Documents loaded:", data);
+      setDocuments(data || []);
     } catch (error) {
       console.error("Error loading documents:", error);
+      setDocuments([]);
     } finally {
       setLoading(false);
     }
