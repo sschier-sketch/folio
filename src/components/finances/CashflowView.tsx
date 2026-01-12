@@ -14,6 +14,7 @@ interface MonthlyData {
   month: string;
   income: number;
   expenses: number;
+  loanPayments: number;
   cashflow: number;
 }
 
@@ -56,7 +57,7 @@ export default function CashflowView() {
         }
       }
 
-      const [paymentsRes, expensesRes] = await Promise.all([
+      const [paymentsRes, expensesRes, loansRes] = await Promise.all([
         supabase
           .from("rent_payments")
           .select("*")
@@ -70,10 +71,16 @@ export default function CashflowView() {
           .lte("expense_date", filterEndDate)
           .eq("is_cashflow_relevant", true)
           .in("status", ["open", "paid"]),
+        supabase
+          .from("loans")
+          .select("*")
+          .eq("loan_status", "active")
+          .or(`end_date.gte.${filterStartDate},start_date.lte.${filterEndDate}`),
       ]);
 
       const payments = paymentsRes.data || [];
       const expenses = expensesRes.data || [];
+      const loans = loansRes.data || [];
 
       const monthNames = [
         "Jan",
@@ -112,11 +119,21 @@ export default function CashflowView() {
           })
           .reduce((sum, e) => sum + e.amount, 0);
 
+        const monthLoanPayments = loans
+          .filter((l) => {
+            const loanStart = new Date(l.start_date);
+            const loanEnd = new Date(l.end_date);
+            const currentMonth = new Date(start.getFullYear(), month, 1);
+            return currentMonth >= loanStart && currentMonth <= loanEnd;
+          })
+          .reduce((sum, l) => sum + parseFloat(l.monthly_payment || 0), 0);
+
         data.push({
           month: monthNames[month],
           income: monthIncome,
           expenses: monthExpenses,
-          cashflow: monthIncome - monthExpenses,
+          loanPayments: monthLoanPayments,
+          cashflow: monthIncome - monthExpenses - monthLoanPayments,
         });
       }
 
@@ -130,14 +147,16 @@ export default function CashflowView() {
 
   const totalIncome = monthlyData.reduce((sum, m) => sum + m.income, 0);
   const totalExpenses = monthlyData.reduce((sum, m) => sum + m.expenses, 0);
-  const totalCashflow = totalIncome - totalExpenses;
+  const totalLoanPayments = monthlyData.reduce((sum, m) => sum + m.loanPayments, 0);
+  const totalCashflow = totalIncome - totalExpenses - totalLoanPayments;
 
   const averageIncome = totalIncome / 12;
   const averageExpenses = totalExpenses / 12;
+  const averageLoanPayments = totalLoanPayments / 12;
   const averageCashflow = totalCashflow / 12;
 
   const maxValue = Math.max(
-    ...monthlyData.map((m) => Math.max(m.income, m.expenses))
+    ...monthlyData.map((m) => Math.max(m.income, m.expenses + m.loanPayments))
   );
 
   if (loading) {
@@ -191,7 +210,7 @@ export default function CashflowView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
             <TrendingUp className="w-6 h-6 text-emerald-600" />
@@ -215,6 +234,19 @@ export default function CashflowView() {
           <div className="text-sm text-gray-400 mb-2">Ausgaben gesamt</div>
           <div className="text-xs text-gray-400">
             Ø {averageExpenses.toFixed(2)} € / Monat
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-6">
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+            <ArrowDown className="w-6 h-6 text-orange-600" />
+          </div>
+          <div className="text-2xl font-bold text-dark mb-1">
+            {totalLoanPayments.toFixed(2)} €
+          </div>
+          <div className="text-sm text-gray-400 mb-2">Kreditzahlungen gesamt</div>
+          <div className="text-xs text-gray-400">
+            Ø {averageLoanPayments.toFixed(2)} € / Monat
           </div>
         </div>
 
@@ -267,8 +299,11 @@ export default function CashflowView() {
                   <span className="text-red-600 font-medium">
                     -{data.expenses.toFixed(2)} €
                   </span>
+                  <span className="text-orange-600 font-medium">
+                    -{data.loanPayments.toFixed(2)} €
+                  </span>
                   <span
-                    className={`font-semibold ${
+                    className={`font-semibold min-w-[100px] text-right ${
                       data.cashflow >= 0 ? "text-primary-blue" : "text-red-600"
                     }`}
                   >
@@ -289,6 +324,12 @@ export default function CashflowView() {
                   className="absolute top-0 left-0 h-full bg-red-500 opacity-50"
                   style={{
                     width: `${(data.expenses / maxValue) * 100}%`,
+                  }}
+                />
+                <div
+                  className="absolute top-0 left-0 h-full bg-orange-500 opacity-50"
+                  style={{
+                    width: `${((data.expenses + data.loanPayments) / maxValue) * 100}%`,
                   }}
                 />
               </div>

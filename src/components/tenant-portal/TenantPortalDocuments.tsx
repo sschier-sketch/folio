@@ -114,14 +114,12 @@ export default function TenantPortalDocuments({
 
   const handleView = async (document: Document) => {
     try {
-      const { data, error } = await supabase.storage
+      const { data: publicUrlData } = supabase.storage
         .from("documents")
-        .createSignedUrl(document.file_path, 3600);
+        .getPublicUrl(document.file_path);
 
-      if (error) throw error;
-
-      if (data.signedUrl) {
-        window.open(data.signedUrl, "_blank");
+      if (publicUrlData.publicUrl) {
+        window.open(publicUrlData.publicUrl, "_blank");
       }
     } catch (error) {
       console.error("Error viewing document:", error);

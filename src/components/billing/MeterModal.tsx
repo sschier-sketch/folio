@@ -28,6 +28,8 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
     supplier: meter?.supplier || "",
     contract_number: meter?.contract_number || "",
     reading_interval: meter?.reading_interval || "yearly",
+    market_location_id: meter?.market_location_id || "",
+    meter_category: meter?.meter_category || "",
     note: meter?.note || ""
   });
 
@@ -147,6 +149,8 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
         supplier: formData.supplier || null,
         contract_number: formData.contract_number || null,
         reading_interval: formData.reading_interval || null,
+        market_location_id: formData.market_location_id || null,
+        meter_category: formData.meter_category || null,
         note: formData.note || null
       };
 
@@ -344,6 +348,21 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
                   />
                 </div>
 
+                {(formData.meter_type === "gas" || formData.meter_type === "strom") && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Marktlokations-ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.market_location_id}
+                      onChange={(e) => setFormData({ ...formData, market_location_id: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      placeholder="z.B. 11-stellige ID"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Ableseintervall
@@ -358,6 +377,21 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
                         {interval.label}
                       </option>
                     ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Zählerkategorie
+                  </label>
+                  <select
+                    value={formData.meter_category}
+                    onChange={(e) => setFormData({ ...formData, meter_category: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  >
+                    <option value="">Nicht angegeben</option>
+                    <option value="hauptzaehler">Hauptzähler</option>
+                    <option value="nebenzaehler">Nebenzähler</option>
                   </select>
                 </div>
 

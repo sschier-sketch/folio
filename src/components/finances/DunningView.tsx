@@ -515,7 +515,7 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
 
       <div className="bg-white rounded-lg p-6">
         <h3 className="text-lg font-semibold text-dark mb-4">
-          Eskalationsstufen
+          Eskalationsstufen (Standardwerte)
         </h3>
 
         <div className="space-y-4">
