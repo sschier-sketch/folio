@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, TrendingDown, Trash2, Building, Tag, Upload, X, Filter, Edit, FileText } from "lucide-react";
+import { Plus, TrendingDown, Trash2, Building, Tag, Upload, X, Filter, Edit, FileText, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -80,6 +80,7 @@ export default function ExpensesView() {
     due_date: "",
   });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -201,7 +202,7 @@ export default function ExpensesView() {
         }
       }
 
-      const { data: expenseData, error } = await supabase.from("expenses").insert({
+      const expensePayload = {
         user_id: user.id,
         property_id: formData.property_id,
         unit_id: formData.unit_id || null,
@@ -220,7 +221,28 @@ export default function ExpensesView() {
         vat_rate: parseFloat(formData.vat_rate),
         due_date: formData.due_date || null,
         document_id: documentId,
-      }).select().single();
+      };
+
+      let expenseData, error;
+
+      if (editingExpense) {
+        const result = await supabase
+          .from("expenses")
+          .update(expensePayload)
+          .eq("id", editingExpense.id)
+          .select()
+          .single();
+        expenseData = result.data;
+        error = result.error;
+      } else {
+        const result = await supabase
+          .from("expenses")
+          .insert(expensePayload)
+          .select()
+          .single();
+        expenseData = result.data;
+        error = result.error;
+      }
 
       if (error) throw error;
 
@@ -233,8 +255,9 @@ export default function ExpensesView() {
         });
       }
 
-      alert("Ausgabe erfolgreich gespeichert!");
+      alert(editingExpense ? "Ausgabe erfolgreich aktualisiert!" : "Ausgabe erfolgreich gespeichert!");
       setShowAddModal(false);
+      setEditingExpense(null);
       setUploadedFile(null);
       setFormData({
         property_id: "",
@@ -314,10 +337,49 @@ export default function ExpensesView() {
         return "Offen";
       case "overdue":
         return "Überfällig";
+      case "open":
+        return "Offen";
       default:
         return status;
     }
   };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "paid":
+        return <CheckCircle className="w-4 h-4" />;
+      case "pending":
+      case "open":
+        return <Clock className="w-4 h-4" />;
+      case "overdue":
+        return <AlertCircle className="w-4 h-4" />;
+      default:
+        return <Clock className="w-4 h-4" />;
+    }
+  };
+
+  function handleEditExpense(expense: Expense) {
+    setEditingExpense(expense);
+    setFormData({
+      property_id: expense.property_id,
+      unit_id: expense.unit_id || "",
+      tenant_id: expense.tenant_id || "",
+      category_id: expense.category_id,
+      amount: expense.amount.toString(),
+      expense_date: expense.expense_date,
+      description: expense.description,
+      recipient: expense.recipient || "",
+      notes: expense.notes || "",
+      status: expense.status,
+      is_apportionable: expense.is_apportionable,
+      is_labor_cost: expense.is_labor_cost,
+      is_cashflow_relevant: expense.is_cashflow_relevant,
+      exclude_from_operating_costs: expense.exclude_from_operating_costs,
+      vat_rate: expense.vat_rate.toString(),
+      due_date: expense.due_date || "",
+    });
+    setShowAddModal(true);
+  }
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
@@ -536,20 +598,31 @@ export default function ExpensesView() {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${getStatusColor(
                           expense.status
                         )}`}
                       >
-                        {getStatusLabel(expense.payment_status)}
+                        {getStatusIcon(expense.status)}
+                        {getStatusLabel(expense.status)}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-center">
-                      <button
-                        onClick={() => handleDeleteExpense(expense.id)}
-                        className="text-red-500 hover:text-red-700 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleEditExpense(expense)}
+                          className="text-primary-blue hover:text-blue-700 transition-colors"
+                          title="Bearbeiten"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteExpense(expense.id)}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                          title="Löschen"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -563,7 +636,7 @@ export default function ExpensesView() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold text-dark mb-4">
-              Ausgabe hinzufügen
+              {editingExpense ? "Ausgabe bearbeiten" : "Ausgabe hinzufügen"}
             </h3>
 
             <div className="space-y-4">
@@ -864,7 +937,8 @@ export default function ExpensesView() {
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
-                  <option value="pending">Offen</option>
+                  <option value="open">Offen</option>
+                  <option value="pending">Ausstehend</option>
                   <option value="paid">Bezahlt</option>
                   <option value="overdue">Überfällig</option>
                 </select>
@@ -873,7 +947,10 @@ export default function ExpensesView() {
 
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={() => {
+                  setShowAddModal(false);
+                  setEditingExpense(null);
+                }}
                 className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
                 Abbrechen
@@ -888,7 +965,7 @@ export default function ExpensesView() {
                   !formData.description
                 }
               >
-                Hinzufügen
+                {editingExpense ? "Aktualisieren" : "Hinzufügen"}
               </button>
             </div>
           </div>

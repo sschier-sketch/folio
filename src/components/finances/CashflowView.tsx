@@ -104,7 +104,6 @@ export default function CashflowView() {
         .from("income_entries")
         .select("*")
         .eq("user_id", user!.id)
-        .eq("category", "income")
         .gte("entry_date", filterStartDate)
         .lte("entry_date", filterEndDate);
 

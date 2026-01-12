@@ -607,18 +607,24 @@ export default function IncomeView() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Beschreibung *
+                  Einheit (optional)
                 </label>
-                <input
-                  type="text"
-                  value={formData.description}
+                <select
+                  value={formData.unit_id}
                   onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
+                    setFormData({ ...formData, unit_id: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="z.B. Parkplatzmiete Januar 2026"
-                  required
-                />
+                >
+                  <option value="">Keine Einheit</option>
+                  {units
+                    .filter(u => !formData.property_id || u.property_id === formData.property_id)
+                    .map((unit) => (
+                      <option key={unit.id} value={unit.id}>
+                        Einheit {unit.unit_number}
+                      </option>
+                    ))}
+                </select>
               </div>
 
               <div>
@@ -651,6 +657,55 @@ export default function IncomeView() {
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Beschreibung *
+                </label>
+                <input
+                  type="text"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. Parkplatzmiete Januar 2026"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Zahlungsempfänger (optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.recipient}
+                  onChange={(e) =>
+                    setFormData({ ...formData, recipient: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="Name des Zahlungsempfängers"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Zahlungsmethode
+                </label>
+                <select
+                  value={formData.payment_method}
+                  onChange={(e) =>
+                    setFormData({ ...formData, payment_method: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  <option value="bank_transfer">Banküberweisung</option>
+                  <option value="cash">Bar</option>
+                  <option value="direct_debit">Lastschrift</option>
+                  <option value="other">Sonstiges</option>
+                </select>
               </div>
 
               <div>
