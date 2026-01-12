@@ -96,25 +96,7 @@ export default function CashflowView() {
         .eq("payment_status", "paid");
 
       if (selectedProperty) {
-        const { data: contractIds } = await supabase
-          .from("rental_contracts")
-          .select("id")
-          .eq("property_id", selectedProperty);
-
-        if (contractIds && contractIds.length > 0) {
-          paymentsQuery = paymentsQuery.in("contract_id", contractIds.map(c => c.id));
-        }
-      }
-
-      if (selectedUnit) {
-        const { data: contractIds } = await supabase
-          .from("rental_contracts")
-          .select("id")
-          .eq("unit_id", selectedUnit);
-
-        if (contractIds && contractIds.length > 0) {
-          paymentsQuery = paymentsQuery.in("contract_id", contractIds.map(c => c.id));
-        }
+        paymentsQuery = paymentsQuery.eq("property_id", selectedProperty);
       }
 
       let expensesQuery = supabase

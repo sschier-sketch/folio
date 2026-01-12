@@ -123,20 +123,19 @@ export default function IncomeView() {
         .from("rent_payments")
         .select(`
           *,
-          rental_contracts!inner(
-            user_id,
-            property_id,
+          properties(name),
+          tenants(first_name, last_name),
+          rental_contracts(
             unit_id,
-            tenants!inner(first_name, last_name),
             properties!inner(name)
           )
         `)
-        .eq("rental_contracts.user_id", user.id)
+        .eq("user_id", user.id)
         .eq("payment_status", "paid")
         .order("paid_date", { ascending: false });
 
       if (selectedProperty) {
-        query = query.eq("rental_contracts.property_id", selectedProperty);
+        query = query.eq("property_id", selectedProperty);
       }
 
       if (selectedUnit) {
@@ -169,15 +168,21 @@ export default function IncomeView() {
     try {
       const insertData: any = {
         user_id: user.id,
+        property_id: formData.property_id,
         amount: parseFloat(formData.amount),
         due_date: formData.due_date || formData.paid_date,
         paid_date: formData.paid_date,
+        paid: true,
         payment_status: "paid",
         payment_method: formData.payment_method,
         notes: formData.notes,
         description: formData.description,
         recipient: formData.recipient,
       };
+
+      if (formData.tenant_id) {
+        insertData.tenant_id = formData.tenant_id;
+      }
 
       if (formData.contract_id) {
         insertData.contract_id = formData.contract_id;
@@ -394,11 +399,13 @@ export default function IncomeView() {
                       })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {payment.rental_contracts.tenants.first_name}{" "}
-                      {payment.rental_contracts.tenants.last_name}
+                      {payment.tenants
+                        ? `${payment.tenants.first_name} ${payment.tenants.last_name}`
+                        : payment.recipient || "-"
+                      }
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {payment.rental_contracts.properties.name}
+                      {payment.properties?.name || "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
                       +{parseFloat(payment.amount.toString()).toFixed(2)} €
