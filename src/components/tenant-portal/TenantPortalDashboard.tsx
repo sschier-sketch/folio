@@ -77,9 +77,30 @@ export default function TenantPortalDashboard({
         ? `${tenant.property.street || ""}, ${tenant.property.zip_code || ""} ${tenant.property.city || ""}`.trim()
         : tenant.property?.address || "";
 
-      const coldRent = parseFloat(contract?.cold_rent || contract?.base_rent || "0");
-      const operatingCosts = parseFloat(contract?.operating_costs || "0");
-      const heatingCosts = parseFloat(contract?.heating_costs || "0");
+      let coldRent = 0;
+      let operatingCosts = 0;
+      let heatingCosts = 0;
+
+      if (contract) {
+        if (contract.rent_type === "flat_rate") {
+          coldRent = parseFloat(contract.flat_rate_amount || "0");
+          operatingCosts = 0;
+          heatingCosts = 0;
+        } else if (contract.rent_type === "cold_rent_advance") {
+          coldRent = parseFloat(contract.cold_rent || "0");
+          operatingCosts = parseFloat(contract.total_advance || "0");
+          heatingCosts = 0;
+        } else if (contract.rent_type === "cold_rent_utilities_heating") {
+          coldRent = parseFloat(contract.cold_rent || "0");
+          operatingCosts = parseFloat(contract.operating_costs || "0");
+          heatingCosts = parseFloat(contract.heating_costs || "0");
+        } else {
+          coldRent = parseFloat(contract.cold_rent || contract.base_rent || "0");
+          operatingCosts = parseFloat(contract.operating_costs || "0");
+          heatingCosts = parseFloat(contract.heating_costs || "0");
+        }
+      }
+
       const warmRent = coldRent + operatingCosts + heatingCosts;
 
       setTenantData({
