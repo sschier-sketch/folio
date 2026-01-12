@@ -89,18 +89,32 @@ export default function CashflowView() {
 
       let paymentsQuery = supabase
         .from("rent_payments")
-        .select("*, rental_contracts!inner(property_id, unit_id)")
-        .eq("rental_contracts.user_id", user!.id)
+        .select("*")
+        .eq("user_id", user!.id)
         .gte("due_date", filterStartDate)
         .lte("due_date", filterEndDate)
         .eq("payment_status", "paid");
 
       if (selectedProperty) {
-        paymentsQuery = paymentsQuery.eq("rental_contracts.property_id", selectedProperty);
+        const { data: contractIds } = await supabase
+          .from("rental_contracts")
+          .select("id")
+          .eq("property_id", selectedProperty);
+
+        if (contractIds && contractIds.length > 0) {
+          paymentsQuery = paymentsQuery.in("contract_id", contractIds.map(c => c.id));
+        }
       }
 
       if (selectedUnit) {
-        paymentsQuery = paymentsQuery.eq("rental_contracts.unit_id", selectedUnit);
+        const { data: contractIds } = await supabase
+          .from("rental_contracts")
+          .select("id")
+          .eq("unit_id", selectedUnit);
+
+        if (contractIds && contractIds.length > 0) {
+          paymentsQuery = paymentsQuery.in("contract_id", contractIds.map(c => c.id));
+        }
       }
 
       let expensesQuery = supabase

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Calendar, CheckCircle2, Clock, AlertCircle, Building2 } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, Plus } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -8,7 +8,7 @@ interface RentPayment {
   amount: number;
   due_date: string;
   payment_status: string;
-  payment_date: string | null;
+  paid_date: string | null;
   payment_method: string | null;
   rental_contracts: {
     tenants: {
@@ -32,17 +32,42 @@ interface Unit {
   property_id: string;
 }
 
+interface Tenant {
+  id: string;
+  first_name: string;
+  last_name: string;
+}
+
+interface Contract {
+  id: string;
+  tenant_id: string;
+  property_id: string;
+  unit_id: string | null;
+  base_rent: number;
+}
+
 export default function IncomeView() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [rentPayments, setRentPayments] = useState<RentPayment[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [timePeriod, setTimePeriod] = useState<"current" | "last" | "all">("current");
   const [selectedProperty, setSelectedProperty] = useState<string>("");
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({
+    contract_id: "",
+    amount: "",
+    due_date: new Date().toISOString().split("T")[0],
+    paid_date: new Date().toISOString().split("T")[0],
+    payment_method: "bank_transfer",
+    notes: "",
+  });
 
   useEffect(() => {
     if (user) {
@@ -53,13 +78,17 @@ export default function IncomeView() {
 
   async function loadProperties() {
     try {
-      const [propertiesRes, unitsRes] = await Promise.all([
+      const [propertiesRes, unitsRes, tenantsRes, contractsRes] = await Promise.all([
         supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
         supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", user!.id).order("unit_number"),
+        supabase.from("tenants").select("id, first_name, last_name").eq("user_id", user!.id).eq("is_active", true).order("last_name"),
+        supabase.from("rental_contracts").select("id, tenant_id, property_id, unit_id, base_rent").eq("user_id", user!.id),
       ]);
 
       if (propertiesRes.data) setProperties(propertiesRes.data);
       if (unitsRes.data) setUnits(unitsRes.data);
+      if (tenantsRes.data) setTenants(tenantsRes.data);
+      if (contractsRes.data) setContracts(contractsRes.data);
     } catch (error) {
       console.error("Error loading properties:", error);
     }
@@ -129,17 +158,39 @@ export default function IncomeView() {
   const totalIncome = rentPayments.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
   const averageIncome = rentPayments.length > 0 ? totalIncome / rentPayments.length : 0;
 
-  const getPaymentMethodLabel = (method: string | null) => {
-    if (!method) return "Nicht angegeben";
-    const methods: { [key: string]: string } = {
-      bank_transfer: "Überweisung",
-      cash: "Bar",
-      debit: "Lastschrift",
-      credit_card: "Kreditkarte",
-      other: "Sonstiges"
-    };
-    return methods[method] || method;
-  };
+  async function handleAddIncome() {
+    if (!user || !formData.contract_id || !formData.amount) return;
+
+    try {
+      const { error } = await supabase.from("rent_payments").insert({
+        user_id: user.id,
+        contract_id: formData.contract_id,
+        amount: parseFloat(formData.amount),
+        due_date: formData.due_date,
+        paid_date: formData.paid_date,
+        payment_status: "paid",
+        payment_method: formData.payment_method,
+        notes: formData.notes,
+      });
+
+      if (error) throw error;
+
+      alert("Einnahme erfolgreich gespeichert!");
+      setShowAddModal(false);
+      setFormData({
+        contract_id: "",
+        amount: "",
+        due_date: new Date().toISOString().split("T")[0],
+        paid_date: new Date().toISOString().split("T")[0],
+        payment_method: "bank_transfer",
+        notes: "",
+      });
+      loadRentPayments();
+    } catch (error) {
+      console.error("Error adding income:", error);
+      alert("Fehler beim Speichern der Einnahme: " + (error as Error).message);
+    }
+  }
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
@@ -147,108 +198,97 @@ export default function IncomeView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+      <div className="bg-white rounded-lg p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-dark">Einnahmen</h2>
-            <p className="text-gray-400 mt-1">
-              Übersicht aller Mieteingänge
-            </p>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Objekt
+            </label>
+            <select
+              value={selectedProperty}
+              onChange={(e) => {
+                setSelectedProperty(e.target.value);
+                setSelectedUnit("");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="">Alle Objekte</option>
+              {properties.map((prop) => (
+                <option key={prop.id} value={prop.id}>
+                  {prop.name}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Objekt
-              </label>
-              <select
-                value={selectedProperty}
-                onChange={(e) => {
-                  setSelectedProperty(e.target.value);
-                  setSelectedUnit("");
-                }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              >
-                <option value="">Alle Objekte</option>
-                {properties.map((prop) => (
-                  <option key={prop.id} value={prop.id}>
-                    {prop.name}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Einheit
+            </label>
+            <select
+              value={selectedUnit}
+              onChange={(e) => setSelectedUnit(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              disabled={!selectedProperty}
+            >
+              <option value="">Alle Einheiten</option>
+              {units
+                .filter((u) => !selectedProperty || u.property_id === selectedProperty)
+                .map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    Einheit {unit.unit_number}
                   </option>
                 ))}
-              </select>
-            </div>
+            </select>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Einheit
-              </label>
-              <select
-                value={selectedUnit}
-                onChange={(e) => setSelectedUnit(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                disabled={!selectedProperty}
-              >
-                <option value="">Alle Einheiten</option>
-                {units
-                  .filter((u) => !selectedProperty || u.property_id === selectedProperty)
-                  .map((unit) => (
-                    <option key={unit.id} value={unit.id}>
-                      Einheit {unit.unit_number}
-                    </option>
-                  ))}
-              </select>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Zeitraum
+            </label>
+            <select
+              value={timePeriod}
+              onChange={(e) => {
+                setTimePeriod(e.target.value as "current" | "last" | "all");
+                setStartDate("");
+                setEndDate("");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="current">Aktuelles Jahr</option>
+              <option value="last">Letztes Jahr</option>
+              <option value="all">Alle</option>
+            </select>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Zeitraum
-              </label>
-              <select
-                value={timePeriod}
-                onChange={(e) => {
-                  setTimePeriod(e.target.value as "current" | "last" | "all");
-                  setStartDate("");
-                  setEndDate("");
-                }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              >
-                <option value="current">Aktuelles Jahr</option>
-                <option value="last">Letztes Jahr</option>
-                <option value="all">Alle</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Von
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                if (e.target.value) setTimePeriod("current");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Von
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
-                  if (e.target.value) setTimePeriod("current");
-                }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bis
-              </label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value);
-                  if (e.target.value) setTimePeriod("current");
-                }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Bis
+            </label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                if (e.target.value) setTimePeriod("current");
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            />
           </div>
         </div>
       </div>
@@ -286,8 +326,15 @@ export default function IncomeView() {
       </div>
 
       <div className="bg-white rounded-lg">
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">Mieteingänge</h3>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Einnahme hinzufügen
+          </button>
         </div>
 
         {rentPayments.length === 0 ? (
@@ -314,9 +361,6 @@ export default function IncomeView() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Objekt
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Zahlungsart
-                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Betrag
                   </th>
@@ -339,9 +383,6 @@ export default function IncomeView() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {payment.rental_contracts.properties.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {getPaymentMethodLabel(payment.payment_method)}
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
                       +{parseFloat(payment.amount.toString()).toFixed(2)} €
                     </td>
@@ -352,6 +393,146 @@ export default function IncomeView() {
           </div>
         )}
       </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-semibold text-dark mb-4">
+              Einnahme hinzufügen
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mietvertrag *
+                </label>
+                <select
+                  value={formData.contract_id}
+                  onChange={(e) => {
+                    const contract = contracts.find(c => c.id === e.target.value);
+                    setFormData({
+                      ...formData,
+                      contract_id: e.target.value,
+                      amount: contract ? contract.base_rent.toString() : ""
+                    });
+                  }}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                >
+                  <option value="">Mietvertrag wählen...</option>
+                  {contracts.map((contract) => {
+                    const tenant = tenants.find(t => t.id === contract.tenant_id);
+                    const property = properties.find(p => p.id === contract.property_id);
+                    const unit = contract.unit_id ? units.find(u => u.id === contract.unit_id) : null;
+                    return (
+                      <option key={contract.id} value={contract.id}>
+                        {tenant ? `${tenant.first_name} ${tenant.last_name}` : "Unbekannt"} - {property?.name || "Unbekannt"}{unit ? ` - Einheit ${unit.unit_number}` : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Betrag (€) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.amount}
+                  onChange={(e) =>
+                    setFormData({ ...formData, amount: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Fälligkeitsdatum *
+                </label>
+                <input
+                  type="date"
+                  value={formData.due_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, due_date: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bezahlt am *
+                </label>
+                <input
+                  type="date"
+                  value={formData.paid_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, paid_date: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Zahlungsart
+                </label>
+                <select
+                  value={formData.payment_method}
+                  onChange={(e) =>
+                    setFormData({ ...formData, payment_method: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  <option value="bank_transfer">Überweisung</option>
+                  <option value="cash">Bar</option>
+                  <option value="debit">Lastschrift</option>
+                  <option value="credit_card">Kreditkarte</option>
+                  <option value="other">Sonstiges</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Notizen (optional)
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  rows={3}
+                  placeholder="Zusätzliche Informationen..."
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={handleAddIncome}
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+                disabled={!formData.contract_id || !formData.amount}
+              >
+                Hinzufügen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
