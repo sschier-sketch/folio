@@ -62,6 +62,16 @@ export default function TenantLogin({
 
       const now = new Date().toISOString();
 
+      const newTokenValue = crypto.randomUUID();
+      const newExpiresAt = new Date();
+      newExpiresAt.setHours(newExpiresAt.getHours() + 24);
+
+      await supabase.from("tenant_impersonation_tokens").insert({
+        tenant_id: tenant.id,
+        token: newTokenValue,
+        expires_at: newExpiresAt.toISOString(),
+      });
+
       await supabase
         .from("tenants")
         .update({
@@ -123,6 +133,17 @@ export default function TenantLogin({
         return;
       }
       const now = new Date().toISOString();
+
+      const tokenValue = crypto.randomUUID();
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24);
+
+      await supabase.from("tenant_impersonation_tokens").insert({
+        tenant_id: tenants.id,
+        token: tokenValue,
+        expires_at: expiresAt.toISOString(),
+      });
+
       await supabase
         .from("tenants")
         .update({
@@ -168,6 +189,17 @@ export default function TenantLogin({
       const salt = generateSalt();
       const hash = await hashPassword(password, salt);
       const now = new Date().toISOString();
+
+      const tokenValue = crypto.randomUUID();
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24);
+
+      await supabase.from("tenant_impersonation_tokens").insert({
+        tenant_id: tenant.id,
+        token: tokenValue,
+        expires_at: expiresAt.toISOString(),
+      });
+
       const { error: updateError } = await supabase
         .from("tenants")
         .update({
