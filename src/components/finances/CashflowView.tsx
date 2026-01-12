@@ -91,8 +91,9 @@ export default function CashflowView() {
         .from("rent_payments")
         .select("*")
         .eq("user_id", user!.id)
-        .gte("due_date", filterStartDate)
-        .lte("due_date", filterEndDate)
+        .not("paid_date", "is", null)
+        .gte("paid_date", filterStartDate)
+        .lte("paid_date", filterEndDate)
         .eq("payment_status", "paid");
 
       if (selectedProperty) {
@@ -180,7 +181,7 @@ export default function CashflowView() {
 
         const rentIncome = payments
           .filter((p) => {
-            const date = new Date(p.due_date);
+            const date = new Date(p.paid_date);
             return date.getFullYear() === year && date.getMonth() === month;
           })
           .reduce((sum, p) => sum + parseFloat(p.amount?.toString() || '0'), 0);

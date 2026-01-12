@@ -13,25 +13,25 @@ import BillingExportView from "./billing/BillingExportView";
 import BillingHistoryView from "./billing/BillingHistoryView";
 
 type Tab =
-  | "overview"
-  | "operating-costs"
   | "meters"
+  | "operating-costs"
   | "export"
   | "history";
 
 export default function BillingView() {
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [activeTab, setActiveTab] = useState<Tab>("meters");
 
   const tabs = [
-    { id: "overview" as Tab, label: "Übersicht", icon: FileText },
+    { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },
     {
       id: "operating-costs" as Tab,
       label: "Betriebskosten",
       icon: Calculator,
+      premium: true,
+      disabled: true,
     },
-    { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },
-    { id: "export" as Tab, label: "Export", icon: Download, premium: true },
-    { id: "history" as Tab, label: "Historie", icon: History, premium: true },
+    { id: "export" as Tab, label: "Export", icon: Download, premium: true, disabled: true },
+    { id: "history" as Tab, label: "Historie", icon: History, premium: true, disabled: true },
   ];
 
   return (
@@ -51,12 +51,15 @@ export default function BillingView() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => !tab.disabled && setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
-                    activeTab === tab.id
+                    tab.disabled
+                      ? "text-gray-300 cursor-not-allowed"
+                      : activeTab === tab.id
                       ? "text-primary-blue"
                       : "text-gray-400 hover:text-dark"
                   }`}
+                  disabled={tab.disabled}
                 >
                   <Icon className="w-5 h-5" />
                   {tab.label}
@@ -65,7 +68,7 @@ export default function BillingView() {
                       Pro
                     </span>
                   )}
-                  {activeTab === tab.id && (
+                  {activeTab === tab.id && !tab.disabled && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
                   )}
                 </button>
@@ -76,9 +79,8 @@ export default function BillingView() {
       </div>
 
       <div>
-        {activeTab === "overview" && <BillingOverview />}
-        {activeTab === "operating-costs" && <OperatingCostsView />}
         {activeTab === "meters" && <MetersView />}
+        {activeTab === "operating-costs" && <OperatingCostsView />}
         {activeTab === "export" && <BillingExportView />}
         {activeTab === "history" && <BillingHistoryView />}
       </div>
