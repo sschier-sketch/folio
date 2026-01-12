@@ -1,7 +1,18 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Calendar, CheckCircle2, Plus } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit2 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+
+interface ManualIncome {
+  id: string;
+  property_id: string;
+  description: string;
+  amount: number;
+  entry_date: string;
+  properties: {
+    name: string;
+  };
+}
 
 interface RentPayment {
   id: string;
@@ -10,15 +21,14 @@ interface RentPayment {
   payment_status: string;
   paid_date: string | null;
   payment_method: string | null;
-  rental_contracts: {
-    tenants: {
-      first_name: string;
-      last_name: string;
-    };
-    properties: {
-      name: string;
-    };
+  tenants?: {
+    first_name: string;
+    last_name: string;
   };
+  properties?: {
+    name: string;
+  };
+  recipient?: string;
 }
 
 interface Property {
@@ -49,6 +59,7 @@ interface Contract {
 export default function IncomeView() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [manualIncomes, setManualIncomes] = useState<ManualIncome[]>([]);
   const [rentPayments, setRentPayments] = useState<RentPayment[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -60,6 +71,7 @@ export default function IncomeView() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingIncome, setEditingIncome] = useState<ManualIncome | null>(null);
   const [formData, setFormData] = useState({
     property_id: "",
     unit_id: "",
@@ -77,7 +89,7 @@ export default function IncomeView() {
   useEffect(() => {
     if (user) {
       loadProperties();
-      loadRentPayments();
+      loadData();
     }
   }, [user, timePeriod, selectedProperty, selectedUnit, startDate, endDate]);
 
@@ -99,7 +111,7 @@ export default function IncomeView() {
     }
   }
 
-  async function loadRentPayments() {
+  async function loadData() {
     try {
       setLoading(true);
 
@@ -119,81 +131,98 @@ export default function IncomeView() {
         }
       }
 
-      let query = supabase
+      let manualQuery = supabase
+        .from("income_entries")
+        .select("id, property_id, description, amount, entry_date, properties(name)")
+        .eq("user_id", user!.id)
+        .eq("category", "income")
+        .order("entry_date", { ascending: false });
+
+      if (selectedProperty) {
+        manualQuery = manualQuery.eq("property_id", selectedProperty);
+      }
+
+      if (timePeriod !== "all" && filterStartDate && filterEndDate) {
+        manualQuery = manualQuery
+          .gte("entry_date", filterStartDate)
+          .lte("entry_date", filterEndDate);
+      }
+
+      let rentQuery = supabase
         .from("rent_payments")
         .select(`
           *,
           properties(name),
-          tenants(first_name, last_name),
-          rental_contracts(
-            unit_id,
-            properties!inner(name)
-          )
+          tenants(first_name, last_name)
         `)
-        .eq("user_id", user.id)
+        .eq("user_id", user!.id)
         .eq("payment_status", "paid")
         .order("paid_date", { ascending: false });
 
       if (selectedProperty) {
-        query = query.eq("property_id", selectedProperty);
-      }
-
-      if (selectedUnit) {
-        query = query.eq("rental_contracts.unit_id", selectedUnit);
+        rentQuery = rentQuery.eq("property_id", selectedProperty);
       }
 
       if (timePeriod !== "all" && filterStartDate && filterEndDate) {
-        query = query
+        rentQuery = rentQuery
           .gte("paid_date", filterStartDate)
           .lte("paid_date", filterEndDate);
       }
 
-      const { data, error } = await query;
+      const [manualRes, rentRes] = await Promise.all([manualQuery, rentQuery]);
 
-      if (error) throw error;
-      setRentPayments(data || []);
+      if (manualRes.error) throw manualRes.error;
+      if (rentRes.error) throw rentRes.error;
+
+      setManualIncomes(manualRes.data || []);
+      setRentPayments(rentRes.data || []);
     } catch (error) {
-      console.error("Error loading rent payments:", error);
+      console.error("Error loading data:", error);
     } finally {
       setLoading(false);
     }
   }
 
-  const totalIncome = rentPayments.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
-  const averageIncome = rentPayments.length > 0 ? totalIncome / rentPayments.length : 0;
+  const totalManualIncome = manualIncomes.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
+  const totalRentIncome = rentPayments.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
+  const totalIncome = totalManualIncome + totalRentIncome;
+  const totalCount = manualIncomes.length + rentPayments.length;
+  const averageIncome = totalCount > 0 ? totalIncome / totalCount : 0;
 
-  async function handleAddIncome() {
+  async function handleSaveIncome() {
     if (!user || !formData.property_id || !formData.amount || !formData.description) return;
 
     try {
-      const insertData: any = {
+      const insertData = {
         user_id: user.id,
         property_id: formData.property_id,
+        unit_id: formData.unit_id || null,
+        entry_date: formData.paid_date,
         amount: parseFloat(formData.amount),
-        due_date: formData.due_date || formData.paid_date,
-        paid_date: formData.paid_date,
-        paid: true,
-        payment_status: "paid",
-        payment_method: formData.payment_method,
-        notes: formData.notes,
+        category: "income",
         description: formData.description,
-        recipient: formData.recipient,
+        status: "paid",
+        notes: formData.notes || null,
       };
 
-      if (formData.tenant_id) {
-        insertData.tenant_id = formData.tenant_id;
-      }
+      let error;
 
-      if (formData.contract_id) {
-        insertData.contract_id = formData.contract_id;
+      if (editingIncome) {
+        const res = await supabase
+          .from("income_entries")
+          .update(insertData)
+          .eq("id", editingIncome.id);
+        error = res.error;
+      } else {
+        const res = await supabase.from("income_entries").insert(insertData);
+        error = res.error;
       }
-
-      const { error } = await supabase.from("rent_payments").insert(insertData);
 
       if (error) throw error;
 
-      alert("Einnahme erfolgreich gespeichert!");
+      alert(editingIncome ? "Einnahme aktualisiert!" : "Einnahme gespeichert!");
       setShowAddModal(false);
+      setEditingIncome(null);
       setFormData({
         property_id: "",
         unit_id: "",
@@ -207,11 +236,48 @@ export default function IncomeView() {
         recipient: "",
         notes: "",
       });
-      loadRentPayments();
+      loadData();
     } catch (error) {
-      console.error("Error adding income:", error);
-      alert("Fehler beim Speichern der Einnahme: " + (error as Error).message);
+      console.error("Error saving income:", error);
+      alert("Fehler beim Speichern: " + (error as Error).message);
     }
+  }
+
+  async function handleDeleteIncome(id: string) {
+    if (!confirm("Möchten Sie diese Einnahme wirklich löschen?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("income_entries")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      alert("Einnahme gelöscht!");
+      loadData();
+    } catch (error) {
+      console.error("Error deleting income:", error);
+      alert("Fehler beim Löschen: " + (error as Error).message);
+    }
+  }
+
+  function handleEditIncome(income: ManualIncome) {
+    setEditingIncome(income);
+    setFormData({
+      property_id: income.property_id,
+      unit_id: "",
+      tenant_id: "",
+      contract_id: "",
+      amount: income.amount.toString(),
+      due_date: income.entry_date,
+      paid_date: income.entry_date,
+      payment_method: "bank_transfer",
+      description: income.description,
+      recipient: "",
+      notes: "",
+    });
+    setShowAddModal(true);
   }
 
   if (loading) {
@@ -331,7 +397,7 @@ export default function IncomeView() {
             <Calendar className="w-6 h-6 text-primary-blue" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
-            {rentPayments.length}
+            {totalCount}
           </div>
           <div className="text-sm text-gray-400">Zahlungseingänge</div>
         </div>
@@ -349,9 +415,25 @@ export default function IncomeView() {
 
       <div className="bg-white rounded-lg">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-dark">Mieteingänge</h3>
+          <h3 className="text-lg font-semibold text-dark">Einnahmen</h3>
           <button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              setEditingIncome(null);
+              setFormData({
+                property_id: "",
+                unit_id: "",
+                tenant_id: "",
+                contract_id: "",
+                amount: "",
+                due_date: new Date().toISOString().split("T")[0],
+                paid_date: new Date().toISOString().split("T")[0],
+                payment_method: "bank_transfer",
+                description: "",
+                recipient: "",
+                notes: "",
+              });
+              setShowAddModal(true);
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -359,11 +441,83 @@ export default function IncomeView() {
           </button>
         </div>
 
+        {manualIncomes.length === 0 ? (
+          <div className="p-8 text-center text-gray-400">
+            Keine manuellen Einnahmen erfasst.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Datum
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Beschreibung
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Objekt
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Betrag
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Aktionen
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {manualIncomes.map((income) => (
+                  <tr key={income.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {new Date(income.entry_date).toLocaleDateString("de-DE", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric"
+                      })}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {income.description}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {income.properties.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
+                      +{parseFloat(income.amount.toString()).toFixed(2)} €
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                      <button
+                        onClick={() => handleEditIncome(income)}
+                        className="text-primary-blue hover:text-primary-blue mr-3"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteIncome(income.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-lg">
+        <div className="p-6 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-dark">Mieteingänge</h3>
+        </div>
+
         {rentPayments.length === 0 ? (
           <div className="p-12 text-center">
             <TrendingUp className="w-16 h-16 text-gray-200 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-dark mb-2">
-              Keine Einnahmen
+              Keine Mieteingänge
             </h3>
             <p className="text-gray-400">
               Im ausgewählten Zeitraum wurden keine Mieteingänge erfasst.
@@ -422,7 +576,7 @@ export default function IncomeView() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold text-dark mb-4">
-              Einnahme hinzufügen
+              {editingIncome ? "Einnahme bearbeiten" : "Einnahme hinzufügen"}
             </h3>
 
             <div className="space-y-4">
@@ -437,8 +591,6 @@ export default function IncomeView() {
                       ...formData,
                       property_id: e.target.value,
                       unit_id: "",
-                      tenant_id: "",
-                      contract_id: "",
                     });
                   }}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
@@ -455,66 +607,6 @@ export default function IncomeView() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Einheit (optional)
-                </label>
-                <select
-                  value={formData.unit_id}
-                  onChange={(e) => {
-                    setFormData({
-                      ...formData,
-                      unit_id: e.target.value,
-                      tenant_id: "",
-                      contract_id: "",
-                    });
-                  }}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  disabled={!formData.property_id}
-                >
-                  <option value="">Keine Einheit</option>
-                  {units
-                    .filter((u) => u.property_id === formData.property_id)
-                    .map((unit) => (
-                      <option key={unit.id} value={unit.id}>
-                        Einheit {unit.unit_number}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mieter (optional)
-                </label>
-                <select
-                  value={formData.tenant_id}
-                  onChange={(e) => {
-                    const selectedTenantId = e.target.value;
-                    const contract = contracts.find(
-                      c => c.tenant_id === selectedTenantId &&
-                      c.property_id === formData.property_id &&
-                      (!formData.unit_id || c.unit_id === formData.unit_id)
-                    );
-                    setFormData({
-                      ...formData,
-                      tenant_id: selectedTenantId,
-                      contract_id: contract?.id || "",
-                      amount: contract ? contract.base_rent.toString() : formData.amount,
-                    });
-                  }}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  disabled={!formData.property_id}
-                >
-                  <option value="">Kein Mieter</option>
-                  {tenants.map((tenant) => (
-                    <option key={tenant.id} value={tenant.id}>
-                      {tenant.first_name} {tenant.last_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Beschreibung *
                 </label>
                 <input
@@ -524,7 +616,7 @@ export default function IncomeView() {
                     setFormData({ ...formData, description: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="z.B. Miete Januar 2026"
+                  placeholder="z.B. Parkplatzmiete Januar 2026"
                   required
                 />
               </div>
@@ -548,22 +640,7 @@ export default function IncomeView() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Zahler (optional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.recipient}
-                  onChange={(e) =>
-                    setFormData({ ...formData, recipient: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="Name des Zahlers"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Eingangsdatum *
+                  Datum *
                 </label>
                 <input
                   type="date"
@@ -574,39 +651,6 @@ export default function IncomeView() {
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   required
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fälligkeitsdatum (optional)
-                </label>
-                <input
-                  type="date"
-                  value={formData.due_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, due_date: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Zahlungsart
-                </label>
-                <select
-                  value={formData.payment_method}
-                  onChange={(e) =>
-                    setFormData({ ...formData, payment_method: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                >
-                  <option value="bank_transfer">Überweisung</option>
-                  <option value="cash">Bar</option>
-                  <option value="debit">Lastschrift</option>
-                  <option value="credit_card">Kreditkarte</option>
-                  <option value="other">Sonstiges</option>
-                </select>
               </div>
 
               <div>
@@ -627,17 +671,20 @@ export default function IncomeView() {
 
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={() => {
+                  setShowAddModal(false);
+                  setEditingIncome(null);
+                }}
                 className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
                 Abbrechen
               </button>
               <button
-                onClick={handleAddIncome}
+                onClick={handleSaveIncome}
                 className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
                 disabled={!formData.property_id || !formData.amount || !formData.description}
               >
-                Hinzufügen
+                {editingIncome ? "Aktualisieren" : "Hinzufügen"}
               </button>
             </div>
           </div>

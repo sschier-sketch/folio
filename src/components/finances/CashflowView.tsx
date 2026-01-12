@@ -99,6 +99,18 @@ export default function CashflowView() {
         paymentsQuery = paymentsQuery.eq("property_id", selectedProperty);
       }
 
+      let manualIncomeQuery = supabase
+        .from("income_entries")
+        .select("*")
+        .eq("user_id", user!.id)
+        .eq("category", "income")
+        .gte("entry_date", filterStartDate)
+        .lte("entry_date", filterEndDate);
+
+      if (selectedProperty) {
+        manualIncomeQuery = manualIncomeQuery.eq("property_id", selectedProperty);
+      }
+
       let expensesQuery = supabase
         .from("expenses")
         .select("*")
@@ -127,13 +139,15 @@ export default function CashflowView() {
         loansQuery = loansQuery.eq("property_id", selectedProperty);
       }
 
-      const [paymentsRes, expensesRes, loansRes] = await Promise.all([
+      const [paymentsRes, manualIncomeRes, expensesRes, loansRes] = await Promise.all([
         paymentsQuery,
+        manualIncomeQuery,
         expensesQuery,
         loansQuery,
       ]);
 
       const payments = paymentsRes.data || [];
+      const manualIncomes = manualIncomeRes.data || [];
       const expenses = expensesRes.data || [];
       const loans = loansRes.data || [];
 
@@ -164,12 +178,21 @@ export default function CashflowView() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
-        const monthIncome = payments
+        const rentIncome = payments
           .filter((p) => {
             const date = new Date(p.due_date);
             return date.getFullYear() === year && date.getMonth() === month;
           })
           .reduce((sum, p) => sum + parseFloat(p.amount?.toString() || '0'), 0);
+
+        const manualIncome = manualIncomes
+          .filter((i) => {
+            const date = new Date(i.entry_date);
+            return date.getFullYear() === year && date.getMonth() === month;
+          })
+          .reduce((sum, i) => sum + parseFloat(i.amount?.toString() || '0'), 0);
+
+        const monthIncome = rentIncome + manualIncome;
 
         const monthExpenses = expenses
           .filter((e) => {
