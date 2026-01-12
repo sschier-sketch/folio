@@ -444,12 +444,12 @@ export default function Dashboard() {
                 <h3 className="font-semibold">Mieterportal</h3>{" "}
               </div>{" "}
               <p className="text-blue-50 text-sm mb-3">
-                Teilen Sie den Zugang mit Ihren Mietern
+                Kommunizieren Sie mit Ihren Mietern
               </p>{" "}
-              <div className="flex gap-2">
+              <div>
                 <button
                   onClick={handleCopyPortalUrl}
-                  className="flex-1 bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   {copiedPortalUrl ? (
                     <>
@@ -460,12 +460,6 @@ export default function Dashboard() {
                       <Copy className="w-4 h-4" /> Link
                     </>
                   )}
-                </button>
-                <button
-                  onClick={handleOpenPortal}
-                  className="flex-1 bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  <ExternalLink className="w-4 h-4" /> Öffnen
                 </button>
               </div>{" "}
             </div>{" "}
@@ -543,12 +537,12 @@ export default function Dashboard() {
                 <h3 className="font-semibold">Mieterportal</h3>{" "}
               </div>{" "}
               <p className="text-blue-50 text-sm mb-3">
-                Teilen Sie den Zugang mit Ihren Mietern
+                Kommunizieren Sie mit Ihren Mietern
               </p>{" "}
-              <div className="flex gap-2">
+              <div>
                 <button
                   onClick={handleCopyPortalUrl}
-                  className="flex-1 bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   {copiedPortalUrl ? (
                     <>
@@ -559,12 +553,6 @@ export default function Dashboard() {
                       <Copy className="w-4 h-4" /> Link
                     </>
                   )}
-                </button>
-                <button
-                  onClick={handleOpenPortal}
-                  className="flex-1 bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  <ExternalLink className="w-4 h-4" /> Öffnen
                 </button>
               </div>{" "}
             </div>{" "}
