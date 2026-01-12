@@ -187,14 +187,14 @@ export default function CashflowView() {
             const date = new Date(p.due_date);
             return date.getFullYear() === year && date.getMonth() === month;
           })
-          .reduce((sum, p) => sum + p.amount, 0);
+          .reduce((sum, p) => sum + parseFloat(p.amount?.toString() || '0'), 0);
 
         const monthExpenses = expenses
           .filter((e) => {
             const date = new Date(e.expense_date);
             return date.getFullYear() === year && date.getMonth() === month;
           })
-          .reduce((sum, e) => sum + e.amount, 0);
+          .reduce((sum, e) => sum + parseFloat(e.amount?.toString() || '0'), 0);
 
         const monthLoanPayments = loans
           .filter((l) => {

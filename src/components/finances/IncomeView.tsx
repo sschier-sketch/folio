@@ -61,11 +61,16 @@ export default function IncomeView() {
   const [endDate, setEndDate] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
+    property_id: "",
+    unit_id: "",
+    tenant_id: "",
     contract_id: "",
     amount: "",
     due_date: new Date().toISOString().split("T")[0],
     paid_date: new Date().toISOString().split("T")[0],
     payment_method: "bank_transfer",
+    description: "",
+    recipient: "",
     notes: "",
   });
 
@@ -159,30 +164,42 @@ export default function IncomeView() {
   const averageIncome = rentPayments.length > 0 ? totalIncome / rentPayments.length : 0;
 
   async function handleAddIncome() {
-    if (!user || !formData.contract_id || !formData.amount) return;
+    if (!user || !formData.property_id || !formData.amount || !formData.description) return;
 
     try {
-      const { error } = await supabase.from("rent_payments").insert({
+      const insertData: any = {
         user_id: user.id,
-        contract_id: formData.contract_id,
         amount: parseFloat(formData.amount),
-        due_date: formData.due_date,
+        due_date: formData.due_date || formData.paid_date,
         paid_date: formData.paid_date,
         payment_status: "paid",
         payment_method: formData.payment_method,
         notes: formData.notes,
-      });
+        description: formData.description,
+        recipient: formData.recipient,
+      };
+
+      if (formData.contract_id) {
+        insertData.contract_id = formData.contract_id;
+      }
+
+      const { error } = await supabase.from("rent_payments").insert(insertData);
 
       if (error) throw error;
 
       alert("Einnahme erfolgreich gespeichert!");
       setShowAddModal(false);
       setFormData({
+        property_id: "",
+        unit_id: "",
+        tenant_id: "",
         contract_id: "",
         amount: "",
         due_date: new Date().toISOString().split("T")[0],
         paid_date: new Date().toISOString().split("T")[0],
         payment_method: "bank_transfer",
+        description: "",
+        recipient: "",
         notes: "",
       });
       loadRentPayments();
@@ -404,33 +421,105 @@ export default function IncomeView() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mietvertrag *
+                  Objekt *
                 </label>
                 <select
-                  value={formData.contract_id}
+                  value={formData.property_id}
                   onChange={(e) => {
-                    const contract = contracts.find(c => c.id === e.target.value);
                     setFormData({
                       ...formData,
-                      contract_id: e.target.value,
-                      amount: contract ? contract.base_rent.toString() : ""
+                      property_id: e.target.value,
+                      unit_id: "",
+                      tenant_id: "",
+                      contract_id: "",
                     });
                   }}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   required
                 >
-                  <option value="">Mietvertrag wählen...</option>
-                  {contracts.map((contract) => {
-                    const tenant = tenants.find(t => t.id === contract.tenant_id);
-                    const property = properties.find(p => p.id === contract.property_id);
-                    const unit = contract.unit_id ? units.find(u => u.id === contract.unit_id) : null;
-                    return (
-                      <option key={contract.id} value={contract.id}>
-                        {tenant ? `${tenant.first_name} ${tenant.last_name}` : "Unbekannt"} - {property?.name || "Unbekannt"}{unit ? ` - Einheit ${unit.unit_number}` : ""}
-                      </option>
-                    );
-                  })}
+                  <option value="">Objekt wählen...</option>
+                  {properties.map((prop) => (
+                    <option key={prop.id} value={prop.id}>
+                      {prop.name}
+                    </option>
+                  ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Einheit (optional)
+                </label>
+                <select
+                  value={formData.unit_id}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      unit_id: e.target.value,
+                      tenant_id: "",
+                      contract_id: "",
+                    });
+                  }}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  disabled={!formData.property_id}
+                >
+                  <option value="">Keine Einheit</option>
+                  {units
+                    .filter((u) => u.property_id === formData.property_id)
+                    .map((unit) => (
+                      <option key={unit.id} value={unit.id}>
+                        Einheit {unit.unit_number}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mieter (optional)
+                </label>
+                <select
+                  value={formData.tenant_id}
+                  onChange={(e) => {
+                    const selectedTenantId = e.target.value;
+                    const contract = contracts.find(
+                      c => c.tenant_id === selectedTenantId &&
+                      c.property_id === formData.property_id &&
+                      (!formData.unit_id || c.unit_id === formData.unit_id)
+                    );
+                    setFormData({
+                      ...formData,
+                      tenant_id: selectedTenantId,
+                      contract_id: contract?.id || "",
+                      amount: contract ? contract.base_rent.toString() : formData.amount,
+                    });
+                  }}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  disabled={!formData.property_id}
+                >
+                  <option value="">Kein Mieter</option>
+                  {tenants.map((tenant) => (
+                    <option key={tenant.id} value={tenant.id}>
+                      {tenant.first_name} {tenant.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Beschreibung *
+                </label>
+                <input
+                  type="text"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. Miete Januar 2026"
+                  required
+                />
               </div>
 
               <div>
@@ -452,22 +541,22 @@ export default function IncomeView() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fälligkeitsdatum *
+                  Zahler (optional)
                 </label>
                 <input
-                  type="date"
-                  value={formData.due_date}
+                  type="text"
+                  value={formData.recipient}
                   onChange={(e) =>
-                    setFormData({ ...formData, due_date: e.target.value })
+                    setFormData({ ...formData, recipient: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  required
+                  placeholder="Name des Zahlers"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bezahlt am *
+                  Eingangsdatum *
                 </label>
                 <input
                   type="date"
@@ -477,6 +566,20 @@ export default function IncomeView() {
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Fälligkeitsdatum (optional)
+                </label>
+                <input
+                  type="date"
+                  value={formData.due_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, due_date: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 />
               </div>
 
@@ -525,7 +628,7 @@ export default function IncomeView() {
               <button
                 onClick={handleAddIncome}
                 className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
-                disabled={!formData.contract_id || !formData.amount}
+                disabled={!formData.property_id || !formData.amount || !formData.description}
               >
                 Hinzufügen
               </button>

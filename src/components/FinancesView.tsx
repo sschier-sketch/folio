@@ -28,8 +28,8 @@ export default function FinancesView() {
   const tabs = [
     { id: "income" as Tab, label: "Einnahmen", icon: TrendingUp },
     { id: "expenses" as Tab, label: "Ausgaben", icon: TrendingDown },
-    { id: "cashflow" as Tab, label: "Cashflow", icon: BarChart3 },
-    { id: "indexrent" as Tab, label: "Indexmiete", icon: Calculator },
+    { id: "cashflow" as Tab, label: "Cashflow", icon: BarChart3, premium: true },
+    { id: "indexrent" as Tab, label: "Indexmiete", icon: Calculator, premium: true },
     { id: "intelligence" as Tab, label: "Intelligenz", icon: Lightbulb, premium: true },
     { id: "bank" as Tab, label: "Bankanbindung", icon: CreditCard, premium: true },
   ];

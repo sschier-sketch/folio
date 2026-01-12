@@ -114,7 +114,7 @@ export default function Dashboard() {
     { id: "financial", labelKey: "nav.financial", icon: TrendingUp },
     { id: "documents", labelKey: "nav.documents", icon: FileText },
     { id: "templates", labelKey: "nav.templates", icon: Files },
-    { id: "billing", labelKey: "nav.billing", icon: Calculator, comingSoon: true },
+    { id: "billing", labelKey: "nav.billing", icon: Calculator },
   ];
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
