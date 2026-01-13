@@ -158,6 +158,12 @@ export default function CashflowView() {
       console.log("Expenses geladen:", expenses.length, expenses);
       console.log("Loans geladen:", loans.length, loans);
 
+      payments.forEach(p => {
+        const paidAmt = parseFloat(p.paid_amount?.toString() || '0');
+        const amt = parseFloat(p.amount?.toString() || '0');
+        console.log(`Payment: paid_amount=${paidAmt}, amount=${amt}, verwendeter Wert=${paidAmt > 0 ? paidAmt : amt}, paid_date=${p.paid_date}`);
+      });
+
       const monthNames = [
         "Jan",
         "Feb",
@@ -191,7 +197,11 @@ export default function CashflowView() {
             const date = new Date(p.paid_date);
             return date.getFullYear() === year && date.getMonth() === month;
           })
-          .reduce((sum, p) => sum + parseFloat(p.paid_amount?.toString() || p.amount?.toString() || '0'), 0);
+          .reduce((sum, p) => {
+            const paidAmount = parseFloat(p.paid_amount?.toString() || '0');
+            const amount = parseFloat(p.amount?.toString() || '0');
+            return sum + (paidAmount > 0 ? paidAmount : amount);
+          }, 0);
 
         const manualIncome = manualIncomes
           .filter((i) => {
