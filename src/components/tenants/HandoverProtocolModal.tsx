@@ -144,7 +144,9 @@ export default function HandoverProtocolModal({
     );
   };
 
-  const handleNext = () => {
+  const handleNext = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }

@@ -529,6 +529,9 @@ export default function IncomeView() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mietvertrag
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Vertragsbeginn
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -551,6 +554,9 @@ export default function IncomeView() {
               <tbody className="bg-white divide-y divide-gray-100">
                 {rentalContracts.map((contract) => (
                   <tr key={contract.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      #{contract.id.slice(0, 8)}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {new Date(contract.start_date).toLocaleDateString("de-DE", {
                         year: "numeric",
