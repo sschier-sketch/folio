@@ -71,10 +71,19 @@ export default function RentPaymentsView() {
             ` id, property_id, properties(name), tenants!contract_id(first_name, last_name) `,
           )
           .eq("user_id", user.id)
+          .eq("status", "active")
           .order("contract_start", { ascending: false }),
       ]);
       setProperties(propertiesRes.data || []);
-      setContracts(contractsRes.data || []);
+
+      const validContracts = (contractsRes.data || []).filter(contract => {
+        if (!contract.tenants || contract.tenants.length === 0) return false;
+        const tenant = contract.tenants[0];
+        if (!tenant.first_name || !tenant.last_name) return false;
+        return true;
+      });
+
+      setContracts(validContracts);
       await loadPayments();
     } catch (error) {
       console.error("Error loading data:", error);
@@ -119,11 +128,17 @@ export default function RentPaymentsView() {
       }
       const { data, error } = await query;
 
-      console.log('RentPayments Query Result:', { data, error, filters: { filterStatus, filterProperty, filterContract, startDate, endDate } });
-
       if (error) throw error;
 
-      setPayments(data || []);
+      const filteredPayments = (data || []).filter(payment => {
+        if (!payment.rental_contract) return false;
+        if (!payment.rental_contract.tenants || payment.rental_contract.tenants.length === 0) return false;
+        const tenant = payment.rental_contract.tenants[0];
+        if (!tenant.first_name || !tenant.last_name) return false;
+        return true;
+      });
+
+      setPayments(filteredPayments);
     } catch (error) {
       console.error("Error loading payments:", error);
     }
