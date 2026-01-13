@@ -156,8 +156,8 @@ export default function IncomeView() {
           additional_costs,
           start_date,
           status,
-          properties(name),
-          tenants(first_name, last_name)
+          tenant_id,
+          property_id
         `)
         .eq("user_id", user!.id)
         .eq("status", "active")
@@ -173,7 +173,31 @@ export default function IncomeView() {
       if (contractsRes.error) throw contractsRes.error;
 
       setManualIncomes(manualRes.data || []);
-      setRentalContracts(contractsRes.data || []);
+
+      const contractsWithRelations = await Promise.all(
+        (contractsRes.data || []).map(async (contract: any) => {
+          const [tenantRes, propertyRes] = await Promise.all([
+            supabase
+              .from("tenants")
+              .select("first_name, last_name")
+              .eq("id", contract.tenant_id)
+              .maybeSingle(),
+            supabase
+              .from("properties")
+              .select("name")
+              .eq("id", contract.property_id)
+              .maybeSingle(),
+          ]);
+
+          return {
+            ...contract,
+            tenants: tenantRes.data,
+            properties: propertyRes.data,
+          };
+        })
+      );
+
+      setRentalContracts(contractsWithRelations);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {

@@ -70,7 +70,32 @@ export default function TenantHandoverTab({
           .eq("contract_id", contractData.id)
           .order("handover_date", { ascending: false });
 
-        if (protocolsData) setProtocols(protocolsData);
+        if (protocolsData) {
+          const protocolsWithUrls = await Promise.all(
+            protocolsData.map(async (protocol) => {
+              if (Array.isArray(protocol.photos) && protocol.photos.length > 0) {
+                const photosWithUrls = await Promise.all(
+                  protocol.photos.map(async (photo: any) => {
+                    if (photo.path) {
+                      const { data: urlData } = await supabase.storage
+                        .from("documents")
+                        .createSignedUrl(photo.path, 3600);
+
+                      return {
+                        ...photo,
+                        url: urlData?.signedUrl || null,
+                      };
+                    }
+                    return photo;
+                  })
+                );
+                return { ...protocol, photos: photosWithUrls };
+              }
+              return protocol;
+            })
+          );
+          setProtocols(protocolsWithUrls);
+        }
       }
     } catch (error) {
       console.error("Error loading handover protocols:", error);
