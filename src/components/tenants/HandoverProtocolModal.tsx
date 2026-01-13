@@ -144,13 +144,14 @@ export default function HandoverProtocolModal({
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleNext = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
-      return;
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     if (!user) return;
     setLoading(true);
@@ -551,7 +552,7 @@ export default function HandoverProtocolModal({
 
             <button
               type={currentStep === 3 ? "submit" : "button"}
-              onClick={currentStep < 3 ? () => setCurrentStep(currentStep + 1) : undefined}
+              onClick={currentStep < 3 ? handleNext : undefined}
               disabled={loading}
               className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
             >
