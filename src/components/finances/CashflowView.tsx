@@ -179,13 +179,15 @@ export default function CashflowView() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
+        const firstDayOfMonth = new Date(year, month, 1);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+
         const rentIncome = contracts
           .filter((contract) => {
             if (!contract.start_date) return false;
             const contractStart = new Date(contract.start_date);
             const contractEnd = contract.end_date ? new Date(contract.end_date) : new Date(2099, 11, 31);
-            const currentMonthDate = new Date(year, month, 1);
-            return currentMonthDate >= contractStart && currentMonthDate <= contractEnd;
+            return contractStart <= lastDayOfMonth && contractEnd >= firstDayOfMonth;
           })
           .reduce((sum, contract) => {
             return sum + parseFloat(contract.total_rent?.toString() || '0');
