@@ -17,6 +17,7 @@ import {
   MapPin,
   Trash2,
   AlertTriangle,
+  Check,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
@@ -245,6 +246,22 @@ export default function TenantHandoverTab({
     }
   };
 
+  const handleFinalizeProtocol = async (protocolId: string) => {
+    try {
+      const { error } = await supabase
+        .from("handover_protocols")
+        .update({ status: "final" })
+        .eq("id", protocolId);
+
+      if (error) throw error;
+
+      loadData();
+    } catch (error) {
+      console.error("Error finalizing protocol:", error);
+      alert("Fehler beim Finalisieren des Protokolls");
+    }
+  };
+
   return (
     <PremiumFeatureGuard featureName="Übergabeprotokolle">
       <div className="space-y-6">
@@ -333,13 +350,22 @@ export default function TenantHandoverTab({
                     </div>
                     <div className="flex items-center gap-2">
                       {protocol.status === "draft" && (
-                        <button
-                          onClick={() => setDeleteConfirmId(protocol.id)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Löschen
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleFinalizeProtocol(protocol.id)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 text-white rounded-full text-sm font-medium hover:bg-emerald-600 transition-colors"
+                          >
+                            <Check className="w-4 h-4" />
+                            Finalisieren
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(protocol.id)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Löschen
+                          </button>
+                        </>
                       )}
                       <button
                         onClick={() => handleDownloadPDF(protocol)}
@@ -360,32 +386,54 @@ export default function TenantHandoverTab({
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-xs text-gray-400 mb-1">
-                        Stromzähler
-                      </div>
-                      <div className="font-medium text-dark">
-                        {protocol.electricity_meter || "-"}
-                      </div>
-                    </div>
+                    {(() => {
+                      const electricityMeter = Array.isArray(protocol.meters)
+                        ? protocol.meters.find((m: any) => m.type === "electricity")
+                        : null;
+                      const waterMeter = Array.isArray(protocol.meters)
+                        ? protocol.meters.find((m: any) => m.type === "water")
+                        : null;
+                      const heatingMeter = Array.isArray(protocol.meters)
+                        ? protocol.meters.find((m: any) => m.type === "heating")
+                        : null;
 
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-xs text-gray-400 mb-1">
-                        Wasserzähler
-                      </div>
-                      <div className="font-medium text-dark">
-                        {protocol.water_meter || "-"}
-                      </div>
-                    </div>
+                      return (
+                        <>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <div className="text-xs text-gray-400 mb-1">
+                              Stromzähler
+                            </div>
+                            <div className="font-medium text-dark">
+                              {electricityMeter?.reading
+                                ? `${electricityMeter.reading} ${electricityMeter.unit}`
+                                : protocol.electricity_meter || "-"}
+                            </div>
+                          </div>
 
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-xs text-gray-400 mb-1">
-                        Heizungszähler
-                      </div>
-                      <div className="font-medium text-dark">
-                        {protocol.heating_meter || "-"}
-                      </div>
-                    </div>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <div className="text-xs text-gray-400 mb-1">
+                              Wasserzähler
+                            </div>
+                            <div className="font-medium text-dark">
+                              {waterMeter?.reading
+                                ? `${waterMeter.reading} ${waterMeter.unit}`
+                                : protocol.water_meter || "-"}
+                            </div>
+                          </div>
+
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <div className="text-xs text-gray-400 mb-1">
+                              Heizungszähler
+                            </div>
+                            <div className="font-medium text-dark">
+                              {heatingMeter?.reading
+                                ? `${heatingMeter.reading} ${heatingMeter.unit}`
+                                : protocol.heating_meter || "-"}
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
 
                   <div className="flex items-center gap-4 text-sm text-gray-600">

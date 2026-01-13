@@ -83,6 +83,9 @@ export default function HandoverProtocolModal({
     unitId: "",
   });
 
+  const [properties, setProperties] = useState<{ id: string; name: string; address: string }[]>([]);
+  const [units, setUnits] = useState<{ id: string; unit_number: string }[]>([]);
+
   const [formData, setFormData] = useState({
     handover_type: "move_in" as "move_in" | "move_out",
     handover_date: new Date().toISOString().split("T")[0],
@@ -124,44 +127,81 @@ export default function HandoverProtocolModal({
 
   async function loadContextData() {
     try {
-      const { data: contract } = await supabase
-        .from("rental_contracts")
-        .select(`
-          property_id,
-          unit_id,
-          properties(name, street, house_number, postal_code, city),
-          property_units(unit_number, square_meters)
-        `)
-        .eq("id", contractId)
-        .maybeSingle();
+      const [tenantRes, propertiesRes, profileRes] = await Promise.all([
+        supabase
+          .from("tenants")
+          .select("first_name, last_name, property_id, unit_id")
+          .eq("id", tenantId)
+          .maybeSingle(),
+        supabase
+          .from("properties")
+          .select("id, name, street, house_number, postal_code, city")
+          .eq("user_id", user!.id)
+          .order("name"),
+        supabase
+          .from("account_profiles")
+          .select("first_name, last_name, company_name")
+          .eq("user_id", user!.id)
+          .maybeSingle(),
+      ]);
 
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("first_name, last_name")
-        .eq("id", tenantId)
-        .maybeSingle();
+      const tenant = tenantRes.data;
+      const profile = profileRes.data;
 
-      const { data: profile } = await supabase
-        .from("account_profiles")
-        .select("first_name, last_name, company_name")
-        .eq("user_id", user!.id)
-        .maybeSingle();
+      if (propertiesRes.data) {
+        const propertiesData = propertiesRes.data.map((p) => ({
+          id: p.id,
+          name: p.name,
+          address: `${p.street || ""} ${p.house_number || ""}, ${p.postal_code || ""} ${p.city || ""}`.trim(),
+        }));
+        setProperties(propertiesData);
+      }
 
-      if (contract) {
-        const property = contract.properties as any;
-        const unit = contract.property_units as any;
+      if (tenant) {
+        let propertyName = "";
+        let propertyAddress = "";
+        let unitName = "";
+        let squareMeters = "";
+
+        if (tenant.property_id) {
+          const { data: propertyData } = await supabase
+            .from("properties")
+            .select("name, street, house_number, postal_code, city")
+            .eq("id", tenant.property_id)
+            .maybeSingle();
+
+          if (propertyData) {
+            propertyName = propertyData.name || "";
+            propertyAddress = `${propertyData.street || ""} ${propertyData.house_number || ""}, ${propertyData.postal_code || ""} ${propertyData.city || ""}`.trim();
+          }
+
+          await loadUnits(tenant.property_id);
+
+          if (tenant.unit_id) {
+            const { data: unitData } = await supabase
+              .from("property_units")
+              .select("unit_number, square_meters")
+              .eq("id", tenant.unit_id)
+              .maybeSingle();
+
+            if (unitData) {
+              unitName = unitData.unit_number || "";
+              squareMeters = unitData.square_meters?.toString() || "";
+            }
+          }
+
+          loadSystemMeters(tenant.property_id);
+        }
 
         const newContextData = {
-          propertyName: property?.name || "",
-          propertyAddress: property
-            ? `${property.street || ""} ${property.house_number || ""}, ${property.postal_code || ""} ${property.city || ""}`
-            : "",
-          unitName: unit?.unit_number || "",
-          squareMeters: unit?.square_meters?.toString() || "",
+          propertyName,
+          propertyAddress,
+          unitName,
+          squareMeters,
           landlordName: profile?.company_name || `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim(),
-          tenantName: tenant ? `${tenant.first_name} ${tenant.last_name}` : "",
-          propertyId: contract.property_id || "",
-          unitId: contract.unit_id || "",
+          tenantName: `${tenant.first_name} ${tenant.last_name}`,
+          propertyId: tenant.property_id || "",
+          unitId: tenant.unit_id || "",
         };
 
         setContextData(newContextData);
@@ -170,13 +210,25 @@ export default function HandoverProtocolModal({
           landlordName: newContextData.landlordName,
           tenantName: newContextData.tenantName,
         }));
-
-        if (contract.property_id) {
-          loadSystemMeters(contract.property_id);
-        }
       }
     } catch (error) {
       console.error("Error loading context data:", error);
+    }
+  }
+
+  async function loadUnits(propertyId: string) {
+    try {
+      const { data } = await supabase
+        .from("property_units")
+        .select("id, unit_number")
+        .eq("property_id", propertyId)
+        .order("unit_number");
+
+      if (data) {
+        setUnits(data);
+      }
+    } catch (error) {
+      console.error("Error loading units:", error);
     }
   }
 
@@ -479,18 +531,94 @@ export default function HandoverProtocolModal({
   const renderStep1 = () => (
     <div className="space-y-6">
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">Kontext</h4>
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Kontext</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <span className="text-gray-500">Immobilie:</span>
-            <p className="font-medium text-gray-800">{contextData.propertyName || "Nicht verfügbar"}</p>
-            <p className="text-xs text-gray-600">{contextData.propertyAddress}</p>
+            <label className="block text-xs text-gray-500 mb-1">
+              Immobilie *
+            </label>
+            <select
+              value={contextData.propertyId}
+              onChange={async (e) => {
+                const propertyId = e.target.value;
+                const selectedProperty = properties.find((p) => p.id === propertyId);
+
+                setContextData((prev) => ({
+                  ...prev,
+                  propertyId,
+                  propertyName: selectedProperty?.name || "",
+                  propertyAddress: selectedProperty?.address || "",
+                  unitId: "",
+                  unitName: "",
+                  squareMeters: "",
+                }));
+
+                if (propertyId) {
+                  await loadUnits(propertyId);
+                  loadSystemMeters(propertyId);
+                } else {
+                  setUnits([]);
+                  setMeters([]);
+                }
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+              required
+            >
+              <option value="">-- Immobilie wählen --</option>
+              {properties.map((property) => (
+                <option key={property.id} value={property.id}>
+                  {property.name}
+                </option>
+              ))}
+            </select>
+            {contextData.propertyAddress && (
+              <p className="text-xs text-gray-600 mt-1">{contextData.propertyAddress}</p>
+            )}
           </div>
           <div>
-            <span className="text-gray-500">Einheit:</span>
-            <p className="font-medium text-gray-800">{contextData.unitName || "Keine Einheit"}</p>
+            <label className="block text-xs text-gray-500 mb-1">
+              Einheit
+            </label>
+            <select
+              value={contextData.unitId}
+              onChange={async (e) => {
+                const unitId = e.target.value;
+                const selectedUnit = units.find((u) => u.id === unitId);
+
+                if (unitId && selectedUnit) {
+                  const { data: unitData } = await supabase
+                    .from("property_units")
+                    .select("square_meters")
+                    .eq("id", unitId)
+                    .maybeSingle();
+
+                  setContextData((prev) => ({
+                    ...prev,
+                    unitId,
+                    unitName: selectedUnit.unit_number,
+                    squareMeters: unitData?.square_meters?.toString() || "",
+                  }));
+                } else {
+                  setContextData((prev) => ({
+                    ...prev,
+                    unitId: "",
+                    unitName: "",
+                    squareMeters: "",
+                  }));
+                }
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+              disabled={!contextData.propertyId}
+            >
+              <option value="">-- Einheit wählen --</option>
+              {units.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.unit_number}
+                </option>
+              ))}
+            </select>
             {contextData.squareMeters && (
-              <p className="text-xs text-gray-600">{contextData.squareMeters} m²</p>
+              <p className="text-xs text-gray-600 mt-1">{contextData.squareMeters} m²</p>
             )}
           </div>
         </div>
