@@ -49,7 +49,6 @@ export default function HandoverProtocolModal({
     electricity_meter: "",
     water_meter: "",
     heating_meter: "",
-    gas_meter: "",
     notes: "",
   });
 
@@ -182,13 +181,11 @@ export default function HandoverProtocolModal({
         {
           user_id: user.id,
           contract_id: contractId,
-          tenant_id: tenantId,
           handover_type: formData.handover_type,
           handover_date: formData.handover_date,
           electricity_meter: formData.electricity_meter || null,
           water_meter: formData.water_meter || null,
           heating_meter: formData.heating_meter || null,
-          gas_meter: formData.gas_meter || null,
           checklist_data: checklist,
           photos: photoData,
           notes: formData.notes || null,
@@ -297,21 +294,6 @@ export default function HandoverProtocolModal({
               }
               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               placeholder="z.B. 11223"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Gaszähler (optional)
-            </label>
-            <input
-              type="text"
-              value={formData.gas_meter}
-              onChange={(e) =>
-                setFormData({ ...formData, gas_meter: e.target.value })
-              }
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              placeholder="z.B. 44556"
             />
           </div>
         </div>

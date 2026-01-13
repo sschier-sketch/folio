@@ -17,6 +17,7 @@ interface ManualIncome {
 interface RentPayment {
   id: string;
   amount: number;
+  paid_amount?: number;
   due_date: string;
   payment_status: string;
   paid_date: string | null;
@@ -184,7 +185,11 @@ export default function IncomeView() {
   }
 
   const totalManualIncome = manualIncomes.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
-  const totalRentIncome = rentPayments.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
+  const totalRentIncome = rentPayments.reduce((sum, p) => {
+    const paidAmount = parseFloat(p.paid_amount?.toString() || '0');
+    const amount = parseFloat(p.amount.toString());
+    return sum + (paidAmount > 0 ? paidAmount : amount);
+  }, 0);
   const totalIncome = totalManualIncome + totalRentIncome;
   const totalCount = manualIncomes.length + rentPayments.length;
   const averageIncome = totalCount > 0 ? totalIncome / totalCount : 0;
@@ -562,7 +567,11 @@ export default function IncomeView() {
                       {payment.properties?.name || "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
-                      +{parseFloat(payment.amount.toString()).toFixed(2)} €
+                      +{(() => {
+                        const paidAmount = parseFloat(payment.paid_amount?.toString() || '0');
+                        const amount = parseFloat(payment.amount.toString());
+                        return (paidAmount > 0 ? paidAmount : amount).toFixed(2);
+                      })()} €
                     </td>
                   </tr>
                 ))}

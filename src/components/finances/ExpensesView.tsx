@@ -292,6 +292,37 @@ export default function ExpensesView() {
     if (!error) loadData();
   }
 
+  async function handleDownloadDocument(documentId: string) {
+    try {
+      const { data: document, error: docError } = await supabase
+        .from('documents')
+        .select('file_path, file_name')
+        .eq('id', documentId)
+        .single();
+
+      if (docError) throw docError;
+      if (!document) throw new Error('Dokument nicht gefunden');
+
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('documents')
+        .download(document.file_path);
+
+      if (downloadError) throw downloadError;
+
+      const url = URL.createObjectURL(fileData);
+      const a = window.document.createElement('a');
+      a.href = url;
+      a.download = document.file_name;
+      window.document.body.appendChild(a);
+      a.click();
+      window.document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      alert('Fehler beim Herunterladen: ' + (error as Error).message);
+    }
+  }
+
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const paidExpenses = expenses
     .filter((e) => e.status === "paid")
@@ -608,6 +639,15 @@ export default function ExpensesView() {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <div className="flex items-center justify-center gap-2">
+                        {expense.document_id && (
+                          <button
+                            onClick={() => handleDownloadDocument(expense.document_id!)}
+                            className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                            title="Beleg herunterladen"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleEditExpense(expense)}
                           className="text-primary-blue hover:text-blue-700 transition-colors"

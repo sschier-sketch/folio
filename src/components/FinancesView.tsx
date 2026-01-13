@@ -48,7 +48,7 @@ export default function FinancesView() {
           <div className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon;
-              const isDisabled = tab.id === "bank";
+              const isDisabled = tab.id === "bank" || tab.id === "intelligence";
               return (
                 <button
                   key={tab.id}

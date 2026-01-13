@@ -361,6 +361,9 @@ export default function RentPaymentsView() {
             >
               <Bell className="w-5 h-5" />
               Mahnwesen
+              <span className="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded font-medium">
+                Pro
+              </span>
               {activeTab === "dunning" && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
