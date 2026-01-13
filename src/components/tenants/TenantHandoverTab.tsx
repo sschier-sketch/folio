@@ -39,6 +39,7 @@ export default function TenantHandoverTab({
   const [protocols, setProtocols] = useState<HandoverProtocol[]>([]);
   const [contractId, setContractId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [expandedProtocolId, setExpandedProtocolId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
@@ -175,8 +176,13 @@ export default function TenantHandoverTab({
                         )}
                       </div>
                     </div>
-                    <button className="text-primary-blue text-sm font-medium hover:underline">
-                      Details ansehen
+                    <button
+                      onClick={() => setExpandedProtocolId(
+                        expandedProtocolId === protocol.id ? null : protocol.id
+                      )}
+                      className="text-primary-blue text-sm font-medium hover:underline"
+                    >
+                      {expandedProtocolId === protocol.id ? "Weniger anzeigen" : "Details ansehen"}
                     </button>
                   </div>
 
@@ -234,6 +240,62 @@ export default function TenantHandoverTab({
                       <div className="text-sm text-gray-700">
                         {protocol.notes}
                       </div>
+                    </div>
+                  )}
+
+                  {expandedProtocolId === protocol.id && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h4 className="font-semibold text-dark mb-3">Vollständige Details</h4>
+
+                      {Array.isArray(protocol.checklist_data) && protocol.checklist_data.length > 0 && (
+                        <div className="mb-4">
+                          <h5 className="text-sm font-medium text-gray-700 mb-2">Checkliste</h5>
+                          <div className="space-y-2">
+                            {protocol.checklist_data.map((item: any, index: number) => (
+                              <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                                <CheckSquare className={`w-4 h-4 mt-0.5 ${
+                                  item.status === 'good' ? 'text-emerald-600' :
+                                  item.status === 'damaged' ? 'text-amber-600' : 'text-red-600'
+                                }`} />
+                                <div className="flex-1">
+                                  <div className="font-medium text-sm text-dark">{item.item}</div>
+                                  {item.notes && (
+                                    <div className="text-xs text-gray-600 mt-1">{item.notes}</div>
+                                  )}
+                                </div>
+                                <span className={`text-xs px-2 py-1 rounded ${
+                                  item.status === 'good' ? 'bg-emerald-100 text-emerald-700' :
+                                  item.status === 'damaged' ? 'bg-amber-100 text-amber-700' :
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {item.status === 'good' ? 'Gut' :
+                                   item.status === 'damaged' ? 'Beschädigt' : 'Fehlt'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {Array.isArray(protocol.photos) && protocol.photos.length > 0 && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-700 mb-2">Fotos</h5>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {protocol.photos.map((photo: any, index: number) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={photo.preview || photo.url}
+                                  alt={photo.description || `Foto ${index + 1}`}
+                                  className="w-full h-32 object-cover rounded-lg"
+                                />
+                                {photo.description && (
+                                  <div className="mt-1 text-xs text-gray-600">{photo.description}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
