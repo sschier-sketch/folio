@@ -14,22 +14,20 @@ interface ManualIncome {
   };
 }
 
-interface RentPayment {
+interface RentalContract {
   id: string;
-  amount: number;
-  paid_amount?: number;
-  due_date: string;
-  payment_status: string;
-  paid_date: string | null;
-  payment_method: string | null;
+  total_rent: number;
+  base_rent: number;
+  additional_costs: number;
+  start_date: string;
+  status: string;
   tenants?: {
     first_name: string;
     last_name: string;
-  };
+  } | null;
   properties?: {
     name: string;
   };
-  recipient?: string;
 }
 
 interface Property {
@@ -61,7 +59,7 @@ export default function IncomeView() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [manualIncomes, setManualIncomes] = useState<ManualIncome[]>([]);
-  const [rentPayments, setRentPayments] = useState<RentPayment[]>([]);
+  const [rentalContracts, setRentalContracts] = useState<RentalContract[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -149,34 +147,33 @@ export default function IncomeView() {
           .lte("entry_date", filterEndDate);
       }
 
-      let rentQuery = supabase
-        .from("rent_payments")
+      let contractsQuery = supabase
+        .from("rental_contracts")
         .select(`
-          *,
+          id,
+          total_rent,
+          base_rent,
+          additional_costs,
+          start_date,
+          status,
           properties(name),
           tenants(first_name, last_name)
         `)
         .eq("user_id", user!.id)
-        .eq("payment_status", "paid")
-        .order("paid_date", { ascending: false });
+        .eq("status", "active")
+        .order("start_date", { ascending: false });
 
       if (selectedProperty) {
-        rentQuery = rentQuery.eq("property_id", selectedProperty);
+        contractsQuery = contractsQuery.eq("property_id", selectedProperty);
       }
 
-      if (timePeriod !== "all" && filterStartDate && filterEndDate) {
-        rentQuery = rentQuery
-          .gte("paid_date", filterStartDate)
-          .lte("paid_date", filterEndDate);
-      }
-
-      const [manualRes, rentRes] = await Promise.all([manualQuery, rentQuery]);
+      const [manualRes, contractsRes] = await Promise.all([manualQuery, contractsQuery]);
 
       if (manualRes.error) throw manualRes.error;
-      if (rentRes.error) throw rentRes.error;
+      if (contractsRes.error) throw contractsRes.error;
 
       setManualIncomes(manualRes.data || []);
-      setRentPayments(rentRes.data || []);
+      setRentalContracts(contractsRes.data || []);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -185,13 +182,11 @@ export default function IncomeView() {
   }
 
   const totalManualIncome = manualIncomes.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
-  const totalRentIncome = rentPayments.reduce((sum, p) => {
-    const paidAmount = parseFloat(p.paid_amount?.toString() || '0');
-    const amount = parseFloat(p.amount.toString());
-    return sum + (paidAmount > 0 ? paidAmount : amount);
+  const totalRentIncome = rentalContracts.reduce((sum, contract) => {
+    return sum + parseFloat(contract.total_rent.toString());
   }, 0);
   const totalIncome = totalManualIncome + totalRentIncome;
-  const totalCount = manualIncomes.length + rentPayments.length;
+  const totalCount = manualIncomes.length + rentalContracts.length;
   const averageIncome = totalCount > 0 ? totalIncome / totalCount : 0;
 
   async function handleSaveIncome() {
@@ -392,9 +387,9 @@ export default function IncomeView() {
             <TrendingUp className="w-6 h-6 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
-            {totalIncome.toFixed(2)} €
+            {totalManualIncome.toFixed(2)} €
           </div>
-          <div className="text-sm text-gray-400">Einnahmen gesamt</div>
+          <div className="text-sm text-gray-400">Sonstige Einnahmen</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
@@ -402,9 +397,9 @@ export default function IncomeView() {
             <Calendar className="w-6 h-6 text-primary-blue" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
-            {totalCount}
+            {rentalContracts.length}
           </div>
-          <div className="text-sm text-gray-400">Zahlungseingänge</div>
+          <div className="text-sm text-gray-400">Aktive Mietverträge</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
@@ -412,15 +407,15 @@ export default function IncomeView() {
             <CheckCircle2 className="w-6 h-6 text-slate-600" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
-            {averageIncome.toFixed(2)} €
+            {totalRentIncome.toFixed(2)} €
           </div>
-          <div className="text-sm text-gray-400">Durchschnitt pro Zahlung</div>
+          <div className="text-sm text-gray-400">Monatliche Mieteinnahmen</div>
         </div>
       </div>
 
       <div className="bg-white rounded-lg">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-dark">Einnahmen</h3>
+          <h3 className="text-lg font-semibold text-dark">Sonstige Einnahmen</h3>
           <button
             onClick={() => {
               setEditingIncome(null);
@@ -515,17 +510,17 @@ export default function IncomeView() {
 
       <div className="bg-white rounded-lg">
         <div className="p-6 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-dark">Mieteingänge</h3>
+          <h3 className="text-lg font-semibold text-dark">Aktuelle Mietverträge</h3>
         </div>
 
-        {rentPayments.length === 0 ? (
+        {rentalContracts.length === 0 ? (
           <div className="p-12 text-center">
             <TrendingUp className="w-16 h-16 text-gray-200 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-dark mb-2">
-              Keine Mieteingänge
+              Keine aktiven Mietverträge
             </h3>
             <p className="text-gray-400">
-              Im ausgewählten Zeitraum wurden keine Mieteingänge erfasst.
+              Es wurden keine aktiven Mietverträge gefunden.
             </p>
           </div>
         ) : (
@@ -534,7 +529,7 @@ export default function IncomeView() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Datum
+                    Vertragsbeginn
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Mieter
@@ -543,35 +538,43 @@ export default function IncomeView() {
                     Objekt
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Betrag
+                    Kaltmiete
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    NK
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Gesamt
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {rentPayments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-gray-50">
+                {rentalContracts.map((contract) => (
+                  <tr key={contract.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {new Date(payment.paid_date || payment.due_date).toLocaleDateString("de-DE", {
+                      {new Date(contract.start_date).toLocaleDateString("de-DE", {
                         year: "numeric",
                         month: "short",
                         day: "numeric"
                       })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {payment.tenants
-                        ? `${payment.tenants.first_name} ${payment.tenants.last_name}`
-                        : payment.recipient || "-"
+                      {contract.tenants
+                        ? `${contract.tenants.first_name} ${contract.tenants.last_name}`
+                        : "-"
                       }
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {payment.properties?.name || "-"}
+                      {contract.properties?.name || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">
+                      {parseFloat(contract.base_rent.toString()).toFixed(2)} €
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">
+                      {parseFloat(contract.additional_costs.toString()).toFixed(2)} €
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
-                      +{(() => {
-                        const paidAmount = parseFloat(payment.paid_amount?.toString() || '0');
-                        const amount = parseFloat(payment.amount.toString());
-                        return (paidAmount > 0 ? paidAmount : amount).toFixed(2);
-                      })()} €
+                      {parseFloat(contract.total_rent.toString()).toFixed(2)} €
                     </td>
                   </tr>
                 ))}
