@@ -685,8 +685,8 @@ export default function TenantHandoverTab({
                   Digitale Checkliste
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Nutzen Sie vordefinierte oder eigene Checklisten für die
-                  Wohnungsübergabe.
+                  Nutzen Sie vordefinierte Checklisten für die
+                  Wohnungsüber- und Rückgabe.
                 </p>
               </div>
             </div>
@@ -713,8 +713,7 @@ export default function TenantHandoverTab({
                   Historische Protokolle
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Alle Übergabeprotokolle bleiben dauerhaft einsehbar und
-                  können verglichen werden.
+                  Alle Übergabeprotokolle bleiben dauerhaft einsehbar.
                 </p>
               </div>
             </div>
