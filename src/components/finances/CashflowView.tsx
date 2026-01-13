@@ -99,10 +99,6 @@ export default function CashflowView() {
         paymentsQuery = paymentsQuery.eq("property_id", selectedProperty);
       }
 
-      if (selectedUnit) {
-        paymentsQuery = paymentsQuery.eq("unit_id", selectedUnit);
-      }
-
       let manualIncomeQuery = supabase
         .from("income_entries")
         .select("*")
