@@ -91,13 +91,16 @@ export default function CashflowView() {
         .from("rent_payments")
         .select("*")
         .eq("user_id", user!.id)
-        .not("paid_date", "is", null)
-        .gte("paid_date", filterStartDate)
-        .lte("paid_date", filterEndDate)
-        .eq("payment_status", "paid");
+        .eq("paid", true)
+        .gte("due_date", filterStartDate)
+        .lte("due_date", filterEndDate);
 
       if (selectedProperty) {
         paymentsQuery = paymentsQuery.eq("property_id", selectedProperty);
+      }
+
+      if (selectedUnit) {
+        paymentsQuery = paymentsQuery.eq("unit_id", selectedUnit);
       }
 
       let manualIncomeQuery = supabase
@@ -111,14 +114,16 @@ export default function CashflowView() {
         manualIncomeQuery = manualIncomeQuery.eq("property_id", selectedProperty);
       }
 
+      if (selectedUnit) {
+        manualIncomeQuery = manualIncomeQuery.eq("unit_id", selectedUnit);
+      }
+
       let expensesQuery = supabase
         .from("expenses")
         .select("*")
         .eq("user_id", user!.id)
         .gte("expense_date", filterStartDate)
-        .lte("expense_date", filterEndDate)
-        .eq("is_cashflow_relevant", true)
-        .in("status", ["open", "paid"]);
+        .lte("expense_date", filterEndDate);
 
       if (selectedProperty) {
         expensesQuery = expensesQuery.eq("property_id", selectedProperty);
@@ -131,9 +136,7 @@ export default function CashflowView() {
       let loansQuery = supabase
         .from("loans")
         .select("*")
-        .eq("user_id", user!.id)
-        .eq("loan_status", "active")
-        .or(`end_date.gte.${filterStartDate},start_date.lte.${filterEndDate}`);
+        .eq("user_id", user!.id);
 
       if (selectedProperty) {
         loansQuery = loansQuery.eq("property_id", selectedProperty);
@@ -180,10 +183,12 @@ export default function CashflowView() {
 
         const rentIncome = payments
           .filter((p) => {
-            const date = new Date(p.paid_date);
+            const dateStr = p.paid_date || p.due_date;
+            if (!dateStr) return false;
+            const date = new Date(dateStr);
             return date.getFullYear() === year && date.getMonth() === month;
           })
-          .reduce((sum, p) => sum + parseFloat(p.amount?.toString() || '0'), 0);
+          .reduce((sum, p) => sum + parseFloat(p.paid_amount?.toString() || p.amount?.toString() || '0'), 0);
 
         const manualIncome = manualIncomes
           .filter((i) => {
@@ -203,12 +208,13 @@ export default function CashflowView() {
 
         const monthLoanPayments = loans
           .filter((l) => {
+            if (!l.start_date) return false;
             const loanStart = new Date(l.start_date);
-            const loanEnd = new Date(l.end_date);
+            const loanEnd = l.end_date ? new Date(l.end_date) : new Date(2099, 11, 31);
             const currentMonthDate = new Date(year, month, 1);
-            return currentMonthDate >= loanStart && currentMonthDate <= loanEnd;
+            return currentMonthDate >= loanStart && currentMonthDate <= loanEnd && l.loan_status === 'active';
           })
-          .reduce((sum, l) => sum + parseFloat(l.monthly_payment || 0), 0);
+          .reduce((sum, l) => sum + parseFloat(l.monthly_payment?.toString() || '0'), 0);
 
         data.push({
           month: monthNames[month],
