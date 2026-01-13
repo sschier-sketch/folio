@@ -185,9 +185,9 @@ export default function CashflowView() {
       const end = new Date(filterEndDate);
 
       const currentDate = new Date(start.getFullYear(), start.getMonth(), 1);
-      const endDate = new Date(end.getFullYear(), end.getMonth(), 1);
+      const endOfPeriod = new Date(end.getFullYear(), end.getMonth(), 1);
 
-      while (currentDate <= endDate) {
+      while (currentDate <= endOfPeriod) {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
