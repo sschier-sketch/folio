@@ -86,6 +86,8 @@ export default function HandoverProtocolModal({
   const [formData, setFormData] = useState({
     handover_type: "move_in" as "move_in" | "move_out",
     handover_date: new Date().toISOString().split("T")[0],
+    landlordName: "",
+    tenantName: "",
     witnessName: "",
     notes: "",
     lastRenovation: "",
@@ -113,7 +115,6 @@ export default function HandoverProtocolModal({
   useEffect(() => {
     if (user && contractId && tenantId) {
       loadContextData();
-      loadSystemMeters();
     }
   }, [user, contractId, tenantId]);
 
@@ -150,7 +151,7 @@ export default function HandoverProtocolModal({
         const property = contract.properties as any;
         const unit = contract.property_units as any;
 
-        setContextData({
+        const newContextData = {
           propertyName: property?.name || "",
           propertyAddress: property
             ? `${property.street || ""} ${property.house_number || ""}, ${property.postal_code || ""} ${property.city || ""}`
@@ -161,20 +162,31 @@ export default function HandoverProtocolModal({
           tenantName: tenant ? `${tenant.first_name} ${tenant.last_name}` : "",
           propertyId: contract.property_id || "",
           unitId: contract.unit_id || "",
-        });
+        };
+
+        setContextData(newContextData);
+        setFormData((prev) => ({
+          ...prev,
+          landlordName: newContextData.landlordName,
+          tenantName: newContextData.tenantName,
+        }));
+
+        if (contract.property_id) {
+          loadSystemMeters(contract.property_id);
+        }
       }
     } catch (error) {
       console.error("Error loading context data:", error);
     }
   }
 
-  async function loadSystemMeters() {
+  async function loadSystemMeters(propertyId: string) {
     try {
       const { data } = await supabase
         .from("meters")
         .select("*")
         .eq("user_id", user!.id)
-        .eq("property_id", contextData.propertyId);
+        .eq("property_id", propertyId);
 
       if (data && data.length > 0) {
         setSystemMeters(data);
@@ -408,8 +420,8 @@ export default function HandoverProtocolModal({
           contract_id: contractId,
           property_id: contextData.propertyId || null,
           unit_id: contextData.unitId || null,
-          landlord_name: contextData.landlordName,
-          tenant_name: contextData.tenantName,
+          landlord_name: formData.landlordName || null,
+          tenant_name: formData.tenantName || null,
           witness_name: formData.witnessName || null,
           handover_type: formData.handover_type,
           handover_date: formData.handover_date,
@@ -527,14 +539,34 @@ export default function HandoverProtocolModal({
 
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <h4 className="text-sm font-semibold text-gray-700 mb-3">Beteiligte</h4>
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <span className="text-gray-500">Vermieter:</span>
-            <p className="font-medium text-gray-800">{contextData.landlordName || "Nicht verfügbar"}</p>
+            <label className="block text-xs text-gray-500 mb-1">
+              Vermieter
+            </label>
+            <input
+              type="text"
+              value={formData.landlordName}
+              onChange={(e) =>
+                setFormData({ ...formData, landlordName: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+              placeholder="Name des Vermieters"
+            />
           </div>
           <div>
-            <span className="text-gray-500">Mieter:</span>
-            <p className="font-medium text-gray-800">{contextData.tenantName || "Nicht verfügbar"}</p>
+            <label className="block text-xs text-gray-500 mb-1">
+              Mieter
+            </label>
+            <input
+              type="text"
+              value={formData.tenantName}
+              onChange={(e) =>
+                setFormData({ ...formData, tenantName: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+              placeholder="Name des Mieters"
+            />
           </div>
         </div>
         <div className="mt-3">

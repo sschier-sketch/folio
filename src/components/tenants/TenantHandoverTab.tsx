@@ -15,6 +15,8 @@ import {
   BarChart3,
   User,
   MapPin,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
@@ -61,6 +63,7 @@ export default function TenantHandoverTab({
   const [contractId, setContractId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [expandedProtocolId, setExpandedProtocolId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
@@ -215,6 +218,33 @@ export default function TenantHandoverTab({
     }
   };
 
+  const handleDeleteProtocol = async (protocolId: string) => {
+    try {
+      const protocol = protocols.find((p) => p.id === protocolId);
+
+      if (protocol && Array.isArray(protocol.photos)) {
+        for (const photo of protocol.photos) {
+          if (photo.path) {
+            await supabase.storage.from("documents").remove([photo.path]);
+          }
+        }
+      }
+
+      const { error } = await supabase
+        .from("handover_protocols")
+        .delete()
+        .eq("id", protocolId);
+
+      if (error) throw error;
+
+      setDeleteConfirmId(null);
+      loadData();
+    } catch (error) {
+      console.error("Error deleting protocol:", error);
+      alert("Fehler beim Löschen des Protokolls");
+    }
+  };
+
   return (
     <PremiumFeatureGuard featureName="Übergabeprotokolle">
       <div className="space-y-6">
@@ -302,6 +332,15 @@ export default function TenantHandoverTab({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      {protocol.status === "draft" && (
+                        <button
+                          onClick={() => setDeleteConfirmId(protocol.id)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Löschen
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDownloadPDF(protocol)}
                         className="flex items-center gap-1 px-3 py-1.5 bg-primary-blue text-white rounded-full text-sm font-medium hover:bg-blue-600 transition-colors"
@@ -658,6 +697,40 @@ export default function TenantHandoverTab({
               loadData();
             }}
           />
+        )}
+
+        {deleteConfirmId && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg w-full max-w-md p-6">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-dark mb-1">
+                    Protokoll löschen?
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Möchten Sie diesen Entwurf wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setDeleteConfirmId(null)}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={() => handleDeleteProtocol(deleteConfirmId)}
+                  className="px-4 py-2 bg-red-500 text-white rounded-full font-medium hover:bg-red-600 transition-colors"
+                >
+                  Löschen
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </PremiumFeatureGuard>
