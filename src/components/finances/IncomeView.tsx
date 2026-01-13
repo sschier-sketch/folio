@@ -201,7 +201,7 @@ export default function IncomeView() {
         amount: parseFloat(formData.amount),
         category: "income",
         description: formData.description,
-        status: "paid",
+        status: "verbucht",
         notes: formData.notes || null,
       };
 
@@ -559,7 +559,7 @@ export default function IncomeView() {
                       })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {contract.tenants
+                      {contract.tenants && contract.tenants.first_name && contract.tenants.last_name
                         ? `${contract.tenants.first_name} ${contract.tenants.last_name}`
                         : "-"
                       }

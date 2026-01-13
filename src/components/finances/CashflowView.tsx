@@ -87,17 +87,18 @@ export default function CashflowView() {
         }
       }
 
-      let paymentsQuery = supabase
-        .from("rent_payments")
+      let contractsQuery = supabase
+        .from("rental_contracts")
         .select("*")
         .eq("user_id", user!.id)
-        .eq("paid", true)
-        .not("paid_date", "is", null)
-        .gte("paid_date", filterStartDate)
-        .lte("paid_date", filterEndDate);
+        .eq("status", "active");
 
       if (selectedProperty) {
-        paymentsQuery = paymentsQuery.eq("property_id", selectedProperty);
+        contractsQuery = contractsQuery.eq("property_id", selectedProperty);
+      }
+
+      if (selectedUnit) {
+        contractsQuery = contractsQuery.eq("unit_id", selectedUnit);
       }
 
       let manualIncomeQuery = supabase
@@ -139,30 +140,17 @@ export default function CashflowView() {
         loansQuery = loansQuery.eq("property_id", selectedProperty);
       }
 
-      const [paymentsRes, manualIncomeRes, expensesRes, loansRes] = await Promise.all([
-        paymentsQuery,
+      const [contractsRes, manualIncomeRes, expensesRes, loansRes] = await Promise.all([
+        contractsQuery,
         manualIncomeQuery,
         expensesQuery,
         loansQuery,
       ]);
 
-      const payments = paymentsRes.data || [];
+      const contracts = contractsRes.data || [];
       const manualIncomes = manualIncomeRes.data || [];
       const expenses = expensesRes.data || [];
       const loans = loansRes.data || [];
-
-      console.log("=== CASHFLOW DEBUG ===");
-      console.log("Zeitraum:", filterStartDate, "bis", filterEndDate);
-      console.log("Payments geladen:", payments.length, payments);
-      console.log("Manual Incomes geladen:", manualIncomes.length, manualIncomes);
-      console.log("Expenses geladen:", expenses.length, expenses);
-      console.log("Loans geladen:", loans.length, loans);
-
-      payments.forEach(p => {
-        const paidAmt = parseFloat(p.paid_amount?.toString() || '0');
-        const amt = parseFloat(p.amount?.toString() || '0');
-        console.log(`Payment: paid_amount=${paidAmt}, amount=${amt}, verwendeter Wert=${paidAmt > 0 ? paidAmt : amt}, paid_date=${p.paid_date}`);
-      });
 
       const monthNames = [
         "Jan",
@@ -191,16 +179,16 @@ export default function CashflowView() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
-        const rentIncome = payments
-          .filter((p) => {
-            if (!p.paid_date) return false;
-            const date = new Date(p.paid_date);
-            return date.getFullYear() === year && date.getMonth() === month;
+        const rentIncome = contracts
+          .filter((contract) => {
+            if (!contract.start_date) return false;
+            const contractStart = new Date(contract.start_date);
+            const contractEnd = contract.end_date ? new Date(contract.end_date) : new Date(2099, 11, 31);
+            const currentMonthDate = new Date(year, month, 1);
+            return currentMonthDate >= contractStart && currentMonthDate <= contractEnd;
           })
-          .reduce((sum, p) => {
-            const paidAmount = parseFloat(p.paid_amount?.toString() || '0');
-            const amount = parseFloat(p.amount?.toString() || '0');
-            return sum + (paidAmount > 0 ? paidAmount : amount);
+          .reduce((sum, contract) => {
+            return sum + parseFloat(contract.total_rent?.toString() || '0');
           }, 0);
 
         const manualIncome = manualIncomes
