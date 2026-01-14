@@ -51,7 +51,11 @@ export default function LoanModal({
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [principalType, setPrincipalType] = useState<"euro" | "percent">("euro");
-  const [principalInput, setPrincipalInput] = useState(0);
+  const [principalInput, setPrincipalInput] = useState("");
+  const [interestRateInput, setInterestRateInput] = useState("");
+  const [loanAmountInput, setLoanAmountInput] = useState("");
+  const [remainingBalanceInput, setRemainingBalanceInput] = useState("");
+  const [monthlyPaymentInput, setMonthlyPaymentInput] = useState("");
 
   const [formData, setFormData] = useState({
     lender_name: "",
@@ -112,13 +116,18 @@ export default function LoanModal({
         email_notification_enabled: loan.email_notification_enabled !== false,
         notification_days_before: loan.notification_days_before || 90,
       });
-      setPrincipalInput(loan.monthly_principal || 0);
+      setPrincipalInput(String(loan.monthly_principal || ""));
+      setInterestRateInput(String(loan.interest_rate || ""));
+      setLoanAmountInput(String(loan.loan_amount || ""));
+      setRemainingBalanceInput(String(loan.remaining_balance || ""));
+      setMonthlyPaymentInput(String(loan.monthly_payment || ""));
     }
   }, [loan]);
 
   useEffect(() => {
+    const principalValue = parseNumberInput(principalInput);
     if (principalType === "percent" && formData.loan_amount > 0) {
-      const annualPrincipal = (formData.loan_amount * principalInput) / 100;
+      const annualPrincipal = (formData.loan_amount * principalValue) / 100;
       const monthlyPrincipal = Math.round((annualPrincipal / 12) * 100) / 100;
 
       if (formData.monthly_principal !== monthlyPrincipal) {
@@ -128,14 +137,24 @@ export default function LoanModal({
         }));
       }
     } else if (principalType === "euro") {
-      if (formData.monthly_principal !== principalInput) {
+      if (formData.monthly_principal !== principalValue) {
         setFormData((prev) => ({
           ...prev,
-          monthly_principal: principalInput,
+          monthly_principal: principalValue,
         }));
       }
     }
   }, [principalInput, principalType, formData.loan_amount, formData.monthly_principal]);
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      loan_amount: parseNumberInput(loanAmountInput),
+      remaining_balance: parseNumberInput(remainingBalanceInput),
+      interest_rate: parseNumberInput(interestRateInput),
+      monthly_payment: parseNumberInput(monthlyPaymentInput),
+    }));
+  }, [loanAmountInput, remainingBalanceInput, interestRateInput, monthlyPaymentInput]);
 
   const validateStep = (step: number): boolean => {
     if (step === 1) {
@@ -283,13 +302,8 @@ export default function LoanModal({
           </label>
           <input
             type="text"
-            value={formData.loan_amount}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                loan_amount: parseNumberInput(e.target.value),
-              })
-            }
+            value={loanAmountInput}
+            onChange={(e) => setLoanAmountInput(e.target.value)}
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             placeholder="z.B. 200000 oder 200.000,00"
             required
@@ -301,13 +315,8 @@ export default function LoanModal({
           </label>
           <input
             type="text"
-            value={formData.remaining_balance}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                remaining_balance: parseNumberInput(e.target.value),
-              })
-            }
+            value={remainingBalanceInput}
+            onChange={(e) => setRemainingBalanceInput(e.target.value)}
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             placeholder="z.B. 185000 oder 185.000,00"
             required
@@ -322,13 +331,8 @@ export default function LoanModal({
           </label>
           <input
             type="text"
-            value={formData.interest_rate}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                interest_rate: parseNumberInput(e.target.value),
-              })
-            }
+            value={interestRateInput}
+            onChange={(e) => setInterestRateInput(e.target.value)}
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             placeholder="z.B. 1,62 oder 2,5"
             required
@@ -340,13 +344,8 @@ export default function LoanModal({
           </label>
           <input
             type="text"
-            value={formData.monthly_payment}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                monthly_payment: parseNumberInput(e.target.value),
-              })
-            }
+            value={monthlyPaymentInput}
+            onChange={(e) => setMonthlyPaymentInput(e.target.value)}
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             placeholder="z.B. 306,28 oder 1200,50"
             required
@@ -362,9 +361,7 @@ export default function LoanModal({
           <input
             type="text"
             value={principalInput}
-            onChange={(e) =>
-              setPrincipalInput(parseNumberInput(e.target.value))
-            }
+            onChange={(e) => setPrincipalInput(e.target.value)}
             className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             placeholder={
               principalType === "euro" ? "z.B. 800" : "z.B. 1,5 oder 2"
