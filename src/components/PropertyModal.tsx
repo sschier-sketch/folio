@@ -14,6 +14,7 @@ interface Property {
   country?: string;
   property_type: string;
   property_management_type?: string;
+  ownership_type?: string;
   purchase_price: number;
   current_value: number;
   purchase_date: string | null;
@@ -35,6 +36,16 @@ interface Unit {
   rooms: string;
   unit_type: string;
   description: string;
+  purchase_price?: string;
+  current_value?: string;
+  purchase_date?: string;
+  broker_costs?: string;
+  notary_costs?: string;
+  lawyer_costs?: string;
+  real_estate_transfer_tax?: string;
+  registration_costs?: string;
+  expert_costs?: string;
+  additional_purchase_costs?: Array<{name: string, amount: number}>;
 }
 
 export default function PropertyModal({
@@ -54,6 +65,7 @@ export default function PropertyModal({
     country: "Deutschland",
     property_type: "multi_family",
     property_management_type: "self_management",
+    ownership_type: "full_property",
     purchase_price: "",
     current_value: "",
     purchase_date: "",
@@ -89,6 +101,7 @@ export default function PropertyModal({
         country: property.country || "Deutschland",
         property_type: property.property_type,
         property_management_type: property.property_management_type || "self_management",
+        ownership_type: property.ownership_type || "full_property",
         purchase_price: property.purchase_price ? String(property.purchase_price) : "",
         current_value: property.current_value ? String(property.current_value) : "",
         purchase_date: property.purchase_date || "",
@@ -144,17 +157,29 @@ export default function PropertyModal({
   }
 
   const handleAddUnit = () => {
-    setUnits([
-      ...units,
-      {
-        unit_number: "",
-        floor: "",
-        size_sqm: "",
-        rooms: "",
-        unit_type: "residential",
-        description: "",
-      },
-    ]);
+    const newUnit: Unit = {
+      unit_number: "",
+      floor: "",
+      size_sqm: "",
+      rooms: "",
+      unit_type: "residential",
+      description: "",
+    };
+
+    if (formData.ownership_type === "units_only") {
+      newUnit.purchase_price = "";
+      newUnit.current_value = "";
+      newUnit.purchase_date = "";
+      newUnit.broker_costs = "";
+      newUnit.notary_costs = "";
+      newUnit.lawyer_costs = "";
+      newUnit.real_estate_transfer_tax = "";
+      newUnit.registration_costs = "";
+      newUnit.expert_costs = "";
+      newUnit.additional_purchase_costs = [];
+    }
+
+    setUnits([...units, newUnit]);
   };
 
   const handleRemoveUnit = (index: number) => {
@@ -188,22 +213,23 @@ export default function PropertyModal({
         address: address,
         property_type: formData.property_type,
         property_management_type: formData.property_management_type,
-        purchase_price: parseNumberInput(formData.purchase_price),
-        current_value: parseNumberInput(formData.current_value),
-        purchase_date: formData.purchase_date,
+        ownership_type: formData.ownership_type,
+        purchase_price: formData.ownership_type === 'full_property' ? parseNumberInput(formData.purchase_price) : 0,
+        current_value: formData.ownership_type === 'full_property' ? parseNumberInput(formData.current_value) : 0,
+        purchase_date: formData.ownership_type === 'full_property' ? formData.purchase_date : null,
         user_id: user.id,
         parking_spot_number:
           formData.property_type === "parking"
             ? formData.parking_spot_number || null
             : null,
         description: formData.description,
-        broker_costs: formData.broker_costs ? parseNumberInput(formData.broker_costs) : 0,
-        notary_costs: formData.notary_costs ? parseNumberInput(formData.notary_costs) : 0,
-        lawyer_costs: formData.lawyer_costs ? parseNumberInput(formData.lawyer_costs) : 0,
-        real_estate_transfer_tax: formData.real_estate_transfer_tax ? parseNumberInput(formData.real_estate_transfer_tax) : 0,
-        registration_costs: formData.registration_costs ? parseNumberInput(formData.registration_costs) : 0,
-        expert_costs: formData.expert_costs ? parseNumberInput(formData.expert_costs) : 0,
-        additional_purchase_costs: additionalCosts.length > 0 ? additionalCosts : [],
+        broker_costs: formData.ownership_type === 'full_property' && formData.broker_costs ? parseNumberInput(formData.broker_costs) : 0,
+        notary_costs: formData.ownership_type === 'full_property' && formData.notary_costs ? parseNumberInput(formData.notary_costs) : 0,
+        lawyer_costs: formData.ownership_type === 'full_property' && formData.lawyer_costs ? parseNumberInput(formData.lawyer_costs) : 0,
+        real_estate_transfer_tax: formData.ownership_type === 'full_property' && formData.real_estate_transfer_tax ? parseNumberInput(formData.real_estate_transfer_tax) : 0,
+        registration_costs: formData.ownership_type === 'full_property' && formData.registration_costs ? parseNumberInput(formData.registration_costs) : 0,
+        expert_costs: formData.ownership_type === 'full_property' && formData.expert_costs ? parseNumberInput(formData.expert_costs) : 0,
+        additional_purchase_costs: formData.ownership_type === 'full_property' && additionalCosts.length > 0 ? additionalCosts : [],
       };
 
       let propertyId: string;
@@ -238,17 +264,34 @@ export default function PropertyModal({
         propertyId = newProperty.id;
 
         if (units.length > 0) {
-          const unitsData = units.map((unit) => ({
-            property_id: propertyId,
-            user_id: user.id,
-            unit_number: unit.unit_number,
-            floor: unit.floor,
-            size_sqm: unit.size_sqm ? parseNumberInput(unit.size_sqm) : null,
-            rooms: unit.rooms ? parseNumberInput(unit.rooms) : null,
-            unit_type: unit.unit_type,
-            status: "vacant",
-            description: unit.description,
-          }));
+          const unitsData = units.map((unit) => {
+            const baseData: any = {
+              property_id: propertyId,
+              user_id: user.id,
+              unit_number: unit.unit_number,
+              floor: unit.floor,
+              size_sqm: unit.size_sqm ? parseNumberInput(unit.size_sqm) : null,
+              rooms: unit.rooms ? parseNumberInput(unit.rooms) : null,
+              unit_type: unit.unit_type,
+              status: "vacant",
+              description: unit.description,
+            };
+
+            if (formData.ownership_type === 'units_only') {
+              baseData.purchase_price = unit.purchase_price ? parseNumberInput(unit.purchase_price) : 0;
+              baseData.current_value = unit.current_value ? parseNumberInput(unit.current_value) : 0;
+              baseData.purchase_date = unit.purchase_date || null;
+              baseData.broker_costs = unit.broker_costs ? parseNumberInput(unit.broker_costs) : 0;
+              baseData.notary_costs = unit.notary_costs ? parseNumberInput(unit.notary_costs) : 0;
+              baseData.lawyer_costs = unit.lawyer_costs ? parseNumberInput(unit.lawyer_costs) : 0;
+              baseData.real_estate_transfer_tax = unit.real_estate_transfer_tax ? parseNumberInput(unit.real_estate_transfer_tax) : 0;
+              baseData.registration_costs = unit.registration_costs ? parseNumberInput(unit.registration_costs) : 0;
+              baseData.expert_costs = unit.expert_costs ? parseNumberInput(unit.expert_costs) : 0;
+              baseData.additional_purchase_costs = unit.additional_purchase_costs && unit.additional_purchase_costs.length > 0 ? unit.additional_purchase_costs : [];
+            }
+
+            return baseData;
+          });
 
           const { error: unitsError } = await supabase
             .from("property_units")
@@ -427,10 +470,50 @@ export default function PropertyModal({
                 </select>
               </div>
 
-              <div>
+              <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Kaufdatum
+                  Besitzvariante *
                 </label>
+                <select
+                  value={formData.ownership_type}
+                  onChange={(e) => {
+                    setFormData({ ...formData, ownership_type: e.target.value });
+                    if (e.target.value === 'units_only') {
+                      setUnits(units.map(unit => ({
+                        ...unit,
+                        purchase_price: unit.purchase_price || "",
+                        current_value: unit.current_value || "",
+                        purchase_date: unit.purchase_date || "",
+                        broker_costs: unit.broker_costs || "",
+                        notary_costs: unit.notary_costs || "",
+                        lawyer_costs: unit.lawyer_costs || "",
+                        real_estate_transfer_tax: unit.real_estate_transfer_tax || "",
+                        registration_costs: unit.registration_costs || "",
+                        expert_costs: unit.expert_costs || "",
+                        additional_purchase_costs: unit.additional_purchase_costs || [],
+                      })));
+                    }
+                  }}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                >
+                  <option value="full_property">Gesamte Immobilie im Besitz</option>
+                  <option value="units_only">Nur einzelne Einheiten im Besitz (Teileigentum)</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  {formData.ownership_type === 'full_property'
+                    ? 'Sie besitzen die gesamte Immobilie und tragen die Kaufdaten auf Immobilienebene ein.'
+                    : 'Sie besitzen nur einzelne Einheiten (z.B. Eigentumswohnungen) und tragen die Kaufdaten bei den jeweiligen Einheiten ein.'
+                  }
+                </p>
+              </div>
+
+              {formData.ownership_type === 'full_property' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Kaufdatum
+                    </label>
                 <input
                   type="date"
                   value={formData.purchase_date}
@@ -631,6 +714,8 @@ export default function PropertyModal({
                   + Weitere Nebenkosten hinzufügen
                 </button>
               </div>
+                </>
+              )}
 
               {formData.property_type === "parking" && (
                 <div className="col-span-2">
@@ -807,6 +892,85 @@ export default function PropertyModal({
                             placeholder="Zusätzliche Informationen..."
                           />
                         </div>
+
+                        {formData.ownership_type === 'units_only' && (
+                          <>
+                            <div className="col-span-2 pt-3 border-t border-gray-300 mt-3">
+                              <h5 className="text-xs font-semibold text-gray-700 mb-2">Kaufdaten für diese Einheit</h5>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Kaufpreis (€)
+                              </label>
+                              <input
+                                type="text"
+                                value={unit.purchase_price || ""}
+                                onChange={(e) => handleUnitChange(index, 'purchase_price', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                                placeholder="z.B. 250000"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Aktueller Wert (€)
+                              </label>
+                              <input
+                                type="text"
+                                value={unit.current_value || ""}
+                                onChange={(e) => handleUnitChange(index, 'current_value', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                                placeholder="z.B. 280000"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Kaufdatum
+                              </label>
+                              <input
+                                type="date"
+                                value={unit.purchase_date || ""}
+                                onChange={(e) => handleUnitChange(index, 'purchase_date', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Maklerkosten (€)
+                              </label>
+                              <input
+                                type="text"
+                                value={unit.broker_costs || ""}
+                                onChange={(e) => handleUnitChange(index, 'broker_costs', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                                placeholder="z.B. 7500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Notarkosten (€)
+                              </label>
+                              <input
+                                type="text"
+                                value={unit.notary_costs || ""}
+                                onChange={(e) => handleUnitChange(index, 'notary_costs', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                                placeholder="z.B. 3000"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Grunderwerbsteuer (€)
+                              </label>
+                              <input
+                                type="text"
+                                value={unit.real_estate_transfer_tax || ""}
+                                onChange={(e) => handleUnitChange(index, 'real_estate_transfer_tax', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                                placeholder="z.B. 15000"
+                              />
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}

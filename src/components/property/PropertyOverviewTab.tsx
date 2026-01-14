@@ -12,6 +12,7 @@ interface PropertyOverviewTabProps {
     address: string;
     property_type: string;
     property_management_type?: string;
+    ownership_type?: string;
     purchase_price: number;
     current_value: number;
     purchase_date: string | null;
@@ -92,6 +93,10 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
   const [showGrossYieldTooltip, setShowGrossYieldTooltip] = useState(false);
   const [showNetYieldTooltip, setShowNetYieldTooltip] = useState(false);
   const [isEditingMasterData, setIsEditingMasterData] = useState(false);
+  const [aggregatedValues, setAggregatedValues] = useState({
+    totalPurchasePrice: property.purchase_price,
+    totalCurrentValue: property.current_value,
+  });
   const [editData, setEditData] = useState({
     name: property.name,
     address: property.address,
@@ -168,6 +173,20 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           totalRent,
           occupancyRate,
         });
+
+        if (property.ownership_type === 'units_only') {
+          const totalPurchasePrice = unitsRes.data.reduce((sum, u) => sum + (Number(u.purchase_price) || 0), 0);
+          const totalCurrentValue = unitsRes.data.reduce((sum, u) => sum + (Number(u.current_value) || 0), 0);
+          setAggregatedValues({
+            totalPurchasePrice,
+            totalCurrentValue,
+          });
+        } else {
+          setAggregatedValues({
+            totalPurchasePrice: property.purchase_price,
+            totalCurrentValue: property.current_value,
+          });
+        }
       }
 
       setLoans(loansRes.data || []);
@@ -276,8 +295,8 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
   const calculateGrossYield = () => {
     const monthlyRent = stats.totalRent;
     const annualRent = monthlyRent * 12;
-    if (property.current_value === 0) return 0;
-    return (annualRent / property.current_value) * 100;
+    if (aggregatedValues.totalCurrentValue === 0) return 0;
+    return (annualRent / aggregatedValues.totalCurrentValue) * 100;
   };
 
   const calculateNetYield = () => {
@@ -288,8 +307,8 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
       0
     );
     const netAnnualIncome = annualRent - totalLoanPayments;
-    if (property.current_value === 0) return 0;
-    return (netAnnualIncome / property.current_value) * 100;
+    if (aggregatedValues.totalCurrentValue === 0) return 0;
+    return (netAnnualIncome / aggregatedValues.totalCurrentValue) * 100;
   };
 
   const monthlyRent = stats.totalRent;
