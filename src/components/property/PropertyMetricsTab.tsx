@@ -68,16 +68,17 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       const monthsInPeriod = daysInPeriod / 30;
 
       const [propertyRes, unitsRes, contractsRes, expensesRes, loansRes] = await Promise.all([
-        supabase.from("properties").select("*").eq("id", propertyId).single(),
+        supabase.from("properties").select("*").eq("id", propertyId).eq("user_id", user.id).single(),
         supabase.from("property_units").select("id, status").eq("property_id", propertyId),
-        supabase.from("rental_contracts").select("base_rent, status").eq("property_id", propertyId),
+        supabase.from("rental_contracts").select("base_rent, status").eq("property_id", propertyId).eq("user_id", user.id),
         supabase
           .from("expenses")
           .select("amount")
           .eq("property_id", propertyId)
+          .eq("user_id", user.id)
           .gte("expense_date", dateFrom)
           .lte("expense_date", dateTo),
-        supabase.from("loans").select("monthly_payment").eq("property_id", propertyId),
+        supabase.from("loans").select("monthly_payment").eq("property_id", propertyId).eq("user_id", user.id),
       ]);
 
       if (propertyRes.data) {

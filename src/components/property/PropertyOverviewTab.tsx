@@ -127,6 +127,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           .from("loans")
           .select("*")
           .eq("property_id", property.id)
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
         supabase
           .from("rental_contracts")
@@ -135,6 +136,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
             property_units(id, unit_number)
           `)
           .eq("property_id", property.id)
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
       ]);
 

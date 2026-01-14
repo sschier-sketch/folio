@@ -117,7 +117,7 @@ export default function PropertyStatistics({
     0,
   );
   const monthlyRent = contracts.reduce(
-    (sum, c) => sum + (Number(c.total_rent) || (Number(c.base_rent) + Number(c.additional_costs))),
+    (sum, c) => sum + Number(c.base_rent || 0),
     0,
   );
   const netEquity =
