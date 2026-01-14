@@ -40,6 +40,8 @@ import DashboardHome from "./DashboardHome";
 import RentPaymentsView from "./RentPaymentsView";
 import FinancesView from "./FinancesView";
 import SettingsView from "./SettingsView";
+import ProfileSettingsView from "./ProfileSettingsView";
+import BillingSettingsView from "./BillingSettingsView";
 import ReferralProgramView from "./ReferralProgramView";
 import FeedbackListView from "./FeedbackListView";
 import DocumentsView from "./DocumentsView";
@@ -582,15 +584,11 @@ export default function Dashboard() {
             {currentView === "templates" && <TemplatesView />}{" "}
             {currentView === "billing" && <BillingView />}{" "}
             {currentView === "tickets" && <TicketsView initialTicketId={selectedTicketId} />}{" "}
-            {currentView === "settings-profile" && (
-              <SettingsView activeTab="profile" />
-            )}{" "}
+            {currentView === "settings-profile" && <ProfileSettingsView />}{" "}
             {currentView === "settings-users" && (
               <SettingsView activeTab="users" />
             )}{" "}
-            {currentView === "settings-billing" && (
-              <SettingsView activeTab="billing" />
-            )}{" "}
+            {currentView === "settings-billing" && <BillingSettingsView />}{" "}
             {currentView === "feedback" && <FeedbackListView />}{" "}
             {currentView === "referral" && <ReferralProgramView />}{" "}
           </main>{" "}

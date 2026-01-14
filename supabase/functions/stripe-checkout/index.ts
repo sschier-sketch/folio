@@ -147,6 +147,39 @@ Deno.serve(async (req) => {
     } else {
       customerId = customer.customer_id;
 
+      // Verify the customer exists in Stripe
+      try {
+        await stripe.customers.retrieve(customerId);
+      } catch (error: any) {
+        if (error.code === 'resource_missing') {
+          console.log(`Customer ${customerId} no longer exists in Stripe, creating new customer`);
+
+          // Create new customer in Stripe
+          const newCustomer = await stripe.customers.create({
+            email: user.email,
+            metadata: {
+              userId: user.id,
+            },
+          });
+
+          // Update database with new customer ID
+          const { error: updateCustomerError } = await supabase
+            .from('stripe_customers')
+            .update({ customer_id: newCustomer.id })
+            .eq('user_id', user.id);
+
+          if (updateCustomerError) {
+            console.error('Failed to update customer information in the database', updateCustomerError);
+            return corsResponse({ error: 'Failed to update customer mapping' }, 500);
+          }
+
+          customerId = newCustomer.id;
+          console.log(`Created replacement Stripe customer ${customerId} for user ${user.id}`);
+        } else {
+          throw error;
+        }
+      }
+
       if (mode === 'subscription') {
         // Verify subscription exists for existing customer
         const { data: subscription, error: getSubscriptionError } = await supabase
