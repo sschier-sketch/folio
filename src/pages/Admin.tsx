@@ -77,12 +77,10 @@ export function Admin() {
           return;
         }
         setUsers(usersData as UserData[]);
-        const freeCount = (usersData || []).filter(
-          (u) => u.subscription_plan === "free",
-        ).length;
         const premiumCount = (usersData || []).filter(
           (u) => u.subscription_plan === "premium",
         ).length;
+        const freeCount = (usersData || []).length - premiumCount;
         setStats({
           totalUsers: (usersData || []).length,
           freeUsers: freeCount,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   ThumbsUp,
-  DollarSign,
+  Euro,
   Filter,
   CheckCircle,
   Clock,
@@ -9,6 +9,7 @@ import {
   Package,
   X,
   TrendingUp,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -120,6 +121,26 @@ export function AdminFeedbackView() {
       loadFeedback();
     } catch (error) {
       console.error("Error updating status:", error);
+    }
+  };
+
+  const handleDeleteFeedback = async (feedbackId: string) => {
+    if (!confirm("Möchten Sie diesen Feedback-Eintrag wirklich löschen?")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("user_feedback")
+        .delete()
+        .eq("id", feedbackId);
+
+      if (error) throw error;
+
+      loadFeedback();
+    } catch (error) {
+      console.error("Error deleting feedback:", error);
+      alert("Fehler beim Löschen des Feedbacks");
     }
   };
 
@@ -241,7 +262,7 @@ export function AdminFeedbackView() {
               </p>
             </div>
             <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-emerald-600" />
+              <Euro className="w-5 h-5 text-emerald-600" />
             </div>
           </div>
         </div>
@@ -323,7 +344,7 @@ export function AdminFeedbackView() {
                       {getStatusBadge(feedback.status)}
                       {feedback.willing_to_pay && (
                         <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-medium">
-                          <DollarSign className="w-3 h-3" />
+                          <Euro className="w-3 h-3" />
                           {feedback.payment_amount || "Betrag nicht angegeben"}
                         </span>
                       )}
@@ -344,7 +365,7 @@ export function AdminFeedbackView() {
                       )}
                     </p>
                   </div>
-                  <div>
+                  <div className="flex items-center gap-2">
                     <select
                       value={feedback.status}
                       onChange={(e) =>
@@ -357,6 +378,13 @@ export function AdminFeedbackView() {
                       <option value="planned">Geplant</option>
                       <option value="implemented">Umgesetzt</option>
                     </select>
+                    <button
+                      onClick={() => handleDeleteFeedback(feedback.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="Feedback löschen"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </div>
