@@ -46,32 +46,60 @@ export default function TenantContractTab({
   const [contractId, setContractId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user && tenantId && isPremium) {
-      loadTenantContract();
+    if (user && tenantId) {
+      if (isPremium) {
+        loadTenantContractAndDocuments();
+      } else {
+        setLoading(false);
+      }
     }
   }, [user, tenantId, isPremium]);
 
-  useEffect(() => {
-    if (contractId) {
-      loadDocuments();
-    }
-  }, [contractId]);
-
-  async function loadTenantContract() {
+  async function loadTenantContractAndDocuments() {
     try {
+      setLoading(true);
+
       const { data: tenantData } = await supabase
         .from("tenants")
         .select("contract_id")
         .eq("id", tenantId)
         .maybeSingle();
 
-      if (tenantData?.contract_id) {
-        setContractId(tenantData.contract_id);
+      if (!tenantData?.contract_id) {
+        setContractId(null);
+        setDocuments([]);
+        return;
+      }
+
+      setContractId(tenantData.contract_id);
+
+      const { data: associations } = await supabase
+        .from("document_associations")
+        .select("document_id, association_id, association_type")
+        .eq("association_type", "rental_contract")
+        .eq("association_id", tenantData.contract_id);
+
+      if (associations && associations.length > 0) {
+        const documentIds = associations.map((a) => a.document_id);
+
+        const { data: docs } = await supabase
+          .from("documents")
+          .select("*")
+          .in("id", documentIds)
+          .eq("is_archived", false)
+          .order("upload_date", { ascending: false });
+
+        if (docs) {
+          setDocuments(docs);
+        } else {
+          setDocuments([]);
+        }
       } else {
-        setLoading(false);
+        setDocuments([]);
       }
     } catch (error) {
-      console.error("Error loading tenant contract:", error);
+      console.error("Error loading documents:", error);
+    } finally {
       setLoading(false);
     }
   }
