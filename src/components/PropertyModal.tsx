@@ -41,19 +41,19 @@ export default function PropertyModal({
     country: "Deutschland",
     property_type: "multi_family",
     property_management_type: "self_management",
-    purchase_price: 0,
-    current_value: 0,
+    purchase_price: "",
+    current_value: "",
     purchase_date: "",
-    size_sqm: 0,
-    usable_area_sqm: 0,
+    size_sqm: "",
+    usable_area_sqm: "",
     parking_spot_number: "",
     description: "",
-    broker_costs: 0,
-    notary_costs: 0,
-    lawyer_costs: 0,
-    real_estate_transfer_tax: 0,
-    registration_costs: 0,
-    expert_costs: 0,
+    broker_costs: "",
+    notary_costs: "",
+    lawyer_costs: "",
+    real_estate_transfer_tax: "",
+    registration_costs: "",
+    expert_costs: "",
   });
   const [additionalCosts, setAdditionalCosts] = useState<Array<{name: string, amount: number}>>([]);
   useEffect(() => {
@@ -77,19 +77,19 @@ export default function PropertyModal({
         country: property.country || "Deutschland",
         property_type: property.property_type,
         property_management_type: property.property_management_type || "self_management",
-        purchase_price: property.purchase_price,
-        current_value: property.current_value,
+        purchase_price: property.purchase_price ? String(property.purchase_price) : "",
+        current_value: property.current_value ? String(property.current_value) : "",
         purchase_date: property.purchase_date || "",
-        size_sqm: property.size_sqm || 0,
-        usable_area_sqm: propertyWithCosts.usable_area_sqm || 0,
+        size_sqm: property.size_sqm ? String(property.size_sqm) : "",
+        usable_area_sqm: propertyWithCosts.usable_area_sqm ? String(propertyWithCosts.usable_area_sqm) : "",
         parking_spot_number: property.parking_spot_number || "",
         description: property.description,
-        broker_costs: propertyWithCosts.broker_costs || 0,
-        notary_costs: propertyWithCosts.notary_costs || 0,
-        lawyer_costs: propertyWithCosts.lawyer_costs || 0,
-        real_estate_transfer_tax: propertyWithCosts.real_estate_transfer_tax || 0,
-        registration_costs: propertyWithCosts.registration_costs || 0,
-        expert_costs: propertyWithCosts.expert_costs || 0,
+        broker_costs: propertyWithCosts.broker_costs ? String(propertyWithCosts.broker_costs) : "",
+        notary_costs: propertyWithCosts.notary_costs ? String(propertyWithCosts.notary_costs) : "",
+        lawyer_costs: propertyWithCosts.lawyer_costs ? String(propertyWithCosts.lawyer_costs) : "",
+        real_estate_transfer_tax: propertyWithCosts.real_estate_transfer_tax ? String(propertyWithCosts.real_estate_transfer_tax) : "",
+        registration_costs: propertyWithCosts.registration_costs ? String(propertyWithCosts.registration_costs) : "",
+        expert_costs: propertyWithCosts.expert_costs ? String(propertyWithCosts.expert_costs) : "",
       };
 
       setFormData(propData);
@@ -149,29 +149,29 @@ export default function PropertyModal({
         address: address,
         property_type: formData.property_type,
         property_management_type: formData.property_management_type,
-        purchase_price: formData.purchase_price,
-        current_value: formData.current_value,
+        purchase_price: parseNumberInput(formData.purchase_price),
+        current_value: parseNumberInput(formData.current_value),
         purchase_date: formData.purchase_date,
         user_id: user.id,
         size_sqm:
           formData.property_type === "parking"
             ? null
-            : formData.size_sqm || null,
+            : formData.size_sqm ? parseNumberInput(formData.size_sqm) : null,
         usable_area_sqm:
           formData.property_type === "parking"
             ? null
-            : formData.usable_area_sqm || null,
+            : formData.usable_area_sqm ? parseNumberInput(formData.usable_area_sqm) : null,
         parking_spot_number:
           formData.property_type === "parking"
             ? formData.parking_spot_number || null
             : null,
         description: formData.description,
-        broker_costs: formData.broker_costs || 0,
-        notary_costs: formData.notary_costs || 0,
-        lawyer_costs: formData.lawyer_costs || 0,
-        real_estate_transfer_tax: formData.real_estate_transfer_tax || 0,
-        registration_costs: formData.registration_costs || 0,
-        expert_costs: formData.expert_costs || 0,
+        broker_costs: formData.broker_costs ? parseNumberInput(formData.broker_costs) : 0,
+        notary_costs: formData.notary_costs ? parseNumberInput(formData.notary_costs) : 0,
+        lawyer_costs: formData.lawyer_costs ? parseNumberInput(formData.lawyer_costs) : 0,
+        real_estate_transfer_tax: formData.real_estate_transfer_tax ? parseNumberInput(formData.real_estate_transfer_tax) : 0,
+        registration_costs: formData.registration_costs ? parseNumberInput(formData.registration_costs) : 0,
+        expert_costs: formData.expert_costs ? parseNumberInput(formData.expert_costs) : 0,
         additional_purchase_costs: additionalCosts.length > 0 ? additionalCosts : [],
       };
       if (property) {
@@ -392,7 +392,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    purchase_price: parseNumberInput(e.target.value),
+                    purchase_price: e.target.value,
                   })
                 }
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
@@ -411,7 +411,7 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    current_value: parseNumberInput(e.target.value),
+                    current_value: e.target.value,
                   })
                 }
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
@@ -433,11 +433,11 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    broker_costs: parseNumberInput(e.target.value),
+                    broker_costs: e.target.value,
                   })
                 }
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 7500"
+                placeholder="z.B. 7500 oder 7.500,00"
               />
             </div>
             <div>
@@ -450,11 +450,11 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    notary_costs: parseNumberInput(e.target.value),
+                    notary_costs: e.target.value,
                   })
                 }
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 3000"
+                placeholder="z.B. 3000 oder 3.000,00"
               />
             </div>
             <div>
@@ -467,11 +467,11 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    lawyer_costs: parseNumberInput(e.target.value),
+                    lawyer_costs: e.target.value,
                   })
                 }
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 1500"
+                placeholder="z.B. 1500 oder 1.500,00"
               />
             </div>
             <div>
@@ -484,11 +484,11 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    real_estate_transfer_tax: parseNumberInput(e.target.value),
+                    real_estate_transfer_tax: e.target.value,
                   })
                 }
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 15000"
+                placeholder="z.B. 15000 oder 15.000,00"
               />
             </div>
             <div>
@@ -501,11 +501,11 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    registration_costs: parseNumberInput(e.target.value),
+                    registration_costs: e.target.value,
                   })
                 }
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 500"
+                placeholder="z.B. 500 oder 500,00"
               />
             </div>
             <div>
@@ -518,11 +518,11 @@ export default function PropertyModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    expert_costs: parseNumberInput(e.target.value),
+                    expert_costs: e.target.value,
                   })
                 }
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 800"
+                placeholder="z.B. 800 oder 800,00"
               />
             </div>
 
@@ -590,11 +590,11 @@ export default function PropertyModal({
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        size_sqm: parseNumberInput(e.target.value),
+                        size_sqm: e.target.value,
                       })
                     }
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="z.B. 75,5"
+                    placeholder="z.B. 75,5 oder 96,7"
                   />{" "}
                 </div>
                 <div>
@@ -609,11 +609,11 @@ export default function PropertyModal({
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        usable_area_sqm: parseNumberInput(e.target.value),
+                        usable_area_sqm: e.target.value,
                       })
                     }
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="z.B. 85,0"
+                    placeholder="z.B. 85,0 oder 100,5"
                   />{" "}
                 </div>
               </>
