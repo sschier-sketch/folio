@@ -188,9 +188,84 @@ export default function TenantModal({
     }
   }, [tenantData.property_id]);
 
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        if (!tenantData.property_id) {
+          alert("Bitte wählen Sie eine Immobilie aus");
+          return false;
+        }
+        if (!tenantData.first_name || !tenantData.last_name) {
+          alert("Bitte geben Sie Vor- und Nachname ein");
+          return false;
+        }
+        if (!tenantData.move_in_date) {
+          alert("Bitte geben Sie ein Einzugsdatum ein");
+          return false;
+        }
+        if (tenantData.email && !validateEmail(tenantData.email)) {
+          alert("Bitte geben Sie eine gültige E-Mail-Adresse ein");
+          return false;
+        }
+        return true;
+
+      case 2:
+        if (rentData.rent_type === "flat_rate" && !rentData.flat_rate_amount) {
+          alert("Bitte geben Sie die Pauschalmiete ein");
+          return false;
+        }
+        if (rentData.rent_type === "cold_rent_advance") {
+          if (!rentData.cold_rent) {
+            alert("Bitte geben Sie die Kaltmiete ein");
+            return false;
+          }
+          if (!rentData.total_advance) {
+            alert("Bitte geben Sie die Nebenkostenvorauszahlung ein");
+            return false;
+          }
+        }
+        if (rentData.rent_type === "cold_rent_utilities_heating") {
+          if (!rentData.cold_rent) {
+            alert("Bitte geben Sie die Kaltmiete ein");
+            return false;
+          }
+          if (!rentData.operating_costs) {
+            alert("Bitte geben Sie die Betriebskosten ein");
+            return false;
+          }
+          if (!rentData.heating_costs) {
+            alert("Bitte geben Sie die Heizkosten ein");
+            return false;
+          }
+        }
+        if (rentData.rent_increase_type === "graduated") {
+          if (!rentData.graduated_rent_date) {
+            alert("Bitte geben Sie das Datum der ersten Mieterhöhung ein");
+            return false;
+          }
+          if (!rentData.graduated_rent_new_amount) {
+            alert("Bitte geben Sie die neue Kaltmiete ein");
+            return false;
+          }
+        }
+        return true;
+
+      case 3:
+        return true;
+
+      case 4:
+        return true;
+
+      default:
+        return true;
+    }
+  };
+
   const handleNext = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
+    if (validateStep(currentStep)) {
+      if (currentStep < 4) {
+        setCurrentStep(currentStep + 1);
+      }
     }
   };
 
