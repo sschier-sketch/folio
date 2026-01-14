@@ -41,6 +41,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [currentStorageUsed, setCurrentStorageUsed] = useState(0);
   const [storageError, setStorageError] = useState("");
+  const [sharedWithTenant, setSharedWithTenant] = useState(false);
 
   const storageLimit = isPro ? PRO_STORAGE_LIMIT : FREE_STORAGE_LIMIT;
 
@@ -213,6 +214,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           category: category || null,
           description: description || null,
           document_date: documentDate || null,
+          shared_with_tenant: sharedWithTenant,
         })
         .select()
         .single();
@@ -539,6 +541,27 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               </p>
             </div>
           </DocumentFeatureGuard>
+
+          <div className="border-t border-gray-200 pt-4">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={sharedWithTenant}
+                onChange={(e) => setSharedWithTenant(e.target.checked)}
+                className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <div className="flex-1">
+                <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                  Im Mieterportal zur Verfügung stellen
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {associationType === 'tenant' && associationId
+                    ? 'Wenn Sie einen Mieter zuordnen, sieht nur dieser Mieter das Dokument in seinem Portal.'
+                    : 'Alle Mieter können dieses Dokument in ihrem Portal einsehen.'}
+                </p>
+              </div>
+            </label>
+          </div>
         </div>
       </div>
 

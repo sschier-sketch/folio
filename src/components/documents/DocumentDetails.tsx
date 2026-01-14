@@ -603,8 +603,8 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                   />
                 </div>
 
-                {associations.some((a) => a.association_type === "tenant") && (
-                  <div className="flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="border-t border-gray-200 pt-4">
+                  <label className="flex items-start gap-3 cursor-pointer group">
                     <input
                       type="checkbox"
                       id="share_with_tenant_edit"
@@ -612,17 +612,21 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                       onChange={(e) =>
                         setEditForm({ ...editForm, shared_with_tenant: e.target.checked })
                       }
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <label
-                      htmlFor="share_with_tenant_edit"
-                      className="text-sm font-medium text-gray-700 flex items-center gap-2"
-                    >
-                      <Lock className="w-4 h-4" />
-                      Im Mieterportal anzeigen (Dokument wird für Mieter sichtbar)
-                    </label>
-                  </div>
-                )}
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        Im Mieterportal zur Verfügung stellen
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {associations.some((a) => a.association_type === "tenant")
+                          ? 'Wenn Sie einen Mieter zugeordnet haben, sieht nur dieser Mieter das Dokument in seinem Portal.'
+                          : 'Alle Mieter der zugeordneten Immobilie/Einheit können dieses Dokument in ihrem Portal einsehen. Ohne Zuordnung bleibt das Dokument privat.'}
+                      </p>
+                    </div>
+                  </label>
+                </div>
 
                 <div className="flex gap-2">
                   <button
@@ -868,6 +872,23 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                   </div>
                 </div>
               )}
+
+              <div className="flex items-start gap-3">
+                <Users className="w-5 h-5 text-gray-400 mt-0.5" />
+                <div className="flex-1">
+                  <div className="text-sm text-gray-500">Mieterportal</div>
+                  <div className="text-sm font-medium text-dark">
+                    {document.shared_with_tenant ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-600">
+                        <FileCheck className="w-4 h-4" />
+                        Für Mieter sichtbar
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">Nicht geteilt</span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
