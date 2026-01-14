@@ -538,15 +538,6 @@ export function Admin() {
                           Tarif <ArrowUpDown className="w-3 h-3" />
                         </div>
                       </th>{" "}
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort("subscription_status")}
-                      >
-                        {" "}
-                        <div className="flex items-center gap-1">
-                          Status <ArrowUpDown className="w-3 h-3" />
-                        </div>
-                      </th>{" "}
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         {" "}
                         Aktionen{" "}
@@ -560,10 +551,15 @@ export function Admin() {
                         {" "}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            {user.is_admin && (
+                            {user.is_admin ? (
                               <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium" title="Administrator">
                                 <ShieldCheck className="w-3 h-3" />
                                 Admin
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium" title="Eigentümer">
+                                <UserCheck className="w-3 h-3" />
+                                Eigentümer
                               </span>
                             )}
                             {user.banned && (
@@ -611,17 +607,6 @@ export function Admin() {
                             {user.subscription_plan === "premium"
                               ? "Premium"
                               : "Gratis"}{" "}
-                          </span>{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {" "}
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.subscription_status === "active" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}
-                          >
-                            {" "}
-                            {user.subscription_status === "active"
-                              ? "Aktiv"
-                              : "Inaktiv"}{" "}
                           </span>{" "}
                         </td>{" "}
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
