@@ -17,6 +17,9 @@ import {
   FileText,
   Bell,
   ArrowUpDown,
+  Ban,
+  UserCog,
+  ShieldCheck,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -36,6 +39,9 @@ interface UserData {
   company_name?: string;
   properties_count?: number;
   tenants_count?: number;
+  is_admin?: boolean;
+  banned?: boolean;
+  ban_reason?: string;
 }
 interface Stats {
   totalUsers: number;
@@ -181,6 +187,92 @@ export function Admin() {
       );
     } catch (err) {
       console.error("Error logging impersonation:", err);
+    }
+  }
+
+  async function handleBanUser(userId: string, userEmail: string) {
+    const reason = prompt(
+      `Möchten Sie ${userEmail} wirklich sperren?\n\nBitte geben Sie einen Grund an:`,
+    );
+    if (!reason) return;
+
+    try {
+      const { error } = await supabase.rpc("admin_ban_user", {
+        target_user_id: userId,
+        reason: reason,
+      });
+
+      if (error) throw error;
+
+      alert("Benutzer wurde gesperrt");
+      window.location.reload();
+    } catch (err) {
+      console.error("Error banning user:", err);
+      alert("Fehler beim Sperren des Benutzers");
+    }
+  }
+
+  async function handleUnbanUser(userId: string, userEmail: string) {
+    if (!confirm(`Möchten Sie die Sperre von ${userEmail} aufheben?`)) return;
+
+    try {
+      const { error } = await supabase.rpc("admin_unban_user", {
+        target_user_id: userId,
+      });
+
+      if (error) throw error;
+
+      alert("Sperre wurde aufgehoben");
+      window.location.reload();
+    } catch (err) {
+      console.error("Error unbanning user:", err);
+      alert("Fehler beim Aufheben der Sperre");
+    }
+  }
+
+  async function handleGrantAdmin(userId: string, userEmail: string) {
+    if (
+      !confirm(
+        `Möchten Sie ${userEmail} wirklich Admin-Rechte erteilen?`,
+      )
+    )
+      return;
+
+    try {
+      const { error } = await supabase.rpc("admin_grant_admin_access", {
+        target_user_id: userId,
+      });
+
+      if (error) throw error;
+
+      alert("Admin-Rechte wurden erteilt");
+      window.location.reload();
+    } catch (err) {
+      console.error("Error granting admin access:", err);
+      alert("Fehler beim Erteilen der Admin-Rechte");
+    }
+  }
+
+  async function handleRevokeAdmin(userId: string, userEmail: string) {
+    if (
+      !confirm(
+        `Möchten Sie ${userEmail} wirklich die Admin-Rechte entziehen?`,
+      )
+    )
+      return;
+
+    try {
+      const { error } = await supabase.rpc("admin_revoke_admin_access", {
+        target_user_id: userId,
+      });
+
+      if (error) throw error;
+
+      alert("Admin-Rechte wurden entzogen");
+      window.location.reload();
+    } catch (err) {
+      console.error("Error revoking admin access:", err);
+      alert("Fehler beim Entziehen der Admin-Rechte");
     }
   }
   return (
@@ -380,6 +472,9 @@ export function Admin() {
                     {" "}
                     <tr>
                       {" "}
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Status
+                      </th>
                       <th
                         className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                         onClick={() => handleSort("email")}
@@ -463,6 +558,22 @@ export function Admin() {
                     {sortedUsers.map((user) => (
                       <tr key={user.id} className="hover:bg-gray-50">
                         {" "}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            {user.is_admin && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium" title="Administrator">
+                                <ShieldCheck className="w-3 h-3" />
+                                Admin
+                              </span>
+                            )}
+                            {user.banned && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-800 text-white rounded text-xs font-medium" title={user.ban_reason || "Gesperrt"}>
+                                <Ban className="w-3 h-3" />
+                                Gesperrt
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
                           {" "}
                           {user.email}{" "}
@@ -539,6 +650,52 @@ export function Admin() {
                                 <XCircle className="w-4 h-4" />{" "}
                               </button>
                             )}{" "}
+                            {user.is_admin ? (
+                              <button
+                                onClick={() =>
+                                  handleRevokeAdmin(user.id, user.email)
+                                }
+                                className="text-orange-600 hover:text-orange-800 transition-colors"
+                                title="Admin-Rechte entziehen"
+                              >
+                                {" "}
+                                <ShieldCheck className="w-4 h-4" />{" "}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  handleGrantAdmin(user.id, user.email)
+                                }
+                                className="text-green-600 hover:text-green-800 transition-colors"
+                                title="Zum Admin machen"
+                              >
+                                {" "}
+                                <UserCog className="w-4 h-4" />{" "}
+                              </button>
+                            )}
+                            {user.banned ? (
+                              <button
+                                onClick={() =>
+                                  handleUnbanUser(user.id, user.email)
+                                }
+                                className="text-emerald-600 hover:text-emerald-800 transition-colors"
+                                title="Sperre aufheben"
+                              >
+                                {" "}
+                                <UserCheck className="w-4 h-4" />{" "}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  handleBanUser(user.id, user.email)
+                                }
+                                className="text-gray-600 hover:text-gray-800 transition-colors"
+                                title="Benutzer sperren"
+                              >
+                                {" "}
+                                <Ban className="w-4 h-4" />{" "}
+                              </button>
+                            )}
                           </div>{" "}
                         </td>{" "}
                       </tr>
