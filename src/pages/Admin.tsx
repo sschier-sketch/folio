@@ -83,15 +83,15 @@ export function Admin() {
           return;
         }
         setUsers(usersData as UserData[]);
-        const premiumCount = (usersData || []).filter(
-          (u) => u.subscription_plan === "premium",
+        const proCount = (usersData || []).filter(
+          (u) => u.subscription_plan === "pro",
         ).length;
-        const freeCount = (usersData || []).length - premiumCount;
+        const freeCount = (usersData || []).length - proCount;
         setStats({
           totalUsers: (usersData || []).length,
           freeUsers: freeCount,
-          premiumUsers: premiumCount,
-          monthlyRevenue: premiumCount * 9,
+          premiumUsers: proCount,
+          monthlyRevenue: proCount * 9,
         });
       } catch (err) {
         console.error("Error loading admin data:", err);
@@ -391,7 +391,7 @@ export function Admin() {
                     {stats.premiumUsers}
                   </span>{" "}
                 </div>{" "}
-                <p className="text-gray-400 font-medium">Premium Nutzer</p>{" "}
+                <p className="text-gray-400 font-medium">Pro Nutzer</p>{" "}
               </div>{" "}
               <div className="bg-white rounded p-6 ">
                 {" "}
@@ -598,11 +598,11 @@ export function Admin() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           {" "}
                           <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.subscription_plan === "premium" ? "bg-amber-100 text-amber-800" : "bg-gray-50 text-dark"}`}
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.subscription_plan === "pro" ? "bg-amber-100 text-amber-800" : "bg-gray-50 text-dark"}`}
                           >
                             {" "}
-                            {user.subscription_plan === "premium"
-                              ? "Premium"
+                            {user.subscription_plan === "pro"
+                              ? "Pro"
                               : "Gratis"}{" "}
                           </span>{" "}
                         </td>{" "}
@@ -620,7 +620,7 @@ export function Admin() {
                               {" "}
                               <Eye className="w-4 h-4" />{" "}
                             </button>{" "}
-                            {user.subscription_plan === "premium" && (
+                            {user.subscription_plan === "pro" && (
                               <button
                                 onClick={() =>
                                   handleCancelSubscription(user.id)
