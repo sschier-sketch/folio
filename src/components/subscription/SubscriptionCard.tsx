@@ -14,10 +14,12 @@ export function SubscriptionCard({
   isCurrentPlan = false,
 }: SubscriptionCardProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { language } = useLanguage();
 
   const handleSubscribe = async () => {
     setLoading(true);
+    setError(null);
     try {
       const {
         data: { session },
@@ -26,6 +28,8 @@ export function SubscriptionCard({
       if (!session) {
         throw new Error("Not authenticated");
       }
+
+      console.log("Creating checkout session for product:", product.priceId);
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`,
@@ -44,18 +48,26 @@ export function SubscriptionCard({
         },
       );
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Checkout error:", errorData);
         throw new Error(errorData.error || "Failed to create checkout session");
       }
 
-      const { url } = await response.json();
-      if (url) {
-        window.location.href = url;
+      const data = await response.json();
+      console.log("Checkout response:", data);
+
+      if (data.url) {
+        console.log("Redirecting to:", data.url);
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL received");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Subscription error:", error);
-    } finally {
+      setError(error.message || "Ein Fehler ist aufgetreten");
       setLoading(false);
     }
   };
@@ -105,6 +117,12 @@ export function SubscriptionCard({
             </div>
           )}
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+            {error}
+          </div>
+        )}
 
         <button
           onClick={handleSubscribe}
