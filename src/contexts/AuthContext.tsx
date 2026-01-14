@@ -18,6 +18,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const checkIfUserBanned = async (userId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from("account_profiles")
+        .select("banned, ban_reason")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error checking ban status:", error);
+        return false;
+      }
+
+      if (data?.banned) {
+        alert(
+          `Ihr Account wurde gesperrt.\n\nGrund: ${data.ban_reason || "Keine Angabe"}\n\nBitte wenden Sie sich an das rentab.ly Team für weitere Informationen.`
+        );
+        return true;
+      }
+
+      return false;
+    } catch (err) {
+      console.error("Error checking ban status:", err);
+      return false;
+    }
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
@@ -55,33 +82,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const checkIfUserBanned = async (userId: string): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase
-        .from("account_profiles")
-        .select("banned, ban_reason")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Error checking ban status:", error);
-        return false;
-      }
-
-      if (data?.banned) {
-        alert(
-          `Ihr Account wurde gesperrt.\n\nGrund: ${data.ban_reason || "Keine Angabe"}\n\nBitte wenden Sie sich an das rentab.ly Team für weitere Informationen.`
-        );
-        return true;
-      }
-
-      return false;
-    } catch (err) {
-      console.error("Error checking ban status:", err);
-      return false;
-    }
-  };
 
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({
