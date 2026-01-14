@@ -26,7 +26,7 @@ export default function Pricing() {
     "yearly",
   );
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const savings = billingCycle === "yearly" ? "20% sparen" : "";
+  const savings = billingCycle === "yearly" ? "30% sparen" : "";
   const plans = [
     {
       id: "starter",
@@ -95,8 +95,8 @@ export default function Pricing() {
         language === "de"
           ? "Ideal für professionelle Verwalter"
           : "Ideal for professional managers",
-      monthlyPrice: 29,
-      yearlyPrice: 279,
+      monthlyPrice: 12.90,
+      yearlyPrice: 108,
       color: "blue",
       popular: true,
       badge: language === "de" ? "Beliebteste Wahl" : "Most Popular",
@@ -337,7 +337,7 @@ export default function Pricing() {
                 {language === "de" ? "Jährlich" : "Yearly"}{" "}
                 <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                   {" "}
-                  -20%{" "}
+                  -30%{" "}
                 </span>{" "}
               </button>{" "}
             </div>{" "}

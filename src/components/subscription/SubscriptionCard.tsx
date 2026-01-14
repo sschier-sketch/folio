@@ -88,8 +88,21 @@ export function SubscriptionCard({
           </span>
           {product.mode === "subscription" && (
             <span className="text-gray-600 ml-1">
-              {language === "de" ? "/Monat" : "/month"}
+              {product.interval === "year"
+                ? language === "de"
+                  ? "/Jahr"
+                  : "/year"
+                : language === "de"
+                  ? "/Monat"
+                  : "/month"}
             </span>
+          )}
+          {product.interval === "year" && (
+            <div className="text-sm text-green-600 font-semibold mt-2">
+              {language === "de"
+                ? `Nur €${(product.price / 12).toFixed(2)}/Monat`
+                : `Only €${(product.price / 12).toFixed(2)}/month`}
+            </div>
           )}
         </div>
 
