@@ -43,22 +43,50 @@ export default function TenantContractTab({
   const [isDragging, setIsDragging] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
   const [shareWithTenant, setShareWithTenant] = useState(true);
+  const [contractId, setContractId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && tenantId && isPremium) {
-      loadDocuments();
+      loadTenantContract();
     }
   }, [user, tenantId, isPremium]);
 
+  useEffect(() => {
+    if (contractId) {
+      loadDocuments();
+    }
+  }, [contractId]);
+
+  async function loadTenantContract() {
+    try {
+      const { data: tenantData } = await supabase
+        .from("tenants")
+        .select("contract_id")
+        .eq("id", tenantId)
+        .maybeSingle();
+
+      if (tenantData?.contract_id) {
+        setContractId(tenantData.contract_id);
+      } else {
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error loading tenant contract:", error);
+      setLoading(false);
+    }
+  }
+
   async function loadDocuments() {
+    if (!contractId) return;
+
     try {
       setLoading(true);
 
       const { data: associations } = await supabase
         .from("document_associations")
         .select("document_id, association_id, association_type")
-        .eq("association_type", "tenant")
-        .eq("association_id", tenantId);
+        .eq("association_type", "rental_contract")
+        .eq("association_id", contractId);
 
       if (associations && associations.length > 0) {
         const documentIds = associations.map((a) => a.document_id);
@@ -116,7 +144,7 @@ export default function TenantContractTab({
   };
 
   async function handleUpload() {
-    if (!user || uploadFiles.length === 0) return;
+    if (!user || uploadFiles.length === 0 || !contractId) return;
 
     setIsUploading(true);
     const results: { id: string; success: boolean }[] = [];
@@ -162,8 +190,8 @@ export default function TenantContractTab({
         const { error: assocError } = await supabase.from("document_associations").insert([
           {
             document_id: docData.id,
-            association_type: "tenant",
-            association_id: tenantId,
+            association_type: "rental_contract",
+            association_id: contractId,
             created_by: user.id,
           },
         ]);
@@ -314,6 +342,18 @@ export default function TenantContractTab({
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
   }
 
+  if (!contractId) {
+    return (
+      <div className="text-center py-12">
+        <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-400">Kein Mietverhältnis gefunden</p>
+        <p className="text-sm text-gray-400 mt-2">
+          Dieser Mieter ist keinem aktiven Mietverhältnis zugeordnet.
+        </p>
+      </div>
+    );
+  }
+
   if (!isPremium) {
     return (
       <div className="bg-white rounded-lg p-8">
@@ -368,10 +408,10 @@ export default function TenantContractTab({
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-dark">
-              Vertragsdokumente
+              Dokumente zum Mietverhältnis
             </h3>
             <p className="text-sm text-gray-500 mt-1">
-              Verwalten Sie alle Vertragsdokumente zentral an einem Ort
+              Hier werden alle Dokumente angezeigt, die diesem Mietverhältnis zugeordnet sind
             </p>
           </div>
           <button
@@ -497,7 +537,12 @@ export default function TenantContractTab({
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-dark">Dokument hochladen</h3>
+              <div>
+                <h3 className="text-xl font-bold text-dark">Dokument zum Mietverhältnis hochladen</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Das Dokument wird automatisch diesem Mietverhältnis zugeordnet
+                </p>
+              </div>
               <button
                 onClick={() => {
                   setShowUploadModal(false);
@@ -542,20 +587,23 @@ export default function TenantContractTab({
                 />
               </div>
 
-              <div className="flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <input
-                  type="checkbox"
-                  id="share_with_tenant"
-                  checked={shareWithTenant}
-                  onChange={(e) => setShareWithTenant(e.target.checked)}
-                  className="w-4 h-4 text-primary-blue focus:ring-primary-blue border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="share_with_tenant"
-                  className="text-sm font-medium text-gray-700 flex items-center gap-2"
-                >
-                  <Lock className="w-4 h-4" />
-                  Im Mieterportal anzeigen (Dokument wird für Mieter sichtbar und downloadbar)
+              <div className="border-t border-gray-200 pt-4">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    id="share_with_tenant"
+                    checked={shareWithTenant}
+                    onChange={(e) => setShareWithTenant(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                      Im Mieterportal zur Verfügung stellen
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Alle Mieter dieses Mietverhältnisses können das Dokument in ihrem Portal einsehen und herunterladen
+                    </p>
+                  </div>
                 </label>
               </div>
 
