@@ -329,6 +329,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
           }
         }}
         onNavigateToTenant={onNavigateToTenant}
+        onUpdate={loadProperties}
       />
     );
   }

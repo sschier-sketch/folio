@@ -44,6 +44,7 @@ interface PropertyDetailsProps {
   onBack: () => void;
   onNavigateToTenant?: (tenantId: string) => void;
   initialTab?: Tab;
+  onUpdate?: () => void;
 }
 
 type Tab =
@@ -56,12 +57,18 @@ type Tab =
   | "maintenance"
   | "metrics";
 
-export default function PropertyDetails({ property, onBack, onNavigateToTenant, initialTab }: PropertyDetailsProps) {
+export default function PropertyDetails({ property, onBack, onNavigateToTenant, initialTab, onUpdate }: PropertyDetailsProps) {
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') as Tab | null;
   const [activeTab, setActiveTab] = useState<Tab>(initialTab || tabFromUrl || "overview");
+  const [currentProperty, setCurrentProperty] = useState<Property>(property);
   const [photoUrl, setPhotoUrl] = useState<string | null>(property.photo_url || null);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    setCurrentProperty(property);
+    setPhotoUrl(property.photo_url || null);
+  }, [property]);
 
   useEffect(() => {
     if (initialTab) {
@@ -70,6 +77,23 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
       setActiveTab(tabFromUrl);
     }
   }, [tabFromUrl, initialTab]);
+
+  const handlePropertyUpdate = async () => {
+    const { data, error } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('id', property.id)
+      .single();
+
+    if (data && !error) {
+      setCurrentProperty(data);
+      setPhotoUrl(data.photo_url || null);
+    }
+
+    if (onUpdate) {
+      onUpdate();
+    }
+  };
 
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -221,8 +245,8 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
           </div>
 
           <div>
-            <h1 className="text-3xl font-bold text-dark mb-2">{property.name}</h1>
-            <p className="text-gray-400">{property.address}</p>
+            <h1 className="text-3xl font-bold text-dark mb-2">{currentProperty.name}</h1>
+            <p className="text-gray-400">{currentProperty.address}</p>
           </div>
         </div>
       </div>
@@ -260,16 +284,16 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
       </div>
 
       <div>
-        {activeTab === "overview" && <PropertyOverviewTab property={property} onNavigateToTenant={onNavigateToTenant} />}
-        {activeTab === "units" && <PropertyUnitsTab propertyId={property.id} />}
-        {activeTab === "equipment" && <PropertyEquipmentTab propertyId={property.id} />}
-        {activeTab === "documents" && <PropertyDocumentsTab propertyId={property.id} />}
-        {activeTab === "history" && <PropertyHistoryTab propertyId={property.id} />}
-        {activeTab === "contacts" && <PropertyContactsTab propertyId={property.id} />}
+        {activeTab === "overview" && <PropertyOverviewTab property={currentProperty} onNavigateToTenant={onNavigateToTenant} onUpdate={handlePropertyUpdate} />}
+        {activeTab === "units" && <PropertyUnitsTab propertyId={currentProperty.id} />}
+        {activeTab === "equipment" && <PropertyEquipmentTab propertyId={currentProperty.id} />}
+        {activeTab === "documents" && <PropertyDocumentsTab propertyId={currentProperty.id} />}
+        {activeTab === "history" && <PropertyHistoryTab propertyId={currentProperty.id} />}
+        {activeTab === "contacts" && <PropertyContactsTab propertyId={currentProperty.id} />}
         {activeTab === "maintenance" && (
-          <PropertyMaintenanceTab propertyId={property.id} />
+          <PropertyMaintenanceTab propertyId={currentProperty.id} />
         )}
-        {activeTab === "metrics" && <PropertyMetricsTab propertyId={property.id} />}
+        {activeTab === "metrics" && <PropertyMetricsTab propertyId={currentProperty.id} />}
       </div>
     </div>
   );
