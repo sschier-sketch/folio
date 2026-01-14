@@ -20,16 +20,29 @@ export function SubscriptionCard({
   const handleSubscribe = async () => {
     setLoading(true);
     setError(null);
+
     try {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
       if (!session) {
-        throw new Error("Not authenticated");
+        throw new Error("Sie sind nicht angemeldet");
       }
 
-      console.log("Creating checkout session for product:", product.priceId);
+      console.log("=== STRIPE CHECKOUT START ===");
+      console.log("Product:", product.priceId);
+      console.log("Mode:", product.mode);
+
+      const requestBody = {
+        price_id: product.priceId,
+        mode: product.mode,
+        success_url: `${window.location.origin}/dashboard?payment=success`,
+        cancel_url: `${window.location.origin}/dashboard`,
+      };
+
+      console.log("Request URL:", `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`);
+      console.log("Request body:", requestBody);
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`,
@@ -39,35 +52,47 @@ export function SubscriptionCard({
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({
-            price_id: product.priceId,
-            mode: product.mode,
-            success_url: `${window.location.origin}/dashboard?payment=success`,
-            cancel_url: `${window.location.origin}/dashboard`,
-          }),
+          body: JSON.stringify(requestBody),
         },
       );
 
       console.log("Response status:", response.status);
+      console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+
+      const responseText = await response.text();
+      console.log("Response text:", responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Failed to parse response:", parseError);
+        throw new Error(`Server-Antwort konnte nicht gelesen werden: ${responseText.substring(0, 100)}`);
+      }
+
+      console.log("Parsed response:", data);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Checkout error:", errorData);
-        throw new Error(errorData.error || "Failed to create checkout session");
+        console.error("=== CHECKOUT FAILED ===");
+        console.error("Error data:", data);
+        throw new Error(data.error || `Server-Fehler (${response.status})`);
       }
-
-      const data = await response.json();
-      console.log("Checkout response:", data);
 
       if (data.url) {
-        console.log("Redirecting to:", data.url);
+        console.log("=== REDIRECTING TO STRIPE ===");
+        console.log("URL:", data.url);
         window.location.href = data.url;
       } else {
-        throw new Error("No checkout URL received");
+        console.error("=== NO URL IN RESPONSE ===");
+        throw new Error("Keine Checkout-URL erhalten. Antwort: " + JSON.stringify(data));
       }
     } catch (error: any) {
-      console.error("Subscription error:", error);
-      setError(error.message || "Ein Fehler ist aufgetreten");
+      console.error("=== SUBSCRIPTION ERROR ===");
+      console.error("Error:", error);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+
+      setError(error.message || "Ein unbekannter Fehler ist aufgetreten");
       setLoading(false);
     }
   };

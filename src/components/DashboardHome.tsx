@@ -187,11 +187,11 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
 
       const { data: unitsData } = await supabase
         .from("property_units")
-        .select("id, rental_contract_id")
+        .select("id, tenant_id")
         .eq("user_id", user.id);
 
       const totalUnits = unitsData?.length || 0;
-      const rentedUnits = unitsData?.filter(u => u.rental_contract_id).length || 0;
+      const rentedUnits = unitsData?.filter(u => u.tenant_id).length || 0;
       const occupancyRate = totalUnits > 0 ? Math.round((rentedUnits / totalUnits) * 100) : 100;
 
       const ninetyDaysFromNow = new Date();
