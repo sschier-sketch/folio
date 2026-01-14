@@ -1,6 +1,28 @@
 export function parseNumberInput(value: string): number {
-  const normalized = value.replace(/\./g, "").replace(",", ".");
-  return parseFloat(normalized) || 0;
+  if (!value) return 0;
+
+  const str = String(value).trim();
+
+  const hasComma = str.includes(',');
+  const hasDot = str.includes('.');
+
+  if (hasComma && hasDot) {
+    const lastCommaPos = str.lastIndexOf(',');
+    const lastDotPos = str.lastIndexOf('.');
+
+    if (lastCommaPos > lastDotPos) {
+      const normalized = str.replace(/\./g, '').replace(',', '.');
+      return parseFloat(normalized) || 0;
+    } else {
+      const normalized = str.replace(/,/g, '');
+      return parseFloat(normalized) || 0;
+    }
+  } else if (hasComma) {
+    const normalized = str.replace(/\./g, '').replace(',', '.');
+    return parseFloat(normalized) || 0;
+  } else {
+    return parseFloat(str) || 0;
+  }
 }
 
 export function formatNumberInput(value: number | string): string {

@@ -137,7 +137,40 @@ export default function LoanModal({
     }
   }, [principalInput, principalType, formData.loan_amount, formData.monthly_principal]);
 
+  const validateStep = (step: number): boolean => {
+    if (step === 1) {
+      if (!formData.lender_name || formData.lender_name.trim() === "") {
+        alert("Bitte geben Sie den Kreditgeber ein");
+        return false;
+      }
+      if (!formData.loan_amount || formData.loan_amount <= 0) {
+        alert("Bitte geben Sie die Kreditsumme ein");
+        return false;
+      }
+      if (!formData.remaining_balance || formData.remaining_balance < 0) {
+        alert("Bitte geben Sie die Restschuld ein");
+        return false;
+      }
+      if (!formData.interest_rate || formData.interest_rate <= 0) {
+        alert("Bitte geben Sie den Zinssatz ein");
+        return false;
+      }
+      if (!formData.monthly_payment || formData.monthly_payment <= 0) {
+        alert("Bitte geben Sie die monatliche Rate ein");
+        return false;
+      }
+      if (!formData.monthly_principal || formData.monthly_principal < 0) {
+        alert("Bitte geben Sie die monatliche Tilgung ein");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleNext = () => {
+    if (!validateStep(currentStep)) {
+      return;
+    }
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
@@ -359,7 +392,7 @@ export default function LoanModal({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-400 mb-1">
-            Kreditbeginn *
+            Kreditbeginn
           </label>
           <input
             type="date"
@@ -368,12 +401,11 @@ export default function LoanModal({
               setFormData({ ...formData, start_date: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            required
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-400 mb-1">
-            Kreditende *
+            Kreditende
           </label>
           <input
             type="date"
@@ -382,7 +414,6 @@ export default function LoanModal({
               setFormData({ ...formData, end_date: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            required
           />
         </div>
       </div>
