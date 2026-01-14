@@ -15,7 +15,6 @@ interface PropertyOverviewTabProps {
     purchase_price: number;
     current_value: number;
     purchase_date: string | null;
-    size_sqm: number | null;
     description: string;
   };
   onUpdate?: () => void;
@@ -99,7 +98,6 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     property_type: property.property_type,
     property_management_type: property.property_management_type || "self_management",
     purchase_date: property.purchase_date || "",
-    size_sqm: property.size_sqm || "",
     purchase_price: property.purchase_price,
     current_value: property.current_value,
     description: property.description,
@@ -204,7 +202,6 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
       if (editData.property_management_type !== (property.property_management_type || "self_management"))
         changes.push("Verwaltungsart");
       if (editData.purchase_date !== (property.purchase_date || "")) changes.push("Kaufdatum");
-      if (Number(editData.size_sqm || 0) !== Number(property.size_sqm || 0)) changes.push("Wohnfläche");
       if (Number(editData.purchase_price) !== Number(property.purchase_price)) changes.push("Kaufpreis");
       if (Number(editData.current_value) !== Number(property.current_value)) changes.push("Aktueller Wert");
       if (editData.description !== property.description) changes.push("Beschreibung");
@@ -217,7 +214,6 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           property_type: editData.property_type,
           property_management_type: editData.property_management_type,
           purchase_date: editData.purchase_date || null,
-          size_sqm: editData.size_sqm ? Number(editData.size_sqm) : null,
           purchase_price: Number(editData.purchase_price),
           current_value: Number(editData.current_value),
           description: editData.description,
@@ -405,7 +401,6 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                     property_type: property.property_type,
                     property_management_type: property.property_management_type || "self_management",
                     purchase_date: property.purchase_date || "",
-                    size_sqm: property.size_sqm || "",
                     purchase_price: property.purchase_price,
                     current_value: property.current_value,
                     description: property.description,
@@ -517,24 +512,6 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
               <div className="text-dark font-medium">
                 {new Date(property.purchase_date).toLocaleDateString("de-DE")}
               </div>
-            ) : (
-              <div className="text-gray-400 italic">Nicht angegeben</div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Fläche (m²)
-            </label>
-            {isEditingMasterData ? (
-              <input
-                type="number"
-                value={editData.size_sqm}
-                onChange={(e) => setEditData({ ...editData, size_sqm: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />
-            ) : property.size_sqm ? (
-              <div className="text-dark font-medium">{property.size_sqm} m²</div>
             ) : (
               <div className="text-gray-400 italic">Nicht angegeben</div>
             )}

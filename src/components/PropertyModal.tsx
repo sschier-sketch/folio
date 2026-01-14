@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Plus, Trash2, ArrowLeft, Check, Building2, Info } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { parseNumberInput } from "../lib/utils";
+
 interface Property {
   id: string;
   name: string;
@@ -20,11 +21,22 @@ interface Property {
   parking_spot_number?: string;
   description: string;
 }
+
 interface PropertyModalProps {
   property: Property | null;
   onClose: () => void;
   onSave: () => void;
 }
+
+interface Unit {
+  unit_number: string;
+  floor: string;
+  size_sqm: string;
+  rooms: string;
+  unit_type: string;
+  description: string;
+}
+
 export default function PropertyModal({
   property,
   onClose,
@@ -32,6 +44,7 @@ export default function PropertyModal({
 }: PropertyModalProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<'property' | 'units'>(property ? 'property' : 'property');
   const [originalData, setOriginalData] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -44,8 +57,6 @@ export default function PropertyModal({
     purchase_price: "",
     current_value: "",
     purchase_date: "",
-    size_sqm: "",
-    usable_area_sqm: "",
     parking_spot_number: "",
     description: "",
     broker_costs: "",
@@ -56,10 +67,11 @@ export default function PropertyModal({
     expert_costs: "",
   });
   const [additionalCosts, setAdditionalCosts] = useState<Array<{name: string, amount: number}>>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
+
   useEffect(() => {
     if (property) {
       const propertyWithCosts = property as Property & {
-        usable_area_sqm?: number;
         broker_costs?: number;
         notary_costs?: number;
         lawyer_costs?: number;
@@ -80,8 +92,6 @@ export default function PropertyModal({
         purchase_price: property.purchase_price ? String(property.purchase_price) : "",
         current_value: property.current_value ? String(property.current_value) : "",
         purchase_date: property.purchase_date || "",
-        size_sqm: property.size_sqm ? String(property.size_sqm) : "",
-        usable_area_sqm: propertyWithCosts.usable_area_sqm ? String(propertyWithCosts.usable_area_sqm) : "",
         parking_spot_number: property.parking_spot_number || "",
         description: property.description,
         broker_costs: propertyWithCosts.broker_costs ? String(propertyWithCosts.broker_costs) : "",
@@ -100,6 +110,7 @@ export default function PropertyModal({
       }
     }
   }, [property]);
+
   function getPropertyChanges() {
     if (!originalData || !property) return [];
 
@@ -115,8 +126,6 @@ export default function PropertyModal({
       purchase_price: "Kaufpreis",
       current_value: "Aktueller Wert",
       purchase_date: "Kaufdatum",
-      size_sqm: "Wohnfläche (m²)",
-      usable_area_sqm: "Nutzfläche (m²)",
       parking_spot_number: "Stellplatznummer",
       description: "Beschreibung",
     };
@@ -134,9 +143,39 @@ export default function PropertyModal({
     return changes;
   }
 
+  const handleAddUnit = () => {
+    setUnits([
+      ...units,
+      {
+        unit_number: "",
+        floor: "",
+        size_sqm: "",
+        rooms: "",
+        unit_type: "residential",
+        description: "",
+      },
+    ]);
+  };
+
+  const handleRemoveUnit = (index: number) => {
+    setUnits(units.filter((_, i) => i !== index));
+  };
+
+  const handleUnitChange = (index: number, field: keyof Unit, value: string) => {
+    const newUnits = [...units];
+    newUnits[index][field] = value;
+    setUnits(newUnits);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    if (!property && step === 'property') {
+      setStep('units');
+      return;
+    }
+
     setLoading(true);
     try {
       const address = `${formData.street}, ${formData.zip_code} ${formData.city}`;
@@ -153,14 +192,6 @@ export default function PropertyModal({
         current_value: parseNumberInput(formData.current_value),
         purchase_date: formData.purchase_date,
         user_id: user.id,
-        size_sqm:
-          formData.property_type === "parking"
-            ? null
-            : formData.size_sqm ? parseNumberInput(formData.size_sqm) : null,
-        usable_area_sqm:
-          formData.property_type === "parking"
-            ? null
-            : formData.usable_area_sqm ? parseNumberInput(formData.usable_area_sqm) : null,
         parking_spot_number:
           formData.property_type === "parking"
             ? formData.parking_spot_number || null
@@ -174,12 +205,17 @@ export default function PropertyModal({
         expert_costs: formData.expert_costs ? parseNumberInput(formData.expert_costs) : 0,
         additional_purchase_costs: additionalCosts.length > 0 ? additionalCosts : [],
       };
+
+      let propertyId: string;
+
       if (property) {
         const { error } = await supabase
           .from("properties")
           .update(data)
           .eq("id", property.id);
         if (error) throw error;
+
+        propertyId = property.id;
 
         const changes = getPropertyChanges();
         if (changes.length > 0) {
@@ -193,9 +229,35 @@ export default function PropertyModal({
           ]);
         }
       } else {
-        const { error } = await supabase.from("properties").insert([data]);
+        const { data: newProperty, error } = await supabase
+          .from("properties")
+          .insert([data])
+          .select()
+          .single();
         if (error) throw error;
+        propertyId = newProperty.id;
+
+        if (units.length > 0) {
+          const unitsData = units.map((unit) => ({
+            property_id: propertyId,
+            user_id: user.id,
+            unit_number: unit.unit_number,
+            floor: unit.floor,
+            size_sqm: unit.size_sqm ? parseNumberInput(unit.size_sqm) : null,
+            rooms: unit.rooms ? parseNumberInput(unit.rooms) : null,
+            unit_type: unit.unit_type,
+            status: "vacant",
+            description: unit.description,
+          }));
+
+          const { error: unitsError } = await supabase
+            .from("property_units")
+            .insert(unitsData);
+
+          if (unitsError) throw unitsError;
+        }
       }
+
       onSave();
     } catch (error) {
       console.error("Error saving property:", error);
@@ -204,478 +266,587 @@ export default function PropertyModal({
       setLoading(false);
     }
   };
+
+  const handleSkipUnits = () => {
+    handleSubmit(new Event('submit') as any);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      {" "}
       <div className="bg-white rounded-md w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {" "}
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-          {" "}
-          <h2 className="text-2xl font-bold text-dark">
-            {" "}
-            {property ? "Immobilie bearbeiten" : "Neue Immobilie"}{" "}
-          </h2>{" "}
+          <div className="flex items-center gap-3">
+            {step === 'units' && (
+              <button
+                type="button"
+                onClick={() => setStep('property')}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
+            <h2 className="text-2xl font-bold text-dark">
+              {property ? "Immobilie bearbeiten" : step === 'property' ? "Neue Immobilie" : "Einheiten hinzufügen"}
+            </h2>
+          </div>
           <button
             onClick={onClose}
             className="text-gray-300 hover:text-gray-400 transition-colors"
           >
-            {" "}
-            <X className="w-6 h-6" />{" "}
-          </button>{" "}
-        </div>{" "}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {" "}
-          <div className="grid grid-cols-2 gap-4">
-            {" "}
-            <div className="col-span-2">
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Bezeichnung *{" "}
-              </label>{" "}
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. Wohnung Musterstraße 1"
-                required
-              />{" "}
-            </div>{" "}
-            <div className="col-span-2">
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Straße und Hausnummer *{" "}
-              </label>{" "}
-              <input
-                type="text"
-                value={formData.street}
-                onChange={(e) =>
-                  setFormData({ ...formData, street: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. Musterstraße 1"
-                required
-              />{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                PLZ *{" "}
-              </label>{" "}
-              <input
-                type="text"
-                value={formData.zip_code}
-                onChange={(e) =>
-                  setFormData({ ...formData, zip_code: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 12345"
-                required
-              />{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Stadt *{" "}
-              </label>{" "}
-              <input
-                type="text"
-                value={formData.city}
-                onChange={(e) =>
-                  setFormData({ ...formData, city: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. Berlin"
-                required
-              />{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Land *{" "}
-              </label>{" "}
-              <select
-                value={formData.country}
-                onChange={(e) =>
-                  setFormData({ ...formData, country: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                required
-              >
-                {" "}
-                <option value="Deutschland">Deutschland</option>{" "}
-                <option value="Österreich">Österreich</option>{" "}
-                <option value="Schweiz">Schweiz</option>{" "}
-                <option value="Belgien">Belgien</option>{" "}
-                <option value="Dänemark">Dänemark</option>{" "}
-                <option value="Frankreich">Frankreich</option>{" "}
-                <option value="Italien">Italien</option>{" "}
-                <option value="Niederlande">Niederlande</option>{" "}
-                <option value="Polen">Polen</option>{" "}
-                <option value="Spanien">Spanien</option>{" "}
-                <option value="Tschechien">Tschechien</option>{" "}
-                <option value="Sonstiges">Sonstiges</option>{" "}
-              </select>{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Immobilientyp{" "}
-              </label>{" "}
-              <select
-                value={formData.property_type}
-                onChange={(e) =>
-                  setFormData({ ...formData, property_type: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              >
-                {" "}
-                <option value="multi_family">Mehrfamilienhaus</option>{" "}
-                <option value="house">Einfamilienhaus</option>{" "}
-                <option value="commercial">Gewerbeeinheit</option>{" "}
-                <option value="parking">Garage/Stellplatz</option>{" "}
-                <option value="land">Grundstück</option>{" "}
-                <option value="other">Sonstiges</option>{" "}
-              </select>{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Immobilienverwaltung{" "}
-              </label>{" "}
-              <select
-                value={formData.property_management_type}
-                onChange={(e) =>
-                  setFormData({ ...formData, property_management_type: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              >
-                {" "}
-                <option value="self_management">Eigenverwaltung</option>{" "}
-                <option value="property_management">Hausverwaltung</option>{" "}
-              </select>{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Kaufdatum{" "}
-              </label>{" "}
-              <input
-                type="date"
-                value={formData.purchase_date}
-                onChange={(e) =>
-                  setFormData({ ...formData, purchase_date: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Kaufpreis (€){" "}
-              </label>{" "}
-              <input
-                type="text"
-                value={formData.purchase_price}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    purchase_price: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 250000 oder 250.000,50"
-              />{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Aktueller Wert (€){" "}
-              </label>{" "}
-              <input
-                type="text"
-                value={formData.current_value}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    current_value: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 280000 oder 280.000,00"
-              />{" "}
-            </div>{" "}
+            <X className="w-6 h-6" />
+          </button>
+        </div>
 
-            {/* Kaufnebenkosten Sektion */}
-            <div className="col-span-2 pt-4 border-t border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Kaufnebenkosten</h3>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Maklerkosten (€)
-              </label>
-              <input
-                type="text"
-                value={formData.broker_costs}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    broker_costs: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 7500 oder 7.500,00"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Notarkosten (€)
-              </label>
-              <input
-                type="text"
-                value={formData.notary_costs}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    notary_costs: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 3000 oder 3.000,00"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Anwaltskosten (€)
-              </label>
-              <input
-                type="text"
-                value={formData.lawyer_costs}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    lawyer_costs: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 1500 oder 1.500,00"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Grunderwerbsteuer (€)
-              </label>
-              <input
-                type="text"
-                value={formData.real_estate_transfer_tax}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    real_estate_transfer_tax: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 15000 oder 15.000,00"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Eintragungskosten (€)
-              </label>
-              <input
-                type="text"
-                value={formData.registration_costs}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    registration_costs: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 500 oder 500,00"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Gutachterkosten (€)
-              </label>
-              <input
-                type="text"
-                value={formData.expert_costs}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    expert_costs: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="z.B. 800 oder 800,00"
-              />
-            </div>
-
-            {/* Zusätzliche Kaufnebenkosten */}
-            <div className="col-span-2 mt-4">
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Weitere Nebenkosten
-              </label>
-              {additionalCosts.map((cost, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={cost.name}
-                    onChange={(e) => {
-                      const newCosts = [...additionalCosts];
-                      newCosts[index].name = e.target.value;
-                      setAdditionalCosts(newCosts);
-                    }}
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="Bezeichnung"
-                  />
-                  <input
-                    type="text"
-                    value={cost.amount}
-                    onChange={(e) => {
-                      const newCosts = [...additionalCosts];
-                      newCosts[index].amount = parseNumberInput(e.target.value);
-                      setAdditionalCosts(newCosts);
-                    }}
-                    className="w-32 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="Betrag"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newCosts = additionalCosts.filter((_, i) => i !== index);
-                      setAdditionalCosts(newCosts);
-                    }}
-                    className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => setAdditionalCosts([...additionalCosts, { name: "", amount: 0 }])}
-                className="text-sm text-primary-blue hover:text-primary-blue/80 font-medium"
-              >
-                + Weitere Nebenkosten hinzufügen
-              </button>
-            </div>
-
-            {formData.property_type !== "parking" && (
-              <>
-                <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    {" "}
-                    Wohnfläche (m²){" "}
-                  </label>{" "}
-                  <input
-                    type="text"
-                    value={formData.size_sqm}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        size_sqm: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="z.B. 75,5 oder 96,7"
-                  />{" "}
-                </div>
-                <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    {" "}
-                    Nutzfläche (m²){" "}
-                  </label>{" "}
-                  <input
-                    type="text"
-                    value={formData.usable_area_sqm}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        usable_area_sqm: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="z.B. 85,0 oder 100,5"
-                  />{" "}
-                </div>
-              </>
-            )}{" "}
-            {formData.property_type === "parking" && (
+        {step === 'property' && (
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                {" "}
                 <label className="block text-sm font-medium text-gray-400 mb-1">
-                  {" "}
-                  Stellplatznummer (optional){" "}
-                </label>{" "}
+                  Bezeichnung *
+                </label>
                 <input
                   type="text"
-                  value={formData.parking_spot_number}
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. Wohnung Musterstraße 1"
+                  required
+                />
+              </div>
+
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Straße und Hausnummer *
+                </label>
+                <input
+                  type="text"
+                  value={formData.street}
+                  onChange={(e) =>
+                    setFormData({ ...formData, street: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. Musterstraße 1"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  PLZ *
+                </label>
+                <input
+                  type="text"
+                  value={formData.zip_code}
+                  onChange={(e) =>
+                    setFormData({ ...formData, zip_code: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. 12345"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Stadt *
+                </label>
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) =>
+                    setFormData({ ...formData, city: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. Berlin"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Land *
+                </label>
+                <select
+                  value={formData.country}
+                  onChange={(e) =>
+                    setFormData({ ...formData, country: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                >
+                  <option value="Deutschland">Deutschland</option>
+                  <option value="Österreich">Österreich</option>
+                  <option value="Schweiz">Schweiz</option>
+                  <option value="Belgien">Belgien</option>
+                  <option value="Dänemark">Dänemark</option>
+                  <option value="Frankreich">Frankreich</option>
+                  <option value="Italien">Italien</option>
+                  <option value="Niederlande">Niederlande</option>
+                  <option value="Polen">Polen</option>
+                  <option value="Spanien">Spanien</option>
+                  <option value="Tschechien">Tschechien</option>
+                  <option value="Sonstiges">Sonstiges</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Immobilientyp
+                </label>
+                <select
+                  value={formData.property_type}
+                  onChange={(e) =>
+                    setFormData({ ...formData, property_type: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  <option value="multi_family">Mehrfamilienhaus</option>
+                  <option value="house">Einfamilienhaus</option>
+                  <option value="commercial">Gewerbeeinheit</option>
+                  <option value="parking">Garage/Stellplatz</option>
+                  <option value="land">Grundstück</option>
+                  <option value="other">Sonstiges</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Immobilienverwaltung
+                </label>
+                <select
+                  value={formData.property_management_type}
+                  onChange={(e) =>
+                    setFormData({ ...formData, property_management_type: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  <option value="self_management">Eigenverwaltung</option>
+                  <option value="property_management">Hausverwaltung</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Kaufdatum
+                </label>
+                <input
+                  type="date"
+                  value={formData.purchase_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, purchase_date: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Kaufpreis (€)
+                </label>
+                <input
+                  type="text"
+                  value={formData.purchase_price}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      parking_spot_number: e.target.value,
+                      purchase_price: e.target.value,
                     })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="z.B. P-12 oder A5"
-                />{" "}
+                  placeholder="z.B. 250000 oder 250.000,50"
+                />
               </div>
-            )}{" "}
-            <div className="col-span-2">
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                {" "}
-                Beschreibung{" "}
-              </label>{" "}
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                rows={3}
-                placeholder="Zusätzliche Informationen..."
-              />{" "}
-            </div>{" "}
-          </div>{" "}
-          <div className="flex gap-3 pt-4">
-            {" "}
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-            >
-              {" "}
-              Abbrechen{" "}
-            </button>{" "}
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
-            >
-              {" "}
-              {loading ? "Speichern..." : "Speichern"}{" "}
-            </button>{" "}
-          </div>{" "}
-        </form>{" "}
-      </div>{" "}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Aktueller Wert (€)
+                </label>
+                <input
+                  type="text"
+                  value={formData.current_value}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      current_value: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. 280000 oder 280.000,00"
+                />
+              </div>
+
+              <div className="col-span-2 pt-4 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Kaufnebenkosten</h3>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Maklerkosten (€)
+                </label>
+                <input
+                  type="text"
+                  value={formData.broker_costs}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      broker_costs: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. 7500 oder 7.500,00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Notarkosten (€)
+                </label>
+                <input
+                  type="text"
+                  value={formData.notary_costs}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      notary_costs: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. 3000 oder 3.000,00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Anwaltskosten (€)
+                </label>
+                <input
+                  type="text"
+                  value={formData.lawyer_costs}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      lawyer_costs: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. 1500 oder 1.500,00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Grunderwerbsteuer (€)
+                </label>
+                <input
+                  type="text"
+                  value={formData.real_estate_transfer_tax}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      real_estate_transfer_tax: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. 15000 oder 15.000,00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Eintragungskosten (€)
+                </label>
+                <input
+                  type="text"
+                  value={formData.registration_costs}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      registration_costs: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. 500 oder 500,00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Gutachterkosten (€)
+                </label>
+                <input
+                  type="text"
+                  value={formData.expert_costs}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      expert_costs: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. 800 oder 800,00"
+                />
+              </div>
+
+              <div className="col-span-2 mt-4">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Weitere Nebenkosten
+                </label>
+                {additionalCosts.map((cost, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={cost.name}
+                      onChange={(e) => {
+                        const newCosts = [...additionalCosts];
+                        newCosts[index].name = e.target.value;
+                        setAdditionalCosts(newCosts);
+                      }}
+                      className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      placeholder="Bezeichnung"
+                    />
+                    <input
+                      type="text"
+                      value={cost.amount}
+                      onChange={(e) => {
+                        const newCosts = [...additionalCosts];
+                        newCosts[index].amount = parseNumberInput(e.target.value);
+                        setAdditionalCosts(newCosts);
+                      }}
+                      className="w-32 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      placeholder="Betrag"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newCosts = additionalCosts.filter((_, i) => i !== index);
+                        setAdditionalCosts(newCosts);
+                      }}
+                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setAdditionalCosts([...additionalCosts, { name: "", amount: 0 }])}
+                  className="text-sm text-primary-blue hover:text-primary-blue/80 font-medium"
+                >
+                  + Weitere Nebenkosten hinzufügen
+                </button>
+              </div>
+
+              {formData.property_type === "parking" && (
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Stellplatznummer (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.parking_spot_number}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        parking_spot_number: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="z.B. P-12 oder A5"
+                  />
+                </div>
+              )}
+
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Beschreibung
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  rows={3}
+                  placeholder="Zusätzliche Informationen..."
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+              >
+                {loading ? "Speichern..." : property ? "Speichern" : "Weiter zu Einheiten"}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {step === 'units' && (
+          <div className="p-6 space-y-4">
+            <div className="mb-6">
+              <p className="text-gray-600 mb-4">
+                Sie können jetzt Einheiten für diese Immobilie anlegen. Dies können z.B. einzelne Wohnungen in einem Mehrfamilienhaus sein.
+              </p>
+              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <p className="text-sm text-blue-900">
+                  Sie können Einheiten auch später über den Tab "Einheiten" hinzufügen oder diesen Schritt überspringen.
+                </p>
+              </div>
+            </div>
+
+            {units.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 mb-4">Noch keine Einheiten hinzugefügt</p>
+                <button
+                  type="button"
+                  onClick={handleAddUnit}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue/90 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Erste Einheit hinzufügen
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {units.map((unit, index) => (
+                    <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-dark">Einheit {index + 1}</h4>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveUnit(index)}
+                          className="text-red-600 hover:bg-red-50 p-1 rounded transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Einheitennummer *
+                          </label>
+                          <input
+                            type="text"
+                            value={unit.unit_number}
+                            onChange={(e) => handleUnitChange(index, 'unit_number', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                            placeholder="z.B. 1.OG links"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Stockwerk
+                          </label>
+                          <input
+                            type="text"
+                            value={unit.floor}
+                            onChange={(e) => handleUnitChange(index, 'floor', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                            placeholder="z.B. 1. OG"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Wohnfläche (m²)
+                          </label>
+                          <input
+                            type="text"
+                            value={unit.size_sqm}
+                            onChange={(e) => handleUnitChange(index, 'size_sqm', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                            placeholder="z.B. 75,5"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Zimmer
+                          </label>
+                          <input
+                            type="text"
+                            value={unit.rooms}
+                            onChange={(e) => handleUnitChange(index, 'rooms', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                            placeholder="z.B. 3,5"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Typ
+                          </label>
+                          <select
+                            value={unit.unit_type}
+                            onChange={(e) => handleUnitChange(index, 'unit_type', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                          >
+                            <option value="residential">Wohnung</option>
+                            <option value="commercial">Gewerbe</option>
+                            <option value="storage">Lager</option>
+                            <option value="garage">Garage</option>
+                            <option value="other">Sonstiges</option>
+                          </select>
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Beschreibung
+                          </label>
+                          <input
+                            type="text"
+                            value={unit.description}
+                            onChange={(e) => handleUnitChange(index, 'description', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                            placeholder="Zusätzliche Informationen..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddUnit}
+                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary-blue hover:text-primary-blue transition-colors font-medium"
+                >
+                  + Weitere Einheit hinzufügen
+                </button>
+              </>
+            )}
+
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={handleSkipUnits}
+                disabled={loading}
+                className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Überspringen
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading || units.length === 0 || units.some(u => !u.unit_number)}
+                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading ? "Speichern..." : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Immobilie erstellen
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
