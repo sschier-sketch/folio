@@ -152,6 +152,10 @@ async function syncCustomerFromStripe(customerId: string) {
         console.error('Error updating subscription status:', noSubError);
         throw new Error('Failed to update subscription status in database');
       }
+
+      // Update billing_info to free plan when no subscriptions
+      await updateBillingInfo(customerId, 'free', 'inactive');
+      return;
     }
 
     // assumes that a customer can only have a single subscription
@@ -183,9 +187,56 @@ async function syncCustomerFromStripe(customerId: string) {
       console.error('Error syncing subscription:', subError);
       throw new Error('Failed to sync subscription in database');
     }
+
+    // Update billing_info based on subscription status
+    const plan = ['active', 'trialing'].includes(subscription.status) ? 'premium' : 'free';
+    const status = ['active', 'trialing'].includes(subscription.status) ? 'active' : 'inactive';
+    await updateBillingInfo(customerId, plan, status);
+
     console.info(`Successfully synced subscription for customer: ${customerId}`);
   } catch (error) {
     console.error(`Failed to sync subscription for customer ${customerId}:`, error);
+    throw error;
+  }
+}
+
+async function updateBillingInfo(customerId: string, plan: string, status: string) {
+  try {
+    // Find user by stripe_customer_id
+    const { data: billingData, error: findError } = await supabase
+      .from('billing_info')
+      .select('user_id')
+      .eq('stripe_customer_id', customerId)
+      .maybeSingle();
+
+    if (findError) {
+      console.error('Error finding billing info:', findError);
+      return;
+    }
+
+    if (!billingData) {
+      console.warn(`No billing info found for customer: ${customerId}`);
+      return;
+    }
+
+    // Update the billing info
+    const { error: updateError } = await supabase
+      .from('billing_info')
+      .update({
+        subscription_plan: plan,
+        subscription_status: status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', billingData.user_id);
+
+    if (updateError) {
+      console.error('Error updating billing info:', updateError);
+      throw new Error('Failed to update billing info');
+    }
+
+    console.info(`Updated billing info for customer ${customerId}: plan=${plan}, status=${status}`);
+  } catch (error) {
+    console.error(`Failed to update billing info for customer ${customerId}:`, error);
     throw error;
   }
 }

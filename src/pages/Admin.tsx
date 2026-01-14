@@ -191,15 +191,12 @@ export function Admin() {
   }
 
   async function handleBanUser(userId: string, userEmail: string) {
-    const reason = prompt(
-      `Möchten Sie ${userEmail} wirklich sperren?\n\nBitte geben Sie einen Grund an:`,
-    );
-    if (!reason) return;
+    if (!confirm(`Möchten Sie ${userEmail} wirklich sperren?`)) return;
 
     try {
       const { error } = await supabase.rpc("admin_ban_user", {
         target_user_id: userId,
-        reason: reason,
+        reason: "Gesperrt durch Administrator",
       });
 
       if (error) throw error;
