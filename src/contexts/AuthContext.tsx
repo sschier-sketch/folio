@@ -6,6 +6,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isBanned: boolean;
+  banReason: string | null;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -17,6 +19,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isBanned, setIsBanned] = useState(false);
+  const [banReason, setBanReason] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -37,7 +41,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setIsBanned(false);
+      setBanReason(null);
+      return;
+    }
 
     const checkBanStatus = async () => {
       try {
@@ -53,10 +61,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (data?.banned) {
-          alert(
-            `Ihr Account wurde gesperrt.\n\nGrund: ${data.ban_reason || "Keine Angabe"}\n\nBitte wenden Sie sich an das rentab.ly Team für weitere Informationen.`
-          );
-          await supabase.auth.signOut();
+          setIsBanned(true);
+          setBanReason(data.ban_reason || null);
+        } else {
+          setIsBanned(false);
+          setBanReason(null);
         }
       } catch (err) {
         console.error("Error checking ban status:", err);
@@ -88,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, signUp, signIn, signOut }}
+      value={{ user, session, loading, isBanned, banReason, signUp, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>

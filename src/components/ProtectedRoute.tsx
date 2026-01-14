@@ -5,7 +5,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, isBanned } = useAuth();
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -16,6 +16,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  if (isBanned) {
+    return <Navigate to="/account-banned" replace />;
   }
   return <>{children}</>;
 }
