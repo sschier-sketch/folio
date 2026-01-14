@@ -97,7 +97,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     name: property.name,
     address: property.address,
     property_type: property.property_type,
-    property_management_type: property.property_management_type || "rental_management",
+    property_management_type: property.property_management_type || "self_management",
     purchase_date: property.purchase_date || "",
     size_sqm: property.size_sqm || "",
     purchase_price: property.purchase_price,
@@ -193,7 +193,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
       if (editData.name !== property.name) changes.push("Name");
       if (editData.address !== property.address) changes.push("Adresse");
       if (editData.property_type !== property.property_type) changes.push("Immobilientyp");
-      if (editData.property_management_type !== (property.property_management_type || "rental_management"))
+      if (editData.property_management_type !== (property.property_management_type || "self_management"))
         changes.push("Verwaltungsart");
       if (editData.purchase_date !== (property.purchase_date || "")) changes.push("Kaufdatum");
       if (Number(editData.size_sqm || 0) !== Number(property.size_sqm || 0)) changes.push("Wohnfläche");
@@ -260,6 +260,8 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
 
   const getPropertyManagementTypeLabel = (type?: string) => {
     const labels: Record<string, string> = {
+      self_management: "Eigenverwaltung",
+      property_management: "Hausverwaltung",
       rental_management: "Miet Verwaltung",
       weg_management: "WEG Verwaltung",
       rental_and_weg_management: "Miet und WEG Verwaltung",
@@ -393,7 +395,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                     name: property.name,
                     address: property.address,
                     property_type: property.property_type,
-                    property_management_type: property.property_management_type || "rental_management",
+                    property_management_type: property.property_management_type || "self_management",
                     purchase_date: property.purchase_date || "",
                     size_sqm: property.size_sqm || "",
                     purchase_price: property.purchase_price,
@@ -482,9 +484,8 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                 onChange={(e) => setEditData({ ...editData, property_management_type: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               >
-                <option value="rental_management">Miet Verwaltung</option>
-                <option value="weg_management">WEG Verwaltung</option>
-                <option value="rental_and_weg_management">Miet und WEG Verwaltung</option>
+                <option value="self_management">Eigenverwaltung</option>
+                <option value="property_management">Hausverwaltung</option>
               </select>
             ) : (
               <div className="text-dark font-medium">

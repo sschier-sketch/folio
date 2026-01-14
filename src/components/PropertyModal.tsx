@@ -40,7 +40,7 @@ export default function PropertyModal({
     city: "",
     country: "Deutschland",
     property_type: "multi_family",
-    property_management_type: "rental_management",
+    property_management_type: "self_management",
     purchase_price: 0,
     current_value: 0,
     purchase_date: "",
@@ -76,7 +76,7 @@ export default function PropertyModal({
         city: property.city || "",
         country: property.country || "Deutschland",
         property_type: property.property_type,
-        property_management_type: property.property_management_type || "rental_management",
+        property_management_type: property.property_management_type || "self_management",
         purchase_price: property.purchase_price,
         current_value: property.current_value,
         purchase_date: property.purchase_date || "",
@@ -360,9 +360,8 @@ export default function PropertyModal({
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               >
                 {" "}
-                <option value="rental_management">Miet Verwaltung</option>{" "}
-                <option value="weg_management">WEG Verwaltung</option>{" "}
-                <option value="rental_and_weg_management">Miet und WEG Verwaltung</option>{" "}
+                <option value="self_management">Eigenverwaltung</option>{" "}
+                <option value="property_management">Hausverwaltung</option>{" "}
               </select>{" "}
             </div>{" "}
             <div>
