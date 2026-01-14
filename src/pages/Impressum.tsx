@@ -65,11 +65,11 @@ export default function Impressum() {
                   {" "}
                   <span className="font-medium">E-Mail:</span>{" "}
                   <a
-                    href="mailto:hallo@rentably.com"
+                    href="mailto:hallo@rentab.ly"
                     className="text-primary-blue hover:text-primary-blue"
                   >
                     {" "}
-                    hallo@rentably.com{" "}
+                    hallo@rentab.ly{" "}
                   </a>{" "}
                 </p>{" "}
               </div>{" "}

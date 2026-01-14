@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const confirmationUrl = `${req.headers.get('origin') || 'https://rentably.com'}/reset-password/confirm?token=${resetRequest.verification_token}`;
+    const confirmationUrl = `${req.headers.get('origin') || 'https://rentab.ly'}/reset-password/confirm?token=${resetRequest.verification_token}`;
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
@@ -112,7 +112,7 @@ Deno.serve(async (req: Request) => {
       console.error('RESEND_API_KEY is not configured');
     } else {
       try {
-        const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <onboarding@resend.dev>';
+        const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
 
         console.log('Sending password reset email from:', EMAIL_FROM, 'to:', email);
 

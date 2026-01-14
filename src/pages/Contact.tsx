@@ -115,11 +115,11 @@ export default function Contact() {
                 </div>{" "}
               </div>{" "}
               <a
-                href="mailto:hallo@rentably.com"
+                href="mailto:hallo@rentab.ly"
                 className="text-primary-blue hover:text-primary-blue font-medium"
               >
                 {" "}
-                hallo@rentably.com{" "}
+                hallo@rentab.ly{" "}
               </a>{" "}
             </div>{" "}
             <div className="bg-white rounded shadow-sm p-6">

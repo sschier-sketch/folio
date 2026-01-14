@@ -4,9 +4,7 @@ Diese Anleitung erklärt, wie Sie den E-Mail-Versand für Rentably einrichten.
 
 ## Schnellstart
 
-**Der E-Mail-Versand ist bereits vorkonfiguriert** und nutzt Resend's `onboarding@resend.dev` Domain für Testzwecke. Alle E-Mails sollten sofort funktionieren.
-
-Für die Produktion sollten Sie eine eigene Domain verifizieren (siehe unten).
+**Der E-Mail-Versand ist bereits vorkonfiguriert** und nutzt die verifizierte Domain `rentab.ly` mit der Absenderadresse `hallo@rentab.ly`. Alle E-Mails sollten sofort funktionieren.
 
 ## 1. Magic Link Login (bereits funktionsfähig)
 
@@ -40,13 +38,12 @@ Der **Magic Link Login** funktioniert sofort out-of-the-box mit Supabase's integ
 
 Für eigene E-Mails (Einladungen, Benachrichtigungen, Tickets, etc.) sind Edge Functions bereits konfiguriert und verwenden Resend.
 
-### Standard-Konfiguration (onboarding@resend.dev)
+### Standard-Konfiguration (hallo@rentab.ly)
 
-Die Edge Functions sind bereits so konfiguriert, dass sie die Resend Onboarding-Domain verwenden:
-- Absenderadresse: `Rentably <onboarding@resend.dev>`
+Die Edge Functions sind bereits so konfiguriert, dass sie die verifizierte Domain rentab.ly verwenden:
+- Absenderadresse: `Rentably <hallo@rentab.ly>`
 - Funktioniert sofort ohne weitere Konfiguration
-- Geeignet für Entwicklung und Tests
-- **Empfehlung:** Für Produktion eine eigene Domain verifizieren
+- Produktionsbereit
 
 ### Resend Integration für Produktion
 
@@ -67,13 +64,13 @@ Der RESEND_API_KEY muss in den Supabase Secrets gespeichert werden:
 
 #### Schritt 3: Eigene E-Mail-Domain konfigurieren (Optional)
 
-Um eine eigene Absenderadresse zu verwenden:
+Um eine andere Absenderadresse zu verwenden:
 
 1. Verifizieren Sie Ihre Domain bei Resend
 2. Fügen Sie in Supabase Secrets hinzu:
    - `EMAIL_FROM` mit Wert: `Ihr Name <noreply@ihre-domain.de>`
 
-**Hinweis:** Ohne eigene Domain wird `onboarding@resend.dev` verwendet.
+**Hinweis:** Standard ist `Rentably <hallo@rentab.ly>`.
 
 #### Schritt 4: E-Mail senden
 ```typescript
@@ -198,7 +195,7 @@ curl -X POST ${SUPABASE_URL}/functions/v1/send-email \
 - ✅ Magic Link Login (mit Supabase's E-Mail-Service)
 - ✅ E-Mail-Template-System in der Datenbank
 - ✅ Edge Functions für E-Mail-Versand (send-email, send-tenant-activation, send-ticket-reply, request-password-reset)
-- ✅ Vorkonfiguriert mit Resend onboarding@resend.dev
+- ✅ Vorkonfiguriert mit hallo@rentab.ly
 
 ### E-Mails die automatisch versendet werden:
 - Mieterportal-Aktivierung

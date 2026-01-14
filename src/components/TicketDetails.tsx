@@ -84,7 +84,7 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
               ticketId: ticket.id,
               message: newMessage,
               senderName: user.email || "Rentably Support",
-              senderEmail: user.email || "support@rentably.com",
+              senderEmail: user.email || "hallo@rentab.ly",
             }),
           },
         );

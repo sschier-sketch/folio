@@ -1,1 +1,1 @@
-rentably.com
+rentab.ly

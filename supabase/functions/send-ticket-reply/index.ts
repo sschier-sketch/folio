@@ -72,7 +72,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (ticket.ticket_type === 'contact' && ticket.contact_email && resendApiKey) {
-      const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <onboarding@resend.dev>';
+      const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
       const emailSubject = `Re: ${ticket.subject} [Ticket #${ticket.ticket_number}]`;
 
       const emailHtml = `

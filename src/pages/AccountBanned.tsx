@@ -55,10 +55,10 @@ export function AccountBanned() {
                 <p className="text-sm text-gray-600">
                   Wenden Sie sich an unser Support-Team unter{" "}
                   <a
-                    href="mailto:support@rentably.de"
+                    href="mailto:hallo@rentab.ly"
                     className="text-primary-blue hover:underline"
                   >
-                    support@rentably.de
+                    hallo@rentab.ly
                   </a>
                 </p>
               </div>

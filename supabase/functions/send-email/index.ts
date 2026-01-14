@@ -103,7 +103,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <onboarding@resend.dev>';
+    const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
 
     console.log('Sending email to:', to, 'Subject:', finalSubject, 'From:', EMAIL_FROM);
 

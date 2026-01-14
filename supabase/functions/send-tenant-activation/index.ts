@@ -120,7 +120,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const origin = req.headers.get("origin") || "http://localhost:5173";
+    const origin = req.headers.get("origin") || "https://rentab.ly";
     const portalLink = `${origin}/tenant-portal/${userId}`;
 
     const landlordName = landlord.first_name && landlord.last_name
