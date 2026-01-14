@@ -211,6 +211,8 @@ Deno.serve(async (req) => {
     }
 
     // create Checkout Session
+    console.log(`Creating checkout session for customer ${customerId} with price ${price_id} in ${mode} mode`);
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -229,8 +231,14 @@ Deno.serve(async (req) => {
 
     return corsResponse({ sessionId: session.id, url: session.url });
   } catch (error: any) {
-    console.error(`Checkout error: ${error.message}`);
-    return corsResponse({ error: error.message }, 500);
+    console.error(`Checkout error: ${error.message}`, error);
+
+    let errorMessage = error.message;
+    if (error.code === 'resource_missing') {
+      errorMessage = `Stripe Fehler: Die Price ID wurde nicht gefunden. Bitte überprüfen Sie, ob die richtigen Live oder Test Price IDs verwendet werden.`;
+    }
+
+    return corsResponse({ error: errorMessage, details: error.code }, 500);
   }
 });
 
