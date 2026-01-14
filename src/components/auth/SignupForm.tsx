@@ -186,7 +186,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           {" "}
           <div className="flex items-center gap-2">
             {" "}
-            <Gift className="h-4 w-4 text-primary-blue" /> Referral Code
+            <Gift className="h-4 w-4 text-primary-blue" /> Gutschein Code
             (optional){" "}
           </div>{" "}
         </label>{" "}
@@ -196,7 +196,6 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           value={referralCode}
           onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
           className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue uppercase"
-          placeholder="Enter referral code"
         />{" "}
         {referralCode && (
           <p className="mt-1 text-xs text-primary-blue">
