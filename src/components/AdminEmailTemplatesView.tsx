@@ -15,41 +15,54 @@ interface EmailTemplate {
   updated_at: string;
 }
 export function AdminEmailTemplatesView() {
-  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<EmailTemplate | null>(null);
+  const [allTemplates, setAllTemplates] = useState<EmailTemplate[]>([]);
+  const [groupedTemplates, setGroupedTemplates] = useState<Map<string, EmailTemplate[]>>(new Map());
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>("");
+  const [selectedLanguage, setSelectedLanguage] = useState<'de' | 'en'>('de');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [previewMode, setPreviewMode] = useState<"html" | "text">("html");
   const [editedTemplate, setEditedTemplate] = useState<EmailTemplate | null>(
     null,
   );
-  const [languageFilter, setLanguageFilter] = useState<'all' | 'de' | 'en'>('all');
+
   useEffect(() => {
     loadTemplates();
-  }, [languageFilter]);
+  }, []);
+
   useEffect(() => {
-    if (selectedTemplate) {
-      setEditedTemplate({ ...selectedTemplate });
+    if (selectedTemplateKey && groupedTemplates.has(selectedTemplateKey)) {
+      const templates = groupedTemplates.get(selectedTemplateKey)!;
+      const template = templates.find(t => t.language === selectedLanguage);
+      if (template) {
+        setEditedTemplate({ ...template });
+      }
     }
-  }, [selectedTemplate]);
+  }, [selectedTemplateKey, selectedLanguage, groupedTemplates]);
   async function loadTemplates() {
     try {
       setLoading(true);
-      let query = supabase
+      const { data, error } = await supabase
         .from("email_templates")
         .select("*")
         .order("template_name");
 
-      if (languageFilter !== 'all') {
-        query = query.eq('language', languageFilter);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
-      setTemplates(data || []);
-      if (data && data.length > 0 && !selectedTemplate) {
-        setSelectedTemplate(data[0]);
+
+      setAllTemplates(data || []);
+
+      const grouped = new Map<string, EmailTemplate[]>();
+      (data || []).forEach(template => {
+        if (!grouped.has(template.template_key)) {
+          grouped.set(template.template_key, []);
+        }
+        grouped.get(template.template_key)!.push(template);
+      });
+
+      setGroupedTemplates(grouped);
+
+      if (grouped.size > 0 && !selectedTemplateKey) {
+        const firstKey = Array.from(grouped.keys())[0];
+        setSelectedTemplateKey(firstKey);
       }
     } catch (err) {
       console.error("Error loading templates:", err);
@@ -131,53 +144,54 @@ export function AdminEmailTemplatesView() {
           {" "}
           <h2 className="text-lg font-bold text-dark">E-Mail Templates</h2>{" "}
           <p className="text-xs text-gray-300 mt-1">
-            {templates.length} Templates
+            {groupedTemplates.size} Templates
           </p>{" "}
-          <div className="mt-4">
-            <label className="block text-xs font-medium text-gray-400 mb-2">
-              Sprache filtern
-            </label>
-            <select
-              value={languageFilter}
-              onChange={(e) => setLanguageFilter(e.target.value as 'all' | 'de' | 'en')}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            >
-              <option value="all">Alle Sprachen</option>
-              <option value="de">Deutsch</option>
-              <option value="en">English</option>
-            </select>
-          </div>
         </div>{" "}
         <div className="divide-y divide-slate-200">
           {" "}
-          {templates.map((template) => (
-            <button
-              key={template.id}
-              onClick={() => setSelectedTemplate(template)}
-              className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${selectedTemplate?.id === template.id ? "bg-primary-blue/5" : ""}`}
-            >
-              {" "}
-              <div className="flex items-start gap-3">
+          {Array.from(groupedTemplates.entries()).map(([key, templates]) => {
+            const deTemplate = templates.find(t => t.language === 'de');
+            const enTemplate = templates.find(t => t.language === 'en');
+            const displayTemplate = deTemplate || templates[0];
+
+            return (
+              <button
+                key={key}
+                onClick={() => setSelectedTemplateKey(key)}
+                className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${selectedTemplateKey === key ? "bg-primary-blue/5" : ""}`}
+              >
                 {" "}
-                <div className="flex-shrink-0 w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
+                <div className="flex items-start gap-3">
                   {" "}
-                  <Mail className="w-5 h-5 text-primary-blue" />{" "}
+                  <div className="flex-shrink-0 w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
+                    {" "}
+                    <Mail className="w-5 h-5 text-primary-blue" />{" "}
+                  </div>{" "}
+                  <div className="flex-1 min-w-0">
+                    {" "}
+                    <h3 className="font-semibold text-dark mb-1">
+                      {displayTemplate.template_name}
+                    </h3>{" "}
+                    <p className="text-xs text-gray-300 line-clamp-2">
+                      {displayTemplate.description}
+                    </p>{" "}
+                    <div className="flex gap-1 mt-2">
+                      {deTemplate && (
+                        <span className="inline-block px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700">
+                          DE
+                        </span>
+                      )}
+                      {enTemplate && (
+                        <span className="inline-block px-2 py-0.5 text-xs rounded bg-green-100 text-green-700">
+                          EN
+                        </span>
+                      )}
+                    </div>
+                  </div>{" "}
                 </div>{" "}
-                <div className="flex-1 min-w-0">
-                  {" "}
-                  <h3 className="font-semibold text-dark mb-1">
-                    {template.template_name}
-                  </h3>{" "}
-                  <p className="text-xs text-gray-300 line-clamp-2">
-                    {template.description}
-                  </p>{" "}
-                  <span className={`inline-block mt-2 px-2 py-0.5 text-xs rounded ${template.language === 'de' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                    {template.language === 'de' ? 'Deutsch' : 'English'}
-                  </span>{" "}
-                </div>{" "}
-              </div>{" "}
-            </button>
-          ))}{" "}
+              </button>
+            );
+          })}{" "}
         </div>{" "}
       </div>{" "}
       <div className="lg:col-span-3 bg-white rounded overflow-hidden">
@@ -291,14 +305,19 @@ export function AdminEmailTemplatesView() {
                   {" "}
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     {" "}
-                    Sprache (nicht änderbar){" "}
+                    Sprache{" "}
                   </label>{" "}
-                  <input
-                    type="text"
-                    value={editedTemplate.language === 'de' ? 'Deutsch' : 'English'}
-                    disabled
-                    className="w-full px-4 py-2 rounded-lg bg-gray-50 text-gray-300"
-                  />{" "}
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value as 'de' | 'en')}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  >
+                    <option value="de">Deutsch</option>
+                    <option value="en">English</option>
+                  </select>
+                  <p className="text-xs text-gray-300 mt-1">
+                    Wählen Sie die Sprache aus, um den Inhalt zu bearbeiten
+                  </p>
                 </div>{" "}
                 {editedTemplate.variables &&
                   editedTemplate.variables.length > 0 && (
@@ -329,59 +348,35 @@ export function AdminEmailTemplatesView() {
             </div>{" "}
             <div className="flex-1 overflow-hidden flex flex-col">
               {" "}
-              <div className="flex gap-2 p-4 border-b">
+              <div className="flex-1 overflow-auto p-4 space-y-4">
                 {" "}
-                <button
-                  onClick={() => setPreviewMode("html")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${previewMode === "html" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
-                >
-                  {" "}
-                  <Code className="w-4 h-4" /> HTML{" "}
-                </button>{" "}
-                <button
-                  onClick={() => setPreviewMode("text")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${previewMode === "text" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
-                >
-                  {" "}
-                  <FileText className="w-4 h-4" /> Text{" "}
-                </button>{" "}
-              </div>{" "}
-              <div className="flex-1 overflow-hidden grid grid-cols-2 gap-4 p-4">
-                {" "}
-                <div className="flex flex-col h-full">
+                <div>
                   {" "}
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     {" "}
-                    {previewMode === "html" ? "HTML Code" : "Text-Version"}{" "}
+                    HTML Version{" "}
                   </label>{" "}
                   <textarea
-                    value={
-                      previewMode === "html"
-                        ? editedTemplate.body_html
-                        : editedTemplate.body_text
-                    }
+                    value={editedTemplate.body_html}
                     onChange={(e) =>
                       setEditedTemplate({
                         ...editedTemplate,
-                        [previewMode === "html" ? "body_html" : "body_text"]:
-                          e.target.value,
+                        body_html: e.target.value,
                       })
                     }
-                    className="flex-1 w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none font-mono text-sm"
+                    rows={12}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none font-mono text-sm"
                   />{" "}
-                </div>{" "}
-                <div className="flex flex-col h-full">
-                  {" "}
-                  <div className="flex items-center gap-2 mb-2">
-                    {" "}
-                    <Eye className="w-4 h-4 text-gray-400" />{" "}
-                    <label className="text-sm font-medium text-gray-400">
-                      Vorschau
-                    </label>{" "}
-                  </div>{" "}
-                  <div className="flex-1 rounded-lg overflow-auto bg-white p-4">
-                    {" "}
-                    {previewMode === "html" ? (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      {" "}
+                      <Eye className="w-4 h-4 text-gray-400" />{" "}
+                      <label className="text-sm font-medium text-gray-400">
+                        HTML Vorschau
+                      </label>{" "}
+                    </div>{" "}
+                    <div className="border border-gray-200 rounded-lg overflow-auto bg-gray-50 p-4 max-h-64">
+                      {" "}
                       <div
                         dangerouslySetInnerHTML={{
                           __html: replaceVariables(
@@ -390,7 +385,36 @@ export function AdminEmailTemplatesView() {
                           ),
                         }}
                       />
-                    ) : (
+                    </div>{" "}
+                  </div>
+                </div>{" "}
+                <div>
+                  {" "}
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    {" "}
+                    Text Version (Plain Text){" "}
+                  </label>{" "}
+                  <textarea
+                    value={editedTemplate.body_text}
+                    onChange={(e) =>
+                      setEditedTemplate({
+                        ...editedTemplate,
+                        body_text: e.target.value,
+                      })
+                    }
+                    rows={12}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none font-mono text-sm"
+                  />{" "}
+                  <div className="mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      {" "}
+                      <Eye className="w-4 h-4 text-gray-400" />{" "}
+                      <label className="text-sm font-medium text-gray-400">
+                        Text Vorschau
+                      </label>{" "}
+                    </div>{" "}
+                    <div className="border border-gray-200 rounded-lg overflow-auto bg-gray-50 p-4 max-h-64">
+                      {" "}
                       <pre className="whitespace-pre-wrap text-sm text-dark font-sans">
                         {" "}
                         {replaceVariables(
@@ -398,8 +422,8 @@ export function AdminEmailTemplatesView() {
                           editedTemplate.variables || [],
                         )}{" "}
                       </pre>
-                    )}{" "}
-                  </div>{" "}
+                    </div>{" "}
+                  </div>
                 </div>{" "}
               </div>{" "}
             </div>{" "}
