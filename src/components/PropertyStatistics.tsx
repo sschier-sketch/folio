@@ -33,6 +33,8 @@ interface RentPayment {
 interface RentalContract {
   base_rent: number;
   additional_costs: number;
+  total_rent: number;
+  status: string;
 }
 interface PropertyStatisticsProps {
   property: Property;
@@ -67,9 +69,10 @@ export default function PropertyStatistics({
           .eq("paid", true),
         supabase
           .from("rental_contracts")
-          .select("base_rent, additional_costs")
+          .select("base_rent, additional_costs, total_rent, status")
           .eq("property_id", property.id)
-          .eq("user_id", user.id),
+          .eq("user_id", user.id)
+          .eq("status", "active"),
       ]);
       setLoans(loansRes.data || []);
       setRentPayments(paymentsRes.data || []);
@@ -114,7 +117,7 @@ export default function PropertyStatistics({
     0,
   );
   const monthlyRent = contracts.reduce(
-    (sum, c) => sum + Number(c.base_rent),
+    (sum, c) => sum + (Number(c.total_rent) || (Number(c.base_rent) + Number(c.additional_costs))),
     0,
   );
   const netEquity =
