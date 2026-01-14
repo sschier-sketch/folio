@@ -80,6 +80,7 @@ export default function RentalContractModal({
     is_sublet: false,
     vat_applicable: false,
     graduated_rent_date: "",
+    generate_historic_payments: true,
     notes: "",
   });
   const [tenants, setTenants] = useState<Tenant[]>([
@@ -97,6 +98,7 @@ export default function RentalContractModal({
         is_sublet?: boolean;
         vat_applicable?: boolean;
         graduated_rent_date?: string;
+        generate_historic_payments?: boolean;
       };
 
       setFormData({
@@ -121,6 +123,7 @@ export default function RentalContractModal({
         is_sublet: contractWithAll.is_sublet || false,
         vat_applicable: contractWithAll.vat_applicable || false,
         graduated_rent_date: contractWithAll.graduated_rent_date || "",
+        generate_historic_payments: contractWithAll.generate_historic_payments ?? true,
         notes: contractWithAll.notes,
       });
       if (contractWithDeposit.tenants && contractWithDeposit.tenants.length > 0) {
@@ -221,6 +224,7 @@ export default function RentalContractModal({
         is_sublet: formData.is_sublet,
         vat_applicable: formData.vat_applicable,
         graduated_rent_date: formData.rent_increase_type === "graduated" ? formData.graduated_rent_date : null,
+        generate_historic_payments: formData.generate_historic_payments,
         notes: formData.notes,
       };
       let contractId: string;
@@ -685,6 +689,29 @@ export default function RentalContractModal({
                   <option value="unlimited">Unbefristet</option>{" "}
                   <option value="fixed">Befristet</option>{" "}
                 </select>{" "}
+              </div>{" "}
+              <div className="col-span-2 bg-blue-50 p-4 rounded-lg">
+                {" "}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  {" "}
+                  <input
+                    type="checkbox"
+                    checked={formData.generate_historic_payments}
+                    onChange={(e) =>
+                      setFormData({ ...formData, generate_historic_payments: e.target.checked })
+                    }
+                    className="w-4 h-4 text-primary-blue border-gray-300 rounded focus:ring-2 focus:ring-primary-blue mt-0.5"
+                  />{" "}
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-gray-700">
+                      Mietzahlungen rückwirkend seit Vertragsbeginn erstellen
+                    </span>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Wenn deaktiviert, werden Mietzahlungen nur ab dem aktuellen Monat erstellt.
+                      Ideal für bestehende Mietverhältnisse, um nicht hunderte historische Zahlungen nachtragen zu müssen.
+                    </p>
+                  </div>
+                </label>{" "}
               </div>{" "}
             </div>{" "}
           </div>{" "}

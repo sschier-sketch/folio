@@ -417,49 +417,6 @@ export default function RentPaymentsView() {
         </div>
       </div>
 
-      {!isPremium && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8 border border-blue-100">
-          <div className="flex items-start gap-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-semibold text-dark mb-2">
-                Automatische Zahlungsüberwachung
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Mit dem Pro-Tarif können Sie Ihr Bankkonto verknüpfen und Mieteingänge automatisch überwachen.
-                Sparen Sie Zeit und haben Sie Ihre Finanzen immer im Blick.
-              </p>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-gray-700">
-                  <Check className="w-5 h-5 text-green-600" />
-                  <span>Automatische Zahlungsabgleich</span>
-                </li>
-                <li className="flex items-center gap-2 text-gray-700">
-                  <Check className="w-5 h-5 text-green-600" />
-                  <span>Echtzeit-Benachrichtigungen bei Zahlungseingang</span>
-                </li>
-                <li className="flex items-center gap-2 text-gray-700">
-                  <Check className="w-5 h-5 text-green-600" />
-                  <span>Mahnwesen für verspätete Zahlungen</span>
-                </li>
-                <li className="flex items-center gap-2 text-gray-700">
-                  <Check className="w-5 h-5 text-green-600" />
-                  <span>Detaillierte Zahlungshistorie und Berichte</span>
-                </li>
-              </ul>
-              <a
-                href="/subscription"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
-              >
-                Jetzt auf Pro upgraden
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="bg-white rounded-lg p-6">
         <div className="mb-4">
           <h3 className="font-semibold text-dark">Filter</h3>
