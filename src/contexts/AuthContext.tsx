@@ -18,45 +18,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkIfUserBanned = async (userId: string): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase
-        .from("account_profiles")
-        .select("banned, ban_reason")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Error checking ban status:", error);
-        return false;
-      }
-
-      if (data?.banned) {
-        alert(
-          `Ihr Account wurde gesperrt.\n\nGrund: ${data.ban_reason || "Keine Angabe"}\n\nBitte wenden Sie sich an das rentab.ly Team für weitere Informationen.`
-        );
-        return true;
-      }
-
-      return false;
-    } catch (err) {
-      console.error("Error checking ban status:", err);
-      return false;
-    }
-  };
-
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const isBanned = await checkIfUserBanned(session.user.id);
-        if (isBanned) {
-          await supabase.auth.signOut();
-          setSession(null);
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-      }
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -64,17 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user && event === 'SIGNED_IN') {
-        const isBanned = await checkIfUserBanned(session.user.id);
-        if (isBanned) {
-          await supabase.auth.signOut();
-          setSession(null);
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-      }
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -82,6 +35,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const checkBanStatus = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("account_profiles")
+          .select("banned, ban_reason")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error checking ban status:", error);
+          return;
+        }
+
+        if (data?.banned) {
+          alert(
+            `Ihr Account wurde gesperrt.\n\nGrund: ${data.ban_reason || "Keine Angabe"}\n\nBitte wenden Sie sich an das rentab.ly Team für weitere Informationen.`
+          );
+          await supabase.auth.signOut();
+        }
+      } catch (err) {
+        console.error("Error checking ban status:", err);
+      }
+    };
+
+    checkBanStatus();
+  }, [user]);
 
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({
@@ -92,19 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
-    if (!error && data.user) {
-      const isBanned = await checkIfUserBanned(data.user.id);
-      if (isBanned) {
-        await supabase.auth.signOut();
-        return { error: { message: "Ihr Account wurde gesperrt." } };
-      }
-    }
-
     return { error };
   };
 
