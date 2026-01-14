@@ -35,6 +35,8 @@ interface RentalContract {
   additional_costs: number;
   total_rent: number;
   status: string;
+  contract_start: string;
+  contract_end: string | null;
 }
 interface PropertyStatisticsProps {
   property: Property;
@@ -69,7 +71,7 @@ export default function PropertyStatistics({
           .eq("paid", true),
         supabase
           .from("rental_contracts")
-          .select("base_rent, additional_costs, total_rent, status")
+          .select("base_rent, additional_costs, total_rent, status, contract_start, contract_end")
           .eq("property_id", property.id)
           .eq("user_id", user.id)
           .eq("status", "active"),
@@ -116,7 +118,13 @@ export default function PropertyStatistics({
     (sum, payment) => sum + Number(payment.amount),
     0,
   );
-  const monthlyRent = contracts.reduce(
+  const today = new Date();
+  const activeStartedContracts = contracts.filter(c => {
+    const startDate = new Date(c.contract_start);
+    const endDate = c.contract_end ? new Date(c.contract_end) : null;
+    return startDate <= today && (!endDate || endDate >= today);
+  });
+  const monthlyRent = activeStartedContracts.reduce(
     (sum, c) => sum + Number(c.base_rent || 0),
     0,
   );

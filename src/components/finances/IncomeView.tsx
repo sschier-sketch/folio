@@ -20,6 +20,8 @@ interface RentalContract {
   base_rent: number;
   additional_costs: number;
   start_date: string;
+  contract_start: string;
+  contract_end: string | null;
   status: string;
   tenants?: {
     first_name: string;
@@ -155,6 +157,8 @@ export default function IncomeView() {
           base_rent,
           additional_costs,
           start_date,
+          contract_start,
+          contract_end,
           status,
           tenant_id,
           property_id
@@ -205,9 +209,16 @@ export default function IncomeView() {
     }
   }
 
+  const today = new Date();
+  const activeStartedContracts = rentalContracts.filter(c => {
+    const startDate = new Date(c.contract_start);
+    const endDate = c.contract_end ? new Date(c.contract_end) : null;
+    return startDate <= today && (!endDate || endDate >= today);
+  });
+
   const totalManualIncome = manualIncomes.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
-  const totalRentIncome = rentalContracts.reduce((sum, contract) => {
-    return sum + parseFloat(contract.total_rent.toString());
+  const totalRentIncome = activeStartedContracts.reduce((sum, contract) => {
+    return sum + parseFloat(contract.base_rent.toString());
   }, 0);
   const totalIncome = totalManualIncome + totalRentIncome;
   const totalCount = manualIncomes.length + rentalContracts.length;

@@ -25,6 +25,7 @@ interface Metrics {
   roi: number;
   totalUnits: number;
   vacantUnits: number;
+  futureContracts: Array<{ contract_start: string; base_rent: number }>;
 }
 
 interface Comparison {
@@ -46,6 +47,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
     roi: 0,
     totalUnits: 0,
     vacantUnits: 0,
+    futureContracts: [],
   });
 
   const currentYear = new Date().getFullYear();
@@ -70,7 +72,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       const [propertyRes, unitsRes, contractsRes, expensesRes, loansRes] = await Promise.all([
         supabase.from("properties").select("*").eq("id", propertyId).eq("user_id", user.id).single(),
         supabase.from("property_units").select("id, status").eq("property_id", propertyId),
-        supabase.from("rental_contracts").select("base_rent, status").eq("property_id", propertyId).eq("user_id", user.id),
+        supabase.from("rental_contracts").select("base_rent, status, contract_start, contract_end").eq("property_id", propertyId).eq("user_id", user.id),
         supabase
           .from("expenses")
           .select("amount")
@@ -87,19 +89,26 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         const totalUnits = unitsRes.data?.length || 0;
         const vacantUnits = unitsRes.data?.filter((u) => u.status === "vacant").length || 0;
 
-        const activeContracts = contractsRes.data?.filter((c) => c.status === "active").length || 0;
+        const today = new Date();
+        const allActiveContracts = contractsRes.data?.filter((c) => c.status === "active") || [];
+        const activeStartedContracts = allActiveContracts.filter(c => {
+          const startDate = new Date(c.contract_start);
+          const endDate = c.contract_end ? new Date(c.contract_end) : null;
+          return startDate <= today && (!endDate || endDate >= today);
+        });
+        const futureContracts = allActiveContracts.filter(c => {
+          const startDate = new Date(c.contract_start);
+          return startDate > today;
+        });
 
         let vacancyRate = 0;
         if (totalUnits > 0) {
           vacancyRate = (vacantUnits / totalUnits) * 100;
-        } else if (activeContracts === 0) {
+        } else if (activeStartedContracts.length === 0) {
           vacancyRate = 100;
         }
 
-        const monthlyRent =
-          contractsRes.data
-            ?.filter((c) => c.status === "active")
-            .reduce((sum, c) => sum + Number(c.base_rent || 0), 0) || 0;
+        const monthlyRent = activeStartedContracts.reduce((sum, c) => sum + Number(c.base_rent || 0), 0);
 
         const totalExpensesInPeriod =
           expensesRes.data?.reduce((sum, e) => sum + Number(e.amount || 0), 0) || 0;
@@ -134,6 +143,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           roi,
           totalUnits,
           vacantUnits,
+          futureContracts: futureContracts.map(c => ({ contract_start: c.contract_start, base_rent: c.base_rent })),
         });
       }
     } catch (error) {
@@ -341,14 +351,35 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         </div>
       </div>
 
+      {metrics.futureContracts.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-900 mb-1">Zukünftige Mietverträge</p>
+              <p className="text-xs text-amber-700 mb-2">
+                Es gibt {metrics.futureContracts.length} Mietvertrag{metrics.futureContracts.length > 1 ? 'e' : ''}, der/die noch nicht begonnen hat/haben und daher nicht in die Berechnung einfließt/einfließen:
+              </p>
+              <div className="space-y-1">
+                {metrics.futureContracts.map((contract, idx) => (
+                  <div key={idx} className="text-xs text-amber-700">
+                    • Kaltmiete {formatCurrency(contract.base_rent)}/Monat ab {new Date(contract.contract_start).toLocaleDateString('de-DE')}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm font-medium text-blue-900 mb-1">Hinweis zu Kennzahlen</p>
             <p className="text-xs text-blue-700">
-              Die Kennzahlen werden basierend auf den aktuellen Daten berechnet. Kostenquote und ROI berücksichtigen
-              Ausgaben der letzten 30 Tage sowie laufende Kreditraten. Für genauere Analysen können Sie im
+              Die Kennzahlen werden basierend auf bereits begonnenen Mietverträgen berechnet. Kostenquote und ROI berücksichtigen
+              Ausgaben im gewählten Zeitraum sowie laufende Kreditraten. Für genauere Analysen können Sie im
               Finanzbereich detaillierte Auswertungen vornehmen.
             </p>
           </div>

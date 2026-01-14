@@ -80,8 +80,9 @@ export default function FinancialAnalysisView() {
         await Promise.all([
           supabase
             .from("rental_contracts")
-            .select("property_id, base_rent, additional_costs")
-            .eq("user_id", user.id),
+            .select("property_id, base_rent, additional_costs, status, contract_start, contract_end")
+            .eq("user_id", user.id)
+            .eq("status", "active"),
           supabase
             .from("rent_payments")
             .select("amount, paid_date")
@@ -102,14 +103,20 @@ export default function FinancialAnalysisView() {
       const contracts = contractsRes.data || [];
       const loans = loansRes.data || [];
       const propertyMap = new Map(properties.map((p) => [p.id, p]));
+      const today = new Date();
       const propertyFinancialsData: PropertyFinancials[] = properties.map(
         (property) => {
           const propertyContracts = contracts.filter(
             (c) => c.property_id === property.id,
           );
-          const monthlyRent = propertyContracts.reduce(
+          const activeStartedContracts = propertyContracts.filter(c => {
+            const startDate = new Date(c.contract_start);
+            const endDate = c.contract_end ? new Date(c.contract_end) : null;
+            return startDate <= today && (!endDate || endDate >= today);
+          });
+          const monthlyRent = activeStartedContracts.reduce(
             (sum, c) =>
-              sum + Number(c.base_rent) + Number(c.additional_costs || 0),
+              sum + Number(c.base_rent || 0),
             0,
           );
           return {
@@ -118,7 +125,7 @@ export default function FinancialAnalysisView() {
             address: `${property.street}, ${property.city}`,
             monthlyRent,
             yearlyRent: monthlyRent * 12,
-            contracts: propertyContracts.length,
+            contracts: activeStartedContracts.length,
           };
         },
       );
