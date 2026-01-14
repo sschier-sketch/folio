@@ -21,6 +21,8 @@ interface Feedback {
   status: string;
   created_at: string;
   upvotes: number;
+  downvotes: number;
+  net_votes: number;
 }
 
 type StatusFilter = "all" | "pending" | "reviewed" | "planned" | "implemented";
@@ -62,7 +64,7 @@ export function AdminFeedbackView() {
       }
 
       if (sortBy === "votes") {
-        query = query.order("upvotes", { ascending: false });
+        query = query.order("net_votes", { ascending: false });
       } else if (sortBy === "payment") {
         query = query.order("payment_amount", {
           ascending: false,
@@ -327,7 +329,7 @@ export function AdminFeedbackView() {
                       )}
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
                         <ThumbsUp className="w-3 h-3" />
-                        {feedback.upvotes}
+                        {feedback.upvotes - feedback.downvotes}
                       </span>
                     </div>
                     <p className="text-dark mb-2">{feedback.feedback_text}</p>

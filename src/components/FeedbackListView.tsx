@@ -13,6 +13,7 @@ interface Feedback {
   created_at: string;
   upvotes: number;
   downvotes: number;
+  net_votes: number;
   user_vote?: "up" | "down" | null;
 }
 type FilterType = "all" | "top" | "new" | "mine";
@@ -38,11 +39,11 @@ export default function FeedbackListView() {
         query = query.eq("user_id", user.id);
       }
       if (filter === "top") {
-        query = query.order("upvotes", { ascending: false });
+        query = query.order("net_votes", { ascending: false });
       } else if (filter === "new") {
         query = query.order("created_at", { ascending: false });
       } else {
-        query = query.order("upvotes", { ascending: false });
+        query = query.order("net_votes", { ascending: false });
       }
       const { data: feedbackData, error: feedbackError } = await query;
       if (feedbackError) throw feedbackError;
@@ -298,15 +299,6 @@ export default function FeedbackListView() {
                       <span className="text-sm text-gray-300">
                         {formatDate(feedback.created_at)}
                       </span>
-                      {feedback.willing_to_pay && (
-                        <span className="px-3 py-1 bg-primary-blue/5 text-primary-blue rounded-full text-xs font-medium">
-                          {language === "de"
-                            ? "Zahlungsbereit"
-                            : "Willing to Pay"}
-                          {feedback.payment_amount &&
-                            ` (${feedback.payment_amount})`}
-                        </span>
-                      )}
                     </div>
                   </div>
                   <p className="text-dark text-lg leading-relaxed whitespace-pre-wrap">
