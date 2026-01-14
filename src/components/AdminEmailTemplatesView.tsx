@@ -10,6 +10,7 @@ interface EmailTemplate {
   body_text: string;
   variables: string[];
   description: string;
+  language: 'de' | 'en';
   created_at: string;
   updated_at: string;
 }
@@ -23,9 +24,10 @@ export function AdminEmailTemplatesView() {
   const [editedTemplate, setEditedTemplate] = useState<EmailTemplate | null>(
     null,
   );
+  const [languageFilter, setLanguageFilter] = useState<'all' | 'de' | 'en'>('all');
   useEffect(() => {
     loadTemplates();
-  }, []);
+  }, [languageFilter]);
   useEffect(() => {
     if (selectedTemplate) {
       setEditedTemplate({ ...selectedTemplate });
@@ -34,10 +36,16 @@ export function AdminEmailTemplatesView() {
   async function loadTemplates() {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from("email_templates")
         .select("*")
         .order("template_name");
+
+      if (languageFilter !== 'all') {
+        query = query.eq('language', languageFilter);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       setTemplates(data || []);
       if (data && data.length > 0 && !selectedTemplate) {
@@ -125,6 +133,20 @@ export function AdminEmailTemplatesView() {
           <p className="text-xs text-gray-300 mt-1">
             {templates.length} Templates
           </p>{" "}
+          <div className="mt-4">
+            <label className="block text-xs font-medium text-gray-400 mb-2">
+              Sprache filtern
+            </label>
+            <select
+              value={languageFilter}
+              onChange={(e) => setLanguageFilter(e.target.value as 'all' | 'de' | 'en')}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="all">Alle Sprachen</option>
+              <option value="de">Deutsch</option>
+              <option value="en">English</option>
+            </select>
+          </div>
         </div>{" "}
         <div className="divide-y divide-slate-200">
           {" "}
@@ -149,6 +171,9 @@ export function AdminEmailTemplatesView() {
                   <p className="text-xs text-gray-300 line-clamp-2">
                     {template.description}
                   </p>{" "}
+                  <span className={`inline-block mt-2 px-2 py-0.5 text-xs rounded ${template.language === 'de' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                    {template.language === 'de' ? 'Deutsch' : 'English'}
+                  </span>{" "}
                 </div>{" "}
               </div>{" "}
             </button>
@@ -260,6 +285,19 @@ export function AdminEmailTemplatesView() {
                       })
                     }
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  />{" "}
+                </div>{" "}
+                <div>
+                  {" "}
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    {" "}
+                    Sprache (nicht änderbar){" "}
+                  </label>{" "}
+                  <input
+                    type="text"
+                    value={editedTemplate.language === 'de' ? 'Deutsch' : 'English'}
+                    disabled
+                    className="w-full px-4 py-2 rounded-lg bg-gray-50 text-gray-300"
                   />{" "}
                 </div>{" "}
                 {editedTemplate.variables &&

@@ -16,7 +16,7 @@ interface UserSettings {
 
 export default function ProfileSettingsView() {
   const { user } = useAuth();
-  const { language, t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
 
   useEffect(() => {
@@ -111,6 +111,24 @@ export default function ProfileSettingsView() {
               <div>{getRoleBadge(userSettings.role)}</div>
             </div>
           )}
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              {t("settings.language")}
+            </label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as "de" | "en")}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="de">Deutsch</option>
+              <option value="en">English</option>
+            </select>
+            <p className="text-sm text-gray-300 mt-1">
+              {language === "de"
+                ? "Änderungen werden sofort wirksam und für alle E-Mails verwendet."
+                : "Changes take effect immediately and are used for all emails."}
+            </p>
+          </div>
         </div>
 
         <div className="mt-8 pt-8 border-t">

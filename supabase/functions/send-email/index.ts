@@ -14,6 +14,8 @@ interface EmailRequest {
   text?: string;
   templateKey?: string;
   variables?: Record<string, string>;
+  language?: 'de' | 'en';
+  userId?: string;
 }
 
 function replaceVariables(content: string, variables: Record<string, string>): string {
@@ -34,7 +36,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { to, subject, html, text, templateKey, variables }: EmailRequest = await req.json();
+    const { to, subject, html, text, templateKey, variables, language, userId }: EmailRequest = await req.json();
 
     let finalSubject = subject || '';
     let finalHtml = html || '';
@@ -45,10 +47,25 @@ Deno.serve(async (req: Request) => {
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
+      let userLanguage = language || 'de';
+
+      if (userId && !language) {
+        const { data: userData } = await supabase
+          .from('admin_users')
+          .select('preferred_language')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (userData?.preferred_language) {
+          userLanguage = userData.preferred_language;
+        }
+      }
+
       const { data: template, error: templateError } = await supabase
         .from('email_templates')
         .select('*')
         .eq('template_key', templateKey)
+        .eq('language', userLanguage)
         .maybeSingle();
 
       if (templateError || !template) {

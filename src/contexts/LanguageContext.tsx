@@ -867,17 +867,17 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     try {
       const { data } = await supabase
-        .from("user_settings")
-        .select("language")
-        .eq("user_id", user.id)
+        .from("admin_users")
+        .select("preferred_language")
+        .eq("id", user.id)
         .maybeSingle();
 
       if (
-        data?.language &&
-        (data.language === "de" || data.language === "en")
+        data?.preferred_language &&
+        (data.preferred_language === "de" || data.preferred_language === "en")
       ) {
-        setLanguageState(data.language as Language);
-        localStorage.setItem("rentably_language", data.language);
+        setLanguageState(data.preferred_language as Language);
+        localStorage.setItem("rentably_language", data.preferred_language);
       }
     } catch (error) {
       console.error("Error loading user language:", error);
@@ -891,9 +891,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (user) {
       try {
         await supabase
-          .from("user_settings")
-          .update({ language: lang })
-          .eq("user_id", user.id);
+          .from("admin_users")
+          .update({ preferred_language: lang })
+          .eq("id", user.id);
       } catch (error) {
         console.error("Error saving user language:", error);
       }
