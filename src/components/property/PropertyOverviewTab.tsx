@@ -135,24 +135,6 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           .order("created_at", { ascending: false }),
       ]);
 
-      if (unitsRes.data) {
-        const totalUnits = unitsRes.data.length;
-        const rentedUnits = unitsRes.data.filter((u) => u.status === "rented").length;
-        const vacantUnits = unitsRes.data.filter((u) => u.status === "vacant").length;
-        const totalRent = unitsRes.data.reduce((sum, u) => sum + (Number(u.rent_amount) || 0), 0);
-        const occupancyRate = totalUnits > 0 ? (rentedUnits / totalUnits) * 100 : 0;
-
-        setStats({
-          totalUnits,
-          rentedUnits,
-          vacantUnits,
-          totalRent,
-          occupancyRate,
-        });
-      }
-
-      setLoans(loansRes.data || []);
-
       const contractsWithTenants: RentalContract[] = [];
       if (contractsRes.data) {
         for (const contract of contractsRes.data) {
@@ -165,6 +147,32 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
         }
       }
       setContracts(contractsWithTenants);
+
+      if (unitsRes.data) {
+        const totalUnits = unitsRes.data.length;
+        const rentedUnits = unitsRes.data.filter((u) => u.status === "rented").length;
+        const vacantUnits = unitsRes.data.filter((u) => u.status === "vacant").length;
+
+        const today = new Date();
+        const activeContracts = contractsWithTenants.filter(c => {
+          const startDate = new Date(c.contract_start);
+          const endDate = c.contract_end ? new Date(c.contract_end) : null;
+          return startDate <= today && (!endDate || endDate >= today);
+        });
+
+        const totalRent = activeContracts.reduce((sum, c) => sum + (Number(c.base_rent) || 0), 0);
+        const occupancyRate = totalUnits > 0 ? (rentedUnits / totalUnits) * 100 : 0;
+
+        setStats({
+          totalUnits,
+          rentedUnits,
+          vacantUnits,
+          totalRent,
+          occupancyRate,
+        });
+      }
+
+      setLoans(loansRes.data || []);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
