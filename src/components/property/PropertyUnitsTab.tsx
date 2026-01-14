@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Home, X } from "lucide-react";
+import { Plus, Edit, Trash2, Home, X, FileText } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
+import TenantModal from "../TenantModal";
 
 interface PropertyUnitsTabProps {
   propertyId: string;
@@ -39,6 +40,9 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUnit, setEditingUnit] = useState<PropertyUnit | null>(null);
+  const [showTenantModal, setShowTenantModal] = useState(false);
+  const [selectedUnitForTenant, setSelectedUnitForTenant] = useState<PropertyUnit | null>(null);
+  const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
   const [formData, setFormData] = useState({
     unit_number: "",
     unit_type: "apartment",
@@ -54,8 +58,26 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
   useEffect(() => {
     if (user) {
       loadUnits();
+      loadProperty();
     }
   }, [user, propertyId]);
+
+  async function loadProperty() {
+    try {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("id, name")
+        .eq("id", propertyId)
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setProperties([data]);
+      }
+    } catch (error) {
+      console.error("Error loading property:", error);
+    }
+  }
 
   async function loadUnits() {
     try {
@@ -405,15 +427,29 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center gap-2">
+                        {unit.status !== "rented" && (
+                          <button
+                            onClick={() => {
+                              setSelectedUnitForTenant(unit);
+                              setShowTenantModal(true);
+                            }}
+                            className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                            title="Mietverhältnis anlegen"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => openEditModal(unit)}
                           className="text-primary-blue hover:text-primary-blue transition-colors"
+                          title="Bearbeiten"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteUnit(unit)}
                           className="text-gray-300 hover:text-red-600 transition-colors"
+                          title="Löschen"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -426,6 +462,24 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
           </div>
         )}
       </div>
+
+      {showTenantModal && (
+        <TenantModal
+          tenant={null}
+          properties={properties}
+          onClose={() => {
+            setShowTenantModal(false);
+            setSelectedUnitForTenant(null);
+          }}
+          onSave={() => {
+            setShowTenantModal(false);
+            setSelectedUnitForTenant(null);
+            loadUnits();
+          }}
+          preselectedPropertyId={propertyId}
+          preselectedUnitId={selectedUnitForTenant?.id}
+        />
+      )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">

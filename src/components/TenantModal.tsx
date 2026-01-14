@@ -35,6 +35,8 @@ interface TenantModalProps {
   properties: Property[];
   onClose: () => void;
   onSave: () => void;
+  preselectedPropertyId?: string;
+  preselectedUnitId?: string;
 }
 
 type RentType = "flat_rate" | "cold_rent_advance" | "cold_rent_utilities_heating";
@@ -46,6 +48,8 @@ export default function TenantModal({
   properties,
   onClose,
   onSave,
+  preselectedPropertyId,
+  preselectedUnitId,
 }: TenantModalProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -53,8 +57,8 @@ export default function TenantModal({
   const [units, setUnits] = useState<{ id: string; unit_number: string }[]>([]);
 
   const [tenantData, setTenantData] = useState({
-    property_id: "",
-    unit_id: "",
+    property_id: preselectedPropertyId || "",
+    unit_id: preselectedUnitId || "",
     salutation: "",
     first_name: "",
     last_name: "",
@@ -96,8 +100,6 @@ export default function TenantModal({
     deposit_payment_date: "",
     deposit_status: "open" as DepositStatus,
   });
-
-  const [costAllocations, setCostAllocations] = useState<string[]>([]);
 
   useEffect(() => {
     const loadTenantData = async () => {
@@ -253,9 +255,6 @@ export default function TenantModal({
       case 3:
         return true;
 
-      case 4:
-        return true;
-
       default:
         return true;
     }
@@ -263,7 +262,7 @@ export default function TenantModal({
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      if (currentStep < 4) {
+      if (currentStep < 3) {
         setCurrentStep(currentStep + 1);
       }
     }
@@ -559,7 +558,6 @@ export default function TenantModal({
       { number: 1, label: "Mieterdaten" },
       { number: 2, label: "Mietdetails" },
       { number: 3, label: "Kaution" },
-      { number: 4, label: "Kostenarten" },
     ];
 
     return (
@@ -1360,42 +1358,6 @@ export default function TenantModal({
     </div>
   );
 
-  const renderStep4 = () => (
-    <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-dark mb-4">
-        Markierte Kostenarten werden auf diesen Mieter umgelegt.
-      </h3>
-      <p className="text-sm text-gray-500">
-        Entfernen Sie die Haken der Kostenarten, welche dieser Mieter nicht bezahlen muss.
-        Diese Kostenarten werden dann vollständig auf die anderen Mieter verteilt.
-      </p>
-
-      <div className="space-y-2">
-        <label className="flex items-center gap-3 p-4 bg-[#EDEFF7] rounded-lg">
-          <input
-            type="checkbox"
-            checked={costAllocations.includes("electricity")}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setCostAllocations([...costAllocations, "electricity"]);
-              } else {
-                setCostAllocations(costAllocations.filter((c) => c !== "electricity"));
-              }
-            }}
-            className="w-5 h-5 text-[#008CFF] rounded"
-          />
-          <span className="font-medium text-dark">Strom</span>
-        </label>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-        <p className="text-sm text-blue-900">
-          <strong>Hinweis:</strong> Die Kostenverteilung wird automatisch bei der Betriebskostenabrechnung berücksichtigt.
-        </p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -1424,16 +1386,12 @@ export default function TenantModal({
                 <div className="border-t border-gray-200 pt-6">
                   {renderStep3()}
                 </div>
-                <div className="border-t border-gray-200 pt-6">
-                  {renderStep4()}
-                </div>
               </div>
             ) : (
               <>
                 {currentStep === 1 && renderStep1()}
                 {currentStep === 2 && renderStep2()}
                 {currentStep === 3 && renderStep3()}
-                {currentStep === 4 && renderStep4()}
               </>
             )}
           </div>
@@ -1457,7 +1415,7 @@ export default function TenantModal({
               Abbrechen
             </button>
 
-            {tenant || currentStep === 4 ? (
+            {tenant || currentStep === 3 ? (
               <button
                 type="button"
                 onClick={handleSubmit}
