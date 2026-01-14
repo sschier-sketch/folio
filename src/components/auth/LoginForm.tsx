@@ -21,13 +21,26 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setLoading(true);
     setMessage(null);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) {
         setMessage({ type: "error", text: error.message });
       } else {
+        if (data.user) {
+          const { data: profileData } = await supabase
+            .from("account_profiles")
+            .select("banned, ban_reason")
+            .eq("user_id", data.user.id)
+            .maybeSingle();
+
+          if (profileData?.banned) {
+            navigate("/account-banned");
+            return;
+          }
+        }
+
         setMessage({ type: "success", text: "Erfolgreich angemeldet!" });
         onSuccess?.();
       }

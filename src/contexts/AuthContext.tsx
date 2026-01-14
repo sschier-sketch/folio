@@ -8,6 +8,7 @@ interface AuthContextType {
   loading: boolean;
   isBanned: boolean;
   banReason: string | null;
+  checkingBan: boolean;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isBanned, setIsBanned] = useState(false);
   const [banReason, setBanReason] = useState<string | null>(null);
+  const [checkingBan, setCheckingBan] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,10 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) {
       setIsBanned(false);
       setBanReason(null);
+      setCheckingBan(false);
       return;
     }
 
     const checkBanStatus = async () => {
+      setCheckingBan(true);
       try {
         const { data, error } = await supabase
           .from("account_profiles")
@@ -57,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (error) {
           console.error("Error checking ban status:", error);
+          setCheckingBan(false);
           return;
         }
 
@@ -69,6 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (err) {
         console.error("Error checking ban status:", err);
+      } finally {
+        setCheckingBan(false);
       }
     };
 
@@ -97,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, isBanned, banReason, signUp, signIn, signOut }}
+      value={{ user, session, loading, isBanned, banReason, checkingBan, signUp, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>

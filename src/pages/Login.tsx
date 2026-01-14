@@ -5,8 +5,8 @@ import { useAuth } from "../hooks/useAuth";
 import { Sparkles } from "lucide-react";
 import { Header } from "../components/Header";
 export function Login() {
-  const { user, loading } = useAuth();
-  if (loading) {
+  const { user, loading, isBanned, checkingBan } = useAuth();
+  if (loading || checkingBan) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         {" "}
@@ -15,6 +15,9 @@ export function Login() {
     );
   }
   if (user) {
+    if (isBanned) {
+      return <Navigate to="/account-banned" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
   return (

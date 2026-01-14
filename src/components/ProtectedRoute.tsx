@@ -5,8 +5,8 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading, isBanned } = useAuth();
-  if (loading) {
+  const { user, loading, isBanned, checkingBan } = useAuth();
+  if (loading || checkingBan) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         {" "}
