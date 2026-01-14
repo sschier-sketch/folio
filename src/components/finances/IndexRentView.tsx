@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calculator, TrendingUp, FileText, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Calculator, TrendingUp, FileText, Clock, CheckCircle, AlertCircle, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -31,11 +31,18 @@ interface IndexRentCalculation {
   };
 }
 
+interface CalculationResult {
+  type: "success" | "info";
+  message: string;
+  details?: string;
+}
+
 export default function IndexRentView() {
   const { user } = useAuth();
   const [calculations, setCalculations] = useState<IndexRentCalculation[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [result, setResult] = useState<CalculationResult | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -68,6 +75,7 @@ export default function IndexRentView() {
 
   const processCalculations = async () => {
     setProcessing(true);
+    setResult(null);
     try {
       const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-index-rent-calculations`;
       const headers = {
@@ -84,12 +92,36 @@ export default function IndexRentView() {
         throw new Error("Fehler beim Verarbeiten der Berechnungen");
       }
 
-      const result = await response.json();
-      alert(`Erfolgreich ${result.processed} von ${result.total_contracts} Berechnungen durchgeführt`);
+      const data = await response.json();
+
+      if (data.processed === 0 && data.total_contracts > 0) {
+        setResult({
+          type: "info",
+          message: `${data.total_contracts} ${data.total_contracts === 1 ? 'Vertrag' : 'Verträge'} geprüft`,
+          details: "Keine Indexerhöhung notwendig. Entweder ist die Mindestfrist noch nicht abgelaufen oder die Indexänderung ist zu gering."
+        });
+      } else if (data.processed > 0) {
+        setResult({
+          type: "success",
+          message: `Berechnung durchgeführt: ${data.processed} ${data.processed === 1 ? 'Indexerhöhung' : 'Indexerhöhungen'} erstellt`,
+          details: `${data.total_contracts} ${data.total_contracts === 1 ? 'Vertrag wurde' : 'Verträge wurden'} geprüft`
+        });
+      } else {
+        setResult({
+          type: "info",
+          message: "Keine Verträge zu prüfen",
+          details: "Es wurden keine Verträge mit Indexmiete gefunden, die derzeit geprüft werden können."
+        });
+      }
+
       loadCalculations();
     } catch (error) {
       console.error("Error processing calculations:", error);
-      alert("Fehler beim Verarbeiten der Berechnungen");
+      setResult({
+        type: "info",
+        message: "Fehler bei der Verarbeitung",
+        details: "Es ist ein Fehler beim Verarbeiten der Berechnungen aufgetreten. Bitte versuchen Sie es später erneut."
+      });
     } finally {
       setProcessing(false);
     }
@@ -177,6 +209,50 @@ export default function IndexRentView() {
           {processing ? "Verarbeite..." : "Berechnungen durchführen"}
         </button>
       </div>
+
+      {result && (
+        <div
+          className={`rounded-lg p-5 flex items-start gap-4 relative ${
+            result.type === "success"
+              ? "bg-green-50 border border-green-200"
+              : "bg-blue-50 border border-blue-200"
+          }`}
+        >
+          {result.type === "success" ? (
+            <CheckCircle className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
+          ) : (
+            <AlertCircle className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0" />
+          )}
+          <div className="flex-1">
+            <h3
+              className={`font-semibold mb-1 ${
+                result.type === "success" ? "text-green-900" : "text-blue-900"
+              }`}
+            >
+              {result.message}
+            </h3>
+            {result.details && (
+              <p
+                className={`text-sm ${
+                  result.type === "success" ? "text-green-800" : "text-blue-800"
+                }`}
+              >
+                {result.details}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => setResult(null)}
+            className={`flex-shrink-0 p-1 rounded-lg transition-colors ${
+              result.type === "success"
+                ? "hover:bg-green-200 text-green-700"
+                : "hover:bg-blue-200 text-blue-700"
+            }`}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
         <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
