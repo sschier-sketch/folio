@@ -41,7 +41,6 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Get ticket details
     const { data: ticket, error: ticketError } = await supabase
       .from('tickets')
       .select('*')
@@ -58,27 +57,24 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Add message to ticket
     const { error: messageError } = await supabase
       .from('ticket_messages')
-      .insert([
-        {
-          ticket_id: ticketId,
-          sender_type: 'landlord',
-          sender_name: senderName,
-          sender_email: senderEmail,
-          message: message,
-        },
-      ]);
+      .insert([{
+        ticket_id: ticketId,
+        sender_type: 'landlord',
+        sender_name: senderName,
+        sender_email: senderEmail,
+        message: message,
+      }]);
 
     if (messageError) {
       throw new Error('Failed to save message: ' + messageError.message);
     }
 
-    // Send email to contact if it's a contact ticket
     if (ticket.ticket_type === 'contact' && ticket.contact_email && resendApiKey) {
+      const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <onboarding@resend.dev>';
       const emailSubject = `Re: ${ticket.subject} [Ticket #${ticket.ticket_number}]`;
-      
+
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">Antwort auf Ihre Anfrage</h2>
@@ -98,6 +94,8 @@ Deno.serve(async (req: Request) => {
         </div>
       `;
 
+      console.log('Sending ticket reply email from:', EMAIL_FROM, 'to:', ticket.contact_email);
+
       const emailResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -105,7 +103,7 @@ Deno.serve(async (req: Request) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: `Rentably Support <support@rentably.com>`,
+          from: EMAIL_FROM,
           to: [ticket.contact_email],
           subject: emailSubject,
           html: emailHtml,
@@ -119,7 +117,6 @@ Deno.serve(async (req: Request) => {
       } else {
         const emailData = await emailResponse.json();
         
-        // Update ticket with email thread ID
         await supabase
           .from('tickets')
           .update({ 

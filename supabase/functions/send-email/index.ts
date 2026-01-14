@@ -103,7 +103,9 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log('Sending email to:', to, 'Subject:', finalSubject);
+    const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <onboarding@resend.dev>';
+
+    console.log('Sending email to:', to, 'Subject:', finalSubject, 'From:', EMAIL_FROM);
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -112,7 +114,7 @@ Deno.serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Rentably <noreply@rentably.com>',
+        from: EMAIL_FROM,
         to: [to],
         subject: finalSubject,
         html: finalHtml,

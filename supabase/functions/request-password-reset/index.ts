@@ -7,7 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
 };
 
-// Simple encryption using Web Crypto API
 async function encryptPassword(password: string, key: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
@@ -28,12 +27,10 @@ async function encryptPassword(password: string, key: string): Promise<string> {
     data
   );
   
-  // Combine IV and encrypted data
   const combined = new Uint8Array(iv.length + encrypted.byteLength);
   combined.set(iv, 0);
   combined.set(new Uint8Array(encrypted), iv.length);
   
-  // Convert to base64
   return btoa(String.fromCharCode(...combined));
 }
 
@@ -72,7 +69,6 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Check if user exists
     const { data: existingUser } = await supabase.auth.admin.listUsers();
     const userExists = existingUser?.users.some(u => u.email === email);
 
@@ -86,10 +82,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Encrypt the new password
     const encryptedPassword = await encryptPassword(newPassword, supabaseServiceKey);
 
-    // Create password reset request
     const { data: resetRequest, error: insertError } = await supabase
       .from('password_reset_requests')
       .insert({
@@ -110,7 +104,6 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Send confirmation email
     const confirmationUrl = `${req.headers.get('origin') || 'https://rentably.com'}/reset-password/confirm?token=${resetRequest.verification_token}`;
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -119,6 +112,10 @@ Deno.serve(async (req: Request) => {
       console.error('RESEND_API_KEY is not configured');
     } else {
       try {
+        const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <onboarding@resend.dev>';
+
+        console.log('Sending password reset email from:', EMAIL_FROM, 'to:', email);
+
         const emailResponse = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -126,7 +123,7 @@ Deno.serve(async (req: Request) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Rentably <noreply@rentably.com>',
+            from: EMAIL_FROM,
             to: [email],
             subject: 'Passwort-Änderung bestätigen',
             html: `

@@ -2,6 +2,12 @@
 
 Diese Anleitung erklärt, wie Sie den E-Mail-Versand für Rentably einrichten.
 
+## Schnellstart
+
+**Der E-Mail-Versand ist bereits vorkonfiguriert** und nutzt Resend's `onboarding@resend.dev` Domain für Testzwecke. Alle E-Mails sollten sofort funktionieren.
+
+Für die Produktion sollten Sie eine eigene Domain verifizieren (siehe unten).
+
 ## 1. Magic Link Login (bereits funktionsfähig)
 
 Der **Magic Link Login** funktioniert sofort out-of-the-box mit Supabase's integriertem E-Mail-Service.
@@ -30,11 +36,19 @@ Der **Magic Link Login** funktioniert sofort out-of-the-box mit Supabase's integ
 - **Mailgun** (bis 5.000 E-Mails/Monat gratis)
 - **Amazon SES** (günstig für große Mengen)
 
-## 2. Custom E-Mail-Templates (für eigene E-Mails)
+## 2. Custom E-Mail-Templates (Bereits konfiguriert)
 
-Für eigene E-Mails (Einladungen, Benachrichtigungen, etc.) wurde eine Edge Function erstellt.
+Für eigene E-Mails (Einladungen, Benachrichtigungen, Tickets, etc.) sind Edge Functions bereits konfiguriert und verwenden Resend.
 
-### Resend Integration (Empfohlen)
+### Standard-Konfiguration (onboarding@resend.dev)
+
+Die Edge Functions sind bereits so konfiguriert, dass sie die Resend Onboarding-Domain verwenden:
+- Absenderadresse: `Rentably <onboarding@resend.dev>`
+- Funktioniert sofort ohne weitere Konfiguration
+- Geeignet für Entwicklung und Tests
+- **Empfehlung:** Für Produktion eine eigene Domain verifizieren
+
+### Resend Integration für Produktion
 
 #### Schritt 1: Resend Account erstellen
 1. Gehen Sie zu [resend.com](https://resend.com)
@@ -43,37 +57,23 @@ Für eigene E-Mails (Einladungen, Benachrichtigungen, etc.) wurde eine Edge Func
 4. Erstellen Sie einen API-Key
 
 #### Schritt 2: API-Key in Supabase hinterlegen
-```bash
-# Über Supabase CLI
-supabase secrets set RESEND_API_KEY=re_xxxxxxxxxxxxxx
 
-# Oder über das Supabase Dashboard:
-# Settings > Edge Functions > Secrets
-```
+Der RESEND_API_KEY muss in den Supabase Secrets gespeichert werden:
 
-#### Schritt 3: Edge Function aktivieren
-Öffnen Sie `/supabase/functions/send-email/index.ts` und entkommentieren Sie den Resend-Code:
+1. Gehen Sie zum Supabase Dashboard
+2. Wählen Sie Ihr Projekt
+3. Navigieren Sie zu **Settings > Edge Functions > Secrets**
+4. Fügen Sie hinzu: `RESEND_API_KEY` mit Ihrem API-Key
 
-```typescript
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+#### Schritt 3: Eigene E-Mail-Domain konfigurieren (Optional)
 
-const response = await fetch('https://api.resend.com/emails', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${RESEND_API_KEY}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    from: 'Rentably <noreply@ihre-domain.de>',
-    to: [to],
-    subject,
-    html,
-    text: text || '',
-  }),
-});
-```
+Um eine eigene Absenderadresse zu verwenden:
 
-Ändern Sie die "from"-Adresse zu Ihrer eigenen Domain.
+1. Verifizieren Sie Ihre Domain bei Resend
+2. Fügen Sie in Supabase Secrets hinzu:
+   - `EMAIL_FROM` mit Wert: `Ihr Name <noreply@ihre-domain.de>`
+
+**Hinweis:** Ohne eigene Domain wird `onboarding@resend.dev` verwendet.
 
 #### Schritt 4: E-Mail senden
 ```typescript
@@ -197,11 +197,19 @@ curl -X POST ${SUPABASE_URL}/functions/v1/send-email \
 ### Was funktioniert bereits:
 - ✅ Magic Link Login (mit Supabase's E-Mail-Service)
 - ✅ E-Mail-Template-System in der Datenbank
-- ✅ Edge Function für E-Mail-Versand vorbereitet
+- ✅ Edge Functions für E-Mail-Versand (send-email, send-tenant-activation, send-ticket-reply, request-password-reset)
+- ✅ Vorkonfiguriert mit Resend onboarding@resend.dev
 
-### Was Sie konfigurieren müssen:
-1. **Für Production Magic Links**: Custom SMTP in Supabase Dashboard
-2. **Für eigene E-Mails**: Resend/SendGrid API-Key + Edge Function aktivieren
+### E-Mails die automatisch versendet werden:
+- Mieterportal-Aktivierung
+- Passwort-Reset-Bestätigung
+- Ticket-Antworten an Kontakte
+- Template-basierte E-Mails (Einladungen, Benachrichtigungen, etc.)
+
+### Optionale Konfiguration für Produktion:
+1. **RESEND_API_KEY**: Fügen Sie Ihren Resend API-Key hinzu
+2. **EMAIL_FROM**: Setzen Sie Ihre eigene verifizierte E-Mail-Domain
+3. **Custom SMTP für Magic Links**: Konfigurieren Sie in Supabase Dashboard > Authentication > Email Templates
 
 ### Kosten (bei Resend):
 - 100 E-Mails/Tag: **Kostenlos**
