@@ -12,6 +12,7 @@ import { ResetPassword } from "./pages/ResetPassword";
 import Dashboard from "./components/Dashboard";
 import { Subscription } from "./pages/Subscription";
 import { SubscriptionSuccess } from "./pages/SubscriptionSuccess";
+import { SubscriptionCancelled } from "./pages/SubscriptionCancelled";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Contact from "./pages/Contact";
 import Impressum from "./pages/Impressum";
@@ -93,6 +94,14 @@ function App() {
           element={
             <ProtectedRoute>
               <SubscriptionSuccess />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscription/cancelled"
+          element={
+            <ProtectedRoute>
+              <SubscriptionCancelled />
             </ProtectedRoute>
           }
         />

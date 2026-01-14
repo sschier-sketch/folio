@@ -166,9 +166,13 @@ export default function SettingsView({
   };
   const getRoleBadge = (role: string) => {
     const roleMap = {
+      owner: {
+        label: t("settings.users.owner"),
+        color: "bg-primary-blue/10 text-primary-blue",
+      },
       admin: {
         label: t("settings.users.admin"),
-        color: "bg-primary-blue/10 text-primary-blue",
+        color: "bg-red-100 text-red-700",
       },
       member: {
         label: t("settings.users.member"),
@@ -179,7 +183,7 @@ export default function SettingsView({
         color: "bg-gray-50 text-gray-400",
       },
     };
-    const roleInfo = roleMap[role as keyof typeof roleMap] || roleMap.member;
+    const roleInfo = roleMap[role as keyof typeof roleMap] || roleMap.owner;
     return (
       <span
         className={`inline-flex items-center gap-1 px-2 py-1 ${roleInfo.color} rounded text-xs font-medium`}

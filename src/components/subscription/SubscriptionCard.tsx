@@ -37,8 +37,8 @@ export function SubscriptionCard({
       const requestBody = {
         price_id: product.priceId,
         mode: product.mode,
-        success_url: `${window.location.origin}/dashboard?payment=success`,
-        cancel_url: `${window.location.origin}/dashboard`,
+        success_url: `${window.location.origin}/subscription/success`,
+        cancel_url: `${window.location.origin}/subscription/cancelled`,
       };
 
       console.log("Request URL:", `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`);
