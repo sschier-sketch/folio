@@ -14,7 +14,6 @@ import {
   UserCog,
   MessageCircle,
   Lightbulb,
-  Languages,
   CheckCircle,
   X,
   Menu,
@@ -215,40 +214,6 @@ export default function Dashboard() {
             </div>{" "}
             <div className="flex items-center gap-4">
               {" "}
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setLanguage("de")}
-                  className={`w-3.5 h-3.5 rounded-full overflow-hidden transition-all ${
-                    language === "de"
-                      ? "ring-1 ring-blue-600 ring-offset-1"
-                      : "opacity-60 hover:opacity-100"
-                  }`}
-                  title="Deutsch"
-                >
-                  <svg viewBox="0 0 36 36" className="w-full h-full">
-                    <path fill="#000" d="M0 0h36v12H0z"/>
-                    <path fill="#D00" d="M0 12h36v12H0z"/>
-                    <path fill="#FFCE00" d="M0 24h36v12H0z"/>
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setLanguage("en")}
-                  className={`w-3.5 h-3.5 rounded-full overflow-hidden transition-all ${
-                    language === "en"
-                      ? "ring-1 ring-blue-600 ring-offset-1"
-                      : "opacity-60 hover:opacity-100"
-                  }`}
-                  title="English"
-                >
-                  <svg viewBox="0 0 36 36" className="w-full h-full">
-                    <path fill="#012169" d="M0 0h36v36H0z"/>
-                    <path d="M4 0 L0 2 L0 4 L4 6 L4 0z M32 0 L36 2 L36 4 L32 6 L32 0z M4 30 L0 32 L0 34 L4 36 L4 30z M32 30 L36 32 L36 34 L32 36 L32 30z" fill="#FFF"/>
-                    <path d="M36 0v4L21 18L36 32v4h-4L17 21L2 36H0v-2L15 20L0 6V2h2L17 17L32 2h4z" fill="#C8102E"/>
-                    <path d="M15 0v36h6V0h-6zM0 12v12h36V12H0z" fill="#FFF"/>
-                    <path d="M0 14v8h36v-8H0zM16 0v36h4V0h-4z" fill="#C8102E"/>
-                  </svg>
-                </button>
-              </div>
               <button
                 onClick={() => setShowUpdatesModal(true)}
                 className="relative p-2 text-gray-400 hover:text-dark transition-colors rounded-lg hover:bg-gray-50"
