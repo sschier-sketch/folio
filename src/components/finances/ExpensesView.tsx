@@ -80,6 +80,7 @@ export default function ExpensesView() {
     due_date: "",
   });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [existingDocument, setExistingDocument] = useState<{id: string, file_name: string, file_path: string} | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
@@ -258,6 +259,7 @@ export default function ExpensesView() {
       alert(editingExpense ? "Ausgabe erfolgreich aktualisiert!" : "Ausgabe erfolgreich gespeichert!");
       setShowAddModal(false);
       setEditingExpense(null);
+      setExistingDocument(null);
       setUploadedFile(null);
       setFormData({
         property_id: "",
@@ -389,7 +391,7 @@ export default function ExpensesView() {
     }
   };
 
-  function handleEditExpense(expense: Expense) {
+  async function handleEditExpense(expense: Expense) {
     setEditingExpense(expense);
     setFormData({
       property_id: expense.property_id,
@@ -409,6 +411,26 @@ export default function ExpensesView() {
       vat_rate: expense.vat_rate.toString(),
       due_date: expense.due_date || "",
     });
+
+    if (expense.document_id) {
+      try {
+        const { data: docData } = await supabase
+          .from('documents')
+          .select('id, file_name, file_path')
+          .eq('id', expense.document_id)
+          .maybeSingle();
+
+        if (docData) {
+          setExistingDocument(docData);
+        }
+      } catch (error) {
+        console.error('Error loading document:', error);
+      }
+    } else {
+      setExistingDocument(null);
+    }
+
+    setUploadedFile(null);
     setShowAddModal(true);
   }
 
@@ -858,6 +880,52 @@ export default function ExpensesView() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Dokument (optional)
                 </label>
+                {existingDocument && !uploadedFile && (
+                  <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm text-blue-700">
+                        <FileText className="w-4 h-4" />
+                        <span>Vorhandenes Dokument: {existingDocument.file_name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const { data, error } = await supabase.storage
+                                .from('documents')
+                                .download(existingDocument.file_path);
+
+                              if (error) throw error;
+
+                              const url = URL.createObjectURL(data);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = existingDocument.file_name;
+                              document.body.appendChild(a);
+                              a.click();
+                              URL.revokeObjectURL(url);
+                              document.body.removeChild(a);
+                            } catch (error) {
+                              console.error('Error downloading document:', error);
+                              alert('Fehler beim Herunterladen des Dokuments');
+                            }
+                          }}
+                          className="text-blue-600 hover:text-blue-800 text-xs underline"
+                        >
+                          Herunterladen
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setExistingDocument(null)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="relative">
                   <input
                     type="file"
@@ -990,6 +1058,8 @@ export default function ExpensesView() {
                 onClick={() => {
                   setShowAddModal(false);
                   setEditingExpense(null);
+                  setExistingDocument(null);
+                  setUploadedFile(null);
                 }}
                 className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >

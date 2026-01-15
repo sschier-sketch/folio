@@ -62,7 +62,6 @@ type View =
   | "billing"
   | "tickets"
   | "settings-profile"
-  | "settings-users"
   | "settings-billing"
   | "feedback"
   | "referral";
@@ -287,19 +286,6 @@ export default function Dashboard() {
                       <User className="w-4 h-4" />{" "}
                       <span className="text-sm">
                         {t("settings.profile")}
-                      </span>{" "}
-                    </button>{" "}
-                    <button
-                      onClick={() => {
-                        setCurrentView("settings-users");
-                        setShowSettingsDropdown(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-gray-400 hover:bg-gray-50 transition-colors"
-                    >
-                      {" "}
-                      <UserCog className="w-4 h-4" />{" "}
-                      <span className="text-sm">
-                        {t("settings.users")}
                       </span>{" "}
                     </button>{" "}
                     <button
@@ -585,9 +571,6 @@ export default function Dashboard() {
             {currentView === "billing" && <BillingView />}{" "}
             {currentView === "tickets" && <TicketsView initialTicketId={selectedTicketId} />}{" "}
             {currentView === "settings-profile" && <ProfileSettingsView />}{" "}
-            {currentView === "settings-users" && (
-              <SettingsView activeTab="users" />
-            )}{" "}
             {currentView === "settings-billing" && <BillingSettingsView />}{" "}
             {currentView === "feedback" && <FeedbackListView />}{" "}
             {currentView === "referral" && <ReferralProgramView />}{" "}
