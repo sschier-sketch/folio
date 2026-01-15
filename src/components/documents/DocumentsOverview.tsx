@@ -185,8 +185,8 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
 
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-              <HardDrive className="w-6 h-6 text-amber-600" />
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <HardDrive className="w-6 h-6 text-orange-600" />
             </div>
           </div>
           <div className="text-2xl font-bold text-dark mb-1">{formatFileSize(stats.totalSize)}</div>
@@ -198,8 +198,8 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
                   storagePercentage > 90
                     ? "bg-red-600"
                     : storagePercentage > 70
-                    ? "bg-amber-500"
-                    : "bg-amber-600"
+                    ? "bg-orange-500"
+                    : "bg-orange-600"
                 }`}
                 style={{ width: `${Math.min(storagePercentage, 100)}%` }}
               ></div>
@@ -209,8 +209,8 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
 
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-violet-100 rounded-lg flex items-center justify-center">
+              <Clock className="w-6 h-6 text-violet-600" />
             </div>
           </div>
           <div className="text-2xl font-bold text-dark mb-1">{stats.recentUploads}</div>

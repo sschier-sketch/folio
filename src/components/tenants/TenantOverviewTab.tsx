@@ -433,8 +433,8 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                <Mail className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center shrink-0">
+                <Mail className="w-5 h-5 text-violet-600" />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">E-Mail</div>
@@ -592,8 +592,8 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
-                <Users className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-orange-600" />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">Haushaltsgröße</div>

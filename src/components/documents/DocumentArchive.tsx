@@ -121,8 +121,8 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
     const colors: Record<string, string> = {
       contract: "bg-blue-100 text-blue-700",
       invoice: "bg-emerald-100 text-emerald-700",
-      bill: "bg-amber-100 text-amber-700",
-      receipt: "bg-blue-100 text-blue-700",
+      bill: "bg-orange-100 text-orange-700",
+      receipt: "bg-violet-100 text-violet-700",
       report: "bg-gray-100 text-gray-700",
       other: "bg-gray-100 text-gray-700",
     };
@@ -303,7 +303,7 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
       </div>
 
       {!isPro && documents.length > 0 && (
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6">
+        <div className="bg-gradient-to-r from-blue-50 to-violet-50 border border-blue-200 rounded-lg p-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
               <Archive className="w-6 h-6 text-white" />

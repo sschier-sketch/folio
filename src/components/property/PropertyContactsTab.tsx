@@ -212,8 +212,8 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
       role: "owner",
       title: "Eigentümer",
       icon: Users,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      color: "text-violet-600",
+      bgColor: "bg-violet-50",
       contacts: contacts.filter((c) => c.contact_role === "owner"),
     },
     {

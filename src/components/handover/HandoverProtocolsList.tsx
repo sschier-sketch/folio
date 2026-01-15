@@ -153,7 +153,7 @@ export default function HandoverProtocolsList({ tenantId, onClose }: HandoverPro
   };
 
   const statusColors = {
-    draft: "bg-amber-100 text-amber-800",
+    draft: "bg-yellow-100 text-yellow-800",
     final: "bg-green-100 text-green-800",
   };
 

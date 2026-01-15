@@ -158,7 +158,7 @@ export function AdminFeedbackView() {
       },
       planned: {
         label: "Geplant",
-        color: "bg-primary-blue/10 text-primary-blue",
+        color: "bg-purple-100 text-purple-700",
         icon: Lightbulb,
       },
       implemented: {
@@ -229,12 +229,12 @@ export function AdminFeedbackView() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">Geplant</p>
-              <p className="text-2xl font-bold text-primary-blue">
+              <p className="text-2xl font-bold text-purple-600">
                 {stats.planned}
               </p>
             </div>
-            <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
-              <Lightbulb className="w-5 h-5 text-primary-blue" />
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <Lightbulb className="w-5 h-5 text-purple-600" />
             </div>
           </div>
         </div>

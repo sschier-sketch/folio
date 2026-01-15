@@ -297,7 +297,7 @@ export default function TemplatesView() {
                                 {template.title}
                               </h3>
                               {template.is_premium && (
-                                <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded font-medium flex items-center gap-1">
+                                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded font-medium flex items-center gap-1">
                                   {!isPremium && <Lock className="w-3 h-3" />}
                                   Premium
                                 </span>

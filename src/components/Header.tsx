@@ -55,7 +55,7 @@ export function Header() {
             </Link>{" "}
             <Link
               to="/signup"
-              className="px-6 py-2 bg-primary-blue text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-dark text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
             >
               {" "}
               Kostenlos starten{" "}
@@ -114,7 +114,7 @@ export function Header() {
               <Link
                 to="/signup"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2 bg-primary-blue text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
+                className="px-4 py-2 bg-dark text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
               >
                 {" "}
                 Kostenlos starten{" "}

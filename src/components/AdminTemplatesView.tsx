@@ -265,7 +265,7 @@ export function AdminTemplatesView() {
                   <td className="px-4 py-4">
                     <div className="flex flex-col gap-1">
                       {template.is_premium ? (
-                        <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded font-medium inline-flex items-center justify-center">
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded font-medium inline-flex items-center justify-center">
                           Premium
                         </span>
                       ) : (

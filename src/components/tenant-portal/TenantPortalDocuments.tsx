@@ -80,11 +80,11 @@ export default function TenantPortalDocuments({
       rental_agreement: "bg-blue-100 text-blue-700",
       contract: "bg-blue-100 text-blue-700",
       utility_bill: "bg-emerald-100 text-emerald-700",
-      invoice: "bg-amber-100 text-amber-700",
-      bill: "bg-amber-100 text-amber-700",
-      receipt: "bg-amber-100 text-amber-700",
+      invoice: "bg-orange-100 text-orange-700",
+      bill: "bg-orange-100 text-orange-700",
+      receipt: "bg-orange-100 text-orange-700",
       maintenance: "bg-slate-100 text-slate-700",
-      automatische_vorlage: "bg-primary-blue/10 text-primary-blue",
+      automatische_vorlage: "bg-purple-100 text-purple-700",
       other: "bg-gray-100 text-gray-700",
     };
     return colors[type] || colors.other;

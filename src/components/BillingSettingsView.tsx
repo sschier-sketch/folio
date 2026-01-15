@@ -164,7 +164,7 @@ export default function BillingSettingsView() {
           </div>
 
           {subscription?.status !== "active" && (
-            <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+            <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
               <h4 className="text-lg font-bold text-dark mb-4 flex items-center gap-2">
                 <span className="text-2xl">✨</span>
                 Mit Pro erhalten Sie:

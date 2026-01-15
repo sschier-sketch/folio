@@ -30,7 +30,7 @@ export function SubscriptionStatus() {
       <div className="flex items-center space-x-3">
         {" "}
         {active ? (
-          <Crown className="w-8 h-8 text-amber-500" />
+          <Crown className="w-8 h-8 text-yellow-500" />
         ) : (
           <AlertCircle className="w-8 h-8 text-gray-400" />
         )}{" "}

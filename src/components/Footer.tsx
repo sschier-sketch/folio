@@ -30,7 +30,7 @@ export default function Footer() {
           </div>{" "}
           <div>
             {" "}
-            <h3 className="font-semibold text-[#131719] mb-3">
+            <h3 className="font-semibold text-dark mb-3">
               {t("footer.product")}
             </h3>{" "}
             <ul className="space-y-2">
@@ -69,7 +69,7 @@ export default function Footer() {
           </div>{" "}
           <div>
             {" "}
-            <h3 className="font-semibold text-[#131719] mb-3">
+            <h3 className="font-semibold text-dark mb-3">
               {t("footer.company")}
             </h3>{" "}
             <ul className="space-y-2">
@@ -98,7 +98,7 @@ export default function Footer() {
           </div>{" "}
           <div>
             {" "}
-            <h3 className="font-semibold text-[#131719] mb-3">
+            <h3 className="font-semibold text-dark mb-3">
               {t("footer.other_products")}
             </h3>{" "}
             <ul className="space-y-2">
