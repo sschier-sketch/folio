@@ -502,18 +502,18 @@ export default function ReferralProgramView() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Datum
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Belohnung
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Monate
                   </th>
                 </tr>
@@ -572,21 +572,21 @@ export default function ReferralProgramView() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Typ
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Monate
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktiviert am
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-dark">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Läuft ab am
                   </th>
                 </tr>

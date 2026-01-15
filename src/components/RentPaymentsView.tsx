@@ -509,54 +509,39 @@ export default function RentPaymentsView() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
+              <thead>
+                <tr className="border-b border-gray-200">
                   <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => handleSort("date")}
                   >
-                    <div className="flex items-center gap-2">
-                      Fälligkeitsdatum
-                      <ArrowUpDown className="w-4 h-4" />
-                    </div>
+                    Fälligkeitsdatum
                   </th>
                   <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => handleSort("property")}
                   >
-                    <div className="flex items-center gap-2">
-                      Immobilie
-                      <ArrowUpDown className="w-4 h-4" />
-                    </div>
+                    Immobilie
                   </th>
                   <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => handleSort("tenant")}
                   >
-                    <div className="flex items-center gap-2">
-                      Mieter
-                      <ArrowUpDown className="w-4 h-4" />
-                    </div>
+                    Mieter
                   </th>
                   <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => handleSort("amount")}
                   >
-                    <div className="flex items-center gap-2">
-                      Betrag
-                      <ArrowUpDown className="w-4 h-4" />
-                    </div>
+                    Betrag
                   </th>
                   <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => handleSort("status")}
                   >
-                    <div className="flex items-center gap-2">
-                      Status
-                      <ArrowUpDown className="w-4 h-4" />
-                    </div>
+                    Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktion
                   </th>
                 </tr>

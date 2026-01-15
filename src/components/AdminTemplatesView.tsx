@@ -223,21 +223,21 @@ export function AdminTemplatesView() {
       ) : (
         <div className="bg-white rounded-lg overflow-x-auto">
           <table className="w-full min-w-[1000px]">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                   Titel & Beschreibung
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                   Kategorie
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                   Datei
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700 w-32">
                   Aktionen
                 </th>
               </tr>

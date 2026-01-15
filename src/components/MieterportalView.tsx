@@ -253,44 +253,22 @@ export default function MieterportalView() {
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-500" />
-                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Mieter
-                    </span>
-                  </div>
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  Mieter
                 </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-gray-500" />
-                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Immobilie
-                    </span>
-                  </div>
+                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  Immobilie
                 </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-gray-500" />
-                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Status
-                    </span>
-                  </div>
+                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  Status
                 </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-500" />
-                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Letzter Login
-                    </span>
-                  </div>
+                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  Letzter Login
                 </th>
-                <th className="px-6 py-4 text-right">
-                  <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Aktionen
-                  </span>
+                <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
+                  Aktionen
                 </th>
               </tr>
             </thead>

@@ -704,14 +704,14 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Immobilie</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Typ</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Adresse</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Fläche</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Status</th>
-                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Wert</th>
-                      <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Aktionen</th>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Immobilie</th>
+                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Typ</th>
+                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Adresse</th>
+                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Fläche</th>
+                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Status</th>
+                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Wert</th>
+                      <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">Aktionen</th>
                     </tr>
                   </thead>
                   <tbody>
