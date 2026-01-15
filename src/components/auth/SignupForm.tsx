@@ -51,30 +51,48 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       });
       if (error) {
         setMessage({ type: "error", text: error.message });
-      } else if (authData.user && referralCode) {
-        const { data: referrerSettings } = await supabase
-          .from("user_settings")
-          .select("user_id")
-          .eq("referral_code", referralCode)
-          .maybeSingle();
-        if (referrerSettings) {
-          await supabase
-            .from("user_referrals")
-            .insert({
-              referrer_id: referrerSettings.user_id,
-              referred_user_id: authData.user.id,
-              referral_code: referralCode,
-              status: "pending",
+      } else if (authData.user) {
+        if (referralCode) {
+          try {
+            const response = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/activate-referral-reward`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  referredUserId: authData.user.id,
+                  referralCode: referralCode,
+                }),
+              }
+            );
+
+            if (response.ok) {
+              setMessage({
+                type: "success",
+                text: "Konto erfolgreich erstellt! Sie erhalten 2 Monate PRO gratis!",
+              });
+            } else {
+              setMessage({
+                type: "success",
+                text: "Konto erfolgreich erstellt!",
+              });
+            }
+          } catch (rewardError) {
+            console.error("Error activating referral reward:", rewardError);
+            setMessage({
+              type: "success",
+              text: "Konto erfolgreich erstellt!",
             });
+          }
+        } else {
+          setMessage({ type: "success", text: "Konto erfolgreich erstellt!" });
         }
-        setMessage({ type: "success", text: "Account created successfully!" });
-        onSuccess?.();
-      } else {
-        setMessage({ type: "success", text: "Account created successfully!" });
         onSuccess?.();
       }
     } catch (error) {
-      setMessage({ type: "error", text: "An unexpected error occurred" });
+      setMessage({ type: "error", text: "Ein unerwarteter Fehler ist aufgetreten" });
     } finally {
       setLoading(false);
     }
@@ -198,9 +216,9 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue uppercase"
         />{" "}
         {referralCode && (
-          <p className="mt-1 text-xs text-primary-blue">
+          <p className="mt-1 text-xs text-emerald-600 font-semibold">
             {" "}
-            You'll receive 20% off your first year!{" "}
+            🎉 Sie erhalten 2 Monate PRO gratis!{" "}
           </p>
         )}{" "}
       </div>{" "}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { SignupForm } from "../components/auth/SignupForm";
 import { useAuth } from "../hooks/useAuth";
@@ -16,6 +16,13 @@ import {
 import { Header } from "../components/Header";
 export function Signup() {
   const { user, loading } = useAuth();
+  const [hasReferralCode, setHasReferralCode] = useState(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get("ref");
+    setHasReferralCode(!!refCode);
+  }, []);
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -37,13 +44,23 @@ export function Signup() {
           {" "}
           <div className="text-center mb-8">
             {" "}
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-full px-4 py-2 mb-4">
-              {" "}
-              <Trophy className="w-4 h-4 text-amber-600" />{" "}
-              <span className="text-sm font-semibold text-amber-800">
-                Kostenlos starten & sofort loslegen
-              </span>{" "}
-            </div>{" "}
+            {hasReferralCode ? (
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-300 rounded-full px-6 py-3 mb-4 shadow-sm">
+                {" "}
+                <Gift className="w-5 h-5 text-emerald-600" />{" "}
+                <span className="text-sm font-bold text-emerald-900">
+                  🎉 Sie erhalten 2 Monate PRO gratis!
+                </span>{" "}
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-full px-4 py-2 mb-4">
+                {" "}
+                <Trophy className="w-4 h-4 text-amber-600" />{" "}
+                <span className="text-sm font-semibold text-amber-800">
+                  Kostenlos starten & sofort loslegen
+                </span>{" "}
+              </div>
+            )}{" "}
             <h1 className="text-4xl sm:text-5xl font-bold text-dark mb-4">
               {" "}
               Erstellen Sie Ihr{" "}
