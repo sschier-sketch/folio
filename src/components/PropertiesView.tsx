@@ -54,8 +54,8 @@ const LABEL_COLORS = {
   green: { bg: "bg-green-100", text: "text-green-700", hover: "hover:bg-green-200" },
   red: { bg: "bg-red-100", text: "text-red-700", hover: "hover:bg-red-200" },
   amber: { bg: "bg-amber-100", text: "text-amber-700", hover: "hover:bg-amber-200" },
-  purple: { bg: "bg-purple-100", text: "text-purple-700", hover: "hover:bg-purple-200" },
-  pink: { bg: "bg-pink-100", text: "text-pink-700", hover: "hover:bg-pink-200" },
+  purple: { bg: "bg-primary-blue/10", text: "text-primary-blue", hover: "hover:bg-primary-blue/20" },
+  pink: { bg: "bg-red-100", text: "text-red-700", hover: "hover:bg-red-200" },
 };
 
 export default function PropertiesView({ selectedPropertyId: externalSelectedPropertyId, selectedPropertyTab, onClearSelection, onNavigateToTenant }: PropertiesViewProps = {}) {

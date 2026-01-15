@@ -393,7 +393,7 @@ export default function RentPaymentsView() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg p-6">
           <div className="text-sm text-gray-400 mb-1">Ausstehend</div>
-          <div className="text-2xl font-bold text-orange-600">
+          <div className="text-2xl font-bold text-amber-600">
             {formatCurrency(totalUnpaid)}
           </div>
         </div>
@@ -633,7 +633,7 @@ export default function RentPaymentsView() {
                           <X className="w-3 h-3" /> Überfällig
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                           <X className="w-3 h-3" /> Ausstehend
                         </span>
                       )}
@@ -642,7 +642,7 @@ export default function RentPaymentsView() {
                       {payment.payment_status === 'paid' ? (
                         <button
                           onClick={() => handleMarkAsUnpaid(payment.id)}
-                          className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                          className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-700 font-medium transition-colors"
                           title="Als unbezahlt markieren"
                         >
                           <XCircle className="w-4 h-4" />
@@ -712,7 +712,7 @@ export default function RentPaymentsView() {
                 </div>
                 <div className="flex justify-between text-sm border-t border-gray-200 pt-2">
                   <span className="text-gray-600 font-medium">Noch offen:</span>
-                  <span className="font-bold text-orange-600">
+                  <span className="font-bold text-amber-600">
                     {formatCurrency(selectedPayment.amount - (selectedPayment.paid_amount || 0))}
                   </span>
                 </div>

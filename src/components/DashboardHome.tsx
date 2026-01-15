@@ -496,7 +496,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             <div className="mt-3 pt-3 border-t border-gray-100 space-y-1.5">
               {stats.unpaidRent > 0 && (
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-orange-600 font-medium">Offen</span>
+                  <span className="text-xs text-amber-600 font-medium">Offen</span>
                   <span className="text-xs text-gray-700 font-semibold">{formatCurrency(stats.unpaidRent)}</span>
                 </div>
               )}
@@ -513,9 +513,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               {" "}
-              <TrendingUp className="w-6 h-6 text-indigo-600" />{" "}
+              <TrendingUp className="w-6 h-6 text-blue-600" />{" "}
             </div>{" "}
           </div>{" "}
           <div className="text-3xl font-bold text-dark mb-1">
@@ -661,10 +661,10 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             </button>{" "}
             <button
               onClick={() => onChangeView?.('financial')}
-              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl hover:shadow-md transition-all group"
+              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
-              <div className="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 {" "}
                 <BarChart3 className="w-7 h-7 text-white" />{" "}
               </div>{" "}

@@ -291,7 +291,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       vacant: "bg-amber-100 text-amber-700",
       rented: "bg-emerald-100 text-emerald-700",
       maintenance: "bg-blue-100 text-blue-700",
-      self_occupied: "bg-purple-100 text-purple-700",
+      self_occupied: "bg-primary-blue/10 text-primary-blue",
     };
     return colors[status] || "bg-gray-100 text-gray-700";
   };

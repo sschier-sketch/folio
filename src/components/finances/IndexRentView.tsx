@@ -130,11 +130,11 @@ export default function IndexRentView() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "pending":
-        return <Clock className="w-5 h-5 text-yellow-500" />;
+        return <Clock className="w-5 h-5 text-amber-500" />;
       case "calculated":
         return <Calculator className="w-5 h-5 text-blue-500" />;
       case "notified":
-        return <AlertCircle className="w-5 h-5 text-orange-500" />;
+        return <AlertCircle className="w-5 h-5 text-amber-500" />;
       case "applied":
         return <CheckCircle className="w-5 h-5 text-green-500" />;
       default:
@@ -300,10 +300,10 @@ export default function IndexRentView() {
                     calc.status === "applied"
                       ? "bg-green-100 text-green-700"
                       : calc.status === "notified"
-                      ? "bg-orange-100 text-orange-700"
+                      ? "bg-amber-100 text-amber-700"
                       : calc.status === "calculated"
                       ? "bg-blue-100 text-blue-700"
-                      : "bg-yellow-100 text-yellow-700"
+                      : "bg-amber-100 text-amber-700"
                   }`}
                 >
                   {getStatusText(calc.status)}

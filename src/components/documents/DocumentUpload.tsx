@@ -320,19 +320,19 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                 storagePercentage > 90
                   ? "bg-red-600"
                   : storagePercentage > 70
-                  ? "bg-orange-500"
+                  ? "bg-amber-500"
                   : "bg-blue-600"
               }`}
               style={{ width: `${Math.min(storagePercentage, 100)}%` }}
             ></div>
           </div>
           {storagePercentage > 80 && (
-            <p className="text-xs text-orange-600">
+            <p className="text-xs text-amber-600">
               {storagePercentage > 90
                 ? "Speicher fast voll!"
                 : "Speicher wird knapp."}{" "}
               {!isPro && (
-                <button className="underline hover:text-orange-700">
+                <button className="underline hover:text-amber-700">
                   Auf Pro upgraden für 2GB
                 </button>
               )}

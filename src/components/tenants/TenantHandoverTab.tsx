@@ -692,8 +692,8 @@ export default function TenantHandoverTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center shrink-0">
-                <Image className="w-4 h-4 text-violet-600" />
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                <Image className="w-4 h-4 text-blue-600" />
               </div>
               <div>
                 <h4 className="font-semibold text-dark mb-1">Foto-Upload</h4>

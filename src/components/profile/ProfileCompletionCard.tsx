@@ -110,7 +110,7 @@ export default function ProfileCompletionCard({ onStartWizard }: ProfileCompleti
   const progress = (completionData.completedSteps / completionData.totalSteps) * 100;
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-sm">
+    <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6 shadow-sm">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">

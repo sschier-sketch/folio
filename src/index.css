@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --color-primary: #008CFF;
+    --color-dark: #131719;
+    --color-white: #FFFFFF;
+    --color-cloud: #EDEFF7;
+    --color-smoke: #D3D6E0;
+    --color-steel: #BCBFCC;
+    --color-space: #9DA2B3;
+    --color-graphite: #6E7180;
+    --color-arsenic: #40424D;
+    --color-phantom: #1E1E24;
+    --color-black: #000000;
+  }
+
+  body {
+    @apply bg-white text-gray-800;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

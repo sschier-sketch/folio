@@ -118,7 +118,7 @@ export default function TicketsView({ initialTicketId }: TicketsViewProps) {
       case "urgent":
         return "bg-red-100 text-red-800";
       case "high":
-        return "bg-orange-100 text-orange-800";
+        return "bg-amber-100 text-amber-800";
       case "medium":
         return "bg-amber-100 text-amber-800";
       case "low":

@@ -14,8 +14,8 @@ export default function IntelligenceView() {
       <div className="space-y-6">
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-violet-100 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-violet-600" />
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-blue-600" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-dark">
@@ -28,9 +28,9 @@ export default function IntelligenceView() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-violet-50 rounded-lg p-4">
-              <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center mb-3">
-                <Lightbulb className="w-5 h-5 text-violet-600" />
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
+                <Lightbulb className="w-5 h-5 text-blue-600" />
               </div>
               <div className="text-2xl font-bold text-dark mb-1">12</div>
               <div className="text-sm text-gray-600">Erkannte Muster</div>
@@ -206,8 +206,8 @@ export default function IntelligenceView() {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4 text-violet-600" />
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-blue-600" />
               </div>
               <div>
                 <h4 className="font-semibold text-dark mb-1">
@@ -223,10 +223,10 @@ export default function IntelligenceView() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-violet-50 to-blue-50 border border-violet-200 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <Sparkles className="w-5 h-5 text-violet-600 mt-0.5" />
-            <div className="text-sm text-violet-900">
+            <Sparkles className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div className="text-sm text-blue-900">
               <p className="font-semibold mb-1">KI-Power für Ihre Finanzen:</p>
               <p>
                 Unsere KI analysiert kontinuierlich Ihre Finanzströme,

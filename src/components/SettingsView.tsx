@@ -205,7 +205,7 @@ export default function SettingsView({
       },
       enterprise: {
         label: t("settings.plan.enterprise"),
-        color: "bg-purple-100 text-purple-700",
+        color: "bg-primary-blue/10 text-primary-blue",
       },
     };
     const planInfo = planMap[plan as keyof typeof planMap] || planMap.free;
@@ -230,7 +230,7 @@ export default function SettingsView({
       },
       planned: {
         label: t("settings.feedback.status.planned"),
-        color: "bg-purple-100 text-purple-700",
+        color: "bg-primary-blue/10 text-primary-blue",
       },
       implemented: {
         label: t("settings.feedback.status.implemented"),

@@ -175,12 +175,12 @@ export default function TenantPortalMeters({
 
   const getMeterTypeColor = (type: string) => {
     const colors: { [key: string]: string } = {
-      strom: "bg-yellow-100 text-yellow-700",
-      gas: "bg-orange-100 text-orange-700",
+      strom: "bg-amber-100 text-amber-700",
+      gas: "bg-amber-100 text-amber-700",
       wasser_kalt: "bg-blue-100 text-blue-700",
       wasser_warm: "bg-red-100 text-red-700",
-      wasser_gesamt: "bg-cyan-100 text-cyan-700",
-      fernwaerme: "bg-purple-100 text-purple-700",
+      wasser_gesamt: "bg-blue-100 text-blue-700",
+      fernwaerme: "bg-primary-blue/10 text-primary-blue",
       heizung: "bg-red-100 text-red-700",
     };
     return colors[type] || "bg-gray-100 text-gray-700";

@@ -388,8 +388,8 @@ export default function CashflowView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-            <ArrowDown className="w-6 h-6 text-orange-600" />
+          <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
+            <ArrowDown className="w-6 h-6 text-amber-600" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {totalLoanPayments.toFixed(2)} €
@@ -449,7 +449,7 @@ export default function CashflowView() {
                   <span className="text-red-600 font-medium">
                     -{data.expenses.toFixed(2)} €
                   </span>
-                  <span className="text-orange-600 font-medium">
+                  <span className="text-amber-600 font-medium">
                     -{data.loanPayments.toFixed(2)} €
                   </span>
                   <span
@@ -498,7 +498,7 @@ export default function CashflowView() {
                   </div>
                 </div>
                 <div
-                  className="absolute top-0 left-0 h-full bg-orange-500 opacity-50 hover:opacity-70 transition-opacity group"
+                  className="absolute top-0 left-0 h-full bg-amber-500 opacity-50 hover:opacity-70 transition-opacity group"
                   style={{
                     width: `${((data.expenses + data.loanPayments) / maxValue) * 100}%`,
                   }}

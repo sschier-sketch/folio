@@ -235,34 +235,34 @@ export default function PropertyStatistics({
               {" "}
               <div className="flex items-center gap-2 mb-2">
                 {" "}
-                <Calendar className="w-5 h-5 text-orange-600" />{" "}
-                <div className="text-sm font-medium text-orange-900">
+                <Calendar className="w-5 h-5 text-amber-600" />{" "}
+                <div className="text-sm font-medium text-amber-900">
                   Break-Even
                 </div>{" "}
               </div>{" "}
-              <div className="text-2xl font-bold text-orange-900">
+              <div className="text-2xl font-bold text-amber-900">
                 {" "}
                 {monthsToBreakEven > 0
                   ? `${Math.floor(monthsToBreakEven / 12)}J ${monthsToBreakEven % 12}M`
                   : "N/A"}{" "}
               </div>{" "}
-              <div className="text-xs text-orange-700 mt-1">
+              <div className="text-xs text-amber-700 mt-1">
                 Bis zur Amortisation
               </div>{" "}
             </div>{" "}
-            <div className="bg-gradient-to-br from-violet-50 to-violet-100 rounded-full p-4 border border-violet-200">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-full p-4 border border-blue-200">
               {" "}
               <div className="flex items-center gap-2 mb-2">
                 {" "}
-                <PiggyBank className="w-5 h-5 text-violet-600" />{" "}
-                <div className="text-sm font-medium text-violet-900">
+                <PiggyBank className="w-5 h-5 text-blue-600" />{" "}
+                <div className="text-sm font-medium text-blue-900">
                   Gewinn bei Kreditende
                 </div>{" "}
               </div>{" "}
-              <div className="text-2xl font-bold text-violet-900">
+              <div className="text-2xl font-bold text-blue-900">
                 {formatCurrency(profitAtLoanEnd)}
               </div>{" "}
-              <div className="text-xs text-violet-700 mt-1">
+              <div className="text-xs text-blue-700 mt-1">
                 Erwarteter Gesamtgewinn
               </div>{" "}
             </div>{" "}
@@ -305,7 +305,7 @@ export default function PropertyStatistics({
                 <div className="text-sm text-gray-400 mb-1">
                   Restschuld
                 </div>{" "}
-                <div className="text-lg font-bold text-orange-600">
+                <div className="text-lg font-bold text-amber-600">
                   {formatCurrency(totalRemainingBalance)}
                 </div>{" "}
               </div>{" "}
@@ -368,26 +368,26 @@ export default function PropertyStatistics({
                 <TrendingDown className="w-8 h-8 text-red-600" />{" "}
               </div>{" "}
               <div
-                className={`flex items-center justify-between p-4 rounded-lg border ${monthlyRent >= monthlyLoanPayment ? "bg-emerald-50 border-emerald-200" : "bg-orange-50 border-orange-200"}`}
+                className={`flex items-center justify-between p-4 rounded-lg border ${monthlyRent >= monthlyLoanPayment ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}
               >
                 {" "}
                 <div>
                   {" "}
                   <div
-                    className={`text-sm font-medium ${monthlyRent >= monthlyLoanPayment ? "text-emerald-600" : "text-orange-600"}`}
+                    className={`text-sm font-medium ${monthlyRent >= monthlyLoanPayment ? "text-emerald-600" : "text-amber-600"}`}
                   >
                     {" "}
                     Monatlicher Cashflow{" "}
                   </div>{" "}
                   <div
-                    className={`text-2xl font-bold mt-1 ${monthlyRent >= monthlyLoanPayment ? "text-emerald-900" : "text-orange-900"}`}
+                    className={`text-2xl font-bold mt-1 ${monthlyRent >= monthlyLoanPayment ? "text-emerald-900" : "text-amber-900"}`}
                   >
                     {" "}
                     {formatCurrency(monthlyRent - monthlyLoanPayment)}{" "}
                   </div>{" "}
                 </div>{" "}
                 <DollarSign
-                  className={`w-8 h-8 ${monthlyRent >= monthlyLoanPayment ? "text-emerald-600" : "text-orange-600"}`}
+                  className={`w-8 h-8 ${monthlyRent >= monthlyLoanPayment ? "text-emerald-600" : "text-amber-600"}`}
                 />{" "}
               </div>{" "}
             </div>{" "}
@@ -407,7 +407,7 @@ export default function PropertyStatistics({
                     Deckung der Gesamtrate
                   </span>{" "}
                   <span
-                    className={`text-lg font-bold ${rentCoverageRatio >= 100 ? "text-emerald-600" : rentCoverageRatio >= 80 ? "text-orange-600" : "text-red-600"}`}
+                    className={`text-lg font-bold ${rentCoverageRatio >= 100 ? "text-emerald-600" : rentCoverageRatio >= 80 ? "text-amber-600" : "text-red-600"}`}
                   >
                     {" "}
                     {formatPercent(rentCoverageRatio)}{" "}
@@ -416,7 +416,7 @@ export default function PropertyStatistics({
                 <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                   {" "}
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${rentCoverageRatio >= 100 ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : rentCoverageRatio >= 80 ? "bg-gradient-to-r from-orange-500 to-orange-600" : "bg-gradient-to-r from-red-500 to-red-600"}`}
+                    className={`h-full rounded-full transition-all duration-500 ${rentCoverageRatio >= 100 ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : rentCoverageRatio >= 80 ? "bg-gradient-to-r from-amber-500 to-amber-600" : "bg-gradient-to-r from-red-500 to-red-600"}`}
                     style={{ width: `${Math.min(rentCoverageRatio, 100)}%` }}
                   />{" "}
                 </div>{" "}
@@ -437,7 +437,7 @@ export default function PropertyStatistics({
                     Deckung der Tilgung
                   </span>{" "}
                   <span
-                    className={`text-lg font-bold ${principalCoverage >= 100 ? "text-emerald-600" : principalCoverage >= 50 ? "text-orange-600" : "text-red-600"}`}
+                    className={`text-lg font-bold ${principalCoverage >= 100 ? "text-emerald-600" : principalCoverage >= 50 ? "text-amber-600" : "text-red-600"}`}
                   >
                     {" "}
                     {formatPercent(principalCoverage)}{" "}
@@ -446,7 +446,7 @@ export default function PropertyStatistics({
                 <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                   {" "}
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${principalCoverage >= 100 ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : principalCoverage >= 50 ? "bg-gradient-to-r from-orange-500 to-orange-600" : "bg-gradient-to-r from-red-500 to-red-600"}`}
+                    className={`h-full rounded-full transition-all duration-500 ${principalCoverage >= 100 ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : principalCoverage >= 50 ? "bg-gradient-to-r from-amber-500 to-amber-600" : "bg-gradient-to-r from-red-500 to-red-600"}`}
                     style={{ width: `${Math.min(principalCoverage, 100)}%` }}
                   />{" "}
                 </div>{" "}
