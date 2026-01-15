@@ -192,7 +192,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
 
   const getAssociationLabel = (associations: Association[]) => {
     if (!associations || associations.length === 0) {
-      return <span className="text-gray-400 italic">Nicht zugeordnet</span>;
+      return <span className="text-sm text-gray-400 italic">Nicht zugeordnet</span>;
     }
 
     const firstAssoc = associations[0];
@@ -210,7 +210,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
       label += ` (+${associations.length - 1})`;
     }
 
-    return <span className="text-gray-700">{label}</span>;
+    return <span className="text-sm text-gray-700">{label}</span>;
   };
 
   const filteredDocuments = documents.filter((doc) => {
@@ -494,16 +494,16 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                         {getDocumentTypeLabel(doc.document_type)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       {getAssociationLabel(doc.associations || [])}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
                         {formatDate(doc.upload_date)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {formatFileSize(doc.file_size)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

@@ -267,7 +267,7 @@ export default function BillingPreview() {
                         </h4>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm text-gray-400 mb-1">
+                        <div className="text-sm text-gray-500 mb-1">
                           Gesamtbetrag
                         </div>
                         <div className="text-2xl font-bold text-dark">
@@ -305,7 +305,7 @@ export default function BillingPreview() {
 
                     <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
                       <div>
-                        <div className="text-xs text-gray-400 mb-1">
+                        <div className="text-xs text-gray-500 mb-1">
                           Vorauszahlungen
                         </div>
                         <div className="text-lg font-semibold text-dark">
@@ -313,7 +313,7 @@ export default function BillingPreview() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-400 mb-1">
+                        <div className="text-xs text-gray-500 mb-1">
                           Kostenanteil
                         </div>
                         <div className="text-lg font-semibold text-dark">
@@ -321,7 +321,7 @@ export default function BillingPreview() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-400 mb-1">
+                        <div className="text-xs text-gray-500 mb-1">
                           Nachzahlung
                         </div>
                         <div

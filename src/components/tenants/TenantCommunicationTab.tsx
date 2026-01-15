@@ -482,7 +482,7 @@ export default function TenantCommunicationTab({
                             )}
                           </span>
                           <span
-                            className={`px-2 py-0.5 rounded text-xs font-medium ${getTypeColor(
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(
                               comm.communication_type
                             )}`}
                           >
@@ -490,12 +490,12 @@ export default function TenantCommunicationTab({
                             {getTypeLabel(comm.communication_type)}
                           </span>
                           {comm.is_internal && (
-                            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-medium">
+                            <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
                               Intern
                             </span>
                           )}
                           {comm.is_deleted && (
-                            <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-medium">
+                            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
                               Gelöscht
                             </span>
                           )}
@@ -535,7 +535,7 @@ export default function TenantCommunicationTab({
                         )}
                         {comm.is_ticket && comm.ticket_status && (
                           <div className="mt-2 flex items-center gap-2">
-                            <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                            <span className="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full">
                               Status: {getTicketStatusLabel(comm.ticket_status)}
                             </span>
                             <span className="text-xs text-gray-400">

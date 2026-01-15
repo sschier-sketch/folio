@@ -889,7 +889,6 @@ export default function FinancialAnalysisView() {
                     {
                       key: "year",
                       header: "Jahr",
-                      align: "left",
                       render: (proj: ProjectionData) => (
                         <span className="text-sm font-medium text-dark">
                           Jahr {proj.year}
@@ -899,7 +898,6 @@ export default function FinancialAnalysisView() {
                     {
                       key: "revenue",
                       header: "Einnahmen",
-                      align: "right",
                       render: (proj: ProjectionData) => (
                         <span className="text-sm font-semibold text-emerald-600">
                           {formatCurrency(proj.revenue)}
@@ -909,7 +907,6 @@ export default function FinancialAnalysisView() {
                     {
                       key: "expenses",
                       header: "Ausgaben",
-                      align: "right",
                       render: (proj: ProjectionData) => (
                         <span className="text-sm font-semibold text-red-600">
                           {formatCurrency(proj.expenses)}
@@ -919,7 +916,6 @@ export default function FinancialAnalysisView() {
                     {
                       key: "netIncome",
                       header: "Nettoeinkommen",
-                      align: "right",
                       render: (proj: ProjectionData) => (
                         <span className={`text-sm font-semibold ${proj.netIncome >= 0 ? "text-primary-blue" : "text-amber-600"}`}>
                           {formatCurrency(proj.netIncome)}

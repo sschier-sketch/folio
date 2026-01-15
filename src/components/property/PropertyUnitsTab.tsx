@@ -366,13 +366,13 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                   <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Status
                   </th>
-                  <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Miete
                   </th>
-                  <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Offene Miete
                   </th>
-                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktionen
                   </th>
                 </tr>
@@ -380,43 +380,43 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
               <tbody>
                 {units.map((unit) => (
                   <tr key={unit.id} className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-sm text-gray-700">
-                      <div className="font-medium">{unit.unit_number}</div>
+                    <td className="py-4 px-6">
+                      <div className="text-sm font-medium text-dark">{unit.unit_number}</div>
                       {unit.tenant && (
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-xs text-gray-500 mt-1">
                           {unit.tenant.first_name} {unit.tenant.last_name}
                         </div>
                       )}
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">
+                    <td className="py-4 px-6 text-sm text-gray-700">
                       {getUnitTypeLabel(unit.unit_type)}
                     </td>
                     {isPremium && (
-                      <td className="py-4 px-6 text-sm text-gray-600">
-                        {unit.floor !== null ? `${unit.floor}. OG` : "-"}
+                      <td className="py-4 px-6 text-sm text-gray-700">
+                        {unit.floor !== null ? `${unit.floor}. OG` : <span className="text-gray-400">-</span>}
                       </td>
                     )}
-                    <td className="py-4 px-6 text-sm text-gray-600">
-                      {unit.area_sqm ? `${unit.area_sqm} m²` : "-"}
+                    <td className="py-4 px-6 text-sm text-gray-700">
+                      {unit.area_sqm ? `${unit.area_sqm} m²` : <span className="text-gray-400">-</span>}
                     </td>
                     {isPremium && (
-                      <td className="py-4 px-6 text-sm text-gray-600">
-                        {unit.rooms || "-"}
+                      <td className="py-4 px-6 text-sm text-gray-700">
+                        {unit.rooms || <span className="text-gray-400">-</span>}
                       </td>
                     )}
                     <td className="py-4 px-6">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(unit.status)}`}
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(unit.status)}`}
                       >
                         {getStatusLabel(unit.status)}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-sm text-right text-gray-700 font-medium">
+                    <td className="py-4 px-6 text-sm font-medium text-dark">
                       {unit.rental_contract?.base_rent
                         ? `${unit.rental_contract.base_rent.toFixed(2)} €`
-                        : "-"}
+                        : <span className="text-gray-400">-</span>}
                     </td>
-                    <td className="py-4 px-6 text-sm text-right">
+                    <td className="py-4 px-6 text-sm">
                       {unit.outstanding_rent && unit.outstanding_rent > 0 ? (
                         <span className="text-red-600 font-semibold">
                           {unit.outstanding_rent.toFixed(2)} € offen
@@ -426,7 +426,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                       )}
                     </td>
                     <td className="py-4 px-6">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-end gap-2">
                         {unit.status !== "rented" && (
                           <button
                             onClick={() => {

@@ -228,7 +228,7 @@ export default function TenantPortalMeters({
                 <div className="flex items-center gap-2">
                   <Gauge className="w-5 h-5 text-primary-blue" />
                   <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${getMeterTypeColor(meter.meter_type)}`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${getMeterTypeColor(meter.meter_type)}`}
                   >
                     {getMeterTypeLabel(meter.meter_type)}
                   </span>
@@ -270,7 +270,7 @@ export default function TenantPortalMeters({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${getMeterTypeColor(reading.meter.meter_type)}`}
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getMeterTypeColor(reading.meter.meter_type)}`}
                       >
                         {getMeterTypeLabel(reading.meter.meter_type)}
                       </span>

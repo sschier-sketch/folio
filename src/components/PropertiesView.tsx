@@ -621,7 +621,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                           return (
                             <span
                               key={label.id}
-                              className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded font-medium ${colorClasses.bg} ${colorClasses.text}`}
+                              className={`inline-flex items-center gap-1 px-3 py-1 text-xs rounded-full font-medium ${colorClasses.bg} ${colorClasses.text}`}
                             >
                               {label.label}
                               <button
@@ -635,7 +635,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                         })}
                         <button
                           onClick={() => setShowLabelModal(property.id)}
-                          className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
+                          className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded-full font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
                         >
                           <Tag className="w-3 h-3" />
                           Label

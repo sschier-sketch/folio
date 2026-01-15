@@ -29,7 +29,7 @@ export default function BillingHistoryView() {
                     01.01.2024 - 31.12.2024
                   </p>
                 </div>
-                <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded text-sm font-medium">
+                <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
                   Versendet
                 </span>
               </div>
@@ -62,7 +62,7 @@ export default function BillingHistoryView() {
                     01.01.2023 - 31.12.2023
                   </p>
                 </div>
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium">
+                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                   Archiviert
                 </span>
               </div>

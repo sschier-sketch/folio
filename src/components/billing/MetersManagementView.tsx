@@ -426,7 +426,7 @@ export default function MetersManagementView({
                           Nr: {meter.meter_number}
                         </div>
                         {meter.location && (
-                          <div className="text-xs text-gray-400 mt-1">
+                          <div className="text-xs text-gray-500 mt-1">
                             {meter.location}
                           </div>
                         )}

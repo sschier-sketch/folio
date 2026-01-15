@@ -94,7 +94,7 @@ export default function ReceiptsView() {
           <div className="text-2xl font-bold text-dark mb-1">
             {receipts.filter((r) => r.status === "open").length}
           </div>
-          <div className="text-sm text-gray-400">Offene Belege</div>
+          <div className="text-sm text-gray-500">Offene Belege</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
@@ -104,7 +104,7 @@ export default function ReceiptsView() {
           <div className="text-2xl font-bold text-dark mb-1">
             {receipts.filter((r) => r.status === "booked").length}
           </div>
-          <div className="text-sm text-gray-400">Gebuchte Belege</div>
+          <div className="text-sm text-gray-500">Gebuchte Belege</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
@@ -114,7 +114,7 @@ export default function ReceiptsView() {
           <div className="text-2xl font-bold text-dark mb-1">
             {receipts.filter((r) => r.status === "archived").length}
           </div>
-          <div className="text-sm text-gray-400">Archivierte Belege</div>
+          <div className="text-sm text-gray-500">Archivierte Belege</div>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ export default function ReceiptsView() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setFilter("all")}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   filter === "all"
                     ? "bg-primary-blue text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -135,7 +135,7 @@ export default function ReceiptsView() {
               </button>
               <button
                 onClick={() => setFilter("open")}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   filter === "open"
                     ? "bg-primary-blue text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -145,7 +145,7 @@ export default function ReceiptsView() {
               </button>
               <button
                 onClick={() => setFilter("booked")}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   filter === "booked"
                     ? "bg-primary-blue text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -155,7 +155,7 @@ export default function ReceiptsView() {
               </button>
               <button
                 onClick={() => setFilter("archived")}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   filter === "archived"
                     ? "bg-primary-blue text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -205,23 +205,23 @@ export default function ReceiptsView() {
               <tbody>
                 {receipts.map((receipt) => (
                   <tr key={receipt.id} className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-sm text-gray-700">
+                    <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
                         <Receipt className="w-4 h-4 text-gray-400" />
-                        {receipt.file_name}
+                        <span className="text-sm font-medium text-dark">{receipt.file_name}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-400">
+                    <td className="py-4 px-6 text-sm text-gray-700">
                       {formatFileSize(receipt.file_size)}
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-400">
+                    <td className="py-4 px-6 text-sm text-gray-700">
                       {new Date(receipt.uploaded_at).toLocaleDateString(
                         "de-DE"
                       )}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                           receipt.status
                         )}`}
                       >
@@ -232,10 +232,10 @@ export default function ReceiptsView() {
                       {receipt.expense_id ? (
                         <div className="flex items-center justify-center gap-1 text-emerald-600">
                           <LinkIcon className="w-4 h-4" />
-                          <span className="text-xs">Verknüpft</span>
+                          <span className="text-xs font-medium">Verknüpft</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-500">
                           Nicht verknüpft
                         </span>
                       )}

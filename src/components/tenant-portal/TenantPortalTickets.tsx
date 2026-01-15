@@ -535,7 +535,7 @@ export default function TenantPortalTickets({
                       <div className="font-medium text-dark">
                         {ticket.subject}
                       </div>
-                      <div className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                      <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                         <Tag className="w-3 h-3" />
                         {getCategoryLabel(ticket.category)}
                       </div>
@@ -548,7 +548,7 @@ export default function TenantPortalTickets({
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(ticket.priority)}`}
                       >
                         {getPriorityText(ticket.priority)}
                       </span>

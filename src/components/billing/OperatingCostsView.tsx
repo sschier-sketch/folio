@@ -287,16 +287,16 @@ export default function OperatingCostsView() {
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                         Kostenart
                       </th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                         Betrag
                       </th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                         Umlageschlüssel
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                         Notizen
                       </th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
                         Aktionen
                       </th>
                     </tr>
@@ -307,18 +307,18 @@ export default function OperatingCostsView() {
                         <td className="py-3 px-4 text-sm text-gray-700">
                           {getCostTypeName(cost.cost_type_id)}
                         </td>
-                        <td className="py-3 px-4 text-sm text-right font-medium text-dark">
+                        <td className="py-3 px-4 text-sm font-medium text-dark">
                           {cost.amount.toFixed(2)} €
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                        <td className="py-3 px-4">
+                          <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                             {getAllocationKeyLabel(cost.allocation_key)}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-400">
-                          {cost.notes || "-"}
+                        <td className="py-3 px-4 text-sm text-gray-700">
+                          {cost.notes || <span className="text-gray-400">-</span>}
                         </td>
-                        <td className="py-3 px-4 text-center">
+                        <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => handleDeleteCost(cost.id)}
                             className="text-red-500 hover:text-red-700 transition-colors"
@@ -334,7 +334,7 @@ export default function OperatingCostsView() {
                       <td className="py-3 px-4 text-sm font-semibold text-dark">
                         Gesamt
                       </td>
-                      <td className="py-3 px-4 text-sm text-right font-bold text-dark">
+                      <td className="py-3 px-4 text-sm font-bold text-dark">
                         {totalCosts.toFixed(2)} €
                       </td>
                       <td colSpan={3}></td>

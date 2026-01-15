@@ -186,7 +186,7 @@ export default function SettingsView({
     const roleInfo = roleMap[role as keyof typeof roleMap] || roleMap.owner;
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2 py-1 ${roleInfo.color} rounded text-xs font-medium`}
+        className={`inline-flex items-center gap-1 px-3 py-1 ${roleInfo.color} rounded-full text-xs font-medium`}
       >
         {" "}
         <Shield className="w-3 h-3" /> {roleInfo.label}{" "}
@@ -211,7 +211,7 @@ export default function SettingsView({
     const planInfo = planMap[plan as keyof typeof planMap] || planMap.free;
     return (
       <span
-        className={`inline-flex items-center px-3 py-1.5 ${planInfo.color} rounded-lg text-sm font-semibold`}
+        className={`inline-flex items-center px-3 py-1.5 ${planInfo.color} rounded-full text-sm font-semibold`}
       >
         {" "}
         {planInfo.label}{" "}
@@ -241,7 +241,7 @@ export default function SettingsView({
       statusMap[status as keyof typeof statusMap] || statusMap.pending;
     return (
       <span
-        className={`inline-flex items-center px-2 py-1 ${statusInfo.color} rounded text-xs font-medium`}
+        className={`inline-flex items-center px-3 py-1 ${statusInfo.color} rounded-full text-xs font-medium`}
       >
         {" "}
         {statusInfo.label}{" "}

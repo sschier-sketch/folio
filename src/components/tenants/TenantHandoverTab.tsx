@@ -318,7 +318,7 @@ export default function TenantHandoverTab({
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <span
-                          className={`px-2 py-1 rounded text-sm font-medium ${getTypeColor(
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(
                             protocol.handover_type
                           )}`}
                         >
@@ -331,7 +331,7 @@ export default function TenantHandoverTab({
                         </span>
                         {protocol.status && (
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
                               protocol.status === "final"
                                 ? "bg-green-100 text-green-700"
                                 : "bg-gray-100 text-gray-700"
@@ -548,7 +548,7 @@ export default function TenantHandoverTab({
                                     <div className="text-xs text-gray-600 mt-1">{item.notes}</div>
                                   )}
                                 </div>
-                                <span className={`text-xs px-2 py-1 rounded ${
+                                <span className={`text-xs px-3 py-1 rounded-full ${
                                   item.status === 'good' ? 'bg-emerald-100 text-emerald-700' :
                                   item.status === 'damaged' ? 'bg-amber-100 text-amber-700' :
                                   'bg-red-100 text-red-700'

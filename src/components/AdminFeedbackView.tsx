@@ -174,7 +174,7 @@ export function AdminFeedbackView() {
 
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2 py-1 ${config.color} rounded text-xs font-medium`}
+        className={`inline-flex items-center gap-1 px-3 py-1 ${config.color} rounded-full text-xs font-medium`}
       >
         <Icon className="w-3 h-3" />
         {config.label}

@@ -452,7 +452,7 @@ export default function TenantPortal() {
                         #{ticket.ticket_number}{" "}
                       </span>{" "}
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(ticket.priority)}`}
                       >
                         {" "}
                         {getPriorityText(ticket.priority)}{" "}

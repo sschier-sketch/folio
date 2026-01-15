@@ -608,6 +608,7 @@ export default function RentPaymentsView() {
           {
             key: "actions",
             header: "Aktion",
+            align: "right",
             render: (payment: RentPayment) => (
               <ActionsCell>
                 {payment.payment_status === 'paid' ? (

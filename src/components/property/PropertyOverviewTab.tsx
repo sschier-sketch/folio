@@ -723,7 +723,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                           <div className="font-semibold text-dark">
                             {loan.lender_name}
                           </div>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${status.color}`}>
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
                             <StatusIcon className="w-3 h-3" />
                             {status.label}
                           </span>

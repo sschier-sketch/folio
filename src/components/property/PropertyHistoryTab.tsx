@@ -162,7 +162,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2 py-1 bg-white text-xs font-medium text-gray-700 rounded">
+                      <span className="px-3 py-1 bg-white text-xs font-medium text-gray-700 rounded-full">
                         {getEventTypeLabel(entry.event_type)}
                       </span>
                       <span className="text-xs text-gray-400">

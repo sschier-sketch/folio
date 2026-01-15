@@ -176,7 +176,7 @@ export default function TenantPortalDocuments({
                     {document.file_name}
                   </h3>
                   <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${getDocumentTypeColor(document.document_type)}`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${getDocumentTypeColor(document.document_type)}`}
                   >
                     {getDocumentTypeLabel(document.document_type)}
                   </span>

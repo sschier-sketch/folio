@@ -480,7 +480,7 @@ export default function TenantContractTab({
                   <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Hochgeladen
                   </th>
-                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktionen
                   </th>
                 </tr>
@@ -492,35 +492,35 @@ export default function TenantContractTab({
                     className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
                     onClick={() => handleViewDocument(doc.id)}
                   >
-                    <td className="py-4 px-6 text-sm text-gray-700">
+                    <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-gray-400" />
                         <div>
-                          <div className="font-medium">{doc.file_name}</div>
+                          <div className="text-sm font-medium text-dark">{doc.file_name}</div>
                           {doc.description && (
-                            <div className="text-xs text-gray-400 mt-0.5">
+                            <div className="text-xs text-gray-500 mt-0.5">
                               {doc.description}
                             </div>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                    <td className="py-4 px-6 text-sm text-gray-700">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                         {getDocumentTypeLabel(doc.document_type)}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-400">
+                    <td className="py-4 px-6 text-sm text-gray-700">
                       {formatFileSize(doc.file_size)}
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-400">
+                    <td className="py-4 px-6 text-sm text-gray-700">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
                         {formatDate(doc.upload_date)}
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -585,7 +585,7 @@ export default function TenantContractTab({
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Dokumenttyp *
                 </label>
                 <select
@@ -603,7 +603,7 @@ export default function TenantContractTab({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Beschreibung (optional)
                 </label>
                 <input
@@ -636,7 +636,7 @@ export default function TenantContractTab({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Datei(en) auswählen *
                 </label>
                 <div
@@ -676,7 +676,7 @@ export default function TenantContractTab({
 
               {uploadFiles.length > 0 && (
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-400">
+                  <label className="block text-sm font-medium text-gray-700">
                     Ausgewählte Dateien ({uploadFiles.length})
                   </label>
                   {uploadFiles.map((file) => (

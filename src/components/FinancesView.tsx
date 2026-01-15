@@ -65,7 +65,7 @@ export default function FinancesView() {
                   <Icon className="w-5 h-5" />
                   {tab.label}
                   {tab.premium && (
-                    <span className="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded font-medium">
+                    <span className="px-3 py-1 text-xs bg-amber-100 text-amber-700 rounded-full font-medium">
                       Pro
                     </span>
                   )}

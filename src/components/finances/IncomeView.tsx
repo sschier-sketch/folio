@@ -600,7 +600,7 @@ export default function IncomeView() {
           <div className="text-2xl font-bold text-dark mb-1">
             {totalManualIncome.toFixed(2)} €
           </div>
-          <div className="text-sm text-gray-400">Sonstige Einnahmen</div>
+          <div className="text-sm text-gray-500">Sonstige Einnahmen</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
@@ -610,7 +610,7 @@ export default function IncomeView() {
           <div className="text-2xl font-bold text-dark mb-1">
             {rentalContracts.length}
           </div>
-          <div className="text-sm text-gray-400">Aktive Mietverträge</div>
+          <div className="text-sm text-gray-500">Aktive Mietverträge</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
@@ -620,7 +620,7 @@ export default function IncomeView() {
           <div className="text-2xl font-bold text-dark mb-1">
             {totalRentIncome.toFixed(2)} €
           </div>
-          <div className="text-sm text-gray-400">Monatliche Mieteinnahmen</div>
+          <div className="text-sm text-gray-500">Monatliche Mieteinnahmen</div>
         </div>
       </div>
 
@@ -679,7 +679,7 @@ export default function IncomeView() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Betrag
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -697,7 +697,7 @@ export default function IncomeView() {
                         day: "numeric"
                       })}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
+                    <td className="px-6 py-4 text-sm font-medium text-dark">
                       {income.description}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -708,10 +708,10 @@ export default function IncomeView() {
                         {getStatusLabel(income.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark">
                       +{parseFloat(income.amount.toString()).toFixed(2)} €
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center justify-end gap-2">
                         {income.document_id && (
                           <button
@@ -775,13 +775,13 @@ export default function IncomeView() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Objekt
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Kaltmiete
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     NK
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Gesamt
                   </th>
                 </tr>
@@ -805,13 +805,13 @@ export default function IncomeView() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {contract.properties?.name || "-"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {parseFloat(contract.base_rent.toString()).toFixed(2)} €
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {parseFloat(contract.additional_costs.toString()).toFixed(2)} €
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark">
                       {parseFloat(contract.total_rent.toString()).toFixed(2)} €
                     </td>
                   </tr>

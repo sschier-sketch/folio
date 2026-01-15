@@ -467,7 +467,6 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                 {
                   key: "rent",
                   header: "Warmmiete",
-                  align: "right",
                   render: (tenant: TenantWithDetails) => {
                     const currentContract =
                       tenant.contracts && tenant.contracts.length > 0
@@ -490,7 +489,6 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                 {
                   key: "rent_type",
                   header: "Mietart",
-                  align: "center",
                   render: (tenant: TenantWithDetails) => {
                     const currentContract =
                       tenant.contracts && tenant.contracts.length > 0
@@ -512,7 +510,6 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                 {
                   key: "status",
                   header: "Status",
-                  align: "center",
                   render: (tenant: TenantWithDetails) => {
                     const currentContract =
                       tenant.contracts && tenant.contracts.length > 0
@@ -533,7 +530,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                 {
                   key: "actions",
                   header: "Details",
-                  align: "center",
+                  align: "right",
                   render: (tenant: TenantWithDetails) => (
                     <ActionsCell>
                       <ActionButton

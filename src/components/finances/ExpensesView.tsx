@@ -543,7 +543,7 @@ export default function ExpensesView() {
           <div className="text-2xl font-bold text-dark mb-1">
             {totalExpenses.toFixed(2)} €
           </div>
-          <div className="text-sm text-gray-400">Gesamt-Ausgaben</div>
+          <div className="text-sm text-gray-500">Gesamt-Ausgaben</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
@@ -553,7 +553,7 @@ export default function ExpensesView() {
           <div className="text-2xl font-bold text-dark mb-1">
             {paidExpenses.toFixed(2)} €
           </div>
-          <div className="text-sm text-gray-400">Bezahlt</div>
+          <div className="text-sm text-gray-500">Bezahlt</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
@@ -563,7 +563,7 @@ export default function ExpensesView() {
           <div className="text-2xl font-bold text-dark mb-1">
             {openExpenses.toFixed(2)} €
           </div>
-          <div className="text-sm text-gray-400">Offen</div>
+          <div className="text-sm text-gray-500">Offen</div>
         </div>
       </div>
 
@@ -607,13 +607,13 @@ export default function ExpensesView() {
                   <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Objekt
                   </th>
-                  <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Betrag
                   </th>
-                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Status
                   </th>
-                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktionen
                   </th>
                 </tr>
@@ -626,30 +626,30 @@ export default function ExpensesView() {
                         "de-DE"
                       )}
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-700">
-                      <div className="font-medium">{expense.description}</div>
+                    <td className="py-4 px-6">
+                      <div className="text-sm font-medium text-dark">{expense.description}</div>
                       {expense.notes && (
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-xs text-gray-500 mt-1">
                           {expense.notes}
                         </div>
                       )}
                     </td>
-                    <td className="py-4 px-6 text-sm">
+                    <td className="py-4 px-6 text-sm text-gray-700">
                       <div className="flex items-center gap-2">
                         <Tag className="w-4 h-4 text-gray-400" />
                         {getCategoryName(expense.category_id)}
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm">
+                    <td className="py-4 px-6 text-sm text-gray-700">
                       <div className="flex items-center gap-2">
                         <Building className="w-4 h-4 text-gray-400" />
                         {getPropertyName(expense.property_id)}
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm text-right font-medium text-dark">
+                    <td className="py-4 px-6 text-sm font-medium text-dark">
                       {expense.amount.toFixed(2)} €
                     </td>
-                    <td className="py-4 px-6 text-center">
+                    <td className="py-4 px-6">
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                           expense.status
@@ -658,8 +658,8 @@ export default function ExpensesView() {
                         {getStatusLabel(expense.status)}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-center">
-                      <div className="flex items-center justify-center gap-2">
+                    <td className="py-4 px-6">
+                      <div className="flex items-center justify-end gap-2">
                         {expense.document_id && (
                           <button
                             onClick={() => handleDownloadDocument(expense.document_id!)}

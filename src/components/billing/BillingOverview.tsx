@@ -196,7 +196,7 @@ export default function BillingOverview() {
                             {period.name}
                           </h3>
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                               period.status
                             )}`}
                           >
