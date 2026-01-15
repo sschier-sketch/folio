@@ -70,8 +70,10 @@ export function AdminTicketsView() {
         );
       });
       setTickets(sortedTickets);
+      return sortedTickets;
     } catch (err) {
       console.error("Error loading tickets:", err);
+      return [];
     } finally {
       setLoading(false);
     }
@@ -166,11 +168,16 @@ export function AdminTicketsView() {
         console.warn("Email notification service unavailable:", emailError);
       }
 
-      await loadTickets();
+      const updatedTickets = await loadTickets();
+      const updatedTicket = updatedTickets.find((t) => t.id === selectedTicket.id);
+
+      if (updatedTicket) {
+        setSelectedTicket(updatedTicket);
+      }
+
       await loadMessages(selectedTicket.id);
       setReplyMessage("");
       setCloseAfterReply(false);
-      setSelectedTicket({ ...selectedTicket, status: newStatus });
     } catch (err) {
       console.error("Error sending reply:", err);
       alert("Fehler beim Senden der Antwort");
@@ -196,8 +203,13 @@ export function AdminTicketsView() {
         .update(updateData)
         .eq("id", selectedTicket.id);
       if (error) throw error;
-      await loadTickets();
-      setSelectedTicket({ ...selectedTicket, status: newStatus });
+
+      const updatedTickets = await loadTickets();
+      const updatedTicket = updatedTickets.find((t) => t.id === selectedTicket.id);
+
+      if (updatedTicket) {
+        setSelectedTicket(updatedTicket);
+      }
     } catch (err) {
       console.error("Error changing ticket status:", err);
       alert("Fehler beim Ändern des Status");
