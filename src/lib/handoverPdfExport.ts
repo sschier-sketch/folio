@@ -38,8 +38,9 @@ export async function generateHandoverPDF(
     try {
       doc.setFontSize(24);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(31, 120, 180);
-      doc.text("Rentably", 20, yPos);
+      doc.setTextColor(60, 138, 247);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      doc.text("rentab.ly", pageWidth / 2, yPos, { align: "center" });
       yPos += 12;
     } catch (error) {
       console.error("Error adding logo:", error);
@@ -133,7 +134,7 @@ export async function generateHandoverPDF(
       head: [["Typ", "Zählernummer", "Stand", "Einheit", "Ablesedatum"]],
       body: meterTableData,
       theme: "grid",
-      headStyles: { fillColor: [31, 120, 180], textColor: 255 },
+      headStyles: { fillColor: [60, 138, 247], textColor: 255 },
       margin: { left: 20, right: 20 },
       styles: { fontSize: 9 },
     });
@@ -163,7 +164,7 @@ export async function generateHandoverPDF(
       head: [["Punkt", "Status", "Anmerkungen"]],
       body: checklistTableData,
       theme: "grid",
-      headStyles: { fillColor: [31, 120, 180], textColor: 255 },
+      headStyles: { fillColor: [60, 138, 247], textColor: 255 },
       margin: { left: 20, right: 20 },
       styles: { fontSize: 9 },
       columnStyles: {

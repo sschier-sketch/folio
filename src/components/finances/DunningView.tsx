@@ -194,6 +194,58 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
         .replace(/\[DUE_DATE\]/g, formatDate(payment.due_date))
         .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount));
 
+      const htmlBody = `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#fff}table{border-collapse:collapse}</style>
+</head>
+<body>
+<table width="100%" style="background:#fff">
+<tr><td align="center" style="padding:20px 0">
+<table width="600" style="background:#faf8f8;border-radius:8px">
+<tr><td style="padding:30px">
+<table width="100%">
+<tr><td align="center" style="padding-bottom:30px">
+<a href="https://rentab.ly"><img src="https://6f36f82794.imgdist.com/pub/bfra/2bnm3c1v/dzm/8g5/nzj/rentably-logo.svg" alt="rentab.ly" width="200"></a>
+</td></tr></table>
+<table width="100%">
+<tr><td style="border-top:1px solid #ddd;padding:20px 0"></td></tr></table>
+<h1 style="margin:0 0 20px 0;color:#3c8af7;font-size:24px">${subject}</h1>
+<div style="color:#141719;font-size:14px;line-height:1.6;white-space:pre-wrap">
+${message}
+</div>
+<table width="100%">
+<tr><td style="border-top:1px solid #ddd;padding:20px 0"></td></tr></table>
+<p style="color:#666;font-size:12px;text-align:center;margin:0">© 2026 <a href="https://rentab.ly">rentab.ly</a></p>
+</td></tr></table>
+</td></tr></table>
+</body>
+</html>`;
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          to: tenantEmail,
+          subject,
+          html: htmlBody,
+          text: message
+        })
+      });
+
+      if (!emailResponse.ok) {
+        const errorData = await emailResponse.json();
+        throw new Error(`Email konnte nicht versendet werden: ${errorData.error || 'Unbekannter Fehler'}`);
+      }
+
       const { data: reminderData, error: reminderError } = await supabase
         .from("rent_payment_reminders")
         .insert({

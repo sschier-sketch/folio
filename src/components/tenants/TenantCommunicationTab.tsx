@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumFeatureGuard } from "../PremiumFeatureGuard";
 import { sanitizeFileName } from "../../lib/utils";
+import { getCategoryLabel } from "../../lib/ticketUtils";
 
 interface TenantCommunicationTabProps {
   tenantId: string;
@@ -113,7 +114,7 @@ export default function TenantCommunicationTab({
             id: ticket.id,
             communication_type: "ticket",
             subject: ticket.subject,
-            content: `Ticket ${ticket.ticket_number} - ${ticket.category}`,
+            content: `Ticket ${ticket.ticket_number} - ${getCategoryLabel(ticket.category)}`,
             is_internal: false,
             created_at: ticket.created_at,
             is_ticket: true,
@@ -793,13 +794,7 @@ export default function TenantCommunicationTab({
                       Kategorie
                     </label>
                     <span className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium inline-block">
-                      {selectedTicket.category === "maintenance"
-                        ? "Wartung"
-                        : selectedTicket.category === "repair"
-                        ? "Reparatur"
-                        : selectedTicket.category === "complaint"
-                        ? "Beschwerde"
-                        : "Allgemein"}
+                      {getCategoryLabel(selectedTicket.category)}
                     </span>
                   </div>
                 </div>

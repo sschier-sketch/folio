@@ -394,7 +394,7 @@ export default function TenantHandoverTab({
                         ? protocol.meters.find((m: any) => m.type === "water")
                         : null;
                       const heatingMeter = Array.isArray(protocol.meters)
-                        ? protocol.meters.find((m: any) => m.type === "heating")
+                        ? protocol.meters.find((m: any) => m.type === "heating" || m.type === "heizung")
                         : null;
 
                       return (

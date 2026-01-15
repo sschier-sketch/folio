@@ -15,6 +15,7 @@ import {
   Tag,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { getCategoryLabel } from "../../lib/ticketUtils";
 
 interface Ticket {
   id: string;
@@ -189,7 +190,7 @@ export default function TenantPortalTickets({
               <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                 <p><strong>Ticket-Nummer:</strong> ${ticket.ticket_number}</p>
                 <p><strong>Betreff:</strong> ${newTicketForm.subject}</p>
-                <p><strong>Kategorie:</strong> ${newTicketForm.category}</p>
+                <p><strong>Kategorie:</strong> ${getCategoryLabel(newTicketForm.category)}</p>
                 <p><strong>Priorität:</strong> ${newTicketForm.priority}</p>
                 <p><strong>Nachricht:</strong></p>
                 <p style="white-space: pre-wrap;">${newTicketForm.message}</p>
@@ -536,10 +537,7 @@ export default function TenantPortalTickets({
                       </div>
                       <div className="text-xs text-gray-400 flex items-center gap-1 mt-1">
                         <Tag className="w-3 h-3" />
-                        {ticket.category === "general" && "Allgemein"}
-                        {ticket.category === "maintenance" && "Wartung"}
-                        {ticket.category === "repair" && "Reparatur"}
-                        {ticket.category === "complaint" && "Beschwerde"}
+                        {getCategoryLabel(ticket.category)}
                       </div>
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-700">
