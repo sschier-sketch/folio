@@ -282,6 +282,7 @@ export default function IncomeView() {
           file_name: uploadedFile.name,
           file_path: filePath,
           file_size: uploadedFile.size,
+          file_type: fileExt || "pdf",
           mime_type: uploadedFile.type,
           uploaded_by: user.id,
         });
