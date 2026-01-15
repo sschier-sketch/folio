@@ -312,27 +312,25 @@ export default function MieterportalView() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-3">
                         {contract?.portal_access_enabled ? (
                           <>
                             <button
                               onClick={() => handleImpersonateTenant(tenant)}
                               disabled={impersonating === tenant.id}
-                              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="text-primary-blue hover:text-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               title="Als Mieter anmelden"
                             >
                               <LogIn className="w-4 h-4" />
-                              <span className="hidden xl:inline">Anmelden</span>
                             </button>
                             {!tenant.portal_activated_at && (
                               <button
                                 onClick={() => handleSendActivationLink(tenant)}
                                 disabled={sendingInvite}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="text-primary-blue hover:text-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 title="Aktivierungslink per E-Mail senden"
                               >
                                 <Send className="w-4 h-4" />
-                                <span className="hidden xl:inline">E-Mail</span>
                               </button>
                             )}
                             <button
@@ -343,11 +341,10 @@ export default function MieterportalView() {
                                   true
                                 )
                               }
-                              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-all hover:shadow-sm"
+                              className="text-primary-blue hover:text-primary-blue transition-colors"
                               title="Zugang deaktivieren"
                             >
                               <X className="w-4 h-4" />
-                              <span className="hidden xl:inline">Deaktivieren</span>
                             </button>
                           </>
                         ) : (
@@ -359,11 +356,10 @@ export default function MieterportalView() {
                                 false
                               )
                             }
-                            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all hover:shadow-md"
+                            className="text-primary-blue hover:text-primary-blue transition-colors"
                             title="Zugang aktivieren"
                           >
                             <Check className="w-4 h-4" />
-                            <span>Aktivieren</span>
                           </button>
                         )}
                       </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Building2, CreditCard as Edit2, Trash2, TrendingUp, Euro, AlertCircle, CheckCircle, X, Tag, Download, FileDown, FileSpreadsheet, FileText, Grid3x3, List } from "lucide-react";
+import { Plus, Building2, CreditCard as Edit2, Trash2, TrendingUp, Euro, AlertCircle, CheckCircle, X, Tag, Download, FileDown, FileSpreadsheet, FileText, Grid3x3, List, Eye } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -777,28 +777,31 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                           </td>
                           <td className="py-4 px-6 text-sm font-medium text-dark">{formatCurrency(property.current_value)}</td>
                           <td className="py-4 px-6">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-3">
                               <button
                                 onClick={() => {
                                   setSelectedProperty(property);
                                   setShowDetails(true);
                                 }}
-                                className="px-3 py-1.5 text-sm text-primary-blue hover:bg-primary-blue/5 rounded transition-colors"
+                                className="text-primary-blue hover:text-primary-blue transition-colors"
+                                title="Details anzeigen"
                               >
-                                Details
+                                <Eye className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => {
                                   setSelectedProperty(property);
                                   setShowModal(true);
                                 }}
-                                className="p-1.5 text-gray-400 hover:text-primary-blue transition-colors"
+                                className="text-primary-blue hover:text-primary-blue transition-colors"
+                                title="Bearbeiten"
                               >
                                 <Edit2 className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDelete(property.id)}
-                                className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                                className="text-primary-blue hover:text-primary-blue transition-colors"
+                                title="Löschen"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>

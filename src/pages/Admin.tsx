@@ -558,7 +558,7 @@ export function Admin() {
                       <tr key={user.id} className="hover:bg-gray-50">
                         {" "}
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             {user.is_admin ? (
                               <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium" title="Administrator">
                                 <ShieldCheck className="w-3 h-3" />
@@ -619,7 +619,7 @@ export function Admin() {
                         </td>{" "}
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {" "}
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             {" "}
                             <button
                               onClick={() =>
@@ -636,7 +636,7 @@ export function Admin() {
                                 onClick={() =>
                                   handleCancelSubscription(user.id)
                                 }
-                                className="text-red-600 hover:text-red-800 transition-colors"
+                                className="text-primary-blue hover:text-primary-blue transition-colors"
                                 title="Abo beenden"
                               >
                                 {" "}
@@ -648,7 +648,7 @@ export function Admin() {
                                 onClick={() =>
                                   handleRevokeAdmin(user.id, user.email)
                                 }
-                                className="text-orange-600 hover:text-orange-800 transition-colors"
+                                className="text-primary-blue hover:text-primary-blue transition-colors"
                                 title="Admin-Rechte entziehen"
                               >
                                 {" "}
@@ -659,7 +659,7 @@ export function Admin() {
                                 onClick={() =>
                                   handleGrantAdmin(user.id, user.email)
                                 }
-                                className="text-green-600 hover:text-green-800 transition-colors"
+                                className="text-primary-blue hover:text-primary-blue transition-colors"
                                 title="Zum Admin machen"
                               >
                                 {" "}
@@ -671,7 +671,7 @@ export function Admin() {
                                 onClick={() =>
                                   handleUnbanUser(user.id, user.email)
                                 }
-                                className="text-emerald-600 hover:text-emerald-800 transition-colors"
+                                className="text-primary-blue hover:text-primary-blue transition-colors"
                                 title="Sperre aufheben"
                               >
                                 {" "}
@@ -682,7 +682,7 @@ export function Admin() {
                                 onClick={() =>
                                   handleBanUser(user.id, user.email)
                                 }
-                                className="text-gray-600 hover:text-gray-800 transition-colors"
+                                className="text-primary-blue hover:text-primary-blue transition-colors"
                                 title="Benutzer sperren"
                               >
                                 {" "}

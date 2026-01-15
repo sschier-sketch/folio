@@ -625,32 +625,33 @@ export default function RentPaymentsView() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {payment.payment_status === 'paid' ? (
-                        <button
-                          onClick={() => handleMarkAsUnpaid(payment.id)}
-                          className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium transition-colors"
-                          title="Als unbezahlt markieren"
-                        >
-                          <XCircle className="w-4 h-4" />
-                          <span>Als unbezahlt markieren</span>
-                        </button>
+                        <div className="flex items-center justify-center gap-3">
+                          <button
+                            onClick={() => handleMarkAsUnpaid(payment.id)}
+                            className="text-primary-blue hover:text-primary-blue transition-colors"
+                            title="Als unbezahlt markieren"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
                       ) : (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center gap-3">
                           <button
                             onClick={() => handleMarkAsPaid(payment.id)}
-                            className="inline-flex items-center gap-1 p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                            className="text-primary-blue hover:text-primary-blue transition-colors"
                             title="Als bezahlt markieren"
                           >
-                            <CheckCircle className="w-5 h-5" />
+                            <CheckCircle className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => {
                               setSelectedPayment(payment);
                               setShowPartialPaymentModal(true);
                             }}
-                            className="inline-flex items-center gap-1 p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="text-primary-blue hover:text-primary-blue transition-colors"
                             title="Teilzahlung erfassen"
                           >
-                            <Coins className="w-5 h-5" />
+                            <Coins className="w-4 h-4" />
                           </button>
                         </div>
                       )}
