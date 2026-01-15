@@ -237,11 +237,21 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
 
       const exportData = await Promise.all(
         properties.map(async (property) => {
-          const { data: units } = await supabase
-            .from("property_units")
-            .select("id, unit_number, status, size_sqm")
-            .eq("property_id", property.id)
-            .order("unit_number");
+          const [unitsRes, equipmentRes] = await Promise.all([
+            supabase
+              .from("property_units")
+              .select("id, unit_number, status, size_sqm, rooms, floor_number, cold_rent, total_rent")
+              .eq("property_id", property.id)
+              .order("unit_number"),
+            supabase
+              .from("property_equipment")
+              .select("*")
+              .eq("property_id", property.id)
+              .maybeSingle()
+          ]);
+
+          const units = unitsRes.data;
+          const equipment = equipmentRes.data;
 
           const unitsWithTenants = await Promise.all(
             (units || []).map(async (unit) => {
@@ -265,7 +275,11 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                   unit_number: unit.unit_number,
                   status: unit.status,
                   size_sqm: unit.size_sqm,
-                  monthly_rent: contract?.total_rent || contract?.monthly_rent,
+                  rooms: unit.rooms,
+                  floor_number: unit.floor_number,
+                  cold_rent: unit.cold_rent,
+                  total_rent: unit.total_rent,
+                  monthly_rent: contract?.total_rent || contract?.monthly_rent || unit.total_rent,
                 },
                 tenant: contract?.tenants ? {
                   name: (contract.tenants as any).name,
@@ -290,6 +304,24 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               description: property.description,
             },
             units: unitsWithTenants,
+            equipment: equipment ? {
+              heating_type: equipment.heating_type,
+              energy_source: equipment.energy_source,
+              construction_type: equipment.construction_type,
+              roof_type: equipment.roof_type,
+              parking_spots: equipment.parking_spots,
+              elevator: equipment.elevator,
+              balcony_terrace: equipment.balcony_terrace,
+              garden: equipment.garden,
+              basement: equipment.basement,
+              fitted_kitchen: equipment.fitted_kitchen,
+              wg_suitable: equipment.wg_suitable,
+              guest_wc: equipment.guest_wc,
+              housing_permit: equipment.housing_permit,
+              parking_type: equipment.parking_type,
+              equipment_notes: equipment.equipment_notes,
+              special_features: equipment.special_features,
+            } : undefined,
           };
         })
       );

@@ -929,17 +929,25 @@ export default function ExpensesView() {
                 <div className="relative">
                   <input
                     type="file"
+                    id="expense-file-upload"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) setUploadedFile(file);
                     }}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    className="hidden"
                     accept=".pdf,.jpg,.jpeg,.png"
                   />
+                  <label
+                    htmlFor="expense-file-upload"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-blue hover:bg-blue-50 transition-colors"
+                  >
+                    <Upload className="w-5 h-5 text-gray-400" />
+                    <span className="text-sm text-gray-600">Datei auswählen (PDF, JPG, PNG)</span>
+                  </label>
                   {uploadedFile && (
-                    <div className="mt-2 text-sm text-gray-600 flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      {uploadedFile.name}
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm text-blue-700 flex-1">{uploadedFile.name}</span>
                       <button
                         type="button"
                         onClick={() => setUploadedFile(null)}
@@ -1046,9 +1054,7 @@ export default function ExpensesView() {
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   <option value="open">Offen</option>
-                  <option value="pending">Ausstehend</option>
                   <option value="paid">Bezahlt</option>
-                  <option value="overdue">Überfällig</option>
                 </select>
               </div>
             </div>

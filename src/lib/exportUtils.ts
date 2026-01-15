@@ -19,7 +19,30 @@ interface ExportUnit {
   unit_number: string;
   status: string;
   size_sqm?: number;
+  rooms?: number;
+  floor_number?: number;
+  cold_rent?: number;
+  total_rent?: number;
   monthly_rent?: number;
+}
+
+interface ExportEquipment {
+  heating_type?: string;
+  energy_source?: string;
+  construction_type?: string;
+  roof_type?: string;
+  parking_spots?: number;
+  elevator?: boolean;
+  balcony_terrace?: boolean;
+  garden?: boolean;
+  basement?: boolean;
+  fitted_kitchen?: boolean;
+  wg_suitable?: boolean;
+  guest_wc?: boolean;
+  housing_permit?: boolean;
+  parking_type?: string;
+  equipment_notes?: string;
+  special_features?: string;
 }
 
 interface ExportTenant {
@@ -34,6 +57,7 @@ interface PropertyWithUnitsAndTenants {
     unit: ExportUnit;
     tenant?: ExportTenant;
   }>;
+  equipment?: ExportEquipment;
 }
 
 interface ExportContract {
@@ -95,6 +119,44 @@ const formatDate = (date: string | null): string => {
   return new Date(date).toLocaleDateString("de-DE");
 };
 
+const getHeatingTypeLabel = (type?: string): string => {
+  if (!type) return "-";
+  const labels: Record<string, string> = {
+    gas: "Gas",
+    oil: "Öl",
+    district_heating: "Fernwärme",
+    heat_pump: "Wärmepumpe",
+    electric: "Elektro",
+    other: "Sonstiges",
+  };
+  return labels[type] || type;
+};
+
+const getEnergySourceLabel = (source?: string): string => {
+  if (!source) return "-";
+  const labels: Record<string, string> = {
+    gas: "Gas",
+    oil: "Öl",
+    electricity: "Strom",
+    solar: "Solar",
+    district: "Fernwärme",
+    other: "Sonstiges",
+  };
+  return labels[source] || source;
+};
+
+const getConstructionTypeLabel = (type?: string): string => {
+  if (!type) return "-";
+  const labels: Record<string, string> = {
+    solid: "Massiv",
+    prefab: "Fertigbau",
+    wood: "Holzbau",
+    mixed: "Gemischt",
+    other: "Sonstiges",
+  };
+  return labels[type] || type;
+};
+
 export async function exportToPDF(data: PropertyWithUnitsAndTenants[] | TenantWithDetails[], type: 'properties' | 'tenants' = 'properties') {
   if (type === 'tenants') {
     return exportTenantsToPDF(data as TenantWithDetails[]);
@@ -154,23 +216,78 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
 
     yPosition = (doc as any).lastAutoTable.finalY + 10;
 
+    if (item.equipment) {
+      const equipmentInfo = [
+        ['Heizung', getHeatingTypeLabel(item.equipment.heating_type)],
+        ['Energiequelle', getEnergySourceLabel(item.equipment.energy_source)],
+        ['Bauweise', getConstructionTypeLabel(item.equipment.construction_type)],
+        ['Dachtyp', item.equipment.roof_type || '-'],
+        ['Stellplätze', item.equipment.parking_spots?.toString() || '0'],
+        ['Parkplatz-Typ', item.equipment.parking_type || '-'],
+        ['Aufzug', item.equipment.elevator ? 'Ja' : 'Nein'],
+        ['Balkon/Terrasse', item.equipment.balcony_terrace ? 'Ja' : 'Nein'],
+        ['Garten', item.equipment.garden ? 'Ja' : 'Nein'],
+        ['Keller', item.equipment.basement ? 'Ja' : 'Nein'],
+        ['Einbauküche', item.equipment.fitted_kitchen ? 'Ja' : 'Nein'],
+        ['WG geeignet', item.equipment.wg_suitable ? 'Ja' : 'Nein'],
+        ['Gäste-WC', item.equipment.guest_wc ? 'Ja' : 'Nein'],
+        ['Wohnberechtigungsschein', item.equipment.housing_permit ? 'Ja' : 'Nein'],
+      ];
+
+      if (item.equipment.equipment_notes) {
+        equipmentInfo.push(['Ausstattungsnotizen', item.equipment.equipment_notes]);
+      }
+      if (item.equipment.special_features) {
+        equipmentInfo.push(['Besonderheiten', item.equipment.special_features]);
+      }
+
+      autoTable(doc, {
+        startY: yPosition,
+        head: [['Ausstattung & Daten', '']],
+        body: equipmentInfo,
+        theme: 'grid',
+        headStyles: { fillColor: [59, 130, 246] },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 50 },
+          1: { cellWidth: 130 },
+        },
+        margin: { left: 14 },
+      });
+
+      yPosition = (doc as any).lastAutoTable.finalY + 10;
+    }
+
     if (item.units.length > 0) {
       const unitsData = item.units.map(u => [
         u.unit.unit_number,
         u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status,
+        u.unit.rooms?.toString() || '-',
+        u.unit.floor_number?.toString() || '-',
         u.unit.size_sqm ? `${u.unit.size_sqm} m²` : '-',
-        u.unit.monthly_rent ? formatCurrency(u.unit.monthly_rent) : '-',
+        u.unit.cold_rent ? formatCurrency(u.unit.cold_rent) : '-',
+        u.unit.total_rent ? formatCurrency(u.unit.total_rent) : '-',
         u.tenant?.name || '-',
         u.tenant?.email || '-',
-        u.tenant?.phone || '-',
       ]);
 
       autoTable(doc, {
         startY: yPosition,
-        head: [['Einheit', 'Status', 'Fläche', 'Miete', 'Mieter', 'E-Mail', 'Telefon']],
+        head: [['Nr.', 'Status', 'Zi.', 'Etage', 'Fläche', 'Kaltmiete', 'Gesamtmiete', 'Mieter', 'E-Mail']],
         body: unitsData,
         theme: 'grid',
-        headStyles: { fillColor: [59, 130, 246] },
+        headStyles: { fillColor: [59, 130, 246], fontSize: 8 },
+        bodyStyles: { fontSize: 8 },
+        columnStyles: {
+          0: { cellWidth: 15 },
+          1: { cellWidth: 22 },
+          2: { cellWidth: 12 },
+          3: { cellWidth: 15 },
+          4: { cellWidth: 20 },
+          5: { cellWidth: 25 },
+          6: { cellWidth: 25 },
+          7: { cellWidth: 30 },
+          8: { cellWidth: 30 },
+        },
         margin: { left: 14 },
       });
     }

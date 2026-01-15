@@ -120,6 +120,7 @@ export default function CashflowView() {
         .from("expenses")
         .select("*")
         .eq("user_id", user!.id)
+        .eq("is_cashflow_relevant", true)
         .gte("expense_date", filterStartDate)
         .lte("expense_date", filterEndDate);
 
