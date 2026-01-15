@@ -400,7 +400,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-dark mb-2">
+        <h1 className="text-3xl font-bold text-[#131719] mb-2">
           {t("dashboard.overview")}
         </h1>
         <p className="text-gray-400">{t("dashboard.welcome")}</p>
@@ -429,7 +429,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <Building2 className="w-6 h-6 text-primary-blue" />{" "}
             </div>{" "}
           </div>{" "}
-          <div className="text-3xl font-bold text-dark mb-1">
+          <div className="text-3xl font-bold text-[#131719] mb-1">
             {stats.propertiesCount}
           </div>{" "}
           <div className="text-sm text-gray-400 mb-2">
@@ -459,7 +459,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <Users className="w-6 h-6 text-emerald-600" />{" "}
             </div>{" "}
           </div>{" "}
-          <div className="text-3xl font-bold text-dark mb-1">
+          <div className="text-3xl font-bold text-[#131719] mb-1">
             {stats.tenantsCount}
           </div>{" "}
           <div className="text-sm text-gray-400 mb-2">
@@ -485,7 +485,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <Euro className="w-6 h-6 text-amber-600" />{" "}
             </div>{" "}
           </div>{" "}
-          <div className="text-3xl font-bold text-dark mb-1">
+          <div className="text-3xl font-bold text-[#131719] mb-1">
             {" "}
             {formatCurrency(stats.totalMonthlyRent)}{" "}
           </div>{" "}
@@ -518,7 +518,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <TrendingUp className="w-6 h-6 text-blue-600" />{" "}
             </div>{" "}
           </div>{" "}
-          <div className="text-3xl font-bold text-dark mb-1">
+          <div className="text-3xl font-bold text-[#131719] mb-1">
             {" "}
             {stats.averageYield.toFixed(2)}%{" "}
           </div>{" "}
@@ -531,7 +531,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         {" "}
         <div className="bg-white rounded-lg p-6">
           {" "}
-          <h3 className="text-lg font-semibold text-dark mb-4">
+          <h3 className="text-lg font-semibold text-[#131719] mb-4">
             {t("dashboard.portfolio.total")}
           </h3>{" "}
           <div className="space-y-4">
@@ -541,7 +541,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <span className="text-gray-400">
                 {t("dashboard.portfolio.value")}
               </span>{" "}
-              <span className="text-lg font-semibold text-dark">
+              <span className="text-lg font-semibold text-[#131719]">
                 {" "}
                 {formatCurrency(stats.totalPropertyValue)}{" "}
               </span>{" "}
@@ -553,7 +553,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                 <span className="text-gray-400">
                   {t("dashboard.portfolio.annual")}
                 </span>{" "}
-                <span className="text-lg font-semibold text-dark">
+                <span className="text-lg font-semibold text-[#131719]">
                   {" "}
                   {formatCurrency(stats.totalMonthlyRent * 12)}{" "}
                 </span>{" "}
@@ -572,7 +572,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <div className="flex justify-between items-center mb-1">
                 {" "}
                 <span className="text-gray-400">Jährliche Ausgaben</span>{" "}
-                <span className="text-lg font-semibold text-dark">
+                <span className="text-lg font-semibold text-[#131719]">
                   {" "}
                   {formatCurrency(stats.totalMonthlyExpenses * 12)}{" "}
                 </span>{" "}
@@ -615,7 +615,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         </div>{" "}
         <div className="lg:col-span-2 bg-white rounded-xl p-6">
           {" "}
-          <h3 className="text-lg font-semibold mb-4 text-dark">
+          <h3 className="text-lg font-semibold mb-4 text-[#131719]">
             {t("dashboard.quickstart")}
           </h3>{" "}
           <div className="grid grid-cols-2 gap-4">
@@ -629,7 +629,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                 {" "}
                 <Building2 className="w-7 h-7 text-white" />{" "}
               </div>{" "}
-              <span className="text-sm font-semibold text-dark text-center">
+              <span className="text-sm font-semibold text-[#131719] text-center">
                 Neue Immobilie anlegen
               </span>{" "}
             </button>{" "}
@@ -642,7 +642,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                 {" "}
                 <Users className="w-7 h-7 text-white" />{" "}
               </div>{" "}
-              <span className="text-sm font-semibold text-dark text-center">
+              <span className="text-sm font-semibold text-[#131719] text-center">
                 Neues Mietverhältnis anlegen
               </span>{" "}
             </button>{" "}
@@ -655,7 +655,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                 {" "}
                 <Receipt className="w-7 h-7 text-white" />{" "}
               </div>{" "}
-              <span className="text-sm font-semibold text-dark text-center">
+              <span className="text-sm font-semibold text-[#131719] text-center">
                 Mieteingänge prüfen
               </span>{" "}
             </button>{" "}
@@ -668,7 +668,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                 {" "}
                 <BarChart3 className="w-7 h-7 text-white" />{" "}
               </div>{" "}
-              <span className="text-sm font-semibold text-dark text-center">
+              <span className="text-sm font-semibold text-[#131719] text-center">
                 Finanzübersicht
               </span>{" "}
             </button>{" "}
@@ -679,7 +679,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       {upcomingTasks.length > 0 && showTasksCard && (
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-dark">Anstehende Wartungsaufgaben</h2>
+            <h2 className="text-xl font-bold text-[#131719]">Anstehende Wartungsaufgaben</h2>
           </div>
           <div className="bg-white rounded-lg">
             {upcomingTasks.map((task, index) => (
@@ -699,7 +699,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-dark truncate">{task.title}</h3>
+                        <h3 className="font-semibold text-[#131719] truncate">{task.title}</h3>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
                           {task.priority === "high" ? "Hoch" : task.priority === "low" ? "Niedrig" : "Mittel"}
                         </span>
@@ -728,7 +728,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       {rentIncreases.length > 0 && showRentIncreasesCard && (
         <div className="mt-8">
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-dark">Anstehende Mieterhöhungen</h2>
+            <h2 className="text-xl font-bold text-[#131719]">Anstehende Mieterhöhungen</h2>
           </div>
           <div className="bg-white rounded-lg">
             {rentIncreases.map((increase, index) => (
@@ -748,7 +748,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-dark truncate">{increase.tenant_name}</h3>
+                        <h3 className="font-semibold text-[#131719] truncate">{increase.tenant_name}</h3>
                         <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           {increase.increase_type}
                         </span>
@@ -777,7 +777,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       {openTickets.length > 0 && showTicketsCard && (
         <div className="mt-8">
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-dark">Offene Mieter-Anfragen</h2>
+            <h2 className="text-xl font-bold text-[#131719]">Offene Mieter-Anfragen</h2>
           </div>
           <div className="bg-white rounded-lg">
             {openTickets.map((ticket, index) => (
@@ -809,7 +809,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-dark">{ticket.subject}</h3>
+                        <h3 className="font-semibold text-[#131719]">{ticket.subject}</h3>
                         <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-medium">
                           #{ticket.ticket_number}
                         </span>

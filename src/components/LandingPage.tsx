@@ -33,7 +33,7 @@ export default function LandingPage() {
                   Objekte & Mieter anlegen komplett gratis
                 </span>{" "}
               </div>{" "}
-              <h1 className="text-5xl sm:text-6xl font-bold text-dark mb-6 leading-tight">
+              <h1 className="text-5xl sm:text-6xl font-bold text-[#131719] mb-6 leading-tight">
                 {" "}
                 Immobilienverwaltung
                 <br />{" "}
@@ -110,9 +110,9 @@ export default function LandingPage() {
                     </li>{" "}
                   </ul>{" "}
                 </div>{" "}
-                <div className="bg-white rounded-lg p-6 text-dark border-4 border-amber-400 relative overflow-hidden">
+                <div className="bg-white rounded-lg p-6 text-[#131719] border-4 border-amber-400 relative overflow-hidden">
                   {" "}
-                  <div className="absolute top-0 right-0 bg-amber-400 text-dark px-4 py-1 text-xs font-bold rounded-bl-lg">
+                  <div className="absolute top-0 right-0 bg-amber-400 text-[#131719] px-4 py-1 text-xs font-bold rounded-bl-lg">
                     {" "}
                     BELIEBT{" "}
                   </div>{" "}
@@ -168,7 +168,7 @@ export default function LandingPage() {
                   {" "}
                   <Building2 className="w-7 h-7 text-primary-blue" />{" "}
                 </div>{" "}
-                <h3 className="text-xl font-semibold text-dark mb-3">
+                <h3 className="text-xl font-semibold text-[#131719] mb-3">
                   Objektverwaltung
                 </h3>{" "}
                 <p className="text-gray-400">
@@ -183,7 +183,7 @@ export default function LandingPage() {
                   {" "}
                   <Users className="w-7 h-7 text-emerald-600" />{" "}
                 </div>{" "}
-                <h3 className="text-xl font-semibold text-dark mb-3">
+                <h3 className="text-xl font-semibold text-[#131719] mb-3">
                   Mieterverwaltung
                 </h3>{" "}
                 <p className="text-gray-400">
@@ -198,7 +198,7 @@ export default function LandingPage() {
                   {" "}
                   <MessageSquare className="w-7 h-7 text-amber-600" />{" "}
                 </div>{" "}
-                <h3 className="text-xl font-semibold text-dark mb-3">
+                <h3 className="text-xl font-semibold text-[#131719] mb-3">
                   Ticketsystem
                 </h3>{" "}
                 <p className="text-gray-400">
@@ -214,7 +214,7 @@ export default function LandingPage() {
                 {" "}
                 <div>
                   {" "}
-                  <h2 className="text-3xl font-bold text-dark mb-6">
+                  <h2 className="text-3xl font-bold text-[#131719] mb-6">
                     {" "}
                     Alle Funktionen auf einen Blick{" "}
                   </h2>{" "}
@@ -228,7 +228,7 @@ export default function LandingPage() {
                       </div>{" "}
                       <div>
                         {" "}
-                        <h4 className="font-semibold text-dark">
+                        <h4 className="font-semibold text-[#131719]">
                           Renditeberechnung
                         </h4>{" "}
                         <p className="text-gray-400">
@@ -245,7 +245,7 @@ export default function LandingPage() {
                       </div>{" "}
                       <div>
                         {" "}
-                        <h4 className="font-semibold text-dark">
+                        <h4 className="font-semibold text-[#131719]">
                           Automatische Mieterhöhungs-Erinnerungen
                         </h4>{" "}
                         <p className="text-gray-400">
@@ -263,7 +263,7 @@ export default function LandingPage() {
                       </div>{" "}
                       <div>
                         {" "}
-                        <h4 className="font-semibold text-dark">
+                        <h4 className="font-semibold text-[#131719]">
                           Mieter-Kommunikation
                         </h4>{" "}
                         <p className="text-gray-400">
@@ -280,7 +280,7 @@ export default function LandingPage() {
                       </div>{" "}
                       <div>
                         {" "}
-                        <h4 className="font-semibold text-dark">
+                        <h4 className="font-semibold text-[#131719]">
                           Kreditverwaltung
                         </h4>{" "}
                         <p className="text-gray-400">

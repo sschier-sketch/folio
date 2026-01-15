@@ -130,13 +130,13 @@ export default function IndexRentView() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "pending":
-        return <Clock className="w-5 h-5 text-amber-500" />;
+        return <Clock className="w-5 h-5" />;
       case "calculated":
-        return <Calculator className="w-5 h-5 text-blue-500" />;
+        return <Calculator className="w-5 h-5" />;
       case "notified":
-        return <AlertCircle className="w-5 h-5 text-amber-500" />;
+        return <AlertCircle className="w-5 h-5" />;
       case "applied":
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5" />;
       default:
         return null;
     }
@@ -285,7 +285,19 @@ export default function IndexRentView() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  {getStatusIcon(calc.status)}
+                  <span
+                    className={`${
+                      calc.status === "applied"
+                        ? "text-green-600"
+                        : calc.status === "notified"
+                        ? "text-amber-600"
+                        : calc.status === "calculated"
+                        ? "text-blue-600"
+                        : "text-amber-600"
+                    }`}
+                  >
+                    {getStatusIcon(calc.status)}
+                  </span>
                   <div>
                     <h3 className="font-semibold text-dark">
                       {calc.rental_contract?.tenants?.name || "Unbekannter Mieter"}

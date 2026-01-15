@@ -102,13 +102,13 @@ export default function DunningHistory() {
     switch (status) {
       case "sent":
       case "delivered":
-        return <CheckCircle className="w-5 h-5 text-emerald-600" />;
+        return <CheckCircle className="w-5 h-5" />;
       case "failed":
-        return <XCircle className="w-5 h-5 text-red-600" />;
+        return <XCircle className="w-5 h-5" />;
       case "bounced":
-        return <AlertCircle className="w-5 h-5 text-amber-600" />;
+        return <AlertCircle className="w-5 h-5" />;
       default:
-        return <Mail className="w-5 h-5 text-gray-600" />;
+        return <Mail className="w-5 h-5" />;
     }
   };
 
@@ -197,7 +197,17 @@ export default function DunningHistory() {
                     </div>
 
                     <div className="flex items-center gap-2 ml-4">
-                      {getStatusIcon(reminder.status)}
+                      <span className={`${
+                        reminder.status === "sent" || reminder.status === "delivered"
+                          ? "text-emerald-600"
+                          : reminder.status === "failed"
+                          ? "text-red-600"
+                          : reminder.status === "bounced"
+                          ? "text-amber-600"
+                          : "text-gray-600"
+                      }`}>
+                        {getStatusIcon(reminder.status)}
+                      </span>
                       <span className="text-sm text-gray-600">
                         {getStatusLabel(reminder.status)}
                       </span>
