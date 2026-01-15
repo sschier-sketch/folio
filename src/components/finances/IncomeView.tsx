@@ -1,14 +1,24 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit2 } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit2, Upload, FileText, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+
+interface IncomeCategory {
+  id: string;
+  name: string;
+}
 
 interface ManualIncome {
   id: string;
   property_id: string;
+  category_id: string | null;
   description: string;
   amount: number;
   entry_date: string;
+  status: string;
+  recipient: string | null;
+  due_date: string | null;
+  is_cashflow_relevant: boolean;
   properties: {
     name: string;
   };
@@ -43,20 +53,6 @@ interface Unit {
   property_id: string;
 }
 
-interface Tenant {
-  id: string;
-  first_name: string;
-  last_name: string;
-}
-
-interface Contract {
-  id: string;
-  tenant_id: string;
-  property_id: string;
-  unit_id: string | null;
-  base_rent: number;
-}
-
 export default function IncomeView() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -64,8 +60,7 @@ export default function IncomeView() {
   const [rentalContracts, setRentalContracts] = useState<RentalContract[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
-  const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [categories, setCategories] = useState<IncomeCategory[]>([]);
   const [timePeriod, setTimePeriod] = useState<"current" | "last" | "all">("current");
   const [selectedProperty, setSelectedProperty] = useState<string>("");
   const [selectedUnit, setSelectedUnit] = useState<string>("");
@@ -73,18 +68,19 @@ export default function IncomeView() {
   const [endDate, setEndDate] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingIncome, setEditingIncome] = useState<ManualIncome | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     property_id: "",
     unit_id: "",
-    tenant_id: "",
-    contract_id: "",
+    category_id: "",
     amount: "",
-    due_date: new Date().toISOString().split("T")[0],
-    paid_date: new Date().toISOString().split("T")[0],
-    payment_method: "bank_transfer",
+    entry_date: new Date().toISOString().split("T")[0],
+    due_date: "",
     description: "",
     recipient: "",
     notes: "",
+    status: "open",
+    is_cashflow_relevant: true,
   });
 
   useEffect(() => {
@@ -96,17 +92,15 @@ export default function IncomeView() {
 
   async function loadProperties() {
     try {
-      const [propertiesRes, unitsRes, tenantsRes, contractsRes] = await Promise.all([
+      const [propertiesRes, unitsRes, categoriesRes] = await Promise.all([
         supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
         supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", user!.id).order("unit_number"),
-        supabase.from("tenants").select("id, first_name, last_name").eq("user_id", user!.id).eq("is_active", true).order("last_name"),
-        supabase.from("rental_contracts").select("id, tenant_id, property_id, unit_id, base_rent").eq("user_id", user!.id),
+        supabase.from("income_categories").select("*").order("sort_order"),
       ]);
 
       if (propertiesRes.data) setProperties(propertiesRes.data);
       if (unitsRes.data) setUnits(unitsRes.data);
-      if (tenantsRes.data) setTenants(tenantsRes.data);
-      if (contractsRes.data) setContracts(contractsRes.data);
+      if (categoriesRes.data) setCategories(categoriesRes.data);
     } catch (error) {
       console.error("Error loading properties:", error);
     }
@@ -134,9 +128,8 @@ export default function IncomeView() {
 
       let manualQuery = supabase
         .from("income_entries")
-        .select("id, property_id, description, amount, entry_date, properties(name)")
+        .select("id, property_id, category_id, description, amount, entry_date, status, recipient, due_date, is_cashflow_relevant, properties(name)")
         .eq("user_id", user!.id)
-        .eq("category", "income")
         .order("entry_date", { ascending: false });
 
       if (selectedProperty) {
@@ -221,55 +214,89 @@ export default function IncomeView() {
     return sum + parseFloat(contract.base_rent.toString());
   }, 0);
   const totalIncome = totalManualIncome + totalRentIncome;
-  const totalCount = manualIncomes.length + rentalContracts.length;
-  const averageIncome = totalCount > 0 ? totalIncome / totalCount : 0;
 
   async function handleSaveIncome() {
-    if (!user || !formData.property_id || !formData.amount || !formData.description) return;
+    if (!user || !formData.property_id || !formData.amount || !formData.description || !formData.category_id) {
+      alert("Bitte füllen Sie alle Pflichtfelder aus.");
+      return;
+    }
 
     try {
-      const insertData = {
+      const insertData: any = {
         user_id: user.id,
         property_id: formData.property_id,
         unit_id: formData.unit_id || null,
-        entry_date: formData.paid_date,
+        category_id: formData.category_id,
+        entry_date: formData.entry_date,
+        due_date: formData.due_date || null,
         amount: parseFloat(formData.amount),
-        category: "income",
         description: formData.description,
-        status: "verbucht",
+        recipient: formData.recipient || null,
+        status: formData.status,
         notes: formData.notes || null,
+        is_cashflow_relevant: formData.is_cashflow_relevant,
       };
 
-      let error;
+      let incomeId = editingIncome?.id;
 
       if (editingIncome) {
-        const res = await supabase
+        const { error } = await supabase
           .from("income_entries")
           .update(insertData)
           .eq("id", editingIncome.id);
-        error = res.error;
+        if (error) throw error;
       } else {
-        const res = await supabase.from("income_entries").insert(insertData);
-        error = res.error;
+        const { data, error } = await supabase
+          .from("income_entries")
+          .insert(insertData)
+          .select()
+          .single();
+        if (error) throw error;
+        incomeId = data.id;
       }
 
-      if (error) throw error;
+      if (uploadedFile && incomeId) {
+        const fileExt = uploadedFile.name.split(".").pop();
+        const fileName = `${incomeId}_${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("documents")
+          .upload(filePath, uploadedFile);
+
+        if (uploadError) throw uploadError;
+
+        const { error: docError } = await supabase.from("documents").insert({
+          user_id: user.id,
+          property_id: formData.property_id,
+          unit_id: formData.unit_id || null,
+          document_type: "receipt",
+          file_name: uploadedFile.name,
+          file_path: filePath,
+          file_size: uploadedFile.size,
+          mime_type: uploadedFile.type,
+          uploaded_by: user.id,
+        });
+
+        if (docError) throw docError;
+      }
 
       alert(editingIncome ? "Einnahme aktualisiert!" : "Einnahme gespeichert!");
       setShowAddModal(false);
       setEditingIncome(null);
+      setUploadedFile(null);
       setFormData({
         property_id: "",
         unit_id: "",
-        tenant_id: "",
-        contract_id: "",
+        category_id: "",
         amount: "",
-        due_date: new Date().toISOString().split("T")[0],
-        paid_date: new Date().toISOString().split("T")[0],
-        payment_method: "bank_transfer",
+        entry_date: new Date().toISOString().split("T")[0],
+        due_date: "",
         description: "",
         recipient: "",
         notes: "",
+        status: "open",
+        is_cashflow_relevant: true,
       });
       loadData();
     } catch (error) {
@@ -302,18 +329,40 @@ export default function IncomeView() {
     setFormData({
       property_id: income.property_id,
       unit_id: "",
-      tenant_id: "",
-      contract_id: "",
+      category_id: income.category_id || "",
       amount: income.amount.toString(),
-      due_date: income.entry_date,
-      paid_date: income.entry_date,
-      payment_method: "bank_transfer",
+      entry_date: income.entry_date,
+      due_date: income.due_date || "",
       description: income.description,
-      recipient: "",
+      recipient: income.recipient || "",
       notes: "",
+      status: income.status,
+      is_cashflow_relevant: income.is_cashflow_relevant,
     });
     setShowAddModal(true);
   }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "paid":
+        return "bg-emerald-100 text-emerald-700";
+      case "open":
+        return "bg-amber-100 text-amber-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "paid":
+        return "Bezahlt";
+      case "open":
+        return "Offen";
+      default:
+        return status;
+    }
+  };
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
@@ -454,18 +503,19 @@ export default function IncomeView() {
           <button
             onClick={() => {
               setEditingIncome(null);
+              setUploadedFile(null);
               setFormData({
                 property_id: "",
                 unit_id: "",
-                tenant_id: "",
-                contract_id: "",
+                category_id: "",
                 amount: "",
-                due_date: new Date().toISOString().split("T")[0],
-                paid_date: new Date().toISOString().split("T")[0],
-                payment_method: "bank_transfer",
+                entry_date: new Date().toISOString().split("T")[0],
+                due_date: "",
                 description: "",
                 recipient: "",
                 notes: "",
+                status: "open",
+                is_cashflow_relevant: true,
               });
               setShowAddModal(true);
             }}
@@ -494,6 +544,9 @@ export default function IncomeView() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Objekt
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Betrag
                   </th>
@@ -517,6 +570,11 @@ export default function IncomeView() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {income.properties.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${getStatusColor(income.status)}`}>
+                        {getStatusLabel(income.status)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
                       +{parseFloat(income.amount.toString()).toFixed(2)} €
@@ -621,12 +679,12 @@ export default function IncomeView() {
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold text-dark mb-4">
               {editingIncome ? "Einnahme bearbeiten" : "Einnahme hinzufügen"}
             </h3>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Objekt *
@@ -676,6 +734,27 @@ export default function IncomeView() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Kategorie *
+                </label>
+                <select
+                  value={formData.category_id}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category_id: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                >
+                  <option value="">Kategorie wählen...</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Betrag (€) *
                 </label>
                 <input
@@ -697,9 +776,9 @@ export default function IncomeView() {
                 </label>
                 <input
                   type="date"
-                  value={formData.paid_date}
+                  value={formData.entry_date}
                   onChange={(e) =>
-                    setFormData({ ...formData, paid_date: e.target.value })
+                    setFormData({ ...formData, entry_date: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   required
@@ -724,7 +803,7 @@ export default function IncomeView() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Zahlungsempfänger (optional)
+                  Empfänger/Zahlender (optional)
                 </label>
                 <input
                   type="text"
@@ -733,29 +812,25 @@ export default function IncomeView() {
                     setFormData({ ...formData, recipient: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="Name des Zahlungsempfängers"
+                  placeholder="z.B. Firma Müller GmbH"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Zahlungsmethode
+                  Fälligkeitsdatum (optional)
                 </label>
-                <select
-                  value={formData.payment_method}
+                <input
+                  type="date"
+                  value={formData.due_date}
                   onChange={(e) =>
-                    setFormData({ ...formData, payment_method: e.target.value })
+                    setFormData({ ...formData, due_date: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                >
-                  <option value="bank_transfer">Banküberweisung</option>
-                  <option value="cash">Bar</option>
-                  <option value="direct_debit">Lastschrift</option>
-                  <option value="other">Sonstiges</option>
-                </select>
+                />
               </div>
 
-              <div>
+              <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Notizen (optional)
                 </label>
@@ -769,6 +844,85 @@ export default function IncomeView() {
                   placeholder="Zusätzliche Informationen..."
                 />
               </div>
+
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Beleg hochladen (optional)
+                </label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="income-file-upload"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setUploadedFile(file);
+                    }}
+                    className="hidden"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                  />
+                  <label
+                    htmlFor="income-file-upload"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-blue hover:bg-blue-50 transition-colors"
+                  >
+                    <Upload className="w-5 h-5 text-gray-400" />
+                    <span className="text-sm text-gray-600">Datei auswählen (PDF, JPG, PNG)</span>
+                  </label>
+                  {uploadedFile && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm text-blue-700 flex-1">{uploadedFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setUploadedFile(null)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Zahlungsstatus
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      status: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  <option value="open">Offen</option>
+                  <option value="paid">Bezahlt</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <span className="text-sm font-medium text-gray-700">
+                    Cashflow relevant
+                  </span>
+                  <div className="relative inline-block">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_cashflow_relevant}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          is_cashflow_relevant: e.target.checked,
+                        })
+                      }
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-blue rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue"></div>
+                  </div>
+                </label>
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -776,6 +930,7 @@ export default function IncomeView() {
                 onClick={() => {
                   setShowAddModal(false);
                   setEditingIncome(null);
+                  setUploadedFile(null);
                 }}
                 className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
@@ -784,7 +939,7 @@ export default function IncomeView() {
               <button
                 onClick={handleSaveIncome}
                 className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
-                disabled={!formData.property_id || !formData.amount || !formData.description}
+                disabled={!formData.property_id || !formData.amount || !formData.description || !formData.category_id}
               >
                 {editingIncome ? "Aktualisieren" : "Hinzufügen"}
               </button>
