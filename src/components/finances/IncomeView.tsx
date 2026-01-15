@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit2, Upload, FileText, X, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -621,18 +621,22 @@ export default function IncomeView() {
                       +{parseFloat(income.amount.toString()).toFixed(2)} €
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                      <button
-                        onClick={() => handleEditIncome(income)}
-                        className="text-primary-blue hover:text-primary-blue mr-3"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteIncome(income.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleEditIncome(income)}
+                          className="text-primary-blue hover:text-blue-700 transition-colors"
+                          title="Bearbeiten"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteIncome(income.id)}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                          title="Löschen"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
