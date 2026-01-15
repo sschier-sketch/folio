@@ -24,6 +24,7 @@ interface ManualIncome {
   is_labor_cost: boolean;
   ignore_in_operating_costs: boolean;
   notes: string | null;
+  document_id: string | null;
   properties: {
     name: string;
   };
@@ -74,6 +75,7 @@ export default function IncomeView() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingIncome, setEditingIncome] = useState<ManualIncome | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [existingDocument, setExistingDocument] = useState<{id: string, file_name: string, file_path: string} | null>(null);
   const [formData, setFormData] = useState({
     property_id: "",
     unit_id: "",
@@ -137,7 +139,7 @@ export default function IncomeView() {
 
       let manualQuery = supabase
         .from("income_entries")
-        .select("id, property_id, category_id, description, amount, entry_date, status, recipient, due_date, is_cashflow_relevant, vat_rate, is_apportionable, is_labor_cost, ignore_in_operating_costs, notes, properties(name)")
+        .select("id, property_id, category_id, description, amount, entry_date, status, recipient, due_date, is_cashflow_relevant, vat_rate, is_apportionable, is_labor_cost, ignore_in_operating_costs, notes, document_id, properties(name)")
         .eq("user_id", user!.id)
         .order("entry_date", { ascending: false });
 
@@ -231,6 +233,55 @@ export default function IncomeView() {
     }
 
     try {
+      let documentId = null;
+
+      if (uploadedFile) {
+        const fileExt = uploadedFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('documents')
+          .upload(fileName, uploadedFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: docData, error: docError } = await supabase
+          .from('documents')
+          .insert({
+            user_id: user.id,
+            file_name: uploadedFile.name,
+            file_path: uploadData.path,
+            file_type: uploadedFile.type,
+            file_size: uploadedFile.size,
+            document_type: 'receipt',
+            category: 'income',
+            description: formData.description || 'Einnahmenbeleg'
+          })
+          .select()
+          .single();
+
+        if (docError) throw docError;
+        documentId = docData.id;
+
+        if (documentId && formData.property_id) {
+          await supabase.from('document_associations').insert({
+            document_id: documentId,
+            association_type: 'property',
+            association_id: formData.property_id,
+            created_by: user.id
+          });
+
+          if (formData.unit_id) {
+            await supabase.from('document_associations').insert({
+              document_id: documentId,
+              association_type: 'unit',
+              association_id: formData.unit_id,
+              created_by: user.id
+            });
+          }
+        }
+      }
+
       const insertData: any = {
         user_id: user.id,
         property_id: formData.property_id,
@@ -248,56 +299,45 @@ export default function IncomeView() {
         is_labor_cost: formData.is_labor_cost,
         ignore_in_operating_costs: formData.ignore_in_operating_costs,
         is_cashflow_relevant: formData.is_cashflow_relevant,
+        document_id: documentId,
       };
 
-      let incomeId = editingIncome?.id;
+      let incomeData, error;
 
       if (editingIncome) {
-        const { error } = await supabase
+        const result = await supabase
           .from("income_entries")
           .update(insertData)
-          .eq("id", editingIncome.id);
-        if (error) throw error;
+          .eq("id", editingIncome.id)
+          .select()
+          .single();
+        incomeData = result.data;
+        error = result.error;
       } else {
-        const { data, error } = await supabase
+        const result = await supabase
           .from("income_entries")
           .insert(insertData)
           .select()
           .single();
-        if (error) throw error;
-        incomeId = data.id;
+        incomeData = result.data;
+        error = result.error;
       }
 
-      if (uploadedFile && incomeId) {
-        const fileExt = uploadedFile.name.split(".").pop();
-        const fileName = `${incomeId}_${Date.now()}.${fileExt}`;
-        const filePath = `${user.id}/${fileName}`;
+      if (error) throw error;
 
-        const { error: uploadError } = await supabase.storage
-          .from("documents")
-          .upload(filePath, uploadedFile);
-
-        if (uploadError) throw uploadError;
-
-        const { error: docError } = await supabase.from("documents").insert({
-          user_id: user.id,
-          property_id: formData.property_id,
-          unit_id: formData.unit_id || null,
-          document_type: "receipt",
-          file_name: uploadedFile.name,
-          file_path: filePath,
-          file_size: uploadedFile.size,
-          file_type: fileExt || "pdf",
-          mime_type: uploadedFile.type,
-          uploaded_by: user.id,
+      if (documentId && incomeData?.id) {
+        await supabase.from('document_associations').insert({
+          document_id: documentId,
+          association_type: 'income',
+          association_id: incomeData.id,
+          created_by: user.id
         });
-
-        if (docError) throw docError;
       }
 
       alert(editingIncome ? "Einnahme aktualisiert!" : "Einnahme gespeichert!");
       setShowAddModal(false);
       setEditingIncome(null);
+      setExistingDocument(null);
       setUploadedFile(null);
       setFormData({
         property_id: "",
@@ -342,7 +382,38 @@ export default function IncomeView() {
     }
   }
 
-  function handleEditIncome(income: ManualIncome) {
+  async function handleDownloadDocument(documentId: string) {
+    try {
+      const { data: document, error: docError } = await supabase
+        .from('documents')
+        .select('file_path, file_name')
+        .eq('id', documentId)
+        .single();
+
+      if (docError) throw docError;
+      if (!document) throw new Error('Dokument nicht gefunden');
+
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('documents')
+        .download(document.file_path);
+
+      if (downloadError) throw downloadError;
+
+      const url = URL.createObjectURL(fileData);
+      const a = window.document.createElement('a');
+      a.href = url;
+      a.download = document.file_name;
+      window.document.body.appendChild(a);
+      a.click();
+      window.document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      alert('Fehler beim Herunterladen: ' + (error as Error).message);
+    }
+  }
+
+  async function handleEditIncome(income: ManualIncome) {
     setEditingIncome(income);
     setFormData({
       property_id: income.property_id,
@@ -361,6 +432,26 @@ export default function IncomeView() {
       ignore_in_operating_costs: income.ignore_in_operating_costs || false,
       is_cashflow_relevant: income.is_cashflow_relevant,
     });
+
+    if (income.document_id) {
+      try {
+        const { data: docData } = await supabase
+          .from('documents')
+          .select('id, file_name, file_path')
+          .eq('id', income.document_id)
+          .maybeSingle();
+
+        if (docData) {
+          setExistingDocument(docData);
+        }
+      } catch (error) {
+        console.error('Error loading document:', error);
+      }
+    } else {
+      setExistingDocument(null);
+    }
+
+    setUploadedFile(null);
     setShowAddModal(true);
   }
 
@@ -539,6 +630,7 @@ export default function IncomeView() {
           <button
             onClick={() => {
               setEditingIncome(null);
+              setExistingDocument(null);
               setUploadedFile(null);
               setFormData({
                 property_id: "",
@@ -622,6 +714,15 @@ export default function IncomeView() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {income.document_id && (
+                          <button
+                            onClick={() => handleDownloadDocument(income.document_id!)}
+                            className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                            title="Beleg herunterladen"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleEditIncome(income)}
                           className="text-primary-blue hover:text-blue-700 transition-colors"
@@ -894,6 +995,52 @@ export default function IncomeView() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Beleg hochladen (optional)
                 </label>
+                {existingDocument && !uploadedFile && (
+                  <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm text-blue-700">
+                        <FileText className="w-4 h-4" />
+                        <span>Vorhandenes Dokument: {existingDocument.file_name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const { data, error } = await supabase.storage
+                                .from('documents')
+                                .download(existingDocument.file_path);
+
+                              if (error) throw error;
+
+                              const url = URL.createObjectURL(data);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = existingDocument.file_name;
+                              document.body.appendChild(a);
+                              a.click();
+                              URL.revokeObjectURL(url);
+                              document.body.removeChild(a);
+                            } catch (error) {
+                              console.error('Error downloading document:', error);
+                              alert('Fehler beim Herunterladen des Dokuments');
+                            }
+                          }}
+                          className="text-blue-600 hover:text-blue-800 text-xs underline"
+                        >
+                          Herunterladen
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setExistingDocument(null)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="relative">
                   <input
                     type="file"
@@ -1050,6 +1197,7 @@ export default function IncomeView() {
                 onClick={() => {
                   setShowAddModal(false);
                   setEditingIncome(null);
+                  setExistingDocument(null);
                   setUploadedFile(null);
                 }}
                 className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
