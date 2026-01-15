@@ -3,7 +3,7 @@ import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit2, Upload, FileTe
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 
-interface IncomeCategory {
+interface ExpenseCategory {
   id: string;
   name: string;
 }
@@ -60,7 +60,7 @@ export default function IncomeView() {
   const [rentalContracts, setRentalContracts] = useState<RentalContract[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
-  const [categories, setCategories] = useState<IncomeCategory[]>([]);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [timePeriod, setTimePeriod] = useState<"current" | "last" | "all">("current");
   const [selectedProperty, setSelectedProperty] = useState<string>("");
   const [selectedUnit, setSelectedUnit] = useState<string>("");
@@ -80,6 +80,10 @@ export default function IncomeView() {
     recipient: "",
     notes: "",
     status: "open",
+    vat_rate: "0",
+    is_apportionable: false,
+    is_labor_cost: false,
+    ignore_in_operating_costs: false,
     is_cashflow_relevant: true,
   });
 
@@ -95,7 +99,7 @@ export default function IncomeView() {
       const [propertiesRes, unitsRes, categoriesRes] = await Promise.all([
         supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
         supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", user!.id).order("unit_number"),
-        supabase.from("income_categories").select("*").order("sort_order"),
+        supabase.from("expense_categories").select("*").order("name"),
       ]);
 
       if (propertiesRes.data) setProperties(propertiesRes.data);
@@ -234,6 +238,10 @@ export default function IncomeView() {
         recipient: formData.recipient || null,
         status: formData.status,
         notes: formData.notes || null,
+        vat_rate: parseFloat(formData.vat_rate),
+        is_apportionable: formData.is_apportionable,
+        is_labor_cost: formData.is_labor_cost,
+        ignore_in_operating_costs: formData.ignore_in_operating_costs,
         is_cashflow_relevant: formData.is_cashflow_relevant,
       };
 
@@ -296,6 +304,10 @@ export default function IncomeView() {
         recipient: "",
         notes: "",
         status: "open",
+        vat_rate: "0",
+        is_apportionable: false,
+        is_labor_cost: false,
+        ignore_in_operating_costs: false,
         is_cashflow_relevant: true,
       });
       loadData();
@@ -337,6 +349,10 @@ export default function IncomeView() {
       recipient: income.recipient || "",
       notes: "",
       status: income.status,
+      vat_rate: "0",
+      is_apportionable: false,
+      is_labor_cost: false,
+      ignore_in_operating_costs: false,
       is_cashflow_relevant: income.is_cashflow_relevant,
     });
     setShowAddModal(true);
@@ -515,6 +531,10 @@ export default function IncomeView() {
                 recipient: "",
                 notes: "",
                 status: "open",
+                vat_rate: "0",
+                is_apportionable: false,
+                is_labor_cost: false,
+                ignore_in_operating_costs: false,
                 is_cashflow_relevant: true,
               });
               setShowAddModal(true);
@@ -885,6 +905,24 @@ export default function IncomeView() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  MwSt-Satz
+                </label>
+                <select
+                  value={formData.vat_rate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, vat_rate: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  <option value="0">0%</option>
+                  <option value="5">5%</option>
+                  <option value="7">7%</option>
+                  <option value="19">19%</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Zahlungsstatus
                 </label>
                 <select
@@ -902,26 +940,83 @@ export default function IncomeView() {
                 </select>
               </div>
 
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <span className="text-sm font-medium text-gray-700">
-                    Cashflow relevant
-                  </span>
-                  <div className="relative inline-block">
-                    <input
-                      type="checkbox"
-                      checked={formData.is_cashflow_relevant}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          is_cashflow_relevant: e.target.checked,
-                        })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-blue rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue"></div>
-                  </div>
+              <div className="col-span-2 border-t pt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Optionen
                 </label>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <label htmlFor="is_apportionable" className="text-sm text-gray-700">
+                      Umlagefähig
+                    </label>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="is_apportionable"
+                        checked={formData.is_apportionable}
+                        onChange={(e) =>
+                          setFormData({ ...formData, is_apportionable: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-blue rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <label htmlFor="is_labor_cost" className="text-sm text-gray-700">
+                      Lohnkosten
+                    </label>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="is_labor_cost"
+                        checked={formData.is_labor_cost}
+                        onChange={(e) =>
+                          setFormData({ ...formData, is_labor_cost: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-blue rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <label htmlFor="ignore_in_operating_costs" className="text-sm text-gray-700">
+                      Ignoriert in BK-Abr.
+                    </label>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="ignore_in_operating_costs"
+                        checked={formData.ignore_in_operating_costs}
+                        onChange={(e) =>
+                          setFormData({ ...formData, ignore_in_operating_costs: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-blue rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <label htmlFor="is_cashflow_relevant" className="text-sm text-gray-700">
+                      Cashflow-relevant
+                    </label>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="is_cashflow_relevant"
+                        checked={formData.is_cashflow_relevant}
+                        onChange={(e) =>
+                          setFormData({ ...formData, is_cashflow_relevant: e.target.checked })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-blue rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-blue"></div>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 

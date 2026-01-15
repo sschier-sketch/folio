@@ -461,23 +461,38 @@ export default function CashflowView() {
 
               <div className="relative h-8 bg-gray-100 rounded overflow-hidden">
                 <div
-                  className="absolute top-0 left-0 h-full bg-emerald-500 opacity-50"
+                  className="absolute top-0 left-0 h-full bg-emerald-500 opacity-50 hover:opacity-70 transition-opacity group"
                   style={{
                     width: `${(data.income / maxValue) * 100}%`,
                   }}
-                />
+                  title={`Einnahmen: ${data.income.toFixed(2)} €`}
+                >
+                  <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
+                    Einnahmen: {data.income.toFixed(2)} €
+                  </div>
+                </div>
                 <div
-                  className="absolute top-0 left-0 h-full bg-red-500 opacity-50"
+                  className="absolute top-0 left-0 h-full bg-red-500 opacity-50 hover:opacity-70 transition-opacity group"
                   style={{
                     width: `${(data.expenses / maxValue) * 100}%`,
                   }}
-                />
+                  title={`Ausgaben: ${data.expenses.toFixed(2)} €`}
+                >
+                  <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
+                    Ausgaben: {data.expenses.toFixed(2)} €
+                  </div>
+                </div>
                 <div
-                  className="absolute top-0 left-0 h-full bg-orange-500 opacity-50"
+                  className="absolute top-0 left-0 h-full bg-orange-500 opacity-50 hover:opacity-70 transition-opacity group"
                   style={{
                     width: `${((data.expenses + data.loanPayments) / maxValue) * 100}%`,
                   }}
-                />
+                  title={`Kreditzahlungen: ${data.loanPayments.toFixed(2)} €`}
+                >
+                  <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
+                    Kreditzahlungen: {data.loanPayments.toFixed(2)} €
+                  </div>
+                </div>
               </div>
             </div>
           ))}
