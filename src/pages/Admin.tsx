@@ -28,6 +28,7 @@ import { AdminTemplatesView } from "../components/AdminTemplatesView";
 import AdminSystemUpdatesView from "../components/AdminSystemUpdatesView";
 import { AdminFeedbackView } from "../components/AdminFeedbackView";
 import AdminSystemSettingsView from "../components/AdminSystemSettingsView";
+import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "../components/common/BaseTable";
 interface UserData {
   id: string;
   email: string;
@@ -466,237 +467,139 @@ export function Admin() {
                 Alle Benutzer
               </h2>{" "}
             </div>{" "}
-            {loadingData ? (
-              <div className="flex items-center justify-center p-8">
-                {" "}
-                <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />{" "}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                {" "}
-                <table className="w-full">
-                  {" "}
-                  <thead className="bg-gray-50">
-                    {" "}
-                    <tr>
-                      {" "}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort("email")}
-                      >
-                        {" "}
-                        <div className="flex items-center gap-1">
-                          E-Mail <ArrowUpDown className="w-3 h-3" />
-                        </div>
-                      </th>{" "}
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort("first_name")}
-                      >
-                        {" "}
-                        <div className="flex items-center gap-1">
-                          Vorname <ArrowUpDown className="w-3 h-3" />
-                        </div>
-                      </th>{" "}
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort("last_name")}
-                      >
-                        {" "}
-                        <div className="flex items-center gap-1">
-                          Nachname <ArrowUpDown className="w-3 h-3" />
-                        </div>
-                      </th>{" "}
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort("company_name")}
-                      >
-                        {" "}
-                        <div className="flex items-center gap-1">
-                          Firma <ArrowUpDown className="w-3 h-3" />
-                        </div>
-                      </th>{" "}
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort("created_at")}
-                      >
-                        {" "}
-                        <div className="flex items-center gap-1">
-                          Registriert <ArrowUpDown className="w-3 h-3" />
-                        </div>
-                      </th>{" "}
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort("last_sign_in_at")}
-                      >
-                        {" "}
-                        <div className="flex items-center gap-1">
-                          Letzter Login <ArrowUpDown className="w-3 h-3" />
-                        </div>
-                      </th>{" "}
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort("subscription_plan")}
-                      >
-                        {" "}
-                        <div className="flex items-center gap-1">
-                          Tarif <ArrowUpDown className="w-3 h-3" />
-                        </div>
-                      </th>{" "}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        {" "}
-                        Aktionen{" "}
-                      </th>{" "}
-                    </tr>{" "}
-                  </thead>{" "}
-                  <tbody className="divide-y divide-slate-200">
-                    {" "}
-                    {sortedUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        {" "}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            {user.is_admin ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium" title="Administrator">
-                                <ShieldCheck className="w-3 h-3" />
-                                Admin
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium" title="Eigentümer">
-                                <UserCheck className="w-3 h-3" />
-                                Eigentümer
-                              </span>
-                            )}
-                            {user.banned && (
-                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-800 text-white rounded text-xs font-medium" title={user.ban_reason || "Gesperrt"}>
-                                <Ban className="w-3 h-3" />
-                                Gesperrt
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
-                          {" "}
-                          {user.email}{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                          {" "}
-                          {user.first_name || "-"}{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                          {" "}
-                          {user.last_name || "-"}{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                          {" "}
-                          {user.company_name || "-"}{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                          {" "}
-                          {new Date(user.created_at).toLocaleDateString(
-                            "de-DE",
-                          )}{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                          {" "}
-                          {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString(
-                            "de-DE",
-                          ) : "-"}{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {" "}
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.subscription_plan === "pro" ? "bg-amber-100 text-amber-800" : "bg-gray-50 text-dark"}`}
-                          >
-                            {" "}
-                            {user.subscription_plan === "pro"
-                              ? "Pro"
-                              : "Gratis"}{" "}
-                          </span>{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {" "}
-                          <div className="flex items-center gap-3">
-                            {" "}
-                            <button
-                              onClick={() =>
-                                handleImpersonate(user.id, user.email)
-                              }
-                              className="text-primary-blue hover:text-primary-blue transition-colors"
-                              title="Als Nutzer anmelden"
-                            >
-                              {" "}
-                              <Eye className="w-4 h-4" />{" "}
-                            </button>{" "}
-                            {user.subscription_plan === "pro" && (
-                              <button
-                                onClick={() =>
-                                  handleCancelSubscription(user.id)
-                                }
-                                className="text-primary-blue hover:text-primary-blue transition-colors"
-                                title="Abo beenden"
-                              >
-                                {" "}
-                                <XCircle className="w-4 h-4" />{" "}
-                              </button>
-                            )}{" "}
-                            {user.is_admin ? (
-                              <button
-                                onClick={() =>
-                                  handleRevokeAdmin(user.id, user.email)
-                                }
-                                className="text-primary-blue hover:text-primary-blue transition-colors"
-                                title="Admin-Rechte entziehen"
-                              >
-                                {" "}
-                                <ShieldCheck className="w-4 h-4" />{" "}
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() =>
-                                  handleGrantAdmin(user.id, user.email)
-                                }
-                                className="text-primary-blue hover:text-primary-blue transition-colors"
-                                title="Zum Admin machen"
-                              >
-                                {" "}
-                                <UserCog className="w-4 h-4" />{" "}
-                              </button>
-                            )}
-                            {user.banned ? (
-                              <button
-                                onClick={() =>
-                                  handleUnbanUser(user.id, user.email)
-                                }
-                                className="text-primary-blue hover:text-primary-blue transition-colors"
-                                title="Sperre aufheben"
-                              >
-                                {" "}
-                                <UserCheck className="w-4 h-4" />{" "}
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() =>
-                                  handleBanUser(user.id, user.email)
-                                }
-                                className="text-primary-blue hover:text-primary-blue transition-colors"
-                                title="Benutzer sperren"
-                              >
-                                {" "}
-                                <Ban className="w-4 h-4" />{" "}
-                              </button>
-                            )}
-                          </div>{" "}
-                        </td>{" "}
-                      </tr>
-                    ))}{" "}
-                  </tbody>{" "}
-                </table>{" "}
-              </div>
-            )}{" "}
+            <BaseTable
+              columns={[
+                {
+                  key: "status",
+                  header: "Status",
+                  render: (user: UserData) => (
+                    <div className="flex items-center gap-2">
+                      {user.is_admin ? (
+                        <StatusBadge type="error" label="Admin" icon={<ShieldCheck className="w-3 h-3" />} />
+                      ) : (
+                        <StatusBadge type="info" label="Eigentümer" icon={<UserCheck className="w-3 h-3" />} />
+                      )}
+                      {user.banned && (
+                        <StatusBadge type="neutral" label="Gesperrt" icon={<Ban className="w-3 h-3" />} />
+                      )}
+                    </div>
+                  )
+                },
+                {
+                  key: "email",
+                  header: "E-Mail",
+                  sortable: true,
+                  render: (user: UserData) => (
+                    <span className="text-sm text-dark">{user.email}</span>
+                  )
+                },
+                {
+                  key: "first_name",
+                  header: "Vorname",
+                  sortable: true,
+                  render: (user: UserData) => (
+                    <span className="text-sm text-gray-400">{user.first_name || "-"}</span>
+                  )
+                },
+                {
+                  key: "last_name",
+                  header: "Nachname",
+                  sortable: true,
+                  render: (user: UserData) => (
+                    <span className="text-sm text-gray-400">{user.last_name || "-"}</span>
+                  )
+                },
+                {
+                  key: "company_name",
+                  header: "Firma",
+                  sortable: true,
+                  render: (user: UserData) => (
+                    <span className="text-sm text-gray-400">{user.company_name || "-"}</span>
+                  )
+                },
+                {
+                  key: "created_at",
+                  header: "Registriert",
+                  sortable: true,
+                  render: (user: UserData) => (
+                    <span className="text-sm text-gray-400">
+                      {new Date(user.created_at).toLocaleDateString("de-DE")}
+                    </span>
+                  )
+                },
+                {
+                  key: "last_sign_in_at",
+                  header: "Letzter Login",
+                  sortable: true,
+                  render: (user: UserData) => (
+                    <span className="text-sm text-gray-400">
+                      {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString("de-DE") : "-"}
+                    </span>
+                  )
+                },
+                {
+                  key: "subscription_plan",
+                  header: "Tarif",
+                  sortable: true,
+                  render: (user: UserData) => (
+                    user.subscription_plan === "pro" ? (
+                      <StatusBadge type="warning" label="Pro" />
+                    ) : (
+                      <StatusBadge type="neutral" label="Gratis" />
+                    )
+                  )
+                },
+                {
+                  key: "actions",
+                  header: "Aktionen",
+                  render: (user: UserData) => (
+                    <ActionsCell>
+                      <ActionButton
+                        icon={<Eye className="w-4 h-4" />}
+                        onClick={() => handleImpersonate(user.id, user.email)}
+                        title="Als Nutzer anmelden"
+                      />
+                      {user.subscription_plan === "pro" && (
+                        <ActionButton
+                          icon={<XCircle className="w-4 h-4" />}
+                          onClick={() => handleCancelSubscription(user.id)}
+                          title="Abo beenden"
+                        />
+                      )}
+                      {user.is_admin ? (
+                        <ActionButton
+                          icon={<ShieldCheck className="w-4 h-4" />}
+                          onClick={() => handleRevokeAdmin(user.id, user.email)}
+                          title="Admin-Rechte entziehen"
+                        />
+                      ) : (
+                        <ActionButton
+                          icon={<UserCog className="w-4 h-4" />}
+                          onClick={() => handleGrantAdmin(user.id, user.email)}
+                          title="Zum Admin machen"
+                        />
+                      )}
+                      {user.banned ? (
+                        <ActionButton
+                          icon={<UserCheck className="w-4 h-4" />}
+                          onClick={() => handleUnbanUser(user.id, user.email)}
+                          title="Sperre aufheben"
+                        />
+                      ) : (
+                        <ActionButton
+                          icon={<Ban className="w-4 h-4" />}
+                          onClick={() => handleBanUser(user.id, user.email)}
+                          title="Benutzer sperren"
+                        />
+                      )}
+                    </ActionsCell>
+                  )
+                }
+              ]}
+              data={sortedUsers}
+              loading={loadingData}
+              emptyMessage="Keine Benutzer gefunden"
+            />
           </div>
         )}{" "}
         {activeTab === "tickets" && <AdminTicketsView />}{" "}

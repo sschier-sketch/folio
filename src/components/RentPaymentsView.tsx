@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import DunningView from "./finances/DunningView";
+import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 interface PartialPayment {
   amount: number;
   date: string;
@@ -500,169 +501,146 @@ export default function RentPaymentsView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg overflow-hidden">
-        {payments.length === 0 ? (
-          <div className="p-8 text-center text-gray-600">
-            Keine Mieteingänge gefunden. Mieteingänge werden automatisch
-            generiert, wenn Sie Mietverträge anlegen.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th
-                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => handleSort("date")}
-                  >
-                    Fälligkeitsdatum
-                  </th>
-                  <th
-                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => handleSort("property")}
-                  >
-                    Immobilie
-                  </th>
-                  <th
-                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => handleSort("tenant")}
-                  >
-                    Mieter
-                  </th>
-                  <th
-                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => handleSort("amount")}
-                  >
-                    Betrag
-                  </th>
-                  <th
-                    className="text-left py-3 px-6 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => handleSort("status")}
-                  >
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Aktion
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredPayments.map((payment) => (
-                  <tr
-                    key={payment.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
-                      {formatDate(payment.due_date)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-dark">
-                      {payment.property ? (
-                        <>
-                          <div className="font-medium">
-                            {payment.property.name}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {payment.property.address}
-                          </div>
-                        </>
-                      ) : (
-                        <span className="text-gray-400 italic">
-                          Keine Immobilie
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-dark">
-                      {payment.rental_contract?.tenants &&
-                      payment.rental_contract.tenants.length > 0 ? (
-                        <div className="space-y-1">
-                          {payment.rental_contract.tenants.map(
-                            (tenant, idx) => (
-                              <div key={idx}>
-                                {tenant.first_name} {tenant.last_name}
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 italic">
-                          Kein Mieter
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
-                      <div className="font-medium">{formatCurrency(payment.amount)}</div>
-                      {(payment.payment_status === 'partial' || payment.payment_status === 'paid') && payment.paid_amount > 0 && (
-                        <div className="text-xs text-gray-500">
-                          Bezahlt: {formatCurrency(payment.paid_amount || 0)}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {payment.payment_status === 'paid' ? (
-                        <div>
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                            <Check className="w-3 h-3" /> Bezahlt
-                          </span>
-                          {payment.paid_date && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              {formatDate(payment.paid_date)}
-                            </div>
-                          )}
-                        </div>
-                      ) : payment.payment_status === 'partial' ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          <Check className="w-3 h-3" /> Teilzahlung
-                        </span>
-                      ) : isOverdue(payment) ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          <X className="w-3 h-3" /> Überfällig
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                          <X className="w-3 h-3" /> Ausstehend
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {payment.payment_status === 'paid' ? (
-                        <div className="flex items-center justify-center gap-3">
-                          <button
-                            onClick={() => handleMarkAsUnpaid(payment.id)}
-                            className="text-primary-blue hover:text-primary-blue transition-colors"
-                            title="Als unbezahlt markieren"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center gap-3">
-                          <button
-                            onClick={() => handleMarkAsPaid(payment.id)}
-                            className="text-primary-blue hover:text-primary-blue transition-colors"
-                            title="Als bezahlt markieren"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedPayment(payment);
-                              setShowPartialPaymentModal(true);
-                            }}
-                            className="text-primary-blue hover:text-primary-blue transition-colors"
-                            title="Teilzahlung erfassen"
-                          >
-                            <Coins className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <BaseTable
+        columns={[
+          {
+            key: "due_date",
+            header: "Fälligkeitsdatum",
+            sortable: true,
+            render: (payment: RentPayment) => (
+              <span className="text-sm text-dark">
+                {formatDate(payment.due_date)}
+              </span>
+            )
+          },
+          {
+            key: "property",
+            header: "Immobilie",
+            sortable: true,
+            render: (payment: RentPayment) => (
+              payment.property ? (
+                <div>
+                  <div className="font-medium text-sm text-dark">
+                    {payment.property.name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {payment.property.address}
+                  </div>
+                </div>
+              ) : (
+                <span className="text-gray-400 italic text-sm">
+                  Keine Immobilie
+                </span>
+              )
+            )
+          },
+          {
+            key: "tenant",
+            header: "Mieter",
+            sortable: true,
+            render: (payment: RentPayment) => (
+              payment.rental_contract?.tenants &&
+              payment.rental_contract.tenants.length > 0 ? (
+                <div className="space-y-1">
+                  {payment.rental_contract.tenants.map(
+                    (tenant, idx) => (
+                      <div key={idx} className="text-sm text-dark">
+                        {tenant.first_name} {tenant.last_name}
+                      </div>
+                    ),
+                  )}
+                </div>
+              ) : (
+                <span className="text-gray-400 italic text-sm">
+                  Kein Mieter
+                </span>
+              )
+            )
+          },
+          {
+            key: "amount",
+            header: "Betrag",
+            sortable: true,
+            render: (payment: RentPayment) => (
+              <div>
+                <div className="font-medium text-sm text-dark">
+                  {formatCurrency(payment.amount)}
+                </div>
+                {(payment.payment_status === 'partial' || payment.payment_status === 'paid') && payment.paid_amount > 0 && (
+                  <div className="text-xs text-gray-500">
+                    Bezahlt: {formatCurrency(payment.paid_amount || 0)}
+                  </div>
+                )}
+              </div>
+            )
+          },
+          {
+            key: "status",
+            header: "Status",
+            sortable: true,
+            render: (payment: RentPayment) => {
+              if (payment.payment_status === 'paid') {
+                return (
+                  <div>
+                    <StatusBadge type="success" label="Bezahlt" icon={<Check className="w-3 h-3" />} />
+                    {payment.paid_date && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {formatDate(payment.paid_date)}
+                      </div>
+                    )}
+                  </div>
+                );
+              } else if (payment.payment_status === 'partial') {
+                return (
+                  <StatusBadge type="info" label="Teilzahlung" icon={<Check className="w-3 h-3" />} />
+                );
+              } else if (isOverdue(payment)) {
+                return (
+                  <StatusBadge type="error" label="Überfällig" icon={<X className="w-3 h-3" />} />
+                );
+              } else {
+                return (
+                  <StatusBadge type="warning" label="Ausstehend" icon={<X className="w-3 h-3" />} />
+                );
+              }
+            }
+          },
+          {
+            key: "actions",
+            header: "Aktion",
+            render: (payment: RentPayment) => (
+              <ActionsCell>
+                {payment.payment_status === 'paid' ? (
+                  <ActionButton
+                    icon={<XCircle className="w-4 h-4" />}
+                    onClick={() => handleMarkAsUnpaid(payment.id)}
+                    title="Als unbezahlt markieren"
+                  />
+                ) : (
+                  <>
+                    <ActionButton
+                      icon={<CheckCircle className="w-4 h-4" />}
+                      onClick={() => handleMarkAsPaid(payment.id)}
+                      title="Als bezahlt markieren"
+                    />
+                    <ActionButton
+                      icon={<Coins className="w-4 h-4" />}
+                      onClick={() => {
+                        setSelectedPayment(payment);
+                        setShowPartialPaymentModal(true);
+                      }}
+                      title="Teilzahlung erfassen"
+                    />
+                  </>
+                )}
+              </ActionsCell>
+            )
+          }
+        ]}
+        data={filteredPayments}
+        loading={false}
+        emptyMessage="Keine Mieteingänge gefunden. Mieteingänge werden automatisch generiert, wenn Sie Mietverträge anlegen."
+      />
 
       {showPartialPaymentModal && selectedPayment && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">

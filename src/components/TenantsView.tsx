@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import TenantContractDetails from "./TenantContractDetails";
 import TenantModal from "./TenantModal";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
+import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 
 interface Property {
   id: string;
@@ -130,16 +131,16 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusType = (status: string): "success" | "warning" | "error" | "neutral" => {
     switch (status) {
       case "active":
-        return "bg-emerald-100 text-emerald-700";
+        return "success";
       case "ending_soon":
-        return "bg-amber-100 text-amber-700";
+        return "warning";
       case "terminated":
-        return "bg-red-100 text-red-700";
+        return "error";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "neutral";
     }
   };
 
@@ -406,131 +407,157 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
               </h3>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                      Einheit
-                    </th>
-                    <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                      Mieter
-                    </th>
-                    <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                      Mietbeginn
-                    </th>
-                    <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
-                      Warmmiete
-                    </th>
-                    <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
-                      Mietart
-                    </th>
-                    <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
-                      Status
-                    </th>
-                    <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
-                      Details
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTenants.map((tenant) => {
+            <BaseTable
+              columns={[
+                {
+                  key: "unit",
+                  header: "Einheit",
+                  render: (tenant: TenantWithDetails) => {
                     const currentContract =
                       tenant.contracts && tenant.contracts.length > 0
                         ? tenant.contracts[0]
                         : null;
-
                     return (
-                      <tr
-                        key={tenant.id}
-                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => setSelectedTenantId(tenant.id)}
-                      >
-                        <td className="py-4 px-6 text-sm text-gray-700">
-                          <div className="flex items-center gap-2">
-                            <Building className="w-4 h-4 text-gray-400" />
-                            <div>
-                              <div>{tenant.properties?.name || "Unbekannt"}</div>
-                              {currentContract?.property_units && (
-                                <div className="text-xs text-gray-500">
-                                  {currentContract.property_units.unit_number}
-                                </div>
-                              )}
-                            </div>
+                      <div className="flex items-center gap-2">
+                        <Building className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-700">
+                            {tenant.properties?.name || "Unbekannt"}
                           </div>
-                        </td>
-                        <td className="py-4 px-6 text-sm">
-                          <div className="font-medium text-dark">
-                            {tenant.name}
-                          </div>
-                          {tenant.email && (
-                            <div className="text-xs text-gray-400">
-                              {tenant.email}
+                          {currentContract?.property_units && (
+                            <div className="text-xs text-gray-500">
+                              {currentContract.property_units.unit_number}
                             </div>
                           )}
-                        </td>
-                        <td className="py-4 px-6 text-sm text-gray-700">
-                          {currentContract ? (
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4 text-gray-400" />
-                              {new Date(
-                                currentContract.start_date
-                              ).toLocaleDateString("de-DE")}
-                            </div>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
-                        <td className="py-4 px-6 text-sm text-right font-medium text-dark">
-                          {currentContract ? (
-                            <span>{(currentContract.total_rent || currentContract.monthly_rent || 0).toFixed(2)} €</span>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
-                        <td className="py-4 px-6 text-center">
-                          {currentContract ? (
-                            <span className="text-xs text-gray-700">
-                              {currentContract.rent_increase_type === "index" ? "Indexmiete" :
-                               currentContract.rent_increase_type === "graduated" ? "Staffelmiete" :
-                               "Normale Miete"}
-                            </span>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
-                        <td className="py-4 px-6 text-center">
-                          {currentContract ? (
-                            <span
-                              className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
-                                getTenantStatus(tenant)
-                              )}`}
-                            >
-                              {getStatusLabel(getTenantStatus(tenant))}
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                              Kein Vertrag
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-4 px-6 text-center">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedTenantId(tenant.id);
-                            }}
-                            className="text-primary-blue hover:text-primary-blue transition-colors"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                  },
+                },
+                {
+                  key: "tenant",
+                  header: "Mieter",
+                  render: (tenant: TenantWithDetails) => (
+                    <div>
+                      <div className="font-medium text-dark text-sm">
+                        {tenant.name}
+                      </div>
+                      {tenant.email && (
+                        <div className="text-xs text-gray-400">{tenant.email}</div>
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  key: "start_date",
+                  header: "Mietbeginn",
+                  render: (tenant: TenantWithDetails) => {
+                    const currentContract =
+                      tenant.contracts && tenant.contracts.length > 0
+                        ? tenant.contracts[0]
+                        : null;
+                    return currentContract ? (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-700">
+                          {new Date(currentContract.start_date).toLocaleDateString(
+                            "de-DE"
+                          )}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-400">-</span>
+                    );
+                  },
+                },
+                {
+                  key: "rent",
+                  header: "Warmmiete",
+                  align: "right",
+                  render: (tenant: TenantWithDetails) => {
+                    const currentContract =
+                      tenant.contracts && tenant.contracts.length > 0
+                        ? tenant.contracts[0]
+                        : null;
+                    return currentContract ? (
+                      <span className="text-sm font-medium text-dark">
+                        {(
+                          currentContract.total_rent ||
+                          currentContract.monthly_rent ||
+                          0
+                        ).toFixed(2)}{" "}
+                        €
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400">-</span>
+                    );
+                  },
+                },
+                {
+                  key: "rent_type",
+                  header: "Mietart",
+                  align: "center",
+                  render: (tenant: TenantWithDetails) => {
+                    const currentContract =
+                      tenant.contracts && tenant.contracts.length > 0
+                        ? tenant.contracts[0]
+                        : null;
+                    return currentContract ? (
+                      <span className="text-xs text-gray-700">
+                        {currentContract.rent_increase_type === "index"
+                          ? "Indexmiete"
+                          : currentContract.rent_increase_type === "graduated"
+                          ? "Staffelmiete"
+                          : "Normale Miete"}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400">-</span>
+                    );
+                  },
+                },
+                {
+                  key: "status",
+                  header: "Status",
+                  align: "center",
+                  render: (tenant: TenantWithDetails) => {
+                    const currentContract =
+                      tenant.contracts && tenant.contracts.length > 0
+                        ? tenant.contracts[0]
+                        : null;
+                    if (!currentContract) {
+                      return <StatusBadge type="neutral" label="Kein Vertrag" />;
+                    }
+                    const status = getTenantStatus(tenant);
+                    return (
+                      <StatusBadge
+                        type={getStatusType(status)}
+                        label={getStatusLabel(status)}
+                      />
+                    );
+                  },
+                },
+                {
+                  key: "actions",
+                  header: "Details",
+                  align: "center",
+                  render: (tenant: TenantWithDetails) => (
+                    <ActionsCell>
+                      <ActionButton
+                        icon={<Eye className="w-4 h-4" />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTenantId(tenant.id);
+                        }}
+                        title="Details anzeigen"
+                      />
+                    </ActionsCell>
+                  ),
+                },
+              ]}
+              data={filteredTenants}
+              loading={false}
+              onRowClick={(tenant) => setSelectedTenantId(tenant.id)}
+            />
           </div>
         </>
       )}

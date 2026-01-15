@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Plus, Trash2, Upload, X, FileText, Loader, Download } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 
 interface Template {
   id: string;
@@ -203,110 +204,96 @@ export function AdminTemplatesView() {
         </button>
       </div>
 
-      {templates.length === 0 ? (
-        <div className="bg-white rounded-lg p-12 text-center">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-dark mb-2">
-            Noch keine Vorlagen
-          </h3>
-          <p className="text-gray-400 mb-6">
-            Laden Sie die erste Vorlage hoch
-          </p>
-          <button
-            onClick={() => setShowUploadModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Erste Vorlage hochladen
-          </button>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg overflow-x-auto">
-          <table className="w-full min-w-[1000px]">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                  Titel & Beschreibung
-                </th>
-                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                  Kategorie
-                </th>
-                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                  Datei
-                </th>
-                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                  Status
-                </th>
-                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700 w-32">
-                  Aktionen
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {templates.map((template) => (
-                <tr key={template.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-4">
-                    <div className="text-sm font-medium text-gray-900 mb-1">
-                      {template.title}
-                    </div>
-                    {template.description && (
-                      <div className="text-xs text-gray-500 max-w-xs truncate">
-                        {template.description}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-4 text-sm text-gray-500">
-                    {getCategoryLabel(template.category)}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="text-sm text-gray-900">{template.file_name}</div>
-                    <div className="text-xs text-gray-500">{formatFileSize(template.file_size)}</div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex flex-col gap-1">
-                      {template.is_premium ? (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded font-medium inline-flex items-center justify-center">
-                          Premium
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-medium inline-flex items-center justify-center">
-                          Gratis
-                        </span>
-                      )}
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded font-medium inline-flex items-center justify-center">
-                        {template.download_count} DL
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleDownload(template)}
-                        disabled={downloading === template.id}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Vorlage herunterladen"
-                      >
-                        {downloading === template.id ? (
-                          <Loader className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <Download className="w-5 h-5" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(template)}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-full font-medium hover:bg-red-600 transition-colors"
-                        title="Vorlage löschen"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <BaseTable
+        columns={[
+          {
+            key: "title",
+            header: "Titel & Beschreibung",
+            render: (template: Template) => (
+              <div>
+                <div className="text-sm font-medium text-gray-900 mb-1">
+                  {template.title}
+                </div>
+                {template.description && (
+                  <div className="text-xs text-gray-500 max-w-xs truncate">
+                    {template.description}
+                  </div>
+                )}
+              </div>
+            ),
+          },
+          {
+            key: "category",
+            header: "Kategorie",
+            render: (template: Template) => (
+              <span className="text-sm text-gray-500">
+                {getCategoryLabel(template.category)}
+              </span>
+            ),
+          },
+          {
+            key: "file",
+            header: "Datei",
+            render: (template: Template) => (
+              <div>
+                <div className="text-sm text-gray-900">{template.file_name}</div>
+                <div className="text-xs text-gray-500">
+                  {formatFileSize(template.file_size)}
+                </div>
+              </div>
+            ),
+          },
+          {
+            key: "status",
+            header: "Status",
+            render: (template: Template) => (
+              <div className="flex flex-col gap-1">
+                {template.is_premium ? (
+                  <StatusBadge type="warning" label="Premium" />
+                ) : (
+                  <StatusBadge type="neutral" label="Gratis" />
+                )}
+                <StatusBadge type="info" label={`${template.download_count} DL`} />
+              </div>
+            ),
+          },
+          {
+            key: "actions",
+            header: "Aktionen",
+            align: "right",
+            render: (template: Template) => (
+              <ActionsCell>
+                <ActionButton
+                  icon={
+                    downloading === template.id ? (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload(template);
+                  }}
+                  title="Vorlage herunterladen"
+                  disabled={downloading === template.id}
+                />
+                <ActionButton
+                  icon={<Trash2 className="w-4 h-4" />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(template);
+                  }}
+                  title="Vorlage löschen"
+                />
+              </ActionsCell>
+            ),
+          },
+        ]}
+        data={templates}
+        loading={loading}
+        emptyMessage="Noch keine Vorlagen"
+      />
 
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">

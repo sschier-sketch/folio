@@ -13,6 +13,7 @@ import {
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { PremiumFeatureGuard } from "./PremiumFeatureGuard";
+import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 interface FinancialData {
   totalRevenue: number;
   totalExpenses: number;
@@ -882,102 +883,82 @@ export default function FinancialAnalysisView() {
                   Detaillierte Prognose-Tabelle
                 </h3>{" "}
               </div>{" "}
-              <div className="overflow-x-auto">
-                {" "}
-                <table className="w-full">
-                  {" "}
-                  <thead className="bg-gray-50 border-b">
-                    {" "}
-                    <tr>
-                      {" "}
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-dark">
-                        Jahr
-                      </th>{" "}
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-dark">
-                        Einnahmen
-                      </th>{" "}
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-dark">
-                        Ausgaben
-                      </th>{" "}
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-dark">
-                        Nettoeinkommen
-                      </th>{" "}
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-dark">
-                        Kumuliert
-                      </th>{" "}
-                    </tr>{" "}
-                  </thead>{" "}
-                  <tbody className="divide-y divide-slate-200">
-                    {" "}
-                    {projections.map((proj) => (
-                      <tr
-                        key={proj.year}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        {" "}
-                        <td className="px-6 py-4 text-sm font-medium text-dark">
-                          {" "}
-                          Jahr {proj.year}{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 text-sm text-right font-semibold text-emerald-600">
-                          {" "}
-                          {formatCurrency(proj.revenue)}{" "}
-                        </td>{" "}
-                        <td className="px-6 py-4 text-sm text-right font-semibold text-red-600">
-                          {" "}
-                          {formatCurrency(proj.expenses)}{" "}
-                        </td>{" "}
-                        <td
-                          className={`px-6 py-4 text-sm text-right font-semibold ${proj.netIncome >= 0 ? "text-primary-blue" : "text-amber-600"}`}
-                        >
-                          {" "}
-                          {formatCurrency(proj.netIncome)}{" "}
-                        </td>{" "}
-                        <td
-                          className={`px-6 py-4 text-sm text-right font-bold ${proj.cumulativeIncome >= 0 ? "text-dark" : "text-red-600"}`}
-                        >
-                          {" "}
-                          {formatCurrency(proj.cumulativeIncome)}{" "}
-                        </td>{" "}
-                      </tr>
-                    ))}{" "}
-                  </tbody>{" "}
-                  <tfoot className="bg-gray-50 border-t-2">
-                    {" "}
-                    <tr>
-                      {" "}
-                      <td className="px-6 py-4 text-sm font-bold text-dark">
-                        Gesamt
-                      </td>{" "}
-                      <td className="px-6 py-4 text-sm text-right font-bold text-emerald-600">
-                        {" "}
-                        {formatCurrency(
-                          projections.reduce((sum, p) => sum + p.revenue, 0),
-                        )}{" "}
-                      </td>{" "}
-                      <td className="px-6 py-4 text-sm text-right font-bold text-red-600">
-                        {" "}
-                        {formatCurrency(
-                          projections.reduce((sum, p) => sum + p.expenses, 0),
-                        )}{" "}
-                      </td>{" "}
-                      <td className="px-6 py-4 text-sm text-right font-bold text-primary-blue">
-                        {" "}
-                        {formatCurrency(
-                          projections.reduce((sum, p) => sum + p.netIncome, 0),
-                        )}{" "}
-                      </td>{" "}
-                      <td className="px-6 py-4 text-sm text-right font-bold text-dark">
-                        {" "}
-                        {formatCurrency(
-                          projections[projections.length - 1]
-                            ?.cumulativeIncome || 0,
-                        )}{" "}
-                      </td>{" "}
-                    </tr>{" "}
-                  </tfoot>{" "}
-                </table>{" "}
-              </div>{" "}
+              <div>
+                <BaseTable
+                  columns={[
+                    {
+                      key: "year",
+                      header: "Jahr",
+                      align: "left",
+                      render: (proj: ProjectionData) => (
+                        <span className="text-sm font-medium text-dark">
+                          Jahr {proj.year}
+                        </span>
+                      )
+                    },
+                    {
+                      key: "revenue",
+                      header: "Einnahmen",
+                      align: "right",
+                      render: (proj: ProjectionData) => (
+                        <span className="text-sm font-semibold text-emerald-600">
+                          {formatCurrency(proj.revenue)}
+                        </span>
+                      )
+                    },
+                    {
+                      key: "expenses",
+                      header: "Ausgaben",
+                      align: "right",
+                      render: (proj: ProjectionData) => (
+                        <span className="text-sm font-semibold text-red-600">
+                          {formatCurrency(proj.expenses)}
+                        </span>
+                      )
+                    },
+                    {
+                      key: "netIncome",
+                      header: "Nettoeinkommen",
+                      align: "right",
+                      render: (proj: ProjectionData) => (
+                        <span className={`text-sm font-semibold ${proj.netIncome >= 0 ? "text-primary-blue" : "text-amber-600"}`}>
+                          {formatCurrency(proj.netIncome)}
+                        </span>
+                      )
+                    },
+                    {
+                      key: "cumulativeIncome",
+                      header: "Kumuliert",
+                      align: "right",
+                      render: (proj: ProjectionData) => (
+                        <span className={`text-sm font-bold ${proj.cumulativeIncome >= 0 ? "text-dark" : "text-red-600"}`}>
+                          {formatCurrency(proj.cumulativeIncome)}
+                        </span>
+                      )
+                    }
+                  ]}
+                  data={projections}
+                  loading={false}
+                  emptyMessage="Keine Prognosedaten verfügbar"
+                />
+                <div className="bg-gray-50 border-t-2 px-6 py-4">
+                  <div className="grid grid-cols-5 gap-4">
+                    <div className="text-sm font-bold text-dark">Gesamt</div>
+                    <div className="text-sm font-bold text-emerald-600 text-right">
+                      {formatCurrency(projections.reduce((sum, p) => sum + p.revenue, 0))}
+                    </div>
+                    <div className="text-sm font-bold text-red-600 text-right">
+                      {formatCurrency(projections.reduce((sum, p) => sum + p.expenses, 0))}
+                    </div>
+                    <div className="text-sm font-bold text-primary-blue text-right">
+                      {formatCurrency(projections.reduce((sum, p) => sum + p.netIncome, 0))}
+                    </div>
+                    <div className="text-sm font-bold text-dark text-right">
+                      {formatCurrency(projections[projections.length - 1]?.cumulativeIncome || 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>{" "}
             <div className="mt-6 bg-primary-blue/5 border border-blue-200 rounded-lg p-4">
               {" "}

@@ -16,6 +16,7 @@ import {
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import { BaseTable, StatusBadge, TableColumn } from "./common/BaseTable";
 
 interface ReferralStats {
   totalReferrals: number;
@@ -488,79 +489,64 @@ export default function ReferralProgramView() {
             Ihre Empfehlungen
           </h3>
         </div>
-        {referrals.length === 0 ? (
-          <div className="p-12 text-center">
-            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 text-lg mb-2">
-              Noch keine Empfehlungen
-            </p>
-            <p className="text-gray-500 text-sm">
-              Teilen Sie Ihren Empfehlungscode, um Ihre ersten Belohnungen zu
-              verdienen.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Datum
-                  </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Belohnung
-                  </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Monate
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {referrals.map((referral) => (
-                  <tr key={referral.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm">
-                      {referral.status === "completed" ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
-                          <Check className="w-3 h-3" /> Abgeschlossen
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-                          <Clock className="w-3 h-3" /> Ausstehend
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {new Date(referral.created_at).toLocaleDateString(
-                        "de-DE"
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      {referral.reward_earned ? (
-                        <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold">
-                          <Award className="w-4 h-4" /> Verdient
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">Ausstehend</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      {referral.reward_earned ? (
-                        <span className="font-semibold text-dark">
-                          {referral.reward_months} Monate
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <BaseTable
+          columns={[
+            {
+              key: "status",
+              header: "Status",
+              render: (referral: Referral) =>
+                referral.status === "completed" ? (
+                  <StatusBadge
+                    type="success"
+                    label="Abgeschlossen"
+                    icon={<Check className="w-3 h-3" />}
+                  />
+                ) : (
+                  <StatusBadge
+                    type="warning"
+                    label="Ausstehend"
+                    icon={<Clock className="w-3 h-3" />}
+                  />
+                ),
+            },
+            {
+              key: "date",
+              header: "Datum",
+              render: (referral: Referral) => (
+                <span className="text-sm text-gray-600">
+                  {new Date(referral.created_at).toLocaleDateString("de-DE")}
+                </span>
+              ),
+            },
+            {
+              key: "reward",
+              header: "Belohnung",
+              render: (referral: Referral) =>
+                referral.reward_earned ? (
+                  <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold text-sm">
+                    <Award className="w-4 h-4" /> Verdient
+                  </span>
+                ) : (
+                  <span className="text-gray-400 text-sm">Ausstehend</span>
+                ),
+            },
+            {
+              key: "months",
+              header: "Monate",
+              render: (referral: Referral) =>
+                referral.reward_earned ? (
+                  <span className="font-semibold text-dark text-sm">
+                    {referral.reward_months} Monate
+                  </span>
+                ) : (
+                  <span className="text-gray-400 text-sm">-</span>
+                ),
+            },
+          ]}
+          data={referrals}
+          loading={false}
+          emptyMessage="Noch keine Empfehlungen. Teilen Sie Ihren Empfehlungscode, um Ihre ersten Belohnungen zu verdienen."
+        />
       </div>
 
       {rewards.length > 0 && (
@@ -570,79 +556,79 @@ export default function ReferralProgramView() {
               Belohnungshistorie
             </h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Typ
-                  </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Monate
-                  </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Aktiviert am
-                  </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Läuft ab am
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {rewards.map((reward) => (
-                  <tr key={reward.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {reward.reward_type === "pro_upgrade"
-                        ? "PRO Upgrade"
-                        : "PRO Verlängerung"}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-dark">
-                      {reward.months_granted} Monate
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      {reward.status === "active" && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
-                          <Check className="w-3 h-3" /> Aktiv
-                        </span>
-                      )}
-                      {reward.status === "used" && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                          Verwendet
-                        </span>
-                      )}
-                      {reward.status === "expired" && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                          Abgelaufen
-                        </span>
-                      )}
-                      {reward.status === "pending" && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-                          Ausstehend
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {reward.activated_at
-                        ? new Date(reward.activated_at).toLocaleDateString(
-                            "de-DE"
-                          )
-                        : "-"}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {reward.expires_at
-                        ? new Date(reward.expires_at).toLocaleDateString(
-                            "de-DE"
-                          )
-                        : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <BaseTable
+            columns={[
+              {
+                key: "type",
+                header: "Typ",
+                render: (reward: ReferralReward) => (
+                  <span className="text-sm text-gray-900">
+                    {reward.reward_type === "pro_upgrade"
+                      ? "PRO Upgrade"
+                      : "PRO Verlängerung"}
+                  </span>
+                ),
+              },
+              {
+                key: "months",
+                header: "Monate",
+                render: (reward: ReferralReward) => (
+                  <span className="text-sm font-semibold text-dark">
+                    {reward.months_granted} Monate
+                  </span>
+                ),
+              },
+              {
+                key: "status",
+                header: "Status",
+                render: (reward: ReferralReward) => {
+                  if (reward.status === "active") {
+                    return (
+                      <StatusBadge
+                        type="success"
+                        label="Aktiv"
+                        icon={<Check className="w-3 h-3" />}
+                      />
+                    );
+                  }
+                  if (reward.status === "used") {
+                    return <StatusBadge type="neutral" label="Verwendet" />;
+                  }
+                  if (reward.status === "expired") {
+                    return <StatusBadge type="error" label="Abgelaufen" />;
+                  }
+                  if (reward.status === "pending") {
+                    return <StatusBadge type="warning" label="Ausstehend" />;
+                  }
+                  return null;
+                },
+              },
+              {
+                key: "activated_at",
+                header: "Aktiviert am",
+                render: (reward: ReferralReward) => (
+                  <span className="text-sm text-gray-600">
+                    {reward.activated_at
+                      ? new Date(reward.activated_at).toLocaleDateString("de-DE")
+                      : "-"}
+                  </span>
+                ),
+              },
+              {
+                key: "expires_at",
+                header: "Läuft ab am",
+                render: (reward: ReferralReward) => (
+                  <span className="text-sm text-gray-600">
+                    {reward.expires_at
+                      ? new Date(reward.expires_at).toLocaleDateString("de-DE")
+                      : "-"}
+                  </span>
+                ),
+              },
+            ]}
+            data={rewards}
+            loading={false}
+          />
         </div>
       )}
     </div>

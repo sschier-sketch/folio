@@ -6,6 +6,7 @@ import { useSubscription } from "../hooks/useSubscription";
 import PropertyModal from "./PropertyModal";
 import PropertyDetails from "./PropertyDetails";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
+import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 
 interface PropertyLabel {
   id: string;
@@ -700,120 +701,147 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
             })}
             </div>
           ) : (
-            <div className="bg-white rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Immobilie</th>
-                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Typ</th>
-                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Adresse</th>
-                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Fläche</th>
-                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Status</th>
-                      <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">Wert</th>
-                      <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">Aktionen</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProperties.map((property) => {
-                      const occupancyStatus = getOccupancyStatus(property.units);
-                      return (
-                        <tr key={property.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full overflow-hidden bg-primary-blue/10 flex items-center justify-center flex-shrink-0">
-                                {property.photo_url ? (
-                                  <img
-                                    src={property.photo_url}
-                                    alt={property.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <Building2 className="w-5 h-5 text-primary-blue" />
-                                )}
-                              </div>
-                              <div>
-                                <div className="font-semibold text-dark">{property.name}</div>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {property.labels?.slice(0, 2).map((label) => {
-                                    const colorClasses = LABEL_COLORS[label.color as keyof typeof LABEL_COLORS] || LABEL_COLORS.blue;
-                                    return (
-                                      <span
-                                        key={label.id}
-                                        className={`inline-block px-1.5 py-0.5 text-xs rounded ${colorClasses.bg} ${colorClasses.text}`}
-                                      >
-                                        {label.label}
-                                      </span>
-                                    );
-                                  })}
-                                  {property.labels && property.labels.length > 2 && (
-                                    <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-600">
-                                      +{property.labels.length - 2}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-sm text-gray-600">{getPropertyTypeLabel(property.property_type)}</td>
-                          <td className="py-4 px-6 text-sm text-gray-600">{property.address}</td>
-                          <td className="py-4 px-6 text-sm text-gray-600">{property.size_sqm ? `${property.size_sqm} m²` : '-'}</td>
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-2">
-                              {occupancyStatus.label === "Voll vermietet" ? (
-                                <CheckCircle className="w-4 h-4 text-emerald-600" />
-                              ) : occupancyStatus.label === "Leer" ? (
-                                <AlertCircle className="w-4 h-4 text-amber-600" />
-                              ) : null}
-                              <span className={`text-sm font-medium ${occupancyStatus.color}`}>
-                                {occupancyStatus.label}
+            <BaseTable
+              columns={[
+                {
+                  key: "property",
+                  header: "Immobilie",
+                  render: (property: Property) => (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-primary-blue/10 flex items-center justify-center flex-shrink-0">
+                        {property.photo_url ? (
+                          <img
+                            src={property.photo_url}
+                            alt={property.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Building2 className="w-5 h-5 text-primary-blue" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-dark text-sm">{property.name}</div>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {property.labels?.slice(0, 2).map((label) => {
+                            const colorClasses = LABEL_COLORS[label.color as keyof typeof LABEL_COLORS] || LABEL_COLORS.blue;
+                            return (
+                              <span
+                                key={label.id}
+                                className={`inline-block px-1.5 py-0.5 text-xs rounded ${colorClasses.bg} ${colorClasses.text}`}
+                              >
+                                {label.label}
                               </span>
-                            </div>
-                            {property.units && property.units.total > 0 && (
-                              <div className="text-xs text-gray-400 mt-1">
-                                {property.units.rented}/{property.units.total} vermietet
-                              </div>
-                            )}
-                          </td>
-                          <td className="py-4 px-6 text-sm font-medium text-dark">{formatCurrency(property.current_value)}</td>
-                          <td className="py-4 px-6">
-                            <div className="flex items-center justify-end gap-3">
-                              <button
-                                onClick={() => {
-                                  setSelectedProperty(property);
-                                  setShowDetails(true);
-                                }}
-                                className="text-primary-blue hover:text-primary-blue transition-colors"
-                                title="Details anzeigen"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedProperty(property);
-                                  setShowModal(true);
-                                }}
-                                className="text-primary-blue hover:text-primary-blue transition-colors"
-                                title="Bearbeiten"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(property.id)}
-                                className="text-primary-blue hover:text-primary-blue transition-colors"
-                                title="Löschen"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                            );
+                          })}
+                          {property.labels && property.labels.length > 2 && (
+                            <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-gray-100 text-gray-600">
+                              +{property.labels.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  key: "type",
+                  header: "Typ",
+                  render: (property: Property) => (
+                    <span className="text-sm text-gray-600">
+                      {getPropertyTypeLabel(property.property_type)}
+                    </span>
+                  ),
+                },
+                {
+                  key: "address",
+                  header: "Adresse",
+                  render: (property: Property) => (
+                    <span className="text-sm text-gray-600">{property.address}</span>
+                  ),
+                },
+                {
+                  key: "size",
+                  header: "Fläche",
+                  render: (property: Property) => (
+                    <span className="text-sm text-gray-600">
+                      {property.size_sqm ? `${property.size_sqm} m²` : '-'}
+                    </span>
+                  ),
+                },
+                {
+                  key: "status",
+                  header: "Status",
+                  render: (property: Property) => {
+                    const occupancyStatus = getOccupancyStatus(property.units);
+                    return (
+                      <div>
+                        <div className="flex items-center gap-2">
+                          {occupancyStatus.label === "Voll vermietet" ? (
+                            <CheckCircle className="w-4 h-4 text-emerald-600" />
+                          ) : occupancyStatus.label === "Leer" ? (
+                            <AlertCircle className="w-4 h-4 text-amber-600" />
+                          ) : null}
+                          <span className={`text-sm font-medium ${occupancyStatus.color}`}>
+                            {occupancyStatus.label}
+                          </span>
+                        </div>
+                        {property.units && property.units.total > 0 && (
+                          <div className="text-xs text-gray-400 mt-1">
+                            {property.units.rented}/{property.units.total} vermietet
+                          </div>
+                        )}
+                      </div>
+                    );
+                  },
+                },
+                {
+                  key: "value",
+                  header: "Wert",
+                  render: (property: Property) => (
+                    <span className="text-sm font-medium text-dark">
+                      {formatCurrency(property.current_value)}
+                    </span>
+                  ),
+                },
+                {
+                  key: "actions",
+                  header: "Aktionen",
+                  align: "right",
+                  render: (property: Property) => (
+                    <ActionsCell>
+                      <ActionButton
+                        icon={<Eye className="w-4 h-4" />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProperty(property);
+                          setShowDetails(true);
+                        }}
+                        title="Details anzeigen"
+                      />
+                      <ActionButton
+                        icon={<Edit2 className="w-4 h-4" />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProperty(property);
+                          setShowModal(true);
+                        }}
+                        title="Bearbeiten"
+                      />
+                      <ActionButton
+                        icon={<Trash2 className="w-4 h-4" />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(property.id);
+                        }}
+                        title="Löschen"
+                      />
+                    </ActionsCell>
+                  ),
+                },
+              ]}
+              data={filteredProperties}
+              loading={false}
+            />
           )}
         </>
       )}

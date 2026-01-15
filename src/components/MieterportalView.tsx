@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 
 interface Tenant {
   id: string;
@@ -169,26 +170,14 @@ export default function MieterportalView() {
       : tenant.rental_contract;
 
     if (!contract?.portal_access_enabled) {
-      return (
-        <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-          Deaktiviert
-        </span>
-      );
+      return <StatusBadge type="neutral" label="Deaktiviert" />;
     }
 
     if (!tenant.portal_activated_at) {
-      return (
-        <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-          Einladung ausstehend
-        </span>
-      );
+      return <StatusBadge type="warning" label="Einladung ausstehend" />;
     }
 
-    return (
-      <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-        Aktiv
-      </span>
-    );
+    return <StatusBadge type="success" label="Aktiv" />;
   };
 
   if (loading) {
@@ -239,138 +228,114 @@ export default function MieterportalView() {
         </div>
       </div>
 
-      {tenants.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <Users className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-dark mb-2">
-            Keine Mieter mit E-Mail-Adresse
-          </h3>
-          <p className="text-gray-400">
-            Fügen Sie Ihren Mietern E-Mail-Adressen hinzu, um ihnen
-            Portalzugang zu gewähren.
-          </p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                  Mieter
-                </th>
-                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                  Immobilie
-                </th>
-                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                  Status
-                </th>
-                <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                  Letzter Login
-                </th>
-                <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
-                  Aktionen
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {tenants.map((tenant) => {
-                const contract = Array.isArray(tenant.rental_contract)
-                  ? tenant.rental_contract[0]
-                  : tenant.rental_contract;
+      <BaseTable
+        columns={[
+          {
+            key: "tenant",
+            header: "Mieter",
+            render: (tenant: Tenant) => (
+              <div>
+                <div className="font-semibold text-dark text-sm">
+                  {tenant.first_name} {tenant.last_name}
+                </div>
+                <div className="text-xs text-gray-500 mt-0.5">
+                  {tenant.email}
+                </div>
+              </div>
+            ),
+          },
+          {
+            key: "property",
+            header: "Immobilie",
+            render: (tenant: Tenant) => (
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Building2 className="w-4 h-4 text-blue-600" />
+                </div>
+                <span className="text-sm font-medium text-dark">
+                  {tenant.property?.name}
+                </span>
+              </div>
+            ),
+          },
+          {
+            key: "status",
+            header: "Status",
+            render: (tenant: Tenant) => getStatusBadge(tenant),
+          },
+          {
+            key: "last_login",
+            header: "Letzter Login",
+            render: (tenant: Tenant) => (
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {formatDate(tenant.last_login)}
+                </span>
+              </div>
+            ),
+          },
+          {
+            key: "actions",
+            header: "Aktionen",
+            align: "right",
+            render: (tenant: Tenant) => {
+              const contract = Array.isArray(tenant.rental_contract)
+                ? tenant.rental_contract[0]
+                : tenant.rental_contract;
 
-                return (
-                  <tr key={tenant.id} className="hover:bg-blue-50/30 transition-colors border-b border-gray-100 last:border-0">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-semibold text-dark text-sm">
-                          {tenant.first_name} {tenant.last_name}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-0.5">
-                          {tenant.email}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                          <Building2 className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <span className="text-sm font-medium text-dark">
-                          {tenant.property?.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {getStatusBadge(tenant)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-600">
-                          {formatDate(tenant.last_login)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-3">
-                        {contract?.portal_access_enabled ? (
-                          <>
-                            <button
-                              onClick={() => handleImpersonateTenant(tenant)}
-                              disabled={impersonating === tenant.id}
-                              className="text-primary-blue hover:text-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Als Mieter anmelden"
-                            >
-                              <LogIn className="w-4 h-4" />
-                            </button>
-                            {!tenant.portal_activated_at && (
-                              <button
-                                onClick={() => handleSendActivationLink(tenant)}
-                                disabled={sendingInvite}
-                                className="text-primary-blue hover:text-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Aktivierungslink per E-Mail senden"
-                              >
-                                <Send className="w-4 h-4" />
-                              </button>
-                            )}
-                            <button
-                              onClick={() =>
-                                handleTogglePortalAccess(
-                                  tenant.id,
-                                  contract.id,
-                                  true
-                                )
-                              }
-                              className="text-primary-blue hover:text-primary-blue transition-colors"
-                              title="Zugang deaktivieren"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            onClick={() =>
-                              handleTogglePortalAccess(
-                                tenant.id,
-                                contract?.id || "",
-                                false
-                              )
-                            }
-                            className="text-primary-blue hover:text-primary-blue transition-colors"
-                            title="Zugang aktivieren"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+              return (
+                <ActionsCell>
+                  {contract?.portal_access_enabled ? (
+                    <>
+                      <ActionButton
+                        icon={<LogIn className="w-4 h-4" />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleImpersonateTenant(tenant);
+                        }}
+                        title="Als Mieter anmelden"
+                        disabled={impersonating === tenant.id}
+                      />
+                      {!tenant.portal_activated_at && (
+                        <ActionButton
+                          icon={<Send className="w-4 h-4" />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSendActivationLink(tenant);
+                          }}
+                          title="Aktivierungslink per E-Mail senden"
+                          disabled={sendingInvite}
+                        />
+                      )}
+                      <ActionButton
+                        icon={<X className="w-4 h-4" />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTogglePortalAccess(tenant.id, contract.id, true);
+                        }}
+                        title="Zugang deaktivieren"
+                      />
+                    </>
+                  ) : (
+                    <ActionButton
+                      icon={<Check className="w-4 h-4" />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTogglePortalAccess(tenant.id, contract?.id || "", false);
+                      }}
+                      title="Zugang aktivieren"
+                    />
+                  )}
+                </ActionsCell>
+              );
+            },
+          },
+        ]}
+        data={tenants}
+        loading={loading}
+        emptyMessage="Keine Mieter mit E-Mail-Adresse"
+      />
 
       <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
         <div className="flex gap-3">
