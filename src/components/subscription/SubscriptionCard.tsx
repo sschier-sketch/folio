@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Crown, CreditCard, Loader2 } from "lucide-react";
+import { Crown, CreditCard, Loader2, Check } from "lucide-react";
 import { StripeProduct } from "../../stripe-config";
 import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -18,6 +18,10 @@ export function SubscriptionCard({
   const { language } = useLanguage();
 
   const handleSubscribe = async () => {
+    if (product.price === 0) {
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -143,6 +147,17 @@ export function SubscriptionCard({
           )}
         </div>
 
+        {product.features && product.features.length > 0 && (
+          <ul className="space-y-3 mb-6 text-left">
+            {product.features.map((feature, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-600 text-sm">{feature}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
             {error}
@@ -151,10 +166,12 @@ export function SubscriptionCard({
 
         <button
           onClick={handleSubscribe}
-          disabled={loading || isCurrentPlan}
+          disabled={loading || isCurrentPlan || product.price === 0}
           className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors ${
             isCurrentPlan
-              ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+              ? "bg-green-100 text-green-700 cursor-default"
+              : product.price === 0
+              ? "bg-gray-100 text-gray-500 cursor-default"
               : "bg-primary-blue hover:bg-primary-blue text-white"
           }`}
         >
@@ -165,6 +182,12 @@ export function SubscriptionCard({
               "Aktiv"
             ) : (
               "Active"
+            )
+          ) : product.price === 0 ? (
+            language === "de" ? (
+              "Ihr aktueller Tarif"
+            ) : (
+              "Your current plan"
             )
           ) : (
             <>

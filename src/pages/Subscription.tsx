@@ -7,6 +7,14 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 export function Subscription() {
   const { subscription } = useSubscription();
+
+  const isCurrentPlan = (priceId: string) => {
+    if (priceId === "free") {
+      return !subscription?.price_id || subscription?.price_id === "pro_plan";
+    }
+    return subscription?.price_id === priceId;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       {" "}
@@ -22,11 +30,11 @@ export function Subscription() {
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard{" "}
           </Link>{" "}
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Subscription Plans
+            Tarif & Abrechnung
           </h1>{" "}
           <p className="text-gray-600 mb-8">
             {" "}
-            Choose the plan that best fits your property management needs.{" "}
+            Wählen Sie den Plan, der am besten zu Ihren Anforderungen passt.{" "}
           </p>{" "}
           <SubscriptionStatus />{" "}
         </div>{" "}
@@ -36,7 +44,7 @@ export function Subscription() {
             <SubscriptionCard
               key={product.priceId}
               product={product}
-              isCurrentPlan={subscription?.price_id === product.priceId}
+              isCurrentPlan={isCurrentPlan(product.priceId)}
             />
           ))}{" "}
         </div>{" "}
