@@ -284,16 +284,13 @@ export default function IndexRentView() {
               className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  {getStatusIcon(calc.status)}
-                  <div>
-                    <h3 className="font-semibold text-dark">
-                      {calc.rental_contract?.tenants?.name || "Unbekannter Mieter"}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {calc.rental_contract?.properties?.name || "Unbekannte Immobilie"}
-                    </p>
-                  </div>
+                <div>
+                  <h3 className="font-semibold text-dark">
+                    {calc.rental_contract?.tenants?.name || "Unbekannter Mieter"}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {calc.rental_contract?.properties?.name || "Unbekannte Immobilie"}
+                  </p>
                 </div>
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${

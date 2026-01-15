@@ -196,9 +196,12 @@ export default function DunningHistory() {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 ml-4">
-                      {getStatusIcon(reminder.status)}
-                      <span className="text-sm text-gray-600">
+                    <div className="ml-4">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                        reminder.status === 'sent' ? 'bg-emerald-100 text-emerald-700' :
+                        reminder.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
                         {getStatusLabel(reminder.status)}
                       </span>
                     </div>

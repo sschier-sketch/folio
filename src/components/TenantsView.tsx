@@ -418,18 +418,15 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                         ? tenant.contracts[0]
                         : null;
                     return (
-                      <div className="flex items-center gap-2">
-                        <Building className="w-4 h-4 text-gray-400" />
-                        <div>
-                          <div className="text-sm text-gray-700">
-                            {tenant.properties?.name || "Unbekannt"}
-                          </div>
-                          {currentContract?.property_units && (
-                            <div className="text-xs text-gray-500">
-                              {currentContract.property_units.unit_number}
-                            </div>
-                          )}
+                      <div>
+                        <div className="text-sm text-gray-700">
+                          {tenant.properties?.name || "Unbekannt"}
                         </div>
+                        {currentContract?.property_units && (
+                          <div className="text-xs text-gray-500">
+                            {currentContract.property_units.unit_number}
+                          </div>
+                        )}
                       </div>
                     );
                   },
@@ -457,14 +454,11 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                         ? tenant.contracts[0]
                         : null;
                     return currentContract ? (
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-700">
-                          {new Date(currentContract.start_date).toLocaleDateString(
-                            "de-DE"
-                          )}
-                        </span>
-                      </div>
+                      <span className="text-sm text-gray-700">
+                        {new Date(currentContract.start_date).toLocaleDateString(
+                          "de-DE"
+                        )}
+                      </span>
                     ) : (
                       <span className="text-sm text-gray-400">-</span>
                     );

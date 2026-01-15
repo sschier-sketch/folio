@@ -582,7 +582,7 @@ export default function RentPaymentsView() {
               if (payment.payment_status === 'paid') {
                 return (
                   <div>
-                    <StatusBadge type="success" label="Bezahlt" icon={<Check className="w-3 h-3" />} />
+                    <StatusBadge type="success" label="Bezahlt" />
                     {payment.paid_date && (
                       <div className="text-xs text-gray-500 mt-1">
                         {formatDate(payment.paid_date)}
@@ -592,15 +592,15 @@ export default function RentPaymentsView() {
                 );
               } else if (payment.payment_status === 'partial') {
                 return (
-                  <StatusBadge type="info" label="Teilzahlung" icon={<Check className="w-3 h-3" />} />
+                  <StatusBadge type="info" label="Teilzahlung" />
                 );
               } else if (isOverdue(payment)) {
                 return (
-                  <StatusBadge type="error" label="Überfällig" icon={<X className="w-3 h-3" />} />
+                  <StatusBadge type="error" label="Überfällig" />
                 );
               } else {
                 return (
-                  <StatusBadge type="warning" label="Ausstehend" icon={<X className="w-3 h-3" />} />
+                  <StatusBadge type="warning" label="Ausstehend" />
                 );
               }
             }

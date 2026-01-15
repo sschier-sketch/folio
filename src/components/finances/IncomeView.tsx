@@ -704,8 +704,7 @@ export default function IncomeView() {
                       {income.properties.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${getStatusColor(income.status)}`}>
-                        {getStatusIcon(income.status)}
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(income.status)}`}>
                         {getStatusLabel(income.status)}
                       </span>
                     </td>

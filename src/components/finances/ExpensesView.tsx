@@ -651,11 +651,10 @@ export default function ExpensesView() {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                           expense.status
                         )}`}
                       >
-                        {getStatusIcon(expense.status)}
                         {getStatusLabel(expense.status)}
                       </span>
                     </td>
