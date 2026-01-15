@@ -665,27 +665,6 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                       </div>
                     </div>
                   ))
-                  ) : isEnergyCertificate ? (
-                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                          <h5 className="font-semibold text-amber-900 mb-1">
-                            Energieausweis fehlt
-                          </h5>
-                          <p className="text-sm text-amber-800 mb-3">
-                            Für Ihre Immobilie ist zwingend ein Bedarfsausweis erforderlich. Mit unserem Partner McEnergieausweis erhalten Sie 20% Rabatt.
-                          </p>
-                          <button
-                            onClick={() => setShowEnergyModal(true)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-full font-medium hover:bg-amber-700 transition-colors text-sm"
-                          >
-                            <FileCheck className="w-4 h-4" />
-                            Energieausweis erstellen lassen
-                          </button>
-                        </div>
-                      </div>
-                    </div>
                   ) : null}
                 </div>
               </div>
