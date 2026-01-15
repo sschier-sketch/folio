@@ -4,64 +4,47 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        sans: ['Manrope', 'system-ui', 'sans-serif'],
       },
       colors: {
-        'app-bg': '#F9FAFB',
-        'bg-subtle': '#F3F4F6',
-        'card-bg': '#FFFFFF',
-        'divider': '#E5E7EB',
-
-        'text-primary': '#111827',
-        'text-secondary': '#6B7280',
-        'text-tertiary': '#9CA3AF',
-
         primary: {
-          100: '#E6F2FF',
+          DEFAULT: '#008CFF',
+          blue: '#008CFF',
+        },
+        dark: {
+          DEFAULT: '#131719',
+        },
+        blue: {
+          50: '#E6F4FF',
+          100: '#CCE9FF',
+          200: '#99D6FF',
+          300: '#66C2FF',
+          400: '#33AFFF',
           500: '#008CFF',
-          600: '#007AE0',
+          600: '#008CFF',
+          700: '#0073CC',
+          800: '#005999',
+          900: '#004D80',
         },
-
-        success: {
-          100: '#DCFCE7',
-          500: '#16A34A',
+        gray: {
+          50: '#faf8f8',
+          100: '#f0eded',
+          200: '#BCBFCC',
+          300: '#9DA2B3',
+          400: '#6E7180',
+          500: '#40424D',
+          600: '#1E1E24',
+          700: '#131719',
+          800: '#000000',
         },
-
-        warning: {
-          100: '#FEF3C7',
-          500: '#F59E0B',
-        },
-
-        error: {
-          100: '#FEE2E2',
-          500: '#DC2626',
-        },
-
-        dark: '#131719',
       },
       fontSize: {
-        xs: ['12px', { lineHeight: '1.5' }],
-        sm: ['14px', { lineHeight: '1.5' }],
-        base: ['15px', { lineHeight: '1.5' }],
-        lg: ['18px', { lineHeight: '1.5' }],
-        xl: ['20px', { lineHeight: '1.5' }],
-        '2xl': ['24px', { lineHeight: '1.4' }],
-        '3xl': ['28px', { lineHeight: '1.3' }],
-      },
-      borderRadius: {
-        'xl': '12px',
-        '2xl': '14px',
-      },
-      boxShadow: {
-        'card-hover': '0 8px 24px rgba(0, 0, 0, 0.06)',
-      },
-      spacing: {
-        '4': '4px',
-        '8': '8px',
-        '12': '12px',
-        '16': '16px',
-        '24': '24px',
-        '32': '32px',
+        'h1': '64px',
+        'h2': '48px',
+        'subheader1': '32px',
+        'subheader2': '24px',
+        'paragraph1': '18px',
+        'paragraph2': '16px',
       },
     },
   },
