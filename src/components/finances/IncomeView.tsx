@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit2, Upload, FileText, X } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit2, Upload, FileText, X, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -19,6 +19,11 @@ interface ManualIncome {
   recipient: string | null;
   due_date: string | null;
   is_cashflow_relevant: boolean;
+  vat_rate: number;
+  is_apportionable: boolean;
+  is_labor_cost: boolean;
+  ignore_in_operating_costs: boolean;
+  notes: string | null;
   properties: {
     name: string;
   };
@@ -132,7 +137,7 @@ export default function IncomeView() {
 
       let manualQuery = supabase
         .from("income_entries")
-        .select("id, property_id, category_id, description, amount, entry_date, status, recipient, due_date, is_cashflow_relevant, properties(name)")
+        .select("id, property_id, category_id, description, amount, entry_date, status, recipient, due_date, is_cashflow_relevant, vat_rate, is_apportionable, is_labor_cost, ignore_in_operating_costs, notes, properties(name)")
         .eq("user_id", user!.id)
         .order("entry_date", { ascending: false });
 
@@ -348,16 +353,30 @@ export default function IncomeView() {
       due_date: income.due_date || "",
       description: income.description,
       recipient: income.recipient || "",
-      notes: "",
+      notes: income.notes || "",
       status: income.status,
-      vat_rate: "0",
-      is_apportionable: false,
-      is_labor_cost: false,
-      ignore_in_operating_costs: false,
+      vat_rate: income.vat_rate?.toString() || "0",
+      is_apportionable: income.is_apportionable || false,
+      is_labor_cost: income.is_labor_cost || false,
+      ignore_in_operating_costs: income.ignore_in_operating_costs || false,
       is_cashflow_relevant: income.is_cashflow_relevant,
     });
     setShowAddModal(true);
   }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "paid":
+        return <CheckCircle className="w-4 h-4" />;
+      case "pending":
+      case "open":
+        return <Clock className="w-4 h-4" />;
+      case "overdue":
+        return <AlertCircle className="w-4 h-4" />;
+      default:
+        return <Clock className="w-4 h-4" />;
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -594,6 +613,7 @@ export default function IncomeView() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${getStatusColor(income.status)}`}>
+                        {getStatusIcon(income.status)}
                         {getStatusLabel(income.status)}
                       </span>
                     </td>

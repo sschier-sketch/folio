@@ -12,6 +12,8 @@ import { useAuth } from "../../hooks/useAuth";
 
 interface MonthlyData {
   month: string;
+  rentIncome: number;
+  manualIncome: number;
   income: number;
   expenses: number;
   loanPayments: number;
@@ -184,7 +186,7 @@ export default function CashflowView() {
         const firstDayOfMonth = new Date(year, month, 1);
         const lastDayOfMonth = new Date(year, month + 1, 0);
 
-        const rentIncome = contracts
+        const monthRentIncome = contracts
           .filter((contract) => {
             if (!contract.start_date) return false;
             const contractStart = new Date(contract.start_date);
@@ -195,14 +197,14 @@ export default function CashflowView() {
             return sum + parseFloat(contract.total_rent?.toString() || '0');
           }, 0);
 
-        const manualIncome = manualIncomes
+        const monthManualIncome = manualIncomes
           .filter((i) => {
             const date = new Date(i.entry_date);
             return date.getFullYear() === year && date.getMonth() === month;
           })
           .reduce((sum, i) => sum + parseFloat(i.amount?.toString() || '0'), 0);
 
-        const monthIncome = rentIncome + manualIncome;
+        const monthIncome = monthRentIncome + monthManualIncome;
 
         const monthExpenses = expenses
           .filter((e) => {
@@ -223,6 +225,8 @@ export default function CashflowView() {
 
         data.push({
           month: monthNames[month],
+          rentIncome: monthRentIncome,
+          manualIncome: monthManualIncome,
           income: monthIncome,
           expenses: monthExpenses,
           loanPayments: monthLoanPayments,
@@ -461,14 +465,25 @@ export default function CashflowView() {
 
               <div className="relative h-8 bg-gray-100 rounded overflow-hidden">
                 <div
-                  className="absolute top-0 left-0 h-full bg-emerald-500 opacity-50 hover:opacity-70 transition-opacity group"
+                  className="absolute top-0 left-0 h-full bg-emerald-600 opacity-50 hover:opacity-70 transition-opacity group"
+                  style={{
+                    width: `${(data.rentIncome / maxValue) * 100}%`,
+                  }}
+                  title={`Mieteinnahmen: ${data.rentIncome.toFixed(2)} €`}
+                >
+                  <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
+                    Mieteinnahmen: {data.rentIncome.toFixed(2)} €
+                  </div>
+                </div>
+                <div
+                  className="absolute top-0 left-0 h-full bg-emerald-400 opacity-50 hover:opacity-70 transition-opacity group"
                   style={{
                     width: `${(data.income / maxValue) * 100}%`,
                   }}
-                  title={`Einnahmen: ${data.income.toFixed(2)} €`}
+                  title={`Sonstige Einnahmen: ${data.manualIncome.toFixed(2)} €`}
                 >
                   <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                    Einnahmen: {data.income.toFixed(2)} €
+                    Sonstige Einnahmen: {data.manualIncome.toFixed(2)} €
                   </div>
                 </div>
                 <div
