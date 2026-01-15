@@ -27,6 +27,7 @@ import { AdminEmailTemplatesView } from "../components/AdminEmailTemplatesView";
 import { AdminTemplatesView } from "../components/AdminTemplatesView";
 import AdminSystemUpdatesView from "../components/AdminSystemUpdatesView";
 import { AdminFeedbackView } from "../components/AdminFeedbackView";
+import AdminSystemSettingsView from "../components/AdminSystemSettingsView";
 interface UserData {
   id: string;
   email: string;
@@ -53,7 +54,7 @@ export function Admin() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates" | "feedback"
+    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates" | "feedback" | "system_settings"
   >("overview");
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -354,6 +355,13 @@ export function Admin() {
             {" "}
             <MessageSquare className="w-4 h-4 inline mr-2" /> Feedback{" "}
           </button>{" "}
+          <button
+            onClick={() => setActiveTab("system_settings")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "system_settings" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
+          >
+            {" "}
+            <Settings className="w-4 h-4 inline mr-2" /> System{" "}
+          </button>{" "}
         </div>{" "}
         {activeTab === "overview" && (
           <div>
@@ -434,14 +442,17 @@ export function Admin() {
                     Templates bearbeiten
                   </p>{" "}
                 </button>{" "}
-                <div className="p-4 border-2 rounded bg-gray-50">
+                <button
+                  onClick={() => setActiveTab("system_settings")}
+                  className="p-4 border-2 rounded-full hover:border-primary-blue hover:bg-primary-blue/5 transition-all text-left"
+                >
                   {" "}
-                  <Settings className="w-6 h-6 text-gray-300 mb-2" />{" "}
+                  <Settings className="w-6 h-6 text-primary-blue mb-2" />{" "}
                   <p className="font-semibold text-dark">
                     System-Einstellungen
                   </p>{" "}
-                  <p className="text-sm text-gray-400">Bald verfügbar</p>{" "}
-                </div>{" "}
+                  <p className="text-sm text-gray-400">GTM & Konfiguration</p>{" "}
+                </button>{" "}
               </div>{" "}
             </div>{" "}
           </div>
@@ -693,6 +704,7 @@ export function Admin() {
         {activeTab === "document_templates" && <AdminTemplatesView />}{" "}
         {activeTab === "system_updates" && <AdminSystemUpdatesView />}{" "}
         {activeTab === "feedback" && <AdminFeedbackView />}{" "}
+        {activeTab === "system_settings" && <AdminSystemSettingsView />}{" "}
       </div>{" "}
     </div>
   );
