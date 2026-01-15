@@ -87,7 +87,6 @@ export function AdminEmailTemplatesView() {
         .eq("id", editedTemplate.id);
       if (error) throw error;
       await loadTemplates();
-      setSelectedTemplate(editedTemplate);
       alert("Template erfolgreich gespeichert!");
     } catch (err) {
       console.error("Error saving template:", err);
@@ -118,8 +117,11 @@ export function AdminEmailTemplatesView() {
     return labels[variable] || variable;
   }
 
-  function replaceVariables(content: string, variables: string[]): string {
+  function replaceVariables(content: string, variables: string[] | null | undefined): string {
     let result = content;
+    if (!variables || !Array.isArray(variables)) {
+      return result;
+    }
     variables.forEach((variable) => {
       const placeholder = `{{${variable}}}`;
       const exampleValue = `[${getVariableLabel(variable)}]`;

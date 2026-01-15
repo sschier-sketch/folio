@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 interface HandoverProtocol {
   handover_type: string;
@@ -128,7 +128,7 @@ export async function generateHandoverPDF(
       ];
     });
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: yPos,
       head: [["Typ", "Zählernummer", "Stand", "Einheit", "Ablesedatum"]],
       body: meterTableData,
@@ -158,7 +158,7 @@ export async function generateHandoverPDF(
       ];
     });
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: yPos,
       head: [["Punkt", "Status", "Anmerkungen"]],
       body: checklistTableData,

@@ -869,7 +869,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       const { data } = await supabase
         .from("admin_users")
         .select("preferred_language")
-        .eq("id", user.id)
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (
@@ -893,7 +893,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         await supabase
           .from("admin_users")
           .update({ preferred_language: lang })
-          .eq("id", user.id);
+          .eq("user_id", user.id);
       } catch (error) {
         console.error("Error saving user language:", error);
       }
