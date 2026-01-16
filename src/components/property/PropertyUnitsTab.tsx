@@ -441,7 +441,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                         )}
                         <button
                           onClick={() => openEditModal(unit)}
-                          className="text-primary-blue hover:text-primary-blue transition-colors"
+                          className="text-gray-300 hover:text-primary-blue transition-colors"
                           title="Bearbeiten"
                         >
                           <Edit className="w-4 h-4" />
@@ -658,7 +658,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                     setEditingUnit(null);
                     resetForm();
                   }}
-                  className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300 transition-colors"
                 >
                   Abbrechen
                 </button>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Building2, CreditCard as Edit2, Trash2, TrendingUp, Euro, AlertCircle, CheckCircle, X, Tag, Download, FileDown, FileSpreadsheet, FileText, Grid3x3, List, Eye } from "lucide-react";
+import { Plus, Building2, Pencil, Trash2, TrendingUp, AlertCircle, CheckCircle, X, Tag, Download, FileDown, FileSpreadsheet, FileText, Grid3x3, List, Eye } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -574,7 +574,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               return (
                 <div
                   key={property.id}
-                  className="bg-white rounded shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                  className="bg-white rounded overflow-hidden border border-gray-100"
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -597,7 +597,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                           }}
                           className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(property.id)}
@@ -675,14 +675,11 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                         {getPropertyTypeLabel(property.property_type)}
                         {property.size_sqm && ` • ${property.size_sqm} m²`}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Euro className="w-4 h-4 text-gray-300" />
-                        <div className="text-sm">
-                          <span className="text-gray-500 font-medium">Aktueller Wert:</span>{" "}
-                          <span className="font-medium text-dark">
-                            {formatCurrency(property.current_value)}
-                          </span>
-                        </div>
+                      <div className="text-sm">
+                        <span className="text-gray-500 font-medium">Aktueller Wert:</span>{" "}
+                        <span className="font-medium text-dark">
+                          {formatCurrency(property.current_value)}
+                        </span>
                       </div>
                     </div>
 
@@ -819,7 +816,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                         title="Details anzeigen"
                       />
                       <ActionButton
-                        icon={<Edit2 className="w-4 h-4" />}
+                        icon={<Pencil className="w-4 h-4" />}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedProperty(property);
@@ -834,6 +831,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                           handleDelete(property.id);
                         }}
                         title="Löschen"
+                        variant="danger"
                       />
                     </ActionsCell>
                   ),
@@ -866,7 +864,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                       onClick={() => {
                         handleAddLabel(showLabelModal, preLabel.label, preLabel.color);
                       }}
-                      className={`px-3 py-1.5 text-xs rounded font-medium ${colorClasses.bg} ${colorClasses.text} ${colorClasses.hover} transition-colors`}
+                      className={`px-3 py-1.5 text-xs rounded-full font-medium ${colorClasses.bg} ${colorClasses.text} ${colorClasses.hover} transition-colors`}
                     >
                       {preLabel.label}
                     </button>
@@ -915,7 +913,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                   setNewLabelText("");
                   setSelectedColor("blue");
                 }}
-                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300 transition-colors"
               >
                 Abbrechen
               </button>

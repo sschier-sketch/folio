@@ -526,7 +526,7 @@ export default function TenantContractTab({
                             e.stopPropagation();
                             handleViewDocument(doc.id);
                           }}
-                          className="text-primary-blue hover:text-blue-700 transition-colors"
+                          className="text-gray-300 hover:text-primary-blue transition-colors"
                           title="Ansehen"
                         >
                           <Eye className="w-4 h-4" />
@@ -536,7 +536,7 @@ export default function TenantContractTab({
                             e.stopPropagation();
                             handleDownload(doc.file_path, doc.file_name);
                           }}
-                          className="text-primary-blue hover:text-blue-700 transition-colors"
+                          className="text-gray-300 hover:text-primary-blue transition-colors"
                           title="Herunterladen"
                         >
                           <Download className="w-4 h-4" />
@@ -546,7 +546,7 @@ export default function TenantContractTab({
                             e.stopPropagation();
                             handleDelete(doc.id, doc.file_path);
                           }}
-                          className="text-red-500 hover:text-red-700 transition-colors"
+                          className="text-gray-300 hover:text-red-600 transition-colors"
                           title="Löschen"
                         >
                           <Trash2 className="w-4 h-4" />

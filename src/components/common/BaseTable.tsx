@@ -148,6 +148,7 @@ export interface ActionButtonProps {
   onClick: (e: React.MouseEvent) => void;
   title: string;
   disabled?: boolean;
+  variant?: "default" | "danger";
 }
 
 export function ActionButton({
@@ -155,13 +156,18 @@ export function ActionButton({
   onClick,
   title,
   disabled = false,
+  variant = "default",
 }: ActionButtonProps) {
+  const colorClass = variant === "danger"
+    ? "text-gray-300 hover:text-red-600 transition-colors"
+    : "text-gray-300 hover:text-primary-blue transition-colors";
+
   return (
     <button
       onClick={onClick}
       title={title}
       disabled={disabled}
-      className="text-primary-blue hover:text-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className={`${colorClass} disabled:opacity-50 disabled:cursor-not-allowed`}
     >
       {icon}
     </button>

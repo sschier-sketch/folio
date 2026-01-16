@@ -607,7 +607,7 @@ export default function RentPaymentsView() {
           },
           {
             key: "actions",
-            header: "Aktion",
+            header: "Aktionen",
             align: "right",
             render: (payment: RentPayment) => (
               <ActionsCell>
