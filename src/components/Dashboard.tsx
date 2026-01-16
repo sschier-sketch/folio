@@ -524,21 +524,23 @@ export default function Dashboard() {
             </div>{" "}
           </aside>{" "}
           <main className="flex-1 min-w-0">
-            {" "}
-            {currentView === "home" && <DashboardHome onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} onChangeView={(view) => setCurrentView(view as View)} />}{" "}
-            {currentView === "properties" && <PropertiesView selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
-            {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} />}{" "}
-            {currentView === "payments" && <RentPaymentsView />}{" "}
-            {currentView === "mieterportal" && <MieterportalView />}{" "}
-            {currentView === "financial" && <FinancesView />}{" "}
-            {currentView === "documents" && <DocumentsView />}{" "}
-            {currentView === "templates" && <TemplatesView />}{" "}
-            {currentView === "billing" && <BillingView />}{" "}
-            {currentView === "tickets" && <TicketsView initialTicketId={selectedTicketId} />}{" "}
-            {currentView === "settings-profile" && <ProfileSettingsView />}{" "}
-            {currentView === "settings-billing" && <BillingSettingsView />}{" "}
-            {currentView === "feedback" && <FeedbackListView />}{" "}
-            {currentView === "referral" && <ReferralProgramView />}{" "}
+            <div className="max-w-7xl mx-auto px-6 py-8">
+              {" "}
+              {currentView === "home" && <DashboardHome onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} onChangeView={(view) => setCurrentView(view as View)} />}{" "}
+              {currentView === "properties" && <PropertiesView selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
+              {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} />}{" "}
+              {currentView === "payments" && <RentPaymentsView />}{" "}
+              {currentView === "mieterportal" && <MieterportalView />}{" "}
+              {currentView === "financial" && <FinancesView />}{" "}
+              {currentView === "documents" && <DocumentsView />}{" "}
+              {currentView === "templates" && <TemplatesView />}{" "}
+              {currentView === "billing" && <BillingView />}{" "}
+              {currentView === "tickets" && <TicketsView initialTicketId={selectedTicketId} />}{" "}
+              {currentView === "settings-profile" && <ProfileSettingsView />}{" "}
+              {currentView === "settings-billing" && <BillingSettingsView />}{" "}
+              {currentView === "feedback" && <FeedbackListView />}{" "}
+              {currentView === "referral" && <ReferralProgramView />}{" "}
+            </div>
           </main>{" "}
         </div>{" "}
       </div>{" "}
