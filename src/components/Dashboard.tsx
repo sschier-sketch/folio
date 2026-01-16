@@ -317,9 +317,10 @@ export default function Dashboard() {
           </div>{" "}
         </div>{" "}
       </nav>{" "}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+      <div className="py-8 flex-1">
         {" "}
         {showSuccessMessage && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-center gap-3">
             {" "}
             <CheckCircle className="w-5 h-5 text-emerald-600" />{" "}
@@ -338,6 +339,7 @@ export default function Dashboard() {
                   : "Your subscription has been activated successfully."}{" "}
               </p>{" "}
             </div>{" "}
+          </div>
           </div>
         )}{" "}
         {/* Mobile Menu Overlay */}{" "}
@@ -524,9 +526,8 @@ export default function Dashboard() {
             </div>{" "}
           </aside>{" "}
           <main className="flex-1 min-w-0">
-            <div className="max-w-7xl mx-auto px-6 py-8">
-              {" "}
-              {currentView === "home" && <DashboardHome onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} onChangeView={(view) => setCurrentView(view as View)} />}{" "}
+            {" "}
+            {currentView === "home" && <DashboardHome onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} onChangeView={(view) => setCurrentView(view as View)} />}{" "}
               {currentView === "properties" && <PropertiesView selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
               {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} />}{" "}
               {currentView === "payments" && <RentPaymentsView />}{" "}
@@ -540,7 +541,6 @@ export default function Dashboard() {
               {currentView === "settings-billing" && <BillingSettingsView />}{" "}
               {currentView === "feedback" && <FeedbackListView />}{" "}
               {currentView === "referral" && <ReferralProgramView />}{" "}
-            </div>
           </main>{" "}
         </div>{" "}
       </div>{" "}
