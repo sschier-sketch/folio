@@ -263,7 +263,8 @@ Mit freundlichen Grüßen`
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleResetTemplate(template.dunning_level)}
-                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-white transition-colors flex items-center gap-2"
+                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                  className="px-3 py-1.5 text-sm rounded-lg hover:bg-[#bdbfcb] transition-colors flex items-center gap-2"
                 >
                   <RotateCcw className="w-4 h-4" />
                   Zurücksetzen
@@ -272,7 +273,8 @@ Mit freundlichen Grüßen`
                   <>
                     <button
                       onClick={() => setEditingTemplate(null)}
-                      className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-white transition-colors"
+                      style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                      className="px-3 py-1.5 text-sm rounded-lg hover:bg-[#bdbfcb] transition-colors"
                     >
                       Abbrechen
                     </button>

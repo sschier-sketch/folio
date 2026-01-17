@@ -207,7 +207,8 @@ export default function OperatingCostsView() {
           </div>
           <button
             onClick={() => setShowAddTypeModal(true)}
-            className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+            className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
           >
             Kostenart verwalten
           </button>
@@ -443,7 +444,8 @@ export default function OperatingCostsView() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowAddCostModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>
@@ -549,7 +551,8 @@ export default function OperatingCostsView() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowAddTypeModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>

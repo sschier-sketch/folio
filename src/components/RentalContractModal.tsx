@@ -405,7 +405,8 @@ export default function RentalContractModal({
               <button
                 type="button"
                 onClick={addTenant}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 {" "}
                 <Plus className="w-4 h-4" /> Mieter hinzufügen{" "}
@@ -923,7 +924,8 @@ export default function RentalContractModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
             >
               {" "}
               Abbrechen{" "}

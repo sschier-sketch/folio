@@ -1401,7 +1401,8 @@ export default function TenantModal({
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-6 py-3 border-2 border-gray-100 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="px-6 py-3 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Zurück
               </button>
@@ -1410,7 +1411,8 @@ export default function TenantModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300 transition-colors"
+              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+              className="px-6 py-3 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
             >
               Abbrechen
             </button>

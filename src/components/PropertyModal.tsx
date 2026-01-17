@@ -757,7 +757,8 @@ export default function PropertyModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>
@@ -990,7 +991,8 @@ export default function PropertyModal({
                 type="button"
                 onClick={handleSkipUnits}
                 disabled={loading}
-                className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors disabled:opacity-50"
               >
                 Überspringen
               </button>

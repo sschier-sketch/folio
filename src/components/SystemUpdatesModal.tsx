@@ -191,7 +191,8 @@ export default function SystemUpdatesModal({
             <button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-400 hover:text-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-[#bdbfcb] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Zurück
@@ -204,7 +205,8 @@ export default function SystemUpdatesModal({
                 setCurrentPage((prev) => Math.min(totalPages, prev + 1))
               }
               disabled={currentPage === totalPages}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-400 hover:text-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-[#bdbfcb] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Weiter
               <ChevronRight className="w-4 h-4" />

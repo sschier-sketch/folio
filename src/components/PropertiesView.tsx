@@ -559,7 +559,8 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               <div className="flex items-end">
                 <button
                   onClick={() => setFilters({ status: "", property_type: "", label: "" })}
-                  className="w-full px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                  className="w-full px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Zurücksetzen
                 </button>
