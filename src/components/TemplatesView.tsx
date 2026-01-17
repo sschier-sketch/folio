@@ -28,43 +28,17 @@ interface CategoryGroup {
   templates: Template[];
 }
 
-const CATEGORIES = [
-  {
-    category: "interessentensuche",
-    title: "Interessentensuche",
-    description: "Neben dem persönlichen Eindruck zählen die wichtigsten Eckdaten zum neuen Mieter. Falschangaben sind übrigens ein Kündigungsgrund.",
-  },
-  {
-    category: "wohnungsuebergabe",
-    title: "Wohnungsübergabe",
-    description: "Protokollieren Sie umfassend und genau, um Konflikten vorzubeugen. Dazu bestätigen Sie den Einzug des Mieters für die Ämter.",
-  },
-  {
-    category: "mietvertrag",
-    title: "Mietvertrag",
-    description: "Die vom Rechtsanwalt geprüften Mietvertragsvorlagen sind der Grundbaustein für ein gutes Mietverhältnis.",
-  },
-  {
-    category: "mietzahlungen",
-    title: "Mietzahlungen",
-    description: "Bei Anpassungen und Mahnungen zur Miete ist es besonders wichtig Formvorgaben und Fristen genau einzuhalten. Diese Vorlagen helfen dabei.",
-  },
-  {
-    category: "kuendigung",
-    title: "Kündigung",
-    description: "Eine formal richtige Kündigungsbestätigung schützt Sie vor Problemen bei Auszug und Neuvermietung.",
-  },
-  {
-    category: "sonstiges",
-    title: "Sonstiges",
-    description: "Checklisten, Protokolle und Vorlagen, die Ihnen das Leben als Vermieter vereinfachen.",
-  },
-];
+interface CategoryDescription {
+  category: string;
+  title: string;
+  description: string;
+}
 
 export default function TemplatesView() {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [categoryDescriptions, setCategoryDescriptions] = useState<CategoryDescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,6 +48,7 @@ export default function TemplatesView() {
   useEffect(() => {
     if (user) {
       loadTemplates();
+      loadCategoryDescriptions();
     }
   }, [user]);
 
@@ -92,6 +67,20 @@ export default function TemplatesView() {
       console.error("Error loading templates:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadCategoryDescriptions() {
+    try {
+      const { data, error } = await supabase
+        .from("template_category_descriptions")
+        .select("*")
+        .order("category");
+
+      if (error) throw error;
+      setCategoryDescriptions(data || []);
+    } catch (error) {
+      console.error("Error loading category descriptions:", error);
     }
   }
 
@@ -166,7 +155,7 @@ export default function TemplatesView() {
     );
   });
 
-  const groupedTemplates: CategoryGroup[] = CATEGORIES.map(cat => ({
+  const groupedTemplates: CategoryGroup[] = categoryDescriptions.map(cat => ({
     category: cat.category,
     title: cat.title,
     description: cat.description,
@@ -226,7 +215,7 @@ export default function TemplatesView() {
               className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white min-w-[200px]"
             >
               <option value="">Alle Kategorien</option>
-              {CATEGORIES.map((cat) => (
+              {categoryDescriptions.map((cat) => (
                 <option key={cat.category} value={cat.category}>
                   {cat.title}
                 </option>

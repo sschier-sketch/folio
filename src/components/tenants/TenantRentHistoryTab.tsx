@@ -629,7 +629,7 @@ export default function TenantRentHistoryTab({
               <Lock className="w-8 h-8 text-amber-600" />
             </div>
             <h3 className="text-xl font-semibold text-dark mb-2">
-              Premium-Funktion
+              Pro-Funktion
             </h3>
             <p className="text-gray-600 mb-6">
               Die vollständige Miethistorie mit allen Änderungen ist im

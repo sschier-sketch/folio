@@ -16,7 +16,7 @@ export function SubscriptionSuccess() {
             Zahlung erfolgreich!
           </h2>
           <p className="text-gray-600 mb-8">
-            Vielen Dank für Ihr Abonnement. Ihr Konto wurde aufgewertet und Sie haben jetzt Zugriff auf alle Premium-Funktionen.
+            Vielen Dank für Ihr Abonnement. Ihr Konto wurde aufgewertet und Sie haben jetzt Zugriff auf alle Pro-Funktionen.
           </p>
           <div className="space-y-4">
             <Link

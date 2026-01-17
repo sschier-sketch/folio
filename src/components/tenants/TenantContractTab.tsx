@@ -390,7 +390,7 @@ export default function TenantContractTab({
             <Lock className="w-8 h-8 text-amber-600" />
           </div>
           <h3 className="text-xl font-semibold text-dark mb-2">
-            Premium-Funktion
+            Pro-Funktion
           </h3>
           <p className="text-gray-600 mb-6">
             Der Upload und die Verwaltung von Vertragsdokumenten ist im

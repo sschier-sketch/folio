@@ -145,7 +145,7 @@ export default function BillingSettingsView() {
                 </div>
                 <div className="text-sm text-gray-400">
                   {subscription?.status === "active"
-                    ? "Alle Premium-Funktionen freigeschaltet"
+                    ? "Alle Pro-Funktionen freigeschaltet"
                     : "Kostenlose Basis-Funktionen"}
                 </div>
               </div>

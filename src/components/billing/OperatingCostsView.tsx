@@ -321,7 +321,8 @@ export default function OperatingCostsView() {
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => handleDeleteCost(cost.id)}
-                            className="text-red-500 hover:text-red-700 transition-colors"
+                            className="text-gray-300 hover:text-red-600 transition-colors"
+                            title="Löschen"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

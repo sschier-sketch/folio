@@ -65,7 +65,7 @@ export default function BillingView() {
                   <Icon className="w-5 h-5" />
                   {tab.label}
                   {tab.premium && (
-                    <span className="px-3 py-1 text-xs bg-amber-100 text-amber-700 rounded-full font-medium">
+                    <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>
                       Pro
                     </span>
                   )}

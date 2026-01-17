@@ -127,8 +127,8 @@ export default function Pricing() {
         {
           text:
             language === "de"
-              ? "Premium Mieterportal"
-              : "Premium tenant portal",
+              ? "Pro Mieterportal"
+              : "Pro tenant portal",
           included: true,
         },
         {
@@ -192,8 +192,8 @@ export default function Pricing() {
         {
           text:
             language === "de"
-              ? "Premium Finanzanalysen"
-              : "Premium financial analytics",
+              ? "Pro Finanzanalysen"
+              : "Pro financial analytics",
           included: true,
         },
         {
@@ -607,8 +607,8 @@ export default function Pricing() {
                 <p className="text-gray-400">
                   {" "}
                   {language === "de"
-                    ? "Ihre Daten bleiben erhalten. Sie verlieren nur Zugriff auf Premium-Features."
-                    : "Your data remains intact. You only lose access to premium features."}{" "}
+                    ? "Ihre Daten bleiben erhalten. Sie verlieren nur Zugriff auf Pro-Features."
+                    : "Your data remains intact. You only lose access to Pro features."}{" "}
                 </p>{" "}
               </div>{" "}
               <div>

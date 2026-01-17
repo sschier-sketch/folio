@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Trash2, Upload, X, FileText, Loader, Download } from "lucide-react";
+import { Plus, Trash2, Upload, X, FileText, Loader, Download, Edit2, Save } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
@@ -19,6 +19,13 @@ interface Template {
   download_count: number;
 }
 
+interface CategoryDescription {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+}
+
 const CATEGORIES = [
   { value: "interessentensuche", label: "Interessentensuche" },
   { value: "wohnungsuebergabe", label: "Wohnungsübergabe" },
@@ -31,6 +38,9 @@ const CATEGORIES = [
 export function AdminTemplatesView() {
   const { user } = useAuth();
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [categoryDescriptions, setCategoryDescriptions] = useState<CategoryDescription[]>([]);
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editDescription, setEditDescription] = useState("");
   const [loading, setLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -48,6 +58,7 @@ export function AdminTemplatesView() {
 
   useEffect(() => {
     loadTemplates();
+    loadCategoryDescriptions();
   }, []);
 
   async function loadTemplates() {
@@ -64,6 +75,39 @@ export function AdminTemplatesView() {
       console.error("Error loading templates:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadCategoryDescriptions() {
+    try {
+      const { data, error } = await supabase
+        .from("template_category_descriptions")
+        .select("*")
+        .order("category");
+
+      if (error) throw error;
+      setCategoryDescriptions(data || []);
+    } catch (error) {
+      console.error("Error loading category descriptions:", error);
+    }
+  }
+
+  async function handleSaveCategoryDescription(categoryId: string) {
+    try {
+      const { error } = await supabase
+        .from("template_category_descriptions")
+        .update({ description: editDescription, updated_at: new Date().toISOString() })
+        .eq("id", categoryId);
+
+      if (error) throw error;
+
+      await loadCategoryDescriptions();
+      setEditingCategory(null);
+      setEditDescription("");
+      alert("Beschreibung aktualisiert!");
+    } catch (error) {
+      console.error("Error updating category description:", error);
+      alert("Fehler beim Aktualisieren der Beschreibung");
     }
   }
 
@@ -190,6 +234,53 @@ export function AdminTemplatesView() {
 
   return (
     <div>
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-dark mb-2">Kategoriebeschreibungen</h2>
+        <p className="text-gray-400 mb-4">Bearbeiten Sie die Beschreibungen, die Benutzern für jede Vorlagenkategorie angezeigt werden</p>
+
+        <div className="bg-white rounded-lg overflow-hidden">
+          {categoryDescriptions.map((cat) => (
+            <div key={cat.id} className="border-b border-gray-100 last:border-b-0">
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-dark">{cat.title}</h3>
+                  {editingCategory === cat.id ? (
+                    <button
+                      onClick={() => handleSaveCategoryDescription(cat.id)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                    >
+                      <Save className="w-4 h-4" />
+                      Speichern
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setEditingCategory(cat.id);
+                        setEditDescription(cat.description);
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:text-primary-blue transition-colors text-sm"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                      Bearbeiten
+                    </button>
+                  )}
+                </div>
+                {editingCategory === cat.id ? (
+                  <textarea
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
+                  />
+                ) : (
+                  <p className="text-gray-600">{cat.description}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-dark">Vorlagen verwalten</h2>

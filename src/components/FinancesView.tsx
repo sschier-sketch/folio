@@ -65,7 +65,7 @@ export default function FinancesView() {
                 >
                   <Icon className="w-5 h-5" />
                   {tab.label}
-                  {tab.premium && tab.id === "intelligence" ? (
+                  {tab.premium && (tab.id === "intelligence" || tab.id === "bank") ? (
                     <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>
                       Bald
                     </span>

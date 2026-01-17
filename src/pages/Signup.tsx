@@ -201,7 +201,7 @@ export function Signup() {
                   <div>
                     {" "}
                     <h4 className="font-semibold text-dark mb-1">
-                      Premium-Features für nur 9 EUR/Monat
+                      Pro-Features für nur 9 EUR/Monat
                     </h4>{" "}
                     <p className="text-sm text-gray-400">
                       {" "}

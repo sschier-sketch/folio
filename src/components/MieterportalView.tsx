@@ -248,14 +248,9 @@ export default function MieterportalView() {
             key: "property",
             header: "Immobilie",
             render: (tenant: Tenant) => (
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Building2 className="w-4 h-4 text-blue-600" />
-                </div>
-                <span className="text-sm font-medium text-dark">
-                  {tenant.property?.name}
-                </span>
-              </div>
+              <span className="text-sm font-medium text-dark">
+                {tenant.property?.name}
+              </span>
             ),
           },
           {
@@ -267,12 +262,9 @@ export default function MieterportalView() {
             key: "last_login",
             header: "Letzter Login",
             render: (tenant: Tenant) => (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-600">
-                  {formatDate(tenant.last_login)}
-                </span>
-              </div>
+              <span className="text-sm text-gray-600">
+                {formatDate(tenant.last_login)}
+              </span>
             ),
           },
           {
@@ -366,8 +358,8 @@ export default function MieterportalView() {
               </button>
             </div>
             <div className="text-xs text-amber-700 space-y-1">
-              <p>💡 <strong>Tipp:</strong> Mit "Als Mieter anmelden" können Sie auch selbst das Portal als Mieter testen</p>
-              <p>📧 <strong>Optional:</strong> Versenden Sie eine E-Mail-Einladung (erfordert E-Mail-Konfiguration)</p>
+              <p><strong>Tipp:</strong> Mit "Als Mieter anmelden" können Sie auch selbst das Portal als Mieter testen</p>
+              <p><strong>Optional:</strong> Versenden Sie eine E-Mail-Einladung</p>
             </div>
           </div>
         </div>

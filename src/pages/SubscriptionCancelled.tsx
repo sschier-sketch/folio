@@ -14,7 +14,7 @@ export function SubscriptionCancelled() {
             Die Zahlung wurde abgebrochen. Keine Sorge - es wurden keine Kosten verursacht.
           </p>
           <p className="text-gray-600 mb-8">
-            Sie haben aktuell kein aktives Abonnement und können die Premium-Funktionen nicht nutzen.
+            Sie haben aktuell kein aktives Abonnement und können die Pro-Funktionen nicht nutzen.
           </p>
           <div className="space-y-4">
             <Link
