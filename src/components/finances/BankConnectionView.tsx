@@ -7,7 +7,7 @@ export default function BankConnectionView() {
       <div className="space-y-6">
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
               <CreditCard className="w-6 h-6 text-primary-blue" />
             </div>
             <div>

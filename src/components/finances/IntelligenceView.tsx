@@ -14,7 +14,7 @@ export default function IntelligenceView() {
       <div className="space-y-6">
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-violet-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-violet-100 rounded-full flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-violet-600" />
             </div>
             <div>
@@ -29,7 +29,7 @@ export default function IntelligenceView() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-violet-50 rounded-lg p-4">
-              <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center mb-3">
+              <div className="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center mb-3">
                 <Lightbulb className="w-5 h-5 text-violet-600" />
               </div>
               <div className="text-2xl font-bold text-dark mb-1">12</div>
@@ -37,7 +37,7 @@ export default function IntelligenceView() {
             </div>
 
             <div className="bg-amber-50 rounded-lg p-4">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mb-3">
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
               </div>
               <div className="text-2xl font-bold text-dark mb-1">3</div>
@@ -45,7 +45,7 @@ export default function IntelligenceView() {
             </div>
 
             <div className="bg-emerald-50 rounded-lg p-4">
-              <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mb-3">
+              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
                 <Target className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="text-2xl font-bold text-dark mb-1">95%</div>
@@ -176,7 +176,7 @@ export default function IntelligenceView() {
 
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
                 <TrendingUp className="w-4 h-4 text-emerald-600" />
               </div>
               <div>
@@ -191,7 +191,7 @@ export default function IntelligenceView() {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
                 <Target className="w-4 h-4 text-primary-blue" />
               </div>
               <div>
@@ -206,7 +206,7 @@ export default function IntelligenceView() {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center shrink-0">
                 <Sparkles className="w-4 h-4 text-violet-600" />
               </div>
               <div>

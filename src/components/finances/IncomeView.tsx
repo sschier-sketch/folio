@@ -594,7 +594,7 @@ export default function IncomeView() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
             <TrendingUp className="w-6 h-6 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
@@ -604,7 +604,7 @@ export default function IncomeView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
             <Calendar className="w-6 h-6 text-primary-blue" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
@@ -614,7 +614,7 @@ export default function IncomeView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
             <CheckCircle2 className="w-6 h-6 text-slate-600" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">

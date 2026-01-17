@@ -274,7 +274,7 @@ export default function TemplatesView() {
                         className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                       >
                         <div className="flex items-center gap-4 flex-1">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                             <FileText className="w-5 h-5 text-blue-600" />
                           </div>
                           <div className="flex-1 min-w-0">

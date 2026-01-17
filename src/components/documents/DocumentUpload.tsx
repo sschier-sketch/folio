@@ -737,7 +737,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
       {!isPro && (
         <div className="bg-gradient-to-r from-blue-50 to-violet-50 border border-blue-200 rounded-lg p-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
               <Upload className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">

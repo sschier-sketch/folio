@@ -361,7 +361,7 @@ ${message}
         <>
           <div className="bg-white rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
             <Bell className="w-6 h-6 text-amber-600" />
           </div>
           <div>
@@ -376,7 +376,7 @@ ${message}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-amber-50 rounded-lg p-4">
-            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-3">
+            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mb-3">
               <AlertTriangle className="w-5 h-5 text-amber-600" />
             </div>
             <div className="text-2xl font-bold text-dark mb-1">{stats.openItems}</div>
@@ -384,7 +384,7 @@ ${message}
           </div>
 
           <div className="bg-blue-50 rounded-lg p-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-3">
               <Send className="w-5 h-5 text-primary-blue" />
             </div>
             <div className="text-2xl font-bold text-dark mb-1">{stats.remindersSent}</div>
@@ -394,7 +394,7 @@ ${message}
           </div>
 
           <div className="bg-emerald-50 rounded-lg p-4">
-            <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mb-3">
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
               <CheckCircle className="w-5 h-5 text-emerald-600" />
             </div>
             <div className="text-2xl font-bold text-dark mb-1">{stats.successfullyCollected}</div>

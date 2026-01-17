@@ -505,7 +505,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-lg p-6 border border-gray-100">
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">

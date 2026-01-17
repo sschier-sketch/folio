@@ -362,7 +362,7 @@ export default function CashflowView() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
             <TrendingUp className="w-6 h-6 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
@@ -375,7 +375,7 @@ export default function CashflowView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
             <TrendingDown className="w-6 h-6 text-red-600" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
@@ -388,7 +388,7 @@ export default function CashflowView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
             <ArrowDown className="w-6 h-6 text-orange-600" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
@@ -402,7 +402,7 @@ export default function CashflowView() {
 
         <div className="bg-white rounded-lg p-6">
           <div
-            className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${
+            className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${
               totalCashflow >= 0 ? "bg-blue-100" : "bg-red-100"
             }`}
           >
