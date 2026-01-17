@@ -18,6 +18,7 @@ import TenantRentHistoryTab from "./tenants/TenantRentHistoryTab";
 import TenantDepositTab from "./tenants/TenantDepositTab";
 import TenantCommunicationTab from "./tenants/TenantCommunicationTab";
 import TenantHandoverTab from "./tenants/TenantHandoverTab";
+import ScrollableTabNav from "./common/ScrollableTabNav";
 
 type Tab =
   | "overview"
@@ -140,7 +141,7 @@ export default function TenantContractDetails({
       </div>
 
       <div className="bg-white rounded-lg mb-6">
-        <div className="overflow-x-auto">
+        <ScrollableTabNav>
           <div className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -168,7 +169,7 @@ export default function TenantContractDetails({
               );
             })}
           </div>
-        </div>
+        </ScrollableTabNav>
       </div>
 
       <div>

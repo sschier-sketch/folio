@@ -19,6 +19,7 @@ import { SubscriptionCard } from "./subscription/SubscriptionCard";
 import { SubscriptionStatus } from "./subscription/SubscriptionStatus";
 import { useSubscription } from "../hooks/useSubscription";
 import ProfileManagement from "./profile/ProfileManagement";
+import ScrollableTabNav from "./common/ScrollableTabNav";
 interface UserSettings {
   role: string;
   can_invite_users: boolean;
@@ -269,7 +270,7 @@ export default function SettingsView({
         </p>{" "}
       </div>{" "}
       <div className="bg-white rounded-lg mb-6">
-        <div className="overflow-x-auto">
+        <ScrollableTabNav>
           <div className="flex">
             {tabs
               .filter((tab) => tab.show !== false)
@@ -294,7 +295,7 @@ export default function SettingsView({
                 );
               })}
           </div>
-        </div>
+        </ScrollableTabNav>
       </div>
       {activeTab === "profile" && (
         <div className="bg-white rounded shadow-sm p-6">

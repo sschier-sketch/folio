@@ -22,6 +22,7 @@ import PropertyHistoryTab from "./property/PropertyHistoryTab";
 import PropertyContactsTab from "./property/PropertyContactsTab";
 import PropertyMaintenanceTab from "./property/PropertyMaintenanceTab";
 import PropertyMetricsTab from "./property/PropertyMetricsTab";
+import ScrollableTabNav from "./common/ScrollableTabNav";
 import { supabase } from "../lib/supabase";
 
 interface Property {
@@ -252,7 +253,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
       </div>
 
       <div className="bg-white rounded-lg mb-6">
-        <div className="overflow-x-auto">
+        <ScrollableTabNav>
           <div className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -280,7 +281,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
               );
             })}
           </div>
-        </div>
+        </ScrollableTabNav>
       </div>
 
       <div>

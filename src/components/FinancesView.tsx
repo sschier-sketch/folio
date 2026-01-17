@@ -13,6 +13,7 @@ import CashflowView from "./finances/CashflowView";
 import BankConnectionView from "./finances/BankConnectionView";
 import IntelligenceView from "./finances/IntelligenceView";
 import IndexRentView from "./finances/IndexRentView";
+import ScrollableTabNav from "./common/ScrollableTabNav";
 
 type Tab =
   | "income"
@@ -44,7 +45,7 @@ export default function FinancesView() {
       </div>
 
       <div className="bg-white rounded-lg mb-6">
-        <div className="overflow-x-auto">
+        <ScrollableTabNav>
           <div className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -76,7 +77,7 @@ export default function FinancesView() {
               );
             })}
           </div>
-        </div>
+        </ScrollableTabNav>
       </div>
 
       <div>

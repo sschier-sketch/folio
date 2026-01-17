@@ -5,6 +5,7 @@ import DocumentsList from "./documents/DocumentsList";
 import DocumentUpload from "./documents/DocumentUpload";
 import DocumentArchive from "./documents/DocumentArchive";
 import DocumentDetails from "./documents/DocumentDetails";
+import ScrollableTabNav from "./common/ScrollableTabNav";
 
 type Tab = "overview" | "list" | "upload" | "archive";
 
@@ -63,7 +64,7 @@ export default function DocumentsView() {
       </div>
 
       <div className="bg-white rounded-lg mb-6">
-        <div className="overflow-x-auto">
+        <ScrollableTabNav>
           <div className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -86,7 +87,7 @@ export default function DocumentsView() {
               );
             })}
           </div>
-        </div>
+        </ScrollableTabNav>
       </div>
 
       <div>

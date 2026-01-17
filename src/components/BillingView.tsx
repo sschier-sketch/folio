@@ -11,6 +11,7 @@ import OperatingCostsView from "./billing/OperatingCostsView";
 import MetersView from "./billing/MetersView";
 import BillingExportView from "./billing/BillingExportView";
 import BillingHistoryView from "./billing/BillingHistoryView";
+import ScrollableTabNav from "./common/ScrollableTabNav";
 
 type Tab =
   | "meters"
@@ -44,7 +45,7 @@ export default function BillingView() {
       </div>
 
       <div className="bg-white rounded-lg mb-6">
-        <div className="overflow-x-auto">
+        <ScrollableTabNav>
           <div className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -75,7 +76,7 @@ export default function BillingView() {
               );
             })}
           </div>
-        </div>
+        </ScrollableTabNav>
       </div>
 
       <div>
