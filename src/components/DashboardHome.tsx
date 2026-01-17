@@ -527,9 +527,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           </div>{" "}
           <div className="mt-3 pt-3 border-t border-gray-100">
             {" "}
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400">Gesamtwert</span>
-              <span className="text-sm font-semibold text-dark">{formatCurrency(stats.totalPropertyValue)}</span>
+            <div className="space-y-1">
+              <div className="text-xs text-gray-400">Gesamtwert</div>
+              <div className="text-sm font-semibold text-dark">{formatCurrency(stats.totalPropertyValue)}</div>
             </div>{" "}
           </div>{" "}
         </div>{" "}

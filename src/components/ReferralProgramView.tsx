@@ -235,7 +235,7 @@ export default function ReferralProgramView() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="lg:col-span-2 bg-gradient-to-br from-blue-500 to-primary-blue rounded-xl p-8 text-white">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
               <Gift className="w-6 h-6" />
             </div>
             <h2 className="text-2xl font-bold">
@@ -299,7 +299,7 @@ export default function ReferralProgramView() {
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
                 <Users className="w-6 h-6 text-emerald-600" />
               </div>
             </div>
@@ -311,7 +311,7 @@ export default function ReferralProgramView() {
 
           <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg shadow-sm p-6 text-white">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                 <Award className="w-6 h-6" />
               </div>
             </div>
@@ -342,7 +342,7 @@ export default function ReferralProgramView() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
               <Mail className="w-5 h-5 text-primary-blue" />
             </div>
             <h3 className="text-lg font-semibold text-dark">
@@ -425,7 +425,7 @@ export default function ReferralProgramView() {
 
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-emerald-600" />
             </div>
             <h3 className="text-lg font-semibold text-dark">

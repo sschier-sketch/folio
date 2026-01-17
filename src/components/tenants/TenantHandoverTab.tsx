@@ -662,7 +662,7 @@ export default function TenantHandoverTab({
 
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
                 <Calendar className="w-4 h-4 text-primary-blue" />
               </div>
               <div>
@@ -677,7 +677,7 @@ export default function TenantHandoverTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
                 <CheckSquare className="w-4 h-4 text-emerald-600" />
               </div>
               <div>
@@ -692,7 +692,7 @@ export default function TenantHandoverTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center shrink-0">
                 <Image className="w-4 h-4 text-violet-600" />
               </div>
               <div>
@@ -705,7 +705,7 @@ export default function TenantHandoverTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
                 <ClipboardList className="w-4 h-4 text-amber-600" />
               </div>
               <div>

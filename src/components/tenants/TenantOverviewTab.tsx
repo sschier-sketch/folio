@@ -337,7 +337,7 @@ export default function TenantOverviewTab({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
                 <Home className="w-5 h-5 text-primary-blue" />
               </div>
               <div className="flex-1">
@@ -397,7 +397,7 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
                 <User className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="flex-1">
@@ -433,7 +433,7 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center shrink-0">
                 <Mail className="w-5 h-5 text-violet-600" />
               </div>
               <div className="flex-1">
@@ -454,7 +454,7 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
                 <Phone className="w-5 h-5 text-amber-600" />
               </div>
               <div className="flex-1">
@@ -477,7 +477,7 @@ export default function TenantOverviewTab({
 
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0">
                 <MapPin className="w-5 h-5 text-green-600" />
               </div>
               <div className="flex-1">
@@ -548,7 +548,7 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
                 <Calendar className="w-5 h-5 text-primary-blue" />
               </div>
               <div className="flex-1">
@@ -592,7 +592,7 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
                 <Users className="w-5 h-5 text-orange-600" />
               </div>
               <div className="flex-1">
