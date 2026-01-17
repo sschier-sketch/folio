@@ -66,7 +66,7 @@ export default function BillingView() {
                   {tab.label}
                   {tab.premium && (
                     <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>
-                      Pro
+                      Bald
                     </span>
                   )}
                   {activeTab === tab.id && !tab.disabled && (

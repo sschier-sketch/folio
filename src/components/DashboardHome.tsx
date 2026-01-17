@@ -454,7 +454,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
               {" "}
               <Users className="w-6 h-6 text-emerald-600" />{" "}
             </div>{" "}
@@ -480,7 +480,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
               {" "}
               <Euro className="w-6 h-6 text-amber-600" />{" "}
             </div>{" "}
@@ -513,7 +513,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
               {" "}
               <TrendingUp className="w-6 h-6 text-indigo-600" />{" "}
             </div>{" "}
@@ -524,6 +524,10 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           </div>{" "}
           <div className="text-sm text-gray-400">
             {t("dashboard.yield.average")}
+          </div>{" "}
+          <div className="text-xs text-gray-300 mt-2">
+            {" "}
+            Gesamtwert: {formatCurrency(stats.totalPropertyValue)}{" "}
           </div>{" "}
         </div>{" "}
       </div>{" "}
@@ -536,16 +540,6 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           </h3>{" "}
           <div className="space-y-4">
             {" "}
-            <div className="flex justify-between items-center">
-              {" "}
-              <span className="text-gray-400">
-                {t("dashboard.portfolio.value")}
-              </span>{" "}
-              <span className="text-lg font-semibold text-dark">
-                {" "}
-                {formatCurrency(stats.totalPropertyValue)}{" "}
-              </span>{" "}
-            </div>{" "}
             <div className="border-t pt-4">
               {" "}
               <div className="flex justify-between items-center mb-1">
@@ -622,7 +616,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             {" "}
             <button
               onClick={() => onChangeView?.('properties')}
-              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all group"
+              style={{ backgroundColor: "#faf8f8" }}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
               <div className="w-14 h-14 bg-primary-blue rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -635,7 +630,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             </button>{" "}
             <button
               onClick={() => onChangeView?.('tenants')}
-              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl hover:shadow-md transition-all group"
+              style={{ backgroundColor: "#faf8f8" }}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
               <div className="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -648,7 +644,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             </button>{" "}
             <button
               onClick={() => onChangeView?.('payments')}
-              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl hover:shadow-md transition-all group"
+              style={{ backgroundColor: "#faf8f8" }}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
               <div className="w-14 h-14 bg-amber-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -661,7 +658,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             </button>{" "}
             <button
               onClick={() => onChangeView?.('financial')}
-              className="flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl hover:shadow-md transition-all group"
+              style={{ backgroundColor: "#faf8f8" }}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
               <div className="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -694,7 +692,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <Wrench className="w-5 h-5 text-amber-600" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -810,21 +808,21 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-dark">{ticket.subject}</h3>
-                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-medium">
+                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">
                           #{ticket.ticket_number}
                         </span>
                         {ticket.status === "open" && (
-                          <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded font-medium">
+                          <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium">
                             Offen
                           </span>
                         )}
                         {ticket.status === "in_progress" && (
-                          <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded font-medium">
+                          <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">
                             In Bearbeitung
                           </span>
                         )}
                         {ticket.status === "resolved" && (
-                          <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded font-medium">
+                          <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-medium">
                             Gelöst
                           </span>
                         )}

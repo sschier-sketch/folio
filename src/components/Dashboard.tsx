@@ -401,16 +401,15 @@ export default function Dashboard() {
               <p className="text-blue-50 text-sm mb-3">
                 Kommunizieren Sie mit Ihren Mietern
               </p>{" "}
-              <div>
-                <button
-                  onClick={() => {
-                    setCurrentView("mieterportal");
-                    setShowMobileMenu(false);
-                  }}
-                  className="w-full bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center"
-                >
-                  Zur Verwaltung
-                </button>
+              <div
+                onClick={() => {
+                  setCurrentView("mieterportal");
+                  setShowMobileMenu(false);
+                }}
+                className="flex items-center gap-2 text-sm font-medium cursor-pointer"
+              >
+                <span>Zur Verwaltung</span>
+                <ChevronDown className="w-4 h-4 -rotate-90" />
               </div>{" "}
             </div>{" "}
             <div
@@ -427,7 +426,7 @@ export default function Dashboard() {
                   {" "}
                   <Gift className="w-5 h-5" />{" "}
                 </div>{" "}
-                <h3 className="font-semibold">{t("referral.title")}</h3>{" "}
+                <h3 className="font-semibold">Empfehlungen</h3>{" "}
               </div>{" "}
               <p className="text-emerald-100 text-sm mb-3">
                 {" "}
@@ -490,16 +489,12 @@ export default function Dashboard() {
               <p className="text-blue-50 text-sm mb-3">
                 Kommunizieren Sie mit Ihren Mietern
               </p>{" "}
-              <div>
-                <button
-                  onClick={() => {
-                    setCurrentView("mieterportal");
-                    setShowMobileMenu(false);
-                  }}
-                  className="w-full bg-white/20 hover:bg-white/30 rounded px-3 py-2 text-sm font-medium transition-colors flex items-center justify-center"
-                >
-                  Zur Verwaltung
-                </button>
+              <div
+                onClick={() => setCurrentView("mieterportal")}
+                className="flex items-center gap-2 text-sm font-medium cursor-pointer"
+              >
+                <span>Zur Verwaltung</span>
+                <ChevronDown className="w-4 h-4 -rotate-90" />
               </div>{" "}
             </div>{" "}
             <div
@@ -513,7 +508,7 @@ export default function Dashboard() {
                   {" "}
                   <Gift className="w-5 h-5" />{" "}
                 </div>{" "}
-                <h3 className="font-semibold">{t("referral.title")}</h3>{" "}
+                <h3 className="font-semibold">Empfehlungen</h3>{" "}
               </div>{" "}
               <p className="text-emerald-100 text-sm mb-3">
                 {" "}

@@ -663,7 +663,7 @@ export default function ExpensesView() {
                         {expense.document_id && (
                           <button
                             onClick={() => handleDownloadDocument(expense.document_id!)}
-                            className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                            className="text-gray-300 hover:text-emerald-600 transition-colors"
                             title="Beleg herunterladen"
                           >
                             <FileText className="w-4 h-4" />
@@ -671,14 +671,14 @@ export default function ExpensesView() {
                         )}
                         <button
                           onClick={() => handleEditExpense(expense)}
-                          className="text-primary-blue hover:text-blue-700 transition-colors"
+                          className="text-gray-300 hover:text-blue-600 transition-colors"
                           title="Bearbeiten"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteExpense(expense.id)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
+                          className="text-gray-300 hover:text-red-600 transition-colors"
                           title="Löschen"
                         >
                           <Trash2 className="w-4 h-4" />
