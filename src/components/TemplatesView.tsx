@@ -97,7 +97,7 @@ export default function TemplatesView() {
 
   async function handleDownload(template: Template) {
     if (template.is_premium && !isPremium) {
-      alert("Diese Vorlage ist nur für Premium-Mitglieder verfügbar. Bitte upgraden Sie Ihren Tarif.");
+      alert("Diese Vorlage ist nur für Pro-Mitglieder verfügbar. Bitte upgraden Sie Ihren Tarif.");
       return;
     }
 
@@ -208,8 +208,8 @@ export default function TemplatesView() {
       )}
 
       {templates.length > 0 && (
-        <div className="mb-6 space-y-4">
-          <div className="relative max-w-2xl">
+        <div className="mb-6 flex gap-4 items-end">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -220,13 +220,10 @@ export default function TemplatesView() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Kategorie filtern
-            </label>
             <select
               value={selectedCategory || ""}
               onChange={(e) => setSelectedCategory(e.target.value || null)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white min-w-[200px]"
+              className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white min-w-[200px]"
             >
               <option value="">Alle Kategorien</option>
               {CATEGORIES.map((cat) => (
@@ -297,9 +294,9 @@ export default function TemplatesView() {
                                 {template.title}
                               </h3>
                               {template.is_premium && (
-                                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded font-medium flex items-center gap-1">
+                                <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded font-medium flex items-center gap-1">
                                   {!isPremium && <Lock className="w-3 h-3" />}
-                                  Premium
+                                  Pro
                                 </span>
                               )}
                               {!template.is_premium && (
@@ -341,7 +338,7 @@ export default function TemplatesView() {
                               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                               : "bg-primary-blue text-white hover:bg-blue-600"
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title={template.is_premium && !isPremium ? "Premium-Tarif erforderlich" : ""}
+                          title={template.is_premium && !isPremium ? "Pro-Tarif erforderlich" : ""}
                         >
                           {downloading === template.id ? (
                             <>
@@ -351,7 +348,7 @@ export default function TemplatesView() {
                           ) : template.is_premium && !isPremium ? (
                             <>
                               <Lock className="w-4 h-4" />
-                              Premium
+                              Pro
                             </>
                           ) : (
                             <>

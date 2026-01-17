@@ -53,6 +53,8 @@ export default function RentPaymentsView() {
   const [partialNote, setPartialNote] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "property" | "tenant" | "amount" | "status">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const paymentsPerPage = 12;
   useEffect(() => {
     loadData();
   }, [user]);
@@ -333,6 +335,12 @@ export default function RentPaymentsView() {
 
   const totalAmount = filteredPayments
     .reduce((sum, p) => sum + Number(p.amount), 0);
+
+  const totalPages = Math.ceil(filteredPayments.length / paymentsPerPage);
+  const paginatedPayments = filteredPayments.slice(
+    (currentPage - 1) * paymentsPerPage,
+    currentPage * paymentsPerPage
+  );
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -638,10 +646,56 @@ export default function RentPaymentsView() {
             )
           }
         ]}
-        data={filteredPayments}
+        data={paginatedPayments}
         loading={false}
         emptyMessage="Keine Mieteingänge gefunden. Mieteingänge werden automatisch generiert, wenn Sie Mietverträge anlegen."
       />
+
+      {filteredPayments.length > paymentsPerPage && (
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-200 rounded-b-xl">
+          <div className="text-sm text-gray-700">
+            Zeige {((currentPage - 1) * paymentsPerPage) + 1} bis {Math.min(currentPage * paymentsPerPage, filteredPayments.length)} von {filteredPayments.length} Einträgen
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Zurück
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                if (totalPages <= 7 || page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 border rounded-md text-sm font-medium transition-colors ${
+                        currentPage === page
+                          ? "bg-primary-blue text-white border-primary-blue"
+                          : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                } else if (page === currentPage - 2 || page === currentPage + 2) {
+                  return <span key={page} className="px-2 text-gray-400">...</span>;
+                }
+                return null;
+              })}
+            </div>
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Weiter
+            </button>
+          </div>
+        </div>
+      )}
 
       {showPartialPaymentModal && selectedPayment && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">

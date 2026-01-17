@@ -716,25 +716,25 @@ export default function IncomeView() {
                         {income.document_id && (
                           <button
                             onClick={() => handleDownloadDocument(income.document_id!)}
-                            className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                            className="text-gray-400 hover:text-emerald-600 transition-colors"
                             title="Beleg herunterladen"
                           >
-                            <FileText className="w-4 h-4" />
+                            <FileText className="w-5 h-5" />
                           </button>
                         )}
                         <button
                           onClick={() => handleEditIncome(income)}
-                          className="text-primary-blue hover:text-blue-700 transition-colors"
+                          className="text-gray-400 hover:text-blue-600 transition-colors"
                           title="Bearbeiten"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteIncome(income.id)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
+                          className="text-gray-400 hover:text-red-600 transition-colors"
                           title="Löschen"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     </td>

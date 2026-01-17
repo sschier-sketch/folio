@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Filter, Search, Download, Eye, Calendar, Building, User, Lock } from "lucide-react";
+import { FileText, Filter, Search, Download, Eye, Calendar, Building, User, Lock, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -41,6 +41,10 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
   });
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Document | "associations";
+    direction: "asc" | "desc";
+  } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -265,6 +269,40 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
     return true;
   });
 
+  const handleSort = (key: keyof Document | "associations") => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedDocuments = [...filteredDocuments].sort((a, b) => {
+    if (!sortConfig) return 0;
+
+    const { key, direction } = sortConfig;
+    const multiplier = direction === "asc" ? 1 : -1;
+
+    if (key === "associations") {
+      const aHasAssoc = a.associations && a.associations.length > 0;
+      const bHasAssoc = b.associations && b.associations.length > 0;
+      return (aHasAssoc ? 1 : 0) - (bHasAssoc ? 1 : 0) * multiplier;
+    }
+
+    const aVal = a[key];
+    const bVal = b[key];
+
+    if (typeof aVal === "string" && typeof bVal === "string") {
+      return aVal.localeCompare(bVal) * multiplier;
+    }
+
+    if (typeof aVal === "number" && typeof bVal === "number") {
+      return (aVal - bVal) * multiplier;
+    }
+
+    return 0;
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -446,67 +484,147 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
         </div>
       ) : (
         <div className="bg-white rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-hidden">
+            <table className="w-full table-fixed">
+              <colgroup>
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "20%" }} />
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "10%" }} />
+                <col style={{ width: "15%" }} />
+              </colgroup>
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Dokumentname
+                  <th
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort("file_name")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Dokumentname
+                      {sortConfig?.key === "file_name" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="w-4 h-4" />
+                        ) : (
+                          <ArrowDown className="w-4 h-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-4 h-4 opacity-30" />
+                      )}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Typ
+                  <th
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort("document_type")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Typ
+                      {sortConfig?.key === "document_type" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="w-4 h-4" />
+                        ) : (
+                          <ArrowDown className="w-4 h-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-4 h-4 opacity-30" />
+                      )}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Zugeordnet zu
+                  <th
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort("associations")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Zugeordnet zu
+                      {sortConfig?.key === "associations" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="w-4 h-4" />
+                        ) : (
+                          <ArrowDown className="w-4 h-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-4 h-4 opacity-30" />
+                      )}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Datum
+                  <th
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort("upload_date")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Datum
+                      {sortConfig?.key === "upload_date" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="w-4 h-4" />
+                        ) : (
+                          <ArrowDown className="w-4 h-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-4 h-4 opacity-30" />
+                      )}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Größe
+                  <th
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort("file_size")}
+                  >
+                    <div className="flex items-center gap-2">
+                      Größe
+                      {sortConfig?.key === "file_size" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="w-4 h-4" />
+                        ) : (
+                          <ArrowDown className="w-4 h-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-4 h-4 opacity-30" />
+                      )}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aktionen
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {filteredDocuments.map((doc) => (
+                {sortedDocuments.map((doc) => (
                   <tr
                     key={doc.id}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={() => onDocumentClick(doc.id)}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm font-medium text-dark truncate max-w-xs">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <span className="text-sm font-medium text-dark truncate">
                           {doc.file_name}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDocumentTypeColor(
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getDocumentTypeColor(
                           doc.document_type
                         )}`}
                       >
                         {getDocumentTypeLabel(doc.document_type)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getAssociationLabel(doc.associations || [])}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        {formatDate(doc.upload_date)}
+                    <td className="px-4 py-4">
+                      <div className="truncate">
+                        {getAssociationLabel(doc.associations || [])}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <td className="px-4 py-4 text-sm text-gray-700">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{formatDate(doc.upload_date)}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-700">
                       {formatFileSize(doc.file_size)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-4 py-4 text-right text-sm font-medium">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -526,8 +644,8 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
         </div>
       )}
 
-      <div className="text-sm text-gray-500 text-center">
-        {filteredDocuments.length} von {documents.length} Dokument{documents.length !== 1 ? "en" : ""} angezeigt
+      <div className="text-sm text-gray-500 text-center mt-4">
+        {sortedDocuments.length} von {documents.length} Dokument{documents.length !== 1 ? "en" : ""} angezeigt
       </div>
     </div>
   );

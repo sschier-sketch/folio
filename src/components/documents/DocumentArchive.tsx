@@ -240,10 +240,10 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => onDocumentClick(doc.id)}
-                          className="text-blue-600 hover:text-blue-900 inline-flex items-center gap-1"
+                          className="text-gray-400 hover:text-blue-600 transition-colors"
+                          title="Ansehen"
                         >
-                          <Eye className="w-4 h-4" />
-                          <span className="hidden sm:inline">Ansehen</span>
+                          <Eye className="w-5 h-5" />
                         </button>
 
                         <DocumentFeatureGuard
@@ -251,20 +251,19 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                           fallback={
                             <button
                               disabled
-                              className="text-gray-400 cursor-not-allowed inline-flex items-center gap-1"
+                              className="text-gray-300 cursor-not-allowed"
+                              title="Wiederherstellen (Pro)"
                             >
-                              <RotateCcw className="w-4 h-4" />
-                              <span className="hidden sm:inline">Wiederherstellen</span>
-                              <Lock className="w-3 h-3 sm:hidden" />
+                              <RotateCcw className="w-5 h-5" />
                             </button>
                           }
                         >
                           <button
                             onClick={() => handleRestore(doc.id)}
-                            className="text-emerald-600 hover:text-emerald-900 inline-flex items-center gap-1"
+                            className="text-gray-400 hover:text-emerald-600 transition-colors"
+                            title="Wiederherstellen"
                           >
-                            <RotateCcw className="w-4 h-4" />
-                            <span className="hidden sm:inline">Wiederherstellen</span>
+                            <RotateCcw className="w-5 h-5" />
                           </button>
                         </DocumentFeatureGuard>
 
@@ -273,18 +272,19 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                           fallback={
                             <button
                               disabled
-                              className="text-gray-400 cursor-not-allowed inline-flex items-center gap-1"
+                              className="text-gray-300 cursor-not-allowed"
+                              title="Endgültig löschen (Pro)"
                             >
-                              <Trash2 className="w-4 h-4" />
-                              <Lock className="w-3 h-3 sm:hidden" />
+                              <Trash2 className="w-5 h-5" />
                             </button>
                           }
                         >
                           <button
                             onClick={() => handleDelete(doc.id, doc.file_path)}
-                            className="text-red-600 hover:text-red-900 inline-flex items-center gap-1"
+                            className="text-gray-400 hover:text-red-600 transition-colors"
+                            title="Endgültig löschen"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-5 h-5" />
                           </button>
                         </DocumentFeatureGuard>
                       </div>

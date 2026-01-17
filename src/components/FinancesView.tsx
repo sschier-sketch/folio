@@ -65,11 +65,15 @@ export default function FinancesView() {
                 >
                   <Icon className="w-5 h-5" />
                   {tab.label}
-                  {tab.premium && (
+                  {tab.premium && tab.id === "intelligence" ? (
+                    <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>
+                      Bald
+                    </span>
+                  ) : tab.premium ? (
                     <span className="px-3 py-1 text-xs bg-amber-100 text-amber-700 rounded-full font-medium">
                       Pro
                     </span>
-                  )}
+                  ) : null}
                   {activeTab === tab.id && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
                   )}
