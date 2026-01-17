@@ -658,7 +658,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                     setEditingUnit(null);
                     resetForm();
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300 transition-colors"
+                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                  className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Abbrechen
                 </button>

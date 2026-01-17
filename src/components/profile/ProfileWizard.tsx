@@ -436,7 +436,8 @@ export default function ProfileWizard({ isOpen, onClose, onComplete }: ProfileWi
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+              className="px-4 py-2 rounded-lg hover:bg-[#bdbfcb] transition-colors"
             >
               Abbrechen
             </button>

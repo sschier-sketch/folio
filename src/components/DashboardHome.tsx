@@ -525,9 +525,12 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           <div className="text-sm text-gray-400">
             {t("dashboard.yield.average")}
           </div>{" "}
-          <div className="text-xs text-gray-300 mt-2">
+          <div className="mt-3 pt-3 border-t border-gray-100">
             {" "}
-            Gesamtwert: {formatCurrency(stats.totalPropertyValue)}{" "}
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-400">Gesamtwert</span>
+              <span className="text-sm font-semibold text-dark">{formatCurrency(stats.totalPropertyValue)}</span>
+            </div>{" "}
           </div>{" "}
         </div>{" "}
       </div>{" "}
@@ -620,7 +623,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
-              <div className="w-14 h-14 bg-primary-blue rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-primary-blue rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
                 {" "}
                 <Building2 className="w-7 h-7 text-white" />{" "}
               </div>{" "}
@@ -634,7 +637,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
-              <div className="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
                 {" "}
                 <Users className="w-7 h-7 text-white" />{" "}
               </div>{" "}
@@ -648,7 +651,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
-              <div className="w-14 h-14 bg-amber-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-amber-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
                 {" "}
                 <Receipt className="w-7 h-7 text-white" />{" "}
               </div>{" "}
@@ -662,7 +665,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
-              <div className="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
                 {" "}
                 <BarChart3 className="w-7 h-7 text-white" />{" "}
               </div>{" "}
@@ -741,7 +744,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <TrendingUp className="w-5 h-5 text-green-600" />
                     </div>
                     <div className="flex-1 min-w-0">

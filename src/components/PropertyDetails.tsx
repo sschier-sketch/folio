@@ -194,7 +194,8 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
     <div>
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-gray-400 hover:text-dark mb-6 transition-colors"
+        style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#bdbfcb] mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
         Zurück zur Übersicht
@@ -216,7 +217,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
             </div>
 
             <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-              <label className="cursor-pointer p-2 bg-white rounded-full hover:bg-gray-100 transition-colors">
+              <label style={{ backgroundColor: "#faf8f8" }} className="cursor-pointer p-2 rounded-full hover:bg-[#bdbfcb] transition-colors">
                 <Camera className="w-5 h-5 text-gray-700" />
                 <input
                   type="file"
@@ -230,7 +231,8 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
               {photoUrl && (
                 <button
                   onClick={handlePhotoDelete}
-                  className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+                  style={{ backgroundColor: "#faf8f8" }}
+                  className="p-2 rounded-full hover:bg-[#bdbfcb] transition-colors"
                   disabled={uploading}
                 >
                   <Trash2 className="w-5 h-5 text-red-600" />

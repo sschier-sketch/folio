@@ -1316,7 +1316,8 @@ export default function HandoverProtocolModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
+              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
             >
               Abbrechen
             </button>

@@ -733,7 +733,8 @@ export default function TenantContractTab({
                   setUploadDescription("");
                 }}
                 disabled={isUploading}
-                className="flex-1 px-4 py-2 text-gray-400 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors disabled:opacity-50"
               >
                 Abbrechen
               </button>

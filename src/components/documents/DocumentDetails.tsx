@@ -646,7 +646,8 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                         shared_with_tenant: document.shared_with_tenant || false,
                       });
                     }}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                    className="px-4 py-2 rounded-lg hover:bg-[#bdbfcb] transition-colors"
                   >
                     Abbrechen
                   </button>
@@ -769,7 +770,8 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                         setShowAddAssociation(false);
                         setNewAssociation({ type: "property", id: "" });
                       }}
-                      className="px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors"
+                      style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                      className="px-3 py-1.5 text-sm rounded-lg hover:bg-[#bdbfcb] transition-colors"
                     >
                       Abbrechen
                     </button>
