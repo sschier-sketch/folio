@@ -278,10 +278,12 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       setLoading(false);
     }
   };
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number, decimals: number = 2) => {
     return new Intl.NumberFormat("de-DE", {
       style: "currency",
       currency: "EUR",
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     }).format(value);
   };
   const loadUpcomingTasks = async () => {
@@ -572,20 +574,10 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-400">Gesamtwert</span>
-                <span className="text-xs text-gray-700 font-semibold">{formatCurrency(stats.totalPropertyValue)}</span>
+                <span className="text-xs text-gray-700 font-semibold">{formatCurrency(stats.totalPropertyValue, 0)}</span>
               </div>
               {stats.valueChange !== 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400 flex items-center gap-1">
-                    {stats.valueChange > 0 ? (
-                      <TrendingUp className="w-3 h-3 text-emerald-600" />
-                    ) : stats.valueChange < 0 ? (
-                      <TrendingDown className="w-3 h-3 text-red-600" />
-                    ) : (
-                      <Minus className="w-3 h-3 text-gray-400" />
-                    )}
-                    Trend
-                  </span>
+                <div className="flex items-center justify-end">
                   <span className={`text-xs font-semibold ${
                     stats.valueChange > 0
                       ? "text-emerald-600"
@@ -593,7 +585,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                         ? "text-red-600"
                         : "text-gray-500"
                   }`}>
-                    {stats.valueChange > 0 ? "+" : ""}{formatCurrency(stats.valueChange)}
+                    {stats.valueChange > 0 ? "+" : ""}{formatCurrency(stats.valueChange, 0)}
                     {" "}({stats.valueChangePercent > 0 ? "+" : ""}{stats.valueChangePercent.toFixed(1)}%)
                   </span>
                 </div>
