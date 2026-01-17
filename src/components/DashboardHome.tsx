@@ -4,12 +4,14 @@ import {
   Building2,
   Users,
   TrendingUp,
+  TrendingDown,
   Euro,
   Wrench,
   AlertCircle,
   ChevronRight,
   Receipt,
   BarChart3,
+  Minus,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -22,6 +24,8 @@ interface Stats {
   tenantsCount: number;
   totalMonthlyRent: number;
   totalPropertyValue: number;
+  valueChange: number;
+  valueChangePercent: number;
   averageYield: number;
   totalMonthlyExpenses: number;
   monthlySurplus: number;
@@ -85,6 +89,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
     tenantsCount: 0,
     totalMonthlyRent: 0,
     totalPropertyValue: 0,
+    valueChange: 0,
+    valueChangePercent: 0,
     averageYield: 0,
     totalMonthlyExpenses: 0,
     monthlySurplus: 0,
@@ -149,6 +155,40 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           (sum, p) => sum + Number(p.current_value),
           0,
         ) || 0;
+
+      // Calculate property value trend
+      const { data: historyData } = await supabase
+        .from("property_value_history")
+        .select("value, recorded_at")
+        .eq("user_id", user.id)
+        .order("recorded_at", { ascending: false })
+        .limit(100);
+
+      let valueChange = 0;
+      let valueChangePercent = 0;
+
+      if (historyData && historyData.length > 1) {
+        // Group by date and sum values for each date
+        const valuesByDate = new Map<string, number>();
+        historyData.forEach((record) => {
+          const dateKey = new Date(record.recorded_at).toISOString().split("T")[0];
+          const currentSum = valuesByDate.get(dateKey) || 0;
+          valuesByDate.set(dateKey, currentSum + Number(record.value));
+        });
+
+        // Get the two most recent different totals
+        const sortedDates = Array.from(valuesByDate.keys()).sort().reverse();
+        if (sortedDates.length >= 2) {
+          const latestTotal = valuesByDate.get(sortedDates[0]) || 0;
+          const previousTotal = valuesByDate.get(sortedDates[1]) || 0;
+
+          valueChange = latestTotal - previousTotal;
+          if (previousTotal > 0) {
+            valueChangePercent = (valueChange / previousTotal) * 100;
+          }
+        }
+      }
+
       const totalMonthlyExpenses =
         loansRes.data?.reduce((sum, l) => sum + Number(l.monthly_payment), 0) ||
         0;
@@ -220,6 +260,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         tenantsCount,
         totalMonthlyRent,
         totalPropertyValue,
+        valueChange,
+        valueChangePercent,
         averageYield,
         totalMonthlyExpenses,
         monthlySurplus,
@@ -527,9 +569,35 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           </div>{" "}
           <div className="mt-3 pt-3 border-t border-gray-100">
             {" "}
-            <div className="space-y-1">
-              <div className="text-xs text-gray-400">Gesamtwert</div>
-              <div className="text-sm font-semibold text-dark">{formatCurrency(stats.totalPropertyValue)}</div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400">Gesamtwert</span>
+                <span className="text-xs text-gray-700 font-semibold">{formatCurrency(stats.totalPropertyValue)}</span>
+              </div>
+              {stats.valueChange !== 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 flex items-center gap-1">
+                    {stats.valueChange > 0 ? (
+                      <TrendingUp className="w-3 h-3 text-emerald-600" />
+                    ) : stats.valueChange < 0 ? (
+                      <TrendingDown className="w-3 h-3 text-red-600" />
+                    ) : (
+                      <Minus className="w-3 h-3 text-gray-400" />
+                    )}
+                    Trend
+                  </span>
+                  <span className={`text-xs font-semibold ${
+                    stats.valueChange > 0
+                      ? "text-emerald-600"
+                      : stats.valueChange < 0
+                        ? "text-red-600"
+                        : "text-gray-500"
+                  }`}>
+                    {stats.valueChange > 0 ? "+" : ""}{formatCurrency(stats.valueChange)}
+                    {" "}({stats.valueChangePercent > 0 ? "+" : ""}{stats.valueChangePercent.toFixed(1)}%)
+                  </span>
+                </div>
+              )}
             </div>{" "}
           </div>{" "}
         </div>{" "}
