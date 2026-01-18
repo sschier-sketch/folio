@@ -385,7 +385,7 @@ export default function Dashboard() {
                           Demnächst
                         </span>
                       )}
-                      {item.id === "mieterportal" && !isPremium && (
+                      {item.id === "mieterportal" && (
                         <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">
                           Pro
                         </span>
@@ -397,13 +397,11 @@ export default function Dashboard() {
             </nav>{" "}
             <div className={`bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`}>
               {" "}
-              {!isPremium && (
-                <div className="absolute top-2 right-2">
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">
-                    Pro
-                  </span>
-                </div>
-              )}
+              <div className="absolute top-2 right-2">
+                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">
+                  Pro
+                </span>
+              </div>
               <div className="flex items-center gap-3 mb-3">
                 {" "}
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -488,7 +486,7 @@ export default function Dashboard() {
                           Demnächst
                         </span>
                       )}
-                      {item.id === "mieterportal" && !isPremium && (
+                      {item.id === "mieterportal" && (
                         <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">
                           Pro
                         </span>
@@ -500,13 +498,11 @@ export default function Dashboard() {
             </nav>{" "}
             <div className={`bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`}>
               {" "}
-              {!isPremium && (
-                <div className="absolute top-2 right-2">
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">
-                    Pro
-                  </span>
-                </div>
-              )}
+              <div className="absolute top-2 right-2">
+                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">
+                  Pro
+                </span>
+              </div>
               <div className="flex items-center gap-3 mb-3">
                 {" "}
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
