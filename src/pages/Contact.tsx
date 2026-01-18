@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import Footer from "../components/Footer";
 import { Header } from "../components/Header";
-import { supabase } from "../lib/supabase";
 export default function Contact() {
   const { language } = useLanguage();
   const [formData, setFormData] = useState({
@@ -20,44 +19,27 @@ export default function Contact() {
     setSubmitting(true);
     setError(null);
     try {
-      const { data: ticketNumberData } = await supabase.rpc(
-        "generate_contact_ticket_number",
-      );
-      const ticketNumber = ticketNumberData || `CONTACT-${Date.now()}`;
-      const { data: newTicket, error: ticketError } = await supabase
-        .from("tickets")
-        .insert([
-          {
-            user_id: null,
-            ticket_number: ticketNumber,
-            ticket_type: "contact",
-            subject: formData.subject,
-            contact_name: formData.name,
-            contact_email: formData.email,
-            status: "open",
-            priority: "medium",
-            category: "inquiry",
-            created_by_name: formData.name,
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/submit-contact-form`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseAnonKey}`,
           },
-        ])
-        .select()
-        .single();
-      if (ticketError) throw ticketError;
-      if (newTicket) {
-        const { error: messageError } = await supabase
-          .from("ticket_messages")
-          .insert([
-            {
-              ticket_id: newTicket.id,
-              sender_type: "contact",
-              sender_name: formData.name,
-              sender_email: formData.email,
-              message: formData.message,
-            },
-          ]);
-        if (messageError)
-          console.error("Failed to add initial message:", messageError);
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit contact form");
       }
+
       setSubmitted(true);
       setTimeout(() => {
         setFormData({ name: "", email: "", subject: "", message: "" });
@@ -66,7 +48,9 @@ export default function Contact() {
     } catch (err) {
       console.error("Error submitting contact form:", err);
       setError(
-        "Es gab einen Fehler beim Senden Ihrer Nachricht. Bitte versuchen Sie es erneut.",
+        language === "de"
+          ? "Es gab einen Fehler beim Senden Ihrer Nachricht. Bitte versuchen Sie es erneut."
+          : "There was an error sending your message. Please try again.",
       );
     } finally {
       setSubmitting(false);
