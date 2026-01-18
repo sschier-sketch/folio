@@ -37,9 +37,19 @@ interface CalculationResult {
   details?: string;
 }
 
+interface CalculationRun {
+  id: string;
+  run_date: string;
+  contracts_checked: number;
+  calculations_created: number;
+  status: string;
+  error_message?: string;
+}
+
 export default function IndexRentView() {
   const { user } = useAuth();
   const [calculations, setCalculations] = useState<IndexRentCalculation[]>([]);
+  const [lastRun, setLastRun] = useState<CalculationRun | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<CalculationResult | null>(null);
@@ -47,6 +57,7 @@ export default function IndexRentView() {
   useEffect(() => {
     if (user) {
       loadCalculations();
+      loadLastRun();
     }
   }, [user]);
 
@@ -73,48 +84,58 @@ export default function IndexRentView() {
     }
   };
 
+  const loadLastRun = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("index_rent_calculation_runs")
+        .select("*")
+        .order("run_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      setLastRun(data);
+    } catch (error) {
+      console.error("Error loading last run:", error);
+    }
+  };
+
   const processCalculations = async () => {
     setProcessing(true);
     setResult(null);
     try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-index-rent-calculations`;
-      const headers = {
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        "Content-Type": "application/json",
-      };
+      const { data, error } = await supabase.rpc('run_automatic_index_rent_calculations');
 
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers,
-      });
+      if (error) throw error;
 
-      if (!response.ok) {
-        throw new Error("Fehler beim Verarbeiten der Berechnungen");
-      }
-
-      const data = await response.json();
-
-      if (data.processed === 0 && data.total_contracts > 0) {
+      if (data.status === 'error') {
         setResult({
           type: "info",
-          message: `${data.total_contracts} ${data.total_contracts === 1 ? 'Vertrag' : 'Verträge'} geprüft`,
-          details: "Keine Indexerhöhung notwendig. Entweder ist die Mindestfrist noch nicht abgelaufen oder die Indexänderung ist zu gering."
+          message: "Fehler bei der Verarbeitung",
+          details: data.error_message || "Es ist ein Fehler aufgetreten."
         });
-      } else if (data.processed > 0) {
-        setResult({
-          type: "success",
-          message: `Berechnung durchgeführt: ${data.processed} ${data.processed === 1 ? 'Indexerhöhung' : 'Indexerhöhungen'} erstellt`,
-          details: `${data.total_contracts} ${data.total_contracts === 1 ? 'Vertrag wurde' : 'Verträge wurden'} geprüft`
-        });
-      } else {
+      } else if (data.contracts_checked === 0) {
         setResult({
           type: "info",
           message: "Keine Verträge zu prüfen",
-          details: "Es wurden keine Verträge mit Indexmiete gefunden, die derzeit geprüft werden können."
+          details: "Es wurden keine Verträge mit Indexmiete gefunden."
+        });
+      } else if (data.calculations_created === 0) {
+        setResult({
+          type: "info",
+          message: `${data.contracts_checked} ${data.contracts_checked === 1 ? 'Vertrag' : 'Verträge'} geprüft`,
+          details: "Keine Indexerhöhung notwendig. Entweder ist die Mindestfrist noch nicht abgelaufen oder die Indexänderung ist zu gering."
+        });
+      } else {
+        setResult({
+          type: "success",
+          message: `Berechnung durchgeführt: ${data.calculations_created} ${data.calculations_created === 1 ? 'Indexerhöhung' : 'Indexerhöhungen'} erstellt`,
+          details: `${data.contracts_checked} ${data.contracts_checked === 1 ? 'Vertrag wurde' : 'Verträge wurden'} geprüft`
         });
       }
 
       loadCalculations();
+      loadLastRun();
     } catch (error) {
       console.error("Error processing calculations:", error);
       setResult({
@@ -197,7 +218,7 @@ export default function IndexRentView() {
         <div>
           <h2 className="text-2xl font-bold text-dark">Indexmieten-Berechnungen</h2>
           <p className="text-gray-500 mt-1">
-            Automatische Berechnung der Mietanpassung nach §557b BGB
+            Automatische Berechnung der Mietanpassung nach §557b BGB (täglich um 3:00 Uhr)
           </p>
         </div>
         <button
@@ -206,9 +227,56 @@ export default function IndexRentView() {
           className="px-6 py-3 bg-[#008CFF] text-white rounded-full font-medium hover:bg-[#0073CC] transition-colors disabled:opacity-50 flex items-center gap-2"
         >
           <TrendingUp className="w-5 h-5" />
-          {processing ? "Verarbeite..." : "Berechnungen durchführen"}
+          {processing ? "Verarbeite..." : "Manuelle Berechnung"}
         </button>
       </div>
+
+      {lastRun && (
+        <div className="bg-white border border-gray-200 rounded-lg p-5">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3 flex-1">
+              <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-dark mb-1">Letzte automatische Berechnung</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  {new Date(lastRun.run_date).toLocaleDateString("de-DE", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })} um {new Date(lastRun.run_date).toLocaleTimeString("de-DE", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })} Uhr
+                </p>
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="text-gray-700">
+                    <span className="font-medium">{lastRun.contracts_checked}</span> {lastRun.contracts_checked === 1 ? 'Vertrag' : 'Verträge'} geprüft
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span className={lastRun.calculations_created > 0 ? "text-green-600 font-medium" : "text-gray-700"}>
+                    <span className="font-medium">{lastRun.calculations_created}</span> {lastRun.calculations_created === 1 ? 'Berechnung' : 'Berechnungen'} erstellt
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    lastRun.status === 'success' ? 'bg-green-100 text-green-700' :
+                    lastRun.status === 'error' ? 'bg-red-100 text-red-700' :
+                    lastRun.status === 'no_contracts' ? 'bg-gray-100 text-gray-700' :
+                    'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {lastRun.status === 'success' ? 'Erfolgreich' :
+                     lastRun.status === 'error' ? 'Fehler' :
+                     lastRun.status === 'no_contracts' ? 'Keine Verträge' :
+                     'Ausstehend'}
+                  </span>
+                </div>
+                {lastRun.error_message && (
+                  <p className="text-sm text-red-600 mt-2">{lastRun.error_message}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {result && (
         <div
