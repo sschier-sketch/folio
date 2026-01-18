@@ -375,25 +375,31 @@ export default function RentPaymentsView() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>
-            {isPremium && (
-              <button
-                onClick={() => setActiveTab("dunning")}
-                className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
-                  activeTab === "dunning"
-                    ? "text-primary-blue"
-                    : "text-gray-400 hover:text-dark"
-                }`}
-              >
-                <Bell className="w-5 h-5" />
-                Mahnwesen
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                  PRO
-                </span>
-                {activeTab === "dunning" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
-                )}
-              </button>
-            )}
+            <button
+              onClick={() => {
+                if (!isPremium) {
+                  alert("Das Mahnwesen ist ein Pro Feature. Upgraden Sie auf Pro, um auf das Mahnwesen zuzugreifen.");
+                  return;
+                }
+                setActiveTab("dunning");
+              }}
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+                !isPremium
+                  ? "text-gray-400 hover:text-gray-500"
+                  : activeTab === "dunning"
+                  ? "text-primary-blue"
+                  : "text-gray-400 hover:text-dark"
+              }`}
+            >
+              <Bell className="w-5 h-5" />
+              Mahnwesen
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
+                PRO
+              </span>
+              {activeTab === "dunning" && isPremium && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+              )}
+            </button>
           </div>
         </div>
       </div>

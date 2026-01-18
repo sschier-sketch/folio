@@ -146,14 +146,22 @@ export default function TenantContractDetails({
         <ScrollableTabNav>
           <div className="flex">
             {tabs.map((tab) => {
-              if (tab.premium && !isPremium) return null;
               const Icon = tab.icon;
+              const isLocked = tab.premium && !isPremium;
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    if (isLocked) {
+                      alert("Dieses Feature ist nur für Pro-User verfügbar. Upgraden Sie auf Pro, um vollen Zugriff zu erhalten.");
+                      return;
+                    }
+                    setActiveTab(tab.id);
+                  }}
                   className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
-                    activeTab === tab.id
+                    isLocked
+                      ? "text-gray-400 hover:text-gray-500"
+                      : activeTab === tab.id
                       ? "text-primary-blue"
                       : "text-gray-400 hover:text-dark"
                   }`}
@@ -165,7 +173,7 @@ export default function TenantContractDetails({
                       PRO
                     </span>
                   )}
-                  {activeTab === tab.id && (
+                  {activeTab === tab.id && !isLocked && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
                   )}
                 </button>
