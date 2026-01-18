@@ -15,6 +15,7 @@ import BankConnectionView from "./finances/BankConnectionView";
 import IntelligenceView from "./finances/IntelligenceView";
 import IndexRentView from "./finances/IndexRentView";
 import ScrollableTabNav from "./common/ScrollableTabNav";
+import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 
 type Tab =
   | "income"
@@ -52,24 +53,14 @@ export default function FinancesView() {
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isDisabled = tab.id === "bank" || tab.id === "intelligence";
-              const isLocked = tab.premium && !isPremium && !isDisabled;
               return (
                 <button
                   key={tab.id}
-                  onClick={() => {
-                    if (isDisabled) return;
-                    if (isLocked) {
-                      alert("Dieses Feature ist nur für Pro-User verfügbar. Upgraden Sie auf Pro, um vollen Zugriff zu erhalten.");
-                      return;
-                    }
-                    setActiveTab(tab.id);
-                  }}
+                  onClick={() => !isDisabled && setActiveTab(tab.id)}
                   disabled={isDisabled}
                   className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
                     isDisabled
                       ? "text-gray-300 cursor-not-allowed opacity-50"
-                      : isLocked
-                      ? "text-gray-400 hover:text-gray-500"
                       : activeTab === tab.id
                       ? "text-primary-blue"
                       : "text-gray-400 hover:text-dark"
@@ -86,7 +77,7 @@ export default function FinancesView() {
                       PRO
                     </span>
                   ) : null}
-                  {activeTab === tab.id && !isLocked && !isDisabled && (
+                  {activeTab === tab.id && !isDisabled && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
                   )}
                 </button>
@@ -99,8 +90,42 @@ export default function FinancesView() {
       <div>
         {activeTab === "income" && <IncomeView />}
         {activeTab === "expenses" && <ExpensesView />}
-        {activeTab === "cashflow" && <CashflowView />}
-        {activeTab === "indexrent" && <IndexRentView />}
+        {activeTab === "cashflow" && (
+          isPremium ? (
+            <CashflowView />
+          ) : (
+            <PremiumUpgradePrompt
+              title="Cashflow-Übersicht"
+              description="Behalten Sie Ihre Liquidität im Blick mit detaillierten Cashflow-Analysen. Verstehen Sie Ihre Ein- und Auszahlungsströme und optimieren Sie Ihre finanzielle Planung."
+              features={[
+                "Monatliche und jährliche Cashflow-Übersichten",
+                "Visualisierung von Ein- und Auszahlungen",
+                "Prognosen für zukünftige Cashflows",
+                "Automatische Kategorisierung aller Transaktionen",
+                "Export für Steuerberater und Buchhaltung",
+                "Kennzahlen zur Liquiditätsplanung"
+              ]}
+            />
+          )
+        )}
+        {activeTab === "indexrent" && (
+          isPremium ? (
+            <IndexRentView />
+          ) : (
+            <PremiumUpgradePrompt
+              title="Indexmiete"
+              description="Passen Sie Ihre Mieten automatisch an die Inflation an. Berechnen Sie gesetzeskonforme Mietanpassungen auf Basis des Verbraucherpreisindex."
+              features={[
+                "Automatische Berechnung nach aktuellem VPI",
+                "Gesetzeskonforme Mieterhöhungsvorlagen",
+                "Historie aller Indexanpassungen",
+                "Fristen-Tracking für Mieterhöhungen",
+                "Automatische Benachrichtigungen bei möglichen Anpassungen",
+                "Dokumentation für rechtliche Zwecke"
+              ]}
+            />
+          )
+        )}
         {activeTab === "intelligence" && <IntelligenceView />}
         {activeTab === "bank" && <BankConnectionView />}
       </div>

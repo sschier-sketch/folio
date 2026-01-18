@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import DunningView from "./finances/DunningView";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
+import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 interface PartialPayment {
   amount: number;
   date: string;
@@ -376,17 +377,9 @@ export default function RentPaymentsView() {
               )}
             </button>
             <button
-              onClick={() => {
-                if (!isPremium) {
-                  alert("Das Mahnwesen ist ein Pro Feature. Upgraden Sie auf Pro, um auf das Mahnwesen zuzugreifen.");
-                  return;
-                }
-                setActiveTab("dunning");
-              }}
+              onClick={() => setActiveTab("dunning")}
               className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
-                !isPremium
-                  ? "text-gray-400 hover:text-gray-500"
-                  : activeTab === "dunning"
+                activeTab === "dunning"
                   ? "text-primary-blue"
                   : "text-gray-400 hover:text-dark"
               }`}
@@ -396,7 +389,7 @@ export default function RentPaymentsView() {
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
                 PRO
               </span>
-              {activeTab === "dunning" && isPremium && (
+              {activeTab === "dunning" && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>
@@ -825,8 +818,21 @@ export default function RentPaymentsView() {
         </div>
       )}
         </div>
-      ) : (
+      ) : isPremium ? (
         <DunningView payments={payments} onReloadPayments={loadPayments} />
+      ) : (
+        <PremiumUpgradePrompt
+          title="Mahnwesen"
+          description="Automatisieren Sie Ihr Mahnwesen und behalten Sie ausstehende Mietzahlungen im Blick. Versenden Sie professionelle Zahlungserinnerungen mit nur einem Klick."
+          features={[
+            "Automatische Mahnstufen mit individuellen Fristen",
+            "Professionelle Mahnvorlagen gemäß gesetzlicher Vorgaben",
+            "Tracking aller versendeten Mahnungen pro Mieter",
+            "Automatische Berechnung von Mahngebühren und Verzugszinsen",
+            "Übersicht über kritische Zahlungsverzüge",
+            "Export aller Mahnungen für Ihre Buchhaltung"
+          ]}
+        />
       )}
     </div>
   );
