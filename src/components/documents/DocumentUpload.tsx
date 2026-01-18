@@ -543,162 +543,190 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
             </div>
           </DocumentFeatureGuard>
 
-          <div className="border-t border-gray-200 pt-4">
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={sharedWithTenant}
-                onChange={(e) => setSharedWithTenant(e.target.checked)}
-                className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <div className="flex-1">
-                <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                  Im Mieterportal zur Verfügung stellen
+          <DocumentFeatureGuard
+            feature="upload-with-assignment"
+            fallback={
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  Zuordnung
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                    PRO
+                  </span>
+                </label>
+                <div className="relative">
+                  <select
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed"
+                  >
+                    <option>Keine Zuordnung</option>
+                  </select>
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  {associationType === 'tenant' && associationId
-                    ? 'Wenn Sie einen Mieter zuordnen, sieht nur dieser Mieter das Dokument in seinem Portal.'
-                    : 'Alle Mieter können dieses Dokument in ihrem Portal einsehen.'}
+                  Pro Feature: Ordnen Sie Dokumente direkt beim Upload zu
                 </p>
               </div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <DocumentFeatureGuard
-        feature="upload-with-assignment"
-        fallback={
-          <div className="bg-white rounded-lg p-6 border border-gray-100 relative">
-            <div className="absolute inset-0 bg-white bg-opacity-80 rounded-lg flex items-center justify-center z-10">
-              <div className="text-center">
-                <Lock className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-700">Pro Feature</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Direkte Zuordnung beim Upload mit Pro
-                </p>
-              </div>
-            </div>
-            <h2 className="text-lg font-semibold text-dark mb-4">Zuordnung (Optional)</h2>
-            <div className="space-y-4 blur-sm">
+            }
+          >
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Typ</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                  <option>Keine Zuordnung</option>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  Zuordnung (Optional)
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    PRO
+                  </span>
+                </label>
+                <select
+                  value={associationType}
+                  onChange={(e) => {
+                    setAssociationType(e.target.value);
+                    setAssociationId("");
+                    setSelectedPropertyForUnit("");
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Keine Zuordnung</option>
+                  <option value="property">Immobilie</option>
+                  <option value="unit">Einheit</option>
+                  <option value="rental_contract">Mietverhältnis</option>
+                  <option value="tenant">Mieter</option>
                 </select>
               </div>
-            </div>
-          </div>
-        }
-      >
-        <div className="bg-white rounded-lg p-6 border border-gray-100">
-          <h2 className="text-lg font-semibold text-dark mb-4">Zuordnung (Optional)</h2>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Zuordnungstyp
-              </label>
-              <select
-                value={associationType}
-                onChange={(e) => {
-                  setAssociationType(e.target.value);
-                  setAssociationId("");
-                  setSelectedPropertyForUnit("");
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Keine Zuordnung</option>
-                <option value="property">Immobilie</option>
-                <option value="unit">Einheit</option>
-                <option value="rental_contract">Mietverhältnis</option>
-                <option value="tenant">Mieter</option>
-              </select>
-            </div>
-
-            {associationType === "unit" && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Immobilie auswählen
-                  </label>
-                  <select
-                    value={selectedPropertyForUnit}
-                    onChange={(e) => {
-                      setSelectedPropertyForUnit(e.target.value);
-                      setAssociationId("");
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Bitte wählen...</option>
-                    {properties.map((prop) => (
-                      <option key={prop.id} value={prop.id}>
-                        {prop.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {selectedPropertyForUnit && (
+              {associationType === "unit" && (
+                <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Einheit auswählen
+                      Immobilie auswählen
                     </label>
                     <select
-                      value={associationId}
-                      onChange={(e) => setAssociationId(e.target.value)}
+                      value={selectedPropertyForUnit}
+                      onChange={(e) => {
+                        setSelectedPropertyForUnit(e.target.value);
+                        setAssociationId("");
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="">Bitte wählen...</option>
-                      {units
-                        .filter((unit) => unit.property_id === selectedPropertyForUnit)
-                        .map((unit) => (
-                          <option key={unit.id} value={unit.id}>
-                            {unit.unit_number}
-                          </option>
-                        ))}
+                      {properties.map((prop) => (
+                        <option key={prop.id} value={prop.id}>
+                          {prop.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
-                )}
-              </>
-            )}
+                  {selectedPropertyForUnit && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Einheit auswählen
+                      </label>
+                      <select
+                        value={associationId}
+                        onChange={(e) => setAssociationId(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Bitte wählen...</option>
+                        {units
+                          .filter((unit) => unit.property_id === selectedPropertyForUnit)
+                          .map((unit) => (
+                            <option key={unit.id} value={unit.id}>
+                              {unit.unit_number}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  )}
+                </>
+              )}
 
-            {associationType && associationType !== "unit" && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {associationType === "property" && "Immobilie auswählen"}
-                  {associationType === "rental_contract" && "Mietverhältnis auswählen"}
-                  {associationType === "tenant" && "Mieter auswählen"}
+              {associationType && associationType !== "unit" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {associationType === "property" && "Immobilie auswählen"}
+                    {associationType === "rental_contract" && "Mietverhältnis auswählen"}
+                    {associationType === "tenant" && "Mieter auswählen"}
+                  </label>
+                  <select
+                    value={associationId}
+                    onChange={(e) => setAssociationId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Bitte wählen...</option>
+                    {associationType === "property" &&
+                      properties.map((prop) => (
+                        <option key={prop.id} value={prop.id}>
+                          {prop.name}
+                        </option>
+                      ))}
+                    {associationType === "rental_contract" &&
+                      contracts.map((contract) => (
+                        <option key={contract.id} value={contract.id}>
+                          {contract.name}
+                        </option>
+                      ))}
+                    {associationType === "tenant" &&
+                      tenants.map((tenant) => (
+                        <option key={tenant.id} value={tenant.id}>
+                          {tenant.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          </DocumentFeatureGuard>
+
+          <DocumentFeatureGuard
+            feature="upload-with-assignment"
+            fallback={
+              <div className="border-t border-gray-200 pt-4">
+                <label className="flex items-start gap-3 opacity-50 cursor-not-allowed">
+                  <input
+                    type="checkbox"
+                    disabled
+                    className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      Im Mieterportal zur Verfügung stellen
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                        PRO
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Pro Feature: Stellen Sie Dokumente für Ihre Mieter bereit
+                    </p>
+                  </div>
                 </label>
-                <select
-                  value={associationId}
-                  onChange={(e) => setAssociationId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Bitte wählen...</option>
-                  {associationType === "property" &&
-                    properties.map((prop) => (
-                      <option key={prop.id} value={prop.id}>
-                        {prop.name}
-                      </option>
-                    ))}
-                  {associationType === "rental_contract" &&
-                    contracts.map((contract) => (
-                      <option key={contract.id} value={contract.id}>
-                        {contract.name}
-                      </option>
-                    ))}
-                  {associationType === "tenant" &&
-                    tenants.map((tenant) => (
-                      <option key={tenant.id} value={tenant.id}>
-                        {tenant.name}
-                      </option>
-                    ))}
-                </select>
               </div>
-            )}
-          </div>
+            }
+          >
+            <div className="border-t border-gray-200 pt-4">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={sharedWithTenant}
+                  onChange={(e) => setSharedWithTenant(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex items-center gap-2">
+                    Im Mieterportal zur Verfügung stellen
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                      PRO
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {associationType === 'tenant' && associationId
+                      ? 'Wenn Sie einen Mieter zuordnen, sieht nur dieser Mieter das Dokument in seinem Portal.'
+                      : 'Alle Mieter können dieses Dokument in ihrem Portal einsehen.'}
+                  </p>
+                </div>
+              </label>
+            </div>
+          </DocumentFeatureGuard>
         </div>
-      </DocumentFeatureGuard>
+      </div>
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">
