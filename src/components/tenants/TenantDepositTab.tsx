@@ -100,7 +100,6 @@ export default function TenantDepositTab({
         .update({
           deposit_type: editData.deposit_type,
           deposit_amount: parseFloat(editData.deposit_amount) || 0,
-          deposit: parseFloat(editData.deposit_amount) || 0,
           deposit_status: editData.deposit_type === "none" ? "complete" : editData.deposit_status,
           deposit_due_date: editData.deposit_payment_date || null,
         })
@@ -127,25 +126,27 @@ export default function TenantDepositTab({
 
     try {
       const transactionAmount = parseFloat(transactionData.amount);
-      const currentDepositAmount = contract.deposit_amount || 0;
-      let newDepositAmount = currentDepositAmount;
+      const agreedDepositAmount = contract.deposit_amount || 0;
+
+      const currentPaid = totalPaid - totalReturned;
+      let newPaid = currentPaid;
       let newDepositStatus = contract.deposit_status;
 
       if (transactionData.transaction_type === "payment") {
-        newDepositAmount = currentDepositAmount + transactionAmount;
-        if (newDepositAmount >= (contract.deposit_amount || 0)) {
+        newPaid = currentPaid + transactionAmount;
+        if (newPaid >= agreedDepositAmount) {
           newDepositStatus = "complete";
         } else {
           newDepositStatus = "partial";
         }
       } else if (transactionData.transaction_type === "partial_return") {
-        newDepositAmount = currentDepositAmount - transactionAmount;
-        if (newDepositAmount <= 0) {
-          newDepositAmount = 0;
+        newPaid = currentPaid - transactionAmount;
+        if (newPaid <= 0) {
+          newPaid = 0;
           newDepositStatus = "returned";
         }
       } else if (transactionData.transaction_type === "full_return") {
-        newDepositAmount = 0;
+        newPaid = 0;
         newDepositStatus = "returned";
       }
 
@@ -165,7 +166,6 @@ export default function TenantDepositTab({
       const { error: updateError } = await supabase
         .from("rental_contracts")
         .update({
-          deposit_amount: newDepositAmount,
           deposit_status: newDepositStatus,
         })
         .eq("id", contract.id);
@@ -252,6 +252,8 @@ export default function TenantDepositTab({
     )
     .reduce((sum, h) => sum + h.amount, 0);
 
+  const currentDepositBalance = totalPaid - totalReturned;
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg p-6">
@@ -315,7 +317,7 @@ export default function TenantDepositTab({
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Kautionsbetrag *
+                    Vereinbarter Kautionsbetrag *
                   </label>
                   <input
                     type="number"
@@ -367,7 +369,7 @@ export default function TenantDepositTab({
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <div className="text-sm text-gray-400 mb-1">Aktueller vorhandener Kautionsbetrag</div>
+                <div className="text-sm text-gray-400 mb-1">Vereinbarter Kautionsbetrag</div>
                 <div className="text-2xl font-bold text-dark">
                   {contract.deposit_amount?.toFixed(2) || "0.00"} €
                 </div>
@@ -384,14 +386,12 @@ export default function TenantDepositTab({
                 </span>
               </div>
 
-              {isPremium && (
-                <div>
-                  <div className="text-sm text-gray-400 mb-1">Eingegangen</div>
-                  <div className="text-2xl font-bold text-dark">
-                    {totalPaid.toFixed(2)} €
-                  </div>
+              <div>
+                <div className="text-sm text-gray-400 mb-1">Aktuell vorhandener Betrag</div>
+                <div className="text-2xl font-bold text-dark">
+                  {currentDepositBalance.toFixed(2)} €
                 </div>
-              )}
+              </div>
             </div>
 
             {contract.deposit_notes && (
