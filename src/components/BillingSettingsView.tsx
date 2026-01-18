@@ -10,7 +10,7 @@ import { useSubscription } from "../hooks/useSubscription";
 export default function BillingSettingsView() {
   const { user } = useAuth();
   const { language } = useLanguage();
-  const { subscription } = useSubscription();
+  const { subscription, isPremium } = useSubscription();
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -41,8 +41,8 @@ export default function BillingSettingsView() {
           </div>
           <p className="text-gray-400 text-sm mb-4">
             {language === "de"
-              ? "Haben Sie einen Empfehlungscode? Lösen Sie ihn ein und erhalten Sie 20% Rabatt auf Ihr erstes Jahr!"
-              : "Have a referral code? Redeem it and get 20% off your first year!"}
+              ? "Haben Sie einen Empfehlungscode? Lösen Sie ihn ein und erhalten Sie 2 Freimonate!"
+              : "Have a referral code? Redeem it and get 2 free months!"}
           </p>
           <form
             onSubmit={async (e) => {
@@ -67,31 +67,51 @@ export default function BillingSettingsView() {
                   );
                   return;
                 }
-                const { error } = await supabase.from("user_referrals").insert({
-                  referrer_id: referrerSettings.user_id,
-                  referred_user_id: user!.id,
-                  referral_code: code,
-                  status: "pending",
-                });
-                if (error) {
-                  if (error.code === "23505") {
-                    setErrorMessage(
-                      language === "de"
-                        ? "Sie haben bereits einen Empfehlungscode eingelöst"
-                        : "You have already redeemed a referral code",
-                    );
-                  } else {
-                    throw error;
-                  }
-                } else {
-                  setSuccessMessage(
+
+                const { data: existingReferral } = await supabase
+                  .from("user_referrals")
+                  .select("id")
+                  .eq("referred_user_id", user!.id)
+                  .maybeSingle();
+
+                if (existingReferral) {
+                  setErrorMessage(
                     language === "de"
-                      ? "Empfehlungscode erfolgreich eingelöst!"
-                      : "Referral code redeemed successfully!",
+                      ? "Sie haben bereits einen Empfehlungscode eingelöst"
+                      : "You have already redeemed a referral code",
                   );
-                  codeInput.value = "";
-                  setTimeout(() => setSuccessMessage(""), 3000);
+                  return;
                 }
+
+                const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/activate-referral-reward`;
+                const response = await fetch(apiUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    referredUserId: user!.id,
+                    referralCode: code,
+                  }),
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || result.error) {
+                  throw new Error(result.error || "Failed to activate referral reward");
+                }
+
+                setSuccessMessage(
+                  language === "de"
+                    ? "Empfehlungscode erfolgreich eingelöst! Sie haben 2 Freimonate erhalten."
+                    : "Referral code redeemed successfully! You received 2 free months.",
+                );
+                codeInput.value = "";
+                setTimeout(() => {
+                  setSuccessMessage("");
+                  window.location.reload();
+                }, 3000);
               } catch (error) {
                 console.error("Error redeeming referral code:", error);
                 setErrorMessage(
@@ -141,16 +161,16 @@ export default function BillingSettingsView() {
               </div>
               <div>
                 <div className="font-bold text-dark text-lg">
-                  {subscription?.status === "active" ? "Pro" : "Basic"}
+                  {isPremium ? "Pro" : "Basic"}
                 </div>
                 <div className="text-sm text-gray-400">
-                  {subscription?.status === "active"
+                  {isPremium
                     ? "Alle Pro-Funktionen freigeschaltet"
                     : "Kostenlose Basis-Funktionen"}
                 </div>
               </div>
             </div>
-            {subscription?.status !== "active" && (
+            {!isPremium && (
               <button
                 onClick={() => {
                   const plansSection = document.getElementById("available-plans");
@@ -163,7 +183,7 @@ export default function BillingSettingsView() {
             )}
           </div>
 
-          {subscription?.status !== "active" && (
+          {!isPremium && (
             <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
               <h4 className="text-lg font-bold text-dark mb-4 flex items-center gap-2">
                 <span className="text-2xl">✨</span>

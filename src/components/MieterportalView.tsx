@@ -339,7 +339,7 @@ export default function MieterportalView() {
               Portal-Link für Ihre Mieter
             </h3>
             <p className="text-sm text-amber-800 mb-3">
-              Teilen Sie diesen Link mit Ihren Mietern. Beim ersten Besuch können sie sich selbst ein Passwort einrichten:
+              Teilen Sie diesen Link mit Ihren Mietern:
             </p>
             <div className="flex items-center gap-2 mb-3">
               <code className="text-sm bg-white px-3 py-2 rounded border border-amber-300 flex-1">

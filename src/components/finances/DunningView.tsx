@@ -51,9 +51,9 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
   });
   const [remindersHistory, setRemindersHistory] = useState<Record<string, DunningReminderHistory[]>>({});
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
-  const [dunningDaysLevel1, setDunningDaysLevel1] = useState(3);
-  const [dunningDaysLevel2, setDunningDaysLevel2] = useState(10);
-  const [dunningDaysLevel3, setDunningDaysLevel3] = useState(20);
+  const [dunningDaysLevel1, setDunningDaysLevel1] = useState(7);
+  const [dunningDaysLevel2, setDunningDaysLevel2] = useState(14);
+  const [dunningDaysLevel3, setDunningDaysLevel3] = useState(28);
 
   useEffect(() => {
     calculateStats();
@@ -582,7 +582,7 @@ ${message}
                 Freundliche Erinnerung
               </h4>
               <p className="text-sm text-gray-600">
-                Automatisch nach 3 Tagen Zahlungsverzug. Höflicher Ton,
+                Automatisch nach 7 Tagen Zahlungsverzug. Höflicher Ton,
                 Hinweis auf möglicherweise vergessene Überweisung.
               </p>
             </div>
@@ -597,7 +597,7 @@ ${message}
                 Formelle Zahlungsaufforderung
               </h4>
               <p className="text-sm text-gray-600">
-                Nach 10 Tagen ohne Reaktion. Formeller Ton, Fristsetzung,
+                Nach 14 Tagen ohne Reaktion. Formeller Ton, Fristsetzung,
                 Hinweis auf mögliche Konsequenzen.
               </p>
             </div>
@@ -610,7 +610,7 @@ ${message}
             <div className="flex-1">
               <h4 className="font-semibold text-dark mb-1">Mahnung</h4>
               <p className="text-sm text-gray-600">
-                Nach 20 Tagen. Offizielle Mahnung mit Mahngebühren,
+                Nach 28 Tagen. Offizielle Mahnung mit Mahngebühren,
                 rechtlichen Hinweisen und letzter Frist vor weiteren
                 Schritten.
               </p>
