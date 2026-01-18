@@ -90,6 +90,11 @@ const tabs = [
 | `tenant_details_handover` | Mietverhältnis | Übergabe & Wechsel | Übergabeprotokolle |
 | `finances_cashflow` | Finanzen | Cashflow | Cashflow-Analysen |
 | `finances_indexrent` | Finanzen | Indexmiete | Indexmiet-Berechnung |
+| `property_history` | Immobilien | Historie | Änderungshistorie |
+| `property_documents` | Immobilien | Dokumente | Dokumentenverwaltung |
+| `property_contacts` | Immobilien | Kontakte | Kontaktverwaltung |
+| `property_maintenance` | Immobilien | Instandhaltung | Instandhaltungsverwaltung |
+| `property_metrics` | Immobilien | Kennzahlen | Kennzahlen & Analysen |
 
 ## Naming Convention
 
@@ -108,7 +113,7 @@ Beispiele:
 - `rent_payments` - Mieteingänge
 - `tenant_details` - Mietverhältnis-Details
 - `finances` - Finanzen
-- `properties` - Immobilien
+- `property` - Immobilien
 - `documents` - Dokumente
 - etc.
 

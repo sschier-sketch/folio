@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { FileText, Lock, Upload, Eye, Calendar, Download, X, Image, FileCheck, Shield, Home, FileSignature, Receipt, Wrench, Plus, Trash2, AlertCircle } from "lucide-react";
+import { FileText, Upload, Eye, Calendar, Download, X, Image, FileCheck, Shield, Home, FileSignature, Receipt, Wrench, Plus, Trash2, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
+import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 
 interface PropertyDocumentsTabProps {
   propertyId: string;
@@ -42,7 +43,7 @@ interface UploadFile {
 
 export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTabProps) {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPremium: isPro } = useSubscription();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [units, setUnits] = useState<{ id: string; unit_number: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -474,49 +475,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
   const allSuccess = uploadFiles.length > 0 && uploadFiles.every((f) => f.status === "success");
 
   if (!isPro) {
-    return (
-      <div className="bg-white rounded-lg p-8">
-        <div className="text-center max-w-md mx-auto">
-          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-amber-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-dark mb-2">Pro-Funktion</h3>
-          <p className="text-gray-600 mb-6">
-            Die Dokumentenverwaltung für Immobilien ist im Pro-Tarif verfügbar.
-            Upgrade jetzt für:
-          </p>
-          <div className="text-left space-y-2 mb-6">
-            <div className="flex items-start gap-2">
-              <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-              <span className="text-sm text-gray-600">
-                Upload von Grundrissen und Plänen
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-              <span className="text-sm text-gray-600">
-                Energieausweise digital hinterlegen
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-              <span className="text-sm text-gray-600">
-                Versicherungsunterlagen zentral verwalten
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-              <span className="text-sm text-gray-600">
-                Alle objektbezogenen Dokumente an einem Ort
-              </span>
-            </div>
-          </div>
-          <button className="px-6 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors">
-            Jetzt auf Pro upgraden
-          </button>
-        </div>
-      </div>
-    );
+    return <PremiumUpgradePrompt featureKey="property_documents" />;
   }
 
   if (loading) {

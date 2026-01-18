@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Lock, Wrench, Plus, CheckCircle2, Clock, AlertCircle, Trash2, Edit2, Calendar, Euro, FileText, Receipt, Bell } from "lucide-react";
+import { Wrench, Plus, CheckCircle2, Clock, AlertCircle, Trash2, Edit2, Calendar, Euro, FileText, Receipt, Bell } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
+import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 
 interface PropertyMaintenanceTabProps {
   propertyId: string;
@@ -251,40 +252,7 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
   const oneTimeTasks = tasks.filter(t => !t.is_recurring);
 
   if (!isPremium) {
-    return (
-      <div className="bg-white rounded-lg p-8">
-        <div className="text-center max-w-md mx-auto">
-          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-amber-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-dark mb-2">Pro-Funktion</h3>
-          <p className="text-gray-600 mb-6">
-            Die Instandhaltungsverwaltung ist im Pro-Tarif verfügbar. Upgrade jetzt für:
-          </p>
-          <div className="text-left space-y-2 mb-6">
-            <div className="flex items-start gap-2">
-              <Wrench className="w-5 h-5 text-primary-blue mt-0.5" />
-              <span className="text-sm text-gray-600">Aufgaben je Immobilie verwalten</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <Wrench className="w-5 h-5 text-primary-blue mt-0.5" />
-              <span className="text-sm text-gray-600">Wiederkehrende Wartungen planen</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <Wrench className="w-5 h-5 text-primary-blue mt-0.5" />
-              <span className="text-sm text-gray-600">Kosten erfassen und dokumentieren</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <Wrench className="w-5 h-5 text-primary-blue mt-0.5" />
-              <span className="text-sm text-gray-600">Verknüpfung mit Ausgaben und Belegen</span>
-            </div>
-          </div>
-          <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
-            Jetzt auf Pro upgraden
-          </button>
-        </div>
-      </div>
-    );
+    return <PremiumUpgradePrompt featureKey="property_maintenance" />;
   }
 
   if (loading) {
