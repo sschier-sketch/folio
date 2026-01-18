@@ -359,10 +359,12 @@ export default function Dashboard() {
             <nav className="bg-white rounded p-2">
               {" "}
               {navigation.map((item) => {
+                const isLocked = item.id === "mieterportal" && !isPremium;
                 return (
                   <button
                     key={item.id}
                     onClick={() => {
+                      if (isLocked) return;
                       if (item.id === "properties") {
                         setSelectedPropertyId(null);
                         setSelectedPropertyTab(null);
@@ -373,7 +375,7 @@ export default function Dashboard() {
                       setCurrentView(item.id as View);
                       setShowMobileMenu(false);
                     }}
-                    className={`w-full px-4 py-3 rounded transition-colors text-left ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
+                    className={`w-full px-4 py-3 rounded transition-colors text-left ${isLocked ? "opacity-50 cursor-not-allowed" : ""} ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
                   >
                     {" "}
                     <div className="flex items-center justify-between">
@@ -383,13 +385,25 @@ export default function Dashboard() {
                           Demnächst
                         </span>
                       )}
+                      {item.id === "mieterportal" && !isPremium && (
+                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">
+                          Pro
+                        </span>
+                      )}
                     </div>{" "}
                   </button>
                 );
               })}{" "}
             </nav>{" "}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+            <div className={`bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`}>
               {" "}
+              {!isPremium && (
+                <div className="absolute top-2 right-2">
+                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">
+                    Pro
+                  </span>
+                </div>
+              )}
               <div className="flex items-center gap-3 mb-3">
                 {" "}
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -403,6 +417,7 @@ export default function Dashboard() {
               </p>{" "}
               <div
                 onClick={() => {
+                  if (!isPremium) return;
                   setCurrentView("mieterportal");
                   setShowMobileMenu(false);
                 }}
@@ -448,10 +463,12 @@ export default function Dashboard() {
             <nav className="bg-white rounded p-2">
               {" "}
               {navigation.map((item) => {
+                const isLocked = item.id === "mieterportal" && !isPremium;
                 return (
                   <button
                     key={item.id}
                     onClick={() => {
+                      if (isLocked) return;
                       if (item.id === "properties") {
                         setSelectedPropertyId(null);
                         setSelectedPropertyTab(null);
@@ -461,7 +478,7 @@ export default function Dashboard() {
                       }
                       setCurrentView(item.id as View);
                     }}
-                    className={`w-full px-4 py-3 rounded transition-colors text-left ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
+                    className={`w-full px-4 py-3 rounded transition-colors text-left ${isLocked ? "opacity-50 cursor-not-allowed" : ""} ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
                   >
                     {" "}
                     <div className="flex items-center justify-between">
@@ -471,13 +488,25 @@ export default function Dashboard() {
                           Demnächst
                         </span>
                       )}
+                      {item.id === "mieterportal" && !isPremium && (
+                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">
+                          Pro
+                        </span>
+                      )}
                     </div>{" "}
                   </button>
                 );
               })}{" "}
             </nav>{" "}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+            <div className={`bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`}>
               {" "}
+              {!isPremium && (
+                <div className="absolute top-2 right-2">
+                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">
+                    Pro
+                  </span>
+                </div>
+              )}
               <div className="flex items-center gap-3 mb-3">
                 {" "}
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -490,7 +519,10 @@ export default function Dashboard() {
                 Kommunizieren Sie mit Ihren Mietern
               </p>{" "}
               <div
-                onClick={() => setCurrentView("mieterportal")}
+                onClick={() => {
+                  if (!isPremium) return;
+                  setCurrentView("mieterportal");
+                }}
                 className="flex items-center gap-2 text-sm font-medium cursor-pointer"
               >
                 <span>Zur Verwaltung</span>
