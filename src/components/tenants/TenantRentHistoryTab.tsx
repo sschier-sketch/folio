@@ -622,53 +622,24 @@ export default function TenantRentHistoryTab({
         )}
       </div>
 
-      {!isPremium ? (
-        <div className="bg-white rounded-lg p-8">
-          <div className="text-center max-w-md mx-auto">
-            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-amber-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-dark mb-2">
-              Pro-Funktion
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Die vollständige Miethistorie mit allen Änderungen ist im
-              Pro-Tarif verfügbar. Upgrade jetzt für:
-            </p>
-            <div className="text-left space-y-2 mb-6">
-              <div className="flex items-start gap-2">
-                <TrendingUp className="w-5 h-5 text-primary-blue mt-0.5" />
-                <span className="text-sm text-gray-600">
-                  Komplette Timeline aller Mietänderungen
-                </span>
-              </div>
-              <div className="flex items-start gap-2">
-                <TrendingUp className="w-5 h-5 text-primary-blue mt-0.5" />
-                <span className="text-sm text-gray-600">
-                  Erfassung von Mieterhöhungen
-                </span>
-              </div>
-              <div className="flex items-start gap-2">
-                <TrendingUp className="w-5 h-5 text-primary-blue mt-0.5" />
-                <span className="text-sm text-gray-600">
-                  Verwaltung von Staffel- und Indexmieten
-                </span>
-              </div>
-            </div>
-            <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
-              Jetzt upgraden
-            </button>
-          </div>
-        </div>
-      ) : (
+{isPremium && (
         <div className="bg-white rounded-lg">
           <div className="p-6 border-b border-gray-100">
-            <h3 className="text-lg font-semibold text-dark">
-              Mietentwicklung
-            </h3>
-            <p className="text-sm text-gray-500 mt-1">
-              Änderungen werden automatisch protokolliert bei Mietanpassungen, Staffelmieten oder Indexmieten
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-semibold text-dark">
+                    Mietentwicklung
+                  </h3>
+                  <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-sm">
+                    PRO
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Änderungen werden automatisch protokolliert bei Mietanpassungen, Staffelmieten oder Indexmieten
+                </p>
+              </div>
+            </div>
           </div>
 
           {history.length === 0 ? (
