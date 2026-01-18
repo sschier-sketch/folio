@@ -68,6 +68,15 @@ export default function BillingSettingsView() {
                   return;
                 }
 
+                if (referrerSettings.user_id === user!.id) {
+                  setErrorMessage(
+                    language === "de"
+                      ? "Sie können Ihren eigenen Empfehlungscode nicht einlösen"
+                      : "You cannot redeem your own referral code",
+                  );
+                  return;
+                }
+
                 const { data: existingReferral } = await supabase
                   .from("user_referrals")
                   .select("id")
@@ -241,13 +250,24 @@ export default function BillingSettingsView() {
               {language === "de" ? "Verfügbare Tarife" : "Available Plans"}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stripeProducts.map((product) => (
-                <SubscriptionCard
-                  key={product.priceId}
-                  product={product}
-                  isCurrentPlan={subscription?.price_id === product.priceId}
-                />
-              ))}
+              {stripeProducts.map((product) => {
+                let isCurrentPlan = false;
+                if (subscription?.price_id) {
+                  isCurrentPlan = subscription.price_id === product.priceId;
+                } else if (isPremium && product.priceId !== "free") {
+                  isCurrentPlan = product.priceId === "price_1SmAu0DT0DRNFiKmj97bxor8";
+                } else if (!isPremium && product.priceId === "free") {
+                  isCurrentPlan = true;
+                }
+
+                return (
+                  <SubscriptionCard
+                    key={product.priceId}
+                    product={product}
+                    isCurrentPlan={isCurrentPlan}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>

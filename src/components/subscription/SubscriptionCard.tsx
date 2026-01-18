@@ -166,12 +166,12 @@ export function SubscriptionCard({
 
         <button
           onClick={handleSubscribe}
-          disabled={loading || isCurrentPlan || product.price === 0}
+          disabled={loading || isCurrentPlan}
           className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors ${
             isCurrentPlan
               ? "bg-green-100 text-green-700 cursor-default"
               : product.price === 0
-              ? "bg-gray-100 text-gray-500 cursor-default"
+              ? "bg-gray-200 text-gray-600 cursor-not-allowed"
               : "bg-primary-blue hover:bg-primary-blue text-white"
           }`}
         >
@@ -185,9 +185,9 @@ export function SubscriptionCard({
             )
           ) : product.price === 0 ? (
             language === "de" ? (
-              "Ihr aktueller Tarif"
+              "Kostenlos"
             ) : (
-              "Your current plan"
+              "Free"
             )
           ) : (
             <>
