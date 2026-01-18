@@ -83,6 +83,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
             *,
             properties(id, name)
           `)
+          .eq("is_active", true)
           .order("name"),
         supabase.from("properties").select("id, name").order("name"),
       ]);
@@ -97,6 +98,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                 property_units(id, unit_number)
               `)
               .eq("tenant_id", tenant.id)
+              .eq("status", "active")
               .order("start_date", { ascending: false })
               .limit(1);
 

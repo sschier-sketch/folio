@@ -134,7 +134,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           supabase
             .from("rental_contracts")
             .select("base_rent, property_id")
-            .eq("user_id", user.id),
+            .eq("user_id", user.id)
+            .eq("status", "active"),
           supabase
             .from("loans")
             .select("monthly_payment")

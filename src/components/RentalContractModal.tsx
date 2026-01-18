@@ -240,7 +240,10 @@ export default function RentalContractModal({
         for (const existingId of existingTenantIds) {
           const stillExists = tenants.find((t) => t.id === existingId);
           if (!stillExists) {
-            await supabase.from("tenants").delete().eq("id", existingId);
+            await supabase
+              .from("tenants")
+              .update({ is_active: false })
+              .eq("id", existingId);
           }
         }
       } else {

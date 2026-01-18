@@ -75,9 +75,10 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         supabase
           .from("rental_contracts")
           .select("id, tenants!contract_id(first_name, last_name)")
+          .eq("status", "active")
           .order("contract_start", { ascending: false }),
         supabase.from("property_units").select("id, unit_number, property_id").order("unit_number"),
-        supabase.from("tenants").select("id, first_name, last_name").order("last_name"),
+        supabase.from("tenants").select("id, first_name, last_name").eq("is_active", true).order("last_name"),
       ]);
 
       if (propsRes.data) setProperties(propsRes.data);

@@ -219,6 +219,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
         supabase
           .from("rental_contracts")
           .select("id, tenants(name)")
+          .eq("status", "active")
           .order("start_date", { ascending: false }),
       ]);
 
