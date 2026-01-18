@@ -7,6 +7,7 @@ import {
   Lightbulb,
   Calculator,
 } from "lucide-react";
+import { useSubscription } from "../hooks/useSubscription";
 import IncomeView from "./finances/IncomeView";
 import ExpensesView from "./finances/ExpensesView";
 import CashflowView from "./finances/CashflowView";
@@ -24,6 +25,7 @@ type Tab =
   | "bank";
 
 export default function FinancesView() {
+  const { isPremium } = useSubscription();
   const [activeTab, setActiveTab] = useState<Tab>("income");
 
   const tabs = [
@@ -50,6 +52,7 @@ export default function FinancesView() {
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isDisabled = tab.id === "bank" || tab.id === "intelligence";
+              if (tab.premium && !isPremium && !isDisabled) return null;
               return (
                 <button
                   key={tab.id}
@@ -70,8 +73,8 @@ export default function FinancesView() {
                       Bald
                     </span>
                   ) : tab.premium ? (
-                    <span className="px-3 py-1 text-xs bg-amber-100 text-amber-700 rounded-full font-medium">
-                      Pro
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
+                      PRO
                     </span>
                   ) : null}
                   {activeTab === tab.id && (

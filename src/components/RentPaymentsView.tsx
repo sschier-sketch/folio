@@ -375,23 +375,25 @@ export default function RentPaymentsView() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>
-            <button
-              onClick={() => setActiveTab("dunning")}
-              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
-                activeTab === "dunning"
-                  ? "text-primary-blue"
-                  : "text-gray-400 hover:text-dark"
-              }`}
-            >
-              <Bell className="w-5 h-5" />
-              Mahnwesen
-              <span className="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded font-medium">
-                Pro
-              </span>
-              {activeTab === "dunning" && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
-              )}
-            </button>
+            {isPremium && (
+              <button
+                onClick={() => setActiveTab("dunning")}
+                className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+                  activeTab === "dunning"
+                    ? "text-primary-blue"
+                    : "text-gray-400 hover:text-dark"
+                }`}
+              >
+                <Bell className="w-5 h-5" />
+                Mahnwesen
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
+                  PRO
+                </span>
+                {activeTab === "dunning" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>

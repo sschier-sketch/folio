@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../hooks/useAuth";
+import { useSubscription } from "../hooks/useSubscription";
 import TenantOverviewTab from "./tenants/TenantOverviewTab";
 import TenantContractTab from "./tenants/TenantContractTab";
 import TenantRentHistoryTab from "./tenants/TenantRentHistoryTab";
@@ -46,6 +47,7 @@ export default function TenantContractDetails({
   onBack,
 }: TenantContractDetailsProps) {
   const { user } = useAuth();
+  const { isPremium } = useSubscription();
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') as Tab | null;
   const [activeTab, setActiveTab] = useState<Tab>(tabFromUrl || "overview");
@@ -144,6 +146,7 @@ export default function TenantContractDetails({
         <ScrollableTabNav>
           <div className="flex">
             {tabs.map((tab) => {
+              if (tab.premium && !isPremium) return null;
               const Icon = tab.icon;
               return (
                 <button
@@ -158,8 +161,8 @@ export default function TenantContractDetails({
                   <Icon className="w-5 h-5" />
                   {tab.label}
                   {tab.premium && (
-                    <span className="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded font-medium">
-                      Pro
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
+                      PRO
                     </span>
                   )}
                   {activeTab === tab.id && (

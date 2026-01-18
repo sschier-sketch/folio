@@ -92,12 +92,9 @@ export default function DocumentsView() {
                   <Icon className="w-5 h-5" />
                   {tab.label}
                   {tab.isPro && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
                       PRO
                     </span>
-                  )}
-                  {isDisabled && (
-                    <Lock className="w-4 h-4" />
                   )}
                   {activeTab === tab.id && !isDisabled && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />

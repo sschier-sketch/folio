@@ -433,7 +433,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                               setSelectedUnitForTenant(unit);
                               setShowTenantModal(true);
                             }}
-                            className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                            className="text-gray-300 hover:text-emerald-600 transition-colors"
                             title="Mietverhältnis anlegen"
                           >
                             <FileText className="w-4 h-4" />
