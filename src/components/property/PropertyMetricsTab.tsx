@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lock, BarChart3, TrendingUp, TrendingDown, Euro, Home, AlertCircle } from "lucide-react";
+import { Lock, BarChart3, TrendingUp, TrendingDown, Euro, Home, AlertCircle, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -129,10 +129,14 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         const annualRent = monthlyRent * 12;
         const annualExpenses = monthlyExpenses * 12;
         const netAnnualIncome = annualRent - annualExpenses;
-        const roi =
-          propertyRes.data.purchase_price > 0
-            ? (netAnnualIncome / propertyRes.data.purchase_price) * 100
-            : 0;
+
+        const investmentBase = propertyRes.data.purchase_price > 0
+          ? propertyRes.data.purchase_price
+          : propertyRes.data.current_value;
+
+        const roi = investmentBase > 0
+          ? (netAnnualIncome / investmentBase) * 100
+          : 0;
 
         setMetrics({
           rentPerSqm,
@@ -162,6 +166,29 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
 
   const formatPercent = (value: number) => {
     return `${value.toFixed(1)}%`;
+  };
+
+  const InfoTooltip = ({ text }: { text: string }) => {
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    return (
+      <div className="relative inline-block ml-2">
+        <button
+          type="button"
+          onMouseEnter={() => setShowTooltip(true)}
+          onMouseLeave={() => setShowTooltip(false)}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <Info className="w-4 h-4" />
+        </button>
+        {showTooltip && (
+          <div className="absolute z-50 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg -top-2 left-6 transform">
+            <div className="absolute -left-1 top-3 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+            {text}
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (!isPremium) {
@@ -245,8 +272,11 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Euro className="w-6 h-6 text-blue-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Miete pro m²</p>
+            <div className="flex-1">
+              <div className="flex items-center">
+                <p className="text-sm text-gray-500">Miete pro m²</p>
+                <InfoTooltip text="Berechnung: Gesamte monatliche Kaltmiete aller aktiven Mietverträge geteilt durch die Gesamtfläche der Immobilie in m²" />
+              </div>
               <p className="text-2xl font-bold text-dark">{formatCurrency(metrics.rentPerSqm)}</p>
             </div>
           </div>
@@ -260,8 +290,11 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
             <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
               <Home className="w-6 h-6 text-amber-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Leerstandsquote</p>
+            <div className="flex-1">
+              <div className="flex items-center">
+                <p className="text-sm text-gray-500">Leerstandsquote</p>
+                <InfoTooltip text="Berechnung: Anzahl leerstehender Einheiten geteilt durch Gesamtanzahl der Einheiten × 100. Bei Immobilien ohne definierte Einheiten wird 100% angezeigt wenn keine aktiven Mietverträge vorhanden sind." />
+              </div>
               <p className="text-2xl font-bold text-dark">{formatPercent(metrics.vacancyRate)}</p>
             </div>
           </div>
@@ -275,8 +308,11 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${metrics.costRatio > 80 ? "bg-red-100" : metrics.costRatio > 50 ? "bg-amber-100" : "bg-emerald-100"}`}>
               <BarChart3 className={`w-6 h-6 ${metrics.costRatio > 80 ? "text-red-600" : metrics.costRatio > 50 ? "text-amber-600" : "text-emerald-600"}`} />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Kostenquote</p>
+            <div className="flex-1">
+              <div className="flex items-center">
+                <p className="text-sm text-gray-500">Kostenquote</p>
+                <InfoTooltip text="Berechnung: Monatliche Gesamtkosten (Ausgaben im gewählten Zeitraum + Kreditraten) geteilt durch monatliche Mieteinnahmen × 100. Zeigt an, welcher Anteil der Mieteinnahmen für Kosten aufgewendet wird." />
+              </div>
               <p className="text-2xl font-bold text-dark">{formatPercent(metrics.costRatio)}</p>
             </div>
           </div>
@@ -290,13 +326,16 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
             <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-emerald-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">ROI (Return on Investment)</p>
+            <div className="flex-1">
+              <div className="flex items-center">
+                <p className="text-sm text-gray-500">ROI (Return on Investment)</p>
+                <InfoTooltip text="Berechnung: (Jährliche Mieteinnahmen - Jährliche Kosten) geteilt durch Kaufpreis (oder aktuellen Wert falls kein Kaufpreis vorhanden) × 100. Zeigt die jährliche Rendite auf das investierte Kapital." />
+              </div>
               <p className="text-2xl font-bold text-dark">{formatPercent(metrics.roi)}</p>
             </div>
           </div>
           <div className="text-xs text-gray-500">
-            Jährliche Nettorendite auf Kaufpreis
+            Jährliche Nettorendite auf {property?.purchase_price && property.purchase_price > 0 ? 'Kaufpreis' : 'aktuellen Wert'}
           </div>
         </div>
 
@@ -305,8 +344,11 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Euro className="w-6 h-6 text-blue-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Monatliche Mieteinnahmen</p>
+            <div className="flex-1">
+              <div className="flex items-center">
+                <p className="text-sm text-gray-500">Monatliche Mieteinnahmen</p>
+                <InfoTooltip text="Berechnung: Summe der Kaltmieten aller aktiven und bereits begonnenen Mietverträge. Zukünftige Mietverträge werden separat angezeigt und fließen nicht in diese Berechnung ein." />
+              </div>
               <p className="text-2xl font-bold text-dark">{formatCurrency(metrics.monthlyRent)}</p>
             </div>
           </div>
@@ -320,8 +362,11 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
               <Euro className="w-6 h-6 text-red-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Monatliche Kosten</p>
+            <div className="flex-1">
+              <div className="flex items-center">
+                <p className="text-sm text-gray-500">Monatliche Kosten</p>
+                <InfoTooltip text="Berechnung: Durchschnittliche monatliche Ausgaben im gewählten Zeitraum (alle erfassten Ausgaben geteilt durch Anzahl Monate) plus monatliche Kreditraten aller Kredite für diese Immobilie." />
+              </div>
               <p className="text-2xl font-bold text-dark">{formatCurrency(metrics.monthlyExpenses)}</p>
             </div>
           </div>
