@@ -631,7 +631,7 @@ export default function TenantRentHistoryTab({
                   <h3 className="text-lg font-semibold text-dark">
                     Mietentwicklung
                   </h3>
-                  <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-sm">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
                     PRO
                   </span>
                 </div>

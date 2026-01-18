@@ -375,7 +375,7 @@ export default function ProfileWizard({ isOpen, onClose, onComplete }: ProfileWi
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     errors.document_sender_name ? "border-red-500" : "border-gray-300"
                   }`}
-                  placeholder={formData.company_name || `${formData.first_name} ${formData.last_name}`}
+                  placeholder={formData.company_name || `${formData.first_name} ${formData.last_name}`.trim()}
                 />
                 {errors.document_sender_name && (
                   <p className="text-sm text-red-600 mt-1">{errors.document_sender_name}</p>
