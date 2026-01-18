@@ -21,6 +21,7 @@ import {
   UserCog,
   ShieldCheck,
   Globe,
+  Sparkles,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -30,6 +31,7 @@ import AdminSystemUpdatesView from "../components/AdminSystemUpdatesView";
 import { AdminFeedbackView } from "../components/AdminFeedbackView";
 import AdminSystemSettingsView from "../components/AdminSystemSettingsView";
 import AdminSeoView from "../components/AdminSeoView";
+import AdminProFeaturesView from "../components/AdminProFeaturesView";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "../components/common/BaseTable";
 interface UserData {
   id: string;
@@ -372,6 +374,13 @@ export function Admin() {
             {" "}
             <Globe className="w-4 h-4 inline mr-2" /> SEO{" "}
           </button>{" "}
+          <button
+            onClick={() => setActiveTab("pro_features")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "pro_features" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
+          >
+            {" "}
+            <Sparkles className="w-4 h-4 inline mr-2" /> Pro-Features{" "}
+          </button>{" "}
         </div>{" "}
         {activeTab === "overview" && (
           <div>
@@ -618,6 +627,7 @@ export function Admin() {
         {activeTab === "feedback" && <AdminFeedbackView />}{" "}
         {activeTab === "system_settings" && <AdminSystemSettingsView />}{" "}
         {activeTab === "seo" && <AdminSeoView />}{" "}
+        {activeTab === "pro_features" && <AdminProFeaturesView />}{" "}
       </div>{" "}
     </div>
   );

@@ -821,18 +821,7 @@ export default function RentPaymentsView() {
       ) : isPremium ? (
         <DunningView payments={payments} onReloadPayments={loadPayments} />
       ) : (
-        <PremiumUpgradePrompt
-          title="Mahnwesen"
-          description="Automatisieren Sie Ihr Mahnwesen und behalten Sie ausstehende Mietzahlungen im Blick. Versenden Sie professionelle Zahlungserinnerungen mit nur einem Klick."
-          features={[
-            "Automatische Mahnstufen mit individuellen Fristen",
-            "Professionelle Mahnvorlagen gemäß gesetzlicher Vorgaben",
-            "Tracking aller versendeten Mahnungen pro Mieter",
-            "Automatische Berechnung von Mahngebühren und Verzugszinsen",
-            "Übersicht über kritische Zahlungsverzüge",
-            "Export aller Mahnungen für Ihre Buchhaltung"
-          ]}
-        />
+        <PremiumUpgradePrompt featureKey="rent_payments_dunning" />
       )}
     </div>
   );

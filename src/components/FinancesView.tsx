@@ -94,36 +94,14 @@ export default function FinancesView() {
           isPremium ? (
             <CashflowView />
           ) : (
-            <PremiumUpgradePrompt
-              title="Cashflow-Übersicht"
-              description="Behalten Sie Ihre Liquidität im Blick mit detaillierten Cashflow-Analysen. Verstehen Sie Ihre Ein- und Auszahlungsströme und optimieren Sie Ihre finanzielle Planung."
-              features={[
-                "Monatliche und jährliche Cashflow-Übersichten",
-                "Visualisierung von Ein- und Auszahlungen",
-                "Prognosen für zukünftige Cashflows",
-                "Automatische Kategorisierung aller Transaktionen",
-                "Export für Steuerberater und Buchhaltung",
-                "Kennzahlen zur Liquiditätsplanung"
-              ]}
-            />
+            <PremiumUpgradePrompt featureKey="finances_cashflow" />
           )
         )}
         {activeTab === "indexrent" && (
           isPremium ? (
             <IndexRentView />
           ) : (
-            <PremiumUpgradePrompt
-              title="Indexmiete"
-              description="Passen Sie Ihre Mieten automatisch an die Inflation an. Berechnen Sie gesetzeskonforme Mietanpassungen auf Basis des Verbraucherpreisindex."
-              features={[
-                "Automatische Berechnung nach aktuellem VPI",
-                "Gesetzeskonforme Mieterhöhungsvorlagen",
-                "Historie aller Indexanpassungen",
-                "Fristen-Tracking für Mieterhöhungen",
-                "Automatische Benachrichtigungen bei möglichen Anpassungen",
-                "Dokumentation für rechtliche Zwecke"
-              ]}
-            />
+            <PremiumUpgradePrompt featureKey="finances_indexrent" />
           )
         )}
         {activeTab === "intelligence" && <IntelligenceView />}

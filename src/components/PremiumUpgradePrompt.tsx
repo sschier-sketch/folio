@@ -1,26 +1,77 @@
+import { useState, useEffect } from "react";
 import { Lock, Sparkles, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 interface PremiumUpgradePromptProps {
+  featureKey: string;
+  title?: string;
+  description?: string;
+  features?: string[];
+}
+
+interface ProFeatureText {
   title: string;
   description: string;
   features: string[];
 }
 
 export function PremiumUpgradePrompt({
-  title,
-  description,
-  features,
+  featureKey,
+  title: fallbackTitle,
+  description: fallbackDescription,
+  features: fallbackFeatures,
 }: PremiumUpgradePromptProps) {
   const navigate = useNavigate();
+  const [content, setContent] = useState<ProFeatureText>({
+    title: fallbackTitle || "Pro Feature",
+    description: fallbackDescription || "Dieses Feature ist nur im Pro-Plan verfügbar.",
+    features: fallbackFeatures || [],
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadFeatureText();
+  }, [featureKey]);
+
+  async function loadFeatureText() {
+    try {
+      const { data, error } = await supabase
+        .from("pro_feature_texts")
+        .select("title, description, features")
+        .eq("feature_key", featureKey)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (!error && data) {
+        setContent({
+          title: data.title,
+          description: data.description,
+          features: data.features,
+        });
+      }
+    } catch (error) {
+      console.error("Error loading feature text:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-200 rounded-lg p-8 text-center">
       <div className="inline-flex w-16 h-16 bg-gradient-to-br from-primary-blue to-primary-blue rounded-full items-center justify-center mb-4">
         <Lock className="w-8 h-8 text-white" />
       </div>
-      <h3 className="text-2xl font-bold text-dark mb-2">{title}</h3>
-      <p className="text-gray-600 mb-6 max-w-md mx-auto">{description}</p>
+      <h3 className="text-2xl font-bold text-dark mb-2">{content.title}</h3>
+      <p className="text-gray-600 mb-6 max-w-md mx-auto">{content.description}</p>
 
       <div className="bg-white rounded-lg p-6 mb-6 max-w-md mx-auto shadow-sm">
         <h4 className="font-semibold text-dark mb-4 flex items-center justify-center gap-2">
@@ -28,7 +79,7 @@ export function PremiumUpgradePrompt({
           Das erwartet Sie im Pro-Plan
         </h4>
         <ul className="text-left space-y-3 text-sm text-gray-700">
-          {features.map((feature, index) => (
+          {content.features.map((feature, index) => (
             <li key={index} className="flex items-start gap-3">
               <Zap className="w-4 h-4 text-primary-blue flex-shrink-0 mt-0.5" />
               <span>{feature}</span>

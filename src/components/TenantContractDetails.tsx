@@ -181,18 +181,7 @@ export default function TenantContractDetails({
           isPremium ? (
             <TenantContractTab tenantId={tenantId} />
           ) : (
-            <PremiumUpgradePrompt
-              title="Vertrag & Dokumente"
-              description="Verwalten Sie alle Vertrags- und Dokumentendaten zentral an einem Ort. Laden Sie Verträge, Übergabeprotokolle und weitere wichtige Dokumente hoch."
-              features={[
-                "Digitale Verwaltung aller Mietverträge",
-                "Upload und Archivierung von Dokumenten pro Mieter",
-                "Automatische Erinnerungen für Vertragsfristen",
-                "Sichere Speicherung mit Zugriffsprotokollen",
-                "Schnelles Auffinden durch intelligente Suche",
-                "Export für rechtliche Zwecke"
-              ]}
-            />
+            <PremiumUpgradePrompt featureKey="tenant_details_contract" />
           )
         )}
         {activeTab === "rent" && <TenantRentHistoryTab tenantId={tenantId} />}
@@ -201,36 +190,14 @@ export default function TenantContractDetails({
           isPremium ? (
             <TenantCommunicationTab tenantId={tenantId} />
           ) : (
-            <PremiumUpgradePrompt
-              title="Kommunikation"
-              description="Führen Sie alle Kommunikation mit Ihren Mietern an einem zentralen Ort. Behalten Sie den Überblick über alle Nachrichten, Anfragen und Vereinbarungen."
-              features={[
-                "Zentraler Posteingang für alle Mieter-Nachrichten",
-                "Nachrichtenverlauf mit vollständiger Historie",
-                "Anhänge für Dokumente und Bilder",
-                "Automatische Benachrichtigungen bei neuen Nachrichten",
-                "Suchfunktion für vergangene Konversationen",
-                "Rechtssichere Dokumentation aller Kommunikation"
-              ]}
-            />
+            <PremiumUpgradePrompt featureKey="tenant_details_communication" />
           )
         )}
         {activeTab === "handover" && (
           isPremium ? (
             <TenantHandoverTab tenantId={tenantId} />
           ) : (
-            <PremiumUpgradePrompt
-              title="Übergabe & Wechsel"
-              description="Dokumentieren Sie Wohnungsübergaben professionell mit digitalen Übergabeprotokollen. Halten Sie den Zustand der Immobilie bei Ein- und Auszug fest."
-              features={[
-                "Digitale Übergabeprotokolle mit Fotos",
-                "Raumweise Dokumentation des Zustands",
-                "Automatische Erinnerungen für Übergabetermine",
-                "Vergleich zwischen Ein- und Auszugsprotokoll",
-                "Rechtssichere PDF-Exports",
-                "Nachvollziehbare Historie aller Übergaben"
-              ]}
-            />
+            <PremiumUpgradePrompt featureKey="tenant_details_handover" />
           )
         )}
       </div>
