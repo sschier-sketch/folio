@@ -205,8 +205,10 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
       const { error } = await supabase.from("properties").delete().eq("id", id);
       if (error) throw error;
       loadProperties();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting property:", error);
+      const errorMessage = error?.message || "Unbekannter Fehler";
+      alert(`Fehler beim Löschen der Immobilie:\n\n${errorMessage}`);
     }
   };
 
@@ -222,6 +224,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
     const labels: Record<string, string> = {
       multi_family: "Mehrfamilienhaus",
       house: "Einfamilienhaus",
+      apartment: "Wohnung",
       commercial: "Gewerbeeinheit",
       parking: "Garage/Stellplatz",
       land: "Grundstück",
@@ -529,6 +532,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                   <option value="">Alle Typen</option>
                   <option value="multi_family">Mehrfamilienhaus</option>
                   <option value="house">Einfamilienhaus</option>
+                  <option value="apartment">Wohnung</option>
                   <option value="commercial">Gewerbeeinheit</option>
                   <option value="parking">Garage/Stellplatz</option>
                   <option value="land">Grundstück</option>

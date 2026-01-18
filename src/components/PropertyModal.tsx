@@ -194,7 +194,10 @@ export default function PropertyModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      alert("Sie müssen angemeldet sein, um eine Immobilie zu speichern.");
+      return;
+    }
 
     if (!property && step === 'property') {
       setStep('units');
@@ -202,6 +205,7 @@ export default function PropertyModal({
     }
 
     setLoading(true);
+    console.log("Starting property save...", { property, formData, units });
     try {
       const address = `${formData.street}, ${formData.zip_code} ${formData.city}`;
       const data = {
@@ -235,11 +239,16 @@ export default function PropertyModal({
       let propertyId: string;
 
       if (property) {
+        console.log("Updating existing property...", data);
         const { error } = await supabase
           .from("properties")
           .update(data)
           .eq("id", property.id);
-        if (error) throw error;
+        if (error) {
+          console.error("Update error:", error);
+          throw error;
+        }
+        console.log("Property updated successfully");
 
         propertyId = property.id;
 
@@ -255,12 +264,17 @@ export default function PropertyModal({
           ]);
         }
       } else {
+        console.log("Inserting new property...", data);
         const { data: newProperty, error } = await supabase
           .from("properties")
           .insert([data])
           .select()
           .single();
-        if (error) throw error;
+        if (error) {
+          console.error("Insert error:", error);
+          throw error;
+        }
+        console.log("Property inserted successfully", newProperty);
         propertyId = newProperty.id;
 
         if (units.length > 0) {
@@ -302,9 +316,12 @@ export default function PropertyModal({
       }
 
       onSave();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving property:", error);
-      alert("Fehler beim Speichern der Immobilie");
+      const errorMessage = error?.message || "Unbekannter Fehler";
+      const errorDetails = error?.details || "";
+      const errorHint = error?.hint || "";
+      alert(`Fehler beim Speichern der Immobilie:\n\n${errorMessage}\n${errorDetails}\n${errorHint}`);
     } finally {
       setLoading(false);
     }
@@ -447,6 +464,7 @@ export default function PropertyModal({
                 >
                   <option value="multi_family">Mehrfamilienhaus</option>
                   <option value="house">Einfamilienhaus</option>
+                  <option value="apartment">Wohnung</option>
                   <option value="commercial">Gewerbeeinheit</option>
                   <option value="parking">Garage/Stellplatz</option>
                   <option value="land">Grundstück</option>
