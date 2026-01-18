@@ -20,6 +20,7 @@ import {
   Ban,
   UserCog,
   ShieldCheck,
+  Globe,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -28,6 +29,7 @@ import { AdminTemplatesView } from "../components/AdminTemplatesView";
 import AdminSystemUpdatesView from "../components/AdminSystemUpdatesView";
 import { AdminFeedbackView } from "../components/AdminFeedbackView";
 import AdminSystemSettingsView from "../components/AdminSystemSettingsView";
+import AdminSeoView from "../components/AdminSeoView";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "../components/common/BaseTable";
 interface UserData {
   id: string;
@@ -55,7 +57,7 @@ export function Admin() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates" | "feedback" | "system_settings"
+    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates" | "feedback" | "system_settings" | "seo"
   >("overview");
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -363,6 +365,13 @@ export function Admin() {
             {" "}
             <Settings className="w-4 h-4 inline mr-2" /> System{" "}
           </button>{" "}
+          <button
+            onClick={() => setActiveTab("seo")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "seo" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
+          >
+            {" "}
+            <Globe className="w-4 h-4 inline mr-2" /> SEO{" "}
+          </button>{" "}
         </div>{" "}
         {activeTab === "overview" && (
           <div>
@@ -608,6 +617,7 @@ export function Admin() {
         {activeTab === "system_updates" && <AdminSystemUpdatesView />}{" "}
         {activeTab === "feedback" && <AdminFeedbackView />}{" "}
         {activeTab === "system_settings" && <AdminSystemSettingsView />}{" "}
+        {activeTab === "seo" && <AdminSeoView />}{" "}
       </div>{" "}
     </div>
   );

@@ -25,6 +25,7 @@ import TenantPortalPage from "./pages/TenantPortalPage";
 import { AccountBanned } from "./pages/AccountBanned";
 import { supabase } from "./lib/supabase";
 import { GTMProvider } from "./components/GTMProvider";
+import SeoHead from "./components/SeoHead";
 
 function PasswordRecoveryHandler() {
   const navigate = useNavigate();
@@ -63,6 +64,7 @@ function App() {
   return (
     <GTMProvider>
       <Router>
+        <SeoHead />
         <PasswordRecoveryHandler />
         <Routes>
         <Route path="/" element={<LandingPage />} />

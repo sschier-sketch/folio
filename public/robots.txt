@@ -1,0 +1,18 @@
+User-agent: *
+
+# Allow public pages
+Allow: /
+
+# Disallow app areas
+Disallow: /dashboard
+Disallow: /app
+Disallow: /admin
+Disallow: /mieterportal
+Disallow: /login
+Disallow: /signup
+Disallow: /reset-password
+Disallow: /einstellungen
+Disallow: /subscription
+
+# Sitemap
+Sitemap: https://rentably.de/sitemap.xml
