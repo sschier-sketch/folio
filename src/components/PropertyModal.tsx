@@ -220,7 +220,7 @@ export default function PropertyModal({
         ownership_type: formData.ownership_type,
         purchase_price: formData.ownership_type === 'full_property' ? parseNumberInput(formData.purchase_price) : 0,
         current_value: formData.ownership_type === 'full_property' ? parseNumberInput(formData.current_value) : 0,
-        purchase_date: formData.ownership_type === 'full_property' ? formData.purchase_date : null,
+        purchase_date: formData.ownership_type === 'full_property' && formData.purchase_date && formData.purchase_date.trim() !== '' ? formData.purchase_date : null,
         user_id: user.id,
         parking_spot_number:
           formData.property_type === "parking"
@@ -284,17 +284,17 @@ export default function PropertyModal({
               user_id: user.id,
               unit_number: unit.unit_number,
               floor: unit.floor,
-              size_sqm: unit.size_sqm ? parseNumberInput(unit.size_sqm) : null,
+              area_sqm: unit.size_sqm ? parseNumberInput(unit.size_sqm) : null,
               rooms: unit.rooms ? parseNumberInput(unit.rooms) : null,
               unit_type: unit.unit_type,
               status: "vacant",
-              description: unit.description,
+              description: unit.description || '',
             };
 
             if (formData.ownership_type === 'units_only') {
               baseData.purchase_price = unit.purchase_price ? parseNumberInput(unit.purchase_price) : 0;
               baseData.current_value = unit.current_value ? parseNumberInput(unit.current_value) : 0;
-              baseData.purchase_date = unit.purchase_date || null;
+              baseData.purchase_date = unit.purchase_date && unit.purchase_date.trim() !== '' ? unit.purchase_date : null;
               baseData.broker_costs = unit.broker_costs ? parseNumberInput(unit.broker_costs) : 0;
               baseData.notary_costs = unit.notary_costs ? parseNumberInput(unit.notary_costs) : 0;
               baseData.lawyer_costs = unit.lawyer_costs ? parseNumberInput(unit.lawyer_costs) : 0;
