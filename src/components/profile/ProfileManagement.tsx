@@ -367,7 +367,7 @@ export default function ProfileManagement() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
           >
             <Save className="w-4 h-4" />
             {saving ? "Speichern..." : "Änderungen speichern"}
