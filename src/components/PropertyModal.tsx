@@ -162,7 +162,7 @@ export default function PropertyModal({
       floor: "",
       size_sqm: "",
       rooms: "",
-      unit_type: "residential",
+      unit_type: "apartment",
       description: "",
     };
 
@@ -892,11 +892,11 @@ export default function PropertyModal({
                             onChange={(e) => handleUnitChange(index, 'unit_type', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                           >
-                            <option value="residential">Wohnung</option>
-                            <option value="commercial">Gewerbe</option>
+                            <option value="apartment">Wohnung</option>
+                            <option value="office">Büro</option>
+                            <option value="parking">Stellplatz/Garage</option>
                             <option value="storage">Lager</option>
-                            <option value="garage">Garage</option>
-                            <option value="other">Sonstiges</option>
+                            <option value="commercial">Gewerbe</option>
                           </select>
                         </div>
                         <div className="col-span-2">
