@@ -127,7 +127,7 @@ export default function Footer() {
           {" "}
           <div className="text-sm text-gray-400">
             {" "}
-            © {currentYear} Rentably. {t("footer.rights")}.{" "}
+            {t("footer.rights")}{" "}
           </div>{" "}
           <div className="flex items-center gap-3">
             {" "}

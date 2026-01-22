@@ -111,7 +111,7 @@ const translations = {
     "footer.kmu_suite": "KMU Suite",
     "footer.kmu_description": "Komplette Business-Management-Lösung",
     "footer.language": "Sprache",
-    "footer.rights": "Alle Rechte vorbehalten",
+    "footer.rights": "Seit 2017 für Vermieter • Entwickelt in Deutschland • Sicher & DSGVO-konform",
     // Dashboard Home
     "dashboard.overview": "Übersicht",
     "dashboard.welcome": "Willkommen in Ihrem Rentably Dashboard",
@@ -521,7 +521,7 @@ const translations = {
     "footer.kmu_suite": "KMU Suite",
     "footer.kmu_description": "Complete business management solution",
     "footer.language": "Language",
-    "footer.rights": "All rights reserved",
+    "footer.rights": "Since 2017 for landlords • Made in Germany • Secure & GDPR compliant",
     // Dashboard Home
     "dashboard.overview": "Overview",
     "dashboard.welcome": "Welcome to your Rentably Dashboard",
