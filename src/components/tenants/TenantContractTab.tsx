@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { FileText, Upload, Download, Lock, X, Trash2, Eye, Calendar, Plus } from "lucide-react";
+import { FileText, Upload, Download, X, Trash2, Eye, Calendar, Plus } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentDetails from "../documents/DocumentDetails";
+import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 
 interface TenantContractTabProps {
   tenantId: string;
@@ -383,51 +384,7 @@ export default function TenantContractTab({
   }
 
   if (!isPremium) {
-    return (
-      <div className="bg-white rounded-lg p-8">
-        <div className="text-center max-w-md mx-auto">
-          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-amber-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-dark mb-2">
-            Pro-Funktion
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Der Upload und die Verwaltung von Vertragsdokumenten ist im
-            Pro-Tarif verfügbar. Upgrade jetzt für:
-          </p>
-          <div className="text-left space-y-2 mb-6">
-            <div className="flex items-start gap-2">
-              <FileText className="w-5 h-5 text-primary-blue mt-0.5" />
-              <span className="text-sm text-gray-600">
-                Upload von Mietverträgen und Nachträgen
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <FileText className="w-5 h-5 text-primary-blue mt-0.5" />
-              <span className="text-sm text-gray-600">
-                Sichere Dokumentenverwaltung
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <FileText className="w-5 h-5 text-primary-blue mt-0.5" />
-              <span className="text-sm text-gray-600">
-                Zentrale Ablage aller Vertragsdokumente
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <FileText className="w-5 h-5 text-primary-blue mt-0.5" />
-              <span className="text-sm text-gray-600">
-                Kategorisierung und Suchfunktion
-              </span>
-            </div>
-          </div>
-          <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
-            Jetzt upgraden
-          </button>
-        </div>
-      </div>
-    );
+    return <PremiumUpgradePrompt featureKey="tenant_details_contract" />;
   }
 
   return (

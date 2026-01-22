@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Wallet, Plus, Lock, Calendar, Edit, Save, X } from "lucide-react";
+import { Wallet, Plus, Calendar, Edit, Save, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
+import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 
 interface TenantDepositTabProps {
   tenantId: string;
@@ -405,43 +406,7 @@ export default function TenantDepositTab({
       </div>
 
       {!isPremium ? (
-        <div className="bg-white rounded-lg p-8">
-          <div className="text-center max-w-md mx-auto">
-            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-amber-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-dark mb-2">
-              Pro-Funktion
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Die detaillierte Kautionshistorie ist im Pro-Tarif verfügbar.
-              Upgrade jetzt für:
-            </p>
-            <div className="text-left space-y-2 mb-6">
-              <div className="flex items-start gap-2">
-                <Wallet className="w-5 h-5 text-primary-blue mt-0.5" />
-                <span className="text-sm text-gray-600">
-                  Vollständige Historie aller Transaktionen
-                </span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Wallet className="w-5 h-5 text-primary-blue mt-0.5" />
-                <span className="text-sm text-gray-600">
-                  Nachverfolgung von Teilzahlungen
-                </span>
-              </div>
-              <div className="flex items-start gap-2">
-                <Wallet className="w-5 h-5 text-primary-blue mt-0.5" />
-                <span className="text-sm text-gray-600">
-                  Rückzahlungs-Workflow
-                </span>
-              </div>
-            </div>
-            <button className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
-              Jetzt upgraden
-            </button>
-          </div>
-        </div>
+        <PremiumUpgradePrompt featureKey="tenant_details_deposit" />
       ) : (
         <div className="bg-white rounded-lg">
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
