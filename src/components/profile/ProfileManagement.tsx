@@ -104,7 +104,13 @@ export default function ProfileManagement() {
   };
 
   const handleChange = (field: keyof ProfileData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === "address_city") {
+      if (value === "" || /^[a-zA-ZäöüÄÖÜß\s\-]+$/.test(value)) {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
     setMessage(null);
   };
 

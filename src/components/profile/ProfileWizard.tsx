@@ -56,7 +56,7 @@ export default function ProfileWizard({ isOpen, onClose, onComplete }: ProfileWi
       const defaultSignature = `Viele Grüße\n${formData.first_name} ${formData.last_name}`;
       setFormData((prev) => ({ ...prev, document_signature: defaultSignature }));
     }
-  }, [formData.first_name, formData.last_name, formData.company_name]);
+  }, [formData.first_name, formData.last_name, formData.company_name, currentStep]);
 
   const loadExistingProfile = async () => {
     try {
@@ -95,7 +95,11 @@ export default function ProfileWizard({ isOpen, onClose, onComplete }: ProfileWi
     if (!formData.last_name.trim()) newErrors.last_name = "Nachname erforderlich";
     if (!formData.address_street.trim()) newErrors.address_street = "Straße erforderlich";
     if (!formData.address_zip.trim()) newErrors.address_zip = "PLZ erforderlich";
-    if (!formData.address_city.trim()) newErrors.address_city = "Ort erforderlich";
+    if (!formData.address_city.trim()) {
+      newErrors.address_city = "Ort erforderlich";
+    } else if (!/^[a-zA-ZäöüÄÖÜß\s\-]+$/.test(formData.address_city)) {
+      newErrors.address_city = "Ort darf nur Buchstaben enthalten";
+    }
     if (!formData.address_country.trim()) newErrors.address_country = "Land erforderlich";
 
     setErrors(newErrors);
@@ -118,6 +122,24 @@ export default function ProfileWizard({ isOpen, onClose, onComplete }: ProfileWi
 
   const handleNext = () => {
     if (currentStep === 1 && validateStep1()) {
+      const expectedSender = formData.company_name || `${formData.first_name} ${formData.last_name}`;
+      const oldShortForm = `${formData.first_name} ${formData.last_name.charAt(0)}`;
+
+      if (!formData.document_sender_name ||
+          formData.document_sender_name.trim() === "" ||
+          formData.document_sender_name === oldShortForm) {
+        setFormData((prev) => ({ ...prev, document_sender_name: expectedSender }));
+      }
+
+      const expectedSignature = `Viele Grüße\n${formData.first_name} ${formData.last_name}`;
+      const oldShortSignature = `Viele Grüße\n${formData.first_name} ${formData.last_name.charAt(0)}`;
+
+      if (!formData.document_signature ||
+          formData.document_signature.trim() === "" ||
+          formData.document_signature === oldShortSignature) {
+        setFormData((prev) => ({ ...prev, document_signature: expectedSignature }));
+      }
+
       setCurrentStep(2);
       setErrors({});
     }
@@ -170,9 +192,18 @@ export default function ProfileWizard({ isOpen, onClose, onComplete }: ProfileWi
   };
 
   const handleChange = (field: keyof ProfileData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    if (field === "address_city") {
+      if (value === "" || /^[a-zA-ZäöüÄÖÜß\s\-]+$/.test(value)) {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+          setErrors((prev) => ({ ...prev, [field]: undefined }));
+        }
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
     }
   };
 
