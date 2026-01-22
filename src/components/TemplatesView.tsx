@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import AutomaticTemplateWizard from "./AutomaticTemplateWizard";
+import Badge from "./common/Badge";
 
 interface Template {
   id: string;
@@ -283,9 +284,7 @@ export default function TemplatesView() {
                                 {template.title}
                               </h3>
                               {template.is_premium && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                                  PRO
-                                </span>
+                                <Badge variant="pro" size="sm">Pro</Badge>
                               )}
                               {!template.is_premium && (
                                 <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded font-medium">

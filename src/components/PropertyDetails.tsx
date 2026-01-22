@@ -23,6 +23,7 @@ import PropertyContactsTab from "./property/PropertyContactsTab";
 import PropertyMaintenanceTab from "./property/PropertyMaintenanceTab";
 import PropertyMetricsTab from "./property/PropertyMetricsTab";
 import ScrollableTabNav from "./common/ScrollableTabNav";
+import Badge from "./common/Badge";
 import { supabase } from "../lib/supabase";
 
 interface Property {
@@ -272,9 +273,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
                   <Icon className="w-5 h-5" />
                   {tab.label}
                   {tab.isPro && (
-                    <span className="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded font-medium">
-                      Pro
-                    </span>
+                    <Badge variant="pro" size="sm">Pro</Badge>
                   )}
                   {activeTab === tab.id && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />

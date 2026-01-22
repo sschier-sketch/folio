@@ -3,6 +3,7 @@ import { TrendingUp, Plus, Lock, Calendar, Edit, Save, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
+import Badge from "../common/Badge";
 
 interface TenantRentHistoryTabProps {
   tenantId: string;
@@ -631,9 +632,7 @@ export default function TenantRentHistoryTab({
                   <h3 className="text-lg font-semibold text-dark">
                     Mietentwicklung
                   </h3>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                    PRO
-                  </span>
+                  <Badge variant="pro" size="sm">Pro</Badge>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
                   Änderungen werden automatisch protokolliert bei Mietanpassungen, Staffelmieten oder Indexmieten

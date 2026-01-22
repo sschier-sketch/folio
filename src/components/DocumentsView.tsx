@@ -6,6 +6,7 @@ import DocumentUpload from "./documents/DocumentUpload";
 import DocumentArchive from "./documents/DocumentArchive";
 import DocumentDetails from "./documents/DocumentDetails";
 import ScrollableTabNav from "./common/ScrollableTabNav";
+import Badge from "./common/Badge";
 import { useSubscription } from "../hooks/useSubscription";
 
 type Tab = "overview" | "list" | "upload" | "archive";
@@ -92,9 +93,7 @@ export default function DocumentsView() {
                   <Icon className="w-5 h-5" />
                   {tab.label}
                   {tab.isPro && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                      PRO
-                    </span>
+                    <Badge variant="pro" size="sm">Pro</Badge>
                   )}
                   {activeTab === tab.id && !isDisabled && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />

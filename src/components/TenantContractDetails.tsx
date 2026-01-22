@@ -20,6 +20,7 @@ import TenantDepositTab from "./tenants/TenantDepositTab";
 import TenantCommunicationTab from "./tenants/TenantCommunicationTab";
 import TenantHandoverTab from "./tenants/TenantHandoverTab";
 import ScrollableTabNav from "./common/ScrollableTabNav";
+import Badge from "./common/Badge";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 
 type Tab =
@@ -161,9 +162,7 @@ export default function TenantContractDetails({
                   <Icon className="w-5 h-5" />
                   {tab.label}
                   {tab.premium && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                      PRO
-                    </span>
+                    <Badge variant="pro" size="sm">Pro</Badge>
                   )}
                   {activeTab === tab.id && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />

@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import DunningView from "./finances/DunningView";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
+import Badge from "./common/Badge";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 interface PartialPayment {
   amount: number;
@@ -386,9 +387,7 @@ export default function RentPaymentsView() {
             >
               <Bell className="w-5 h-5" />
               Mahnwesen
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                PRO
-              </span>
+              <Badge variant="pro" size="sm">Pro</Badge>
               {activeTab === "dunning" && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}

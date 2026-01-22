@@ -3,6 +3,7 @@ import { FileText, FolderCheck, HardDrive, Upload, Clock, TrendingUp } from "luc
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
+import Badge from "../common/Badge";
 
 interface DocumentsOverviewProps {
   onNavigateToUpload: () => void;
@@ -285,9 +286,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-dark mb-2 flex items-center gap-2">
                 Erweitern Sie Ihre Dokumentenverwaltung mit Pro
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                  PRO
-                </span>
+                <Badge variant="pro" size="sm">Pro</Badge>
               </h3>
               <p className="text-sm text-gray-700 mb-4">
                 Nutzen Sie alle Funktionen der professionellen Dokumentenverwaltung:
