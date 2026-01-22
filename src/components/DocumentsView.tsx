@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, List, Upload, Archive, Eye, Lock } from "lucide-react";
+import { FileText, List, Upload, Archive, Eye } from "lucide-react";
 import DocumentsOverview from "./documents/DocumentsOverview";
 import DocumentsList from "./documents/DocumentsList";
 import DocumentUpload from "./documents/DocumentUpload";
@@ -8,6 +8,7 @@ import DocumentDetails from "./documents/DocumentDetails";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
 import { useSubscription } from "../hooks/useSubscription";
+import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 
 type Tab = "overview" | "list" | "upload" | "archive";
 
@@ -132,18 +133,7 @@ export default function DocumentsView() {
           />
         )}
         {activeTab === "archive" && !isPro && (
-          <div className="bg-white rounded-lg p-12 text-center">
-            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-amber-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-dark mb-2">Pro Feature</h3>
-            <p className="text-gray-500 mb-4">
-              Das Dokumentarchiv ist ein Pro Feature. Upgraden Sie auf Pro, um archivierte Dokumente zu verwalten.
-            </p>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">
-              Jetzt auf Pro upgraden
-            </button>
-          </div>
+          <PremiumUpgradePrompt featureKey="documents_archive" />
         )}
       </div>
     </div>

@@ -3,7 +3,7 @@ import { FileText, FolderCheck, HardDrive, Upload, Clock, TrendingUp } from "luc
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
-import Badge from "../common/Badge";
+import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 
 interface DocumentsOverviewProps {
   onNavigateToUpload: () => void;
@@ -277,44 +277,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
         </div>
       </div>
 
-      {!isPro && (
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-              <FileText className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-dark mb-2 flex items-center gap-2">
-                Erweitern Sie Ihre Dokumentenverwaltung mit Pro
-                <Badge variant="pro" size="sm">Pro</Badge>
-              </h3>
-              <p className="text-sm text-gray-700 mb-4">
-                Nutzen Sie alle Funktionen der professionellen Dokumentenverwaltung:
-              </p>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span><strong>2 GB Speicher</strong> statt 200 MB für alle Ihre Dokumente</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span><strong>Zuordnung zu Mietern und Immobilien</strong> für bessere Organisation</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span><strong>Archivfunktion mit Wiederherstellung</strong> für gelöschte Dokumente</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => window.location.href = '/subscription'}
-                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
-              >
-                Jetzt auf Pro upgraden
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {!isPro && <PremiumUpgradePrompt featureKey="documents_overview" />}
 
       {stats.unassignedDocuments > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
