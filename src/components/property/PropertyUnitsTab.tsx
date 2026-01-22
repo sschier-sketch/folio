@@ -538,7 +538,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Etage {isPremium && "(Pro)"}
+                    Etage
                   </label>
                   <input
                     type="number"
