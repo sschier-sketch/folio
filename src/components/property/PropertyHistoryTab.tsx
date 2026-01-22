@@ -127,11 +127,117 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
     return labels[eventType] || eventType;
   };
 
+  const getFieldLabel = (fieldName: string): string => {
+    const labels: Record<string, string> = {
+      // Property fields
+      name: "Name",
+      address: "Adresse",
+      street: "Straße",
+      house_number: "Hausnummer",
+      postal_code: "Postleitzahl",
+      city: "Stadt",
+      country: "Land",
+      property_type: "Immobilientyp",
+      year_built: "Baujahr",
+      total_area: "Gesamtfläche",
+      plot_size: "Grundstücksgröße",
+      purchase_price: "Kaufpreis",
+      purchase_date: "Kaufdatum",
+      current_value: "Aktueller Wert",
+      ownership_type: "Eigentumsart",
+      notes: "Notizen",
+      description: "Beschreibung",
+
+      // Unit fields
+      unit_number: "Einheitennummer",
+      unit_type: "Einheitentyp",
+      floor: "Etage",
+      area_sqm: "Fläche (m²)",
+      rooms: "Zimmeranzahl",
+      status: "Status",
+      rent_amount: "Miete",
+      mea: "Miteigentumsanteil",
+      location: "Lage",
+
+      // Tenant fields
+      first_name: "Vorname",
+      last_name: "Nachname",
+      email: "E-Mail",
+      phone: "Telefon",
+      mobile: "Mobiltelefon",
+      birth_date: "Geburtsdatum",
+      nationality: "Nationalität",
+      occupation: "Beruf",
+      employer: "Arbeitgeber",
+      monthly_income: "Monatliches Einkommen",
+      previous_address: "Vorherige Adresse",
+
+      // Contract fields
+      contract_type: "Vertragsart",
+      start_date: "Startdatum",
+      end_date: "Enddatum",
+      rent: "Miete",
+      deposit: "Kaution",
+      notice_period: "Kündigungsfrist",
+      payment_day: "Zahlungstag",
+
+      // Contact fields
+      company: "Firma",
+      role: "Rolle",
+
+      // Common fields
+      created_at: "Erstellt am",
+      updated_at: "Aktualisiert am",
+    };
+
+    return labels[fieldName] || fieldName;
+  };
+
   const formatValue = (value: any): string => {
     if (value === null || value === undefined) return "-";
     if (typeof value === "boolean") return value ? "Ja" : "Nein";
     if (typeof value === "number") return value.toLocaleString("de-DE");
     if (typeof value === "string") {
+      // Translate common enum values
+      const translations: Record<string, string> = {
+        // Status values
+        vacant: "Leer",
+        rented: "Vermietet",
+        maintenance: "Wartung",
+        self_occupied: "Selbstnutzung",
+
+        // Unit types
+        apartment: "Wohnung",
+        office: "Büro",
+        parking: "Stellplatz/Garage",
+        storage: "Lager",
+        commercial: "Gewerbe",
+
+        // Property types
+        house: "Haus",
+        condominium: "Eigentumswohnung",
+        multi_family: "Mehrfamilienhaus",
+
+        // Ownership types
+        full_ownership: "Volleigentum",
+        units_only: "Nur Einheiten",
+
+        // Contract types
+        fixed_term: "Befristet",
+        unlimited: "Unbefristet",
+
+        // Other common values
+        yes: "Ja",
+        no: "Nein",
+        true: "Ja",
+        false: "Nein",
+      };
+
+      const lowerValue = value.toLowerCase();
+      if (translations[lowerValue]) {
+        return translations[lowerValue];
+      }
+
       if (value.match(/^\d{4}-\d{2}-\d{2}/)) {
         try {
           return new Date(value).toLocaleDateString("de-DE");
@@ -168,7 +274,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
             if (fieldKey && (oldVal !== undefined || newVal !== undefined)) {
               return (
                 <div key={idx} className="text-xs bg-white rounded px-3 py-2">
-                  <div className="font-medium text-gray-700 mb-1">{field}</div>
+                  <div className="font-medium text-gray-700 mb-1">{getFieldLabel(field)}</div>
                   <div className="flex items-center gap-2">
                     <span className="text-red-600 line-through">
                       {formatValue(oldVal)}
