@@ -469,9 +469,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#BCBFCC' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
               {" "}
-              <Building2 className="w-6 h-6" style={{ color: '#1E1E24' }} />{" "}
+              <Building2 className="w-6 h-6" style={{ color: '#2F6FED' }} />{" "}
             </div>{" "}
           </div>{" "}
           <div className="text-3xl font-bold text-dark mb-1">
@@ -499,9 +499,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#BCBFCC' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
               {" "}
-              <Users className="w-6 h-6" style={{ color: '#1E1E24' }} />{" "}
+              <Users className="w-6 h-6" style={{ color: '#2F6FED' }} />{" "}
             </div>{" "}
           </div>{" "}
           <div className="text-3xl font-bold text-dark mb-1">
@@ -523,9 +523,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#BCBFCC' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
               {" "}
-              <Euro className="w-6 h-6" style={{ color: '#1E1E24' }} />{" "}
+              <Euro className="w-6 h-6" style={{ color: '#2F6FED' }} />{" "}
             </div>{" "}
           </div>{" "}
           <div className="text-3xl font-bold text-dark mb-1">
@@ -556,9 +556,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#BCBFCC' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
               {" "}
-              <TrendingUp className="w-6 h-6" style={{ color: '#1E1E24' }} />{" "}
+              <TrendingUp className="w-6 h-6" style={{ color: '#2F6FED' }} />{" "}
             </div>{" "}
           </div>{" "}
           <div className="text-3xl font-bold text-dark mb-1">
@@ -682,9 +682,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
-              <div className="w-14 h-14 bg-primary-blue rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                 {" "}
-                <Building2 className="w-7 h-7 text-white" />{" "}
+                <Building2 className="w-7 h-7" style={{ color: '#2F6FED' }} />{" "}
               </div>{" "}
               <span className="text-sm font-semibold text-dark text-center">
                 Neue Immobilie anlegen
@@ -696,9 +696,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
-              <div className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                 {" "}
-                <Users className="w-7 h-7 text-white" />{" "}
+                <Users className="w-7 h-7" style={{ color: '#2F6FED' }} />{" "}
               </div>{" "}
               <span className="text-sm font-semibold text-dark text-center">
                 Neue Mieter
@@ -710,9 +710,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
-              <div className="w-14 h-14 bg-amber-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                 {" "}
-                <Receipt className="w-7 h-7 text-white" />{" "}
+                <Receipt className="w-7 h-7" style={{ color: '#2F6FED' }} />{" "}
               </div>{" "}
               <span className="text-sm font-semibold text-dark text-center">
                 Mieteingänge prüfen
@@ -724,9 +724,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
             >
               {" "}
-              <div className="w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                 {" "}
-                <BarChart3 className="w-7 h-7 text-white" />{" "}
+                <BarChart3 className="w-7 h-7" style={{ color: '#2F6FED' }} />{" "}
               </div>{" "}
               <span className="text-sm font-semibold text-dark text-center">
                 Finanzübersicht
@@ -754,8 +754,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Wrench className="w-5 h-5 text-amber-600" />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                      <Wrench className="w-5 h-5" style={{ color: '#2F6FED' }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -803,8 +803,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <TrendingUp className="w-5 h-5 text-green-600" />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                      <TrendingUp className="w-5 h-5" style={{ color: '#2F6FED' }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -852,20 +852,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-start gap-3 flex-1">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      ticket.priority === "high"
-                        ? "bg-red-100"
-                        : ticket.priority === "medium"
-                        ? "bg-amber-100"
-                        : "bg-gray-100"
-                    }`}>
-                      <AlertCircle className={`w-5 h-5 ${
-                        ticket.priority === "high"
-                          ? "text-red-600"
-                          : ticket.priority === "medium"
-                          ? "text-amber-600"
-                          : "text-gray-600"
-                      }`} />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                      <AlertCircle className="w-5 h-5" style={{ color: '#2F6FED' }} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
