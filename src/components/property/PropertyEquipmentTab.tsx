@@ -25,6 +25,10 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
     basement: false,
     fitted_kitchen: false,
     wg_suitable: false,
+    barrier_free: false,
+    furnished: false,
+    condition: "",
+    flooring: "",
     equipment_notes: "",
     special_features: "",
   });
@@ -60,6 +64,10 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
           basement: data.basement || false,
           fitted_kitchen: data.fitted_kitchen || false,
           wg_suitable: data.wg_suitable || false,
+          barrier_free: data.barrier_free || false,
+          furnished: data.furnished || false,
+          condition: data.condition || "",
+          flooring: data.flooring || "",
           equipment_notes: data.equipment_notes || "",
           special_features: data.special_features || "",
         };
@@ -79,6 +87,10 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
           basement: false,
           fitted_kitchen: false,
           wg_suitable: false,
+          barrier_free: false,
+          furnished: false,
+          condition: "",
+          flooring: "",
           equipment_notes: "",
           special_features: "",
         });
@@ -107,6 +119,10 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
       basement: "Keller",
       fitted_kitchen: "Einbauküche",
       wg_suitable: "WG geeignet",
+      barrier_free: "Barrierefrei",
+      furnished: "Möbliert",
+      condition: "Zustand",
+      flooring: "Bodenbelag",
       equipment_notes: "Ausstattungsnotizen",
       special_features: "Besonderheiten",
     };
@@ -151,6 +167,10 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         basement: formData.basement,
         fitted_kitchen: formData.fitted_kitchen,
         wg_suitable: formData.wg_suitable,
+        barrier_free: formData.barrier_free,
+        furnished: formData.furnished,
+        condition: formData.condition || null,
+        flooring: formData.flooring || null,
         equipment_notes: formData.equipment_notes,
         special_features: formData.special_features,
       };
@@ -186,6 +206,10 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         basement: formData.basement,
         fitted_kitchen: formData.fitted_kitchen,
         wg_suitable: formData.wg_suitable,
+        barrier_free: formData.barrier_free,
+        furnished: formData.furnished,
+        condition: formData.condition,
+        flooring: formData.flooring,
         equipment_notes: formData.equipment_notes,
         special_features: formData.special_features,
       };
@@ -401,7 +425,7 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
               }
               className="w-5 h-5 text-primary-blue focus:ring-2 focus:ring-blue-500 rounded"
             />
-            <span className="text-sm font-medium text-gray-700">Einbauküche</span>
+            <span className="text-sm font-medium text-gray-700">EBK (Einbauküche)</span>
           </label>
 
           <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
@@ -415,6 +439,72 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
             />
             <span className="text-sm font-medium text-gray-700">WG geeignet</span>
           </label>
+
+          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+            <input
+              type="checkbox"
+              checked={formData.barrier_free}
+              onChange={(e) =>
+                setFormData({ ...formData, barrier_free: e.target.checked })
+              }
+              className="w-5 h-5 text-primary-blue focus:ring-2 focus:ring-blue-500 rounded"
+            />
+            <span className="text-sm font-medium text-gray-700">Barrierefrei</span>
+          </label>
+
+          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+            <input
+              type="checkbox"
+              checked={formData.furnished}
+              onChange={(e) =>
+                setFormData({ ...formData, furnished: e.target.checked })
+              }
+              className="w-5 h-5 text-primary-blue focus:ring-2 focus:ring-blue-500 rounded"
+            />
+            <span className="text-sm font-medium text-gray-700">Möbliert</span>
+          </label>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Zustand
+            </label>
+            <select
+              value={formData.condition}
+              onChange={(e) =>
+                setFormData({ ...formData, condition: e.target.value })
+              }
+              className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            >
+              <option value="">Bitte wählen</option>
+              <option value="first_time_use">Erstbezug</option>
+              <option value="mint_condition">Neuwertig</option>
+              <option value="renovated">Renoviert</option>
+              <option value="well_maintained">Gepflegt</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Bodenbelag
+            </label>
+            <select
+              value={formData.flooring}
+              onChange={(e) =>
+                setFormData({ ...formData, flooring: e.target.value })
+              }
+              className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            >
+              <option value="">Bitte wählen</option>
+              <option value="parquet">Parkett</option>
+              <option value="laminate">Laminat</option>
+              <option value="tiles">Fliesen</option>
+              <option value="carpet">Teppich</option>
+              <option value="vinyl">Vinyl</option>
+              <option value="floorboards">Dielen</option>
+            </select>
+          </div>
         </div>
       </div>
 
