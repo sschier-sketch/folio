@@ -122,7 +122,7 @@ const translations = {
     "dashboard.portfolio.total": "Gesamtübersicht",
     "dashboard.portfolio.value": "Gesamtwert Immobilien",
     "dashboard.portfolio.annual": "Jährliche Mieteinnahmen",
-    "dashboard.quickstart": "Schnellstart",
+    "dashboard.quickstart": "Schnellaktion",
     "dashboard.quickstart.description":
       "Beginnen Sie mit der Verwaltung Ihrer Immobilien, indem Sie Ihre erste Immobilie hinzufügen.",
     "dashboard.quickstart.property": "Immobilie anlegen",
@@ -532,7 +532,7 @@ const translations = {
     "dashboard.portfolio.total": "Total Overview",
     "dashboard.portfolio.value": "Total Property Value",
     "dashboard.portfolio.annual": "Annual Rental Income",
-    "dashboard.quickstart": "Quick Start",
+    "dashboard.quickstart": "Quick Actions",
     "dashboard.quickstart.description":
       "Start managing your properties by adding your first property.",
     "dashboard.quickstart.property": "Add Property",

@@ -469,9 +469,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#BCBFCC' }}>
               {" "}
-              <Building2 className="w-6 h-6 text-primary-blue" />{" "}
+              <Building2 className="w-6 h-6" style={{ color: '#1E1E24' }} />{" "}
             </div>{" "}
           </div>{" "}
           <div className="text-3xl font-bold text-dark mb-1">
@@ -499,9 +499,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#BCBFCC' }}>
               {" "}
-              <Users className="w-6 h-6 text-emerald-600" />{" "}
+              <Users className="w-6 h-6" style={{ color: '#1E1E24' }} />{" "}
             </div>{" "}
           </div>{" "}
           <div className="text-3xl font-bold text-dark mb-1">
@@ -512,11 +512,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           </div>
           {stats.tenantsMovingOutSoon > 0 && (
             <div className="pt-3 border-t border-gray-100">
-              <div className="flex items-center gap-2 text-xs text-amber-600">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span className="font-medium">
-                  {stats.tenantsMovingOutSoon} {stats.tenantsMovingOutSoon === 1 ? 'Mieter zieht' : 'Mieter ziehen'} in den nächsten 90 Tagen aus
-                </span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-amber-600 font-medium">Auszüge (90 Tage)</span>
+                <span className="text-lg font-bold text-amber-600">{stats.tenantsMovingOutSoon}</span>
               </div>
             </div>
           )}{" "}
@@ -525,16 +523,16 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#BCBFCC' }}>
               {" "}
-              <Euro className="w-6 h-6 text-amber-600" />{" "}
+              <Euro className="w-6 h-6" style={{ color: '#1E1E24' }} />{" "}
             </div>{" "}
           </div>{" "}
           <div className="text-3xl font-bold text-dark mb-1">
             {" "}
             {formatCurrency(stats.totalMonthlyRent)}{" "}
           </div>{" "}
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-gray-400 mb-2">
             {t("dashboard.rent.monthly")}
           </div>
           {(stats.unpaidRent > 0 || stats.overdueRent > 0) && (
@@ -558,16 +556,16 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           {" "}
           <div className="flex items-center justify-between mb-4">
             {" "}
-            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#BCBFCC' }}>
               {" "}
-              <TrendingUp className="w-6 h-6 text-indigo-600" />{" "}
+              <TrendingUp className="w-6 h-6" style={{ color: '#1E1E24' }} />{" "}
             </div>{" "}
           </div>{" "}
           <div className="text-3xl font-bold text-dark mb-1">
             {" "}
             {stats.averageYield.toFixed(2)}%{" "}
           </div>{" "}
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-gray-400 mb-2">
             {t("dashboard.yield.average")}
           </div>{" "}
           <div className="mt-3 pt-3 border-t border-gray-100">
@@ -703,7 +701,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                 <Users className="w-7 h-7 text-white" />{" "}
               </div>{" "}
               <span className="text-sm font-semibold text-dark text-center">
-                Neues Mietverhältnis anlegen
+                Neue Mieter
               </span>{" "}
             </button>{" "}
             <button
