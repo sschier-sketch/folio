@@ -5,6 +5,7 @@ import {
   Gauge,
   Download,
   History,
+  Receipt,
 } from "lucide-react";
 import BillingOverview from "./billing/BillingOverview";
 import OperatingCostsView from "./billing/OperatingCostsView";
@@ -16,6 +17,7 @@ import ScrollableTabNav from "./common/ScrollableTabNav";
 type Tab =
   | "meters"
   | "operating-costs"
+  | "taxes"
   | "export"
   | "history";
 
@@ -28,6 +30,13 @@ export default function BillingView() {
       id: "operating-costs" as Tab,
       label: "Betriebskosten",
       icon: Calculator,
+      premium: true,
+      disabled: true,
+    },
+    {
+      id: "taxes" as Tab,
+      label: "Steuern",
+      icon: Receipt,
       premium: true,
       disabled: true,
     },

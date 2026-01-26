@@ -606,7 +606,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               {" "}
               <div className="flex justify-between items-center mb-1">
                 {" "}
-                <span className="text-gray-400">
+                <span className="text-sm text-gray-400">
                   {t("dashboard.portfolio.annual")}
                 </span>{" "}
                 <span className="text-lg font-semibold text-dark">
@@ -627,7 +627,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               {" "}
               <div className="flex justify-between items-center mb-1">
                 {" "}
-                <span className="text-gray-400">Jährliche Ausgaben</span>{" "}
+                <span className="text-sm text-gray-400">Jährliche Ausgaben</span>{" "}
                 <span className="text-lg font-semibold text-dark">
                   {" "}
                   {formatCurrency(stats.totalMonthlyExpenses * 12)}{" "}
@@ -646,7 +646,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               {" "}
               <div className="flex justify-between items-center mb-1">
                 {" "}
-                <span className="text-gray-400 font-medium">
+                <span className="text-sm text-gray-400 font-medium">
                   Jährlicher Überschuss
                 </span>{" "}
                 <span
