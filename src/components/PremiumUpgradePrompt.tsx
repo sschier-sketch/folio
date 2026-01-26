@@ -66,8 +66,8 @@ export function PremiumUpgradePrompt({
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-200 rounded-lg p-8 text-center">
-      <div className="inline-flex w-16 h-16 bg-gradient-to-br from-primary-blue to-primary-blue rounded-full items-center justify-center mb-4">
+    <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-8 text-center">
+      <div className="inline-flex w-16 h-16 bg-primary-blue rounded-full items-center justify-center mb-4">
         <Lock className="w-8 h-8 text-white" />
       </div>
       <h3 className="text-2xl font-bold text-dark mb-2">{content.title}</h3>
@@ -90,7 +90,7 @@ export function PremiumUpgradePrompt({
 
       <button
         onClick={() => navigate("/subscription")}
-        className="px-8 py-3 bg-gradient-to-r from-primary-blue to-primary-blue text-white font-semibold rounded-full hover:shadow-lg transition-all inline-flex items-center gap-2"
+        className="px-8 py-3 bg-primary-blue text-white font-semibold rounded-full hover:shadow-lg transition-all inline-flex items-center gap-2"
       >
         <Sparkles className="w-5 h-5" />
         Jetzt für 9 EUR/Monat upgraden
