@@ -77,9 +77,16 @@ export function useSubscription() {
   };
 
   const hasPro = () => {
-    return (
-      subscription?.subscription_status === "active" && subscription?.price_id
-    );
+    if (!subscription?.subscription_status || subscription.subscription_status !== "active") {
+      return false;
+    }
+    if (!subscription.price_id) {
+      return false;
+    }
+    if (subscription.price_id === "free") {
+      return false;
+    }
+    return true;
   };
 
   return {

@@ -6,23 +6,21 @@ import { useSubscription } from "../hooks/useSubscription";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 export function Subscription() {
-  const { subscription, isPro } = useSubscription();
-
-  const isCurrentPlan = (priceId: string) => {
-    if (priceId === "free") {
-      return !subscription?.price_id || subscription?.price_id === "pro_plan";
-    }
-    return subscription?.price_id === priceId;
-  };
+  const { isPro } = useSubscription();
 
   const isProPlan = (priceId: string) => {
     return priceId === "price_1SmAu0DT0DRNFiKmj97bxor8" || priceId === "price_1SmAszDT0DRNFiKmQ7qG1L8V" || priceId === "pro_plan";
   };
 
-  const shouldHideProPlans = isPro;
+  const isCurrentPlan = (priceId: string) => {
+    if (priceId === "free") {
+      return !isPro;
+    }
+    return isPro && isProPlan(priceId);
+  };
 
   const visibleProducts = stripeProducts.filter(product => {
-    if (shouldHideProPlans && isProPlan(product.priceId)) {
+    if (isPro && isProPlan(product.priceId)) {
       return false;
     }
     return true;
