@@ -16,8 +16,8 @@ export function Subscription() {
   };
 
   const visibleProducts = isPro
-    ? stripeProducts.filter((product) => product.id === "free")
-    : stripeProducts.filter((product) => product.id !== "free");
+    ? stripeProducts.filter((product) => product.priceId === "free")
+    : stripeProducts.filter((product) => product.priceId !== "free");
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
