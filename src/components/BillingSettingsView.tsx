@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { CreditCard, Gift, CheckCircle } from "lucide-react";
+import { CreditCard, Gift, CheckCircle, ArrowRight } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
-import { stripeProducts } from "../stripe-config";
-import { SubscriptionCard } from "./subscription/SubscriptionCard";
 import { useSubscription } from "../hooks/useSubscription";
+import { useNavigate } from "react-router-dom";
 
 export default function BillingSettingsView() {
   const { user } = useAuth();
   const { language } = useLanguage();
   const { subscription, isPremium } = useSubscription();
+  const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -247,28 +247,29 @@ export default function BillingSettingsView() {
 
           <div id="available-plans">
             <h4 className="text-md font-semibold text-dark mb-4">
-              {language === "de" ? "Verfügbare Tarife" : "Available Plans"}
+              {language === "de" ? "Tarife verwalten" : "Manage Plans"}
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stripeProducts.map((product) => {
-                let isCurrentPlan = false;
-                if (subscription?.price_id) {
-                  isCurrentPlan = subscription.price_id === product.priceId;
-                } else if (isPremium && product.priceId !== "free") {
-                  isCurrentPlan = product.priceId === "price_1SmAu0DT0DRNFiKmj97bxor8";
-                } else if (!isPremium && product.priceId === "free") {
-                  isCurrentPlan = true;
-                }
-
-                return (
-                  <SubscriptionCard
-                    key={product.priceId}
-                    product={product}
-                    isCurrentPlan={isCurrentPlan}
-                  />
-                );
-              })}
-            </div>
+            <button
+              onClick={() => navigate('/subscription')}
+              className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-lg hover:shadow-lg transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                  <CreditCard className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-gray-900 text-lg mb-1">
+                    {language === "de" ? "Alle Tarife ansehen" : "View All Plans"}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {language === "de"
+                      ? "Verwalten Sie Ihr Abonnement und wechseln Sie zwischen Tarifen"
+                      : "Manage your subscription and switch between plans"}
+                  </div>
+                </div>
+              </div>
+              <ArrowRight className="w-6 h-6 text-blue-600 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
         </div>
       </div>
