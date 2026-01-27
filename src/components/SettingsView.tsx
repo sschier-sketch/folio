@@ -1,24 +1,19 @@
 import { useState, useEffect } from "react";
 import {
   User,
-  Globe,
   CreditCard,
-  Building,
-  FileText,
   Shield,
   MessageCircle,
   Send,
   Gift,
   CheckCircle,
-  ArrowRight,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useSubscription } from "../hooks/useSubscription";
 import ProfileManagement from "./profile/ProfileManagement";
 import ScrollableTabNav from "./common/ScrollableTabNav";
-import { useNavigate } from "react-router-dom";
+import { SubscriptionPlans } from "./subscription/SubscriptionPlans";
 interface UserSettings {
   role: string;
   can_invite_users: boolean;
@@ -52,8 +47,6 @@ export default function SettingsView({
 }: SettingsViewProps) {
   const { user } = useAuth();
   const { language, setLanguage, t } = useLanguage();
-  const { subscription } = useSubscription();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
     "profile" | "billing"
   >(initialTab);
@@ -444,102 +437,7 @@ export default function SettingsView({
             </form>{" "}
           </div>{" "}
           <div className="bg-white rounded shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-dark mb-6">
-              {t("settings.plan")}
-            </h3>
-
-            <div className="flex items-center justify-between p-5 bg-gray-50 rounded-lg mb-6 border-2 border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
-                  <CreditCard className="w-6 h-6 text-primary-blue" />
-                </div>
-                <div>
-                  <div className="font-bold text-dark text-lg">
-                    {subscription?.status === "active" ? "Pro" : "Basic"}
-                  </div>
-                  <div className="text-sm text-gray-400">
-                    {subscription?.status === "active"
-                      ? "Alle Pro-Funktionen freigeschaltet"
-                      : "Kostenlose Basis-Funktionen"}
-                  </div>
-                </div>
-              </div>
-              {subscription?.status !== "active" && (
-                <button
-                  onClick={() => {
-                    const plansSection = document.getElementById("available-plans");
-                    plansSection?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="px-6 py-2.5 bg-primary-blue text-white rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-                >
-                  Jetzt upgraden
-                </button>
-              )}
-            </div>
-
-            {subscription?.status !== "active" && (
-              <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                <h4 className="text-lg font-bold text-dark mb-4 flex items-center gap-2">
-                  <span className="text-2xl">✨</span>
-                  Mit Pro erhalten Sie:
-                </h4>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-dark"><strong>Unbegrenzte Immobilien</strong> - Verwalten Sie beliebig viele Objekte</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-dark"><strong>Erweiterte Finanzverwaltung</strong> - Cashflow, Analysen und Berichte</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-dark"><strong>Professionelles Mieterportal</strong> - Digitale Kommunikation mit Mietern</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-dark"><strong>Automatische Nebenkostenabrechnung</strong> - Zählerstände & Abrechnungen</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-dark"><strong>Dokumentenverwaltung</strong> - Zentrale Ablage aller Dokumente</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-dark"><strong>Prioritärer Support</strong> - Schnelle Hilfe bei Fragen</span>
-                  </li>
-                </ul>
-              </div>
-            )}
-
-            <div id="available-plans">
-              <h4 className="text-md font-semibold text-dark mb-4">
-                {language === "de"
-                  ? "Tarife verwalten"
-                  : "Manage Plans"}
-              </h4>
-              <button
-                onClick={() => navigate('/subscription')}
-                className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-lg hover:shadow-lg transition-all group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                    <CreditCard className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-gray-900 text-lg mb-1">
-                      {language === "de" ? "Alle Tarife ansehen" : "View All Plans"}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {language === "de"
-                        ? "Verwalten Sie Ihr Abonnement und wechseln Sie zwischen Tarifen"
-                        : "Manage your subscription and switch between plans"}
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight className="w-6 h-6 text-blue-600 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
+            <SubscriptionPlans showCurrentPlanCard={true} />
           </div>
         </div>
       )}{" "}
