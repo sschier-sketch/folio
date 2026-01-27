@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Crown, CreditCard, Loader2, Check } from "lucide-react";
+import { Crown, CreditCard, Loader2, Check, ArrowDownCircle, AlertTriangle } from "lucide-react";
 import { StripeProduct } from "../../stripe-config";
 import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -7,14 +7,17 @@ import { useLanguage } from "../../contexts/LanguageContext";
 interface SubscriptionCardProps {
   product: StripeProduct;
   isCurrentPlan?: boolean;
+  showDowngradeButton?: boolean;
 }
 
 export function SubscriptionCard({
   product,
   isCurrentPlan = false,
+  showDowngradeButton = false,
 }: SubscriptionCardProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { language } = useLanguage();
 
   const handleSubscribe = async () => {
@@ -101,6 +104,45 @@ export function SubscriptionCard({
     }
   };
 
+  const handleCancelSubscription = async () => {
+    setLoading(true);
+    setError(null);
+    setShowConfirmModal(false);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error("Sie sind nicht angemeldet");
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cancel-subscription`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Fehler beim Kündigen des Abonnements");
+      }
+
+      window.location.reload();
+    } catch (error: any) {
+      console.error("Cancel subscription error:", error);
+      setError(error.message || "Ein Fehler ist beim Kündigen aufgetreten");
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       className={`relative bg-white rounded p-8 ${
@@ -164,45 +206,111 @@ export function SubscriptionCard({
           </div>
         )}
 
-        <button
-          onClick={handleSubscribe}
-          disabled={loading || isCurrentPlan}
-          className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors ${
-            isCurrentPlan
-              ? "bg-green-100 text-green-700 cursor-default"
-              : product.price === 0
-              ? "bg-gray-200 text-gray-600 cursor-not-allowed"
-              : "bg-primary-blue hover:bg-primary-blue text-white"
-          }`}
-        >
-          {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : isCurrentPlan ? (
-            language === "de" ? (
-              "Aktiv"
+        {showDowngradeButton ? (
+          <button
+            onClick={() => setShowConfirmModal(true)}
+            disabled={loading}
+            className="w-full flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors bg-red-500 hover:bg-red-600 text-white"
+          >
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              "Active"
-            )
-          ) : product.price === 0 ? (
-            language === "de" ? (
-              "Kostenlos"
+              <>
+                <ArrowDownCircle className="w-5 h-5 mr-2" />
+                {language === "de" ? "Auf Basic downgraden" : "Downgrade to Basic"}
+              </>
+            )}
+          </button>
+        ) : (
+          <button
+            onClick={handleSubscribe}
+            disabled={loading || isCurrentPlan}
+            className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors ${
+              isCurrentPlan
+                ? "bg-green-100 text-green-700 cursor-default"
+                : product.price === 0
+                ? "bg-gray-200 text-gray-600 cursor-not-allowed"
+                : "bg-primary-blue hover:bg-primary-blue text-white"
+            }`}
+          >
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : isCurrentPlan ? (
+              language === "de" ? (
+                "Aktiv"
+              ) : (
+                "Active"
+              )
+            ) : product.price === 0 ? (
+              language === "de" ? (
+                "Kostenlos"
+              ) : (
+                "Free"
+              )
             ) : (
-              "Free"
-            )
-          ) : (
-            <>
-              <CreditCard className="w-5 h-5 mr-2" />
-              {product.mode === "subscription"
-                ? language === "de"
-                  ? "Abonnieren"
-                  : "Subscribe"
-                : language === "de"
-                  ? "Kaufen"
-                  : "Purchase"}
-            </>
-          )}
-        </button>
+              <>
+                <CreditCard className="w-5 h-5 mr-2" />
+                {product.mode === "subscription"
+                  ? language === "de"
+                    ? "Abonnieren"
+                    : "Subscribe"
+                  : language === "de"
+                    ? "Kaufen"
+                    : "Purchase"}
+              </>
+            )}
+          </button>
+        )}
       </div>
+
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-dark mb-2">
+                  {language === "de" ? "Abo kündigen?" : "Cancel subscription?"}
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  {language === "de"
+                    ? "Möchten Sie Ihr Pro-Abo wirklich kündigen? Das Abo läuft zum Ende der aktuellen Abrechnungsperiode aus und Ihr Account wird dann automatisch auf Basic zurückgestuft."
+                    : "Are you sure you want to cancel your Pro subscription? The subscription will expire at the end of the current billing period and your account will be automatically downgraded to Basic."}
+                </p>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                disabled={loading}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              >
+                {language === "de" ? "Abbrechen" : "Cancel"}
+              </button>
+              <button
+                onClick={handleCancelSubscription}
+                disabled={loading}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center justify-center"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  language === "de" ? "Ja, kündigen" : "Yes, cancel"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
