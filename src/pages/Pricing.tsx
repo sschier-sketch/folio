@@ -111,7 +111,7 @@ export default function Pricing() {
                 </ul>
 
                 <button
-                  onClick={() => navigate("/subscription")}
+                  onClick={() => navigate("/dashboard?view=settings-billing")}
                   className={`w-full py-3 rounded-lg font-semibold transition-all ${
                     plan.popular
                       ? "bg-dark text-white hover:bg-gray-800"

@@ -452,7 +452,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         <p className="text-gray-400">{t("dashboard.welcome")}</p>
       </div>
 
-      <TrialBanner />
+      <TrialBanner
+        onUpgradeClick={() => onChangeView?.('settings-billing')}
+      />
 
       <div className="mb-8" key={profileRefreshTrigger}>
         <ProfileCompletionCard

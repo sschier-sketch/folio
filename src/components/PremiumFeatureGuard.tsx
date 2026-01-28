@@ -47,7 +47,7 @@ export function PremiumFeatureGuard({
             </div>{" "}
             <p className="text-sm text-gray-400 mb-3">{featureName}</p>{" "}
             <button
-              onClick={() => navigate("/subscription")}
+              onClick={() => navigate("/dashboard?view=settings-billing")}
               className="w-full px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-blue text-white text-sm font-semibold rounded-full hover:from-primary-blue hover:to-primary-blue transition-all flex items-center justify-center gap-2"
             >
               {" "}
@@ -103,7 +103,7 @@ export function PremiumFeatureGuard({
         </ul>{" "}
       </div>{" "}
       <button
-        onClick={() => navigate("/subscription")}
+        onClick={() => navigate("/dashboard?view=settings-billing")}
         className="px-8 py-3 bg-gradient-to-r from-primary-blue to-primary-blue text-white font-semibold rounded-full hover:from-primary-blue hover:to-primary-blue transition-all hover:inline-flex items-center gap-2"
       >
         {" "}

@@ -84,6 +84,15 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    if (view && ['home', 'properties', 'tenants', 'mieterportal', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'referral'].includes(view)) {
+      setCurrentView(view as View);
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, []);
+
   const handleNavigateToTenant = (tenantId: string) => {
     setSelectedTenantId(tenantId);
     setCurrentView("tenants");

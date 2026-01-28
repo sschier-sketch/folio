@@ -89,7 +89,7 @@ export function PremiumUpgradePrompt({
       </div>
 
       <button
-        onClick={() => navigate("/subscription")}
+        onClick={() => navigate("/dashboard?view=settings-billing")}
         className="px-8 py-3 bg-primary-blue text-white font-semibold rounded-full hover:shadow-lg transition-all inline-flex items-center gap-2"
       >
         <Sparkles className="w-5 h-5" />

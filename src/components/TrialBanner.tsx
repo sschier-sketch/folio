@@ -1,16 +1,18 @@
 import { Sparkles, Clock, ArrowRight, X } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTrialStatus } from '../hooks/useTrialStatus';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
 
-export default function TrialBanner() {
+interface TrialBannerProps {
+  onUpgradeClick?: () => void;
+}
+
+export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
   const { user } = useAuth();
   const { billingInfo } = useSubscription();
   const trialStatus = useTrialStatus(user?.id);
   const [isDismissed, setIsDismissed] = useState(false);
-  const navigate = useNavigate();
 
   if (!user || trialStatus.isLoading || isDismissed) {
     return null;
@@ -55,7 +57,7 @@ export default function TrialBanner() {
             </p>
 
             <button
-              onClick={() => navigate('/subscription')}
+              onClick={() => onUpgradeClick?.()}
               className="inline-flex items-center gap-2 px-4 py-2 bg-white text-emerald-600 rounded-lg font-semibold hover:bg-white/90 transition-colors text-sm"
             >
               Jetzt auf Pro upgraden
@@ -91,7 +93,7 @@ export default function TrialBanner() {
             </p>
 
             <button
-              onClick={() => navigate('/subscription')}
+              onClick={() => onUpgradeClick?.()}
               className="inline-flex items-center gap-2 px-4 py-2 bg-white text-amber-600 rounded-lg font-semibold hover:bg-white/90 transition-colors text-sm"
             >
               Jetzt auf Pro upgraden
