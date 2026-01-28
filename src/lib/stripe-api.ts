@@ -23,9 +23,10 @@ export async function createCheckoutSession(params: CheckoutSessionParams): Prom
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
-          priceId: params.priceId,
-          successUrl: params.successUrl || `${window.location.origin}/subscription/success`,
-          cancelUrl: params.cancelUrl || `${window.location.origin}/subscription/cancelled`,
+          price_id: params.priceId,
+          success_url: params.successUrl || `${window.location.origin}/subscription/success`,
+          cancel_url: params.cancelUrl || `${window.location.origin}/subscription/cancelled`,
+          mode: 'subscription',
         }),
       }
     );
