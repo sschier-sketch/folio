@@ -7,7 +7,7 @@ import { useSubscription } from '../hooks/useSubscription';
 
 export default function TrialBanner() {
   const { user } = useAuth();
-  const { isPro } = useSubscription();
+  const { billingInfo } = useSubscription();
   const trialStatus = useTrialStatus(user?.id);
   const [isDismissed, setIsDismissed] = useState(false);
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function TrialBanner() {
     return null;
   }
 
-  if (isPro) {
+  if (billingInfo?.subscription_plan === 'pro' && billingInfo?.subscription_status === 'active') {
     return null;
   }
 
