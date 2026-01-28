@@ -8,9 +8,9 @@ export interface CheckoutSessionParams {
 
 export async function createCheckoutSession(params: CheckoutSessionParams): Promise<string> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session) {
       throw new Error('User not authenticated');
     }
 
@@ -20,7 +20,7 @@ export async function createCheckoutSession(params: CheckoutSessionParams): Prom
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           price_id: params.priceId,
@@ -57,9 +57,9 @@ export async function createCheckoutSession(params: CheckoutSessionParams): Prom
 
 export async function createPortalSession(): Promise<string> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session) {
       throw new Error('User not authenticated');
     }
 
@@ -78,7 +78,7 @@ export async function createPortalSession(): Promise<string> {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           returnUrl: `${window.location.origin}/subscription`,
@@ -101,9 +101,9 @@ export async function createPortalSession(): Promise<string> {
 
 export async function changeSubscription(newPriceId: string): Promise<void> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session) {
       throw new Error('User not authenticated');
     }
 
@@ -113,7 +113,7 @@ export async function changeSubscription(newPriceId: string): Promise<void> {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           priceId: newPriceId,
