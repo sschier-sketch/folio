@@ -45,8 +45,8 @@ Deno.serve(async (req: Request) => {
 
     const user = await userResponse.json();
 
-    const subscriptionResponse = await fetch(
-      `${supabaseUrl}/rest/v1/stripe_user_subscriptions?select=customer_id&limit=1`,
+    const customerResponse = await fetch(
+      `${supabaseUrl}/rest/v1/stripe_customers?select=customer_id&user_id=eq.${user.id}&limit=1`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -56,17 +56,17 @@ Deno.serve(async (req: Request) => {
       }
     );
 
-    if (!subscriptionResponse.ok) {
-      throw new Error("Failed to get subscription");
+    if (!customerResponse.ok) {
+      throw new Error("Failed to get customer");
     }
 
-    const subscriptions = await subscriptionResponse.json();
+    const customers = await customerResponse.json();
 
-    if (!subscriptions || subscriptions.length === 0) {
-      throw new Error("No subscription found");
+    if (!customers || customers.length === 0) {
+      throw new Error("No Stripe customer found. Please upgrade to Pro first.");
     }
 
-    const customerId = subscriptions[0].customer_id;
+    const customerId = customers[0].customer_id;
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,

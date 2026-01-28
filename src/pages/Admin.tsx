@@ -157,11 +157,32 @@ export function Admin() {
     if (!confirm("Möchten Sie das Abonnement dieses Nutzers wirklich beenden?"))
       return;
     try {
-      const { error } = await supabase
+      const { data: customer } = await supabase
+        .from("stripe_customers")
+        .select("customer_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (customer) {
+        const { error: subError } = await supabase
+          .from("stripe_subscriptions")
+          .update({
+            status: "canceled",
+            cancel_at_period_end: true,
+            updated_at: new Date().toISOString()
+          })
+          .eq("customer_id", customer.customer_id);
+
+        if (subError) throw subError;
+      }
+
+      const { error: billingError } = await supabase
         .from("billing_info")
         .update({ subscription_plan: "free", subscription_status: "canceled" })
         .eq("user_id", userId);
-      if (error) throw error;
+
+      if (billingError) console.error("Billing info update error:", billingError);
+
       await supabase
         .from("admin_activity_log")
         .insert({
