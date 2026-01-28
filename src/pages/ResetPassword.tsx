@@ -19,18 +19,37 @@ export function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkPasswordRecoverySession();
+    const hash = window.location.hash;
+
+    if (hash.includes('type=recovery') || hash.includes('access_token')) {
+      setViewMode("reset");
+
+      setTimeout(() => {
+        checkPasswordRecoverySession();
+      }, 1000);
+    }
   }, []);
 
   const checkPasswordRecoverySession = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
-      if (session && window.location.hash.includes('type=recovery')) {
+      if (session) {
         setViewMode("reset");
+      } else if (window.location.hash.includes('type=recovery')) {
+        setMessage({
+          type: "error",
+          text: "Der Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen Link an.",
+        });
+        setViewMode("request");
       }
     } catch (error) {
       console.error("Error checking session:", error);
+      setMessage({
+        type: "error",
+        text: "Fehler beim Überprüfen der Session. Bitte versuchen Sie es erneut.",
+      });
+      setViewMode("request");
     }
   };
 
