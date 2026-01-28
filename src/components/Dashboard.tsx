@@ -403,20 +403,20 @@ export default function Dashboard() {
                 );
               })}{" "}
             </nav>{" "}
-            <div className={`bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`}>
+            <div className={`rounded-lg p-4 relative border border-blue-200 ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`} style={{ backgroundColor: '#EEF4FF' }}>
               {" "}
               <div className="absolute top-2 right-2">
                 <Badge variant="pro" size="sm">Pro</Badge>
               </div>
               <div className="flex items-center gap-3 mb-3">
                 {" "}
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                   {" "}
-                  <KeyRound className="w-5 h-5" />{" "}
+                  <KeyRound className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />{" "}
                 </div>{" "}
-                <h3 className="font-semibold">Mieterportal</h3>{" "}
+                <h3 className="font-semibold text-gray-900">Mieterportal</h3>{" "}
               </div>{" "}
-              <p className="text-blue-50 text-sm mb-3">
+              <p className="text-gray-600 text-sm mb-3">
                 Kommunizieren Sie mit Ihren Mietern
               </p>{" "}
               <div
@@ -425,7 +425,7 @@ export default function Dashboard() {
                   setCurrentView("mieterportal");
                   setShowMobileMenu(false);
                 }}
-                className="flex items-center gap-2 text-sm font-medium cursor-pointer"
+                className="flex items-center gap-2 text-sm font-medium cursor-pointer text-blue-600"
               >
                 <span>Zur Verwaltung</span>
                 <ChevronDown className="w-4 h-4 -rotate-90" />
@@ -436,22 +436,23 @@ export default function Dashboard() {
                 setCurrentView("referral");
                 setShowMobileMenu(false);
               }}
-              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 text-white cursor-pointer hover:transition-shadow"
+              className="rounded-lg p-4 border border-blue-200 cursor-pointer hover:shadow-sm transition-shadow"
+              style={{ backgroundColor: '#EEF4FF' }}
             >
               {" "}
               <div className="flex items-center gap-3 mb-3">
                 {" "}
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                   {" "}
-                  <Gift className="w-5 h-5" />{" "}
+                  <Gift className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />{" "}
                 </div>{" "}
-                <h3 className="font-semibold">Empfehlungen</h3>{" "}
+                <h3 className="font-semibold text-gray-900">Empfehlungen</h3>{" "}
               </div>{" "}
-              <p className="text-emerald-100 text-sm mb-3">
+              <p className="text-gray-600 text-sm mb-3">
                 {" "}
                 {t("referral.description")}{" "}
               </p>{" "}
-              <div className="flex items-center gap-2 text-sm font-medium">
+              <div className="flex items-center gap-2 text-sm font-medium text-blue-600">
                 {" "}
                 <span>{t("referral.learn_more")}</span>{" "}
                 <ChevronDown className="w-4 h-4 -rotate-90" />{" "}
@@ -500,20 +501,20 @@ export default function Dashboard() {
                 );
               })}{" "}
             </nav>{" "}
-            <div className={`bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`}>
+            <div className={`rounded-lg p-4 relative border border-blue-200 ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`} style={{ backgroundColor: '#EEF4FF' }}>
               {" "}
               <div className="absolute top-2 right-2">
                 <Badge variant="pro" size="sm">Pro</Badge>
               </div>
               <div className="flex items-center gap-3 mb-3">
                 {" "}
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                   {" "}
-                  <KeyRound className="w-5 h-5" />{" "}
+                  <KeyRound className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />{" "}
                 </div>{" "}
-                <h3 className="font-semibold">Mieterportal</h3>{" "}
+                <h3 className="font-semibold text-gray-900">Mieterportal</h3>{" "}
               </div>{" "}
-              <p className="text-blue-50 text-sm mb-3">
+              <p className="text-gray-600 text-sm mb-3">
                 Kommunizieren Sie mit Ihren Mietern
               </p>{" "}
               <div
@@ -521,7 +522,7 @@ export default function Dashboard() {
                   if (!isPremium) return;
                   setCurrentView("mieterportal");
                 }}
-                className="flex items-center gap-2 text-sm font-medium cursor-pointer"
+                className="flex items-center gap-2 text-sm font-medium cursor-pointer text-blue-600"
               >
                 <span>Zur Verwaltung</span>
                 <ChevronDown className="w-4 h-4 -rotate-90" />
@@ -529,22 +530,23 @@ export default function Dashboard() {
             </div>{" "}
             <div
               onClick={() => setCurrentView("referral")}
-              className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 text-white cursor-pointer hover:transition-shadow"
+              className="rounded-lg p-4 border border-blue-200 cursor-pointer hover:shadow-sm transition-shadow"
+              style={{ backgroundColor: '#EEF4FF' }}
             >
               {" "}
               <div className="flex items-center gap-3 mb-3">
                 {" "}
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                   {" "}
-                  <Gift className="w-5 h-5" />{" "}
+                  <Gift className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />{" "}
                 </div>{" "}
-                <h3 className="font-semibold">Empfehlungen</h3>{" "}
+                <h3 className="font-semibold text-gray-900">Empfehlungen</h3>{" "}
               </div>{" "}
-              <p className="text-emerald-100 text-sm mb-3">
+              <p className="text-gray-600 text-sm mb-3">
                 {" "}
                 {t("referral.description")}{" "}
               </p>{" "}
-              <div className="flex items-center gap-2 text-sm font-medium">
+              <div className="flex items-center gap-2 text-sm font-medium text-blue-600">
                 {" "}
                 <span>{t("referral.learn_more")}</span>{" "}
                 <ChevronDown className="w-4 h-4 -rotate-90" />{" "}

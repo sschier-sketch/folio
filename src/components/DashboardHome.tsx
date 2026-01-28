@@ -513,7 +513,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             {stats.tenantsCount}
           </div>{" "}
           <div className="text-sm text-gray-400 mb-2">
-            {t("dashboard.tenants.active")}
+            {stats.tenantsCount === 1 ? 'Aktiver Mieter' : t("dashboard.tenants.active")}
           </div>
           {stats.tenantsMovingOutSoon > 0 && (
             <div className="pt-3 border-t border-gray-100">
@@ -632,7 +632,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               {" "}
               <div className="flex justify-between items-center mb-1">
                 {" "}
-                <span className="text-sm text-gray-400">Jährliche Ausgaben</span>{" "}
+                <span className="text-sm text-gray-400 leading-tight">Jährliche<br/>Ausgaben</span>{" "}
                 <span className="text-lg font-semibold text-dark">
                   {" "}
                   {formatCurrency(stats.totalMonthlyExpenses * 12)}{" "}
@@ -651,8 +651,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               {" "}
               <div className="flex justify-between items-center mb-1">
                 {" "}
-                <span className="text-sm text-gray-400 font-medium">
-                  Jährlicher Überschuss
+                <span className="text-sm text-gray-400 font-medium leading-tight">
+                  Jährlicher<br/>Überschuss
                 </span>{" "}
                 <span
                   className={`text-lg font-bold ${stats.monthlySurplus >= 0 ? "text-emerald-600" : "text-red-600"}`}
@@ -684,7 +684,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             <button
               onClick={() => onChangeView?.('properties')}
               style={{ backgroundColor: "#faf8f8" }}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl transition-all group"
             >
               {" "}
               <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
@@ -692,13 +692,13 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
                 <Building2 className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />{" "}
               </div>{" "}
               <span className="text-sm font-semibold text-dark text-center">
-                Neue Immobilie anlegen
+                Neue Immobilie
               </span>{" "}
             </button>{" "}
             <button
               onClick={() => onChangeView?.('tenants')}
               style={{ backgroundColor: "#faf8f8" }}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl transition-all group"
             >
               {" "}
               <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
@@ -712,7 +712,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             <button
               onClick={() => onChangeView?.('payments')}
               style={{ backgroundColor: "#faf8f8" }}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl transition-all group"
             >
               {" "}
               <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
@@ -726,7 +726,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             <button
               onClick={() => onChangeView?.('financial')}
               style={{ backgroundColor: "#faf8f8" }}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl hover:shadow-md transition-all group"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl transition-all group"
             >
               {" "}
               <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
