@@ -105,20 +105,15 @@ export default function Footer() {
               {" "}
               <li>
                 {" "}
-                <a
-                  href="https://kmu-suite.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors block"
-                >
+                <div className="text-sm text-gray-400 block">
                   {" "}
                   <div className="font-medium">
                     {t("footer.kmu_suite")}
                   </div>{" "}
                   <div className="text-xs text-gray-300">
-                    {t("footer.kmu_description")}
+                    Coming soon
                   </div>{" "}
-                </a>{" "}
+                </div>{" "}
               </li>{" "}
             </ul>{" "}
           </div>{" "}
