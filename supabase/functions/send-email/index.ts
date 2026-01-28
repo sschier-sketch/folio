@@ -16,6 +16,10 @@ interface EmailRequest {
   variables?: Record<string, string>;
   language?: 'de' | 'en';
   userId?: string;
+  mailType?: string;
+  category?: 'transactional' | 'informational';
+  idempotencyKey?: string;
+  metadata?: Record<string, any>;
 }
 
 function replaceVariables(content: string, variables: Record<string, string>): string {
@@ -35,25 +39,69 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  let logId: string | undefined;
+
   try {
-    const { to, subject, html, text, templateKey, variables, language, userId }: EmailRequest = await req.json();
+    const {
+      to,
+      subject,
+      html,
+      text,
+      templateKey,
+      variables,
+      language,
+      userId,
+      mailType,
+      category,
+      idempotencyKey,
+      metadata
+    }: EmailRequest = await req.json();
 
     let finalSubject = subject || '';
     let finalHtml = html || '';
     let finalText = text || '';
+    let finalMailType = mailType || templateKey || 'generic';
+    let finalCategory = category || 'transactional';
 
+    // Check idempotency
+    if (idempotencyKey) {
+      const { data: existingLog } = await supabase
+        .from('email_logs')
+        .select('id, status')
+        .eq('idempotency_key', idempotencyKey)
+        .maybeSingle();
+
+      if (existingLog && (existingLog.status === 'sent' || existingLog.status === 'queued')) {
+        console.log('Email already sent/queued with idempotency key:', idempotencyKey);
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: 'Email already sent (idempotency)',
+            skipped: true,
+            logId: existingLog.id,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+    }
+
+    // Load template if specified
     if (templateKey) {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
       let userLanguage = language || 'de';
 
       if (userId && !language) {
         const { data: userData } = await supabase
           .from('admin_users')
           .select('preferred_language')
-          .eq('id', userId)
+          .eq('user_id', userId)
           .maybeSingle();
 
         if (userData?.preferred_language) {
@@ -69,15 +117,7 @@ Deno.serve(async (req: Request) => {
         .maybeSingle();
 
       if (templateError || !template) {
-        return new Response(
-          JSON.stringify({
-            error: `Template not found: ${templateKey}`
-          }),
-          {
-            status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+        throw new Error(`Template not found: ${templateKey}`);
       }
 
       finalSubject = template.subject;
@@ -92,37 +132,62 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!to || !finalSubject || !finalHtml) {
-      return new Response(
-        JSON.stringify({
-          error: "Missing required fields: to, and either (subject + html) or templateKey"
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      throw new Error("Missing required fields: to, and either (subject + html) or templateKey");
     }
+
+    // Create email log entry (status: queued)
+    const { data: logEntry, error: logError } = await supabase
+      .from('email_logs')
+      .insert({
+        mail_type: finalMailType,
+        category: finalCategory,
+        to_email: to,
+        user_id: userId || null,
+        subject: finalSubject,
+        provider: 'resend',
+        status: 'queued',
+        idempotency_key: idempotencyKey || null,
+        metadata: metadata || {},
+      })
+      .select('id')
+      .single();
+
+    if (logError) {
+      console.error('Failed to create email log:', logError);
+      throw new Error('Failed to create email log');
+    }
+
+    logId = logEntry.id;
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
     if (!RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured');
-      return new Response(
-        JSON.stringify({
-          error: 'E-Mail-Versand nicht konfiguriert',
-          details: 'RESEND_API_KEY fehlt. Bitte konfigurieren Sie den API-Key in den Supabase Edge Function Secrets.',
-          instructions: 'Siehe EMAIL_SETUP.md für Anweisungen zur Konfiguration.'
-        }),
-        {
-          status: 503,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      await supabase
+        .from('email_logs')
+        .update({
+          status: 'failed',
+          error_code: 'CONFIG_ERROR',
+          error_message: 'RESEND_API_KEY not configured',
+        })
+        .eq('id', logId);
+
+      throw new Error('RESEND_API_KEY not configured');
     }
 
     const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
+    const NODE_ENV = Deno.env.get('NODE_ENV') || 'production';
 
-    console.log('Sending email to:', to, 'Subject:', finalSubject, 'From:', EMAIL_FROM);
+    // DEV Mode: Log email preview
+    if (NODE_ENV === 'development') {
+      console.log('=== EMAIL PREVIEW (DEV MODE) ===');
+      console.log('To:', to);
+      console.log('Subject:', finalSubject);
+      console.log('Mail Type:', finalMailType);
+      console.log('Idempotency Key:', idempotencyKey || 'none');
+      console.log('===============================');
+    }
+
+    console.log('Sending email via Resend:', { to, subject: finalSubject, from: EMAIL_FROM });
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -142,30 +207,31 @@ Deno.serve(async (req: Request) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Resend API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        data: data
-      });
-      return new Response(
-        JSON.stringify({
-          error: 'Fehler beim E-Mail-Versand',
-          details: data.message || 'Failed to send email via Resend',
-          resendStatus: response.status,
-          resendData: data
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      console.error('Resend API error:', data);
+
+      await supabase
+        .from('email_logs')
+        .update({
+          status: 'failed',
+          error_code: `RESEND_${response.status}`,
+          error_message: data.message || 'Resend API error',
+        })
+        .eq('id', logId);
+
+      throw new Error(data.message || 'Failed to send email via Resend');
     }
 
-    console.log('Email sent successfully via Resend:', {
-      id: data.id,
-      to,
-      subject: finalSubject,
-    });
+    // Update log: success
+    await supabase
+      .from('email_logs')
+      .update({
+        status: 'sent',
+        provider_message_id: data.id,
+        sent_at: new Date().toISOString(),
+      })
+      .eq('id', logId);
+
+    console.log('Email sent successfully:', { id: data.id, to, subject: finalSubject });
 
     return new Response(
       JSON.stringify({
@@ -173,6 +239,7 @@ Deno.serve(async (req: Request) => {
         message: 'Email sent successfully',
         recipient: to,
         emailId: data.id,
+        logId: logId,
       }),
       {
         status: 200,
@@ -181,7 +248,18 @@ Deno.serve(async (req: Request) => {
     );
   } catch (error) {
     console.error('Error sending email:', error);
-    
+
+    // Update log if we created one
+    if (logId) {
+      await supabase
+        .from('email_logs')
+        .update({
+          status: 'failed',
+          error_message: error instanceof Error ? error.message : 'Unknown error',
+        })
+        .eq('id', logId);
+    }
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Failed to send email'

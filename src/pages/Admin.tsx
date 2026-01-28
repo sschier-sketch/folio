@@ -34,6 +34,7 @@ import AdminSeoView from "../components/AdminSeoView";
 import AdminProFeaturesView from "../components/AdminProFeaturesView";
 import AdminAffiliatesView from "../components/AdminAffiliatesView";
 import AdminPayoutsView from "../components/AdminPayoutsView";
+import AdminEmailLogsView from "../components/AdminEmailLogsView";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "../components/common/BaseTable";
 interface UserData {
   id: string;
@@ -61,7 +62,7 @@ export function Admin() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates" | "feedback" | "system_settings" | "seo" | "affiliates" | "payouts"
+    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates" | "feedback" | "system_settings" | "seo" | "affiliates" | "payouts" | "pro_features" | "email_logs"
   >("overview");
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -361,6 +362,13 @@ export function Admin() {
           >
             {" "}
             <Mail className="w-4 h-4 inline mr-2" /> E-Mail Templates{" "}
+          </button>{" "}
+          <button
+            onClick={() => setActiveTab("email_logs")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "email_logs" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
+          >
+            {" "}
+            <Activity className="w-4 h-4 inline mr-2" /> E-Mail Logs{" "}
           </button>{" "}
           <button
             onClick={() => setActiveTab("document_templates")}
@@ -667,6 +675,7 @@ export function Admin() {
         {activeTab === "affiliates" && <AdminAffiliatesView />}{" "}
         {activeTab === "payouts" && <AdminPayoutsView />}{" "}
         {activeTab === "pro_features" && <AdminProFeaturesView />}{" "}
+        {activeTab === "email_logs" && <AdminEmailLogsView />}{" "}
       </div>{" "}
     </div>
   );
