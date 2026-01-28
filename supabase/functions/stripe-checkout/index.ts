@@ -186,6 +186,7 @@ Deno.serve(async (req) => {
           .from('stripe_subscriptions')
           .select('status')
           .eq('customer_id', customerId)
+          .is('deleted_at', null)
           .maybeSingle();
 
         if (getSubscriptionError) {
@@ -194,7 +195,27 @@ Deno.serve(async (req) => {
           return corsResponse({ error: 'Failed to fetch subscription information' }, 500);
         }
 
-        if (!subscription) {
+        // If there's a canceled subscription, mark it as deleted to allow a new one
+        if (subscription && subscription.status === 'canceled') {
+          console.log(`Marking canceled subscription as deleted for customer ${customerId}`);
+          await supabase
+            .from('stripe_subscriptions')
+            .update({ deleted_at: new Date().toISOString() })
+            .eq('customer_id', customerId)
+            .eq('status', 'canceled');
+
+          // Create a new subscription record
+          const { error: createSubscriptionError } = await supabase.from('stripe_subscriptions').insert({
+            customer_id: customerId,
+            status: 'not_started',
+          });
+
+          if (createSubscriptionError) {
+            console.error('Failed to create subscription record for existing customer', createSubscriptionError);
+
+            return corsResponse({ error: 'Failed to create subscription record for existing customer' }, 500);
+          }
+        } else if (!subscription) {
           // Create subscription record for existing customer if missing
           const { error: createSubscriptionError } = await supabase.from('stripe_subscriptions').insert({
             customer_id: customerId,
