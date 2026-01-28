@@ -403,7 +403,7 @@ export default function Dashboard() {
                 );
               })}{" "}
             </nav>{" "}
-            <div className={`rounded-lg p-4 relative border border-blue-200 ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`} style={{ backgroundColor: '#EEF4FF' }}>
+            <div className={`rounded-lg p-4 relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`} style={{ backgroundColor: '#EEF4FF' }}>
               {" "}
               <div className="absolute top-2 right-2">
                 <Badge variant="pro" size="sm">Pro</Badge>
@@ -436,7 +436,7 @@ export default function Dashboard() {
                 setCurrentView("referral");
                 setShowMobileMenu(false);
               }}
-              className="rounded-lg p-4 border border-blue-200 cursor-pointer hover:shadow-sm transition-shadow"
+              className="rounded-lg p-4 cursor-pointer hover:shadow-sm transition-shadow"
               style={{ backgroundColor: '#EEF4FF' }}
             >
               {" "}
@@ -501,7 +501,7 @@ export default function Dashboard() {
                 );
               })}{" "}
             </nav>{" "}
-            <div className={`rounded-lg p-4 relative border border-blue-200 ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`} style={{ backgroundColor: '#EEF4FF' }}>
+            <div className={`rounded-lg p-4 relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`} style={{ backgroundColor: '#EEF4FF' }}>
               {" "}
               <div className="absolute top-2 right-2">
                 <Badge variant="pro" size="sm">Pro</Badge>
@@ -530,7 +530,7 @@ export default function Dashboard() {
             </div>{" "}
             <div
               onClick={() => setCurrentView("referral")}
-              className="rounded-lg p-4 border border-blue-200 cursor-pointer hover:shadow-sm transition-shadow"
+              className="rounded-lg p-4 cursor-pointer hover:shadow-sm transition-shadow"
               style={{ backgroundColor: '#EEF4FF' }}
             >
               {" "}

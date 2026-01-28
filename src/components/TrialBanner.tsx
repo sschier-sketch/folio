@@ -24,46 +24,46 @@ export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
 
   if (trialStatus.hasActiveTrial) {
     return (
-      <div style={{ backgroundColor: '#eef4ff' }} className="px-6 py-4 rounded-lg shadow-sm mb-6 relative border border-blue-200">
-        <button
-          onClick={() => setIsDismissed(true)}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
-          aria-label="Banner schließen"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-            <Sparkles className="w-6 h-6" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
-          </div>
-
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-bold text-gray-900">Gratis-Testphase aktiv</h3>
-              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-                {trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'Tag' : 'Tage'} verbleibend
-              </span>
+      <div style={{ backgroundColor: '#EEF4FF' }} className="rounded-lg p-6 shadow-sm mb-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+              <Sparkles className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
             </div>
-
-            <p className="text-gray-600 text-sm mb-3">
-              Sie haben vollen Zugriff auf alle Pro-Features bis zum{' '}
-              {trialStatus.trialEndsAt?.toLocaleDateString('de-DE', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              })}
-              . Upgraden Sie jetzt, um alle Funktionen dauerhaft zu nutzen.
-            </p>
-
-            <button
-              onClick={() => onUpgradeClick?.()}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
-            >
-              Jetzt auf Pro upgraden
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-lg font-semibold text-gray-900">Gratis-Testphase aktiv</h3>
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+                  {trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'Tag' : 'Tage'} verbleibend
+                </span>
+              </div>
+              <p className="text-sm text-gray-600">
+                Sie haben vollen Zugriff auf alle Pro-Features bis zum{' '}
+                {trialStatus.trialEndsAt?.toLocaleDateString('de-DE', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })}
+                . Upgraden Sie jetzt, um alle Funktionen dauerhaft zu nutzen.
+              </p>
+            </div>
           </div>
+          <button
+            onClick={() => setIsDismissed(true)}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            title="Banner schließen"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => onUpgradeClick?.()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            Jetzt auf Pro upgraden
+          </button>
         </div>
       </div>
     );
