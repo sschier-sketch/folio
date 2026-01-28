@@ -200,7 +200,7 @@ async function syncCustomerFromStripe(customerId: string) {
     }
 
     // Update billing_info based on subscription status
-    const plan = ['active', 'trialing'].includes(subscription.status) ? 'premium' : 'free';
+    const plan = ['active', 'trialing'].includes(subscription.status) ? 'pro' : 'free';
     const status = ['active', 'trialing'].includes(subscription.status) ? 'active' : 'inactive';
     await updateBillingInfo(customerId, plan, status);
 
@@ -216,7 +216,7 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
     // Find user by stripe_customer_id
     const { data: billingData, error: findError } = await supabase
       .from('billing_info')
-      .select('user_id')
+      .select('user_id, subscription_plan, pro_activated_at')
       .eq('stripe_customer_id', customerId)
       .maybeSingle();
 
@@ -230,14 +230,22 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
       return;
     }
 
+    const updateData: any = {
+      subscription_plan: plan,
+      subscription_status: status,
+      updated_at: new Date().toISOString(),
+    };
+
+    // If upgrading to Pro and pro_activated_at is not set, set it now
+    if (plan === 'pro' && status === 'active' && !billingData.pro_activated_at) {
+      updateData.pro_activated_at = new Date().toISOString();
+      console.info(`Setting pro_activated_at for customer ${customerId}`);
+    }
+
     // Update the billing info
     const { error: updateError } = await supabase
       .from('billing_info')
-      .update({
-        subscription_plan: plan,
-        subscription_status: status,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('user_id', billingData.user_id);
 
     if (updateError) {

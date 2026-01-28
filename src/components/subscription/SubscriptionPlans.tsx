@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Check, CreditCard, Info, Loader2 } from 'lucide-react';
+import { Check, CreditCard, Info, Loader2, Clock, Sparkles } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useTrialStatus } from '../../hooks/useTrialStatus';
+import { useAuth } from '../../hooks/useAuth';
 import { PLANS, type BillingInterval, getPlanByStripePriceId, getStripePriceId, calculateYearlySavings } from '../../config/plans';
 import { createCheckoutSession, createPortalSession } from '../../lib/stripe-api';
 import { supabase } from '../../lib/supabase';
@@ -10,7 +12,9 @@ interface SubscriptionPlansProps {
 }
 
 export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPlansProps) {
-  const { subscription, loading: subscriptionLoading } = useSubscription();
+  const { user } = useAuth();
+  const { subscription, loading: subscriptionLoading, isPro } = useSubscription();
+  const trialStatus = useTrialStatus(user?.id);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('month');
   const [loading, setLoading] = useState<string | null>(null);
   const [showDowngradeModal, setShowDowngradeModal] = useState(false);
@@ -191,7 +195,74 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             </div>
           )}
 
-          {currentPlanId === 'basic' && (
+          {currentPlanId === 'basic' && trialStatus.hasActiveTrial && (
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 rounded-xl p-6 mb-8">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-emerald-900">Gratis-Testphase aktiv</h3>
+                    <span className="px-2 py-0.5 bg-emerald-200 rounded-full text-xs font-semibold text-emerald-800">
+                      {trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'Tag' : 'Tage'} verbleibend
+                    </span>
+                  </div>
+                  <p className="text-emerald-800 text-sm mb-3">
+                    Sie haben vollen Zugriff auf alle Pro-Features bis zum{' '}
+                    <strong>
+                      {trialStatus.trialEndsAt?.toLocaleDateString('de-DE', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
+                    </strong>
+                    . Upgraden Sie jetzt, um alle Funktionen nach Ende der Testphase weiter zu nutzen.
+                  </p>
+                  <div className="flex flex-col gap-2 text-sm text-emerald-700">
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4" />
+                      <span>Unbegrenzte Objekte und Mieter</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4" />
+                      <span>Ticketsystem und Mieterkommunikation</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4" />
+                      <span>Finanzanalysen und Renditeberechnung</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentPlanId === 'basic' && trialStatus.isTrialExpired && (
+            <div className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl p-6 mb-8">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-amber-900 mb-1">Gratis-Testphase beendet</h3>
+                  <p className="text-amber-800 text-sm">
+                    Ihre Gratis-Testphase ist am{' '}
+                    <strong>
+                      {trialStatus.trialEndsAt?.toLocaleDateString('de-DE', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
+                    </strong>{' '}
+                    abgelaufen. Upgrade auf Pro, um alle Funktionen weiter zu nutzen.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentPlanId === 'basic' && !trialStatus.hasActiveTrial && !trialStatus.isTrialExpired && (
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">

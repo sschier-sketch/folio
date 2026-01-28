@@ -18,6 +18,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import ProfileCompletionCard from "./profile/ProfileCompletionCard";
 import ProfileWizard from "./profile/ProfileWizard";
+import TrialBanner from "./TrialBanner";
 
 interface Stats {
   propertiesCount: number;
@@ -450,6 +451,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         </h1>
         <p className="text-gray-400">{t("dashboard.welcome")}</p>
       </div>
+
+      <TrialBanner />
 
       <div className="mb-8" key={profileRefreshTrigger}>
         <ProfileCompletionCard

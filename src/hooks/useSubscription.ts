@@ -15,14 +15,25 @@ export interface Subscription {
   payment_method_last4: string | null;
 }
 
+export interface BillingInfo {
+  subscription_plan: string;
+  subscription_status: string;
+  trial_started_at: string | null;
+  trial_ends_at: string | null;
+  stripe_customer_id: string | null;
+  subscription_ends_at: string | null;
+}
+
 export function useSubscription() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       setSubscription(null);
+      setBillingInfo(null);
       setLoading(false);
       return;
     }
@@ -31,8 +42,12 @@ export function useSubscription() {
       try {
         const [stripeResult, billingResult] = await Promise.all([
           supabase.from("stripe_user_subscriptions").select("*").maybeSingle(),
-          supabase.from("billing_info").select("*").eq("user_id", user.id).maybeSingle(),
+          supabase.from("billing_info").select("subscription_plan, subscription_status, trial_started_at, trial_ends_at, stripe_customer_id, subscription_ends_at").eq("user_id", user.id).maybeSingle(),
         ]);
+
+        if (billingResult.data) {
+          setBillingInfo(billingResult.data);
+        }
 
         if (billingResult.data && billingResult.data.subscription_plan === "pro" && billingResult.data.subscription_status === "active") {
           setSubscription({
@@ -57,12 +72,33 @@ export function useSubscription() {
       } catch (error) {
         console.error("Error fetching subscription:", error);
         setSubscription(null);
+        setBillingInfo(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchSubscription();
+
+    const channel = supabase
+      .channel('billing_subscription_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'billing_info',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchSubscription();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const getSubscriptionPlan = () => {
@@ -76,25 +112,32 @@ export function useSubscription() {
     return subscription?.subscription_status === "active";
   };
 
-  const hasPro = () => {
-    if (!subscription?.subscription_status || subscription.subscription_status !== "active") {
-      return false;
+  const hasProAccess = () => {
+    if (!billingInfo) return false;
+
+    if (billingInfo.subscription_plan === "pro" && billingInfo.subscription_status === "active") {
+      return true;
     }
-    if (!subscription.price_id) {
-      return false;
+
+    if (billingInfo.trial_ends_at) {
+      const trialEndsAt = new Date(billingInfo.trial_ends_at);
+      const now = new Date();
+      if (trialEndsAt > now) {
+        return true;
+      }
     }
-    if (subscription.price_id === "free") {
-      return false;
-    }
-    return true;
+
+    return false;
   };
 
   return {
     subscription,
+    billingInfo,
     loading,
     getSubscriptionPlan,
     isActive,
-    isPro: hasPro(),
-    isPremium: hasPro(),
+    isPro: hasProAccess(),
+    isPremium: hasProAccess(),
+    hasProAccess: hasProAccess(),
   };
 }
