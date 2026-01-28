@@ -195,27 +195,7 @@ Deno.serve(async (req) => {
           return corsResponse({ error: 'Failed to fetch subscription information' }, 500);
         }
 
-        // If there's a canceled subscription, mark it as deleted to allow a new one
-        if (subscription && subscription.status === 'canceled') {
-          console.log(`Marking canceled subscription as deleted for customer ${customerId}`);
-          await supabase
-            .from('stripe_subscriptions')
-            .update({ deleted_at: new Date().toISOString() })
-            .eq('customer_id', customerId)
-            .eq('status', 'canceled');
-
-          // Create a new subscription record
-          const { error: createSubscriptionError } = await supabase.from('stripe_subscriptions').insert({
-            customer_id: customerId,
-            status: 'not_started',
-          });
-
-          if (createSubscriptionError) {
-            console.error('Failed to create subscription record for existing customer', createSubscriptionError);
-
-            return corsResponse({ error: 'Failed to create subscription record for existing customer' }, 500);
-          }
-        } else if (!subscription) {
+        if (!subscription) {
           // Create subscription record for existing customer if missing
           const { error: createSubscriptionError } = await supabase.from('stripe_subscriptions').insert({
             customer_id: customerId,
@@ -227,6 +207,31 @@ Deno.serve(async (req) => {
 
             return corsResponse({ error: 'Failed to create subscription record for existing customer' }, 500);
           }
+
+          console.log(`Created subscription record for existing customer ${customerId}`);
+        } else if (subscription.status === 'canceled') {
+          // If subscription was canceled, reset it to not_started to allow resubscription
+          console.log(`Resetting canceled subscription for customer ${customerId}`);
+          const { error: updateSubscriptionError } = await supabase
+            .from('stripe_subscriptions')
+            .update({
+              status: 'not_started',
+              subscription_id: null,
+              price_id: null,
+              current_period_start: null,
+              current_period_end: null,
+              cancel_at_period_end: false,
+              updated_at: new Date().toISOString()
+            })
+            .eq('customer_id', customerId);
+
+          if (updateSubscriptionError) {
+            console.error('Failed to reset canceled subscription', updateSubscriptionError);
+            return corsResponse({ error: 'Failed to reset subscription' }, 500);
+          }
+        } else {
+          // Subscription exists and is active/pending - this is fine, continue to checkout
+          console.log(`Subscription already exists for customer ${customerId} with status ${subscription.status}`);
         }
       }
     }
