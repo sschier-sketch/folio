@@ -173,7 +173,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             )}
           </div>
 
-          {subscription?.subscription_status && !isActive && (
+          {subscription?.subscription_status && !isActive && currentPlanId === 'pro' && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8 flex items-start gap-3">
               <Info className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
               <div>
@@ -187,6 +187,55 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                 >
                   Zahlungsmethode aktualisieren
                 </button>
+              </div>
+            </div>
+          )}
+
+          {currentPlanId === 'basic' && (
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    Schalten Sie Ihr volles Potenzial frei!
+                  </h3>
+                  <p className="text-sm text-gray-700 mb-4">
+                    Sie nutzen derzeit den Basic-Tarif. Upgraden Sie auf <strong>Pro</strong> und erhalten Sie Zugriff auf alle Premium-Features für eine professionelle Immobilienverwaltung.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Unbegrenzte Objekte & Mieter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Erweiterte Finanzen</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Dokumente & Vorlagen</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Alle Pro-Features</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      document.getElementById('pro-plan-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Jetzt auf Pro upgraden
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -238,7 +287,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
         )}
 
         {currentPlanId === 'basic' && (
-          <div className="bg-white rounded-lg border-2 border-blue-500 p-8 hover:shadow-lg transition-all relative">
+          <div id="pro-plan-card" className="bg-white rounded-lg border-2 border-blue-500 p-8 hover:shadow-lg transition-all relative">
             {PLANS.pro.popular && (
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="inline-block px-4 py-1 bg-blue-600 text-white text-sm font-semibold rounded-full">
