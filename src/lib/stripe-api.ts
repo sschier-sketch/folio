@@ -33,7 +33,18 @@ export async function createCheckoutSession(params: CheckoutSessionParams): Prom
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Failed to create checkout session');
+      console.error('Stripe checkout error:', error);
+
+      // Show detailed error message if available
+      let errorMessage = error.error || 'Failed to create checkout session';
+      if (error.details) {
+        console.error('Error details:', error.details);
+        if (error.details.suggestion) {
+          errorMessage += `\n\n${error.details.suggestion}`;
+        }
+      }
+
+      throw new Error(errorMessage);
     }
 
     const { url } = await response.json();

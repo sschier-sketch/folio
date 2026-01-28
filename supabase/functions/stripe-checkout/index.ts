@@ -253,13 +253,29 @@ Deno.serve(async (req) => {
     return corsResponse({ sessionId: session.id, url: session.url });
   } catch (error: any) {
     console.error(`Checkout error: ${error.message}`, error);
+    console.error('Error details:', {
+      code: error.code,
+      type: error.type,
+      statusCode: error.statusCode,
+      raw: error.raw,
+    });
 
     let errorMessage = error.message;
+    let errorDetails: any = {
+      code: error.code,
+      type: error.type,
+    };
+
     if (error.code === 'resource_missing') {
-      errorMessage = `Stripe Fehler: Die Price ID wurde nicht gefunden. Bitte überprüfen Sie, ob die richtigen Live oder Test Price IDs verwendet werden.`;
+      errorMessage = `Die Price ID wurde in Ihrem Stripe Account nicht gefunden. Verwendete Price ID: ${price_id}`;
+      errorDetails.priceId = price_id;
+      errorDetails.suggestion = 'Bitte prüfen Sie, ob Sie Live oder Test Keys verwenden und ob die Price IDs übereinstimmen.';
+    } else if (error.type === 'StripeInvalidRequestError') {
+      errorMessage = `Stripe Fehler: ${error.message}`;
+      errorDetails.raw_message = error.raw?.message;
     }
 
-    return corsResponse({ error: errorMessage, details: error.code }, 500);
+    return corsResponse({ error: errorMessage, details: errorDetails }, 500);
   }
 });
 
