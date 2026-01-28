@@ -68,11 +68,13 @@ export default function IndexRentView() {
         .select(`
           *,
           rental_contract:rental_contracts!contract_id (
+            user_id,
             tenant_id,
             tenants:tenant_id (name),
             properties:property_id (name)
           )
         `)
+        .eq("rental_contracts.user_id", user?.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -86,15 +88,50 @@ export default function IndexRentView() {
 
   const loadLastRun = async () => {
     try {
-      const { data, error } = await supabase
+      // Get the last global run date
+      const { data: globalRun, error: globalRunError } = await supabase
         .from("index_rent_calculation_runs")
         .select("*")
         .order("run_date", { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      if (error) throw error;
-      setLastRun(data);
+      if (globalRunError) throw globalRunError;
+
+      if (globalRun) {
+        // Count user-specific contracts that would be checked
+        const { count: userContractsCount, error: contractsError } = await supabase
+          .from("rental_contracts")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user?.id)
+          .eq("rent_type", "index_rent")
+          .is("contract_end", null)
+          .or(`contract_end.gte.${new Date().toISOString().split('T')[0]}`);
+
+        if (contractsError) throw contractsError;
+
+        // Count user-specific calculations created during the last run
+        const { data: userCalculations, error: calculationsError } = await supabase
+          .from("index_rent_calculations")
+          .select("id, rental_contracts!contract_id(user_id)")
+          .gte("created_at", globalRun.run_date);
+
+        if (calculationsError) throw calculationsError;
+
+        // Filter calculations for this user
+        const userCalculationsCount = userCalculations?.filter(
+          (calc: any) => calc.rental_contracts?.user_id === user?.id
+        ).length || 0;
+
+        // Create user-specific run info
+        setLastRun({
+          ...globalRun,
+          contracts_checked: userContractsCount || 0,
+          calculations_created: userCalculationsCount || 0,
+        });
+      } else {
+        setLastRun(null);
+      }
     } catch (error) {
       console.error("Error loading last run:", error);
     }
