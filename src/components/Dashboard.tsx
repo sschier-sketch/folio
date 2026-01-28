@@ -41,7 +41,7 @@ import FinancesView from "./FinancesView";
 import SettingsView from "./SettingsView";
 import ProfileSettingsView from "./ProfileSettingsView";
 import BillingSettingsView from "./BillingSettingsView";
-import ReferralProgramView from "./ReferralProgramView";
+import AffiliateDashboard from "./AffiliateDashboard";
 import FeedbackListView from "./FeedbackListView";
 import DocumentsView from "./DocumentsView";
 import TemplatesView from "./TemplatesView";
@@ -557,7 +557,7 @@ export default function Dashboard() {
             {currentView === "settings-profile" && <ProfileSettingsView />}{" "}
             {currentView === "settings-billing" && <BillingSettingsView />}{" "}
             {currentView === "feedback" && <FeedbackListView />}{" "}
-            {currentView === "referral" && <ReferralProgramView />}{" "}
+            {currentView === "referral" && <AffiliateDashboard />}{" "}
           </main>{" "}
           </div>
         </div>{" "}

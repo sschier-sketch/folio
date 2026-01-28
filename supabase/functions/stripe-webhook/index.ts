@@ -60,6 +60,16 @@ async function handleEvent(event: Stripe.Event) {
     return;
   }
 
+  if (event.type === 'invoice.paid') {
+    await handleInvoicePaid(event);
+    return;
+  }
+
+  if (event.type === 'charge.refunded') {
+    await handleChargeRefunded(event);
+    return;
+  }
+
   if (!('customer' in stripeData)) {
     return;
   }
@@ -89,6 +99,7 @@ async function handleEvent(event: Stripe.Event) {
     if (isSubscription) {
       console.info(`Starting subscription sync for customer: ${customerId}`);
       await syncCustomerFromStripe(customerId);
+      await updateReferralCustomerId(customerId);
     } else if (mode === 'payment' && payment_status === 'paid') {
       try {
         // Extract the necessary information from the session
@@ -238,5 +249,220 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
   } catch (error) {
     console.error(`Failed to update billing info for customer ${customerId}:`, error);
     throw error;
+  }
+}
+
+async function handleInvoicePaid(event: Stripe.Event) {
+  try {
+    const invoice = event.data.object as Stripe.Invoice;
+
+    if (!invoice.customer || typeof invoice.customer !== 'string') {
+      console.error('No customer ID in invoice');
+      return;
+    }
+
+    if (!invoice.subscription || typeof invoice.subscription !== 'string') {
+      console.log('Invoice is not for a subscription, skipping commission');
+      return;
+    }
+
+    const { data: referral } = await supabase
+      .from('affiliate_referrals')
+      .select('id, affiliate_id, status')
+      .eq('customer_id', invoice.customer)
+      .maybeSingle();
+
+    if (!referral) {
+      console.log(`No referral found for customer ${invoice.customer}`);
+      return;
+    }
+
+    if (referral.status !== 'paying') {
+      await supabase
+        .from('affiliate_referrals')
+        .update({
+          status: 'paying',
+          first_payment_at: new Date().toISOString(),
+          last_payment_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', referral.id);
+    } else {
+      await supabase
+        .from('affiliate_referrals')
+        .update({
+          last_payment_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', referral.id);
+    }
+
+    const { data: existingCommission } = await supabase
+      .from('affiliate_commissions')
+      .select('id')
+      .eq('stripe_event_id', event.id)
+      .maybeSingle();
+
+    if (existingCommission) {
+      console.log(`Commission already processed for event ${event.id}`);
+      return;
+    }
+
+    const { data: affiliate } = await supabase
+      .from('affiliates')
+      .select('id, commission_rate, is_blocked')
+      .eq('id', referral.affiliate_id)
+      .maybeSingle();
+
+    if (!affiliate || affiliate.is_blocked) {
+      console.log(`Affiliate ${referral.affiliate_id} is blocked or not found`);
+      return;
+    }
+
+    const amountTotal = invoice.total / 100;
+    const amountNet = invoice.subtotal / 100;
+    const commissionAmount = amountNet * affiliate.commission_rate;
+    const holdPeriodDays = 14;
+    const holdUntil = new Date();
+    holdUntil.setDate(holdUntil.getDate() + holdPeriodDays);
+
+    const { error: commissionError } = await supabase
+      .from('affiliate_commissions')
+      .insert({
+        affiliate_id: affiliate.id,
+        referral_id: referral.id,
+        subscription_id: invoice.subscription,
+        invoice_id: invoice.id,
+        stripe_event_id: event.id,
+        amount_total: amountTotal,
+        amount_net: amountNet,
+        commission_rate: affiliate.commission_rate,
+        commission_amount: commissionAmount,
+        status: 'pending',
+        hold_until: holdUntil.toISOString(),
+      });
+
+    if (commissionError) {
+      console.error('Error creating commission:', commissionError);
+      return;
+    }
+
+    const { error: updateLifetimeError } = await supabase
+      .from('affiliate_referrals')
+      .update({
+        lifetime_value: supabase.rpc('increment', { x: amountTotal }),
+      })
+      .eq('id', referral.id);
+
+    if (updateLifetimeError) {
+      console.error('Error updating lifetime value:', updateLifetimeError);
+    }
+
+    console.log(`Created commission of ${commissionAmount} EUR for affiliate ${affiliate.id}`);
+  } catch (error) {
+    console.error('Error handling invoice.paid:', error);
+  }
+}
+
+async function handleChargeRefunded(event: Stripe.Event) {
+  try {
+    const charge = event.data.object as Stripe.Charge;
+
+    if (!charge.invoice || typeof charge.invoice !== 'string') {
+      console.log('Refund is not for an invoice, skipping');
+      return;
+    }
+
+    const { data: commission } = await supabase
+      .from('affiliate_commissions')
+      .select('id, commission_amount, status, affiliate_id, referral_id')
+      .eq('invoice_id', charge.invoice)
+      .maybeSingle();
+
+    if (!commission) {
+      console.log(`No commission found for invoice ${charge.invoice}`);
+      return;
+    }
+
+    if (commission.status === 'reversed') {
+      console.log('Commission already reversed');
+      return;
+    }
+
+    await supabase
+      .from('affiliate_commissions')
+      .update({
+        status: 'reversed',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', commission.id);
+
+    const refundEventId = `refund_${event.id}`;
+    const { data: existingReversal } = await supabase
+      .from('affiliate_commissions')
+      .select('id')
+      .eq('stripe_event_id', refundEventId)
+      .maybeSingle();
+
+    if (!existingReversal) {
+      await supabase
+        .from('affiliate_commissions')
+        .insert({
+          affiliate_id: commission.affiliate_id,
+          referral_id: commission.referral_id,
+          invoice_id: charge.invoice,
+          stripe_event_id: refundEventId,
+          amount_total: -(charge.amount_refunded / 100),
+          amount_net: -(charge.amount_refunded / 100),
+          commission_rate: 0,
+          commission_amount: -commission.commission_amount,
+          status: 'reversed',
+          hold_until: new Date().toISOString(),
+        });
+    }
+
+    console.log(`Reversed commission for invoice ${charge.invoice}`);
+  } catch (error) {
+    console.error('Error handling charge.refunded:', error);
+  }
+}
+
+async function updateReferralCustomerId(customerId: string) {
+  try {
+    const { data: stripeCustomer } = await supabase
+      .from('stripe_customers')
+      .select('user_id')
+      .eq('customer_id', customerId)
+      .maybeSingle();
+
+    if (!stripeCustomer) {
+      console.log(`No user found for customer ${customerId}`);
+      return;
+    }
+
+    const { data: referral } = await supabase
+      .from('affiliate_referrals')
+      .select('id, customer_id')
+      .eq('referred_user_id', stripeCustomer.user_id)
+      .maybeSingle();
+
+    if (!referral) {
+      console.log(`No referral found for user ${stripeCustomer.user_id}`);
+      return;
+    }
+
+    if (!referral.customer_id) {
+      await supabase
+        .from('affiliate_referrals')
+        .update({
+          customer_id: customerId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', referral.id);
+
+      console.log(`Updated referral ${referral.id} with customer_id ${customerId}`);
+    }
+  } catch (error) {
+    console.error('Error updating referral customer_id:', error);
   }
 }

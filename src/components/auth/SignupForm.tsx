@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 import { Eye, EyeOff, UserPlus, Gift } from "lucide-react";
+import { getAffiliateCode, initAffiliateTracking } from "../../lib/affiliateTracking";
+
 interface SignupFormProps {
   onSuccess?: () => void;
 }
+
 export function SignupForm({ onSuccess }: SignupFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [referralCode, setReferralCode] = useState("");
+  const [affiliateCode, setAffiliateCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -16,11 +19,12 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
     type: "error" | "success";
     text: string;
   } | null>(null);
+
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const refCode = urlParams.get("ref");
-    if (refCode) {
-      setReferralCode(refCode);
+    initAffiliateTracking();
+    const code = getAffiliateCode();
+    if (code) {
+      setAffiliateCode(code);
     }
   }, []);
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,24 +50,26 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
         password,
         options: {
           emailRedirectTo: undefined,
-          data: { referral_code: referralCode || null },
+          data: { affiliate_code: affiliateCode || null },
         },
       });
+
       if (error) {
         setMessage({ type: "error", text: error.message });
       } else if (authData.user) {
-        if (referralCode) {
+        if (affiliateCode) {
           try {
             const response = await fetch(
-              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/activate-referral-reward`,
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-affiliate-referral`,
               {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
+                  "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
                 },
                 body: JSON.stringify({
-                  referredUserId: authData.user.id,
-                  referralCode: referralCode,
+                  userId: authData.user.id,
+                  affiliateCode: affiliateCode,
                 }),
               }
             );
@@ -71,7 +77,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
             if (response.ok) {
               setMessage({
                 type: "success",
-                text: "Konto erfolgreich erstellt! Sie erhalten 2 Monate PRO gratis!",
+                text: "Konto erfolgreich erstellt! Sie wurden über einen Partner-Link registriert.",
               });
             } else {
               setMessage({
@@ -79,8 +85,8 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
                 text: "Konto erfolgreich erstellt!",
               });
             }
-          } catch (rewardError) {
-            console.error("Error activating referral reward:", rewardError);
+          } catch (affiliateError) {
+            console.error("Error creating affiliate referral:", affiliateError);
             setMessage({
               type: "success",
               text: "Konto erfolgreich erstellt!",
@@ -195,33 +201,19 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           </button>{" "}
         </div>{" "}
       </div>{" "}
-      <div>
-        {" "}
-        <label
-          htmlFor="referralCode"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          {" "}
-          <div className="flex items-center gap-2">
-            {" "}
-            <Gift className="h-4 w-4 text-primary-blue" /> Gutschein Code
-            (optional){" "}
-          </div>{" "}
-        </label>{" "}
-        <input
-          id="referralCode"
-          type="text"
-          value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue uppercase"
-        />{" "}
-        {referralCode && (
-          <p className="mt-1 text-xs text-emerald-600 font-semibold">
-            {" "}
-            🎉 Sie erhalten 2 Monate PRO gratis!{" "}
+      {affiliateCode && (
+        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-emerald-800">
+            <Gift className="h-5 w-5" />
+            <p className="text-sm font-semibold">
+              Sie registrieren sich über einen Partner-Link!
+            </p>
+          </div>
+          <p className="text-xs text-emerald-700 mt-1">
+            Partner Code: <span className="font-mono font-bold">{affiliateCode}</span>
           </p>
-        )}{" "}
-      </div>{" "}
+        </div>
+      )}
       <button
         type="submit"
         disabled={loading}

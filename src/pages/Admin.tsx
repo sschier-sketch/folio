@@ -32,6 +32,8 @@ import { AdminFeedbackView } from "../components/AdminFeedbackView";
 import AdminSystemSettingsView from "../components/AdminSystemSettingsView";
 import AdminSeoView from "../components/AdminSeoView";
 import AdminProFeaturesView from "../components/AdminProFeaturesView";
+import AdminAffiliatesView from "../components/AdminAffiliatesView";
+import AdminPayoutsView from "../components/AdminPayoutsView";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "../components/common/BaseTable";
 interface UserData {
   id: string;
@@ -59,7 +61,7 @@ export function Admin() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates" | "feedback" | "system_settings" | "seo"
+    "overview" | "users" | "tickets" | "templates" | "document_templates" | "system_updates" | "feedback" | "system_settings" | "seo" | "affiliates" | "payouts"
   >("overview");
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -396,6 +398,20 @@ export function Admin() {
             <Globe className="w-4 h-4 inline mr-2" /> SEO{" "}
           </button>{" "}
           <button
+            onClick={() => setActiveTab("affiliates")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "affiliates" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
+          >
+            {" "}
+            <TrendingUp className="w-4 h-4 inline mr-2" /> Affiliates{" "}
+          </button>{" "}
+          <button
+            onClick={() => setActiveTab("payouts")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "payouts" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
+          >
+            {" "}
+            <DollarSign className="w-4 h-4 inline mr-2" /> Auszahlungen{" "}
+          </button>{" "}
+          <button
             onClick={() => setActiveTab("pro_features")}
             className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === "pro_features" ? "border-primary-blue text-primary-blue" : "border-transparent text-gray-400 hover:text-dark"}`}
           >
@@ -648,6 +664,8 @@ export function Admin() {
         {activeTab === "feedback" && <AdminFeedbackView />}{" "}
         {activeTab === "system_settings" && <AdminSystemSettingsView />}{" "}
         {activeTab === "seo" && <AdminSeoView />}{" "}
+        {activeTab === "affiliates" && <AdminAffiliatesView />}{" "}
+        {activeTab === "payouts" && <AdminPayoutsView />}{" "}
         {activeTab === "pro_features" && <AdminProFeaturesView />}{" "}
       </div>{" "}
     </div>
