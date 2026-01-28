@@ -181,12 +181,11 @@ Deno.serve(async (req) => {
       }
 
       if (mode === 'subscription') {
-        // Verify subscription exists for existing customer
+        // Check for any subscription record (including soft deleted ones)
         const { data: subscription, error: getSubscriptionError } = await supabase
           .from('stripe_subscriptions')
-          .select('status')
+          .select('status, deleted_at')
           .eq('customer_id', customerId)
-          .is('deleted_at', null)
           .maybeSingle();
 
         if (getSubscriptionError) {
@@ -209,9 +208,9 @@ Deno.serve(async (req) => {
           }
 
           console.log(`Created subscription record for existing customer ${customerId}`);
-        } else if (subscription.status === 'canceled') {
-          // If subscription was canceled, reset it to not_started to allow resubscription
-          console.log(`Resetting canceled subscription for customer ${customerId}`);
+        } else if (subscription.deleted_at || subscription.status === 'canceled') {
+          // If subscription was deleted or canceled, restore/reset it
+          console.log(`Restoring subscription for customer ${customerId} (was ${subscription.status})`);
           const { error: updateSubscriptionError } = await supabase
             .from('stripe_subscriptions')
             .update({
@@ -221,13 +220,14 @@ Deno.serve(async (req) => {
               current_period_start: null,
               current_period_end: null,
               cancel_at_period_end: false,
+              deleted_at: null,
               updated_at: new Date().toISOString()
             })
             .eq('customer_id', customerId);
 
           if (updateSubscriptionError) {
-            console.error('Failed to reset canceled subscription', updateSubscriptionError);
-            return corsResponse({ error: 'Failed to reset subscription' }, 500);
+            console.error('Failed to restore subscription', updateSubscriptionError);
+            return corsResponse({ error: 'Failed to restore subscription' }, 500);
           }
         } else {
           // Subscription exists and is active/pending - this is fine, continue to checkout
