@@ -46,17 +46,13 @@ Deno.serve(async (req: Request) => {
       throw new Error("Unauthorized");
     }
 
-    const { data: stripeData, error: stripeError } = await supabase
-      .from("stripe_user_subscriptions")
-      .select("subscription_id")
+    const { data: customerData } = await supabase
+      .from("stripe_customers")
+      .select("customer_id")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (stripeError) {
-      throw new Error("Error fetching subscription: " + stripeError.message);
-    }
-
-    if (!stripeData?.subscription_id) {
+    if (!customerData?.customer_id) {
       const { data: billingData } = await supabase
         .from("billing_info")
         .select("subscription_plan, subscription_status")
@@ -68,7 +64,7 @@ Deno.serve(async (req: Request) => {
           .from("billing_info")
           .update({
             subscription_plan: "free",
-            subscription_status: "active",
+            subscription_status: "canceled",
             subscription_ends_at: null,
             updated_at: new Date().toISOString(),
           })
@@ -91,7 +87,38 @@ Deno.serve(async (req: Request) => {
       throw new Error("No active subscription found");
     }
 
-    const subscriptionId = stripeData.subscription_id;
+    const { data: subscriptionData } = await supabase
+      .from("stripe_subscriptions")
+      .select("subscription_id")
+      .eq("customer_id", customerData.customer_id)
+      .maybeSingle();
+
+    if (!subscriptionData?.subscription_id) {
+      await supabase
+        .from("billing_info")
+        .update({
+          subscription_plan: "free",
+          subscription_status: "canceled",
+          subscription_ends_at: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Subscription cancelled successfully",
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    const subscriptionId = subscriptionData.subscription_id;
 
     const stripeResponse = await fetch(
       `https://api.stripe.com/v1/subscriptions/${subscriptionId}`,
@@ -115,9 +142,19 @@ Deno.serve(async (req: Request) => {
     const subscription = await stripeResponse.json();
 
     await supabase
-      .from("stripe_user_subscriptions")
+      .from("stripe_subscriptions")
       .update({
+        status: "canceled",
         cancel_at_period_end: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("customer_id", customerData.customer_id);
+
+    await supabase
+      .from("billing_info")
+      .update({
+        subscription_plan: "free",
+        subscription_status: "canceled",
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", user.id);

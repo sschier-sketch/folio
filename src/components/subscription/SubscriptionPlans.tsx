@@ -3,6 +3,7 @@ import { Check, CreditCard, Info, Loader2 } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { PLANS, type BillingInterval, getPlanByStripePriceId, getStripePriceId, calculateYearlySavings } from '../../config/plans';
 import { createCheckoutSession, createPortalSession } from '../../lib/stripe-api';
+import { supabase } from '../../lib/supabase';
 
 interface SubscriptionPlansProps {
   showCurrentPlanCard?: boolean;
@@ -14,10 +15,10 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
   const [loading, setLoading] = useState<string | null>(null);
   const [showDowngradeModal, setShowDowngradeModal] = useState(false);
 
-  const currentPlan = subscription?.price_id ? getPlanByStripePriceId(subscription.price_id) : null;
+  const isActive = subscription?.subscription_status === 'active';
+  const currentPlan = (subscription?.price_id && isActive) ? getPlanByStripePriceId(subscription.price_id) : null;
   const currentPlanId = currentPlan?.planId || 'basic';
   const currentInterval = currentPlan?.interval || 'month';
-  const isActive = subscription?.subscription_status === 'active';
 
   const handleUpgrade = async (interval: BillingInterval) => {
     const priceId = getStripePriceId('pro', interval);
@@ -35,14 +36,32 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
   };
 
   const handleDowngrade = async () => {
-    const basicPriceId = PLANS.basic.stripePriceId;
-    if (!basicPriceId) return;
-
-    setLoading(basicPriceId);
+    setLoading('downgrade');
     setShowDowngradeModal(false);
     try {
-      const url = await createCheckoutSession({ priceId: basicPriceId });
-      window.location.href = url;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cancel-subscription`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to cancel subscription');
+      }
+
+      alert('Ihr Abonnement wurde erfolgreich gekündigt. Sie befinden sich jetzt im Basic-Tarif.');
+      window.location.reload();
     } catch (error) {
       console.error('Error downgrading:', error);
       alert('Fehler beim Downgrade. Bitte versuchen Sie es erneut.');
