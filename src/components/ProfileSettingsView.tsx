@@ -107,8 +107,8 @@ export default function ProfileSettingsView() {
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      setPasswordError(language === "de" ? "Das Passwort muss mindestens 6 Zeichen lang sein" : "Password must be at least 6 characters");
+    if (passwordData.newPassword.length < 10) {
+      setPasswordError(language === "de" ? "Das Passwort muss mindestens 10 Zeichen lang sein" : "Password must be at least 10 characters");
       return;
     }
 
