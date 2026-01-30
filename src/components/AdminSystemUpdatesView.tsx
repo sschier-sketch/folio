@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Bell, Plus, Edit2, Trash2, Eye, EyeOff, Calendar } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../hooks/useAuth";
+import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 
 interface SystemUpdate {
   id: string;
@@ -226,38 +227,27 @@ export default function AdminSystemUpdatesView() {
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2 ml-4">
-                <button
-                  onClick={() => togglePublished(update)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    update.is_published
-                      ? "text-emerald-600 hover:bg-emerald-50"
-                      : "text-gray-400 hover:bg-gray-50"
-                  }`}
-                  title={
-                    update.is_published ? "Veröffentlichung aufheben" : "Veröffentlichen"
-                  }
-                >
-                  {update.is_published ? (
-                    <Eye className="w-5 h-5" />
-                  ) : (
-                    <EyeOff className="w-5 h-5" />
-                  )}
-                </button>
-                <button
-                  onClick={() => openEditModal(update)}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  title="Bearbeiten"
-                >
-                  <Edit2 className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => handleDelete(update.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Löschen"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+              <div className="ml-4">
+                <TableActionsDropdown
+                  actions={[
+                    {
+                      label: update.is_published ? 'Veröffentlichung aufheben' : 'Veröffentlichen',
+                      onClick: () => togglePublished(update),
+                      icon: update.is_published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />
+                    },
+                    {
+                      label: 'Bearbeiten',
+                      onClick: () => openEditModal(update),
+                      icon: <Edit2 className="w-4 h-4" />
+                    },
+                    {
+                      label: 'Löschen',
+                      onClick: () => handleDelete(update.id),
+                      icon: <Trash2 className="w-4 h-4" />,
+                      variant: 'danger' as const
+                    }
+                  ]}
+                />
               </div>
             </div>
           </div>

@@ -7,6 +7,7 @@ import PropertyModal from "./PropertyModal";
 import PropertyDetails from "./PropertyDetails";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
+import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 
 interface PropertyLabel {
   id: string;
@@ -808,37 +809,34 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                 {
                   key: "actions",
                   header: "Aktionen",
-                  align: "right",
+                  align: "right" as const,
                   render: (property: Property) => (
-                    <ActionsCell>
-                      <ActionButton
-                        icon={<Eye className="w-4 h-4" />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedProperty(property);
-                          setShowDetails(true);
-                        }}
-                        title="Details anzeigen"
-                      />
-                      <ActionButton
-                        icon={<Pencil className="w-4 h-4" />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedProperty(property);
-                          setShowModal(true);
-                        }}
-                        title="Bearbeiten"
-                      />
-                      <ActionButton
-                        icon={<Trash2 className="w-4 h-4" />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(property.id);
-                        }}
-                        title="Löschen"
-                        variant="danger"
-                      />
-                    </ActionsCell>
+                    <TableActionsDropdown
+                      actions={[
+                        {
+                          label: 'Details anzeigen',
+                          onClick: () => {
+                            setSelectedProperty(property);
+                            setShowDetails(true);
+                          },
+                          icon: <Eye className="w-4 h-4" />
+                        },
+                        {
+                          label: 'Bearbeiten',
+                          onClick: () => {
+                            setSelectedProperty(property);
+                            setShowModal(true);
+                          },
+                          icon: <Pencil className="w-4 h-4" />
+                        },
+                        {
+                          label: 'Löschen',
+                          onClick: () => handleDelete(property.id),
+                          icon: <Trash2 className="w-4 h-4" />,
+                          variant: 'danger'
+                        }
+                      ]}
+                    />
                   ),
                 },
               ]}

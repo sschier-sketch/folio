@@ -3,6 +3,7 @@ import { Plus, Trash2, Upload, X, FileText, Loader, Download, Edit2, Save } from
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
+import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 
 interface Template {
   id: string;
@@ -351,33 +352,27 @@ export function AdminTemplatesView() {
           {
             key: "actions",
             header: "Aktionen",
-            align: "right",
+            align: "right" as const,
             render: (template: Template) => (
-              <ActionsCell>
-                <ActionButton
-                  icon={
-                    downloading === template.id ? (
+              <TableActionsDropdown
+                actions={[
+                  {
+                    label: 'Herunterladen',
+                    onClick: () => handleDownload(template),
+                    icon: downloading === template.id ? (
                       <Loader className="w-4 h-4 animate-spin" />
                     ) : (
                       <Download className="w-4 h-4" />
                     )
+                  },
+                  {
+                    label: 'Löschen',
+                    onClick: () => handleDelete(template),
+                    icon: <Trash2 className="w-4 h-4" />,
+                    variant: 'danger'
                   }
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(template);
-                  }}
-                  title="Vorlage herunterladen"
-                  disabled={downloading === template.id}
-                />
-                <ActionButton
-                  icon={<Trash2 className="w-4 h-4" />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(template);
-                  }}
-                  title="Vorlage löschen"
-                />
-              </ActionsCell>
+                ]}
+              />
             ),
           },
         ]}

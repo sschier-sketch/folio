@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Search, Edit, CheckCircle, XCircle, Lock, Calendar } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import AdminSeoPageEdit from "./AdminSeoPageEdit";
+import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 
 interface SeoPage {
   id: string;
@@ -270,13 +271,15 @@ export default function AdminSeoPagesView() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => setSelectedPageId(page.id)}
-                        className="text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1 ml-auto"
-                      >
-                        <Edit className="w-4 h-4" />
-                        Bearbeiten
-                      </button>
+                      <TableActionsDropdown
+                        actions={[
+                          {
+                            label: "Bearbeiten",
+                            icon: <Edit className="w-4 h-4" />,
+                            onClick: () => setSelectedPageId(page.id),
+                          },
+                        ]}
+                      />
                     </td>
                   </tr>
                 );

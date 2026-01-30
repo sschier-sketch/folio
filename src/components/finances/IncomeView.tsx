@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 
 interface ExpenseCategory {
   id: string;
@@ -712,34 +713,27 @@ export default function IncomeView() {
                       +{parseFloat(income.amount.toString()).toFixed(2)} €
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center justify-end gap-2">
-                        {income.document_id && (
-                          <button
-                            onClick={() => handleDownloadDocument(income.document_id!)}
-                            className="text-gray-300 hover:text-emerald-600 transition-colors"
-                            title="Beleg herunterladen"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleEditIncome(income)}
-                          style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                          className="px-3 py-2 rounded-lg font-medium hover:bg-[#e8e8e8] transition-colors flex items-center gap-2"
-                          title="Bearbeiten"
-                        >
-                          <div className="w-5 h-5 bg-[#EEF4FF] rounded-full flex items-center justify-center border border-[#DDE7FF]">
-                            <Edit className="w-3 h-3 text-[#1e1e24]" />
-                          </div>
-                          <span className="text-sm">Bearbeiten</span>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteIncome(income.id)}
-                          className="text-gray-300 hover:text-red-600 transition-colors"
-                          title="Löschen"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div className="flex items-center justify-end">
+                        <TableActionsDropdown
+                          actions={[
+                            ...(income.document_id ? [{
+                              label: 'Beleg herunterladen',
+                              onClick: () => handleDownloadDocument(income.document_id!),
+                              icon: <FileText className="w-4 h-4" />
+                            }] : []),
+                            {
+                              label: 'Bearbeiten',
+                              onClick: () => handleEditIncome(income),
+                              icon: <Edit className="w-4 h-4" />
+                            },
+                            {
+                              label: 'Löschen',
+                              onClick: () => handleDeleteIncome(income.id),
+                              icon: <Trash2 className="w-4 h-4" />,
+                              variant: 'danger' as const
+                            }
+                          ]}
+                        />
                       </div>
                     </td>
                   </tr>

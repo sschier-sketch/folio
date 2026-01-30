@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Calendar, FileText, Edit, Copy, Trash2, Eye, Filter } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 
 interface HandoverProtocol {
   id: string;
@@ -258,41 +259,38 @@ export default function HandoverProtocolsList({ tenantId, onClose }: HandoverPro
                     Erstellt: {new Date(protocol.created_at).toLocaleDateString("de-DE")}
                   </div>
                 </div>
-                <div className="flex gap-2 ml-4">
-                  <button
-                    onClick={() => {
-                      setSelectedProtocol(protocol);
-                      setViewMode("detail");
-                    }}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Anzeigen"
-                  >
-                    <Eye className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedProtocol(protocol);
-                      setShowForm(true);
-                    }}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Bearbeiten"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDuplicate(protocol)}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Duplizieren"
-                  >
-                    <Copy className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(protocol.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Löschen"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                <div className="ml-4">
+                  <TableActionsDropdown
+                    actions={[
+                      {
+                        label: 'Anzeigen',
+                        onClick: () => {
+                          setSelectedProtocol(protocol);
+                          setViewMode("detail");
+                        },
+                        icon: <Eye className="w-4 h-4" />
+                      },
+                      {
+                        label: 'Bearbeiten',
+                        onClick: () => {
+                          setSelectedProtocol(protocol);
+                          setShowForm(true);
+                        },
+                        icon: <Edit className="w-4 h-4" />
+                      },
+                      {
+                        label: 'Duplizieren',
+                        onClick: () => handleDuplicate(protocol),
+                        icon: <Copy className="w-4 h-4" />
+                      },
+                      {
+                        label: 'Löschen',
+                        onClick: () => handleDelete(protocol.id),
+                        icon: <Trash2 className="w-4 h-4" />,
+                        variant: 'danger' as const
+                      }
+                    ]}
+                  />
                 </div>
               </div>
             </div>

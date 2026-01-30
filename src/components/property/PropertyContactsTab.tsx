@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
+import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 
 interface PropertyContactsTabProps {
   propertyId: string;
@@ -309,22 +310,21 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
                           <h5 className="font-semibold text-dark">{contact.contact_name}</h5>
                           <p className="text-xs text-gray-500 mt-0.5">{getRoleLabel(contact.contact_role)}</p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => openEditModal(contact)}
-                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                            title="Bearbeiten"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(contact.id)}
-                            className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                            title="Löschen"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                        <TableActionsDropdown
+                          actions={[
+                            {
+                              label: 'Bearbeiten',
+                              onClick: () => openEditModal(contact),
+                              icon: <Edit2 className="w-4 h-4" />
+                            },
+                            {
+                              label: 'Löschen',
+                              onClick: () => handleDelete(contact.id),
+                              icon: <Trash2 className="w-4 h-4" />,
+                              variant: 'danger' as const
+                            }
+                          ]}
+                        />
                       </div>
 
                       <div className="space-y-2 text-sm">

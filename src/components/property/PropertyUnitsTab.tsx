@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import TenantModal from "../TenantModal";
+import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 
 interface PropertyUnitsTabProps {
   propertyId: string;
@@ -426,33 +427,30 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                       )}
                     </td>
                     <td className="py-4 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        {unit.status !== "rented" && (
-                          <button
-                            onClick={() => {
-                              setSelectedUnitForTenant(unit);
-                              setShowTenantModal(true);
-                            }}
-                            className="text-gray-300 hover:text-emerald-600 transition-colors"
-                            title="Mietverhältnis anlegen"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => openEditModal(unit)}
-                          className="text-gray-300 hover:text-primary-blue transition-colors"
-                          title="Bearbeiten"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteUnit(unit)}
-                          className="text-gray-300 hover:text-red-600 transition-colors"
-                          title="Löschen"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div className="flex items-center justify-end">
+                        <TableActionsDropdown
+                          actions={[
+                            ...(unit.status !== "rented" ? [{
+                              label: 'Mietverhältnis anlegen',
+                              onClick: () => {
+                                setSelectedUnitForTenant(unit);
+                                setShowTenantModal(true);
+                              },
+                              icon: <FileText className="w-4 h-4" />
+                            }] : []),
+                            {
+                              label: 'Bearbeiten',
+                              onClick: () => openEditModal(unit),
+                              icon: <Edit className="w-4 h-4" />
+                            },
+                            {
+                              label: 'Löschen',
+                              onClick: () => handleDeleteUnit(unit),
+                              icon: <Trash2 className="w-4 h-4" />,
+                              variant: 'danger' as const
+                            }
+                          ]}
+                        />
                       </div>
                     </td>
                   </tr>

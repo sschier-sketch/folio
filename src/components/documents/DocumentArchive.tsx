@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
+import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 
 interface Document {
   id: string;
@@ -237,57 +238,28 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                       {formatFileSize(doc.file_size)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => onDocumentClick(doc.id)}
-                          className="text-gray-400 hover:text-blue-600 transition-colors"
-                          title="Ansehen"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
-
-                        <DocumentFeatureGuard
-                          feature="restore-archived"
-                          fallback={
-                            <button
-                              disabled
-                              className="text-gray-300 cursor-not-allowed"
-                              title="Wiederherstellen (Pro)"
-                            >
-                              <RotateCcw className="w-5 h-5" />
-                            </button>
-                          }
-                        >
-                          <button
-                            onClick={() => handleRestore(doc.id)}
-                            className="text-gray-400 hover:text-emerald-600 transition-colors"
-                            title="Wiederherstellen"
-                          >
-                            <RotateCcw className="w-5 h-5" />
-                          </button>
-                        </DocumentFeatureGuard>
-
-                        <DocumentFeatureGuard
-                          feature="delete-archived"
-                          fallback={
-                            <button
-                              disabled
-                              className="text-gray-300 cursor-not-allowed"
-                              title="Endgültig löschen (Pro)"
-                            >
-                              <Trash2 className="w-5 h-5" />
-                            </button>
-                          }
-                        >
-                          <button
-                            onClick={() => handleDelete(doc.id, doc.file_path)}
-                            className="text-gray-400 hover:text-red-600 transition-colors"
-                            title="Endgültig löschen"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </DocumentFeatureGuard>
-                      </div>
+                      <TableActionsDropdown
+                        actions={[
+                          {
+                            label: "Ansehen",
+                            icon: <Eye className="w-4 h-4" />,
+                            onClick: () => onDocumentClick(doc.id),
+                          },
+                          {
+                            label: isPro ? "Wiederherstellen" : "Wiederherstellen (Pro)",
+                            icon: <RotateCcw className="w-4 h-4" />,
+                            onClick: () => handleRestore(doc.id),
+                            hidden: !isPro,
+                          },
+                          {
+                            label: isPro ? "Endgültig löschen" : "Endgültig löschen (Pro)",
+                            icon: <Trash2 className="w-4 h-4" />,
+                            onClick: () => handleDelete(doc.id, doc.file_path),
+                            variant: "danger",
+                            hidden: !isPro,
+                          },
+                        ]}
+                      />
                     </td>
                   </tr>
                 ))}

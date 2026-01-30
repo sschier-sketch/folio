@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import DunningView from "./finances/DunningView";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
+import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 import Badge from "./common/Badge";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 interface PartialPayment {
@@ -616,33 +617,33 @@ export default function RentPaymentsView() {
           {
             key: "actions",
             header: "Aktionen",
-            align: "right",
+            align: "right" as const,
             render: (payment: RentPayment) => (
-              <ActionsCell>
-                {payment.payment_status === 'paid' ? (
-                  <ActionButton
-                    icon={<XCircle className="w-4 h-4" />}
-                    onClick={() => handleMarkAsUnpaid(payment.id)}
-                    title="Als unbezahlt markieren"
-                  />
-                ) : (
-                  <>
-                    <ActionButton
-                      icon={<CheckCircle className="w-4 h-4" />}
-                      onClick={() => handleMarkAsPaid(payment.id)}
-                      title="Als bezahlt markieren"
-                    />
-                    <ActionButton
-                      icon={<Coins className="w-4 h-4" />}
-                      onClick={() => {
-                        setSelectedPayment(payment);
-                        setShowPartialPaymentModal(true);
-                      }}
-                      title="Teilzahlung erfassen"
-                    />
-                  </>
-                )}
-              </ActionsCell>
+              <TableActionsDropdown
+                actions={[
+                  {
+                    label: 'Als unbezahlt markieren',
+                    onClick: () => handleMarkAsUnpaid(payment.id),
+                    icon: <XCircle className="w-4 h-4" />,
+                    hidden: payment.payment_status !== 'paid'
+                  },
+                  {
+                    label: 'Als bezahlt markieren',
+                    onClick: () => handleMarkAsPaid(payment.id),
+                    icon: <CheckCircle className="w-4 h-4" />,
+                    hidden: payment.payment_status === 'paid'
+                  },
+                  {
+                    label: 'Teilzahlung erfassen',
+                    onClick: () => {
+                      setSelectedPayment(payment);
+                      setShowPartialPaymentModal(true);
+                    },
+                    icon: <Coins className="w-4 h-4" />,
+                    hidden: payment.payment_status === 'paid'
+                  }
+                ]}
+              />
             )
           }
         ]}

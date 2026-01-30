@@ -3,6 +3,7 @@ import { Search, Filter, Download, Plus, Gauge, Edit2, Activity, ChevronDown, Hi
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import * as XLSX from "xlsx";
+import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 
 interface Meter {
   id: string;
@@ -482,28 +483,26 @@ export default function MetersManagementView({
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => onAddReading(meter)}
-                        className="p-2 text-primary-blue hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Stand erfassen"
-                      >
-                        <Activity className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => onViewHistory(meter)}
-                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Verlauf anzeigen"
-                      >
-                        <History className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => onEditMeter(meter)}
-                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Bearbeiten"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
+                    <div className="flex justify-end">
+                      <TableActionsDropdown
+                        actions={[
+                          {
+                            label: 'Stand erfassen',
+                            onClick: () => onAddReading(meter),
+                            icon: <Activity className="w-4 h-4" />
+                          },
+                          {
+                            label: 'Verlauf anzeigen',
+                            onClick: () => onViewHistory(meter),
+                            icon: <History className="w-4 h-4" />
+                          },
+                          {
+                            label: 'Bearbeiten',
+                            onClick: () => onEditMeter(meter),
+                            icon: <Edit2 className="w-4 h-4" />
+                          }
+                        ]}
+                      />
                     </div>
                   </td>
                 </tr>

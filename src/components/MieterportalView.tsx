@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
+import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 
 interface Tenant {
   id: string;
@@ -270,56 +271,42 @@ export default function MieterportalView() {
           {
             key: "actions",
             header: "Aktionen",
-            align: "right",
+            align: "right" as const,
             render: (tenant: Tenant) => {
               const contract = Array.isArray(tenant.rental_contract)
                 ? tenant.rental_contract[0]
                 : tenant.rental_contract;
 
               return (
-                <ActionsCell>
-                  {contract?.portal_access_enabled ? (
-                    <>
-                      <ActionButton
-                        icon={<LogIn className="w-4 h-4" />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleImpersonateTenant(tenant);
-                        }}
-                        title="Als Mieter anmelden"
-                        disabled={impersonating === tenant.id}
-                      />
-                      {!tenant.portal_activated_at && (
-                        <ActionButton
-                          icon={<Send className="w-4 h-4" />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSendActivationLink(tenant);
-                          }}
-                          title="Aktivierungslink per E-Mail senden"
-                          disabled={sendingInvite}
-                        />
-                      )}
-                      <ActionButton
-                        icon={<X className="w-4 h-4" />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTogglePortalAccess(tenant.id, contract.id, true);
-                        }}
-                        title="Zugang deaktivieren"
-                      />
-                    </>
-                  ) : (
-                    <ActionButton
-                      icon={<Check className="w-4 h-4" />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleTogglePortalAccess(tenant.id, contract?.id || "", false);
-                      }}
-                      title="Zugang aktivieren"
-                    />
-                  )}
-                </ActionsCell>
+                <TableActionsDropdown
+                  actions={[
+                    {
+                      label: 'Als Mieter anmelden',
+                      onClick: () => handleImpersonateTenant(tenant),
+                      icon: <LogIn className="w-4 h-4" />,
+                      hidden: !contract?.portal_access_enabled
+                    },
+                    {
+                      label: 'Aktivierungslink senden',
+                      onClick: () => handleSendActivationLink(tenant),
+                      icon: <Send className="w-4 h-4" />,
+                      hidden: !contract?.portal_access_enabled || !!tenant.portal_activated_at
+                    },
+                    {
+                      label: 'Zugang deaktivieren',
+                      onClick: () => handleTogglePortalAccess(tenant.id, contract.id, true),
+                      icon: <X className="w-4 h-4" />,
+                      variant: 'danger',
+                      hidden: !contract?.portal_access_enabled
+                    },
+                    {
+                      label: 'Zugang aktivieren',
+                      onClick: () => handleTogglePortalAccess(tenant.id, contract?.id || "", false),
+                      icon: <Check className="w-4 h-4" />,
+                      hidden: contract?.portal_access_enabled
+                    }
+                  ]}
+                />
               );
             },
           },

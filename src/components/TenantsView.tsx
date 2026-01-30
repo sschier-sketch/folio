@@ -6,6 +6,7 @@ import TenantContractDetails from "./TenantContractDetails";
 import TenantModal from "./TenantModal";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
+import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 
 interface Property {
   id: string;
@@ -533,18 +534,17 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                 {
                   key: "actions",
                   header: "Details",
-                  align: "right",
+                  align: "right" as const,
                   render: (tenant: TenantWithDetails) => (
-                    <ActionsCell>
-                      <ActionButton
-                        icon={<Eye className="w-4 h-4" />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedTenantId(tenant.id);
-                        }}
-                        title="Details anzeigen"
-                      />
-                    </ActionsCell>
+                    <TableActionsDropdown
+                      actions={[
+                        {
+                          label: 'Details anzeigen',
+                          onClick: () => setSelectedTenantId(tenant.id),
+                          icon: <Eye className="w-4 h-4" />
+                        }
+                      ]}
+                    />
                   ),
                 },
               ]}
