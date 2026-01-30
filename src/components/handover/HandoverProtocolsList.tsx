@@ -267,26 +267,22 @@ export default function HandoverProtocolsList({ tenantId, onClose }: HandoverPro
                         onClick: () => {
                           setSelectedProtocol(protocol);
                           setViewMode("detail");
-                        },
-                        icon: <Eye className="w-4 h-4" />
+                        }
                       },
                       {
                         label: 'Bearbeiten',
                         onClick: () => {
                           setSelectedProtocol(protocol);
                           setShowForm(true);
-                        },
-                        icon: <Edit className="w-4 h-4" />
+                        }
                       },
                       {
                         label: 'Duplizieren',
-                        onClick: () => handleDuplicate(protocol),
-                        icon: <Copy className="w-4 h-4" />
+                        onClick: () => handleDuplicate(protocol)
                       },
                       {
                         label: 'Löschen',
                         onClick: () => handleDelete(protocol.id),
-                        icon: <Trash2 className="w-4 h-4" />,
                         variant: 'danger' as const
                       }
                     ]}

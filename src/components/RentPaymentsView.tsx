@@ -624,13 +624,11 @@ export default function RentPaymentsView() {
                   {
                     label: 'Als unbezahlt markieren',
                     onClick: () => handleMarkAsUnpaid(payment.id),
-                    icon: <XCircle className="w-4 h-4" />,
                     hidden: payment.payment_status !== 'paid'
                   },
                   {
                     label: 'Als bezahlt markieren',
                     onClick: () => handleMarkAsPaid(payment.id),
-                    icon: <CheckCircle className="w-4 h-4" />,
                     hidden: payment.payment_status === 'paid'
                   },
                   {
@@ -639,7 +637,6 @@ export default function RentPaymentsView() {
                       setSelectedPayment(payment);
                       setShowPartialPaymentModal(true);
                     },
-                    icon: <Coins className="w-4 h-4" />,
                     hidden: payment.payment_status === 'paid'
                   }
                 ]}

@@ -275,7 +275,6 @@ export default function AdminSeoPagesView() {
                         actions={[
                           {
                             label: "Bearbeiten",
-                            icon: <Edit className="w-4 h-4" />,
                             onClick: () => setSelectedPageId(page.id),
                           },
                         ]}

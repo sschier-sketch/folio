@@ -242,18 +242,15 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                         actions={[
                           {
                             label: "Ansehen",
-                            icon: <Eye className="w-4 h-4" />,
                             onClick: () => onDocumentClick(doc.id),
                           },
                           {
                             label: isPro ? "Wiederherstellen" : "Wiederherstellen (Pro)",
-                            icon: <RotateCcw className="w-4 h-4" />,
                             onClick: () => handleRestore(doc.id),
                             hidden: !isPro,
                           },
                           {
                             label: isPro ? "Endgültig löschen" : "Endgültig löschen (Pro)",
-                            icon: <Trash2 className="w-4 h-4" />,
                             onClick: () => handleDelete(doc.id, doc.file_path),
                             variant: "danger",
                             hidden: !isPro,

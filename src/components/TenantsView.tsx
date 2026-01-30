@@ -540,8 +540,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                       actions={[
                         {
                           label: 'Details anzeigen',
-                          onClick: () => setSelectedTenantId(tenant.id),
-                          icon: <Eye className="w-4 h-4" />
+                          onClick: () => setSelectedTenantId(tenant.id)
                         }
                       ]}
                     />

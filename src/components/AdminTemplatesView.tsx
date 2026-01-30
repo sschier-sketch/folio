@@ -358,17 +358,11 @@ export function AdminTemplatesView() {
                 actions={[
                   {
                     label: 'Herunterladen',
-                    onClick: () => handleDownload(template),
-                    icon: downloading === template.id ? (
-                      <Loader className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download className="w-4 h-4" />
-                    )
+                    onClick: () => handleDownload(template)
                   },
                   {
                     label: 'Löschen',
                     onClick: () => handleDelete(template),
-                    icon: <Trash2 className="w-4 h-4" />,
                     variant: 'danger'
                   }
                 ]}

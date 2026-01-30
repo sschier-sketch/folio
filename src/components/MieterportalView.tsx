@@ -283,26 +283,22 @@ export default function MieterportalView() {
                     {
                       label: 'Als Mieter anmelden',
                       onClick: () => handleImpersonateTenant(tenant),
-                      icon: <LogIn className="w-4 h-4" />,
                       hidden: !contract?.portal_access_enabled
                     },
                     {
                       label: 'Aktivierungslink senden',
                       onClick: () => handleSendActivationLink(tenant),
-                      icon: <Send className="w-4 h-4" />,
                       hidden: !contract?.portal_access_enabled || !!tenant.portal_activated_at
                     },
                     {
                       label: 'Zugang deaktivieren',
                       onClick: () => handleTogglePortalAccess(tenant.id, contract.id, true),
-                      icon: <X className="w-4 h-4" />,
                       variant: 'danger',
                       hidden: !contract?.portal_access_enabled
                     },
                     {
                       label: 'Zugang aktivieren',
                       onClick: () => handleTogglePortalAccess(tenant.id, contract?.id || "", false),
-                      icon: <Check className="w-4 h-4" />,
                       hidden: contract?.portal_access_enabled
                     }
                   ]}

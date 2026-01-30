@@ -488,18 +488,15 @@ export default function MetersManagementView({
                         actions={[
                           {
                             label: 'Stand erfassen',
-                            onClick: () => onAddReading(meter),
-                            icon: <Activity className="w-4 h-4" />
+                            onClick: () => onAddReading(meter)
                           },
                           {
                             label: 'Verlauf anzeigen',
-                            onClick: () => onViewHistory(meter),
-                            icon: <History className="w-4 h-4" />
+                            onClick: () => onViewHistory(meter)
                           },
                           {
                             label: 'Bearbeiten',
-                            onClick: () => onEditMeter(meter),
-                            icon: <Edit2 className="w-4 h-4" />
+                            onClick: () => onEditMeter(meter)
                           }
                         ]}
                       />

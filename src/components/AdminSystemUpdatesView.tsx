@@ -232,18 +232,15 @@ export default function AdminSystemUpdatesView() {
                   actions={[
                     {
                       label: update.is_published ? 'Veröffentlichung aufheben' : 'Veröffentlichen',
-                      onClick: () => togglePublished(update),
-                      icon: update.is_published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />
+                      onClick: () => togglePublished(update)
                     },
                     {
                       label: 'Bearbeiten',
-                      onClick: () => openEditModal(update),
-                      icon: <Edit2 className="w-4 h-4" />
+                      onClick: () => openEditModal(update)
                     },
                     {
                       label: 'Löschen',
                       onClick: () => handleDelete(update.id),
-                      icon: <Trash2 className="w-4 h-4" />,
                       variant: 'danger' as const
                     }
                   ]}

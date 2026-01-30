@@ -718,18 +718,15 @@ export default function IncomeView() {
                           actions={[
                             ...(income.document_id ? [{
                               label: 'Beleg herunterladen',
-                              onClick: () => handleDownloadDocument(income.document_id!),
-                              icon: <FileText className="w-4 h-4" />
+                              onClick: () => handleDownloadDocument(income.document_id!)
                             }] : []),
                             {
                               label: 'Bearbeiten',
-                              onClick: () => handleEditIncome(income),
-                              icon: <Edit className="w-4 h-4" />
+                              onClick: () => handleEditIncome(income)
                             },
                             {
                               label: 'Löschen',
                               onClick: () => handleDeleteIncome(income.id),
-                              icon: <Trash2 className="w-4 h-4" />,
                               variant: 'danger' as const
                             }
                           ]}

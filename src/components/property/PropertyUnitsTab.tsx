@@ -435,18 +435,15 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                               onClick: () => {
                                 setSelectedUnitForTenant(unit);
                                 setShowTenantModal(true);
-                              },
-                              icon: <FileText className="w-4 h-4" />
+                              }
                             }] : []),
                             {
                               label: 'Bearbeiten',
-                              onClick: () => openEditModal(unit),
-                              icon: <Edit className="w-4 h-4" />
+                              onClick: () => openEditModal(unit)
                             },
                             {
                               label: 'Löschen',
                               onClick: () => handleDeleteUnit(unit),
-                              icon: <Trash2 className="w-4 h-4" />,
                               variant: 'danger' as const
                             }
                           ]}

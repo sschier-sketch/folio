@@ -665,18 +665,15 @@ export default function ExpensesView() {
                           actions={[
                             ...(expense.document_id ? [{
                               label: 'Beleg herunterladen',
-                              onClick: () => handleDownloadDocument(expense.document_id!),
-                              icon: <FileText className="w-4 h-4" />
+                              onClick: () => handleDownloadDocument(expense.document_id!)
                             }] : []),
                             {
                               label: 'Bearbeiten',
-                              onClick: () => handleEditExpense(expense),
-                              icon: <Edit className="w-4 h-4" />
+                              onClick: () => handleEditExpense(expense)
                             },
                             {
                               label: 'Löschen',
                               onClick: () => handleDeleteExpense(expense.id),
-                              icon: <Trash2 className="w-4 h-4" />,
                               variant: 'danger' as const
                             }
                           ]}

@@ -314,13 +314,11 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
                           actions={[
                             {
                               label: 'Bearbeiten',
-                              onClick: () => openEditModal(contact),
-                              icon: <Edit2 className="w-4 h-4" />
+                              onClick: () => openEditModal(contact)
                             },
                             {
                               label: 'Löschen',
                               onClick: () => handleDelete(contact.id),
-                              icon: <Trash2 className="w-4 h-4" />,
                               variant: 'danger' as const
                             }
                           ]}

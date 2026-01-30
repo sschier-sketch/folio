@@ -818,21 +818,18 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                           onClick: () => {
                             setSelectedProperty(property);
                             setShowDetails(true);
-                          },
-                          icon: <Eye className="w-4 h-4" />
+                          }
                         },
                         {
                           label: 'Bearbeiten',
                           onClick: () => {
                             setSelectedProperty(property);
                             setShowModal(true);
-                          },
-                          icon: <Pencil className="w-4 h-4" />
+                          }
                         },
                         {
                           label: 'Löschen',
                           onClick: () => handleDelete(property.id),
-                          icon: <Trash2 className="w-4 h-4" />,
                           variant: 'danger'
                         }
                       ]}
