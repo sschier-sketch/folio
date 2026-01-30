@@ -213,7 +213,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Building2 className="w-12 h-12" style={{ color: '#2F6FED' }} />
+                <Building2 className="w-12 h-12" style={{ color: '#3c8af7' }} />
               )}
             </div>
 

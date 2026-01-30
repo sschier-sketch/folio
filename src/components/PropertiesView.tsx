@@ -718,7 +718,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <Building2 className="w-5 h-5" style={{ color: '#2F6FED' }} />
+                          <Building2 className="w-5 h-5" style={{ color: '#3c8af7' }} />
                         )}
                       </div>
                       <div>

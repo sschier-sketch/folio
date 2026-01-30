@@ -608,7 +608,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                 <Info className="w-4 h-4" />
               </button>
             </div>
-            <TrendingUp className="w-5 h-5" style={{ color: '#2F6FED' }} strokeWidth={1.5} />
+            <TrendingUp className="w-5 h-5" style={{ color: '#3c8af7' }} strokeWidth={1.5} />
           </div>
           <div className="text-3xl font-bold text-dark mb-1">
             {calculateGrossYield().toFixed(2)}%
@@ -643,7 +643,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                 <Info className="w-4 h-4" />
               </button>
             </div>
-            <TrendingUp className="w-5 h-5" style={{ color: '#2F6FED' }} strokeWidth={1.5} />
+            <TrendingUp className="w-5 h-5" style={{ color: '#3c8af7' }} strokeWidth={1.5} />
           </div>
           <div className="text-3xl font-bold text-dark mb-1">
             {calculateNetYield().toFixed(2)}%
@@ -675,7 +675,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-500">Netto-Cashflow</span>
-            <Users className="w-5 h-5" style={{ color: '#2F6FED' }} strokeWidth={1.5} />
+            <Users className="w-5 h-5" style={{ color: '#3c8af7' }} strokeWidth={1.5} />
           </div>
           <div className="text-3xl font-bold text-dark mb-1">
             {formatCurrency(netMonthlyIncome)}

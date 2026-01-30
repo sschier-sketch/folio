@@ -498,7 +498,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           </div>
           <button
             onClick={() => setShowUploadModal(true)}
-            style={{ backgroundColor: '#2F6FED' }}
+            style={{ backgroundColor: '#3c8af7' }}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-full font-medium hover:opacity-90 transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -552,7 +552,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           </p>
           <button
             onClick={() => setShowUploadModal(true)}
-            style={{ backgroundColor: '#2F6FED' }}
+            style={{ backgroundColor: '#3c8af7' }}
             className="inline-flex items-center gap-2 px-4 py-2 text-white rounded-full font-medium hover:opacity-90 transition-colors"
           >
             <Upload className="w-4 h-4" />
@@ -674,7 +674,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                     setCopiedCode(true);
                     setTimeout(() => setCopiedCode(false), 2000);
                   }}
-                  style={{ backgroundColor: '#2F6FED' }}
+                  style={{ backgroundColor: '#3c8af7' }}
                   className="inline-flex items-center gap-2 px-4 py-2 text-white rounded-full font-medium hover:opacity-90 transition-colors"
                 >
                   {copiedCode ? (
@@ -697,7 +697,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                 href="https://mcenergieausweis.de"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ backgroundColor: '#2F6FED' }}
+                style={{ backgroundColor: '#3c8af7' }}
                 className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-full font-medium hover:opacity-90 transition-colors"
               >
                 Zu McEnergieausweis
@@ -853,7 +853,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                 </p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  style={{ backgroundColor: '#2F6FED' }}
+                  style={{ backgroundColor: '#3c8af7' }}
                   className="px-4 py-2 text-white rounded-full hover:opacity-90 transition-colors"
                 >
                   Dateien auswählen
@@ -932,7 +932,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                 <button
                   onClick={handleUpload}
                   disabled={uploadFiles.length === 0 || isUploading || allSuccess}
-                  style={uploadFiles.length === 0 || isUploading || allSuccess ? {} : { backgroundColor: '#2F6FED' }}
+                  style={uploadFiles.length === 0 || isUploading || allSuccess ? {} : { backgroundColor: '#3c8af7' }}
                   className={`px-6 py-2 rounded-full font-medium transition-colors ${
                     uploadFiles.length === 0 || isUploading || allSuccess
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
