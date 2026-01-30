@@ -237,8 +237,8 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <Euro className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+              <Euro className="w-6 h-6" style={{ color: '#2F6FED' }} />
             </div>
             <div className="flex-1">
               <div className="flex items-center">
