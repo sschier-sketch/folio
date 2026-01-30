@@ -546,7 +546,7 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <p className="text-sm text-blue-900">
           Diese Daten dienen der Vorbereitung für zukünftige Energie- und
           Verbrauchsauswertungen und sind für alle Nutzer verfügbar.

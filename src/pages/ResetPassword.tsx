@@ -204,7 +204,7 @@ export function ResetPassword() {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
               <p className="text-sm text-blue-700">
                 <strong>So funktioniert es:</strong> Sie erhalten eine E-Mail
                 mit einem sicheren Link. Klicken Sie auf den Link, um Ihr
@@ -290,7 +290,7 @@ export function ResetPassword() {
               />
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
               <p className="text-sm text-blue-700">
                 <strong>Passwort-Anforderungen:</strong>
                 <ul className="list-disc list-inside mt-2 space-y-1">

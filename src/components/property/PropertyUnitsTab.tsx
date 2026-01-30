@@ -628,7 +628,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                 </div>
 
                 <div className="col-span-2">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-3">
                     <p className="text-sm text-blue-900">
                       <strong>Hinweis:</strong> Mieter werden einer Einheit über die Mieterdetails zugeordnet. Öffnen Sie die Mieterdetails und wählen Sie dort die gewünschte Einheit aus.
                     </p>
@@ -658,8 +658,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                     setEditingUnit(null);
                     resetForm();
                   }}
-                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                  className="flex-1 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                  className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Abbrechen
                 </button>

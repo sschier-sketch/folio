@@ -297,15 +297,15 @@ export default function TenantOverviewTab({
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Bearbeiten
                 </button>
                 <button
                   onClick={handleDelete}
-                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Löschen
                 </button>
@@ -317,8 +317,8 @@ export default function TenantOverviewTab({
                     setIsEditing(false);
                     setFormData(tenant);
                   }}
-                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Abbrechen
                 </button>
@@ -643,7 +643,7 @@ export default function TenantOverviewTab({
         )}
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <div className="text-sm text-blue-900">
           <p className="font-semibold mb-1">Hinweis:</p>
           <p>

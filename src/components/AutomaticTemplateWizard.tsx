@@ -899,7 +899,8 @@ export default function AutomaticTemplateWizard({ onClose }: AutomaticTemplateWi
         <div className="p-6 border-t border-gray-200 flex items-center justify-between bg-gray-50">
           <button
             onClick={currentStep === 1 ? onClose : goToPreviousStep}
-            className="px-6 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium flex items-center gap-2"
+            style={currentStep === 1 ? { backgroundColor: "#faf8f8", color: "#000000" } : undefined}
+            className={currentStep === 1 ? "px-6 py-3 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors flex items-center gap-2" : "px-6 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium flex items-center gap-2"}
           >
             {currentStep === 1 ? (
               <>Abbrechen</>

@@ -228,7 +228,7 @@ export default function TenantPortalProfile({
         </form>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <div className="flex gap-3">
           <div className="flex-shrink-0">
             <svg

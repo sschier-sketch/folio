@@ -389,7 +389,8 @@ export default function AdminPayoutsView() {
                   setTransactionId("");
                   setSelectedPayout(null);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>
@@ -428,7 +429,8 @@ export default function AdminPayoutsView() {
                   setRejectReason("");
                   setSelectedPayout(null);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>

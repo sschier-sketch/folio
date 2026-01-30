@@ -370,7 +370,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
         )}
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <p className="text-sm text-blue-900">
           Die Historie wird automatisch aktualisiert, wenn Änderungen an Einheiten,
           Mietverhältnissen oder anderen Objektdaten vorgenommen werden.

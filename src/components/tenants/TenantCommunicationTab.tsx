@@ -552,7 +552,7 @@ export default function TenantCommunicationTab({
           )}
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
           <div className="flex items-start gap-3">
             <MessageSquare className="w-5 h-5 text-primary-blue mt-0.5" />
             <div className="text-sm text-blue-900">
@@ -719,8 +719,8 @@ export default function TenantCommunicationTab({
                   <button
                     type="button"
                     onClick={() => setShowNewEntry(false)}
-                    style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                    className="flex-1 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+                    style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                    className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
                   >
                     Abbrechen
                   </button>

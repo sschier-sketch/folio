@@ -383,7 +383,7 @@ ${message}
             <div className="text-sm text-gray-600">Offene Posten</div>
           </div>
 
-          <div className="bg-blue-50 rounded-lg p-4">
+          <div style={{ backgroundColor: "#eff4fe" }} className="rounded-lg p-4">
             <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-3 border border-[#DDE7FF]">
               <Send className="w-5 h-5 text-[#1e1e24]" />
             </div>
@@ -619,7 +619,7 @@ ${message}
         </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <div className="flex items-start gap-3">
           <TrendingUp className="w-5 h-5 text-primary-blue mt-0.5" />
           <div className="text-sm text-blue-900">

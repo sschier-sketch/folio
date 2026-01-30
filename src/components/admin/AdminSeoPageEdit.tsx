@@ -370,7 +370,8 @@ export default function AdminSeoPageEdit({ pageId, onBack }: AdminSeoPageEditPro
           <button
             type="button"
             onClick={onBack}
-            className="px-6 py-2 text-gray-600 hover:text-dark transition-colors"
+            style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+            className="px-6 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
           >
             Abbrechen
           </button>

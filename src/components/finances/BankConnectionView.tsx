@@ -126,7 +126,7 @@ export default function BankConnectionView() {
           </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
           <div className="flex items-start gap-3">
             <Shield className="w-5 h-5 text-primary-blue mt-0.5" />
             <div className="text-sm text-blue-900">

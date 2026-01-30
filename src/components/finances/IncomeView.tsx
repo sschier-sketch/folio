@@ -999,7 +999,7 @@ export default function IncomeView() {
                   Beleg hochladen (optional)
                 </label>
                 {existingDocument && !uploadedFile && (
-                  <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="mb-2 p-3 border rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-sm text-blue-700">
                         <FileText className="w-4 h-4" />
@@ -1063,7 +1063,7 @@ export default function IncomeView() {
                     <span className="text-sm text-gray-600">Datei auswählen (PDF, JPG, PNG)</span>
                   </label>
                   {uploadedFile && (
-                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                    <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="mt-2 p-2 border rounded-lg flex items-center gap-2">
                       <FileText className="w-4 h-4 text-blue-600" />
                       <span className="text-sm text-blue-700 flex-1">{uploadedFile.name}</span>
                       <button

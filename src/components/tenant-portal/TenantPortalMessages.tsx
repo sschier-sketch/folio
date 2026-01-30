@@ -141,7 +141,7 @@ export default function TenantPortalMessages({
           )}
 
           {message.attachment_name && message.attachment_path && (
-            <div className="mt-4 flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="mt-4 flex items-center gap-2 p-3 border rounded-lg">
               <FileText className="w-5 h-5 text-primary-blue" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-dark">{message.attachment_name}</p>

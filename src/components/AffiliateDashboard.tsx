@@ -617,7 +617,8 @@ export default function AffiliateDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowPayoutModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                  className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Abbrechen
                 </button>

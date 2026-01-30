@@ -530,7 +530,7 @@ export default function HandoverProtocolModal({
 
   const renderStep1 = () => (
     <div className="space-y-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <h4 className="text-sm font-semibold text-gray-700 mb-3">Kontext</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -1316,8 +1316,8 @@ export default function HandoverProtocolModal({
             <button
               type="button"
               onClick={onClose}
-              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-              className="flex-1 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
             >
               Abbrechen
             </button>

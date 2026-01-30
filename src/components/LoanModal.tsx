@@ -435,7 +435,7 @@ export default function LoanModal({
       {formData.interest_rate > 0 &&
         formData.monthly_payment > 0 &&
         formData.monthly_principal > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
             <h4 className="text-sm font-semibold text-blue-900 mb-2">
               Tilgungs-Transparenz
             </h4>
@@ -530,7 +530,7 @@ export default function LoanModal({
           E-Mail Erinnerung
         </h3>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+        <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4 mb-4">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -855,8 +855,8 @@ export default function LoanModal({
             <button
               type="button"
               onClick={onClose}
-              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-              className="flex-1 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
             >
               Abbrechen
             </button>

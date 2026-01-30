@@ -359,7 +359,7 @@ export default function IndexRentView() {
         </div>
       )}
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4 flex items-start gap-3">
         <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
         <div className="flex-1">
           <h3 className="font-semibold text-blue-900 mb-1">Wichtiger Hinweis</h3>

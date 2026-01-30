@@ -570,7 +570,8 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDowngradeModal(false)}
-                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>

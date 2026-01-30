@@ -801,7 +801,8 @@ export default function RentPaymentsView() {
                   setPartialAmount("");
                   setPartialNote("");
                 }}
-                className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>

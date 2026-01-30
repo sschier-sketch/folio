@@ -884,7 +884,7 @@ export default function ExpensesView() {
                   Dokument (optional)
                 </label>
                 {existingDocument && !uploadedFile && (
-                  <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="mb-2 p-3 border rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-sm text-blue-700">
                         <FileText className="w-4 h-4" />

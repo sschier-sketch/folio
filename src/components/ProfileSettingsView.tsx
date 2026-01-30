@@ -355,7 +355,8 @@ export default function ProfileSettingsView() {
                   setPasswordError("");
                   setPasswordSuccess("");
                 }}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="px-6 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 {language === "de" ? "Abbrechen" : "Cancel"}
               </button>

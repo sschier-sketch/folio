@@ -277,8 +277,8 @@ export default function TenantDepositTab({
                   setIsEditing(false);
                   loadData();
                 }}
-                style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>
@@ -516,7 +516,7 @@ export default function TenantDepositTab({
         </div>
       )}
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-6">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
