@@ -165,7 +165,6 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
             <div className="w-12 h-12 rounded-full flex items-center justify-center border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
               <FileText className="w-6 h-6" style={{ color: '#1e1e24' }} />
             </div>
-            <TrendingUp className="w-5 h-5 text-emerald-500" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">{stats.totalDocuments}</div>
           <div className="text-sm text-gray-500">Dokumente gesamt</div>

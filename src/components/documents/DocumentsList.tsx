@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
+import TableActionsDropdown from "../common/TableActionsDropdown";
 
 interface Document {
   id: string;
@@ -625,16 +626,17 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                       {formatFileSize(doc.file_size)}
                     </td>
                     <td className="px-4 py-4 text-right text-sm font-medium">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDocumentClick(doc.id);
-                        }}
-                        className="text-blue-600 hover:text-blue-900 inline-flex items-center gap-1"
-                      >
-                        <Eye className="w-4 h-4" />
-                        Ansehen
-                      </button>
+                      <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+                        <TableActionsDropdown
+                          actions={[
+                            {
+                              label: "Ansehen",
+                              onClick: () => onDocumentClick(doc.id),
+                              icon: <Eye className="w-4 h-4" />,
+                            },
+                          ]}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}

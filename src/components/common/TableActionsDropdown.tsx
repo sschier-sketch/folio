@@ -68,10 +68,11 @@ export default function TableActionsDropdown({ actions }: TableActionsDropdownPr
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors border"
+        style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}
         title="Aktionen"
       >
-        <MoreVertical className="w-5 h-5 text-gray-500" />
+        <MoreVertical className="w-4 h-4" style={{ color: '#1e1e24' }} />
       </button>
 
       {isOpen && createPortal(
