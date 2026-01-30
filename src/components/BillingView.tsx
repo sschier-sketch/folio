@@ -30,8 +30,6 @@ export default function BillingView() {
       id: "operating-costs" as Tab,
       label: "Betriebskosten",
       icon: Calculator,
-      premium: true,
-      disabled: true,
     },
     {
       id: "taxes" as Tab,
