@@ -724,10 +724,14 @@ export default function IncomeView() {
                         )}
                         <button
                           onClick={() => handleEditIncome(income)}
-                          className="text-gray-300 hover:text-blue-600 transition-colors"
+                          style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                          className="px-3 py-2 rounded-lg font-medium hover:bg-[#e8e8e8] transition-colors flex items-center gap-2"
                           title="Bearbeiten"
                         >
-                          <Edit className="w-4 h-4" />
+                          <div className="w-5 h-5 bg-[#EEF4FF] rounded-full flex items-center justify-center border border-[#DDE7FF]">
+                            <Edit className="w-3 h-3 text-[#1e1e24]" />
+                          </div>
+                          <span className="text-sm">Bearbeiten</span>
                         </button>
                         <button
                           onClick={() => handleDeleteIncome(income.id)}
