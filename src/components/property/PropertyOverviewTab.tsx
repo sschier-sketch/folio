@@ -406,9 +406,9 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           {!isEditingMasterData ? (
             <button
               onClick={() => setIsEditingMasterData(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300 transition-colors"
+              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+              className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
             >
-              <Edit className="w-4 h-4" />
               Bearbeiten
             </button>
           ) : (
@@ -608,7 +608,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                 <Info className="w-4 h-4" />
               </button>
             </div>
-            <TrendingUp className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+            <TrendingUp className="w-5 h-5" style={{ color: '#2F6FED' }} strokeWidth={1.5} />
           </div>
           <div className="text-3xl font-bold text-dark mb-1">
             {calculateGrossYield().toFixed(2)}%
@@ -643,7 +643,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                 <Info className="w-4 h-4" />
               </button>
             </div>
-            <TrendingUp className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+            <TrendingUp className="w-5 h-5" style={{ color: '#2F6FED' }} strokeWidth={1.5} />
           </div>
           <div className="text-3xl font-bold text-dark mb-1">
             {calculateNetYield().toFixed(2)}%
@@ -675,7 +675,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-500">Netto-Cashflow</span>
-            <Users className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+            <Users className="w-5 h-5" style={{ color: '#2F6FED' }} strokeWidth={1.5} />
           </div>
           <div className="text-3xl font-bold text-dark mb-1">
             {formatCurrency(netMonthlyIncome)}

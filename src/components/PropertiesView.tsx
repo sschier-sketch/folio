@@ -579,11 +579,11 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               return (
                 <div
                   key={property.id}
-                  className="bg-white rounded overflow-hidden border border-gray-100"
+                  className="bg-white rounded overflow-hidden"
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-primary-blue/10 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0" style={{ backgroundColor: property.photo_url ? 'transparent' : '#EEF4FF', border: property.photo_url ? 'none' : '1px solid #DDE7FF' }}>
                         {property.photo_url ? (
                           <img
                             src={property.photo_url}
@@ -591,7 +591,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <Building2 className="w-6 h-6 text-primary-blue" />
+                          <Building2 className="w-6 h-6" style={{ color: '#2F6FED' }} />
                         )}
                       </div>
                       <div className="flex gap-2">
@@ -710,7 +710,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                   header: "Immobilie",
                   render: (property: Property) => (
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-primary-blue/10 flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0" style={{ backgroundColor: property.photo_url ? 'transparent' : '#EEF4FF', border: property.photo_url ? 'none' : '1px solid #DDE7FF' }}>
                         {property.photo_url ? (
                           <img
                             src={property.photo_url}
@@ -718,7 +718,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <Building2 className="w-5 h-5 text-primary-blue" />
+                          <Building2 className="w-5 h-5" style={{ color: '#2F6FED' }} />
                         )}
                       </div>
                       <div>
@@ -918,7 +918,8 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                   setNewLabelText("");
                   setSelectedColor("blue");
                 }}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300 transition-colors"
+                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>

@@ -205,7 +205,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
       <div className="bg-white rounded-lg p-6 mb-6">
         <div className="flex items-center gap-6">
           <div className="relative group">
-            <div className="w-24 h-24 rounded-full overflow-hidden bg-blue-50 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center" style={{ backgroundColor: photoUrl ? 'transparent' : '#EEF4FF', border: photoUrl ? 'none' : '1px solid #DDE7FF' }}>
               {photoUrl ? (
                 <img
                   src={photoUrl}
@@ -213,7 +213,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Building2 className="w-12 h-12 text-primary-blue" />
+                <Building2 className="w-12 h-12" style={{ color: '#2F6FED' }} />
               )}
             </div>
 
