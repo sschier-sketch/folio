@@ -809,7 +809,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                 {
                   key: "actions",
                   header: "Aktionen",
-                  align: "right" as const,
+                  align: "center" as const,
                   render: (property: Property) => (
                     <TableActionsDropdown
                       actions={[

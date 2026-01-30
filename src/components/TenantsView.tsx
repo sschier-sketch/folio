@@ -534,7 +534,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                 {
                   key: "actions",
                   header: "Details",
-                  align: "right" as const,
+                  align: "center" as const,
                   render: (tenant: TenantWithDetails) => (
                     <TableActionsDropdown
                       actions={[

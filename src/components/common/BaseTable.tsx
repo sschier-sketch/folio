@@ -176,7 +176,7 @@ export function ActionButton({
 
 export function ActionsCell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center justify-end gap-3" onClick={(e) => e.stopPropagation()}>
+    <div className="flex items-center justify-center gap-3" onClick={(e) => e.stopPropagation()}>
       {children}
     </div>
   );

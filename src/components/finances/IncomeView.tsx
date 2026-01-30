@@ -683,7 +683,7 @@ export default function IncomeView() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Betrag
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aktionen
                   </th>
                 </tr>
@@ -712,8 +712,8 @@ export default function IncomeView() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark">
                       +{parseFloat(income.amount.toString()).toFixed(2)} €
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center justify-end">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                      <div className="flex items-center justify-center">
                         <TableActionsDropdown
                           actions={[
                             ...(income.document_id ? [{

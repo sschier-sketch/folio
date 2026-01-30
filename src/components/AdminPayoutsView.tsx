@@ -310,6 +310,7 @@ export default function AdminPayoutsView() {
             {
               key: "actions",
               header: "",
+              align: "center" as const,
               render: (payout: PayoutRequest) =>
                 payout.status === "pending" && (
                   <div className="flex gap-2">

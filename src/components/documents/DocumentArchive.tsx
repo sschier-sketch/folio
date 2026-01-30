@@ -203,7 +203,7 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Größe
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aktionen
                   </th>
                 </tr>
@@ -237,26 +237,28 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {formatFileSize(doc.file_size)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <TableActionsDropdown
-                        actions={[
-                          {
-                            label: "Ansehen",
-                            onClick: () => onDocumentClick(doc.id),
-                          },
-                          {
-                            label: isPro ? "Wiederherstellen" : "Wiederherstellen (Pro)",
-                            onClick: () => handleRestore(doc.id),
-                            hidden: !isPro,
-                          },
-                          {
-                            label: isPro ? "Endgültig löschen" : "Endgültig löschen (Pro)",
-                            onClick: () => handleDelete(doc.id, doc.file_path),
-                            variant: "danger",
-                            hidden: !isPro,
-                          },
-                        ]}
-                      />
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                      <div className="flex justify-center">
+                        <TableActionsDropdown
+                          actions={[
+                            {
+                              label: "Ansehen",
+                              onClick: () => onDocumentClick(doc.id),
+                            },
+                            {
+                              label: isPro ? "Wiederherstellen" : "Wiederherstellen (Pro)",
+                              onClick: () => handleRestore(doc.id),
+                              hidden: !isPro,
+                            },
+                            {
+                              label: isPro ? "Endgültig löschen" : "Endgültig löschen (Pro)",
+                              onClick: () => handleDelete(doc.id, doc.file_path),
+                              variant: "danger",
+                              hidden: !isPro,
+                            },
+                          ]}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}

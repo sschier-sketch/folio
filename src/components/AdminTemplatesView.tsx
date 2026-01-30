@@ -352,7 +352,7 @@ export function AdminTemplatesView() {
           {
             key: "actions",
             header: "Aktionen",
-            align: "right" as const,
+            align: "center" as const,
             render: (template: Template) => (
               <TableActionsDropdown
                 actions={[

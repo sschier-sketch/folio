@@ -582,7 +582,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                       )}
                     </div>
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aktionen
                   </th>
                 </tr>
@@ -625,8 +625,8 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                     <td className="px-4 py-4 text-sm text-gray-700">
                       {formatFileSize(doc.file_size)}
                     </td>
-                    <td className="px-4 py-4 text-right text-sm font-medium">
-                      <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-4 py-4 text-center text-sm font-medium">
+                      <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                         <TableActionsDropdown
                           actions={[
                             {

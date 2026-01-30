@@ -615,6 +615,7 @@ export function Admin() {
                 {
                   key: "actions",
                   header: "Aktionen",
+                  align: "center" as const,
                   render: (user: UserData) => (
                     <ActionsCell>
                       <ActionButton

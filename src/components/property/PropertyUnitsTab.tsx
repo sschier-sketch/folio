@@ -373,7 +373,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                   <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Offene Miete
                   </th>
-                  <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktionen
                   </th>
                 </tr>
@@ -426,8 +426,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center justify-end">
+                    <td className="py-4 px-6 text-center">
+                      <div className="flex items-center justify-center">
                         <TableActionsDropdown
                           actions={[
                             ...(unit.status !== "rented" ? [{

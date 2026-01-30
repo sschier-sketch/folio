@@ -617,7 +617,7 @@ export default function RentPaymentsView() {
           {
             key: "actions",
             header: "Aktionen",
-            align: "right" as const,
+            align: "center" as const,
             render: (payment: RentPayment) => (
               <TableActionsDropdown
                 actions={[

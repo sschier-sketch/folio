@@ -202,7 +202,7 @@ export default function AdminSeoPagesView() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Zuletzt geändert
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aktion
                 </th>
               </tr>
@@ -270,15 +270,17 @@ export default function AdminSeoPagesView() {
                         {formatDate(page.updated_at)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <TableActionsDropdown
-                        actions={[
-                          {
-                            label: "Bearbeiten",
-                            onClick: () => setSelectedPageId(page.id),
-                          },
-                        ]}
-                      />
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                      <div className="flex justify-center">
+                        <TableActionsDropdown
+                          actions={[
+                            {
+                              label: "Bearbeiten",
+                              onClick: () => setSelectedPageId(page.id),
+                            },
+                          ]}
+                        />
+                      </div>
                     </td>
                   </tr>
                 );

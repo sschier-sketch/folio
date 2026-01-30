@@ -519,6 +519,7 @@ export default function AdminAffiliatesView() {
             {
               key: "actions",
               header: "",
+              align: "center" as const,
               render: (affiliate: Affiliate) => (
                 <button
                   onClick={() => handleViewAffiliate(affiliate)}

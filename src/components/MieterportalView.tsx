@@ -271,7 +271,7 @@ export default function MieterportalView() {
           {
             key: "actions",
             header: "Aktionen",
-            align: "right" as const,
+            align: "center" as const,
             render: (tenant: Tenant) => {
               const contract = Array.isArray(tenant.rental_contract)
                 ? tenant.rental_contract[0]
