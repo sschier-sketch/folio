@@ -361,8 +361,8 @@ ${message}
         <>
           <div className="bg-white rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-            <Bell className="w-6 h-6 text-amber-600" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center border border-[#DDE7FF]">
+            <Bell className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-dark">
@@ -376,16 +376,16 @@ ${message}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-amber-50 rounded-lg p-4">
-            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mb-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-3 border border-[#DDE7FF]">
+              <AlertTriangle className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <div className="text-2xl font-bold text-dark mb-1">{stats.openItems}</div>
             <div className="text-sm text-gray-600">Offene Posten</div>
           </div>
 
           <div className="bg-blue-50 rounded-lg p-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-              <Send className="w-5 h-5 text-primary-blue" />
+            <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-3 border border-[#DDE7FF]">
+              <Send className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <div className="text-2xl font-bold text-dark mb-1">{stats.remindersSent}</div>
             <div className="text-sm text-gray-600">
@@ -394,8 +394,8 @@ ${message}
           </div>
 
           <div className="bg-emerald-50 rounded-lg p-4">
-            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
-              <CheckCircle className="w-5 h-5 text-emerald-600" />
+            <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-3 border border-[#DDE7FF]">
+              <CheckCircle className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <div className="text-2xl font-bold text-dark mb-1">{stats.successfullyCollected}</div>
             <div className="text-sm text-gray-600">
@@ -481,7 +481,7 @@ ${message}
                         <h4 className="font-semibold text-dark">
                           {unitInfo} - {tenantName}
                         </h4>
-                        <span className={`text-xs ${levelInfo.color} px-2 py-1 rounded`}>
+                        <span className={`text-xs ${levelInfo.color} px-3 py-1 rounded-full font-medium`}>
                           {levelInfo.label}
                         </span>
                       </div>
@@ -549,7 +549,7 @@ ${message}
                         <h4 className="font-semibold text-dark">
                           {unitInfo} - {tenantName}
                         </h4>
-                        <span className={`text-xs ${levelInfo.color} px-2 py-1 rounded`}>
+                        <span className={`text-xs ${levelInfo.color} px-3 py-1 rounded-full font-medium`}>
                           {levelInfo.label}
                         </span>
                       </div>
@@ -572,8 +572,8 @@ ${message}
 
         <div className="space-y-4">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-              <span className="text-sm font-semibold text-primary-blue">
+            <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+              <span className="text-sm font-semibold text-[#1e1e24]">
                 1
               </span>
             </div>
@@ -589,8 +589,8 @@ ${message}
           </div>
 
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
-              <span className="text-sm font-semibold text-amber-600">2</span>
+            <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+              <span className="text-sm font-semibold text-[#1e1e24]">2</span>
             </div>
             <div className="flex-1">
               <h4 className="font-semibold text-dark mb-1">
@@ -604,8 +604,8 @@ ${message}
           </div>
 
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-              <span className="text-sm font-semibold text-red-600">3</span>
+            <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+              <span className="text-sm font-semibold text-[#1e1e24]">3</span>
             </div>
             <div className="flex-1">
               <h4 className="font-semibold text-dark mb-1">Mahnung</h4>
