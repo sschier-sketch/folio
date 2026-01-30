@@ -690,8 +690,8 @@ export default function TenantContractTab({
                   setUploadDescription("");
                 }}
                 disabled={isUploading}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors disabled:opacity-50"
+                style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors disabled:opacity-50"
               >
                 Abbrechen
               </button>
@@ -699,7 +699,7 @@ export default function TenantContractTab({
                 type="button"
                 onClick={handleUpload}
                 disabled={isUploading || uploadFiles.length === 0}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
               >
                 {isUploading ? "Lädt hoch..." : "Hochladen"}
               </button>

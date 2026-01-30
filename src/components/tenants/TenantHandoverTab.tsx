@@ -765,8 +765,8 @@ export default function TenantHandoverTab({
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setDeleteConfirmId(null)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                  className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Abbrechen
                 </button>

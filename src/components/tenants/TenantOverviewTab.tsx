@@ -297,16 +297,16 @@ export default function TenantOverviewTab({
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                  className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
-                  <Edit className="w-4 h-4" />
                   Bearbeiten
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors"
+                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                  className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
                   Löschen
                 </button>
               </>
@@ -317,16 +317,15 @@ export default function TenantOverviewTab({
                     setIsEditing(false);
                     setFormData(tenant);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                  className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
-                  <X className="w-4 h-4" />
                   Abbrechen
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
+                  className="px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
                 >
-                  <Save className="w-4 h-4" />
                   Speichern
                 </button>
               </>
@@ -337,8 +336,8 @@ export default function TenantOverviewTab({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                <Home className="w-5 h-5 text-primary-blue" />
+              <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+                <Home className="w-5 h-5 text-[#1e1e24]" />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">Immobilie</div>
@@ -397,8 +396,8 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
-                <User className="w-5 h-5 text-emerald-600" />
+              <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+                <User className="w-5 h-5 text-[#1e1e24]" />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">Name</div>
@@ -433,8 +432,8 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center shrink-0">
-                <Mail className="w-5 h-5 text-violet-600" />
+              <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+                <Mail className="w-5 h-5 text-[#1e1e24]" />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">E-Mail</div>
@@ -454,8 +453,8 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
-                <Phone className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+                <Phone className="w-5 h-5 text-[#1e1e24]" />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">Telefon</div>
@@ -477,8 +476,8 @@ export default function TenantOverviewTab({
 
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-                <MapPin className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+                <MapPin className="w-5 h-5 text-[#1e1e24]" />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">Adresse</div>
@@ -548,8 +547,8 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                <Calendar className="w-5 h-5 text-primary-blue" />
+              <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+                <Calendar className="w-5 h-5 text-[#1e1e24]" />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">Einzug / Auszug</div>
@@ -592,8 +591,8 @@ export default function TenantOverviewTab({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
-                <Users className="w-5 h-5 text-orange-600" />
+              <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center shrink-0 border border-[#DDE7FF]">
+                <Users className="w-5 h-5 text-[#1e1e24]" />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-gray-400 mb-1">Haushaltsgröße</div>

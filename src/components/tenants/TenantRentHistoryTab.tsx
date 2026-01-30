@@ -228,9 +228,9 @@ export default function TenantRentHistoryTab({
           {!isEditing ? (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+              className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
             >
-              <Edit className="w-4 h-4" />
               Bearbeiten
             </button>
           ) : (
@@ -240,16 +240,15 @@ export default function TenantRentHistoryTab({
                   setIsEditing(false);
                   loadData();
                 }}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
               >
-                <X className="w-4 h-4" />
                 Abbrechen
               </button>
               <button
                 onClick={handleSaveRent}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
               >
-                <Save className="w-4 h-4" />
                 Speichern
               </button>
             </div>

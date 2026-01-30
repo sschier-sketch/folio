@@ -265,9 +265,9 @@ export default function TenantDepositTab({
           {!isEditing ? (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+              className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
             >
-              <Edit className="w-4 h-4" />
               Bearbeiten
             </button>
           ) : (
@@ -277,16 +277,15 @@ export default function TenantDepositTab({
                   setIsEditing(false);
                   loadData();
                 }}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
               >
-                <X className="w-4 h-4" />
                 Abbrechen
               </button>
               <button
                 onClick={handleSaveDeposit}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
               >
-                <Save className="w-4 h-4" />
                 Speichern
               </button>
             </div>
@@ -647,15 +646,15 @@ export default function TenantDepositTab({
               <button
                 type="button"
                 onClick={() => setShowTransactionModal(false)}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                className="flex-1 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
               >
                 Abbrechen
               </button>
               <button
                 type="button"
                 onClick={handleSaveTransaction}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+                className="flex-1 px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
               >
                 Speichern
               </button>
