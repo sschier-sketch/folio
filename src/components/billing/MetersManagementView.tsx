@@ -417,21 +417,18 @@ export default function MetersManagementView({
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4">
-                    <div className="flex items-start gap-3">
-                      <Gauge className="w-5 h-5 text-primary-blue flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-medium text-dark">
-                          {meter.meter_name || meter.meter_number}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Nr: {meter.meter_number}
-                        </div>
-                        {meter.location && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            {meter.location}
-                          </div>
-                        )}
+                    <div>
+                      <div className="font-medium text-dark">
+                        {meter.meter_name || meter.meter_number}
                       </div>
+                      <div className="text-sm text-gray-500">
+                        Nr: {meter.meter_number}
+                      </div>
+                      {meter.location && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {meter.location}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

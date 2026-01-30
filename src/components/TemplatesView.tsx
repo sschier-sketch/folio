@@ -275,8 +275,8 @@ export default function TemplatesView() {
                         className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                       >
                         <div className="flex items-center gap-4 flex-1">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-5 h-5 text-blue-600" />
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
+                            <FileText className="w-5 h-5" style={{ color: '#1e1e24' }} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
@@ -320,7 +320,7 @@ export default function TemplatesView() {
                         <button
                           onClick={() => handleDownload(template)}
                           disabled={downloading === template.id || (template.is_premium && !isPremium)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors flex-shrink-0 ${
+                          className={`px-6 py-2 rounded-full font-medium transition-colors flex-shrink-0 ${
                             template.is_premium && !isPremium
                               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                               : "bg-primary-blue text-white hover:bg-blue-600"
@@ -328,20 +328,11 @@ export default function TemplatesView() {
                           title={template.is_premium && !isPremium ? "Pro-Tarif erforderlich" : ""}
                         >
                           {downloading === template.id ? (
-                            <>
-                              <Loader className="w-4 h-4 animate-spin" />
-                              Lädt...
-                            </>
+                            "Lädt..."
                           ) : template.is_premium && !isPremium ? (
-                            <>
-                              <Lock className="w-4 h-4" />
-                              Pro
-                            </>
+                            "Pro"
                           ) : (
-                            <>
-                              <Download className="w-4 h-4" />
-                              Herunterladen
-                            </>
+                            "Herunterladen"
                           )}
                         </button>
                       </div>

@@ -738,27 +738,18 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         <button
           onClick={handleUpload}
           disabled={files.length === 0 || isUploading || allSuccess}
-          className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+          className={`px-6 py-2 rounded-full font-medium transition-colors ${
             files.length === 0 || isUploading || allSuccess
               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
               : "bg-blue-600 text-white hover:bg-blue-700"
           }`}
         >
           {isUploading ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Wird hochgeladen...
-            </>
+            "Wird hochgeladen..."
           ) : allSuccess ? (
-            <>
-              <Check className="w-4 h-4" />
-              Erfolgreich hochgeladen
-            </>
+            "Erfolgreich hochgeladen"
           ) : (
-            <>
-              <Upload className="w-4 h-4" />
-              Jetzt hochladen
-            </>
+            "Jetzt hochladen"
           )}
         </button>
       </div>
