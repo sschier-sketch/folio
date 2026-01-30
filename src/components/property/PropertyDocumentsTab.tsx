@@ -919,15 +919,15 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                     setSelectedUnitId("");
                     setUploadDescription("");
                   }}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                  className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Abbrechen
                 </button>
                 <button
                   onClick={handleUpload}
                   disabled={uploadFiles.length === 0 || isUploading || allSuccess}
-                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-6 py-2 rounded-full font-medium transition-colors ${
                     uploadFiles.length === 0 || isUploading || allSuccess
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "bg-blue-600 text-white hover:bg-blue-700"

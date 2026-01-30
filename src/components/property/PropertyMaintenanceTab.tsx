@@ -585,14 +585,14 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowAddModal(false)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                  className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
                 >
                   Abbrechen
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
                 >
                   {editingTask ? "Speichern" : "Hinzufügen"}
                 </button>
