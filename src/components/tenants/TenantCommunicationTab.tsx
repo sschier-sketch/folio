@@ -719,7 +719,8 @@ export default function TenantCommunicationTab({
                   <button
                     type="button"
                     onClick={() => setShowNewEntry(false)}
-                    className="flex-1 px-4 py-2 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                    style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                    className="flex-1 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
                   >
                     Abbrechen
                   </button>

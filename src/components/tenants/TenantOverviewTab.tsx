@@ -447,7 +447,7 @@ export default function TenantOverviewTab({
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   />
                 ) : (
-                  <div className="text-gray-700">{tenant.email || "-"}</div>
+                  <div className="text-gray-700 font-semibold">{tenant.email || "-"}</div>
                 )}
               </div>
             </div>
@@ -468,7 +468,7 @@ export default function TenantOverviewTab({
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   />
                 ) : (
-                  <div className="text-gray-700">{tenant.phone || "-"}</div>
+                  <div className="text-gray-700 font-semibold">{tenant.phone || "-"}</div>
                 )}
               </div>
             </div>
