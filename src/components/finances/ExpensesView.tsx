@@ -537,8 +537,8 @@ export default function ExpensesView() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <TrendingDown className="w-6 h-6 text-red-600" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <TrendingDown className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {totalExpenses.toFixed(2)} €
@@ -547,8 +547,8 @@ export default function ExpensesView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-            <TrendingDown className="w-6 h-6 text-emerald-600" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <CheckCircle className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {paidExpenses.toFixed(2)} €
@@ -557,8 +557,8 @@ export default function ExpensesView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-            <TrendingDown className="w-6 h-6 text-amber-600" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <Clock className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {openExpenses.toFixed(2)} €

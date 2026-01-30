@@ -88,8 +88,8 @@ export default function ReceiptsView() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-            <Receipt className="w-6 h-6 text-amber-600" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <Receipt className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {receipts.filter((r) => r.status === "open").length}
@@ -98,8 +98,8 @@ export default function ReceiptsView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-            <Receipt className="w-6 h-6 text-emerald-600" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <Receipt className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {receipts.filter((r) => r.status === "booked").length}
@@ -108,8 +108,8 @@ export default function ReceiptsView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <Archive className="w-6 h-6 text-gray-600" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <Archive className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {receipts.filter((r) => r.status === "archived").length}

@@ -594,8 +594,8 @@ export default function IncomeView() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-            <TrendingUp className="w-6 h-6 text-emerald-600" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <TrendingUp className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {totalManualIncome.toFixed(2)} €
@@ -604,8 +604,8 @@ export default function IncomeView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <Calendar className="w-6 h-6 text-primary-blue" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <Calendar className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {rentalContracts.length}
@@ -614,8 +614,8 @@ export default function IncomeView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-            <CheckCircle2 className="w-6 h-6 text-slate-600" />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <CheckCircle2 className="w-6 h-6 text-[#1e1e24]" />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {totalRentIncome.toFixed(2)} €
