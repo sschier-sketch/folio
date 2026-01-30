@@ -591,7 +591,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <Building2 className="w-6 h-6" style={{ color: '#2F6FED' }} />
+                          <Building2 className="w-6 h-6" style={{ color: '#1E1E24' }} />
                         )}
                       </div>
                       <div className="flex gap-2">

@@ -238,7 +238,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-              <Euro className="w-6 h-6" style={{ color: '#2F6FED' }} />
+              <Euro className="w-6 h-6" style={{ color: '#1E1E24' }} />
             </div>
             <div className="flex-1">
               <div className="flex items-center">
@@ -256,7 +256,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-              <Home className="w-6 h-6" style={{ color: '#2F6FED' }} />
+              <Home className="w-6 h-6" style={{ color: '#1E1E24' }} />
             </div>
             <div className="flex-1">
               <div className="flex items-center">
@@ -274,7 +274,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-              <BarChart3 className="w-6 h-6" style={{ color: '#2F6FED' }} />
+              <BarChart3 className="w-6 h-6" style={{ color: '#1E1E24' }} />
             </div>
             <div className="flex-1">
               <div className="flex items-center">
@@ -292,7 +292,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-              <TrendingUp className="w-6 h-6" style={{ color: '#2F6FED' }} />
+              <TrendingUp className="w-6 h-6" style={{ color: '#1E1E24' }} />
             </div>
             <div className="flex-1">
               <div className="flex items-center">
@@ -310,7 +310,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-              <Euro className="w-6 h-6" style={{ color: '#2F6FED' }} />
+              <Euro className="w-6 h-6" style={{ color: '#1E1E24' }} />
             </div>
             <div className="flex-1">
               <div className="flex items-center">
@@ -328,7 +328,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-              <Euro className="w-6 h-6" style={{ color: '#2F6FED' }} />
+              <Euro className="w-6 h-6" style={{ color: '#1E1E24' }} />
             </div>
             <div className="flex-1">
               <div className="flex items-center">
