@@ -327,18 +327,18 @@ export default function OperatingCostWizardStep2() {
             </table>
           </div>
 
-          <div className="mt-6 p-4 flex items-start gap-3" style={{ backgroundColor: '#BCBFCC' }}>
-            <AlertCircle className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-medium text-gray-900 mb-1">
-                Hinweis zum Umlageschlüssel
-              </h4>
-              <p className="text-sm text-gray-700">
-                Der Umlageschlüssel bestimmt, wie die Kosten auf die Mieter
-                verteilt werden. Wählen Sie für jede Kostenart den passenden
-                Schlüssel aus. Lassen Sie den Betrag bei 0, wenn eine Kostenart
-                nicht anfällt.
-              </p>
+          <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4 mt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-primary-blue mt-0.5" />
+              <div className="text-sm text-blue-900">
+                <p className="font-semibold mb-1">Hinweis zum Umlageschlüssel:</p>
+                <p>
+                  Der Umlageschlüssel bestimmt, wie die Kosten auf die Mieter
+                  verteilt werden. Wählen Sie für jede Kostenart den passenden
+                  Schlüssel aus. Lassen Sie den Betrag bei 0, wenn eine Kostenart
+                  nicht anfällt.
+                </p>
+              </div>
             </div>
           </div>
         </div>
