@@ -22,7 +22,7 @@ export default function OperatingCostsView() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   useEffect(() => {
