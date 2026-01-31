@@ -15,7 +15,7 @@ export interface OperatingCostLineItem {
   id: string;
   statement_id: string;
   cost_type: string;
-  allocation_key: 'area' | 'persons' | 'units';
+  allocation_key: 'area' | 'persons' | 'units' | 'consumption';
   amount: number;
   created_at: string;
 }
@@ -68,7 +68,7 @@ export interface UpsertLineItemParams {
   items: Array<{
     id?: string;
     cost_type: string;
-    allocation_key: 'area' | 'persons' | 'units';
+    allocation_key: 'area' | 'persons' | 'units' | 'consumption';
     amount: number;
   }>;
 }
@@ -121,13 +121,20 @@ export const operatingCostService = {
     params: UpsertLineItemParams
   ): Promise<{ data: OperatingCostLineItem[] | null; error: any }> {
     try {
-      const itemsToUpsert = params.items.map((item) => ({
-        id: item.id,
-        statement_id: params.statement_id,
-        cost_type: item.cost_type,
-        allocation_key: item.allocation_key,
-        amount: item.amount,
-      }));
+      const itemsToUpsert = params.items.map((item) => {
+        const baseItem: any = {
+          statement_id: params.statement_id,
+          cost_type: item.cost_type,
+          allocation_key: item.allocation_key,
+          amount: item.amount,
+        };
+
+        if (item.id) {
+          baseItem.id = item.id;
+        }
+
+        return baseItem;
+      });
 
       const { data, error } = await supabase
         .from('operating_cost_line_items')

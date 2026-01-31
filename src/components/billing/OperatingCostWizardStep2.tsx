@@ -7,7 +7,7 @@ import { operatingCostService } from "../../lib/operatingCostService";
 interface CostItem {
   id?: string;
   cost_type: string;
-  allocation_key: "area" | "persons" | "units";
+  allocation_key: "area" | "persons" | "units" | "consumption";
   amount: number;
 }
 
@@ -34,6 +34,7 @@ const ALLOCATION_OPTIONS = [
   { value: "area", label: "Wohnfläche (m²)" },
   { value: "persons", label: "Personenzahl" },
   { value: "units", label: "Wohneinheiten" },
+  { value: "consumption", label: "Verbrauch (Zähler)" },
 ];
 
 export default function OperatingCostWizardStep2() {
@@ -208,23 +209,20 @@ export default function OperatingCostWizardStep2() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
             >
               {saving ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="inline-block w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2"></div>
                   Speichert...
                 </>
               ) : saveSuccess ? (
                 <>
-                  <span className="text-green-600">✓</span>
+                  <span className="text-green-600 mr-2">✓</span>
                   Gespeichert
                 </>
               ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  Speichern
-                </>
+                'Speichern'
               )}
             </button>
           </div>
@@ -319,13 +317,13 @@ export default function OperatingCostWizardStep2() {
             </table>
           </div>
 
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="mt-6 p-4 flex items-start gap-3" style={{ backgroundColor: '#BCBFCC' }}>
+            <AlertCircle className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="font-medium text-blue-900 mb-1">
+              <h4 className="font-medium text-gray-900 mb-1">
                 Hinweis zum Umlageschlüssel
               </h4>
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-gray-700">
                 Der Umlageschlüssel bestimmt, wie die Kosten auf die Mieter
                 verteilt werden. Wählen Sie für jede Kostenart den passenden
                 Schlüssel aus. Lassen Sie den Betrag bei 0, wenn eine Kostenart
@@ -338,28 +336,24 @@ export default function OperatingCostWizardStep2() {
         <div className="flex items-center justify-between mt-6">
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
             disabled={saving}
           >
-            <ArrowLeft className="w-4 h-4" />
             Zurück
           </button>
 
           <button
             onClick={handleNext}
             disabled={saving || totalCosts === 0}
-            className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Speichert...
               </>
             ) : (
-              <>
-                Weiter
-                <ArrowRight className="w-4 h-4" />
-              </>
+              'Weiter'
             )}
           </button>
         </div>

@@ -714,7 +714,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
               return (
                 <div
                   key={loan.id}
-                  className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-all"
+                  className="p-4 bg-gray-50 rounded-lg transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-start gap-3 flex-1">

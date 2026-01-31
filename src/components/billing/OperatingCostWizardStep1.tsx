@@ -221,28 +221,24 @@ export default function OperatingCostWizardStep1() {
         <div className="flex items-center justify-between mt-6">
           <button
             onClick={() => navigate("/dashboard?view=billing")}
-            className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
             disabled={creating}
           >
-            <ArrowLeft className="w-4 h-4" />
             Zurück
           </button>
 
           <button
             onClick={handleNext}
             disabled={!canProceed || creating || properties.length === 0}
-            className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {creating ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Erstelle...
               </>
             ) : (
-              <>
-                Weiter
-                <ArrowRight className="w-4 h-4" />
-              </>
+              'Weiter'
             )}
           </button>
         </div>

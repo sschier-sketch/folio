@@ -563,10 +563,9 @@ export default function OperatingCostWizardStep3() {
         <div className="flex items-center justify-between mt-6">
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
             disabled={saving}
           >
-            <ArrowLeft className="w-4 h-4" />
             Zurück
           </button>
 
@@ -576,10 +575,10 @@ export default function OperatingCostWizardStep3() {
             className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
-              <span className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <>
+                <div className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Speichert...
-              </span>
+              </>
             ) : (
               'Abrechnung speichern'
             )}
