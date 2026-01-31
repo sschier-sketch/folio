@@ -625,7 +625,7 @@ export default function IncomeView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg">
+      <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">Sonstige Einnahmen</h3>
           <button
@@ -690,7 +690,7 @@ export default function IncomeView() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {manualIncomes.map((income) => (
-                  <tr key={income.id} className="hover:bg-gray-50">
+                  <tr key={income.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {new Date(income.entry_date).toLocaleDateString("de-DE", {
                         year: "numeric",
@@ -741,7 +741,7 @@ export default function IncomeView() {
         )}
       </div>
 
-      <div className="bg-white rounded-lg">
+      <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-100">
           <h3 className="text-lg font-semibold text-dark">Aktuelle Mietverträge</h3>
         </div>
@@ -783,7 +783,7 @@ export default function IncomeView() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {rentalContracts.map((contract) => (
-                  <tr key={contract.id} className="hover:bg-gray-50">
+                  <tr key={contract.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {new Date(contract.start_date).toLocaleDateString("de-DE", {
                         year: "numeric",

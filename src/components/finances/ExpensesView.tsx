@@ -568,7 +568,7 @@ export default function ExpensesView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg">
+      <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">Ausgaben</h3>
           <button
@@ -594,35 +594,35 @@ export default function ExpensesView() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Datum
                   </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Beschreibung
                   </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Kategorie
                   </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Objekt
                   </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Betrag
                   </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-center py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aktionen
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white divide-y divide-gray-100">
                 {expenses.map((expense) => (
-                  <tr key={expense.id} className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-sm text-gray-700">
+                  <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="py-4 px-6 text-sm text-gray-700 whitespace-nowrap">
                       {new Date(expense.expense_date).toLocaleDateString(
                         "de-DE"
                       )}
@@ -647,10 +647,10 @@ export default function ExpensesView() {
                         {getPropertyName(expense.property_id)}
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm font-medium text-dark">
+                    <td className="py-4 px-6 text-sm font-medium text-dark whitespace-nowrap">
                       {expense.amount.toFixed(2)} €
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-4 px-6 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                           expense.status

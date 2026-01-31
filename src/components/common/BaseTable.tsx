@@ -48,7 +48,7 @@ export function BaseTable<T>({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl overflow-hidden">
+      <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-blue"></div>
         </div>
@@ -58,7 +58,7 @@ export function BaseTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-xl overflow-hidden">
+      <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-12 text-center">
           <p className="text-gray-400">{emptyMessage}</p>
         </div>
@@ -67,7 +67,7 @@ export function BaseTable<T>({
   }
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden">
+    <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
@@ -75,7 +75,7 @@ export function BaseTable<T>({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider ${getAlignmentClass(column.align)} ${
+                  className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${getAlignmentClass(column.align)} ${
                     column.sortable ? "cursor-pointer hover:bg-gray-100 transition-colors" : ""
                   }`}
                   onClick={() => handleHeaderClick(column)}
@@ -92,7 +92,7 @@ export function BaseTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-100">
             {data.map((item, index) => (
               <tr
                 key={index}
