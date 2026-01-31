@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, FileText, Mail, AlertCircle, Building2 } from "lucide-react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { ArrowLeft, FileText, Mail, AlertCircle, Building2, Download } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService, OperatingCostStatement, OperatingCostResult } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
+import { generateOperatingCostPdf } from "../../lib/operatingCostPdfGenerator";
+import { sendOperatingCostPdf, checkIfAnySent } from "../../lib/operatingCostMailer";
 
 interface ResultWithDetails extends OperatingCostResult {
   tenant_name?: string;
   unit_number?: string;
+  tenant_email?: string;
+  pdf_id?: string;
+  is_sent?: boolean;
 }
 
 export default function OperatingCostWizardStep3() {
@@ -23,12 +28,28 @@ export default function OperatingCostWizardStep3() {
   const [statement, setStatement] = useState<OperatingCostStatement | null>(null);
   const [results, setResults] = useState<ResultWithDetails[]>([]);
   const [property, setProperty] = useState<any>(null);
+  const [hasBankDetails, setHasBankDetails] = useState(false);
+  const [generatingPdfId, setGeneratingPdfId] = useState<string | null>(null);
+  const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (statementId) {
+    if (statementId && user) {
       loadData();
+      checkBankDetails();
     }
-  }, [statementId]);
+  }, [statementId, user]);
+
+  async function checkBankDetails() {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('user_bank_details')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    setHasBankDetails(!!data);
+  }
 
   async function loadData() {
     if (!statementId) return;
@@ -78,12 +99,13 @@ export default function OperatingCostWizardStep3() {
       if (result.tenant_id) {
         const { data: tenant } = await supabase
           .from('tenants')
-          .select('first_name, last_name')
+          .select('first_name, last_name, email')
           .eq('id', result.tenant_id)
           .single();
 
         if (tenant) {
           details.tenant_name = `${tenant.first_name} ${tenant.last_name}`;
+          details.tenant_email = tenant.email;
         }
       }
 
@@ -98,6 +120,28 @@ export default function OperatingCostWizardStep3() {
           details.unit_number = unit.unit_number;
         }
       }
+
+      const { data: existingPdf } = await supabase
+        .from('operating_cost_pdfs')
+        .select('id')
+        .eq('result_id', result.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existingPdf) {
+        details.pdf_id = existingPdf.id;
+      }
+
+      const { data: sentLog } = await supabase
+        .from('operating_cost_send_logs')
+        .select('id')
+        .eq('result_id', result.id)
+        .eq('status', 'success')
+        .limit(1)
+        .single();
+
+      details.is_sent = !!sentLog;
 
       resultsWithDetails.push(details);
     }
@@ -123,6 +167,90 @@ export default function OperatingCostWizardStep3() {
       setError(err.message || 'Fehler bei der Berechnung');
     } finally {
       setComputing(false);
+    }
+  }
+
+  async function handleGeneratePdf(result: ResultWithDetails) {
+    if (!user || !statementId) return;
+
+    setGeneratingPdfId(result.id);
+    setError(null);
+
+    try {
+      const { data, error } = await generateOperatingCostPdf(
+        user.id,
+        statementId,
+        result.id
+      );
+
+      if (error) throw error;
+
+      if (data) {
+        const blob = data.pdfBlob;
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Betriebskostenabrechnung_${statement?.year}_${result.tenant_name?.replace(/\s+/g, '_')}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        setResults((prev) =>
+          prev.map((r) =>
+            r.id === result.id ? { ...r, pdf_id: data.pdfId } : r
+          )
+        );
+      }
+    } catch (err: any) {
+      console.error('Error generating PDF:', err);
+      setError(err.message || 'Fehler beim Erstellen des PDFs');
+    } finally {
+      setGeneratingPdfId(null);
+    }
+  }
+
+  async function handleSendEmail(result: ResultWithDetails) {
+    if (!user || !statementId || !result.tenant_email) {
+      setError('Keine E-Mail-Adresse hinterlegt');
+      return;
+    }
+
+    if (!result.pdf_id) {
+      setError('Bitte erst PDF generieren');
+      return;
+    }
+
+    setSendingEmailId(result.id);
+    setError(null);
+
+    try {
+      const { error } = await sendOperatingCostPdf(
+        user.id,
+        statementId,
+        result.id,
+        result.pdf_id,
+        result.tenant_email
+      );
+
+      if (error) throw error;
+
+      setResults((prev) =>
+        prev.map((r) =>
+          r.id === result.id ? { ...r, is_sent: true } : r
+        )
+      );
+
+      const anySent = await checkIfAnySent(statementId);
+      if (anySent && statement?.status !== 'sent') {
+        await operatingCostService.updateStatementStatus(statementId, 'sent');
+        setStatement((prev) => prev ? { ...prev, status: 'sent' } : null);
+      }
+    } catch (err: any) {
+      console.error('Error sending email:', err);
+      setError(err.message || 'Fehler beim Versenden der E-Mail');
+    } finally {
+      setSendingEmailId(null);
     }
   }
 
@@ -222,6 +350,26 @@ export default function OperatingCostWizardStep3() {
           </div>
         </div>
 
+        {!hasBankDetails && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-medium text-yellow-900 mb-1">
+                Bankverbindung fehlt
+              </h4>
+              <p className="text-sm text-yellow-700 mb-2">
+                Für Nachzahlungen wird keine Bankverbindung im PDF angezeigt.
+              </p>
+              <Link
+                to="/dashboard?view=settings"
+                className="text-sm text-yellow-900 font-medium hover:underline"
+              >
+                In Mein Account hinterlegen →
+              </Link>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -306,18 +454,45 @@ export default function OperatingCostWizardStep3() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        disabled
-                        className="p-2 text-gray-300 bg-gray-50 rounded-lg cursor-not-allowed"
-                        title="PDF-Generierung in Entwicklung"
+                        onClick={() => handleGeneratePdf(result)}
+                        disabled={generatingPdfId === result.id}
+                        className="p-2 text-primary-blue bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="PDF herunterladen"
                       >
-                        <FileText className="w-5 h-5" />
+                        {generatingPdfId === result.id ? (
+                          <div className="w-5 h-5 border-2 border-primary-blue border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Download className="w-5 h-5" />
+                        )}
                       </button>
                       <button
-                        disabled
-                        className="p-2 text-gray-300 bg-gray-50 rounded-lg cursor-not-allowed"
-                        title="E-Mail-Versand in Entwicklung"
+                        onClick={() => handleSendEmail(result)}
+                        disabled={
+                          !result.tenant_email ||
+                          !result.pdf_id ||
+                          sendingEmailId === result.id ||
+                          result.is_sent
+                        }
+                        className={`p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                          result.is_sent
+                            ? 'text-green-600 bg-green-50'
+                            : 'text-primary-blue bg-blue-50 hover:bg-blue-100'
+                        }`}
+                        title={
+                          result.is_sent
+                            ? 'Bereits versendet'
+                            : !result.tenant_email
+                            ? 'Keine E-Mail-Adresse hinterlegt'
+                            : !result.pdf_id
+                            ? 'Bitte erst PDF generieren'
+                            : 'Per E-Mail senden'
+                        }
                       >
-                        <Mail className="w-5 h-5" />
+                        {sendingEmailId === result.id ? (
+                          <div className="w-5 h-5 border-2 border-primary-blue border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Mail className="w-5 h-5" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -381,22 +556,6 @@ export default function OperatingCostWizardStep3() {
                   </div>
                 </div>
               ))}
-            </div>
-          )}
-
-          {results.length > 0 && (
-            <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-blue-900 mb-1">
-                  PDF & Versand in Entwicklung
-                </h4>
-                <p className="text-sm text-blue-700">
-                  Die Funktionen zur PDF-Generierung und zum E-Mail-Versand
-                  werden in einem zukünftigen Update verfügbar sein. Sie können
-                  die Abrechnung bereits speichern.
-                </p>
-              </div>
             </div>
           )}
         </div>
