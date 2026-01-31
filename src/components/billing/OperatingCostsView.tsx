@@ -237,80 +237,82 @@ export default function OperatingCostsView() {
             )}
           </div>
         ) : viewMode === "list" ? (
-          <div className="overflow-x-auto rounded-xl border border-gray-200">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Immobilie
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Jahr
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Gesamtkosten
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Status
-                  </th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">
-                    Aktionen
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStatements.map((statement) => (
-                  <tr
-                    key={statement.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                  >
-                    <td
-                      className="py-3 px-4 text-sm font-medium text-dark cursor-pointer"
-                      onClick={() => handleStatementClick(statement)}
-                    >
-                      {statement.property?.name || "Unbekannte Immobilie"}
-                    </td>
-                    <td
-                      className="py-3 px-4 text-sm text-gray-700 cursor-pointer"
-                      onClick={() => handleStatementClick(statement)}
-                    >
-                      {statement.year}
-                    </td>
-                    <td
-                      className="py-3 px-4 text-sm font-medium text-dark cursor-pointer"
-                      onClick={() => handleStatementClick(statement)}
-                    >
-                      {Number(statement.total_costs).toFixed(2)} €
-                    </td>
-                    <td
-                      className="py-3 px-4 cursor-pointer"
-                      onClick={() => handleStatementClick(statement)}
-                    >
-                      {getStatusBadge(statement.status)}
-                    </td>
-                    <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-center">
-                        <TableActionsDropdown
-                          actions={[
-                            {
-                              label: 'Duplizieren',
-                              onClick: () => handleDuplicateStatement(statement),
-                              icon: <Copy className="w-4 h-4" />
-                            },
-                            {
-                              label: 'Löschen',
-                              onClick: () => handleDeleteStatement(statement.id),
-                              icon: <Trash2 className="w-4 h-4" />,
-                              variant: 'danger'
-                            }
-                          ]}
-                        />
-                      </div>
-                    </td>
+          <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Immobilie
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Jahr
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Gesamtkosten
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
+                      Aktionen
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {filteredStatements.map((statement) => (
+                    <tr
+                      key={statement.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td
+                        className="px-6 py-4 text-sm font-medium text-dark cursor-pointer"
+                        onClick={() => handleStatementClick(statement)}
+                      >
+                        {statement.property?.name || "Unbekannte Immobilie"}
+                      </td>
+                      <td
+                        className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
+                        onClick={() => handleStatementClick(statement)}
+                      >
+                        {statement.year}
+                      </td>
+                      <td
+                        className="px-6 py-4 text-sm font-medium text-dark cursor-pointer"
+                        onClick={() => handleStatementClick(statement)}
+                      >
+                        {Number(statement.total_costs).toFixed(2)} €
+                      </td>
+                      <td
+                        className="px-6 py-4 cursor-pointer"
+                        onClick={() => handleStatementClick(statement)}
+                      >
+                        {getStatusBadge(statement.status)}
+                      </td>
+                      <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-center">
+                          <TableActionsDropdown
+                            actions={[
+                              {
+                                label: 'Duplizieren',
+                                onClick: () => handleDuplicateStatement(statement),
+                                icon: <Copy className="w-4 h-4" />
+                              },
+                              {
+                                label: 'Löschen',
+                                onClick: () => handleDeleteStatement(statement.id),
+                                icon: <Trash2 className="w-4 h-4" />,
+                                variant: 'danger'
+                              }
+                            ]}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
