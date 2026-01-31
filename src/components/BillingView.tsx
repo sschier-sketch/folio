@@ -7,6 +7,7 @@ import {
   History,
   Receipt,
 } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import BillingOverview from "./billing/BillingOverview";
 import OperatingCostsView from "./billing/OperatingCostsView";
 import MetersView from "./billing/MetersView";
@@ -22,17 +23,18 @@ type Tab =
   | "history";
 
 export default function BillingView() {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<Tab>("meters");
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
     if (tab && ['meters', 'operating-costs', 'taxes', 'export', 'history'].includes(tab)) {
       setActiveTab(tab as Tab);
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
     }
-  }, []);
+  }, [location.search]);
 
   const tabs = [
     { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },
@@ -97,10 +99,10 @@ export default function BillingView() {
       </div>
 
       <div>
-        {activeTab === "meters" && <MetersView />}
-        {activeTab === "operating-costs" && <OperatingCostsView />}
-        {activeTab === "export" && <BillingExportView />}
-        {activeTab === "history" && <BillingHistoryView />}
+        {activeTab === "meters" && <MetersView key="meters" />}
+        {activeTab === "operating-costs" && <OperatingCostsView key="operating-costs" />}
+        {activeTab === "export" && <BillingExportView key="export" />}
+        {activeTab === "history" && <BillingHistoryView key="history" />}
       </div>
     </div>
   );
