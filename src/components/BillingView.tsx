@@ -25,12 +25,14 @@ type Tab =
 export default function BillingView() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<Tab>("meters");
+  const [viewKey, setViewKey] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
     if (tab && ['meters', 'operating-costs', 'taxes', 'export', 'history'].includes(tab)) {
       setActiveTab(tab as Tab);
+      setViewKey(prev => prev + 1);
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
     }
@@ -99,10 +101,10 @@ export default function BillingView() {
       </div>
 
       <div>
-        {activeTab === "meters" && <MetersView key="meters" />}
-        {activeTab === "operating-costs" && <OperatingCostsView key="operating-costs" />}
-        {activeTab === "export" && <BillingExportView key="export" />}
-        {activeTab === "history" && <BillingHistoryView key="history" />}
+        {activeTab === "meters" && <MetersView key={`meters-${viewKey}`} />}
+        {activeTab === "operating-costs" && <OperatingCostsView key={`operating-costs-${viewKey}`} />}
+        {activeTab === "export" && <BillingExportView key={`export-${viewKey}`} />}
+        {activeTab === "history" && <BillingHistoryView key={`history-${viewKey}`} />}
       </div>
     </div>
   );
