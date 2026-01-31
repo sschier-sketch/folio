@@ -26,6 +26,7 @@ import { AccountBanned } from "./pages/AccountBanned";
 import { supabase } from "./lib/supabase";
 import { GTMProvider } from "./components/GTMProvider";
 import SeoHead from "./components/SeoHead";
+import OperatingCostWizardStep1 from "./components/billing/OperatingCostWizardStep1";
 
 function PasswordRecoveryHandler() {
   const navigate = useNavigate();
@@ -116,6 +117,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Admin />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/abrechnungen/betriebskosten/neu"
+          element={
+            <ProtectedRoute>
+              <OperatingCostWizardStep1 />
             </ProtectedRoute>
           }
         />
