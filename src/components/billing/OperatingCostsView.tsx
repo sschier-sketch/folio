@@ -93,6 +93,14 @@ export default function OperatingCostsView() {
     }
   };
 
+  const handleStatementClick = (statement: StatementWithProperty) => {
+    if (statement.status === "draft") {
+      navigate(`/abrechnungen/betriebskosten/${statement.id}/kosten`);
+    } else {
+      navigate(`/abrechnungen/betriebskosten/${statement.id}/versand`);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg p-6">
@@ -201,9 +209,7 @@ export default function OperatingCostsView() {
                 {filteredStatements.map((statement) => (
                   <tr
                     key={statement.id}
-                    onClick={() =>
-                      navigate(`/abrechnungen/betriebskosten/${statement.id}`)
-                    }
+                    onClick={() => handleStatementClick(statement)}
                     className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                   >
                     <td className="py-3 px-4 text-sm font-medium text-dark">
@@ -226,9 +232,7 @@ export default function OperatingCostsView() {
             {filteredStatements.map((statement) => (
               <div
                 key={statement.id}
-                onClick={() =>
-                  navigate(`/abrechnungen/betriebskosten/${statement.id}`)
-                }
+                onClick={() => handleStatementClick(statement)}
                 className="bg-white border border-gray-200 rounded-lg p-6 hover:border-primary-blue hover:shadow-md transition-all cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-4">

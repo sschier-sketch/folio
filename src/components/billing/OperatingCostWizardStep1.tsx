@@ -220,7 +220,7 @@ export default function OperatingCostWizardStep1() {
 
         <div className="flex items-center justify-between mt-6">
           <button
-            onClick={() => navigate("/dashboard?view=billing")}
+            onClick={() => navigate("/dashboard?view=billing&tab=operating-costs")}
             className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
             disabled={creating}
           >

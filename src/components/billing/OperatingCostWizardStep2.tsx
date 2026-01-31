@@ -119,6 +119,13 @@ export default function OperatingCostWizardStep2() {
 
       if (error) throw error;
 
+      const { error: statusError } = await operatingCostService.updateStatementStatus(
+        statementId,
+        'draft'
+      );
+
+      if (statusError) throw statusError;
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
     } catch (err: any) {
@@ -142,7 +149,7 @@ export default function OperatingCostWizardStep2() {
   }
 
   function handleBack() {
-    navigate("/dashboard?view=billing");
+    navigate("/dashboard?view=billing&tab=operating-costs");
   }
 
   if (loading) {

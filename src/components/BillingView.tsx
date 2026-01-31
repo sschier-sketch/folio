@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   Calculator,
@@ -23,6 +23,16 @@ type Tab =
 
 export default function BillingView() {
   const [activeTab, setActiveTab] = useState<Tab>("meters");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab && ['meters', 'operating-costs', 'taxes', 'export', 'history'].includes(tab)) {
+      setActiveTab(tab as Tab);
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
   const tabs = [
     { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },

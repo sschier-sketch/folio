@@ -268,7 +268,7 @@ export default function OperatingCostWizardStep3() {
 
       if (error) throw error;
 
-      navigate('/dashboard?view=billing');
+      navigate('/dashboard?view=billing&tab=operating-costs');
     } catch (err: any) {
       console.error('Error saving statement:', err);
       setError(err.message || 'Fehler beim Speichern');
