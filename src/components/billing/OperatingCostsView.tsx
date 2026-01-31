@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Grid3x3, List, FileText } from "lucide-react";
+import { Plus, Search, Grid3x3, List, FileText, Copy, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
 import Badge from "../common/Badge";
+import TableActionsDropdown from "../common/TableActionsDropdown";
 
 interface Property {
   id: string;
@@ -101,6 +102,55 @@ export default function OperatingCostsView() {
     }
   };
 
+  const handleDeleteStatement = async (statementId: string) => {
+    if (!confirm("Möchten Sie diese Betriebskostenabrechnung wirklich löschen?")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("operating_cost_statements")
+        .delete()
+        .eq("id", statementId);
+
+      if (error) throw error;
+
+      await loadStatements();
+    } catch (error) {
+      console.error("Error deleting statement:", error);
+      alert("Fehler beim Löschen der Abrechnung");
+    }
+  };
+
+  const handleDuplicateStatement = async (statement: StatementWithProperty) => {
+    if (!user) return;
+
+    try {
+      const newYear = statement.year + 1;
+
+      const newStatement = {
+        user_id: user.id,
+        property_id: statement.property_id,
+        year: newYear,
+        status: "draft",
+        total_costs: 0,
+        cost_items: statement.cost_items || [],
+        distribution_keys: statement.distribution_keys || {},
+        tenant_shares: {}
+      };
+
+      const { error } = await operatingCostService.createStatement(newStatement);
+
+      if (error) throw error;
+
+      await loadStatements();
+      alert(`Abrechnung wurde für das Jahr ${newYear} dupliziert`);
+    } catch (error) {
+      console.error("Error duplicating statement:", error);
+      alert("Fehler beim Duplizieren der Abrechnung");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg p-6">
@@ -187,9 +237,9 @@ export default function OperatingCostsView() {
             )}
           </div>
         ) : viewMode === "list" ? (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="w-full">
-              <thead>
+              <thead className="bg-gray-50">
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                     Immobilie
@@ -203,25 +253,60 @@ export default function OperatingCostsView() {
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                     Status
                   </th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">
+                    Aktionen
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredStatements.map((statement) => (
                   <tr
                     key={statement.id}
-                    onClick={() => handleStatementClick(statement)}
-                    className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
-                    <td className="py-3 px-4 text-sm font-medium text-dark">
+                    <td
+                      className="py-3 px-4 text-sm font-medium text-dark cursor-pointer"
+                      onClick={() => handleStatementClick(statement)}
+                    >
                       {statement.property?.name || "Unbekannte Immobilie"}
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
+                    <td
+                      className="py-3 px-4 text-sm text-gray-700 cursor-pointer"
+                      onClick={() => handleStatementClick(statement)}
+                    >
                       {statement.year}
                     </td>
-                    <td className="py-3 px-4 text-sm font-medium text-dark">
+                    <td
+                      className="py-3 px-4 text-sm font-medium text-dark cursor-pointer"
+                      onClick={() => handleStatementClick(statement)}
+                    >
                       {Number(statement.total_costs).toFixed(2)} €
                     </td>
-                    <td className="py-3 px-4">{getStatusBadge(statement.status)}</td>
+                    <td
+                      className="py-3 px-4 cursor-pointer"
+                      onClick={() => handleStatementClick(statement)}
+                    >
+                      {getStatusBadge(statement.status)}
+                    </td>
+                    <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-center">
+                        <TableActionsDropdown
+                          actions={[
+                            {
+                              label: 'Duplizieren',
+                              onClick: () => handleDuplicateStatement(statement),
+                              icon: <Copy className="w-4 h-4" />
+                            },
+                            {
+                              label: 'Löschen',
+                              onClick: () => handleDeleteStatement(statement.id),
+                              icon: <Trash2 className="w-4 h-4" />,
+                              variant: 'danger'
+                            }
+                          ]}
+                        />
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
