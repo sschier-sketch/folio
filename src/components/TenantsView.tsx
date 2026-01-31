@@ -5,8 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import TenantContractDetails from "./TenantContractDetails";
 import TenantModal from "./TenantModal";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
-import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
-import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
+import TableActionsDropdown from "./common/TableActionsDropdown";
 
 interface Property {
   id: string;
@@ -404,153 +403,120 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
             </div>
           </div>
 
-          <div className="bg-white rounded-lg">
+          <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
             <div className="p-6 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-dark">
                 Übersicht ({filteredTenants.length})
               </h3>
             </div>
 
-            <BaseTable
-              columns={[
-                {
-                  key: "unit",
-                  header: "Einheit",
-                  render: (tenant: TenantWithDetails) => {
-                    const currentContract =
-                      tenant.contracts && tenant.contracts.length > 0
-                        ? tenant.contracts[0]
-                        : null;
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Einheit
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Mieter
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Mietbeginn
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Warmmiete
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Mietart
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Aktionen
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {filteredTenants.map((tenant) => {
+                    const currentContract = tenant.contracts && tenant.contracts.length > 0 ? tenant.contracts[0] : null;
+                    const tenantStatus = getTenantStatus(tenant);
+
                     return (
-                      <div>
-                        <div className="text-sm text-gray-700">
-                          {tenant.properties?.name || "Unbekannt"}
-                        </div>
-                        {currentContract?.property_units && (
-                          <div className="text-xs text-gray-500">
-                            {currentContract.property_units.unit_number}
+                      <tr key={tenant.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-700">
+                            {tenant.properties?.name || "Unbekannt"}
                           </div>
-                        )}
-                      </div>
+                          {currentContract?.property_units && (
+                            <div className="text-xs text-gray-500">
+                              {currentContract.property_units.unit_number}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-dark text-sm">
+                            {tenant.name}
+                          </div>
+                          {tenant.email && (
+                            <div className="text-xs text-gray-400">{tenant.email}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {currentContract ? (
+                            <span className="text-sm text-gray-700">
+                              {new Date(currentContract.start_date).toLocaleDateString("de-DE")}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {currentContract ? (
+                            <span className="text-sm font-medium text-dark">
+                              {(currentContract.total_rent || currentContract.monthly_rent || 0).toFixed(2)} €
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {currentContract ? (
+                            <span className="text-xs text-gray-700">
+                              {currentContract.rent_increase_type === "index" ? "Indexmiete" : "Festmiete"}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            tenantStatus === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                            tenantStatus === 'ending_soon' ? 'bg-amber-100 text-amber-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {getStatusLabel(tenantStatus)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center">
+                            <TableActionsDropdown
+                              actions={[
+                                {
+                                  label: 'Details anzeigen',
+                                  onClick: () => setSelectedTenantId(tenant.id)
+                                }
+                              ]}
+                            />
+                          </div>
+                        </td>
+                      </tr>
                     );
-                  },
-                },
-                {
-                  key: "tenant",
-                  header: "Mieter",
-                  render: (tenant: TenantWithDetails) => (
-                    <div>
-                      <div className="font-medium text-dark text-sm">
-                        {tenant.name}
-                      </div>
-                      {tenant.email && (
-                        <div className="text-xs text-gray-400">{tenant.email}</div>
-                      )}
-                    </div>
-                  ),
-                },
-                {
-                  key: "start_date",
-                  header: "Mietbeginn",
-                  render: (tenant: TenantWithDetails) => {
-                    const currentContract =
-                      tenant.contracts && tenant.contracts.length > 0
-                        ? tenant.contracts[0]
-                        : null;
-                    return currentContract ? (
-                      <span className="text-sm text-gray-700">
-                        {new Date(currentContract.start_date).toLocaleDateString(
-                          "de-DE"
-                        )}
-                      </span>
-                    ) : (
-                      <span className="text-sm text-gray-400">-</span>
-                    );
-                  },
-                },
-                {
-                  key: "rent",
-                  header: "Warmmiete",
-                  render: (tenant: TenantWithDetails) => {
-                    const currentContract =
-                      tenant.contracts && tenant.contracts.length > 0
-                        ? tenant.contracts[0]
-                        : null;
-                    return currentContract ? (
-                      <span className="text-sm font-medium text-dark">
-                        {(
-                          currentContract.total_rent ||
-                          currentContract.monthly_rent ||
-                          0
-                        ).toFixed(2)}{" "}
-                        €
-                      </span>
-                    ) : (
-                      <span className="text-sm text-gray-400">-</span>
-                    );
-                  },
-                },
-                {
-                  key: "rent_type",
-                  header: "Mietart",
-                  render: (tenant: TenantWithDetails) => {
-                    const currentContract =
-                      tenant.contracts && tenant.contracts.length > 0
-                        ? tenant.contracts[0]
-                        : null;
-                    return currentContract ? (
-                      <span className="text-xs text-gray-700">
-                        {currentContract.rent_increase_type === "index"
-                          ? "Indexmiete"
-                          : currentContract.rent_increase_type === "graduated"
-                          ? "Staffelmiete"
-                          : "Normale Miete"}
-                      </span>
-                    ) : (
-                      <span className="text-sm text-gray-400">-</span>
-                    );
-                  },
-                },
-                {
-                  key: "status",
-                  header: "Status",
-                  render: (tenant: TenantWithDetails) => {
-                    const currentContract =
-                      tenant.contracts && tenant.contracts.length > 0
-                        ? tenant.contracts[0]
-                        : null;
-                    if (!currentContract) {
-                      return <StatusBadge type="neutral" label="Kein Vertrag" />;
-                    }
-                    const status = getTenantStatus(tenant);
-                    return (
-                      <StatusBadge
-                        type={getStatusType(status)}
-                        label={getStatusLabel(status)}
-                      />
-                    );
-                  },
-                },
-                {
-                  key: "actions",
-                  header: "Details",
-                  align: "center" as const,
-                  render: (tenant: TenantWithDetails) => (
-                    <TableActionsDropdown
-                      actions={[
-                        {
-                          label: 'Details anzeigen',
-                          onClick: () => setSelectedTenantId(tenant.id)
-                        }
-                      ]}
-                    />
-                  ),
-                },
-              ]}
-              data={filteredTenants}
-              loading={false}
-              onRowClick={(tenant) => setSelectedTenantId(tenant.id)}
-            />
+                  })}
+                </tbody>
+              </table>
+            </div>
+
           </div>
         </>
       )}
