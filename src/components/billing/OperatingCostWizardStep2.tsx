@@ -71,16 +71,19 @@ export default function OperatingCostWizardStep2() {
 
     setStatement(statement);
 
-    if (lineItems && lineItems.length > 0) {
-      setCostItems(lineItems);
-    } else {
-      const initialItems: CostItem[] = COST_TYPES.map((costType) => ({
+    const initialItems: CostItem[] = COST_TYPES.map((costType) => {
+      const existingItem = lineItems?.find(
+        (item) => item.cost_type === costType
+      );
+
+      return existingItem || {
         cost_type: costType,
         allocation_key: "area",
         amount: 0,
-      }));
-      setCostItems(initialItems);
-    }
+      };
+    });
+
+    setCostItems(initialItems);
 
     setLoading(false);
   }
