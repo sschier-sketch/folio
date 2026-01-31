@@ -229,7 +229,7 @@ export default function Dashboard() {
                 className="relative p-2 text-gray-400 hover:text-dark transition-colors rounded-lg hover:bg-gray-50"
                 title="Updates"
               >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-4 h-4" />
                 {hasNewUpdates && (
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
                 )}
