@@ -8,6 +8,7 @@ import PropertyDetails from "./PropertyDetails";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
+import Badge from "./common/Badge";
 
 interface PropertyLabel {
   id: string;
@@ -372,10 +373,10 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   }
 
   const getOccupancyStatus = (units?: { total: number; rented: number; vacant: number }) => {
-    if (!units || units.total === 0) return { label: "Keine Einheiten", color: "text-gray-400" };
-    if (units.vacant === 0) return { label: "Voll vermietet", color: "text-emerald-600" };
-    if (units.rented === 0) return { label: "Leer", color: "text-amber-600" };
-    return { label: "Teilvermietet", color: "text-blue-600" };
+    if (!units || units.total === 0) return { label: "Keine Einheiten", variant: "gray" as const };
+    if (units.vacant === 0) return { label: "Voll vermietet", variant: "green" as const };
+    if (units.rented === 0) return { label: "Leer", variant: "warning" as const };
+    return { label: "Teilvermietet", variant: "blue" as const };
   };
 
   const filteredProperties = properties.filter((property) => {
@@ -658,14 +659,9 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          {occupancyStatus.label === "Voll vermietet" ? (
-                            <CheckCircle className="w-4 h-4 text-emerald-600" />
-                          ) : occupancyStatus.label === "Leer" ? (
-                            <AlertCircle className="w-4 h-4 text-amber-600" />
-                          ) : null}
-                          <span className={`text-sm font-medium ${occupancyStatus.color}`}>
+                          <Badge variant={occupancyStatus.variant}>
                             {occupancyStatus.label}
-                          </span>
+                          </Badge>
                         </div>
                         {isPremium && property.units.vacant > 0 && (
                           <div className="mt-2 text-xs text-amber-600">
@@ -778,16 +774,9 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                     const occupancyStatus = getOccupancyStatus(property.units);
                     return (
                       <div>
-                        <div className="flex items-center gap-2">
-                          {occupancyStatus.label === "Voll vermietet" ? (
-                            <CheckCircle className="w-4 h-4 text-emerald-600" />
-                          ) : occupancyStatus.label === "Leer" ? (
-                            <AlertCircle className="w-4 h-4 text-amber-600" />
-                          ) : null}
-                          <span className={`text-sm font-medium ${occupancyStatus.color}`}>
-                            {occupancyStatus.label}
-                          </span>
-                        </div>
+                        <Badge variant={occupancyStatus.variant}>
+                          {occupancyStatus.label}
+                        </Badge>
                         {property.units && property.units.total > 0 && (
                           <div className="text-xs text-gray-400 mt-1">
                             {property.units.rented}/{property.units.total} vermietet
