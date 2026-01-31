@@ -373,8 +373,8 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   }
 
   const getOccupancyStatus = (units?: { total: number; rented: number; vacant: number }) => {
-    if (!units || units.total === 0) return { label: "Keine Einheiten", variant: "gray" as const };
-    if (units.vacant === 0) return { label: "Voll vermietet", variant: "green" as const };
+    if (!units || units.total === 0) return { label: "0 Einheiten", variant: "gray" as const };
+    if (units.vacant === 0) return { label: "Vermietet", variant: "green" as const };
     if (units.rented === 0) return { label: "Leer", variant: "warning" as const };
     return { label: "Teilvermietet", variant: "blue" as const };
   };
@@ -382,7 +382,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   const filteredProperties = properties.filter((property) => {
     if (filters.status) {
       const status = getOccupancyStatus(property.units);
-      if (filters.status === "full" && status.label !== "Voll vermietet") return false;
+      if (filters.status === "full" && status.label !== "Vermietet") return false;
       if (filters.status === "partial" && status.label !== "Teilvermietet") return false;
       if (filters.status === "vacant" && status.label !== "Leer") return false;
     }
@@ -514,7 +514,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
                   <option value="">Alle Status</option>
-                  <option value="full">Voll vermietet</option>
+                  <option value="full">Vermietet</option>
                   <option value="partial">Teilvermietet</option>
                   <option value="vacant">Leer</option>
                 </select>

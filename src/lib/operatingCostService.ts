@@ -184,11 +184,7 @@ export const operatingCostService = {
 
       const { data: contracts, error: contractsError } = await supabase
         .from('rental_contracts')
-        .select(`
-          *,
-          tenants!inner(*),
-          property_units(*)
-        `)
+        .select('*')
         .eq('property_id', statement.property_id)
         .or(`contract_end.is.null,contract_end.gte.${periodStart.toISOString().split('T')[0]}`)
         .lte('contract_start', periodEnd.toISOString().split('T')[0]);
@@ -207,6 +203,18 @@ export const operatingCostService = {
       const results: OperatingCostResult[] = [];
 
       for (const contract of contracts) {
+        const { data: tenant } = await supabase
+          .from('tenants')
+          .select('*')
+          .eq('id', contract.tenant_id)
+          .single();
+
+        const { data: unit } = contract.unit_id ? await supabase
+          .from('property_units')
+          .select('*')
+          .eq('id', contract.unit_id)
+          .single() : { data: null };
+
         const contractStart = new Date(contract.contract_start);
         const contractEnd = contract.contract_end ? new Date(contract.contract_end) : periodEnd;
 
@@ -217,8 +225,7 @@ export const operatingCostService = {
           (effectiveEnd.getTime() - effectiveStart.getTime()) / (1000 * 60 * 60 * 24)
         ) + 1;
 
-        const unitArea = contract.property_units?.area_sqm || 0;
-        const tenant = contract.tenants;
+        const unitArea = unit?.area_sqm || 0;
 
         let costShare = 0;
 
