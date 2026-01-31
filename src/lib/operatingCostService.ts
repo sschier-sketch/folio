@@ -153,8 +153,134 @@ export const operatingCostService = {
   async computeResults(
     statementId: string
   ): Promise<{ data: OperatingCostResult[] | null; error: any }> {
-    console.log('computeResults stub called for statement:', statementId);
-    return { data: [], error: null };
+    try {
+      const { data: statement, error: statementError } = await supabase
+        .from('operating_cost_statements')
+        .select('*')
+        .eq('id', statementId)
+        .single();
+
+      if (statementError || !statement) {
+        throw statementError || new Error('Statement not found');
+      }
+
+      const { data: lineItems, error: lineItemsError } = await supabase
+        .from('operating_cost_line_items')
+        .select('*')
+        .eq('statement_id', statementId);
+
+      if (lineItemsError) throw lineItemsError;
+
+      const periodStart = new Date(statement.year, 0, 1);
+      const periodEnd = new Date(statement.year, 11, 31);
+      const totalDaysInYear = 365 + (new Date(statement.year, 1, 29).getMonth() === 1 ? 1 : 0);
+
+      const { data: contracts, error: contractsError } = await supabase
+        .from('rental_contracts')
+        .select(`
+          *,
+          tenants!inner(*),
+          property_units(*)
+        `)
+        .eq('property_id', statement.property_id)
+        .or(`contract_end.is.null,contract_end.gte.${periodStart.toISOString().split('T')[0]}`)
+        .lte('contract_start', periodEnd.toISOString().split('T')[0]);
+
+      if (contractsError) throw contractsError;
+
+      if (!contracts || contracts.length === 0) {
+        return { data: [], error: null };
+      }
+
+      await supabase
+        .from('operating_cost_results')
+        .delete()
+        .eq('statement_id', statementId);
+
+      const results: OperatingCostResult[] = [];
+
+      for (const contract of contracts) {
+        const contractStart = new Date(contract.contract_start);
+        const contractEnd = contract.contract_end ? new Date(contract.contract_end) : periodEnd;
+
+        const effectiveStart = contractStart > periodStart ? contractStart : periodStart;
+        const effectiveEnd = contractEnd < periodEnd ? contractEnd : periodEnd;
+
+        const daysInPeriod = Math.floor(
+          (effectiveEnd.getTime() - effectiveStart.getTime()) / (1000 * 60 * 60 * 24)
+        ) + 1;
+
+        const unitArea = contract.property_units?.area_sqm || 0;
+        const tenant = contract.tenants;
+
+        let costShare = 0;
+
+        if (lineItems && lineItems.length > 0) {
+          for (const lineItem of lineItems) {
+            let share = 0;
+
+            if (lineItem.allocation_key === 'area') {
+              const { data: allUnits } = await supabase
+                .from('property_units')
+                .select('area_sqm')
+                .eq('property_id', statement.property_id);
+
+              const totalArea = allUnits?.reduce(
+                (sum, u) => sum + Number(u.area_sqm || 0),
+                0
+              ) || 1;
+
+              share = (Number(unitArea) / totalArea) * Number(lineItem.amount);
+            } else if (lineItem.allocation_key === 'units') {
+              const { count } = await supabase
+                .from('property_units')
+                .select('*', { count: 'exact', head: true })
+                .eq('property_id', statement.property_id);
+
+              share = Number(lineItem.amount) / (count || 1);
+            } else if (lineItem.allocation_key === 'persons') {
+              const { count } = await supabase
+                .from('property_units')
+                .select('*', { count: 'exact', head: true })
+                .eq('property_id', statement.property_id);
+
+              share = Number(lineItem.amount) / (count || 1);
+            }
+
+            const proRatedShare = (share * daysInPeriod) / totalDaysInYear;
+            costShare += proRatedShare;
+          }
+        }
+
+        const monthlyPrepayment = Number(contract.additional_costs || 0);
+        const prepayments = monthlyPrepayment * 12 * (daysInPeriod / totalDaysInYear);
+
+        const balance = costShare - prepayments;
+
+        const { data: result, error: insertError } = await supabase
+          .from('operating_cost_results')
+          .insert({
+            statement_id: statementId,
+            unit_id: contract.unit_id,
+            tenant_id: contract.tenant_id,
+            days_in_period: daysInPeriod,
+            area_sqm: unitArea,
+            cost_share: Math.round(costShare * 100) / 100,
+            prepayments: Math.round(prepayments * 100) / 100,
+            balance: Math.round(balance * 100) / 100,
+          })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        if (result) results.push(result);
+      }
+
+      return { data: results, error: null };
+    } catch (error) {
+      console.error('Error computing results:', error);
+      return { data: null, error };
+    }
   },
 
   async listStatements(

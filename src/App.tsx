@@ -28,6 +28,7 @@ import { GTMProvider } from "./components/GTMProvider";
 import SeoHead from "./components/SeoHead";
 import OperatingCostWizardStep1 from "./components/billing/OperatingCostWizardStep1";
 import OperatingCostWizardStep2 from "./components/billing/OperatingCostWizardStep2";
+import OperatingCostWizardStep3 from "./components/billing/OperatingCostWizardStep3";
 
 function PasswordRecoveryHandler() {
   const navigate = useNavigate();
@@ -134,6 +135,14 @@ function App() {
           element={
             <ProtectedRoute>
               <OperatingCostWizardStep2 />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/abrechnungen/betriebskosten/:id/versand"
+          element={
+            <ProtectedRoute>
+              <OperatingCostWizardStep3 />
             </ProtectedRoute>
           }
         />
