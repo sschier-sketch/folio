@@ -534,7 +534,7 @@ function createPdf(data: PdfData): Blob {
   const belege = 'Sie haben das Recht, die dieser Abrechnung zugrunde liegenden Belege und Unterlagen einzusehen. Bitte vereinbaren Sie hierzu einen Termin.';
   const belegeLines = doc.splitTextToSize(belege, contentWidth - 5);
   doc.text(belegeLines, M_LEFT + 3, currentY);
-  currentY += belegeLines.length * 4.5 + 8;
+  currentY += belegeLines.length * 4.5 + 6;
 
   checkPageBreak(20);
   doc.setFont('helvetica', 'bold');
@@ -545,7 +545,7 @@ function createPdf(data: PdfData): Blob {
   const einwendung = 'Einwendungen gegen diese Abrechnung sind gemäß § 556 Abs. 3 Satz 5 BGB innerhalb von 12 Monaten nach Zugang dieser Abrechnung mitzuteilen. Nach Ablauf dieser Frist können Einwendungen nicht mehr geltend gemacht werden, es sei denn, Sie haben die verspätete Geltendmachung nicht zu vertreten.';
   const einwendungLines = doc.splitTextToSize(einwendung, contentWidth - 5);
   doc.text(einwendungLines, M_LEFT + 3, currentY);
-  currentY += einwendungLines.length * 4.5 + 8;
+  currentY += einwendungLines.length * 4.5 + 6;
 
   checkPageBreak(15);
   doc.setFont('helvetica', 'bold');
@@ -556,7 +556,40 @@ function createPdf(data: PdfData): Blob {
   const rechtsgrundlage = 'Diese Abrechnung wurde auf Grundlage des § 556 BGB sowie der Betriebskostenverordnung (BetrKV) erstellt. Es wurden nur umlagefähige Betriebskosten gemäß § 2 BetrKV berücksichtigt.';
   const rechtsgrundlageLines = doc.splitTextToSize(rechtsgrundlage, contentWidth - 5);
   doc.text(rechtsgrundlageLines, M_LEFT + 3, currentY);
-  currentY += rechtsgrundlageLines.length * 4.5 + 10;
+  currentY += rechtsgrundlageLines.length * 4.5 + 6;
+
+  checkPageBreak(15);
+  doc.setFont('helvetica', 'bold');
+  doc.text('• Direktumlage', M_LEFT, currentY);
+  currentY += 5;
+
+  doc.setFont('helvetica', 'normal');
+  const direktumlage = 'Bei Kostenpositionen, die mit dem Vermerk \'Direktumlage\' gekennzeichnet sind, wurde der Betrag manuell zugeordnet.';
+  const direktumlageLines = doc.splitTextToSize(direktumlage, contentWidth - 5);
+  doc.text(direktumlageLines, M_LEFT + 3, currentY);
+  currentY += direktumlageLines.length * 4.5 + 6;
+
+  checkPageBreak(15);
+  doc.setFont('helvetica', 'bold');
+  doc.text('• Berechnung des Kostenanteils', M_LEFT, currentY);
+  currentY += 5;
+
+  doc.setFont('helvetica', 'normal');
+  const berechnung = 'Ihren Kostenanteil berechnen Sie wie folgt: Gesamtkosten/Gesamteinheiten * Ihre Einheiten/Tage im AZ * Tage im NZ = Ihr Kostenanteil. (Zum Beispiel: 200,00 €/400qm*40qm/365 Tage im AZ * 180 Tage im NZ = 9,86 €)';
+  const berechnungLines = doc.splitTextToSize(berechnung, contentWidth - 5);
+  doc.text(berechnungLines, M_LEFT + 3, currentY);
+  currentY += berechnungLines.length * 4.5 + 6;
+
+  checkPageBreak(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('• Kohlendioxidkosten', M_LEFT, currentY);
+  currentY += 5;
+
+  doc.setFont('helvetica', 'normal');
+  const co2kosten = 'Die Aufteilung der Kohlendioxidkosten zwischen Vermieter und Mieter richtet sich nach dem Kohlendioxidausstoß des Gebäudes pro Quadratmeter Wohnfläche und Jahr. Mithilfe dieses Wertes werden Gebäude in das Stufenmodell eingeordnet. Hierbei ergab sich ein Vermieteranteil von 0 %.';
+  const co2kostenLines = doc.splitTextToSize(co2kosten, contentWidth - 5);
+  doc.text(co2kostenLines, M_LEFT + 3, currentY);
+  currentY += co2kostenLines.length * 4.5 + 6;
 
   doc.setFontSize(10);
 
