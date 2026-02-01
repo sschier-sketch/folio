@@ -121,24 +121,21 @@ export const operatingCostService = {
     params: UpsertLineItemParams
   ): Promise<{ data: OperatingCostLineItem[] | null; error: any }> {
     try {
-      const itemsToUpsert = params.items.map((item) => {
-        const baseItem: any = {
-          statement_id: params.statement_id,
-          cost_type: item.cost_type,
-          allocation_key: item.allocation_key,
-          amount: item.amount,
-        };
+      await supabase
+        .from('operating_cost_line_items')
+        .delete()
+        .eq('statement_id', params.statement_id);
 
-        if (item.id) {
-          baseItem.id = item.id;
-        }
-
-        return baseItem;
-      });
+      const itemsToInsert = params.items.map((item) => ({
+        statement_id: params.statement_id,
+        cost_type: item.cost_type,
+        allocation_key: item.allocation_key,
+        amount: item.amount,
+      }));
 
       const { data, error } = await supabase
         .from('operating_cost_line_items')
-        .upsert(itemsToUpsert, { onConflict: 'id' })
+        .insert(itemsToInsert)
         .select();
 
       if (!error && data) {

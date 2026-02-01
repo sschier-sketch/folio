@@ -54,7 +54,7 @@ export async function sendOperatingCostPdf(
 
     const { data: pdfBlob } = await supabase.storage
       .from('documents')
-      .download(pdf.file_url);
+      .download(pdf.file_path);
 
     if (!pdfBlob) throw new Error('Could not download PDF');
 
@@ -132,6 +132,17 @@ export async function sendOperatingCostPdf(
       });
 
     if (logError) console.error('Error logging send:', logError);
+
+    await supabase.from('property_documents').insert({
+      property_id: statement.property_id,
+      unit_id: result.unit_id,
+      document_type: 'nebenkostenabrechnung',
+      file_path: pdf.file_path,
+      file_name: `Betriebskostenabrechnung_${statement.year}.pdf`,
+      file_size: pdfBlob.size,
+      shared_with_tenant: true,
+      user_id: userId,
+    });
 
     return { data: { success: true }, error: null };
   } catch (error: any) {
