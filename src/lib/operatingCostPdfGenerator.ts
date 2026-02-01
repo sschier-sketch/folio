@@ -287,27 +287,23 @@ function createPdf(data: PdfData): Blob {
   const marginRight = 20;
   const contentWidth = pageWidth - marginLeft - marginRight;
 
-  let yPos = 20;
-
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100);
   const senderLine = `${data.landlordName} · ${data.landlordAddress}`;
-  doc.text(senderLine, marginLeft, yPos);
-  yPos += 10;
+  doc.text(senderLine, marginLeft, 27);
 
   doc.setFontSize(11);
   doc.setTextColor(0);
   doc.setFont('helvetica', 'normal');
   const recipientLines = data.tenantName + '\n' + data.tenantAddress;
-  const splitRecipient = doc.splitTextToSize(recipientLines, 80);
-  doc.text(splitRecipient, marginLeft, yPos);
-  yPos += splitRecipient.length * 5 + 10;
+  const splitRecipient = doc.splitTextToSize(recipientLines, 85);
+  doc.text(splitRecipient, marginLeft, 45);
 
   doc.setFontSize(10);
-  doc.text(data.createdDate, pageWidth - marginRight, 30, { align: 'right' });
+  doc.text(data.createdDate, pageWidth - marginRight, 45, { align: 'right' });
 
-  yPos = Math.max(yPos, 60);
+  let yPos = 95;
 
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
