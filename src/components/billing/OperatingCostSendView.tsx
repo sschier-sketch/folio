@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Mail, X, Paperclip, Eye, Send, AlertCircle } from "lucide-react";
+import { ArrowLeft, Mail, X, Paperclip, Eye, Send, AlertCircle, Check } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
@@ -288,7 +288,7 @@ Mit freundlichen Grüßen
 
       if (errorCount === 0) {
         alert(`Alle ${successCount} Abrechnungen wurden erfolgreich versendet.`);
-        navigate(`/abrechnungen/betriebskosten/${statementId}/versand`);
+        navigate(-1);
       } else {
         alert(`${successCount} Abrechnungen versendet, ${errorCount} fehlgeschlagen.`);
       }
@@ -317,25 +317,29 @@ Mit freundlichen Grüßen
     const previewMessage = previewRecipient ? replacePlaceholders(message, previewRecipient) : message;
 
     return (
-      <div className="max-w-5xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-dark">E-Mail Vorschau</h2>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="mb-6">
             <button
               onClick={() => setShowPreview(false)}
-              className="px-4 py-2 text-gray-600 hover:text-dark transition-colors"
+              className="flex items-center gap-2 text-gray-600 hover:text-dark transition-colors mb-4"
             >
-              Schließen
+              <ArrowLeft className="w-4 h-4" />
+              Zurück
             </button>
+            <h1 className="text-3xl font-bold text-dark mb-2">E-Mail Vorschau</h1>
+            <p className="text-gray-400">So sieht die E-Mail für Ihre Mieter aus</p>
           </div>
 
           {enabledRecipients.length > 1 && (
-            <div className="mb-4">
-              <label className="text-sm text-gray-600">Empfänger auswählen:</label>
+            <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Vorschau für Empfänger:
+              </label>
               <select
                 value={previewRecipientIndex}
                 onChange={(e) => setPreviewRecipientIndex(Number(e.target.value))}
-                className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-dark"
               >
                 {enabledRecipients.map((recipient, index) => (
                   <option key={recipient.id} value={index}>
@@ -346,16 +350,26 @@ Mit freundlichen Grüßen
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="bg-white rounded-lg p-6 shadow-sm space-y-6">
             <div>
-              <label className="text-sm font-medium text-gray-700">Betreff:</label>
-              <div className="mt-1 p-3 bg-gray-50 rounded-lg text-dark">{previewSubject}</div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Betreff:</label>
+              <div className="p-4 bg-gray-50 rounded-lg text-dark">{previewSubject}</div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700">Nachricht:</label>
-              <div className="mt-1 p-3 bg-gray-50 rounded-lg text-dark whitespace-pre-wrap">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nachricht:</label>
+              <div className="p-4 bg-gray-50 rounded-lg text-dark whitespace-pre-wrap">
                 {previewMessage}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Anhang:</label>
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <Paperclip className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-700">
+                  Betriebskostenabrechnung_{statement?.year}_{previewRecipient?.tenantName.replace(/\s+/g, "_")}.pdf
+                </span>
               </div>
             </div>
           </div>
@@ -365,81 +379,88 @@ Mit freundlichen Grüßen
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 hover:text-dark transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Zurück
-        </button>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 hover:text-dark transition-colors mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Zurück
+          </button>
 
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-dark">Betriebskostenabrechnung senden</h1>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-dark mb-2">
+                Betriebskostenabrechnung senden
+              </h1>
+              <p className="text-gray-400">
+                Senden Sie die Abrechnung per E-Mail an Ihre Mieter
+              </p>
+            </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="px-4 py-2 text-gray-600 hover:text-dark transition-colors"
-            >
-              Abbrechen
-            </button>
-            <button
-              onClick={() => setShowPreview(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-              disabled={enabledRecipients.length === 0}
-            >
-              <Eye className="w-4 h-4" />
-              Vorschau
-            </button>
-            <button
-              onClick={handleSend}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-              disabled={enabledRecipients.length === 0 || sending}
-            >
-              {sending ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Wird gesendet...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  Senden
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowPreview(true)}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={enabledRecipients.length === 0}
+              >
+                <Eye className="w-4 h-4" />
+                Vorschau
+              </button>
+              <button
+                onClick={handleSend}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                disabled={enabledRecipients.length === 0 || sending}
+              >
+                {sending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Wird gesendet...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Senden ({enabledRecipients.length})
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Kanal</h3>
-            <div className="flex items-center gap-3 p-4 border-2 border-primary-blue bg-blue-50 rounded-lg">
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
               <Mail className="w-5 h-5 text-primary-blue" />
-              <div>
-                <div className="font-medium text-dark">E-Mail</div>
-                <div className="text-sm text-gray-600">Per E-Mail senden</div>
+              <h3 className="text-lg font-semibold text-dark">Versandkanal</h3>
+            </div>
+            <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary-blue rounded-lg flex items-center justify-center">
+                  <Mail className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <div className="font-medium text-dark">E-Mail</div>
+                  <div className="text-sm text-gray-600">Versand per E-Mail mit PDF-Anhang</div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-700">Empfänger</h3>
-              <span className="text-sm text-gray-500">
-                {enabledRecipients.length} von {recipients.length}
-              </span>
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-dark">
+                Empfänger ({enabledRecipients.length} von {recipients.length})
+              </h3>
             </div>
 
             {recipientsWithoutEmail.length > 0 && (
-              <div className="mb-4 flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="mb-4 flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-yellow-800">
-                  {recipientsWithoutEmail.length} Empfänger ohne E-Mail können nicht per E-Mail kontaktiert werden.
+                  {recipientsWithoutEmail.length} Empfänger ohne E-Mail-Adresse können nicht kontaktiert werden.
                 </div>
               </div>
             )}
@@ -448,27 +469,29 @@ Mit freundlichen Grüßen
               {recipients.map((recipient) => (
                 <div
                   key={recipient.id}
-                  className={`flex items-center justify-between p-3 rounded-lg border ${
+                  className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
                     recipient.enabled
                       ? "bg-white border-gray-200"
                       : "bg-gray-50 border-gray-200 opacity-60"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-primary-blue font-medium">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-primary-blue font-semibold">
                       {recipient.tenantName.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <div className="font-medium text-dark">{recipient.tenantName}</div>
                       <div className="text-sm text-gray-600">
-                        {recipient.email || "E-Mail fehlt"}
+                        {recipient.email || (
+                          <span className="text-red-600">E-Mail fehlt</span>
+                        )}
                         {recipient.unitNumber && ` • ${recipient.unitNumber}`}
                       </div>
                     </div>
                   </div>
                   <button
                     onClick={() => removeRecipient(recipient.id)}
-                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4 text-gray-400" />
                   </button>
@@ -477,77 +500,65 @@ Mit freundlichen Grüßen
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Betreff</h3>
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-dark mb-4">Betreff</h3>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-dark"
               placeholder="Betreff der E-Mail"
             />
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Nachricht</h3>
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-dark mb-2">Nachricht</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Verfügbare Platzhalter: {"{"}
+              {"{"}mieter_name{"}"}, {"{"}immobilie{"}"}, {"{"}einheit{"}"}, {"{"}jahr{"}"}, {"{"}betrag_nachzahlung_oder_guthaben{"}"}, {"{"}faelligkeit_datum{"}"}, {"{"}iban{"}"}, {"{"}vermieter_name{"}"}
+            </p>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={12}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue font-mono text-sm"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue font-mono text-sm text-dark"
               placeholder="E-Mail-Nachricht mit Platzhaltern"
             />
-            <div className="mt-2 text-xs text-gray-500">
-              Verfügbare Platzhalter: {"{{mieter_name}}, {{immobilie}}, {{einheit}}, {{jahr}}, {{betrag_nachzahlung_oder_guthaben}}, {{faelligkeit_datum}}, {{iban}}, {{vermieter_name}}"}
-            </div>
           </div>
-        </div>
 
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Anhänge ({recipients.length})</h3>
-            <div className="space-y-2">
-              {recipients.slice(0, 3).map((recipient) => (
-                <div key={recipient.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                  <Paperclip className="w-4 h-4 text-gray-400" />
-                  <div className="flex-1 text-sm text-gray-700 truncate">
-                    Abrechnung_{recipient.tenantName.replace(/\s+/g, "_")}.pdf
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-dark mb-4">Weitere Optionen</h3>
+
+            <div className="space-y-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <div className="flex items-center h-5">
+                  <input
+                    type="checkbox"
+                    checked={includeInPortal}
+                    onChange={(e) => setIncludeInPortal(e.target.checked)}
+                    className="w-4 h-4 text-primary-blue border-gray-300 rounded focus:ring-primary-blue"
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-dark">Im Mieterportal bereitstellen</div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Die Abrechnung wird zusätzlich im Mieterportal unter Dokumente angezeigt
                   </div>
                 </div>
-              ))}
-              {recipients.length > 3 && (
-                <div className="text-xs text-gray-500 text-center">
-                  +{recipients.length - 3} weitere
-                </div>
-              )}
-            </div>
-          </div>
+              </label>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Mieterportal</h3>
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={includeInPortal}
-                onChange={(e) => setIncludeInPortal(e.target.checked)}
-                className="mt-1 w-4 h-4 text-primary-blue border-gray-300 rounded focus:ring-primary-blue"
-              />
-              <div>
-                <div className="text-sm text-dark">Zusätzlich im Mieterportal bereitstellen</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Der Mieter sieht die Abrechnung im Portal unter Dokumente/Abrechnungen.
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Paperclip className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Anhänge ({recipients.length})
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500">
+                  Pro Empfänger wird automatisch die passende PDF angehängt
                 </div>
               </div>
-            </label>
-          </div>
-
-          <div className="bg-blue-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-dark mb-2">Tipps</h4>
-            <ul className="text-xs text-gray-600 space-y-1">
-              <li>• Vorlagen nutzen für schnelles Schreiben</li>
-              <li>• Platzhalter werden automatisch ersetzt</li>
-              <li>• E-Mails werden im Postausgang archiviert</li>
-            </ul>
+            </div>
           </div>
         </div>
       </div>
