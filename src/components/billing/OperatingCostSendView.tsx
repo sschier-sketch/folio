@@ -3,6 +3,7 @@ import { ArrowLeft, Mail, X, Paperclip, Eye, Send, AlertCircle, Check } from "lu
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
+import { generateOperatingCostPdf } from "../../lib/operatingCostPdfGenerator";
 
 interface Recipient {
   id: string;
@@ -207,7 +208,7 @@ Mit freundlichen Grüßen
         const personalizedSubject = replacePlaceholders(subject, recipient);
         const personalizedMessage = replacePlaceholders(message, recipient);
 
-        const { data: pdfData } = await supabase
+        let pdfData = await supabase
           .from("operating_cost_pdfs")
           .select("id, file_path")
           .eq("result_id", recipient.resultId)
@@ -215,19 +216,32 @@ Mit freundlichen Grüßen
           .limit(1)
           .maybeSingle();
 
-        if (!pdfData?.file_path) {
-          console.warn(`No PDF found for recipient ${recipient.tenantName}`);
+        if (!pdfData.data?.file_path) {
+          console.log(`PDF not found for ${recipient.tenantName}, generating now...`);
 
-          await supabase.from("operating_cost_send_logs").insert({
-            statement_id: statementId,
-            tenant_id: recipient.tenantId,
-            email: recipient.email,
-            status: "failed",
-            error_message: "PDF nicht gefunden",
-          });
+          const { data: generatedPdf, error: pdfError } = await generateOperatingCostPdf(
+            user!.id,
+            statementId!,
+            recipient.resultId
+          );
 
-          errorCount++;
-          continue;
+          if (pdfError || !generatedPdf) {
+            console.error(`Error generating PDF for ${recipient.tenantName}:`, pdfError);
+            errorCount++;
+            continue;
+          }
+
+          pdfData = await supabase
+            .from("operating_cost_pdfs")
+            .select("id, file_path")
+            .eq("id", generatedPdf.pdfId)
+            .single();
+
+          if (!pdfData.data?.file_path) {
+            console.error(`Generated PDF not found in database for ${recipient.tenantName}`);
+            errorCount++;
+            continue;
+          }
         }
 
         const { error: sendError } = await supabase.functions.invoke("send-email", {
@@ -240,7 +254,7 @@ Mit freundlichen Grüßen
             attachments: [
               {
                 filename: `Betriebskostenabrechnung_${statement?.year}_${recipient.tenantName.replace(/\s+/g, "_")}.pdf`,
-                path: pdfData.file_path,
+                path: pdfData.data!.file_path,
               },
             ],
           },
@@ -248,25 +262,10 @@ Mit freundlichen Grüßen
 
         if (sendError) {
           console.error(`Error sending to ${recipient.email}:`, sendError);
-
-          await supabase.from("operating_cost_send_logs").insert({
-            statement_id: statementId,
-            tenant_id: recipient.tenantId,
-            email: recipient.email,
-            status: "failed",
-            error_message: sendError.message || "Fehler beim Versenden",
-          });
-
           errorCount++;
         } else {
+          console.log(`Successfully sent to ${recipient.email}`);
           successCount++;
-
-          await supabase.from("operating_cost_send_logs").insert({
-            statement_id: statementId,
-            tenant_id: recipient.tenantId,
-            email: recipient.email,
-            status: "success",
-          });
 
           if (includeInPortal) {
             await supabase.from("property_documents").insert({
@@ -275,7 +274,7 @@ Mit freundlichen Grüßen
               unit_id: recipient.unitNumber ? undefined : null,
               title: `Nebenkostenabrechnung ${statement?.year}`,
               description: `Betriebskostenabrechnung für das Jahr ${statement?.year}`,
-              file_path: pdfData.file_path,
+              file_path: pdfData.data!.file_path,
               file_type: "application/pdf",
               document_type: "betriebskostenabrechnung",
               shared_with_tenant: true,
