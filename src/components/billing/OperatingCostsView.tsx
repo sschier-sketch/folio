@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Grid3x3, List, FileText, Copy, Trash2, Download, Mail } from "lucide-react";
+import { Plus, Search, FileText, Copy, Trash2, Download, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
@@ -26,7 +26,6 @@ export default function OperatingCostsView() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   useEffect(() => {
     if (user) {
@@ -88,12 +87,23 @@ export default function OperatingCostsView() {
       case "draft":
         return <Badge variant="gray">Entwurf</Badge>;
       case "ready":
-        return <Badge variant="blue">Bereit</Badge>;
+        return <Badge variant="blue">Fertiggestellt</Badge>;
       case "sent":
         return <Badge variant="green">Versendet</Badge>;
       default:
         return <Badge variant="gray">{status}</Badge>;
     }
+  };
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
 
   const handleStatementClick = (statement: StatementWithProperty) => {
@@ -321,31 +331,6 @@ export default function OperatingCostsView() {
             ))}
           </select>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === "list"
-                  ? "bg-primary-blue text-white"
-                  : "bg-gray-100 text-gray-400 hover:text-gray-700"
-              }`}
-              title="Listenansicht"
-            >
-              <List className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === "grid"
-                  ? "bg-primary-blue text-white"
-                  : "bg-gray-100 text-gray-400 hover:text-gray-700"
-              }`}
-              title="Rasteransicht"
-            >
-              <Grid3x3 className="w-5 h-5" />
-            </button>
-          </div>
-
           <button
             onClick={() => navigate("/abrechnungen/betriebskosten/neu")}
             className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors whitespace-nowrap"
@@ -379,7 +364,7 @@ export default function OperatingCostsView() {
               </button>
             )}
           </div>
-        ) : viewMode === "list" ? (
+        ) : (
           <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -396,6 +381,9 @@ export default function OperatingCostsView() {
                     </th>
                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
                       Status
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Letzte Bearbeitung
                     </th>
                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                       Aktionen
@@ -431,6 +419,12 @@ export default function OperatingCostsView() {
                         onClick={() => handleStatementClick(statement)}
                       >
                         {getStatusBadge(statement.status)}
+                      </td>
+                      <td
+                        className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
+                        onClick={() => handleStatementClick(statement)}
+                      >
+                        {statement.updated_at ? formatDateTime(statement.updated_at) : '-'}
                       </td>
                       <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-center">
@@ -468,39 +462,6 @@ export default function OperatingCostsView() {
                 </tbody>
               </table>
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredStatements.map((statement) => (
-              <div
-                key={statement.id}
-                onClick={() => handleStatementClick(statement)}
-                className="bg-white border border-gray-200 rounded-lg p-6 hover:border-primary-blue hover:shadow-md transition-all cursor-pointer"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-primary-blue" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-dark">
-                        {statement.property?.name || "Unbekannt"}
-                      </h3>
-                      <p className="text-sm text-gray-400">{statement.year}</p>
-                    </div>
-                  </div>
-                  {getStatusBadge(statement.status)}
-                </div>
-
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-dark">
-                    {Number(statement.total_costs).toFixed(2)}
-                  </span>
-                  <span className="text-sm text-gray-400">€</span>
-                </div>
-                <p className="text-xs text-gray-400 mt-1">Gesamtkosten</p>
-              </div>
-            ))}
           </div>
         )}
       </div>
