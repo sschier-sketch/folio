@@ -286,8 +286,8 @@ function createPdf(data: PdfData): Blob {
   const M_LEFT = 20;
   const M_RIGHT = 20;
   const M_TOP = 20;
-  const M_BOTTOM = 25;
-  const FOOTER_H = 12;
+  const M_BOTTOM = 15;
+  const FOOTER_H = 8;
   const CONTENT_BOTTOM_Y = PAGE_H - M_BOTTOM - FOOTER_H;
   const contentWidth = PAGE_W - M_LEFT - M_RIGHT;
 
@@ -304,17 +304,17 @@ function createPdf(data: PdfData): Blob {
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100);
   const senderLine = `${data.landlordName} · ${data.landlordAddress}`;
-  doc.text(senderLine, M_LEFT, 27);
+  doc.text(senderLine, M_LEFT, 37);
 
   doc.setFontSize(11);
   doc.setTextColor(0);
   doc.setFont('helvetica', 'normal');
   const recipientLines = data.tenantName + '\n' + data.tenantAddress;
   const splitRecipient = doc.splitTextToSize(recipientLines, 85);
-  doc.text(splitRecipient, M_LEFT, 45);
+  doc.text(splitRecipient, M_LEFT, 55);
 
   doc.setFontSize(10);
-  doc.text(data.createdDate, PAGE_W - M_RIGHT, 55, { align: 'right' });
+  doc.text(data.createdDate, PAGE_W - M_RIGHT, 80, { align: 'right' });
 
   let currentY = 90;
 
@@ -391,10 +391,10 @@ function createPdf(data: PdfData): Blob {
       overflow: 'linebreak',
     },
     columnStyles: {
-      0: { cellWidth: 45 },
-      1: { cellWidth: 35 },
-      2: { halign: 'right', cellWidth: 30 },
-      3: { halign: 'right', cellWidth: 40 },
+      0: { cellWidth: 42 },
+      1: { cellWidth: 32 },
+      2: { halign: 'right', cellWidth: 28 },
+      3: { halign: 'right', cellWidth: 38 },
       4: { halign: 'right', cellWidth: 25 },
     },
   });
