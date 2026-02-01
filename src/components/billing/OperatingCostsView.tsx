@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, FileText, Copy, Trash2, Download, Mail } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
@@ -8,6 +8,7 @@ import Badge from "../common/Badge";
 import TableActionsDropdown from "../common/TableActionsDropdown";
 import { generateOperatingCostPdf } from "../../lib/operatingCostPdfGenerator";
 import { sendOperatingCostPdf } from "../../lib/operatingCostMailer";
+import OperatingCostSendView from "./OperatingCostSendView";
 
 interface Property {
   id: string;
@@ -21,11 +22,14 @@ interface StatementWithProperty extends OperatingCostStatement {
 export default function OperatingCostsView() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [statements, setStatements] = useState<StatementWithProperty[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
+
+  const sendStatementId = searchParams.get('sendStatement');
 
   useEffect(() => {
     if (user) {
@@ -304,6 +308,14 @@ export default function OperatingCostsView() {
     }
   };
 
+  const handleBackFromSend = () => {
+    setSearchParams({ tab: 'operating-costs' });
+  };
+
+  if (sendStatementId) {
+    return <OperatingCostSendView statementId={sendStatementId} onBack={handleBackFromSend} />;
+  }
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg p-6">
@@ -438,7 +450,7 @@ export default function OperatingCostsView() {
                                 },
                                 {
                                   label: 'An Mieter senden',
-                                  onClick: () => navigate(`/abrechnungen/betriebskosten/${statement.id}/senden`),
+                                  onClick: () => setSearchParams({ tab: 'operating-costs', sendStatement: statement.id }),
                                   icon: <Mail className="w-4 h-4" />
                                 }
                               ] : []),
