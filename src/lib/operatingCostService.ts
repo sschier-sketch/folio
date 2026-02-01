@@ -189,9 +189,15 @@ export const operatingCostService = {
         .or(`contract_end.is.null,contract_end.gte.${periodStart.toISOString().split('T')[0]}`)
         .lte('contract_start', periodEnd.toISOString().split('T')[0]);
 
-      if (contractsError) throw contractsError;
+      if (contractsError) {
+        console.error('Error loading contracts:', contractsError);
+        throw contractsError;
+      }
+
+      console.log(`Found ${contracts?.length || 0} contracts for property ${statement.property_id} in year ${statement.year}`);
 
       if (!contracts || contracts.length === 0) {
+        console.warn('No contracts found for this property and period');
         return { data: [], error: null };
       }
 
@@ -203,17 +209,32 @@ export const operatingCostService = {
       const results: OperatingCostResult[] = [];
 
       for (const contract of contracts) {
+        console.log(`Processing contract ${contract.id}:`, {
+          tenant_id: contract.tenant_id,
+          unit_id: contract.unit_id,
+          contract_start: contract.contract_start,
+          contract_end: contract.contract_end
+        });
+
         const { data: tenant } = await supabase
           .from('tenants')
           .select('*')
           .eq('id', contract.tenant_id)
-          .single();
+          .maybeSingle();
 
         const { data: unit } = contract.unit_id ? await supabase
           .from('property_units')
           .select('*')
           .eq('id', contract.unit_id)
-          .single() : { data: null };
+          .maybeSingle() : { data: null };
+
+        console.log(`Loaded tenant: ${tenant ? `${tenant.first_name} ${tenant.last_name}` : 'NOT FOUND'}`);
+        console.log(`Loaded unit: ${unit ? unit.unit_number : 'NONE'}`);
+
+        if (!tenant) {
+          console.warn(`Tenant with id ${contract.tenant_id} not found for contract ${contract.id}`);
+          continue;
+        }
 
         const contractStart = new Date(contract.contract_start);
         const contractEnd = contract.contract_end ? new Date(contract.contract_end) : periodEnd;
