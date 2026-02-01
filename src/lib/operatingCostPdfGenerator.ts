@@ -514,12 +514,14 @@ function createPdf(data: PdfData): Blob {
   currentY += 15;
 
   checkPageBreak(80);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text('IV. Rechtliche Hinweise', M_LEFT, currentY);
   currentY += 2;
   doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
   currentY += 10;
 
+  doc.setFontSize(8.5);
   checkPageBreak(15);
   doc.setFont('helvetica', 'bold');
   doc.text('• Belegeinsicht (§ 259 BGB)', M_LEFT, currentY);
@@ -529,7 +531,7 @@ function createPdf(data: PdfData): Blob {
   const belege = 'Sie haben das Recht, die dieser Abrechnung zugrunde liegenden Belege und Unterlagen einzusehen. Bitte vereinbaren Sie hierzu einen Termin.';
   const belegeLines = doc.splitTextToSize(belege, contentWidth - 5);
   doc.text(belegeLines, M_LEFT + 3, currentY);
-  currentY += belegeLines.length * 5 + 8;
+  currentY += belegeLines.length * 4.5 + 8;
 
   checkPageBreak(20);
   doc.setFont('helvetica', 'bold');
@@ -540,7 +542,7 @@ function createPdf(data: PdfData): Blob {
   const einwendung = 'Einwendungen gegen diese Abrechnung sind gemäß § 556 Abs. 3 Satz 5 BGB innerhalb von 12 Monaten nach Zugang dieser Abrechnung mitzuteilen. Nach Ablauf dieser Frist können Einwendungen nicht mehr geltend gemacht werden, es sei denn, Sie haben die verspätete Geltendmachung nicht zu vertreten.';
   const einwendungLines = doc.splitTextToSize(einwendung, contentWidth - 5);
   doc.text(einwendungLines, M_LEFT + 3, currentY);
-  currentY += einwendungLines.length * 5 + 8;
+  currentY += einwendungLines.length * 4.5 + 8;
 
   checkPageBreak(15);
   doc.setFont('helvetica', 'bold');
@@ -551,7 +553,9 @@ function createPdf(data: PdfData): Blob {
   const rechtsgrundlage = 'Diese Abrechnung wurde auf Grundlage des § 556 BGB sowie der Betriebskostenverordnung (BetrKV) erstellt. Es wurden nur umlagefähige Betriebskosten gemäß § 2 BetrKV berücksichtigt.';
   const rechtsgrundlageLines = doc.splitTextToSize(rechtsgrundlage, contentWidth - 5);
   doc.text(rechtsgrundlageLines, M_LEFT + 3, currentY);
-  currentY += rechtsgrundlageLines.length * 5 + 10;
+  currentY += rechtsgrundlageLines.length * 4.5 + 10;
+
+  doc.setFontSize(10);
 
   checkPageBreak(20);
   doc.setFont('helvetica', 'normal');
