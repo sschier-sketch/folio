@@ -182,6 +182,20 @@ export const operatingCostService = {
       const periodEnd = new Date(statement.year, 11, 31);
       const totalDaysInYear = 365 + (new Date(statement.year, 1, 29).getMonth() === 1 ? 1 : 0);
 
+      console.log('DEBUG: Loading contracts for property:', statement.property_id);
+      console.log('DEBUG: Period:', {
+        start: periodStart.toISOString().split('T')[0],
+        end: periodEnd.toISOString().split('T')[0],
+        year: statement.year
+      });
+
+      const { data: allContractsDebug } = await supabase
+        .from('rental_contracts')
+        .select('id, tenant_id, status, contract_start, contract_end')
+        .eq('property_id', statement.property_id);
+
+      console.log('DEBUG: All contracts for property (before filtering):', allContractsDebug);
+
       const { data: contracts, error: contractsError } = await supabase
         .from('rental_contracts')
         .select('*')
@@ -194,10 +208,15 @@ export const operatingCostService = {
         throw contractsError;
       }
 
-      console.log(`Found ${contracts?.length || 0} contracts for property ${statement.property_id} in year ${statement.year}`);
+      console.log(`Found ${contracts?.length || 0} contracts matching period for property ${statement.property_id} in year ${statement.year}`);
+      console.log('DEBUG: Contracts after period filter:', contracts);
 
       if (!contracts || contracts.length === 0) {
         console.warn('No contracts found for this property and period');
+        console.warn('Check the following:');
+        console.warn('1. Does the property have rental contracts?');
+        console.warn('2. Do the contracts overlap with the billing year?');
+        console.warn('3. Are the contract_start and contract_end dates correct?');
         return { data: [], error: null };
       }
 
