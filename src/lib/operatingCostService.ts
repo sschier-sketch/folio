@@ -178,14 +178,16 @@ export const operatingCostService = {
 
       if (lineItemsError) throw lineItemsError;
 
-      const periodStart = new Date(statement.year, 0, 1);
-      const periodEnd = new Date(statement.year, 11, 31);
+      const periodStartStr = `${statement.year}-01-01`;
+      const periodEndStr = `${statement.year}-12-31`;
+      const periodStart = new Date(periodStartStr);
+      const periodEnd = new Date(periodEndStr);
       const totalDaysInYear = 365 + (new Date(statement.year, 1, 29).getMonth() === 1 ? 1 : 0);
 
       console.log('DEBUG: Loading contracts for property:', statement.property_id);
       console.log('DEBUG: Period:', {
-        start: periodStart.toISOString().split('T')[0],
-        end: periodEnd.toISOString().split('T')[0],
+        start: periodStartStr,
+        end: periodEndStr,
         year: statement.year
       });
 
@@ -200,8 +202,8 @@ export const operatingCostService = {
         .from('rental_contracts')
         .select('*')
         .eq('property_id', statement.property_id)
-        .or(`contract_end.is.null,contract_end.gte.${periodStart.toISOString().split('T')[0]}`)
-        .lte('contract_start', periodEnd.toISOString().split('T')[0]);
+        .or(`contract_end.is.null,contract_end.gte.${periodStartStr}`)
+        .lte('contract_start', periodEndStr);
 
       if (contractsError) {
         console.error('Error loading contracts:', contractsError);
