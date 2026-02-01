@@ -279,43 +279,56 @@ export async function generateOperatingCostPdf(
 
 function createPdf(data: PdfData): Blob {
   console.log('createPdf called with data:', { year: data.year, tenantName: data.tenantName });
-  const doc = new jsPDF();
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const marginLeft = 20;
-  const marginRight = 20;
-  const contentWidth = pageWidth - marginLeft - marginRight;
+  const PAGE_W = 210;
+  const PAGE_H = 297;
+  const M_LEFT = 20;
+  const M_RIGHT = 20;
+  const M_TOP = 20;
+  const M_BOTTOM = 25;
+  const FOOTER_H = 12;
+  const CONTENT_BOTTOM_Y = PAGE_H - M_BOTTOM - FOOTER_H;
+  const contentWidth = PAGE_W - M_LEFT - M_RIGHT;
+
+  const checkPageBreak = (requiredSpace: number = 10) => {
+    if (currentY > CONTENT_BOTTOM_Y - requiredSpace) {
+      doc.addPage();
+      currentY = M_TOP;
+      return true;
+    }
+    return false;
+  };
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100);
   const senderLine = `${data.landlordName} · ${data.landlordAddress}`;
-  doc.text(senderLine, marginLeft, 27);
+  doc.text(senderLine, M_LEFT, 27);
 
   doc.setFontSize(11);
   doc.setTextColor(0);
   doc.setFont('helvetica', 'normal');
   const recipientLines = data.tenantName + '\n' + data.tenantAddress;
   const splitRecipient = doc.splitTextToSize(recipientLines, 85);
-  doc.text(splitRecipient, marginLeft, 45);
+  doc.text(splitRecipient, M_LEFT, 45);
 
   doc.setFontSize(10);
-  doc.text(data.createdDate, pageWidth - marginRight, 45, { align: 'right' });
+  doc.text(data.createdDate, PAGE_W - M_RIGHT, 55, { align: 'right' });
 
-  let yPos = 95;
+  let currentY = 90;
 
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Betriebskostenabrechnung für das Jahr ${data.year}`, marginLeft, yPos);
-  yPos += 10;
+  doc.text(`Betriebskostenabrechnung für das Jahr ${data.year}`, M_LEFT, currentY);
+  currentY += 10;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Mietobjekt: ${data.propertyName}, Einheit ${data.unitNumber}`, marginLeft, yPos);
-  yPos += 5;
-  doc.text(`Abrechnungszeitraum: 01.01.${data.year} – 31.12.${data.year}`, marginLeft, yPos);
-  yPos += 10;
+  doc.text(`Mietobjekt: ${data.propertyName}, Einheit ${data.unitNumber}`, M_LEFT, currentY);
+  currentY += 5;
+  doc.text(`Abrechnungszeitraum: 01.01.${data.year} – 31.12.${data.year}`, M_LEFT, currentY);
+  currentY += 10;
 
   let salutation = 'Sehr geehrte Damen und Herren';
   if (data.tenantGender === 'male') {
@@ -324,21 +337,22 @@ function createPdf(data: PdfData): Blob {
     salutation = `Sehr geehrte Frau ${data.tenantName.split(' ').pop()}`;
   }
 
-  doc.text(`${salutation},`, marginLeft, yPos);
-  yPos += 10;
+  doc.text(`${salutation},`, M_LEFT, currentY);
+  currentY += 10;
 
   const introText = 'hiermit erhalten Sie die Abrechnung über die Betriebskosten gemäß § 556 BGB und der\nBetriebskostenverordnung (BetrKV) für den oben genannten Abrechnungszeitraum.';
   const introLines = doc.splitTextToSize(introText, contentWidth);
-  doc.text(introLines, marginLeft, yPos);
-  yPos += introLines.length * 5 + 10;
+  doc.text(introLines, M_LEFT, currentY);
+  currentY += introLines.length * 5 + 10;
 
+  checkPageBreak(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('I. Aufstellung der Betriebskosten', marginLeft, yPos);
-  yPos += 2;
+  doc.text('I. Aufstellung der Betriebskosten', M_LEFT, currentY);
+  currentY += 2;
   doc.setDrawColor(0);
   doc.setLineWidth(0.5);
-  doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
-  yPos += 8;
+  doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
+  currentY += 8;
 
   const tableData = data.lineItems.map((item) => [
     item.cost_type,
@@ -355,12 +369,13 @@ function createPdf(data: PdfData): Blob {
     { content: `${data.costShare.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
   ]);
 
+  checkPageBreak(30);
   autoTable(doc, {
-    startY: yPos,
+    startY: currentY,
     head: [['Kostenart', 'Umlageschlüssel', 'Gesamtkosten', 'Ihr Anteil', 'Ihr Betrag']],
     body: tableData,
     theme: 'plain',
-    margin: { left: marginLeft },
+    margin: { left: M_LEFT, right: M_RIGHT },
     headStyles: {
       fillColor: [255, 255, 255],
       textColor: 0,
@@ -373,6 +388,7 @@ function createPdf(data: PdfData): Blob {
       cellPadding: 2,
       lineColor: [200, 200, 200],
       lineWidth: 0.1,
+      overflow: 'linebreak',
     },
     columnStyles: {
       0: { cellWidth: 45 },
@@ -383,143 +399,186 @@ function createPdf(data: PdfData): Blob {
     },
   });
 
-  yPos = (doc as any).lastAutoTable.finalY + 15;
+  currentY = (doc as any).lastAutoTable.finalY + 15;
 
+  checkPageBreak(30);
   doc.setFont('helvetica', 'bold');
-  doc.text('II. Abrechnungsergebnis', marginLeft, yPos);
-  yPos += 2;
-  doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
-  yPos += 10;
+  doc.text('II. Abrechnungsergebnis', M_LEFT, currentY);
+  currentY += 2;
+  doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
+  currentY += 10;
 
   doc.setFont('helvetica', 'normal');
-  doc.text('Geleistete Betriebskostenvorauszahlungen', marginLeft, yPos);
-  doc.text(`${data.prepayments.toFixed(2)} €`, pageWidth - marginRight, yPos, { align: 'right' });
-  yPos += 6;
+  doc.text('Geleistete Betriebskostenvorauszahlungen', M_LEFT, currentY);
+  doc.text(`${data.prepayments.toFixed(2)} €`, PAGE_W - M_RIGHT, currentY, { align: 'right' });
+  currentY += 6;
 
-  doc.text('Ihr Anteil an den Betriebskosten (siehe Aufstellung)', marginLeft, yPos);
-  doc.text(`./. ${data.costShare.toFixed(2)} €`, pageWidth - marginRight, yPos, { align: 'right' });
-  yPos += 10;
+  doc.text('Ihr Anteil an den Betriebskosten (siehe Aufstellung)', M_LEFT, currentY);
+  doc.text(`./. ${data.costShare.toFixed(2)} €`, PAGE_W - M_RIGHT, currentY, { align: 'right' });
+  currentY += 10;
 
   doc.setFont('helvetica', 'bold');
   if (data.balance >= 0) {
-    doc.text('Nachzahlung', marginLeft, yPos);
-    doc.text(`${data.balance.toFixed(2)} €`, pageWidth - marginRight, yPos, { align: 'right' });
+    doc.text('Nachzahlung', M_LEFT, currentY);
+    doc.text(`${data.balance.toFixed(2)} €`, PAGE_W - M_RIGHT, currentY, { align: 'right' });
   } else {
-    doc.text('Guthaben', marginLeft, yPos);
-    doc.text(`${Math.abs(data.balance).toFixed(2)} €`, pageWidth - marginRight, yPos, { align: 'right' });
+    doc.text('Guthaben', M_LEFT, currentY);
+    doc.text(`${Math.abs(data.balance).toFixed(2)} €`, PAGE_W - M_RIGHT, currentY, { align: 'right' });
   }
-  yPos += 2;
+  currentY += 2;
   doc.setLineWidth(1);
-  doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
+  doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
+  currentY += 15;
 
-  if (yPos > pageHeight - 40) {
-    doc.addPage();
-    yPos = 20;
-  } else {
-    yPos += 15;
-  }
-
-  if (data.balance > 0 && data.bankDetails) {
+  checkPageBreak(40);
+  if (data.balance > 0) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    const paymentText = `Bitte überweisen Sie den Nachzahlungsbetrag von ${data.balance.toFixed(2)} € bis zum ${data.paymentDueDate} auf folgendes Konto:`;
-    const paymentLines = doc.splitTextToSize(paymentText, contentWidth);
-    doc.text(paymentLines, marginLeft, yPos);
-    yPos += paymentLines.length * 5 + 10;
+    if (data.bankDetails && data.bankDetails.iban) {
+      const paymentText = `Bitte überweisen Sie den Nachzahlungsbetrag von ${data.balance.toFixed(2)} € bis zum ${data.paymentDueDate} auf folgendes Konto:`;
+      const paymentLines = doc.splitTextToSize(paymentText, contentWidth);
+      doc.text(paymentLines, M_LEFT, currentY);
+      currentY += paymentLines.length * 5 + 8;
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Kontoinhaber:', M_LEFT, currentY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(data.bankDetails.account_holder, M_LEFT + 40, currentY);
+      currentY += 5;
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('IBAN:', M_LEFT, currentY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(data.bankDetails.iban, M_LEFT + 40, currentY);
+      currentY += 5;
+
+      if (data.bankDetails.bic) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('BIC:', M_LEFT, currentY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.bankDetails.bic, M_LEFT + 40, currentY);
+        currentY += 5;
+      }
+
+      if (data.bankDetails.bank_name) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Bank:', M_LEFT, currentY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.bankDetails.bank_name, M_LEFT + 40, currentY);
+        currentY += 5;
+      }
+      currentY += 5;
+    } else {
+      doc.setFillColor(255, 245, 230);
+      doc.rect(M_LEFT, currentY - 3, contentWidth, 12, 'F');
+      doc.setTextColor(180, 100, 0);
+      const warningText = 'Bankverbindung nicht hinterlegt – bitte im Account ergänzen.';
+      doc.text(warningText, M_LEFT + 2, currentY + 3);
+      doc.setTextColor(0);
+      currentY += 15;
+    }
   }
 
+  checkPageBreak(50);
   doc.setFont('helvetica', 'bold');
-  doc.text('III. Berechnungsgrundlagen', marginLeft, yPos);
-  yPos += 2;
-  doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
-  yPos += 10;
+  doc.text('III. Berechnungsgrundlagen', M_LEFT, currentY);
+  currentY += 2;
+  doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
+  currentY += 10;
 
-  const columnXPos = pageWidth / 2 + 10;
+  const columnXPos = PAGE_W / 2 + 10;
 
   doc.setFont('helvetica', 'bold');
-  doc.text('Gesamtobjekt:', marginLeft, yPos);
-  doc.text('Ihre Wohnung:', columnXPos, yPos);
-  yPos += 7;
+  doc.text('Gesamtobjekt:', M_LEFT, currentY);
+  doc.text('Ihre Wohnung:', columnXPos, currentY);
+  currentY += 7;
 
   doc.setFont('helvetica', 'normal');
-  doc.text('Gesamtwohnfläche:', marginLeft, yPos);
-  doc.text(`${data.totalAreaSqm.toFixed(2)} m²`, marginLeft + 50, yPos);
-  doc.text('Wohnfläche:', columnXPos, yPos);
-  doc.text(`${data.areaSqm.toFixed(2)} m² (${((data.areaSqm / data.totalAreaSqm) * 100).toFixed(2)}%)`, columnXPos + 30, yPos);
-  yPos += 5;
+  doc.text('Gesamtwohnfläche:', M_LEFT, currentY);
+  doc.text(`${data.totalAreaSqm.toFixed(2)} m²`, M_LEFT + 50, currentY);
+  doc.text('Wohnfläche:', columnXPos, currentY);
+  doc.text(`${data.areaSqm.toFixed(2)} m² (${((data.areaSqm / data.totalAreaSqm) * 100).toFixed(2)}%)`, columnXPos + 30, currentY);
+  currentY += 5;
 
-  doc.text('Wohneinheiten:', marginLeft, yPos);
-  doc.text(`${data.unitCount}`, marginLeft + 50, yPos);
-  doc.text('Personen:', columnXPos, yPos);
-  doc.text(`${data.totalPersons}`, columnXPos + 30, yPos);
-  yPos += 5;
+  doc.text('Wohneinheiten:', M_LEFT, currentY);
+  doc.text(`${data.unitCount}`, M_LEFT + 50, currentY);
+  doc.text('Personen:', columnXPos, currentY);
+  doc.text(`${data.totalPersons}`, columnXPos + 30, currentY);
+  currentY += 5;
 
-  doc.text('Bewohner gesamt:', marginLeft, yPos);
-  doc.text(`${data.totalPersons} Personen`, marginLeft + 50, yPos);
-  doc.text('Abrechnungstage:', columnXPos, yPos);
+  doc.text('Bewohner gesamt:', M_LEFT, currentY);
+  doc.text(`${data.totalPersons} Personen`, M_LEFT + 50, currentY);
+  doc.text('Abrechnungstage:', columnXPos, currentY);
   const totalDaysInYear = 365 + (new Date(data.year, 1, 29).getMonth() === 1 ? 1 : 0);
-  doc.text(`${data.daysInPeriod} von ${totalDaysInYear} (${((data.daysInPeriod / totalDaysInYear) * 100).toFixed(2)}%)`, columnXPos + 30, yPos);
-  yPos += 15;
+  doc.text(`${data.daysInPeriod} von ${totalDaysInYear} (${((data.daysInPeriod / totalDaysInYear) * 100).toFixed(2)}%)`, columnXPos + 30, currentY);
+  currentY += 15;
 
-  if (yPos > pageHeight - 80) {
-    doc.addPage();
-    yPos = 20;
-  }
-
+  checkPageBreak(80);
   doc.setFont('helvetica', 'bold');
-  doc.text('IV. Rechtliche Hinweise', marginLeft, yPos);
-  yPos += 2;
-  doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
-  yPos += 10;
+  doc.text('IV. Rechtliche Hinweise', M_LEFT, currentY);
+  currentY += 2;
+  doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
+  currentY += 10;
 
+  checkPageBreak(15);
   doc.setFont('helvetica', 'bold');
-  doc.text('• Belegeinsicht (§ 259 BGB)', marginLeft, yPos);
-  yPos += 5;
+  doc.text('• Belegeinsicht (§ 259 BGB)', M_LEFT, currentY);
+  currentY += 5;
 
   doc.setFont('helvetica', 'normal');
-  const belege = 'Sie haben das Recht, die dieser Abrechnung zugrunde liegenden Belege und Unterlagen einzusehen. Bitte vereinbaren Sie\nhierzu einen Termin.';
+  const belege = 'Sie haben das Recht, die dieser Abrechnung zugrunde liegenden Belege und Unterlagen einzusehen. Bitte vereinbaren Sie hierzu einen Termin.';
   const belegeLines = doc.splitTextToSize(belege, contentWidth - 5);
-  doc.text(belegeLines, marginLeft + 3, yPos);
-  yPos += belegeLines.length * 5 + 8;
+  doc.text(belegeLines, M_LEFT + 3, currentY);
+  currentY += belegeLines.length * 5 + 8;
 
+  checkPageBreak(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('• Einwendungsfrist (§ 556 Abs. 3 Satz 5 BGB)', marginLeft, yPos);
-  yPos += 5;
+  doc.text('• Einwendungsfrist (§ 556 Abs. 3 Satz 5 BGB)', M_LEFT, currentY);
+  currentY += 5;
 
   doc.setFont('helvetica', 'normal');
-  const einwendung = 'Einwendungen gegen diese Abrechnung sind gemäß § 556 Abs. 3 Satz 5 BGB innerhalb von 12 Monaten nach Zugang dieser\nAbrechnung mitzuteilen. Nach Ablauf dieser Frist können Einwendungen nicht mehr geltend gemacht werden, es sei denn, Sie\nhaben die verspätete Geltendmachung nicht zu vertreten.';
+  const einwendung = 'Einwendungen gegen diese Abrechnung sind gemäß § 556 Abs. 3 Satz 5 BGB innerhalb von 12 Monaten nach Zugang dieser Abrechnung mitzuteilen. Nach Ablauf dieser Frist können Einwendungen nicht mehr geltend gemacht werden, es sei denn, Sie haben die verspätete Geltendmachung nicht zu vertreten.';
   const einwendungLines = doc.splitTextToSize(einwendung, contentWidth - 5);
-  doc.text(einwendungLines, marginLeft + 3, yPos);
-  yPos += einwendungLines.length * 5 + 8;
+  doc.text(einwendungLines, M_LEFT + 3, currentY);
+  currentY += einwendungLines.length * 5 + 8;
 
+  checkPageBreak(15);
   doc.setFont('helvetica', 'bold');
-  doc.text('• Rechtsgrundlage', marginLeft, yPos);
-  yPos += 5;
+  doc.text('• Rechtsgrundlage', M_LEFT, currentY);
+  currentY += 5;
 
   doc.setFont('helvetica', 'normal');
-  const rechtsgrundlage = 'Diese Abrechnung wurde auf Grundlage des § 556 BGB sowie der Betriebskostenverordnung (BetrKV) erstellt. Es wurden nur\numlagefähige Betriebskosten gemäß § 2 BetrKV berücksichtigt.';
+  const rechtsgrundlage = 'Diese Abrechnung wurde auf Grundlage des § 556 BGB sowie der Betriebskostenverordnung (BetrKV) erstellt. Es wurden nur umlagefähige Betriebskosten gemäß § 2 BetrKV berücksichtigt.';
   const rechtsgrundlageLines = doc.splitTextToSize(rechtsgrundlage, contentWidth - 5);
-  doc.text(rechtsgrundlageLines, marginLeft + 3, yPos);
-  yPos += rechtsgrundlageLines.length * 5 + 10;
+  doc.text(rechtsgrundlageLines, M_LEFT + 3, currentY);
+  currentY += rechtsgrundlageLines.length * 5 + 10;
 
+  checkPageBreak(20);
   doc.setFont('helvetica', 'normal');
-  doc.text('Für Rückfragen stehen wir Ihnen gerne zur Verfügung.', marginLeft, yPos);
-  yPos += 10;
+  doc.text('Für Rückfragen stehen wir Ihnen gerne zur Verfügung.', M_LEFT, currentY);
+  currentY += 10;
 
-  doc.text('Mit freundlichen Grüßen', marginLeft, yPos);
-  yPos += 15;
+  doc.text('Mit freundlichen Grüßen', M_LEFT, currentY);
+  currentY += 15;
 
-  doc.text(data.landlordName, marginLeft, yPos);
+  doc.text(data.landlordName, M_LEFT, currentY);
 
   const totalPages = doc.internal.getNumberOfPages();
+  const footerY = PAGE_H - M_BOTTOM;
+  const footerLineY = PAGE_H - M_BOTTOM - FOOTER_H;
 
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
+
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.3);
+    doc.line(M_LEFT, footerLineY, PAGE_W - M_RIGHT, footerLineY);
+
     doc.setFontSize(8);
-    doc.setTextColor(128);
+    doc.setTextColor(130);
     const footer = `Betriebskostenabrechnung ${data.year} · Erstellt am ${data.createdDate}`;
-    doc.text(footer, marginLeft, pageHeight - 10);
-    doc.text(`Seite ${i} von ${totalPages}`, pageWidth - marginRight, pageHeight - 10, { align: 'right' });
+    doc.text(footer, M_LEFT, footerY);
+    doc.text(`Seite ${i} von ${totalPages}`, PAGE_W - M_RIGHT, footerY, { align: 'right' });
   }
 
   console.log('Outputting PDF as blob');
