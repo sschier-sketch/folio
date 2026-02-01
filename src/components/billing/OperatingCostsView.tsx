@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Grid3x3, List, FileText, Copy, Trash2 } from "lucide-react";
+import { Plus, Search, Grid3x3, List, FileText, Copy, Trash2, Download, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
 import Badge from "../common/Badge";
 import TableActionsDropdown from "../common/TableActionsDropdown";
+import { generateOperatingCostPdf } from "../../lib/operatingCostPdfGenerator";
+import { sendOperatingCostPdf } from "../../lib/operatingCostMailer";
 
 interface Property {
   id: string;
@@ -151,6 +153,147 @@ export default function OperatingCostsView() {
     }
   };
 
+  const handleDownloadAllPdfs = async (statement: StatementWithProperty) => {
+    if (!user) return;
+
+    try {
+      const { data: results } = await supabase
+        .from('operating_cost_results')
+        .select('*')
+        .eq('statement_id', statement.id);
+
+      if (!results || results.length === 0) {
+        alert('Keine Ergebnisse für diese Abrechnung gefunden');
+        return;
+      }
+
+      for (const result of results) {
+        const { data, error } = await generateOperatingCostPdf(
+          user.id,
+          statement.id,
+          result.id
+        );
+
+        if (error) {
+          console.error('Error generating PDF:', error);
+          continue;
+        }
+
+        if (data) {
+          const blob = data.pdfBlob;
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+
+          const { data: tenant } = result.tenant_id ? await supabase
+            .from('tenants')
+            .select('first_name, last_name')
+            .eq('id', result.tenant_id)
+            .single() : { data: null };
+
+          const tenantName = tenant
+            ? `${tenant.first_name}_${tenant.last_name}`
+            : `Mieter_${result.id}`;
+
+          link.download = `Betriebskostenabrechnung_${statement.year}_${tenantName}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }
+      }
+
+      alert(`${results.length} PDF(s) wurden heruntergeladen`);
+    } catch (error) {
+      console.error("Error downloading PDFs:", error);
+      alert("Fehler beim Herunterladen der PDFs");
+    }
+  };
+
+  const handleSendAllToTenants = async (statement: StatementWithProperty) => {
+    if (!user) return;
+
+    if (!confirm(`Möchten Sie die Betriebskostenabrechnungen an alle Mieter versenden?\n\nDie PDFs werden per E-Mail versendet und im Mieterportal bereitgestellt.`)) {
+      return;
+    }
+
+    try {
+      const { data: results } = await supabase
+        .from('operating_cost_results')
+        .select('*, tenant:tenants(email)')
+        .eq('statement_id', statement.id);
+
+      if (!results || results.length === 0) {
+        alert('Keine Ergebnisse für diese Abrechnung gefunden');
+        return;
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const result of results) {
+        const tenantEmail = result.tenant?.email;
+        if (!tenantEmail) {
+          errorCount++;
+          continue;
+        }
+
+        const { data: existingPdf } = await supabase
+          .from('operating_cost_pdfs')
+          .select('id')
+          .eq('result_id', result.id)
+          .order('generated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        let pdfId = existingPdf?.id;
+
+        if (!pdfId) {
+          const { data: pdfData, error: pdfError } = await generateOperatingCostPdf(
+            user.id,
+            statement.id,
+            result.id
+          );
+
+          if (pdfError || !pdfData) {
+            errorCount++;
+            continue;
+          }
+
+          pdfId = pdfData.pdfId;
+        }
+
+        const { error: sendError } = await sendOperatingCostPdf(
+          user.id,
+          statement.id,
+          result.id,
+          pdfId,
+          tenantEmail
+        );
+
+        if (sendError) {
+          errorCount++;
+        } else {
+          successCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        await operatingCostService.updateStatementStatus(statement.id, 'sent');
+        await loadStatements();
+      }
+
+      if (errorCount === 0) {
+        alert(`Alle ${successCount} Abrechnungen wurden erfolgreich versendet`);
+      } else {
+        alert(`${successCount} Abrechnungen versendet, ${errorCount} fehlgeschlagen`);
+      }
+    } catch (error) {
+      console.error("Error sending to tenants:", error);
+      alert("Fehler beim Versenden der Abrechnungen");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg p-6">
@@ -293,6 +436,18 @@ export default function OperatingCostsView() {
                         <div className="flex justify-center">
                           <TableActionsDropdown
                             actions={[
+                              ...(statement.status === 'ready' || statement.status === 'sent' ? [
+                                {
+                                  label: 'PDF herunterladen',
+                                  onClick: () => handleDownloadAllPdfs(statement),
+                                  icon: <Download className="w-4 h-4" />
+                                },
+                                {
+                                  label: 'An Mieter versenden',
+                                  onClick: () => handleSendAllToTenants(statement),
+                                  icon: <Mail className="w-4 h-4" />
+                                }
+                              ] : []),
                               {
                                 label: 'Duplizieren',
                                 onClick: () => handleDuplicateStatement(statement),

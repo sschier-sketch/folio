@@ -1,18 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ArrowLeft, FileText, Mail, AlertCircle, Building2, Download } from "lucide-react";
+import { ArrowLeft, AlertCircle, Building2 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService, OperatingCostStatement, OperatingCostResult } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
-import { generateOperatingCostPdf } from "../../lib/operatingCostPdfGenerator";
-import { sendOperatingCostPdf, checkIfAnySent } from "../../lib/operatingCostMailer";
 
 interface ResultWithDetails extends OperatingCostResult {
   tenant_name?: string;
   unit_number?: string;
   tenant_email?: string;
-  pdf_id?: string;
-  is_sent?: boolean;
 }
 
 export default function OperatingCostWizardStep3() {
@@ -29,8 +25,6 @@ export default function OperatingCostWizardStep3() {
   const [results, setResults] = useState<ResultWithDetails[]>([]);
   const [property, setProperty] = useState<any>(null);
   const [hasBankDetails, setHasBankDetails] = useState(false);
-  const [generatingPdfId, setGeneratingPdfId] = useState<string | null>(null);
-  const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
   useEffect(() => {
     if (statementId && user) {
@@ -121,28 +115,6 @@ export default function OperatingCostWizardStep3() {
         }
       }
 
-      const { data: existingPdf } = await supabase
-        .from('operating_cost_pdfs')
-        .select('id')
-        .eq('result_id', result.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (existingPdf) {
-        details.pdf_id = existingPdf.id;
-      }
-
-      const { data: sentLog } = await supabase
-        .from('operating_cost_send_logs')
-        .select('id')
-        .eq('result_id', result.id)
-        .eq('status', 'success')
-        .limit(1)
-        .single();
-
-      details.is_sent = !!sentLog;
-
       resultsWithDetails.push(details);
     }
 
@@ -167,90 +139,6 @@ export default function OperatingCostWizardStep3() {
       setError(err.message || 'Fehler bei der Berechnung');
     } finally {
       setComputing(false);
-    }
-  }
-
-  async function handleGeneratePdf(result: ResultWithDetails) {
-    if (!user || !statementId) return;
-
-    setGeneratingPdfId(result.id);
-    setError(null);
-
-    try {
-      const { data, error } = await generateOperatingCostPdf(
-        user.id,
-        statementId,
-        result.id
-      );
-
-      if (error) throw error;
-
-      if (data) {
-        const blob = data.pdfBlob;
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Betriebskostenabrechnung_${statement?.year}_${result.tenant_name?.replace(/\s+/g, '_')}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-
-        setResults((prev) =>
-          prev.map((r) =>
-            r.id === result.id ? { ...r, pdf_id: data.pdfId } : r
-          )
-        );
-      }
-    } catch (err: any) {
-      console.error('Error generating PDF:', err);
-      setError(err.message || 'Fehler beim Erstellen des PDFs');
-    } finally {
-      setGeneratingPdfId(null);
-    }
-  }
-
-  async function handleSendEmail(result: ResultWithDetails) {
-    if (!user || !statementId || !result.tenant_email) {
-      setError('Keine E-Mail-Adresse hinterlegt');
-      return;
-    }
-
-    if (!result.pdf_id) {
-      setError('Bitte erst PDF generieren');
-      return;
-    }
-
-    setSendingEmailId(result.id);
-    setError(null);
-
-    try {
-      const { error } = await sendOperatingCostPdf(
-        user.id,
-        statementId,
-        result.id,
-        result.pdf_id,
-        result.tenant_email
-      );
-
-      if (error) throw error;
-
-      setResults((prev) =>
-        prev.map((r) =>
-          r.id === result.id ? { ...r, is_sent: true } : r
-        )
-      );
-
-      const anySent = await checkIfAnySent(statementId);
-      if (anySent && statement?.status !== 'sent') {
-        await operatingCostService.updateStatementStatus(statementId, 'sent');
-        setStatement((prev) => prev ? { ...prev, status: 'sent' } : null);
-      }
-    } catch (err: any) {
-      console.error('Error sending email:', err);
-      setError(err.message || 'Fehler beim Versenden der E-Mail');
-    } finally {
-      setSendingEmailId(null);
     }
   }
 
@@ -437,63 +325,24 @@ export default function OperatingCostWizardStep3() {
                   key={result.id}
                   className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-dark mb-1">
-                        {result.tenant_name || 'Unbekannter Mieter'}
-                      </h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
-                        <span>Einheit: {result.unit_number || 'N/A'}</span>
-                        <span>•</span>
-                        <span>
-                          {Number(result.area_sqm).toFixed(2)} m²
-                        </span>
-                        <span>•</span>
-                        <span>{result.days_in_period} Tage</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleGeneratePdf(result)}
-                        disabled={generatingPdfId === result.id}
-                        className="p-2 text-primary-blue bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="PDF herunterladen"
-                      >
-                        {generatingPdfId === result.id ? (
-                          <div className="w-5 h-5 border-2 border-primary-blue border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <Download className="w-5 h-5" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => handleSendEmail(result)}
-                        disabled={
-                          !result.tenant_email ||
-                          !result.pdf_id ||
-                          sendingEmailId === result.id ||
-                          result.is_sent
-                        }
-                        className={`p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                          result.is_sent
-                            ? 'text-green-600 bg-green-50'
-                            : 'text-primary-blue bg-blue-50 hover:bg-blue-100'
-                        }`}
-                        title={
-                          result.is_sent
-                            ? 'Bereits versendet'
-                            : !result.tenant_email
-                            ? 'Keine E-Mail-Adresse hinterlegt'
-                            : !result.pdf_id
-                            ? 'Bitte erst PDF generieren'
-                            : 'Per E-Mail senden'
-                        }
-                      >
-                        {sendingEmailId === result.id ? (
-                          <div className="w-5 h-5 border-2 border-primary-blue border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <Mail className="w-5 h-5" />
-                        )}
-                      </button>
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold text-dark mb-1">
+                      {result.tenant_name || 'Unbekannter Mieter'}
+                    </h3>
+                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                      <span>Einheit: {result.unit_number || 'N/A'}</span>
+                      <span>•</span>
+                      <span>
+                        {Number(result.area_sqm).toFixed(2)} m²
+                      </span>
+                      <span>•</span>
+                      <span>{result.days_in_period} Tage</span>
+                      {!result.tenant_email && (
+                        <>
+                          <span>•</span>
+                          <span className="text-yellow-600">Keine E-Mail hinterlegt</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -577,10 +426,10 @@ export default function OperatingCostWizardStep3() {
             {saving ? (
               <>
                 <div className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Speichert...
+                Wird fertiggestellt...
               </>
             ) : (
-              'Abrechnung speichern'
+              'Abrechnung fertigstellen'
             )}
           </button>
         </div>
