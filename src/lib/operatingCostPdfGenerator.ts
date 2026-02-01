@@ -174,7 +174,7 @@ export async function generateOperatingCostPdf(
       : '';
 
     const tenantFullAddress = tenant
-      ? `${tenant.street || ''}\n${tenant.postal_code || ''} ${tenant.city || ''}`
+      ? `${tenant.street || ''} ${tenant.house_number || ''}\n${tenant.zip_code || ''} ${tenant.city || ''}`
       : '';
 
     const createdDate = new Date().toLocaleDateString('de-DE', {
@@ -364,23 +364,25 @@ function createPdf(data: PdfData): Blob {
     head: [['Kostenart', 'Umlageschlüssel', 'Gesamtkosten', 'Ihr Anteil', 'Ihr Betrag']],
     body: tableData,
     theme: 'plain',
+    margin: { left: marginLeft },
     headStyles: {
       fillColor: [255, 255, 255],
       textColor: 0,
       fontStyle: 'bold',
       lineWidth: 0,
+      fontSize: 8,
     },
     styles: {
-      fontSize: 9,
+      fontSize: 8,
       cellPadding: 2,
       lineColor: [200, 200, 200],
       lineWidth: 0.1,
     },
     columnStyles: {
-      0: { cellWidth: 50 },
+      0: { cellWidth: 45 },
       1: { cellWidth: 35 },
-      2: { halign: 'right', cellWidth: 25 },
-      3: { cellWidth: 35 },
+      2: { halign: 'right', cellWidth: 30 },
+      3: { halign: 'right', cellWidth: 40 },
       4: { halign: 'right', cellWidth: 25 },
     },
   });
@@ -513,11 +515,16 @@ function createPdf(data: PdfData): Blob {
 
   doc.text(data.landlordName, marginLeft, yPos);
 
-  doc.setFontSize(8);
-  doc.setTextColor(128);
-  const footer = `Betriebskostenabrechnung ${data.year} · Erstellt am ${data.createdDate}`;
-  doc.text(footer, marginLeft, pageHeight - 10);
-  doc.text(`Seite 1 von 1`, pageWidth - marginRight, pageHeight - 10, { align: 'right' });
+  const totalPages = doc.internal.getNumberOfPages();
+
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(128);
+    const footer = `Betriebskostenabrechnung ${data.year} · Erstellt am ${data.createdDate}`;
+    doc.text(footer, marginLeft, pageHeight - 10);
+    doc.text(`Seite ${i} von ${totalPages}`, pageWidth - marginRight, pageHeight - 10, { align: 'right' });
+  }
 
   console.log('Outputting PDF as blob');
   const blob = doc.output('blob') as Blob;
