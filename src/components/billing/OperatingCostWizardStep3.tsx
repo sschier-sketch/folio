@@ -25,6 +25,7 @@ export default function OperatingCostWizardStep3() {
   const [results, setResults] = useState<ResultWithDetails[]>([]);
   const [property, setProperty] = useState<any>(null);
   const [hasBankDetails, setHasBankDetails] = useState(false);
+  const [lineItems, setLineItems] = useState<any[]>([]);
 
   useEffect(() => {
     if (statementId && user) {
@@ -62,6 +63,10 @@ export default function OperatingCostWizardStep3() {
       }
 
       setStatement(statement);
+
+      if (lineItems && lineItems.length > 0) {
+        setLineItems(lineItems);
+      }
 
       const { data: propertyData } = await supabase
         .from('properties')
@@ -293,6 +298,57 @@ export default function OperatingCostWizardStep3() {
             </div>
           </div>
         </div>
+
+        {lineItems.length > 0 && (
+          <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <h3 className="text-lg font-semibold text-dark mb-4">
+              Erfasste Betriebskosten
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-left">
+                      Kostenart
+                    </th>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-left">
+                      Umlageschlüssel
+                    </th>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">
+                      Betrag
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {lineItems.map((item, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-dark">
+                        {item.cost_type}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {item.allocation_key === 'area' ? 'Wohnfläche' :
+                         item.allocation_key === 'units' ? 'Wohneinheiten' :
+                         item.allocation_key === 'persons' ? 'Personenzahl' :
+                         item.allocation_key}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-medium text-dark">
+                        {Number(item.amount).toFixed(2)} €
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="bg-gray-50 font-semibold">
+                    <td colSpan={2} className="px-4 py-3 text-sm text-dark">
+                      Summe
+                    </td>
+                    <td className="px-4 py-3 text-sm text-right text-dark">
+                      {lineItems.reduce((sum, item) => sum + Number(item.amount), 0).toFixed(2)} €
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-lg p-8 shadow-sm">
           <h2 className="text-xl font-semibold text-dark mb-6">
