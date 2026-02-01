@@ -171,29 +171,49 @@ export default function OperatingCostsView() {
     if (!user) return;
 
     try {
-      const { data: results } = await supabase
+      console.log('Starting PDF download for statement:', statement.id);
+
+      const { data: results, error: resultsError } = await supabase
         .from('operating_cost_results')
         .select('*')
         .eq('statement_id', statement.id);
+
+      console.log('Results query:', { results, resultsError });
+
+      if (resultsError) {
+        console.error('Error loading results:', resultsError);
+        alert(`Fehler beim Laden der Ergebnisse: ${resultsError.message}`);
+        return;
+      }
 
       if (!results || results.length === 0) {
         alert('Keine Ergebnisse für diese Abrechnung gefunden');
         return;
       }
 
+      let successCount = 0;
+      let errorCount = 0;
+
       for (const result of results) {
+        console.log('Generating PDF for result:', result.id);
+
         const { data, error } = await generateOperatingCostPdf(
           user.id,
           statement.id,
           result.id
         );
 
+        console.log('PDF generation result:', { data, error });
+
         if (error) {
           console.error('Error generating PDF:', error);
+          errorCount++;
           continue;
         }
 
-        if (data) {
+        if (data && data.pdfBlob) {
+          console.log('PDF blob received, size:', data.pdfBlob.size);
+
           const blob = data.pdfBlob;
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
@@ -211,16 +231,25 @@ export default function OperatingCostsView() {
 
           link.download = `Betriebskostenabrechnung_${statement.year}_${tenantName}.pdf`;
           document.body.appendChild(link);
+          console.log('Clicking download link for:', link.download);
           link.click();
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
+          successCount++;
+        } else {
+          console.error('No PDF blob in response');
+          errorCount++;
         }
       }
 
-      alert(`${results.length} PDF(s) wurden heruntergeladen`);
+      if (successCount > 0) {
+        alert(`${successCount} PDF(s) wurden erfolgreich heruntergeladen${errorCount > 0 ? `, ${errorCount} fehlgeschlagen` : ''}`);
+      } else {
+        alert('Fehler: Keine PDFs konnten generiert werden');
+      }
     } catch (error) {
       console.error("Error downloading PDFs:", error);
-      alert("Fehler beim Herunterladen der PDFs");
+      alert(`Fehler beim Herunterladen der PDFs: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
     }
   };
 

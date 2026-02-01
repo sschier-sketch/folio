@@ -43,20 +43,28 @@ export async function generateOperatingCostPdf(
   resultId: string
 ): Promise<{ data: { pdfBlob: Blob; pdfId: string } | null; error: any }> {
   try {
-    const { data: statement } = await supabase
+    console.log('generateOperatingCostPdf called:', { userId, statementId, resultId });
+
+    const { data: statement, error: statementError } = await supabase
       .from('operating_cost_statements')
       .select('*')
       .eq('id', statementId)
       .single();
 
+    console.log('Statement loaded:', { statement, error: statementError });
+
+    if (statementError) throw new Error(`Statement error: ${statementError.message}`);
     if (!statement) throw new Error('Statement not found');
 
-    const { data: result } = await supabase
+    const { data: result, error: resultError } = await supabase
       .from('operating_cost_results')
       .select('*')
       .eq('id', resultId)
       .single();
 
+    console.log('Result loaded:', { result, error: resultError });
+
+    if (resultError) throw new Error(`Result error: ${resultError.message}`);
     if (!result) throw new Error('Result not found');
 
     const { data: property } = await supabase
@@ -214,10 +222,16 @@ export async function generateOperatingCostPdf(
       paymentDueDate,
     };
 
-    const pdfBlob = await createPdf(pdfData);
+    console.log('Creating PDF with data:', { year: pdfData.year, tenantName: pdfData.tenantName });
+
+    const pdfBlob = createPdf(pdfData);
+
+    console.log('PDF created, blob size:', pdfBlob.size);
 
     const fileName = `betriebskostenabrechnung_${statement.year}_einheit_${unit?.unit_number || result.id}.pdf`;
     const filePath = `operating-costs/${userId}/${fileName}`;
+
+    console.log('Uploading PDF to storage:', filePath);
 
     const { error: uploadError } = await supabase.storage
       .from('documents')
@@ -226,20 +240,32 @@ export async function generateOperatingCostPdf(
         upsert: true,
       });
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw uploadError;
+    }
+
+    console.log('PDF uploaded successfully');
 
     const { data: pdfRecord, error: insertError } = await supabase
       .from('operating_cost_pdfs')
       .insert({
         statement_id: statementId,
+        result_id: resultId,
         tenant_id: result.tenant_id,
         unit_id: result.unit_id,
         file_path: filePath,
+        user_id: userId,
       })
       .select()
       .single();
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error('Insert error:', insertError);
+      throw insertError;
+    }
+
+    console.log('PDF record created:', pdfRecord.id);
 
     return {
       data: { pdfBlob, pdfId: pdfRecord.id },
@@ -252,6 +278,7 @@ export async function generateOperatingCostPdf(
 }
 
 function createPdf(data: PdfData): Blob {
+  console.log('createPdf called with data:', { year: data.year, tenantName: data.tenantName });
   const doc = new jsPDF();
 
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -492,7 +519,10 @@ function createPdf(data: PdfData): Blob {
   doc.text(footer, marginLeft, pageHeight - 10);
   doc.text(`Seite 1 von 1`, pageWidth - marginRight, pageHeight - 10, { align: 'right' });
 
-  return doc.output('blob');
+  console.log('Outputting PDF as blob');
+  const blob = doc.output('blob') as Blob;
+  console.log('PDF blob created, size:', blob.size, 'type:', blob.type);
+  return blob;
 }
 
 function getAllocationKeyLabel(key: string): string {
