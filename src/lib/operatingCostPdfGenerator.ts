@@ -318,7 +318,7 @@ function createPdf(data: PdfData): Blob {
 
   let currentY = 90;
 
-  doc.setFontSize(14);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.text(`Betriebskostenabrechnung für das Jahr ${data.year}`, M_LEFT, currentY);
   currentY += 10;
@@ -391,10 +391,10 @@ function createPdf(data: PdfData): Blob {
       overflow: 'linebreak',
     },
     columnStyles: {
-      0: { cellWidth: 42 },
-      1: { cellWidth: 32 },
+      0: { cellWidth: 45 },
+      1: { cellWidth: 33 },
       2: { halign: 'right', cellWidth: 28 },
-      3: { halign: 'right', cellWidth: 38 },
+      3: { halign: 'right', cellWidth: 39 },
       4: { halign: 'right', cellWidth: 25 },
     },
   });
@@ -405,6 +405,7 @@ function createPdf(data: PdfData): Blob {
   doc.setFont('helvetica', 'bold');
   doc.text('II. Abrechnungsergebnis', M_LEFT, currentY);
   currentY += 2;
+  doc.setLineWidth(0.5);
   doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
   currentY += 10;
 
@@ -483,6 +484,7 @@ function createPdf(data: PdfData): Blob {
   doc.setFont('helvetica', 'bold');
   doc.text('III. Berechnungsgrundlagen', M_LEFT, currentY);
   currentY += 2;
+  doc.setLineWidth(0.5);
   doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
   currentY += 10;
 
@@ -518,6 +520,7 @@ function createPdf(data: PdfData): Blob {
   doc.setFont('helvetica', 'bold');
   doc.text('IV. Rechtliche Hinweise', M_LEFT, currentY);
   currentY += 2;
+  doc.setLineWidth(0.5);
   doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
   currentY += 10;
 
