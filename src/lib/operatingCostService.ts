@@ -310,22 +310,46 @@ export const operatingCostService = {
 
         const balance = costShare - prepayments;
 
-        const { data: result, error: insertError } = await supabase
-          .from('operating_cost_results')
-          .insert({
-            statement_id: statementId,
-            unit_id: contract.unit_id,
-            tenant_id: contract.tenant_id,
-            days_in_period: daysInPeriod,
-            area_sqm: unitArea,
-            cost_share: Math.round(costShare * 100) / 100,
-            prepayments: Math.round(prepayments * 100) / 100,
-            balance: Math.round(balance * 100) / 100,
-          })
-          .select()
-          .single();
+        const resultData = {
+          statement_id: statementId,
+          unit_id: contract.unit_id,
+          tenant_id: contract.tenant_id,
+          days_in_period: daysInPeriod,
+          area_sqm: unitArea,
+          cost_share: Math.round(costShare * 100) / 100,
+          prepayments: Math.round(prepayments * 100) / 100,
+          balance: Math.round(balance * 100) / 100,
+        };
 
-        if (insertError) throw insertError;
+        const { data: existingResult } = await supabase
+          .from('operating_cost_results')
+          .select('id')
+          .eq('statement_id', statementId)
+          .eq('tenant_id', contract.tenant_id)
+          .eq('unit_id', contract.unit_id || null)
+          .maybeSingle();
+
+        let result;
+        if (existingResult) {
+          const { data: updated } = await supabase
+            .from('operating_cost_results')
+            .update(resultData)
+            .eq('id', existingResult.id)
+            .select()
+            .single();
+          result = updated;
+        } else {
+          const { data: inserted, error: insertError } = await supabase
+            .from('operating_cost_results')
+            .insert(resultData)
+            .select()
+            .single();
+          if (insertError && !insertError.message?.includes('duplicate')) {
+            throw insertError;
+          }
+          result = inserted;
+        }
+
         if (result) results.push(result);
       }
 
