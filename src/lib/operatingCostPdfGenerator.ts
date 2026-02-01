@@ -229,7 +229,7 @@ export async function generateOperatingCostPdf(
     console.log('PDF created, blob size:', pdfBlob.size);
 
     const fileName = `betriebskostenabrechnung_${statement.year}_einheit_${unit?.unit_number || result.id}.pdf`;
-    const filePath = `operating-costs/${userId}/${fileName}`;
+    const filePath = `${userId}/operating-costs/${fileName}`;
 
     console.log('Uploading PDF to storage:', filePath);
 
