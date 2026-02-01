@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { supabase } from './supabase';
 
 interface PdfData {
@@ -131,11 +131,11 @@ export async function generateOperatingCostPdf(
     if (allContracts) {
       const { data: tenants } = await supabase
         .from('tenants')
-        .select('number_of_persons')
+        .select('household_size')
         .in('id', allContracts.map(c => c.tenant_id));
 
       if (tenants) {
-        totalPersons = tenants.reduce((sum, t) => sum + Number(t.number_of_persons || 1), 0);
+        totalPersons = tenants.reduce((sum, t) => sum + Number(t.household_size || 1), 0);
       }
     }
 
@@ -151,7 +151,7 @@ export async function generateOperatingCostPdf(
         share = `1 / ${unitCount}`;
         shareAmount = (Number(item.amount) / unitCount) * (result.days_in_period / totalDaysInYear);
       } else if (item.allocation_key === 'persons' && totalPersons > 0) {
-        const tenantPersons = Number(tenant?.number_of_persons || 1);
+        const tenantPersons = Number(tenant?.household_size || 1);
         share = `${tenantPersons} / ${totalPersons} Personen`;
         shareAmount = (Number(item.amount) * tenantPersons / totalPersons) * (result.days_in_period / totalDaysInYear);
       }
@@ -359,7 +359,7 @@ function createPdf(data: PdfData): Blob {
     { content: `${data.costShare.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
   ]);
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: yPos,
     head: [['Kostenart', 'Umlageschlüssel', 'Gesamtkosten', 'Ihr Anteil', 'Ihr Betrag']],
     body: tableData,
