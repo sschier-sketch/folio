@@ -7,6 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+interface EmailAttachment {
+  filename: string;
+  content?: string;
+  path?: string;
+}
+
 interface EmailRequest {
   to: string;
   subject?: string;
@@ -20,6 +26,7 @@ interface EmailRequest {
   category?: 'transactional' | 'informational';
   idempotencyKey?: string;
   metadata?: Record<string, any>;
+  attachments?: EmailAttachment[];
 }
 
 function replaceVariables(content: string, variables: Record<string, string>): string {
@@ -58,7 +65,8 @@ Deno.serve(async (req: Request) => {
       mailType,
       category,
       idempotencyKey,
-      metadata
+      metadata,
+      attachments
     }: EmailRequest = await req.json();
 
     let finalSubject = subject || '';
@@ -189,19 +197,54 @@ Deno.serve(async (req: Request) => {
 
     console.log('Sending email via Resend:', { to, subject: finalSubject, from: EMAIL_FROM });
 
+    const emailPayload: any = {
+      from: EMAIL_FROM,
+      to: [to],
+      subject: finalSubject,
+      html: finalHtml,
+      text: finalText || '',
+    };
+
+    if (attachments && attachments.length > 0) {
+      emailPayload.attachments = await Promise.all(
+        attachments.map(async (att) => {
+          if (att.path) {
+            const { data: fileData, error: fileError } = await supabase.storage
+              .from('documents')
+              .download(att.path);
+
+            if (fileError) {
+              console.error('Error loading attachment:', fileError);
+              throw new Error(`Failed to load attachment: ${att.filename}`);
+            }
+
+            const buffer = await fileData.arrayBuffer();
+            const base64Content = btoa(
+              String.fromCharCode(...new Uint8Array(buffer))
+            );
+
+            return {
+              filename: att.filename,
+              content: base64Content,
+            };
+          } else if (att.content) {
+            return {
+              filename: att.filename,
+              content: att.content,
+            };
+          }
+          return null;
+        })
+      ).then(results => results.filter(r => r !== null));
+    }
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: EMAIL_FROM,
-        to: [to],
-        subject: finalSubject,
-        html: finalHtml,
-        text: finalText || '',
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const data = await response.json();

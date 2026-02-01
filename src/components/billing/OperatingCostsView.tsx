@@ -437,8 +437,8 @@ export default function OperatingCostsView() {
                                   icon: <Download className="w-4 h-4" />
                                 },
                                 {
-                                  label: 'An Mieter versenden',
-                                  onClick: () => handleSendAllToTenants(statement),
+                                  label: 'An Mieter senden',
+                                  onClick: () => navigate(`/abrechnungen/betriebskosten/${statement.id}/senden`),
                                   icon: <Mail className="w-4 h-4" />
                                 }
                               ] : []),
