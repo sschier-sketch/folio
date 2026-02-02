@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AlertCircle, Plus, X } from "lucide-react";
+import { AlertCircle, Plus, X, Info } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService } from "../../lib/operatingCostService";
 
@@ -315,7 +315,18 @@ export default function OperatingCostWizardStep2() {
                     Betrag (EUR)
                   </th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-700">
-                    §35a EStG
+                    <div className="flex items-center justify-center gap-1.5 group relative">
+                      <span>§35a EStG</span>
+                      <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                      <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-72 p-3 bg-gray-900 text-white text-xs font-normal rounded-lg shadow-lg z-50">
+                        <div className="text-left">
+                          Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
+                        </div>
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                          <div className="border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+                    </div>
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">
                     Kategorie (§35a)
@@ -458,7 +469,18 @@ export default function OperatingCostWizardStep2() {
                       Betrag (EUR)
                     </th>
                     <th className="text-center py-3 px-4 font-semibold text-gray-700">
-                      §35a EStG
+                      <div className="flex items-center justify-center gap-1.5 group relative">
+                        <span>§35a EStG</span>
+                        <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                        <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-72 p-3 bg-gray-900 text-white text-xs font-normal rounded-lg shadow-lg z-50">
+                          <div className="text-left">
+                            Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
+                          </div>
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                            <div className="border-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        </div>
+                      </div>
                     </th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">
                       Kategorie (§35a)

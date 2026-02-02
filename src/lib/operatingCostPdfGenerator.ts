@@ -627,13 +627,21 @@ function createPdf(data: PdfData): Blob {
 
     currentY = (doc as any).lastAutoTable.finalY + 10;
 
-    checkPageBreak(25);
+    checkPageBreak(30);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    const taxHinweis = 'Hinweis: Sie können 20% der Arbeitskosten für haushaltsnahe Dienstleistungen (max. 4.000 €/Jahr) bzw. Handwerkerleistungen (max. 1.200 €/Jahr) direkt von der Steuerschuld abziehen. Bewahren Sie diese Abrechnung als Nachweis auf. Materialkosten sind nicht absetzbar.';
-    const taxHinweisLines = doc.splitTextToSize(taxHinweis, contentWidth);
-    doc.text(taxHinweisLines, M_LEFT, currentY);
-    currentY += taxHinweisLines.length * 4 + 15;
+    const taxDisclaimer = 'Die ausgewiesenen Beträge dienen ausschließlich als Übersicht über potenziell steuerlich begünstigte Aufwendungen gemäß §35a EStG. Eine Gewähr für die steuerliche Anerkennung durch das Finanzamt wird nicht übernommen.';
+    const taxDisclaimerLines = doc.splitTextToSize(taxDisclaimer, contentWidth);
+    doc.text(taxDisclaimerLines, M_LEFT, currentY);
+    currentY += taxDisclaimerLines.length * 4 + 3;
+
+    doc.setFontSize(7);
+    doc.setTextColor(120, 120, 120);
+    const materialNote = 'Materialkosten und nicht begünstigte Gebührenanteile können enthalten sein.';
+    const materialNoteLines = doc.splitTextToSize(materialNote, contentWidth);
+    doc.text(materialNoteLines, M_LEFT, currentY);
+    currentY += materialNoteLines.length * 3.5 + 12;
+    doc.setTextColor(0, 0, 0);
 
     nextSectionNumber = 5;
   }
