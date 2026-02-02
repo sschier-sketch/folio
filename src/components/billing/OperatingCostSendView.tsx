@@ -244,6 +244,8 @@ Mit freundlichen Grüßen
           }
         }
 
+        const idempotencyKey = `operating_cost_${statementId}_${recipient.tenantId}_${Date.now()}`;
+
         const { error: sendError } = await supabase.functions.invoke("send-email", {
           body: {
             to: recipient.email,
@@ -251,6 +253,7 @@ Mit freundlichen Grüßen
             html: personalizedMessage.replace(/\n/g, "<br>"),
             mailType: "operating_cost_statement",
             userId: user!.id,
+            idempotencyKey: idempotencyKey,
             attachments: [
               {
                 filename: `Betriebskostenabrechnung_${statement?.year}_${recipient.tenantName.replace(/\s+/g, "_")}.pdf`,
