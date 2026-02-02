@@ -17,6 +17,7 @@ import {
 import PropertyOverviewTab from "./property/PropertyOverviewTab";
 import PropertyUnitsTab from "./property/PropertyUnitsTab";
 import PropertyEquipmentTab from "./property/PropertyEquipmentTab";
+import PropertyPhotosTab from "./property/PropertyPhotosTab";
 import PropertyDocumentsTab from "./property/PropertyDocumentsTab";
 import PropertyHistoryTab from "./property/PropertyHistoryTab";
 import PropertyContactsTab from "./property/PropertyContactsTab";
@@ -53,6 +54,7 @@ type Tab =
   | "overview"
   | "units"
   | "equipment"
+  | "photos"
   | "documents"
   | "history"
   | "contacts"
@@ -184,6 +186,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
     { id: "overview" as Tab, label: "Überblick", icon: Home },
     { id: "units" as Tab, label: "Einheiten", icon: Package },
     { id: "equipment" as Tab, label: "Ausstattung & Daten", icon: Zap },
+    { id: "photos" as Tab, label: "Bilder", icon: Camera },
     { id: "history" as Tab, label: "Historie", icon: Clock, isPro: true },
     { id: "documents" as Tab, label: "Dokumente", icon: FileText, isPro: true },
     { id: "contacts" as Tab, label: "Kontakte", icon: Users, isPro: true },
@@ -289,6 +292,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
         {activeTab === "overview" && <PropertyOverviewTab property={currentProperty} onNavigateToTenant={onNavigateToTenant} onUpdate={handlePropertyUpdate} />}
         {activeTab === "units" && <PropertyUnitsTab propertyId={currentProperty.id} />}
         {activeTab === "equipment" && <PropertyEquipmentTab propertyId={currentProperty.id} />}
+        {activeTab === "photos" && <PropertyPhotosTab propertyId={currentProperty.id} />}
         {activeTab === "documents" && <PropertyDocumentsTab propertyId={currentProperty.id} />}
         {activeTab === "history" && <PropertyHistoryTab propertyId={currentProperty.id} />}
         {activeTab === "contacts" && <PropertyContactsTab propertyId={currentProperty.id} />}
