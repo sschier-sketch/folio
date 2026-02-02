@@ -21,6 +21,8 @@ interface PdfData {
     amount: number;
     share: string;
     shareAmount: number;
+    is_section_35a?: boolean;
+    section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
   }>;
   costShare: number;
   prepayments: number;
@@ -162,6 +164,8 @@ export async function generateOperatingCostPdf(
         amount: Number(item.amount),
         share,
         shareAmount,
+        is_section_35a: item.is_section_35a || false,
+        section_35a_category: item.section_35a_category || null,
       };
     });
 
@@ -524,24 +528,9 @@ function createPdf(data: PdfData): Blob {
   doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
   currentY += 10;
 
-  const taxRelevantCategories = [
-    'Hauswart',
-    'Hausmeister',
-    'Gartenpflege',
-    'Gebäudereinigung',
-    'Schornsteinreinigung',
-    'Straßenreinigung',
-    'Ungezieferbekämpfung',
-    'Rauchwarnmelderwartung',
-    'Wartung Elektro/Türanlagen',
-    'Winterdienst',
-  ];
+  const section35aItems = data.lineItems.filter(item => item.is_section_35a && item.section_35a_category);
 
-  const taxRelevantItems = data.lineItems.filter(item =>
-    taxRelevantCategories.some(cat => item.cost_type.toLowerCase().includes(cat.toLowerCase()))
-  );
-
-  if (taxRelevantItems.length > 0) {
+  if (section35aItems.length > 0) {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     const taxIntroText = 'Folgende Beträge aus dieser Abrechnung können Sie gemäß § 35a EStG (haushaltsnahe Dienstleistungen und Handwerkerleistungen) in Ihrer Einkommensteuererklärung geltend machen:';
@@ -551,21 +540,64 @@ function createPdf(data: PdfData): Blob {
 
     checkPageBreak(40);
 
-    const taxTableData = taxRelevantItems.map(item => [
-      item.cost_type,
-      `${item.shareAmount.toFixed(2)} €`,
-    ]);
+    const haushaltsnaheItems = section35aItems.filter(item => item.section_35a_category === 'haushaltsnahe_dienstleistungen');
+    const handwerkerItems = section35aItems.filter(item => item.section_35a_category === 'handwerkerleistungen');
 
-    const totalTaxRelevant = taxRelevantItems.reduce((sum, item) => sum + item.shareAmount, 0);
+    const taxTableData: any[] = [];
 
+    if (haushaltsnaheItems.length > 0) {
+      taxTableData.push([
+        { content: 'a) Haushaltsnahe Dienstleistungen', colSpan: 5, styles: { fontStyle: 'bold', fillColor: [245, 245, 245] } },
+      ]);
+
+      haushaltsnaheItems.forEach(item => {
+        taxTableData.push([
+          item.cost_type,
+          'Haushaltsnahe Dienstleistungen',
+          `${item.amount.toFixed(2)} €`,
+          getAllocationKeyLabel(item.allocation_key),
+          `${item.shareAmount.toFixed(2)} €`,
+        ]);
+      });
+
+      const sumHaushaltsnahe = haushaltsnaheItems.reduce((sum, item) => sum + item.shareAmount, 0);
+      taxTableData.push([
+        { content: 'Summe a)', colSpan: 4, styles: { fontStyle: 'bold' } },
+        { content: `${sumHaushaltsnahe.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
+      ]);
+    }
+
+    if (handwerkerItems.length > 0) {
+      taxTableData.push([
+        { content: 'b) Handwerkerleistungen', colSpan: 5, styles: { fontStyle: 'bold', fillColor: [245, 245, 245] } },
+      ]);
+
+      handwerkerItems.forEach(item => {
+        taxTableData.push([
+          item.cost_type,
+          'Handwerkerleistungen',
+          `${item.amount.toFixed(2)} €`,
+          getAllocationKeyLabel(item.allocation_key),
+          `${item.shareAmount.toFixed(2)} €`,
+        ]);
+      });
+
+      const sumHandwerker = handwerkerItems.reduce((sum, item) => sum + item.shareAmount, 0);
+      taxTableData.push([
+        { content: 'Summe b)', colSpan: 4, styles: { fontStyle: 'bold' } },
+        { content: `${sumHandwerker.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
+      ]);
+    }
+
+    const totalSection35a = section35aItems.reduce((sum, item) => sum + item.shareAmount, 0);
     taxTableData.push([
-      { content: 'Summe steuerlich absetzbar', styles: { fontStyle: 'bold' } },
-      { content: `${totalTaxRelevant.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
+      { content: 'In den Kosten enthaltener Gesamtanteil gemäß §35a EStG', colSpan: 4, styles: { fontStyle: 'bold', fillColor: [230, 230, 230] } },
+      { content: `${totalSection35a.toFixed(2)} €`, styles: { fontStyle: 'bold', fillColor: [230, 230, 230] } },
     ]);
 
     autoTable(doc, {
       startY: currentY,
-      head: [['Kostenart', 'Ihr Betrag']],
+      head: [['Kostenart', 'Kategorie (§35a)', 'Gesamtkosten (§35a-relevant)', 'Umlageschlüssel', 'Anteil des Mieters (€)']],
       body: taxTableData,
       theme: 'plain',
       margin: { left: M_LEFT, right: M_RIGHT },
@@ -573,18 +605,22 @@ function createPdf(data: PdfData): Blob {
         fillColor: [255, 255, 255],
         textColor: 0,
         fontStyle: 'bold',
-        lineWidth: 0,
-        fontSize: 8.5,
+        lineWidth: 0.1,
+        lineColor: [200, 200, 200],
+        fontSize: 8,
       },
       styles: {
-        fontSize: 8.5,
+        fontSize: 8,
         cellPadding: 2,
         lineColor: [200, 200, 200],
         lineWidth: 0.1,
       },
       columnStyles: {
-        0: { cellWidth: 120 },
-        1: { halign: 'right', cellWidth: 50 },
+        0: { cellWidth: 38 },
+        1: { cellWidth: 42 },
+        2: { halign: 'right', cellWidth: 30 },
+        3: { cellWidth: 32 },
+        4: { halign: 'right', cellWidth: 28 },
       },
     });
 

@@ -9,6 +9,8 @@ interface CostItem {
   cost_type: string;
   allocation_key: "area" | "persons" | "units" | "consumption";
   amount: number;
+  is_section_35a?: boolean;
+  section_35a_category?: "haushaltsnahe_dienstleistungen" | "handwerkerleistungen" | null;
 }
 
 const COST_TYPES = [
@@ -100,7 +102,7 @@ export default function OperatingCostWizardStep2() {
 
   function updateCostItem(
     index: number,
-    field: "allocation_key" | "amount",
+    field: "allocation_key" | "amount" | "is_section_35a" | "section_35a_category",
     value: any
   ) {
     const updated = [...costItems];
@@ -108,12 +110,17 @@ export default function OperatingCostWizardStep2() {
       ...updated[index],
       [field]: value,
     };
+
+    if (field === "is_section_35a" && value === false) {
+      updated[index].section_35a_category = null;
+    }
+
     setCostItems(updated);
   }
 
   function updateCustomCostItem(
     index: number,
-    field: "allocation_key" | "amount",
+    field: "allocation_key" | "amount" | "is_section_35a" | "section_35a_category",
     value: any
   ) {
     const updated = [...customCostItems];
@@ -121,6 +128,11 @@ export default function OperatingCostWizardStep2() {
       ...updated[index],
       [field]: value,
     };
+
+    if (field === "is_section_35a" && value === false) {
+      updated[index].section_35a_category = null;
+    }
+
     setCustomCostItems(updated);
   }
 
@@ -302,6 +314,12 @@ export default function OperatingCostWizardStep2() {
                   <th className="text-right py-3 px-4 font-semibold text-gray-700">
                     Betrag (EUR)
                   </th>
+                  <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                    §35a EStG
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    Kategorie (§35a)
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -349,6 +367,38 @@ export default function OperatingCostWizardStep2() {
                         placeholder="0,00"
                       />
                     </td>
+                    <td className="py-3 px-4 text-center">
+                      <input
+                        type="checkbox"
+                        checked={item.is_section_35a || false}
+                        onChange={(e) =>
+                          updateCostItem(
+                            index,
+                            "is_section_35a",
+                            e.target.checked
+                          )
+                        }
+                        className="w-5 h-5 text-primary-blue focus:ring-2 focus:ring-primary-blue rounded"
+                      />
+                    </td>
+                    <td className="py-3 px-4">
+                      <select
+                        value={item.section_35a_category || ""}
+                        onChange={(e) =>
+                          updateCostItem(
+                            index,
+                            "section_35a_category",
+                            e.target.value || null
+                          )
+                        }
+                        disabled={!item.is_section_35a}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm disabled:bg-gray-50 disabled:text-gray-400"
+                      >
+                        <option value="">Bitte wählen</option>
+                        <option value="haushaltsnahe_dienstleistungen">Haushaltsnahe Dienstleistungen</option>
+                        <option value="handwerkerleistungen">Handwerkerleistungen</option>
+                      </select>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -364,6 +414,7 @@ export default function OperatingCostWizardStep2() {
                     })}{" "}
                     €
                   </td>
+                  <td colSpan={2}></td>
                 </tr>
               </tfoot>
             </table>
@@ -373,13 +424,18 @@ export default function OperatingCostWizardStep2() {
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-primary-blue mt-0.5" />
               <div className="text-sm text-blue-900">
-                <p className="font-semibold mb-1">Hinweis zum Umlageschlüssel:</p>
-                <p>
-                  Der Umlageschlüssel bestimmt, wie die Kosten auf die Mieter
-                  verteilt werden. Wählen Sie für jede Kostenart den passenden
-                  Schlüssel aus. Lassen Sie den Betrag bei 0, wenn eine Kostenart
-                  nicht anfällt.
-                </p>
+                <p className="font-semibold mb-2">Hinweise zur Erfassung:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>
+                    Der <strong>Umlageschlüssel</strong> bestimmt, wie die Kosten auf die Mieter verteilt werden.
+                  </li>
+                  <li>
+                    Markieren Sie Kosten als <strong>§35a EStG-relevant</strong>, wenn diese steuerlich absetzbar sind (z.B. Hauswart, Gartenpflege, Schornsteinreinigung).
+                  </li>
+                  <li>
+                    Wählen Sie die passende <strong>Kategorie</strong>: Haushaltsnahe Dienstleistungen (max. 4.000€/Jahr) oder Handwerkerleistungen (max. 1.200€/Jahr).
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -400,6 +456,12 @@ export default function OperatingCostWizardStep2() {
                     </th>
                     <th className="text-right py-3 px-4 font-semibold text-gray-700">
                       Betrag (EUR)
+                    </th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                      §35a EStG
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Kategorie (§35a)
                     </th>
                     <th className="w-16"></th>
                   </tr>
@@ -448,6 +510,38 @@ export default function OperatingCostWizardStep2() {
                           className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-right"
                           placeholder="0,00"
                         />
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={item.is_section_35a || false}
+                          onChange={(e) =>
+                            updateCustomCostItem(
+                              index,
+                              "is_section_35a",
+                              e.target.checked
+                            )
+                          }
+                          className="w-5 h-5 text-primary-blue focus:ring-2 focus:ring-primary-blue rounded"
+                        />
+                      </td>
+                      <td className="py-3 px-4">
+                        <select
+                          value={item.section_35a_category || ""}
+                          onChange={(e) =>
+                            updateCustomCostItem(
+                              index,
+                              "section_35a_category",
+                              e.target.value || null
+                            )
+                          }
+                          disabled={!item.is_section_35a}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm disabled:bg-gray-50 disabled:text-gray-400"
+                        >
+                          <option value="">Bitte wählen</option>
+                          <option value="haushaltsnahe_dienstleistungen">Haushaltsnahe Dienstleistungen</option>
+                          <option value="handwerkerleistungen">Handwerkerleistungen</option>
+                        </select>
                       </td>
                       <td className="py-3 px-4">
                         <button
