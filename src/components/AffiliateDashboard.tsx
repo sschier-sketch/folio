@@ -6,6 +6,7 @@ import {
   TrendingUp,
   DollarSign,
   Linkedin,
+  Mail,
   ExternalLink,
   CreditCard,
   AlertCircle,
@@ -138,6 +139,14 @@ export default function AffiliateDashboard() {
     );
   };
 
+  const handleShareEmail = () => {
+    const affiliateUrl = `${window.location.origin}/?ref=${stats?.affiliateCode}`;
+    const subject = encodeURIComponent("Schau dir rentab.ly an!");
+    const body = encodeURIComponent(
+      `Hallo,\n\nIch nutze rentab.ly für meine Immobilienverwaltung und bin sehr zufrieden damit. Die Software ist modern, benutzerfreundlich und perfekt für kleine Vermieter.\n\nFalls du auch Immobilien vermietest, schau sie dir doch mal an:\n${affiliateUrl}\n\nViele Grüße`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
 
   const handleRequestPayout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,7 +239,7 @@ export default function AffiliateDashboard() {
 
   if (!stats) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+      <div className="bg-white rounded-lg shadow-sm p-8 text-center">
         <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-dark mb-2">
           Affiliate-Profil nicht gefunden
@@ -267,7 +276,7 @@ export default function AffiliateDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6">
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
               <ExternalLink className="w-5 h-5 text-[#1e1e24]" />
@@ -275,8 +284,8 @@ export default function AffiliateDashboard() {
             <h2 className="text-lg font-semibold text-dark">Ihr Partner-Code</h2>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
-            <div className="flex items-center justify-between gap-4">
+          <div className="bg-gray-50 rounded-lg p-6 mb-4">
+            <div className="flex items-center justify-between gap-4 mb-4">
               <div className="flex-1">
                 <p className="text-gray-600 text-sm mb-2">Partner-Code:</p>
                 <p className="text-2xl font-bold font-mono tracking-wider text-dark">
@@ -298,6 +307,12 @@ export default function AffiliateDashboard() {
                 )}
               </button>
             </div>
+            <div>
+              <p className="text-gray-600 text-sm mb-2">Ihr persönlicher Link:</p>
+              <p className="text-sm font-mono text-dark break-all">
+                {window.location.origin}/?ref={stats.affiliateCode}
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-3">
@@ -308,11 +323,18 @@ export default function AffiliateDashboard() {
               <Linkedin className="w-4 h-4" />
               Auf LinkedIn teilen
             </button>
+            <button
+              onClick={handleShareEmail}
+              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+            >
+              <Mail className="w-4 h-4" />
+              Per E-Mail teilen
+            </button>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
                 <Users className="w-5 h-5 text-[#1e1e24]" />
@@ -327,7 +349,7 @@ export default function AffiliateDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-[#1e1e24]" />
@@ -342,7 +364,7 @@ export default function AffiliateDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
               <DollarSign className="w-5 h-5 text-[#1e1e24]" />
@@ -354,7 +376,7 @@ export default function AffiliateDashboard() {
           <div className="text-sm text-gray-600">Gesamt verdient</div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
               <CreditCard className="w-5 h-5 text-[#1e1e24]" />
@@ -374,7 +396,7 @@ export default function AffiliateDashboard() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
               <Check className="w-5 h-5 text-[#1e1e24]" />
@@ -406,7 +428,7 @@ export default function AffiliateDashboard() {
       )}
 
       {payoutRequests.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-8">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
           <div className="px-6 py-4 border-b bg-gray-50">
             <h3 className="text-lg font-semibold text-dark">Auszahlungsanfragen</h3>
           </div>
@@ -467,7 +489,7 @@ export default function AffiliateDashboard() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-8">
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
         <div className="px-6 py-4 border-b bg-gray-50">
           <h3 className="text-lg font-semibold text-dark">Geworbene Nutzer</h3>
         </div>
