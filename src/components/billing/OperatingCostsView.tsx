@@ -34,39 +34,6 @@ export default function OperatingCostsView() {
 
   const sendStatementId = searchParams.get('sendStatement');
 
-  if (subscriptionLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!isPro) {
-    return (
-      <PremiumUpgradePrompt
-        featureKey="billing_operating_costs"
-        title="Betriebskostenabrechnung"
-        description="Erstellen Sie professionelle Betriebskostenabrechnungen für Ihre Mieter. Sparen Sie Zeit und vermeiden Sie Fehler mit unserem intelligenten Abrechnungsassistenten."
-        features={[
-          "Automatische Berechnung nach Verteilerschlüsseln",
-          "Rechtssichere Abrechnungen gemäß Betriebskostenverordnung",
-          "Import von Rechnungen und Belegen",
-          "Automatische Zuordnung zu Kostenpositionen",
-          "Export als PDF mit Mieter-Anschreiben",
-          "Versand per E-Mail direkt aus der Software"
-        ]}
-      />
-    );
-  }
-
-  useEffect(() => {
-    if (user) {
-      loadProperties();
-      loadStatements();
-    }
-  }, [user, selectedYear]);
-
   async function loadProperties() {
     const { data } = await supabase
       .from("properties")
@@ -369,6 +336,39 @@ export default function OperatingCostsView() {
   const handleBackFromSend = () => {
     setSearchParams({ tab: 'operating-costs' });
   };
+
+  useEffect(() => {
+    if (user && isPro) {
+      loadProperties();
+      loadStatements();
+    }
+  }, [user, selectedYear, isPro]);
+
+  if (subscriptionLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isPro) {
+    return (
+      <PremiumUpgradePrompt
+        featureKey="billing_operating_costs"
+        title="Betriebskostenabrechnung"
+        description="Erstellen Sie professionelle Betriebskostenabrechnungen für Ihre Mieter. Sparen Sie Zeit und vermeiden Sie Fehler mit unserem intelligenten Abrechnungsassistenten."
+        features={[
+          "Automatische Berechnung nach Verteilerschlüsseln",
+          "Rechtssichere Abrechnungen gemäß Betriebskostenverordnung",
+          "Import von Rechnungen und Belegen",
+          "Automatische Zuordnung zu Kostenpositionen",
+          "Export als PDF mit Mieter-Anschreiben",
+          "Versand per E-Mail direkt aus der Software"
+        ]}
+      />
+    );
+  }
 
   if (sendStatementId) {
     return <OperatingCostSendView statementId={sendStatementId} onBack={handleBackFromSend} />;
