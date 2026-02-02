@@ -455,17 +455,20 @@ export default function TenantCommunicationTab({
           ) : (
             <div className="p-6">
               <div className="space-y-4">
-                {communications.map((comm) => {
+                {communications.map((comm, index) => {
                   const Icon = getTypeIcon(comm.communication_type);
+                  const isLast = index === communications.length - 1;
                   return (
                     <div
                       key={comm.id}
-                      className={`relative pl-8 pb-4 border-l-2 border-gray-200 last:border-0 ${
+                      className={`relative pl-8 pb-4 ${
+                        !isLast ? "border-l-2 border-gray-200" : ""
+                      } ${
                         comm.is_ticket ? "cursor-pointer hover:bg-gray-50 -mx-6 px-14 py-4" : ""
                       } ${comm.is_deleted ? "opacity-60" : ""}`}
                       onClick={() => comm.is_ticket && loadTicketDetails(comm.id)}
                     >
-                      <div className="absolute left-0 top-0 -translate-x-1/2 w-4 h-4 bg-primary-blue rounded-full"></div>
+                      <div className="absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full bg-primary-blue"></div>
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <Calendar className="w-4 h-4 text-gray-400" />
