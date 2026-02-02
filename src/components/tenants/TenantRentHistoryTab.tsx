@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { TrendingUp, Plus, Lock, Calendar, Edit, Save, X } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { TrendingUp, Plus, Lock, Calendar, Edit, Save, X, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import Badge from "../common/Badge";
+import { addMonths, differenceInDays, formatDateDE, parseISODate } from "../../lib/dateUtils";
 
 interface TenantRentHistoryTabProps {
   tenantId: string;
@@ -38,6 +39,7 @@ interface Contract {
   is_sublet: boolean;
   vat_applicable: boolean;
   rent_due_day: number;
+  start_date: string;
 }
 
 export default function TenantRentHistoryTab({
@@ -71,6 +73,48 @@ export default function TenantRentHistoryTab({
       loadData();
     }
   }, [user, tenantId]);
+
+  const section558Info = useMemo(() => {
+    if (!contract || !contract.start_date) return null;
+
+    let lastEffectiveDate: Date | null = null;
+
+    if (history.length > 0) {
+      const sortedHistory = [...history].sort(
+        (a, b) => new Date(b.effective_date).getTime() - new Date(a.effective_date).getTime()
+      );
+
+      for (const event of sortedHistory) {
+        const eventDate = parseISODate(event.effective_date);
+        if (eventDate <= new Date() && (event.cold_rent > 0 || event.utilities > 0)) {
+          lastEffectiveDate = eventDate;
+          break;
+        }
+      }
+    }
+
+    if (!lastEffectiveDate && contract.start_date) {
+      lastEffectiveDate = parseISODate(contract.start_date);
+    }
+
+    if (!lastEffectiveDate) return null;
+
+    const earliest558EffectiveDate = addMonths(lastEffectiveDate, 15);
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+
+    const daysRemaining = differenceInDays(earliest558EffectiveDate, today);
+
+    if (daysRemaining > 0) {
+      return {
+        earliest558EffectiveDate,
+        daysRemaining,
+        formattedDate: formatDateDE(earliest558EffectiveDate),
+      };
+    }
+
+    return null;
+  }, [contract, history]);
 
   async function loadData() {
     try {
@@ -621,6 +665,24 @@ export default function TenantRentHistoryTab({
           </>
         )}
       </div>
+
+      {section558Info && (
+        <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
+          <div className="flex gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <AlertCircle className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-blue-900">
+                Eine Mieterhöhung nach §558 BGB ist frühestens ab <strong>{section558Info.formattedDate}</strong> zulässig (15-Monats-Frist seit der letzten wirksamen Mieterhöhung).
+              </p>
+              <p className="text-xs text-blue-700 mt-2">
+                Hinweis: Diese Frist gilt für Anpassungen an die ortsübliche Vergleichsmiete (§558 BGB).
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
 {isPremium && (
         <div className="bg-white rounded-lg">
