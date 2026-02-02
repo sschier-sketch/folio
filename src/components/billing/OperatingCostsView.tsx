@@ -17,8 +17,21 @@ interface Property {
   name: string;
 }
 
+interface PropertyUnit {
+  id: string;
+  unit_number: string;
+}
+
+interface Tenant {
+  id: string;
+  first_name: string;
+  last_name: string;
+}
+
 interface StatementWithProperty extends OperatingCostStatement {
   property?: Property;
+  unit?: PropertyUnit;
+  tenant?: Tenant;
 }
 
 export default function OperatingCostsView() {
@@ -54,14 +67,44 @@ export default function OperatingCostsView() {
 
     if (data) {
       const statementsWithProperties = await Promise.all(
-        data.map(async (statement) => {
+        data.map(async (statement: any) => {
           const { data: property } = await supabase
             .from("properties")
             .select("id, name")
             .eq("id", statement.property_id)
-            .single();
+            .maybeSingle();
 
-          return { ...statement, property: property || undefined };
+          let unit = undefined;
+          let tenant = undefined;
+
+          if (statement.unit_id) {
+            const { data: unitData } = await supabase
+              .from("property_units")
+              .select("id, unit_number")
+              .eq("id", statement.unit_id)
+              .maybeSingle();
+            unit = unitData || undefined;
+
+            const { data: contract } = await supabase
+              .from("rental_contracts")
+              .select("tenant_id")
+              .eq("unit_id", statement.unit_id)
+              .eq("property_id", statement.property_id)
+              .or(`contract_end.is.null,contract_end.gte.${statement.year}-12-31`)
+              .lte("contract_start", `${statement.year}-12-31`)
+              .maybeSingle();
+
+            if (contract?.tenant_id) {
+              const { data: tenantData } = await supabase
+                .from("tenants")
+                .select("id, first_name, last_name")
+                .eq("id", contract.tenant_id)
+                .maybeSingle();
+              tenant = tenantData || undefined;
+            }
+          }
+
+          return { ...statement, property: property || undefined, unit, tenant };
         })
       );
 
@@ -444,6 +487,12 @@ export default function OperatingCostsView() {
                       Immobilie
                     </th>
                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Einheit
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Mieter
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
                       Jahr
                     </th>
                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
@@ -471,6 +520,20 @@ export default function OperatingCostsView() {
                         onClick={() => handleStatementClick(statement)}
                       >
                         {statement.property?.name || "Unbekannte Immobilie"}
+                      </td>
+                      <td
+                        className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
+                        onClick={() => handleStatementClick(statement)}
+                      >
+                        {statement.unit ? `Einheit ${statement.unit.unit_number}` : '-'}
+                      </td>
+                      <td
+                        className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
+                        onClick={() => handleStatementClick(statement)}
+                      >
+                        {statement.tenant
+                          ? `${statement.tenant.first_name} ${statement.tenant.last_name}`
+                          : '-'}
                       </td>
                       <td
                         className="px-6 py-4 text-sm text-gray-700 cursor-pointer"

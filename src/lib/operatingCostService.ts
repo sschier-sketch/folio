@@ -57,6 +57,7 @@ export interface OperatingCostSendLog {
 export interface CreateStatementParams {
   property_id: string;
   year: number;
+  unit_id?: string | null;
 }
 
 export interface ListStatementsParams {
@@ -89,6 +90,7 @@ export const operatingCostService = {
           user_id: userId,
           property_id: params.property_id,
           year: params.year,
+          unit_id: params.unit_id || null,
           status: 'draft',
           total_costs: 0,
         })

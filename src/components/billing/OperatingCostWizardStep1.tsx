@@ -11,15 +11,24 @@ interface Property {
   address: string;
 }
 
+interface PropertyUnit {
+  id: string;
+  unit_number: string;
+  floor: string | null;
+}
+
 export default function OperatingCostWizardStep1() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [properties, setProperties] = useState<Property[]>([]);
+  const [units, setUnits] = useState<PropertyUnit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingUnits, setLoadingUnits] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [selectedPropertyId, setSelectedPropertyId] = useState("");
+  const [selectedUnitId, setSelectedUnitId] = useState("");
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear() - 1
   );
@@ -29,6 +38,15 @@ export default function OperatingCostWizardStep1() {
       loadProperties();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (selectedPropertyId) {
+      loadUnits(selectedPropertyId);
+    } else {
+      setUnits([]);
+      setSelectedUnitId("");
+    }
+  }, [selectedPropertyId]);
 
   async function loadProperties() {
     setLoading(true);
@@ -44,12 +62,32 @@ export default function OperatingCostWizardStep1() {
     setLoading(false);
   }
 
+  async function loadUnits(propertyId: string) {
+    setLoadingUnits(true);
+    const { data } = await supabase
+      .from("property_units")
+      .select("id, unit_number, floor")
+      .eq("property_id", propertyId)
+      .order("unit_number");
+
+    if (data) {
+      setUnits(data);
+      if (data.length === 1) {
+        setSelectedUnitId(data[0].id);
+      } else {
+        setSelectedUnitId("");
+      }
+    }
+    setLoadingUnits(false);
+  }
+
   const availableYears = Array.from(
     { length: 10 },
     (_, i) => new Date().getFullYear() - 1 - i
   );
 
-  const canProceed = selectedPropertyId && selectedYear;
+  const requiresUnitSelection = units.length > 1;
+  const canProceed = selectedPropertyId && selectedYear && (!requiresUnitSelection || selectedUnitId);
 
   const deadlineYear = selectedYear + 1;
 
@@ -65,6 +103,7 @@ export default function OperatingCostWizardStep1() {
         {
           property_id: selectedPropertyId,
           year: selectedYear,
+          unit_id: requiresUnitSelection ? selectedUnitId : null,
         }
       );
 
@@ -181,6 +220,39 @@ export default function OperatingCostWizardStep1() {
                   </select>
                 )}
               </div>
+
+              {selectedPropertyId && units.length > 1 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Einheit <span className="text-red-500">*</span>
+                  </label>
+                  {loadingUnits ? (
+                    <div className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg bg-gray-50">
+                      <div className="w-4 h-4 border-2 border-gray-300 border-t-primary-blue rounded-full animate-spin"></div>
+                      <span className="text-sm text-gray-500">Lade Einheiten...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <select
+                        value={selectedUnitId}
+                        onChange={(e) => setSelectedUnitId(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      >
+                        <option value="">Einheit auswählen...</option>
+                        {units.map((unit) => (
+                          <option key={unit.id} value={unit.id}>
+                            Einheit {unit.unit_number}
+                            {unit.floor && ` (${unit.floor}. OG)`}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Diese Immobilie hat mehrere Einheiten. Bitte wählen Sie die Einheit aus, für die Sie die Betriebskostenabrechnung erstellen möchten.
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
