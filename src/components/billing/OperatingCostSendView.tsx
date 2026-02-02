@@ -295,12 +295,31 @@ Mit freundlichen Grüßen
             if (docInsertError) {
               console.error(`Error saving document for ${recipient.tenantName}:`, docInsertError);
             } else if (documentData) {
-              await supabase.from("document_associations").insert({
-                document_id: documentData.id,
-                association_type: "tenant",
-                association_id: recipient.tenantId,
-                created_by: user!.id,
-              });
+              const associations = [
+                {
+                  document_id: documentData.id,
+                  association_type: "tenant",
+                  association_id: recipient.tenantId,
+                  created_by: user!.id,
+                }
+              ];
+
+              const { data: tenantData } = await supabase
+                .from("tenants")
+                .select("contract_id")
+                .eq("id", recipient.tenantId)
+                .maybeSingle();
+
+              if (tenantData?.contract_id) {
+                associations.push({
+                  document_id: documentData.id,
+                  association_type: "rental_contract",
+                  association_id: tenantData.contract_id,
+                  created_by: user!.id,
+                });
+              }
+
+              await supabase.from("document_associations").insert(associations);
             }
           }
         }
