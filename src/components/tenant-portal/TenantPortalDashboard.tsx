@@ -210,10 +210,10 @@ export default function TenantPortalDashboard({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-          <div className="w-12 h-12 bg-primary-blue rounded-lg flex items-center justify-center">
-            <Home className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+            <Home className="w-6 h-6" style={{ color: '#1e1e24' }} />
           </div>
           <h2 className="text-2xl font-bold text-dark">
             Meine Mietdaten
@@ -297,7 +297,7 @@ export default function TenantPortalDashboard({
       </div>
 
       {(newDocumentsCount > 0 || openTicketsCount > 0 || unreadMessagesCount > 0) && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <h2 className="text-lg font-semibold text-dark mb-4">Updates</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {newDocumentsCount > 0 && (
@@ -307,8 +307,8 @@ export default function TenantPortalDashboard({
                 className="relative rounded-lg p-6 text-left hover:shadow-md transition-all border"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-primary-blue rounded-lg flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                    <FileText className="w-6 h-6" style={{ color: '#1e1e24' }} />
                   </div>
                   <span className="bg-primary-blue text-white text-sm font-bold px-3 py-1 rounded-full">
                     {newDocumentsCount}
@@ -327,8 +327,8 @@ export default function TenantPortalDashboard({
                 className="relative bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-6 text-left hover:shadow-md transition-all border-2 border-transparent hover:border-amber-600"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center">
-                    <Wrench className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                    <Wrench className="w-6 h-6" style={{ color: '#1e1e24' }} />
                   </div>
                   <span className="bg-amber-600 text-white text-sm font-bold px-3 py-1 rounded-full">
                     {openTicketsCount}
@@ -347,8 +347,8 @@ export default function TenantPortalDashboard({
                 className="relative bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 text-left hover:shadow-md transition-all border-2 border-transparent hover:border-emerald-600"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
-                    <MessageSquare className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                    <MessageSquare className="w-6 h-6" style={{ color: '#1e1e24' }} />
                   </div>
                   <span className="bg-emerald-600 text-white text-sm font-bold px-3 py-1 rounded-full">
                     {unreadMessagesCount}
@@ -373,8 +373,8 @@ export default function TenantPortalDashboard({
             onClick={() => onNavigateToTab("tickets")}
             className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-red-50 to-red-100 rounded-lg hover:bg-gradient-to-br hover:from-red-100 hover:to-red-200 transition-all"
           >
-            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <Wrench className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+              <Wrench className="w-7 h-7" style={{ color: '#1e1e24' }} />
             </div>
             <div className="flex-1 text-left">
               <h3 className="font-bold text-dark text-lg mb-1">Schaden melden</h3>
@@ -388,8 +388,8 @@ export default function TenantPortalDashboard({
             onClick={() => onNavigateToTab("meters")}
             className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:bg-gradient-to-br hover:from-blue-100 hover:to-blue-200 transition-all"
           >
-            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <Gauge className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+              <Gauge className="w-7 h-7" style={{ color: '#1e1e24' }} />
             </div>
             <div className="flex-1 text-left">
               <h3 className="font-bold text-dark text-lg mb-1">Zählerstand melden</h3>
