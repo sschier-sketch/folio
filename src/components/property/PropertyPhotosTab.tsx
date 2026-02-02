@@ -217,7 +217,7 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
           </div>
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+            className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-full font-medium transition-colors"
           >
             Bilder hochladen
           </button>
@@ -257,7 +257,7 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
               setMultiSelectMode(!multiSelectMode);
               setSelectedImageIds([]);
             }}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-full font-medium transition-colors ${
               multiSelectMode ? "bg-gray-400 text-white" : "bg-gray-100 hover:bg-gray-200 text-dark"
             }`}
           >
@@ -265,7 +265,7 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
           </button>
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+            className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-full font-medium transition-colors"
           >
             Bilder hochladen
           </button>
@@ -293,19 +293,19 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
             </select>
             <button
               onClick={() => handleBulkVisibilityChange(true)}
-              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              className="px-3 py-1.5 text-sm rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               Im Portal anzeigen
             </button>
             <button
               onClick={() => handleBulkVisibilityChange(false)}
-              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              className="px-3 py-1.5 text-sm rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               Im Portal verbergen
             </button>
             <button
               onClick={handleDeleteSelected}
-              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 text-red-600 transition-colors"
+              className="px-3 py-1.5 text-sm rounded-full bg-gray-100 hover:bg-gray-200 text-red-600 transition-colors"
             >
               Löschen
             </button>
@@ -693,14 +693,14 @@ function UploadModal({ propertyId, onClose, onSuccess }: UploadModalProps) {
           <button
             onClick={onClose}
             disabled={uploading}
-            className="px-4 py-2 rounded-lg font-medium bg-gray-100 hover:bg-gray-200 text-dark transition-colors"
+            className="px-4 py-2 rounded-full font-medium bg-gray-100 hover:bg-gray-200 text-dark transition-colors"
           >
             Abbrechen
           </button>
           <button
             onClick={handleUpload}
             disabled={files.length === 0 || uploading}
-            className="px-4 py-2 rounded-lg font-medium bg-primary-blue hover:bg-blue-600 text-white transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-full font-medium bg-primary-blue hover:bg-blue-600 text-white transition-colors disabled:opacity-50"
           >
             {uploading ? "Lädt hoch..." : "Hochladen"}
           </button>
@@ -787,7 +787,7 @@ function ImageDetailModal({
               <button
                 onClick={() => onNavigate("prev")}
                 disabled={!hasPrev}
-                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
+                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -795,7 +795,7 @@ function ImageDetailModal({
               <button
                 onClick={() => onNavigate("next")}
                 disabled={!hasNext}
-                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
+                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -857,7 +857,7 @@ function ImageDetailModal({
             <div className="pt-4 border-t border-gray-200 space-y-3">
               <button
                 onClick={onSetCover}
-                className="w-full px-4 py-2 rounded-lg font-medium bg-gray-100 hover:bg-gray-200 text-dark transition-colors"
+                className="w-full px-4 py-2 rounded-full font-medium bg-gray-100 hover:bg-gray-200 text-dark transition-colors"
               >
                 Als Titelbild setzen
               </button>
@@ -865,14 +865,14 @@ function ImageDetailModal({
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full px-4 py-2 rounded-lg font-medium bg-primary-blue hover:bg-blue-600 text-white transition-colors"
+                className="w-full px-4 py-2 rounded-full font-medium bg-primary-blue hover:bg-blue-600 text-white transition-colors"
               >
                 {saving ? "Speichert..." : "Speichern"}
               </button>
 
               <button
                 onClick={onDelete}
-                className="w-full px-4 py-2 rounded-lg font-medium bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
+                className="w-full px-4 py-2 rounded-full font-medium bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
               >
                 Löschen
               </button>
