@@ -200,7 +200,7 @@ export default function MieterportalView() {
         </div>
       </div>
 
-      <div className="rounded-lg p-4 mb-6" style={{ backgroundColor: '#BCBFCC' }}>
+      <div className="rounded-lg p-4 mb-6" style={{ backgroundColor: '#EEF4FF' }}>
         <div className="flex gap-3">
           <div className="flex-shrink-0">
             <svg
