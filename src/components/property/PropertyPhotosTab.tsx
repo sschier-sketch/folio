@@ -217,8 +217,7 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
           </div>
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="px-4 py-2 rounded-lg font-medium transition-colors"
-            style={{ backgroundColor: "#3c8af7", color: "white" }}
+            className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
           >
             Bilder hochladen
           </button>
@@ -258,18 +257,15 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
               setMultiSelectMode(!multiSelectMode);
               setSelectedImageIds([]);
             }}
-            className="px-4 py-2 rounded-lg font-medium transition-colors"
-            style={{
-              backgroundColor: multiSelectMode ? "#bdbfcb" : "#faf8f8",
-              color: "#000000",
-            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              multiSelectMode ? "bg-gray-400 text-white" : "bg-gray-100 hover:bg-gray-200 text-dark"
+            }`}
           >
             {multiSelectMode ? "Abbrechen" : "Auswählen"}
           </button>
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="px-4 py-2 rounded-lg font-medium transition-colors"
-            style={{ backgroundColor: "#3c8af7", color: "white" }}
+            className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
           >
             Bilder hochladen
           </button>
@@ -277,7 +273,7 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
       </div>
 
       {multiSelectMode && selectedImageIds.length > 0 && (
-        <div className="mb-6 p-4 rounded-lg flex items-center justify-between" style={{ backgroundColor: "#EEF4FF" }}>
+        <div className="mb-6 p-4 rounded-lg flex items-center justify-between bg-blue-50">
           <span className="font-medium">{selectedImageIds.length} Bild(er) ausgewählt</span>
           <div className="flex gap-3">
             <select
@@ -297,22 +293,19 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
             </select>
             <button
               onClick={() => handleBulkVisibilityChange(true)}
-              className="px-3 py-1.5 text-sm rounded-lg"
-              style={{ backgroundColor: "#faf8f8" }}
+              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               Im Portal anzeigen
             </button>
             <button
               onClick={() => handleBulkVisibilityChange(false)}
-              className="px-3 py-1.5 text-sm rounded-lg"
-              style={{ backgroundColor: "#faf8f8" }}
+              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               Im Portal verbergen
             </button>
             <button
               onClick={handleDeleteSelected}
-              className="px-3 py-1.5 text-sm rounded-lg text-red-600"
-              style={{ backgroundColor: "#faf8f8" }}
+              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 text-red-600 transition-colors"
             >
               Löschen
             </button>
@@ -448,7 +441,7 @@ function ImageCard({
       )}
 
       {image.is_cover && (
-        <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded text-xs font-medium text-white" style={{ backgroundColor: "#3c8af7" }}>
+        <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded text-xs font-medium text-white bg-primary-blue">
           Titelbild
         </div>
       )}
@@ -700,16 +693,14 @@ function UploadModal({ propertyId, onClose, onSuccess }: UploadModalProps) {
           <button
             onClick={onClose}
             disabled={uploading}
-            className="px-4 py-2 rounded-lg font-medium transition-colors"
-            style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+            className="px-4 py-2 rounded-lg font-medium bg-gray-100 hover:bg-gray-200 text-dark transition-colors"
           >
             Abbrechen
           </button>
           <button
             onClick={handleUpload}
             disabled={files.length === 0 || uploading}
-            className="px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-            style={{ backgroundColor: "#3c8af7", color: "white" }}
+            className="px-4 py-2 rounded-lg font-medium bg-primary-blue hover:bg-blue-600 text-white transition-colors disabled:opacity-50"
           >
             {uploading ? "Lädt hoch..." : "Hochladen"}
           </button>
@@ -796,8 +787,7 @@ function ImageDetailModal({
               <button
                 onClick={() => onNavigate("prev")}
                 disabled={!hasPrev}
-                className="p-2 rounded-lg disabled:opacity-30"
-                style={{ backgroundColor: "#faf8f8" }}
+                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -805,8 +795,7 @@ function ImageDetailModal({
               <button
                 onClick={() => onNavigate("next")}
                 disabled={!hasNext}
-                className="p-2 rounded-lg disabled:opacity-30"
-                style={{ backgroundColor: "#faf8f8" }}
+                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -849,7 +838,7 @@ function ImageDetailModal({
               />
             </div>
 
-            <div className="flex items-center gap-2 p-4 rounded-lg" style={{ backgroundColor: "#EEF4FF" }}>
+            <div className="flex items-center gap-2 p-4 rounded-lg bg-blue-50">
               <input
                 type="checkbox"
                 id="visibleInPortal"
@@ -868,8 +857,7 @@ function ImageDetailModal({
             <div className="pt-4 border-t border-gray-200 space-y-3">
               <button
                 onClick={onSetCover}
-                className="w-full px-4 py-2 rounded-lg font-medium transition-colors"
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
+                className="w-full px-4 py-2 rounded-lg font-medium bg-gray-100 hover:bg-gray-200 text-dark transition-colors"
               >
                 Als Titelbild setzen
               </button>
@@ -877,16 +865,14 @@ function ImageDetailModal({
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full px-4 py-2 rounded-lg font-medium transition-colors"
-                style={{ backgroundColor: "#3c8af7", color: "white" }}
+                className="w-full px-4 py-2 rounded-lg font-medium bg-primary-blue hover:bg-blue-600 text-white transition-colors"
               >
                 {saving ? "Speichert..." : "Speichern"}
               </button>
 
               <button
                 onClick={onDelete}
-                className="w-full px-4 py-2 rounded-lg font-medium transition-colors text-red-600"
-                style={{ backgroundColor: "#fef2f2" }}
+                className="w-full px-4 py-2 rounded-lg font-medium bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
               >
                 Löschen
               </button>
