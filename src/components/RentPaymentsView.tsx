@@ -366,13 +366,13 @@ export default function RentPaymentsView() {
           <div className="flex">
             <button
               onClick={() => setActiveTab("payments")}
-              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
                 activeTab === "payments"
                   ? "text-primary-blue"
                   : "text-gray-400 hover:text-dark"
               }`}
             >
-              <Coins className="w-5 h-5" />
+              <Coins className="w-3 h-3" />
               Mieteingänge
               {activeTab === "payments" && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
@@ -380,13 +380,13 @@ export default function RentPaymentsView() {
             </button>
             <button
               onClick={() => setActiveTab("dunning")}
-              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
                 activeTab === "dunning"
                   ? "text-primary-blue"
                   : "text-gray-400 hover:text-dark"
               }`}
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-3 h-3" />
               Mahnwesen
               <Badge variant="pro" size="sm">Pro</Badge>
               {activeTab === "dunning" && (
