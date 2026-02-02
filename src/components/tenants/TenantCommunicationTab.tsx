@@ -465,7 +465,7 @@ export default function TenantCommunicationTab({
                       } ${comm.is_deleted ? "opacity-60" : ""}`}
                       onClick={() => comm.is_ticket && loadTicketDetails(comm.id)}
                     >
-                      <div className="absolute left-6 top-4 -translate-x-1/2 w-4 h-4 bg-primary-blue rounded-full"></div>
+                      <div className="absolute left-[-1px] top-4 -translate-x-1/2 w-4 h-4 bg-primary-blue rounded-full"></div>
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <Calendar className="w-4 h-4 text-gray-400" />
