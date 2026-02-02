@@ -200,11 +200,11 @@ export default function MieterportalView() {
         </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className="rounded-lg p-4 mb-6" style={{ backgroundColor: '#BCBFCC' }}>
         <div className="flex gap-3">
           <div className="flex-shrink-0">
             <svg
-              className="w-5 h-5 text-blue-600"
+              className="w-5 h-5 text-gray-700"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -216,10 +216,10 @@ export default function MieterportalView() {
             </svg>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-blue-900 mb-1">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">
               Über das Mieterportal
             </h3>
-            <p className="text-sm text-blue-800">
+            <p className="text-sm text-gray-800">
               Das Mieterportal ermöglicht Ihren Mietern einen sicheren Zugang
               zu Dokumenten, Tickets, Zählerständen und Nachrichten. Aktivieren
               Sie den Zugang pro Mietverhältnis und senden Sie eine
