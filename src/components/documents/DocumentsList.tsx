@@ -104,10 +104,10 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                   } else if (assoc.association_type === "tenant") {
                     const { data: tenant } = await supabase
                       .from("tenants")
-                      .select("name")
+                      .select("first_name, last_name")
                       .eq("id", assoc.association_id)
                       .maybeSingle();
-                    name = tenant?.name;
+                    name = tenant ? `${tenant.first_name} ${tenant.last_name}` : undefined;
                   }
 
                   return {
