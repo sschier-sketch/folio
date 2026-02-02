@@ -3,9 +3,6 @@ import {
   ArrowLeft,
   FileText,
   Download,
-  Archive,
-  Trash2,
-  Edit2,
   Link as LinkIcon,
   Clock,
   User,
@@ -475,9 +472,9 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
           {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+              className="px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
             >
-              <Edit2 className="w-4 h-4" />
               Bearbeiten
             </button>
           )}
@@ -485,18 +482,18 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
           <DocumentFeatureGuard feature="document-archive">
             <button
               onClick={handleArchive}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+              className="px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
             >
-              <Archive className="w-4 h-4" />
               Archivieren
             </button>
           </DocumentFeatureGuard>
 
           <button
             onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+            style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+            className="px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
           >
-            <Trash2 className="w-4 h-4" />
             Löschen
           </button>
         </div>
@@ -647,8 +644,8 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                         shared_with_tenant: document.shared_with_tenant || false,
                       });
                     }}
-                    style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                    className="px-4 py-2 rounded-lg hover:bg-[#bdbfcb] transition-colors"
+                    style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                    className="px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
                   >
                     Abbrechen
                   </button>
@@ -771,8 +768,8 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                         setShowAddAssociation(false);
                         setNewAssociation({ type: "property", id: "" });
                       }}
-                      style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                      className="px-3 py-1.5 text-sm rounded-lg hover:bg-[#bdbfcb] transition-colors"
+                      style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+                      className="px-3 py-1.5 text-sm rounded-full hover:bg-gray-200 transition-colors"
                     >
                       Abbrechen
                     </button>
