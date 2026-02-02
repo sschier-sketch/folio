@@ -271,10 +271,11 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
 
   data.forEach((item, index) => {
     if (index > 0) {
-      ensureSpace(30);
+      doc.addPage();
+      drawHeader();
+      currentY = HEADER_END_Y;
     }
 
-    ensureSpace(20);
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(0);
@@ -286,7 +287,12 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
     doc.setTextColor(100);
     doc.text(item.property.address, M_LEFT, currentY);
     doc.setTextColor(0);
-    currentY += 6;
+    currentY += 4;
+
+    doc.setDrawColor(230);
+    doc.setLineWidth(0.1);
+    doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
+    currentY += 8;
 
     const totalUnits = item.units.length;
     const rentedUnits = item.units.filter(u => u.unit.status === 'rented').length;
@@ -597,10 +603,11 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
 
   data.forEach((item, index) => {
     if (index > 0) {
-      ensureSpace(30);
+      doc.addPage();
+      drawHeader();
+      currentY = HEADER_END_Y;
     }
 
-    ensureSpace(20);
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(0);
@@ -612,7 +619,12 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
     doc.setTextColor(100);
     doc.text(`${item.tenant.property} · ${item.tenant.address}`, M_LEFT, currentY);
     doc.setTextColor(0);
-    currentY += 6;
+    currentY += 4;
+
+    doc.setDrawColor(230);
+    doc.setLineWidth(0.1);
+    doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
+    currentY += 8;
 
     ensureSpace(30);
     doc.setFontSize(12);
