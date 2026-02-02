@@ -2,6 +2,27 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
+async function loadImageAsDataURL(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } else {
+        reject(new Error('Could not get canvas context'));
+      }
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
 interface ExportProperty {
   id: string;
   name: string;
@@ -168,6 +189,13 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const exportDate = new Date().toLocaleDateString("de-DE");
 
+  let logoData: string | null = null;
+  try {
+    logoData = await loadImageAsDataURL('/asset_1@4x.png');
+  } catch (error) {
+    console.warn('Could not load logo for PDF export:', error);
+  }
+
   const PAGE_W = 210;
   const PAGE_H = 297;
   const M_LEFT = 20;
@@ -181,13 +209,15 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
   let currentY = HEADER_END_Y;
 
   const drawHeader = () => {
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'bold');
-    doc.setTextColor(0);
-    doc.text("Rentably", M_LEFT, M_TOP + 4);
+    if (logoData) {
+      const logoHeight = 8;
+      const logoWidth = 40;
+      doc.addImage(logoData, 'PNG', PAGE_W - M_RIGHT - logoWidth, M_TOP, logoWidth, logoHeight);
+    }
 
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
+    doc.setTextColor(0);
     doc.text("Immobilienübersicht", M_LEFT, M_TOP + 9);
 
     doc.setDrawColor(220);
@@ -495,6 +525,13 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const exportDate = new Date().toLocaleDateString("de-DE");
 
+  let logoData: string | null = null;
+  try {
+    logoData = await loadImageAsDataURL('/asset_1@4x.png');
+  } catch (error) {
+    console.warn('Could not load logo for PDF export:', error);
+  }
+
   const PAGE_W = 210;
   const PAGE_H = 297;
   const M_LEFT = 20;
@@ -508,13 +545,15 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
   let currentY = HEADER_END_Y;
 
   const drawHeader = () => {
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'bold');
-    doc.setTextColor(0);
-    doc.text("Rentably", M_LEFT, M_TOP + 4);
+    if (logoData) {
+      const logoHeight = 8;
+      const logoWidth = 40;
+      doc.addImage(logoData, 'PNG', PAGE_W - M_RIGHT - logoWidth, M_TOP, logoWidth, logoHeight);
+    }
 
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
+    doc.setTextColor(0);
     doc.text("Mietverhältnisse", M_LEFT, M_TOP + 9);
 
     doc.setDrawColor(220);
