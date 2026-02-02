@@ -17,6 +17,8 @@ export interface OperatingCostLineItem {
   cost_type: string;
   allocation_key: 'area' | 'persons' | 'units' | 'consumption';
   amount: number;
+  is_section_35a?: boolean;
+  section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
   created_at: string;
 }
 
@@ -70,6 +72,8 @@ export interface UpsertLineItemParams {
     cost_type: string;
     allocation_key: 'area' | 'persons' | 'units' | 'consumption';
     amount: number;
+    is_section_35a?: boolean;
+    section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
   }>;
 }
 
@@ -131,6 +135,8 @@ export const operatingCostService = {
         cost_type: item.cost_type,
         allocation_key: item.allocation_key,
         amount: item.amount,
+        is_section_35a: item.is_section_35a || false,
+        section_35a_category: item.section_35a_category || null,
       }));
 
       const { data, error } = await supabase
