@@ -4,6 +4,7 @@ export interface OperatingCostStatement {
   id: string;
   user_id: string;
   property_id: string;
+  unit_id?: string | null;
   year: number;
   status: 'draft' | 'ready' | 'sent';
   total_costs: number;
@@ -190,6 +191,7 @@ export const operatingCostService = {
       const totalDaysInYear = 365 + (new Date(statement.year, 1, 29).getMonth() === 1 ? 1 : 0);
 
       console.log('DEBUG: Loading contracts for property:', statement.property_id);
+      console.log('DEBUG: Unit ID from statement:', statement.unit_id);
       console.log('DEBUG: Period:', {
         start: periodStartStr,
         end: periodEndStr,
@@ -198,17 +200,23 @@ export const operatingCostService = {
 
       const { data: allContractsDebug } = await supabase
         .from('rental_contracts')
-        .select('id, tenant_id, status, contract_start, contract_end')
+        .select('id, tenant_id, unit_id, status, contract_start, contract_end')
         .eq('property_id', statement.property_id);
 
       console.log('DEBUG: All contracts for property (before filtering):', allContractsDebug);
 
-      const { data: contracts, error: contractsError } = await supabase
+      let contractsQuery = supabase
         .from('rental_contracts')
         .select('*')
         .eq('property_id', statement.property_id)
         .or(`contract_end.is.null,contract_end.gte.${periodStartStr}`)
         .lte('contract_start', periodEndStr);
+
+      if (statement.unit_id) {
+        contractsQuery = contractsQuery.eq('unit_id', statement.unit_id);
+      }
+
+      const { data: contracts, error: contractsError } = await contractsQuery;
 
       if (contractsError) {
         console.error('Error loading contracts:', contractsError);
@@ -216,14 +224,21 @@ export const operatingCostService = {
       }
 
       console.log(`Found ${contracts?.length || 0} contracts matching period for property ${statement.property_id} in year ${statement.year}`);
+      if (statement.unit_id) {
+        console.log(`Filtered for unit_id: ${statement.unit_id}`);
+      }
       console.log('DEBUG: Contracts after period filter:', contracts);
 
       if (!contracts || contracts.length === 0) {
-        console.warn('No contracts found for this property and period');
+        const unitInfo = statement.unit_id ? ` and unit ${statement.unit_id}` : '';
+        console.warn(`No contracts found for this property${unitInfo} and period`);
         console.warn('Check the following:');
         console.warn('1. Does the property have rental contracts?');
-        console.warn('2. Do the contracts overlap with the billing year?');
-        console.warn('3. Are the contract_start and contract_end dates correct?');
+        if (statement.unit_id) {
+          console.warn('2. Is the contract assigned to the correct unit_id?');
+        }
+        console.warn('3. Do the contracts overlap with the billing year?');
+        console.warn('4. Are the contract_start and contract_end dates correct?');
         return { data: [], error: null };
       }
 
