@@ -11,6 +11,7 @@ interface Recipient {
   tenantName: string;
   email: string | null;
   unitNumber: string | null;
+  unitId: string | null;
   balance: number;
   resultId: string;
   enabled: boolean;
@@ -114,6 +115,7 @@ export default function OperatingCostSendView({ statementId, onBack }: Operating
               tenantName: tenant ? `${tenant.first_name} ${tenant.last_name}` : "Unbekannt",
               email: tenant?.email || null,
               unitNumber: unit?.unit_number || null,
+              unitId: r.unit_id || null,
               balance: Number(r.balance),
               resultId: r.id,
               enabled: hasEmail,
@@ -275,6 +277,8 @@ Mit freundlichen Grüßen
               .from("documents")
               .insert({
                 user_id: user!.id,
+                property_id: statement?.property_id || null,
+                unit_id: recipient.unitId || null,
                 file_name: `Betriebskostenabrechnung_${statement?.year}_${recipient.tenantName.replace(/\s+/g, "_")}.pdf`,
                 file_path: pdfData.data!.file_path,
                 file_size: 0,
@@ -283,6 +287,7 @@ Mit freundlichen Grüßen
                 category: "Betriebskosten",
                 description: `Betriebskostenabrechnung für das Jahr ${statement?.year}`,
                 shared_with_tenant: true,
+                document_date: new Date(`${statement?.year}-12-31`),
               })
               .select()
               .single();
