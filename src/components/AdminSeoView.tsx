@@ -41,13 +41,13 @@ export default function AdminSeoView() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-xs ${
                     activeTab === tab.id
                       ? "text-primary-blue"
                       : "text-gray-400 hover:text-dark"
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-2.5 h-2.5" />
                   {tab.label}
                   {activeTab === tab.id && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />

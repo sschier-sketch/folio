@@ -59,7 +59,7 @@ export default function FinancesView() {
                   key={tab.id}
                   onClick={() => !isDisabled && setActiveTab(tab.id)}
                   disabled={isDisabled}
-                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-xs ${
                     isDisabled
                       ? "text-gray-300 cursor-not-allowed opacity-50"
                       : activeTab === tab.id
@@ -67,7 +67,7 @@ export default function FinancesView() {
                       : "text-gray-400 hover:text-dark"
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-2.5 h-2.5" />
                   {tab.label}
                   {tab.premium && (tab.id === "intelligence" || tab.id === "bank") ? (
                     <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>

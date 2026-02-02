@@ -72,7 +72,7 @@ export default function BillingView() {
                 <button
                   key={tab.id}
                   onClick={() => !tab.disabled && setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-xs ${
                     tab.disabled
                       ? "text-gray-300 cursor-not-allowed"
                       : activeTab === tab.id
@@ -81,7 +81,7 @@ export default function BillingView() {
                   }`}
                   disabled={tab.disabled}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-2.5 h-2.5" />
                   {tab.label}
                   {tab.premium && tab.disabled ? (
                     <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>

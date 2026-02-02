@@ -267,13 +267,13 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-xs ${
                     activeTab === tab.id
                       ? "text-primary-blue"
                       : "text-gray-400 hover:text-dark"
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-2.5 h-2.5" />
                   {tab.label}
                   {tab.isPro && (
                     <Badge variant="pro" size="sm">Pro</Badge>
