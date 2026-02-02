@@ -153,13 +153,13 @@ export default function TenantContractDetails({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-xs ${
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
                     activeTab === tab.id
                       ? "text-primary-blue"
                       : "text-gray-400 hover:text-dark"
                   }`}
                 >
-                  <Icon className="w-2.5 h-2.5" />
+                  <Icon className="w-3 h-3" />
                   {tab.label}
                   {tab.premium && (
                     <Badge variant="pro" size="sm">Pro</Badge>

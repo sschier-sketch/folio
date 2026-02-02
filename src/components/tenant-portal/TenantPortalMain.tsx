@@ -127,13 +127,13 @@ export default function TenantPortalMain({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as TabType)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-xs ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-sm ${
                       activeTab === tab.id
                         ? "bg-primary-blue/10 text-primary-blue"
                         : "text-gray-600 hover:bg-gray-50"
                     }`}
                   >
-                    <Icon className="w-2.5 h-2.5" />
+                    <Icon className="w-3 h-3" />
                     <span className="font-medium">{tab.label}</span>
                   </button>
                 );
