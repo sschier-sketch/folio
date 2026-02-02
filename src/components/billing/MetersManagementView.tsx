@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, Download, Plus, Gauge, Edit2, Activity, ChevronDown, History } from "lucide-react";
+import { Search, Filter, Download, Gauge, Edit2, Activity, ChevronDown, History } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import * as XLSX from "xlsx";
@@ -300,9 +300,9 @@ export default function MetersManagementView({
 
           <button
             onClick={onAddMeter}
-            className="px-4 py-2.5 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center gap-2"
+            style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
+            className="px-4 py-2.5 rounded-full font-medium hover:bg-gray-200 transition-colors"
           >
-            <Plus className="w-4 h-4" />
             Neuen Zähler anlegen
           </button>
         </div>
