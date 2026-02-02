@@ -303,7 +303,8 @@ export default function TenantPortalDashboard({
             {newDocumentsCount > 0 && (
               <button
                 onClick={() => onNavigateToTab("documents")}
-                className="relative bg-blue-50 rounded-lg p-6 text-left hover:bg-blue-100 transition-colors border border-blue-200"
+                style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }}
+                className="relative rounded-lg p-6 text-left hover:shadow-md transition-all border"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-12 h-12 bg-primary-blue rounded-lg flex items-center justify-center">
