@@ -219,9 +219,15 @@ Deno.serve(async (req: Request) => {
             }
 
             const buffer = await fileData.arrayBuffer();
-            const base64Content = btoa(
-              String.fromCharCode(...new Uint8Array(buffer))
-            );
+            const bytes = new Uint8Array(buffer);
+
+            let binary = '';
+            const chunkSize = 8192;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+              const chunk = bytes.slice(i, i + chunkSize);
+              binary += String.fromCharCode.apply(null, Array.from(chunk));
+            }
+            const base64Content = btoa(binary);
 
             return {
               filename: att.filename,
