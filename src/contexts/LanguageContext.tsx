@@ -98,7 +98,7 @@ const translations = {
     "feedback.submit_first": "Seien Sie der Erste und teilen Sie Ihre Idee!",
     "referral.title": "Empfehlungsprogramm",
     "referral.description":
-      "Empfehlen Sie Rentably und verdienen Sie Belohnungen!",
+      "Empfehlen Sie rentably und verdienen Sie 25% Provision",
     "referral.learn_more": "Mehr erfahren",
     "footer.product": "Produkt",
     "footer.features": "Funktionen",
@@ -508,7 +508,7 @@ const translations = {
     "feedback.no_feedback": "No suggestions yet",
     "feedback.submit_first": "Be the first to share your idea!",
     "referral.title": "Referral Program",
-    "referral.description": "Refer Rentably and earn rewards!",
+    "referral.description": "Refer rentably and earn 25% commission",
     "referral.learn_more": "Learn more",
     "footer.product": "Product",
     "footer.features": "Features",
