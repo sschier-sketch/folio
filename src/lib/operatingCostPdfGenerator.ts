@@ -526,18 +526,13 @@ function createPdf(data: PdfData): Blob {
     checkPageBreak(80);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('IV. Steuerlich relevante haushaltsnahe Dienstleistungen und Handwerkerleistungen (§35a EStG)', M_LEFT, currentY);
-    currentY += 2;
+    const section35aTitle = 'IV. In Ihren Kosten enthaltener Anteil an Aufwendungen gemäß §35a EStG\n(haushaltsnahe Dienstleistungen & Handwerkerleistungen)';
+    const section35aTitleLines = doc.splitTextToSize(section35aTitle, contentWidth);
+    doc.text(section35aTitleLines, M_LEFT, currentY);
+    currentY += section35aTitleLines.length * 5;
     doc.setLineWidth(0.5);
     doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
     currentY += 10;
-
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    const taxIntroText = 'Folgende Beträge aus dieser Abrechnung können Sie gemäß § 35a EStG (haushaltsnahe Dienstleistungen und Handwerkerleistungen) in Ihrer Einkommensteuererklärung geltend machen:';
-    const taxIntroLines = doc.splitTextToSize(taxIntroText, contentWidth);
-    doc.text(taxIntroLines, M_LEFT, currentY);
-    currentY += taxIntroLines.length * 4.5 + 8;
 
     checkPageBreak(40);
 
@@ -548,13 +543,12 @@ function createPdf(data: PdfData): Blob {
 
     if (haushaltsnaheItems.length > 0) {
       taxTableData.push([
-        { content: 'a) Haushaltsnahe Dienstleistungen', colSpan: 5, styles: { fontStyle: 'bold', fillColor: [245, 245, 245] } },
+        { content: 'a) Haushaltsnahe Dienstleistungen / Beschäftigungen', colSpan: 4, styles: { fontStyle: 'bold', fillColor: [245, 245, 245] } },
       ]);
 
       haushaltsnaheItems.forEach(item => {
         taxTableData.push([
           item.cost_type,
-          'Haushaltsnahe Dienstleistungen',
           `${item.amount.toFixed(2)} €`,
           getAllocationKeyLabel(item.allocation_key),
           `${item.shareAmount.toFixed(2)} €`,
@@ -563,20 +557,19 @@ function createPdf(data: PdfData): Blob {
 
       const sumHaushaltsnahe = haushaltsnaheItems.reduce((sum, item) => sum + item.shareAmount, 0);
       taxTableData.push([
-        { content: 'Summe a)', colSpan: 4, styles: { fontStyle: 'bold' } },
+        { content: 'Summe a)', colSpan: 3, styles: { fontStyle: 'bold' } },
         { content: `${sumHaushaltsnahe.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
       ]);
     }
 
     if (handwerkerItems.length > 0) {
       taxTableData.push([
-        { content: 'b) Handwerkerleistungen', colSpan: 5, styles: { fontStyle: 'bold', fillColor: [245, 245, 245] } },
+        { content: 'b) Handwerkerleistungen', colSpan: 4, styles: { fontStyle: 'bold', fillColor: [245, 245, 245] } },
       ]);
 
       handwerkerItems.forEach(item => {
         taxTableData.push([
           item.cost_type,
-          'Handwerkerleistungen',
           `${item.amount.toFixed(2)} €`,
           getAllocationKeyLabel(item.allocation_key),
           `${item.shareAmount.toFixed(2)} €`,
@@ -585,20 +578,20 @@ function createPdf(data: PdfData): Blob {
 
       const sumHandwerker = handwerkerItems.reduce((sum, item) => sum + item.shareAmount, 0);
       taxTableData.push([
-        { content: 'Summe b)', colSpan: 4, styles: { fontStyle: 'bold' } },
+        { content: 'Summe b)', colSpan: 3, styles: { fontStyle: 'bold' } },
         { content: `${sumHandwerker.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
       ]);
     }
 
     const totalSection35a = section35aItems.reduce((sum, item) => sum + item.shareAmount, 0);
     taxTableData.push([
-      { content: 'In den Kosten enthaltener Gesamtanteil gemäß §35a EStG', colSpan: 4, styles: { fontStyle: 'bold', fillColor: [230, 230, 230] } },
+      { content: 'In Ihren Kosten enthaltener Gesamtanteil an Aufwendungen gemäß §35a EStG', colSpan: 3, styles: { fontStyle: 'bold', fillColor: [230, 230, 230] } },
       { content: `${totalSection35a.toFixed(2)} €`, styles: { fontStyle: 'bold', fillColor: [230, 230, 230] } },
     ]);
 
     autoTable(doc, {
       startY: currentY,
-      head: [['Kostenart', 'Kategorie (§35a)', 'Gesamtkosten (§35a-relevant)', 'Umlageschlüssel', 'Anteil des Mieters (€)']],
+      head: [['Kostenart', 'Kosten gemäß §35a EStG (Gesamtbetrag)', 'Abrechnungsschlüssel', 'Ihr Anteil']],
       body: taxTableData,
       theme: 'plain',
       margin: { left: M_LEFT, right: M_RIGHT },
@@ -617,11 +610,10 @@ function createPdf(data: PdfData): Blob {
         lineWidth: 0.1,
       },
       columnStyles: {
-        0: { cellWidth: 38 },
-        1: { cellWidth: 42 },
-        2: { halign: 'right', cellWidth: 30 },
-        3: { cellWidth: 32 },
-        4: { halign: 'right', cellWidth: 28 },
+        0: { cellWidth: 50 },
+        1: { halign: 'right', cellWidth: 45 },
+        2: { cellWidth: 40 },
+        3: { halign: 'right', cellWidth: 35 },
       },
     });
 
@@ -723,6 +715,17 @@ function createPdf(data: PdfData): Blob {
   const co2kostenLines = doc.splitTextToSize(co2kosten, contentWidth - 5);
   doc.text(co2kostenLines, M_LEFT, currentY);
   currentY += co2kostenLines.length * 4.5 + 6;
+
+  checkPageBreak(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('§35a EStG (haushaltsnahe Dienstleistungen & Handwerkerleistungen)', M_LEFT, currentY);
+  currentY += 5;
+
+  doc.setFont('helvetica', 'normal');
+  const section35aDisclaimer = 'Die ausgewiesenen Beträge dienen ausschließlich als Übersicht über potenziell steuerlich begünstigte Aufwendungen gemäß §35a EStG. Eine steuerliche Beratung oder Gewähr für die Anerkennung durch das Finanzamt ist ausgeschlossen.';
+  const section35aDisclaimerLines = doc.splitTextToSize(section35aDisclaimer, contentWidth - 5);
+  doc.text(section35aDisclaimerLines, M_LEFT, currentY);
+  currentY += section35aDisclaimerLines.length * 4.5 + 6;
 
   doc.setFontSize(10);
 

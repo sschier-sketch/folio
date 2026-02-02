@@ -315,15 +315,17 @@ export default function OperatingCostWizardStep2() {
                     Betrag (EUR)
                   </th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-700">
-                    <div className="flex items-center justify-center gap-1.5 group relative">
+                    <div className="flex items-center justify-center gap-1.5">
                       <span>§35a EStG</span>
-                      <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                      <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-72 p-3 bg-gray-900 text-white text-xs font-normal rounded-lg shadow-lg z-50">
-                        <div className="text-left">
-                          Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
-                        </div>
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                          <div className="border-4 border-transparent border-t-gray-900"></div>
+                      <div className="relative group">
+                        <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                        <div className="invisible group-hover:visible absolute left-1/2 bottom-full -translate-x-1/2 mb-2 w-80 p-4 bg-gray-900 text-white text-sm font-normal rounded-lg shadow-2xl z-[9999] pointer-events-none">
+                          <div className="text-left leading-relaxed">
+                            Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
+                          </div>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
+                            <div className="border-[6px] border-transparent border-t-gray-900"></div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -469,15 +471,17 @@ export default function OperatingCostWizardStep2() {
                       Betrag (EUR)
                     </th>
                     <th className="text-center py-3 px-4 font-semibold text-gray-700">
-                      <div className="flex items-center justify-center gap-1.5 group relative">
+                      <div className="flex items-center justify-center gap-1.5">
                         <span>§35a EStG</span>
-                        <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                        <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-72 p-3 bg-gray-900 text-white text-xs font-normal rounded-lg shadow-lg z-50">
-                          <div className="text-left">
-                            Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
-                          </div>
-                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                            <div className="border-4 border-transparent border-t-gray-900"></div>
+                        <div className="relative group">
+                          <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                          <div className="invisible group-hover:visible absolute left-1/2 bottom-full -translate-x-1/2 mb-2 w-80 p-4 bg-gray-900 text-white text-sm font-normal rounded-lg shadow-2xl z-[9999] pointer-events-none">
+                            <div className="text-left leading-relaxed">
+                              Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
+                            </div>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
+                              <div className="border-[6px] border-transparent border-t-gray-900"></div>
+                            </div>
                           </div>
                         </div>
                       </div>
