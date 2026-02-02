@@ -233,10 +233,10 @@ export default function ReferralProgramView() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
+        <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
-              <Gift className="w-5 h-5 text-primary-blue" />
+            <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+              <Gift className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <h2 className="text-lg font-semibold text-dark">
               Ihr persönlicher Empfehlungscode
@@ -270,21 +270,6 @@ export default function ReferralProgramView() {
             </div>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
-            <p className="text-gray-600 text-sm mb-2">Empfehlungslink:</p>
-            <div className="flex items-center gap-3">
-              <p className="flex-1 text-sm font-mono bg-white px-4 py-3 rounded-lg break-all border border-gray-200 text-gray-700">
-                {window.location.origin}/signup?ref={referralCode}
-              </p>
-              <button
-                onClick={handleCopyReferralLink}
-                className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm"
-              >
-                <Share2 className="w-4 h-4" /> Teilen
-              </button>
-            </div>
-          </div>
-
           <div className="flex gap-3">
             <button
               onClick={handleShareLinkedIn}
@@ -297,10 +282,10 @@ export default function ReferralProgramView() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary-blue" />
+              <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-[#1e1e24]" />
               </div>
             </div>
             <div className="text-3xl font-bold text-dark mb-1">
@@ -309,10 +294,10 @@ export default function ReferralProgramView() {
             <div className="text-sm text-gray-600">Gesamt Empfehlungen</div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-primary-blue/20">
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
-                <Award className="w-5 h-5 text-primary-blue" />
+              <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+                <Award className="w-5 h-5 text-[#1e1e24]" />
               </div>
             </div>
             <div className="text-3xl font-bold text-dark mb-1">
@@ -340,10 +325,10 @@ export default function ReferralProgramView() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
-              <Mail className="w-5 h-5 text-primary-blue" />
+            <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+              <Mail className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <h3 className="text-lg font-semibold text-dark">
               Freunde per E-Mail einladen
@@ -423,10 +408,10 @@ export default function ReferralProgramView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-primary-blue" />
+            <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <h3 className="text-lg font-semibold text-dark">
               So funktioniert's
@@ -435,7 +420,7 @@ export default function ReferralProgramView() {
 
           <div className="space-y-4">
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-primary-blue/10 rounded-full flex items-center justify-center text-primary-blue font-semibold text-sm">
+              <div className="flex-shrink-0 w-8 h-8 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center text-[#1e1e24] font-semibold text-sm">
                 1
               </div>
               <div>
@@ -450,7 +435,7 @@ export default function ReferralProgramView() {
             </div>
 
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-primary-blue/10 rounded-full flex items-center justify-center text-primary-blue font-semibold text-sm">
+              <div className="flex-shrink-0 w-8 h-8 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center text-[#1e1e24] font-semibold text-sm">
                 2
               </div>
               <div>
@@ -465,7 +450,7 @@ export default function ReferralProgramView() {
             </div>
 
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-primary-blue/10 rounded-full flex items-center justify-center text-primary-blue font-semibold text-sm">
+              <div className="flex-shrink-0 w-8 h-8 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center text-[#1e1e24] font-semibold text-sm">
                 3
               </div>
               <div>
@@ -483,7 +468,7 @@ export default function ReferralProgramView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-8">
         <div className="px-6 py-4 border-b bg-gray-50">
           <h3 className="text-lg font-semibold text-dark">
             Ihre Empfehlungen
@@ -550,7 +535,7 @@ export default function ReferralProgramView() {
       </div>
 
       {rewards.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b bg-gray-50">
             <h3 className="text-lg font-semibold text-dark">
               Belohnungshistorie
