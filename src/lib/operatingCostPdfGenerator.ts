@@ -687,17 +687,6 @@ function createPdf(data: PdfData): Blob {
 
   checkPageBreak(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('Kohlendioxidkosten', M_LEFT, currentY);
-  currentY += 5;
-
-  doc.setFont('helvetica', 'normal');
-  const co2kosten = 'Die Aufteilung der Kohlendioxidkosten zwischen Vermieter und Mieter richtet sich nach dem Kohlendioxidausstoß des Gebäudes pro Quadratmeter Wohnfläche und Jahr. Mithilfe dieses Wertes werden Gebäude in das Stufenmodell eingeordnet. Hierbei ergab sich ein Vermieteranteil von 0 %.';
-  const co2kostenLines = doc.splitTextToSize(co2kosten, contentWidth - 5);
-  doc.text(co2kostenLines, M_LEFT, currentY);
-  currentY += co2kostenLines.length * 4.5 + 6;
-
-  checkPageBreak(20);
-  doc.setFont('helvetica', 'bold');
   doc.text('§35a EStG (haushaltsnahe Dienstleistungen & Handwerkerleistungen)', M_LEFT, currentY);
   currentY += 5;
 
@@ -712,10 +701,10 @@ function createPdf(data: PdfData): Blob {
   checkPageBreak(20);
   doc.setFont('helvetica', 'normal');
   doc.text('Für Rückfragen stehen wir Ihnen gerne zur Verfügung.', M_LEFT, currentY);
-  currentY += 10;
+  currentY += 15;
 
   doc.text('Mit freundlichen Grüßen', M_LEFT, currentY);
-  currentY += 15;
+  currentY += 20;
 
   doc.text(data.landlordName, M_LEFT, currentY);
 
