@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { FileText, Upload, Download, X, Trash2, Eye, Calendar, Plus } from "lucide-react";
+import { FileText, Upload, X, Calendar, Plus } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentDetails from "../documents/DocumentDetails";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
+import TableActionsDropdown from "../common/TableActionsDropdown";
 
 interface TenantContractTabProps {
   tenantId: string;
@@ -336,6 +337,8 @@ export default function TenantContractTab({
         return "Protokoll";
       case "correspondence":
         return "Schriftverkehr";
+      case "bill":
+        return "Abrechnung";
       case "other":
         return "Sonstiges";
       default:
@@ -437,7 +440,7 @@ export default function TenantContractTab({
                   <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Hochgeladen
                   </th>
-                  <th className="text-right py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktionen
                   </th>
                 </tr>
@@ -477,37 +480,24 @@ export default function TenantContractTab({
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewDocument(doc.id);
-                          }}
-                          className="text-gray-300 hover:text-primary-blue transition-colors"
-                          title="Ansehen"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(doc.file_path, doc.file_name);
-                          }}
-                          className="text-gray-300 hover:text-primary-blue transition-colors"
-                          title="Herunterladen"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(doc.id, doc.file_path);
-                          }}
-                          className="text-gray-300 hover:text-red-600 transition-colors"
-                          title="Löschen"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                        <TableActionsDropdown
+                          actions={[
+                            {
+                              label: "Ansehen",
+                              onClick: () => handleViewDocument(doc.id),
+                            },
+                            {
+                              label: "Herunterladen",
+                              onClick: () => handleDownload(doc.file_path, doc.file_name),
+                            },
+                            {
+                              label: "Löschen",
+                              onClick: () => handleDelete(doc.id, doc.file_path),
+                              variant: "danger",
+                            },
+                          ]}
+                        />
                       </div>
                     </td>
                   </tr>
