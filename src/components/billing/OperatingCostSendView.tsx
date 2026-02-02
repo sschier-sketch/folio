@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Mail, X, Paperclip, Eye, Send, AlertCircle, Check } from "lucide-react";
+import { ArrowLeft, Mail, X, Paperclip, Eye, Send, AlertCircle, Check, Plus, Upload, Trash2 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
@@ -10,11 +10,19 @@ interface Recipient {
   tenantId: string;
   tenantName: string;
   email: string | null;
+  additionalEmails: string[];
   unitNumber: string | null;
   unitId: string | null;
   balance: number;
   resultId: string;
   enabled: boolean;
+}
+
+interface AdditionalAttachment {
+  id: string;
+  file: File;
+  name: string;
+  size: number;
 }
 
 interface OperatingCostSendViewProps {
@@ -36,6 +44,8 @@ export default function OperatingCostSendView({ statementId, onBack }: Operating
   const [propertyName, setPropertyName] = useState("");
   const [landlordName, setLandlordName] = useState("");
   const [bankIban, setBankIban] = useState("");
+  const [additionalAttachments, setAdditionalAttachments] = useState<AdditionalAttachment[]>([]);
+  const [uploadingAttachments, setUploadingAttachments] = useState(false);
 
   useEffect(() => {
     if (statementId && user) {
@@ -114,6 +124,7 @@ export default function OperatingCostSendView({ statementId, onBack }: Operating
               tenantId: r.tenant_id!,
               tenantName: tenant ? `${tenant.first_name} ${tenant.last_name}` : "Unbekannt",
               email: tenant?.email || null,
+              additionalEmails: [],
               unitNumber: unit?.unit_number || null,
               unitId: r.unit_id || null,
               balance: Number(r.balance),
@@ -158,6 +169,101 @@ Mit freundlichen Grüßen
     setRecipients(recipients.filter((r) => r.id !== recipientId));
   }
 
+  function addEmailToRecipient(recipientId: string) {
+    const email = prompt("E-Mail-Adresse eingeben:");
+    if (!email || !email.trim()) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      alert("Bitte geben Sie eine gültige E-Mail-Adresse ein.");
+      return;
+    }
+
+    setRecipients(recipients.map((r) => {
+      if (r.id === recipientId) {
+        return {
+          ...r,
+          additionalEmails: [...r.additionalEmails, email.trim()],
+          enabled: true,
+        };
+      }
+      return r;
+    }));
+  }
+
+  function removeEmailFromRecipient(recipientId: string, emailIndex: number) {
+    setRecipients(recipients.map((r) => {
+      if (r.id === recipientId) {
+        const newAdditionalEmails = r.additionalEmails.filter((_, i) => i !== emailIndex);
+        return {
+          ...r,
+          additionalEmails: newAdditionalEmails,
+          enabled: r.email ? true : newAdditionalEmails.length > 0,
+        };
+      }
+      return r;
+    }));
+  }
+
+  async function handleAttachmentUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingAttachments(true);
+
+    try {
+      const newAttachments: AdditionalAttachment[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user!.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('documents')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          alert(`Fehler beim Hochladen von ${file.name}: ${uploadError.message}`);
+          continue;
+        }
+
+        newAttachments.push({
+          id: fileName,
+          file: file,
+          name: file.name,
+          size: file.size,
+        });
+      }
+
+      setAdditionalAttachments([...additionalAttachments, ...newAttachments]);
+    } catch (error) {
+      console.error("Error uploading attachments:", error);
+      alert("Fehler beim Hochladen der Anhänge");
+    } finally {
+      setUploadingAttachments(false);
+      event.target.value = '';
+    }
+  }
+
+  async function removeAttachment(attachmentId: string) {
+    try {
+      const { error } = await supabase.storage
+        .from('documents')
+        .remove([attachmentId]);
+
+      if (error) {
+        console.error("Error deleting attachment:", error);
+      }
+
+      setAdditionalAttachments(additionalAttachments.filter((a) => a.id !== attachmentId));
+    } catch (error) {
+      console.error("Error removing attachment:", error);
+    }
+  }
+
   function replacePlaceholders(text: string, recipient: Recipient): string {
     const balanceText = recipient.balance >= 0
       ? `Nachzahlung von ${recipient.balance.toFixed(2)} €`
@@ -179,7 +285,7 @@ Mit freundlichen Grüßen
   }
 
   async function handleSend() {
-    const enabledRecipients = recipients.filter((r) => r.enabled && r.email);
+    const enabledRecipients = recipients.filter((r) => r.enabled && (r.email || r.additionalEmails.length > 0));
 
     if (enabledRecipients.length === 0) {
       alert("Bitte wählen Sie mindestens einen Empfänger mit gültiger E-Mail-Adresse aus.");
@@ -196,7 +302,13 @@ Mit freundlichen Grüßen
       return;
     }
 
-    if (!confirm(`Möchten Sie die Abrechnung an ${enabledRecipients.length} Empfänger versenden?`)) {
+    const totalEmailCount = enabledRecipients.reduce((sum, r) => {
+      let count = r.email ? 1 : 0;
+      count += r.additionalEmails.length;
+      return sum + count;
+    }, 0);
+
+    if (!confirm(`Möchten Sie die Abrechnung an insgesamt ${totalEmailCount} E-Mail-Adresse(n) versenden?`)) {
       return;
     }
 
@@ -246,81 +358,94 @@ Mit freundlichen Grüßen
           }
         }
 
-        const idempotencyKey = `operating_cost_${statementId}_${recipient.tenantId}_${Date.now()}`;
-
-        const { error: sendError } = await supabase.functions.invoke("send-email", {
-          body: {
-            to: recipient.email,
-            subject: personalizedSubject,
-            html: personalizedMessage.replace(/\n/g, "<br>"),
-            mailType: "operating_cost_statement",
-            userId: user!.id,
-            idempotencyKey: idempotencyKey,
-            attachments: [
-              {
-                filename: `Betriebskostenabrechnung_${statement?.year}_${recipient.tenantName.replace(/\s+/g, "_")}.pdf`,
-                path: pdfData.data!.file_path,
-              },
-            ],
+        const allAttachments = [
+          {
+            filename: `Betriebskostenabrechnung_${statement?.year}_${recipient.tenantName.replace(/\s+/g, "_")}.pdf`,
+            path: pdfData.data!.file_path,
           },
-        });
+          ...additionalAttachments.map((att) => ({
+            filename: att.name,
+            path: att.id,
+          })),
+        ];
 
-        if (sendError) {
-          console.error(`Error sending to ${recipient.email}:`, sendError);
-          errorCount++;
-        } else {
-          console.log(`Successfully sent to ${recipient.email}`);
-          successCount++;
+        const allEmails = [
+          ...(recipient.email ? [recipient.email] : []),
+          ...recipient.additionalEmails,
+        ];
 
-          if (includeInPortal) {
-            const { data: documentData, error: docInsertError } = await supabase
-              .from("documents")
-              .insert({
-                user_id: user!.id,
-                property_id: statement?.property_id || null,
-                unit_id: recipient.unitId || null,
-                file_name: `Betriebskostenabrechnung_${statement?.year}_${recipient.tenantName.replace(/\s+/g, "_")}.pdf`,
-                file_path: pdfData.data!.file_path,
-                file_size: 0,
-                file_type: "application/pdf",
-                document_type: "bill",
-                category: "Betriebskosten",
-                description: `Betriebskostenabrechnung für das Jahr ${statement?.year}`,
-                shared_with_tenant: true,
-                document_date: new Date(`${statement?.year}-12-31`),
-              })
-              .select()
-              .single();
+        for (const email of allEmails) {
+          const idempotencyKey = `operating_cost_${statementId}_${recipient.tenantId}_${email}_${Date.now()}`;
 
-            if (docInsertError) {
-              console.error(`Error saving document for ${recipient.tenantName}:`, docInsertError);
-            } else if (documentData) {
-              const associations = [
-                {
-                  document_id: documentData.id,
-                  association_type: "tenant",
-                  association_id: recipient.tenantId,
-                  created_by: user!.id,
-                }
-              ];
+          const { error: sendError } = await supabase.functions.invoke("send-email", {
+            body: {
+              to: email,
+              subject: personalizedSubject,
+              html: personalizedMessage.replace(/\n/g, "<br>"),
+              mailType: "operating_cost_statement",
+              userId: user!.id,
+              idempotencyKey: idempotencyKey,
+              attachments: allAttachments,
+            },
+          });
 
-              const { data: tenantData } = await supabase
-                .from("tenants")
-                .select("contract_id")
-                .eq("id", recipient.tenantId)
-                .maybeSingle();
+          if (sendError) {
+            console.error(`Error sending to ${email}:`, sendError);
+            errorCount++;
+          } else {
+            console.log(`Successfully sent to ${email}`);
+            successCount++;
+          }
+        }
 
-              if (tenantData?.contract_id) {
-                associations.push({
-                  document_id: documentData.id,
-                  association_type: "rental_contract",
-                  association_id: tenantData.contract_id,
-                  created_by: user!.id,
-                });
+        if (includeInPortal) {
+          const { data: documentData, error: docInsertError } = await supabase
+            .from("documents")
+            .insert({
+              user_id: user!.id,
+              property_id: statement?.property_id || null,
+              unit_id: recipient.unitId || null,
+              file_name: `Betriebskostenabrechnung_${statement?.year}_${recipient.tenantName.replace(/\s+/g, "_")}.pdf`,
+              file_path: pdfData.data!.file_path,
+              file_size: 0,
+              file_type: "application/pdf",
+              document_type: "bill",
+              category: "Betriebskosten",
+              description: `Betriebskostenabrechnung für das Jahr ${statement?.year}`,
+              shared_with_tenant: true,
+              document_date: new Date(`${statement?.year}-12-31`),
+            })
+            .select()
+            .single();
+
+          if (docInsertError) {
+            console.error(`Error saving document for ${recipient.tenantName}:`, docInsertError);
+          } else if (documentData) {
+            const associations = [
+              {
+                document_id: documentData.id,
+                association_type: "tenant",
+                association_id: recipient.tenantId,
+                created_by: user!.id,
               }
+            ];
 
-              await supabase.from("document_associations").insert(associations);
+            const { data: tenantData } = await supabase
+              .from("tenants")
+              .select("contract_id")
+              .eq("id", recipient.tenantId)
+              .maybeSingle();
+
+            if (tenantData?.contract_id) {
+              associations.push({
+                document_id: documentData.id,
+                association_type: "rental_contract",
+                association_id: tenantData.contract_id,
+                created_by: user!.id,
+              });
             }
+
+            await supabase.from("document_associations").insert(associations);
           }
         }
       }
@@ -330,10 +455,10 @@ Mit freundlichen Grüßen
       }
 
       if (errorCount === 0) {
-        alert(`Alle ${successCount} Abrechnungen wurden erfolgreich versendet.`);
+        alert(`Alle ${successCount} E-Mails wurden erfolgreich versendet.`);
         onBack();
       } else {
-        alert(`${successCount} Abrechnungen versendet, ${errorCount} fehlgeschlagen.`);
+        alert(`${successCount} E-Mails versendet, ${errorCount} fehlgeschlagen.`);
       }
     } catch (error) {
       console.error("Error sending:", error);
@@ -343,8 +468,14 @@ Mit freundlichen Grüßen
     }
   }
 
-  const enabledRecipients = recipients.filter((r) => r.enabled && r.email);
-  const recipientsWithoutEmail = recipients.filter((r) => !r.email);
+  const enabledRecipients = recipients.filter((r) => r.enabled && (r.email || r.additionalEmails.length > 0));
+  const recipientsWithoutEmail = recipients.filter((r) => !r.email && r.additionalEmails.length === 0);
+
+  const totalEmailCount = enabledRecipients.reduce((sum, r) => {
+    let count = r.email ? 1 : 0;
+    count += r.additionalEmails.length;
+    return sum + count;
+  }, 0);
 
   if (loading) {
     return (
@@ -408,12 +539,24 @@ Mit freundlichen Grüßen
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Anhang:</label>
-            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-              <Paperclip className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-700">
-                Betriebskostenabrechnung_{statement?.year}_{previewRecipient?.tenantName.replace(/\s+/g, "_")}.pdf
-              </span>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Anhänge ({1 + additionalAttachments.length}):
+            </label>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <Paperclip className="w-4 h-4 text-primary-blue" />
+                <span className="text-sm text-dark">
+                  Betriebskostenabrechnung_{statement?.year}_{previewRecipient?.tenantName.replace(/\s+/g, "_")}.pdf
+                </span>
+              </div>
+              {additionalAttachments.map((attachment) => (
+                <div key={attachment.id} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <Paperclip className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-700">
+                    {attachment.name}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -462,7 +605,7 @@ Mit freundlichen Grüßen
             ) : (
               <>
                 <Send className="w-4 h-4" />
-                Senden ({enabledRecipients.length})
+                Senden ({totalEmailCount} E-Mails)
               </>
             )}
           </button>
@@ -490,7 +633,7 @@ Mit freundlichen Grüßen
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-dark">
-            Empfänger ({enabledRecipients.length} von {recipients.length})
+            Empfänger ({enabledRecipients.length} Mieter, {totalEmailCount} E-Mail-Adressen)
           </h3>
         </div>
 
@@ -503,36 +646,70 @@ Mit freundlichen Grüßen
           </div>
         )}
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {recipients.map((recipient) => (
             <div
               key={recipient.id}
-              className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+              className={`p-4 rounded-lg border transition-colors ${
                 recipient.enabled
                   ? "bg-white border-gray-200"
                   : "bg-gray-50 border-gray-200 opacity-60"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-primary-blue font-semibold">
-                  {recipient.tenantName.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div className="font-medium text-dark">{recipient.tenantName}</div>
-                  <div className="text-sm text-gray-600">
-                    {recipient.email || (
-                      <span className="text-red-600">E-Mail fehlt</span>
-                    )}
-                    {recipient.unitNumber && ` • ${recipient.unitNumber}`}
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3 flex-1">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-primary-blue font-semibold flex-shrink-0">
+                    {recipient.tenantName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-dark">{recipient.tenantName}</div>
+                    <div className="text-sm text-gray-600 mb-2">
+                      {recipient.unitNumber && `${recipient.unitNumber}`}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {recipient.email ? (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail className="w-3.5 h-3.5 text-gray-400" />
+                          <span className="text-gray-700">{recipient.email}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm">
+                          <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                          <span className="text-red-600">Keine E-Mail-Adresse hinterlegt</span>
+                        </div>
+                      )}
+
+                      {recipient.additionalEmails.map((email, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm group">
+                          <Mail className="w-3.5 h-3.5 text-gray-400" />
+                          <span className="text-gray-700">{email}</span>
+                          <button
+                            onClick={() => removeEmailFromRecipient(recipient.id, index)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded"
+                          >
+                            <X className="w-3 h-3 text-gray-400" />
+                          </button>
+                        </div>
+                      ))}
+
+                      <button
+                        onClick={() => addEmailToRecipient(recipient.id)}
+                        className="flex items-center gap-1.5 text-sm text-primary-blue hover:text-blue-600 transition-colors mt-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Weitere E-Mail hinzufügen
+                      </button>
+                    </div>
                   </div>
                 </div>
+                <button
+                  onClick={() => removeRecipient(recipient.id)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                >
+                  <X className="w-4 h-4 text-gray-400" />
+                </button>
               </div>
-              <button
-                onClick={() => removeRecipient(recipient.id)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-4 h-4 text-gray-400" />
-              </button>
             </div>
           ))}
         </div>
@@ -565,6 +742,83 @@ Mit freundlichen Grüßen
       </div>
 
       <div className="bg-white rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-dark mb-4">Anhänge</h3>
+
+        <div className="space-y-4">
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <div className="flex items-center gap-2 mb-2">
+              <Check className="w-4 h-4 text-primary-blue" />
+              <span className="text-sm font-medium text-dark">
+                Betriebskostenabrechnung (automatisch)
+              </span>
+            </div>
+            <div className="text-xs text-gray-600">
+              Pro Empfänger wird automatisch die passende PDF-Abrechnung angehängt
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium text-gray-700">
+                Zusätzliche Anhänge ({additionalAttachments.length})
+              </label>
+              <label className="flex items-center gap-2 px-3 py-1.5 text-sm text-primary-blue hover:bg-blue-50 border border-primary-blue rounded-lg cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <Upload className="w-4 h-4" />
+                {uploadingAttachments ? "Hochladen..." : "Datei hinzufügen"}
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleAttachmentUpload}
+                  className="hidden"
+                  disabled={uploadingAttachments}
+                />
+              </label>
+            </div>
+
+            {additionalAttachments.length > 0 ? (
+              <div className="space-y-2">
+                {additionalAttachments.map((attachment) => (
+                  <div
+                    key={attachment.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 group hover:border-gray-300 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-dark truncate">
+                          {attachment.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {(attachment.size / 1024).toFixed(1)} KB
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeAttachment(attachment.id)}
+                      className="p-2 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                      title="Anhang entfernen"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center">
+                <Paperclip className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-600">
+                  Keine zusätzlichen Anhänge
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Fügen Sie weitere Dokumente hinzu, die an alle Empfänger mitgesendet werden
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg p-6 shadow-sm">
         <h3 className="text-lg font-semibold text-dark mb-4">Weitere Optionen</h3>
 
         <div className="space-y-4">
@@ -584,18 +838,6 @@ Mit freundlichen Grüßen
               </div>
             </div>
           </label>
-
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Paperclip className="w-4 h-4 text-gray-400" />
-              <span className="text-sm font-medium text-gray-700">
-                Anhänge ({recipients.length})
-              </span>
-            </div>
-            <div className="text-xs text-gray-500">
-              Pro Empfänger wird automatisch die passende PDF angehängt
-            </div>
-          </div>
         </div>
       </div>
     </div>
