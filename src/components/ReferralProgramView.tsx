@@ -224,73 +224,73 @@ export default function ReferralProgramView() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-dark mb-2">
+        <h1 className="text-3xl font-bold text-dark">
           Empfehlungsprogramm
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-400 mt-1">
           Empfehlen Sie rentab.ly und erhalten Sie 2 Monate PRO gratis
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-gradient-to-br from-blue-500 to-primary-blue rounded-xl p-8 text-white">
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-              <Gift className="w-6 h-6" />
+            <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
+              <Gift className="w-5 h-5 text-primary-blue" />
             </div>
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-lg font-semibold text-dark">
               Ihr persönlicher Empfehlungscode
             </h2>
           </div>
 
-          <div className="bg-white/20 backdrop-blur rounded-lg p-6 mb-6">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1">
-                <p className="text-white/70 text-sm mb-2">
+                <p className="text-gray-600 text-sm mb-2">
                   Ihr Empfehlungscode:
                 </p>
-                <p className="text-3xl font-bold font-mono tracking-wider">
+                <p className="text-2xl font-bold font-mono tracking-wider text-dark">
                   {referralCode}
                 </p>
               </div>
               <button
                 onClick={handleCopyCode}
-                className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
               >
                 {copied ? (
                   <>
-                    <Check className="w-5 h-5" /> Kopiert!
+                    <Check className="w-4 h-4" /> Kopiert!
                   </>
                 ) : (
                   <>
-                    <Copy className="w-5 h-5" /> Kopieren
+                    <Copy className="w-4 h-4" /> Kopieren
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          <div className="bg-white/20 backdrop-blur rounded-lg p-6">
-            <p className="text-white/70 text-sm mb-2">Empfehlungslink:</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
+            <p className="text-gray-600 text-sm mb-2">Empfehlungslink:</p>
             <div className="flex items-center gap-3">
-              <p className="flex-1 text-sm font-mono bg-white/10 px-4 py-3 rounded-lg break-all">
+              <p className="flex-1 text-sm font-mono bg-white px-4 py-3 rounded-lg break-all border border-gray-200 text-gray-700">
                 {window.location.origin}/signup?ref={referralCode}
               </p>
               <button
                 onClick={handleCopyReferralLink}
-                className="px-4 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+                className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm"
               >
                 <Share2 className="w-4 h-4" /> Teilen
               </button>
             </div>
           </div>
 
-          <div className="mt-6 flex gap-3">
+          <div className="flex gap-3">
             <button
               onClick={handleShareLinkedIn}
-              className="flex-1 bg-[#0A66C2] hover:bg-[#004182] text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              className="flex-1 bg-[#0A66C2] hover:bg-[#004182] text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
             >
-              <Linkedin className="w-5 h-5" />
+              <Linkedin className="w-4 h-4" />
               Auf LinkedIn teilen
             </button>
           </div>
@@ -299,8 +299,8 @@ export default function ReferralProgramView() {
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-emerald-600" />
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary-blue" />
               </div>
             </div>
             <div className="text-3xl font-bold text-dark mb-1">
@@ -309,30 +309,30 @@ export default function ReferralProgramView() {
             <div className="text-sm text-gray-600">Gesamt Empfehlungen</div>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg shadow-sm p-6 text-white">
+          <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-primary-blue/20">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <Award className="w-6 h-6" />
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
+                <Award className="w-5 h-5 text-primary-blue" />
               </div>
             </div>
-            <div className="text-3xl font-bold mb-1">
+            <div className="text-3xl font-bold text-dark mb-1">
               {stats.totalMonthsEarned}
             </div>
-            <div className="text-sm text-white/80 mb-4">
+            <div className="text-sm text-gray-600 mb-4">
               Verdiente Belohnungen (Monate)
             </div>
-            <div className="pt-4 border-t border-white/20 space-y-2 text-sm">
+            <div className="pt-4 border-t border-gray-200 space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-gray-600">
                   <Clock className="w-4 h-4" /> Aktiv
                 </span>
-                <span className="font-semibold">{stats.activeMonths} Monate</span>
+                <span className="font-semibold text-dark">{stats.activeMonths} Monate</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-gray-600">
                   <Check className="w-4 h-4" /> Verwendet
                 </span>
-                <span className="font-semibold">{stats.usedMonths} Monate</span>
+                <span className="font-semibold text-dark">{stats.usedMonths} Monate</span>
               </div>
             </div>
           </div>
@@ -415,8 +415,8 @@ export default function ReferralProgramView() {
             </button>
           </form>
 
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-900">
+          <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-xs text-gray-600">
               Die E-Mail enthält Ihren persönlichen Empfehlungslink und eine
               Beschreibung der Vorteile von rentab.ly.
             </p>
@@ -425,8 +425,8 @@ export default function ReferralProgramView() {
 
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
+            <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-primary-blue" />
             </div>
             <h3 className="text-lg font-semibold text-dark">
               So funktioniert's
@@ -439,7 +439,7 @@ export default function ReferralProgramView() {
                 1
               </div>
               <div>
-                <h4 className="font-semibold text-dark mb-1">
+                <h4 className="font-semibold text-dark mb-1 text-sm">
                   Teilen Sie Ihren Code
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -454,7 +454,7 @@ export default function ReferralProgramView() {
                 2
               </div>
               <div>
-                <h4 className="font-semibold text-dark mb-1">
+                <h4 className="font-semibold text-dark mb-1 text-sm">
                   Freunde registrieren sich
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -469,7 +469,7 @@ export default function ReferralProgramView() {
                 3
               </div>
               <div>
-                <h4 className="font-semibold text-dark mb-1">
+                <h4 className="font-semibold text-dark mb-1 text-sm">
                   Belohnungen werden aktiviert
                 </h4>
                 <p className="text-sm text-gray-600">
@@ -523,7 +523,7 @@ export default function ReferralProgramView() {
               header: "Belohnung",
               render: (referral: Referral) =>
                 referral.reward_earned ? (
-                  <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold text-sm">
+                  <span className="inline-flex items-center gap-1 text-primary-blue font-semibold text-sm">
                     <Award className="w-4 h-4" /> Verdient
                   </span>
                 ) : (
