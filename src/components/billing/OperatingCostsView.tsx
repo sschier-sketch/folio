@@ -525,7 +525,7 @@ export default function OperatingCostsView() {
                         className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
                         onClick={() => handleStatementClick(statement)}
                       >
-                        {statement.unit ? `Einheit ${statement.unit.unit_number}` : '-'}
+                        {statement.unit ? statement.unit.unit_number : '-'}
                       </td>
                       <td
                         className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
