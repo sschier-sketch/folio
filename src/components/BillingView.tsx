@@ -16,21 +16,21 @@ import BillingHistoryView from "./billing/BillingHistoryView";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 
 type Tab =
-  | "meters"
   | "operating-costs"
+  | "meters"
   | "taxes"
   | "export"
   | "history";
 
 export default function BillingView() {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<Tab>("meters");
+  const [activeTab, setActiveTab] = useState<Tab>("operating-costs");
   const [viewKey, setViewKey] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab && ['meters', 'operating-costs', 'taxes', 'export', 'history'].includes(tab)) {
+    if (tab && ['operating-costs', 'meters', 'taxes', 'export', 'history'].includes(tab)) {
       setActiveTab(tab as Tab);
       setViewKey(prev => prev + 1);
       const newUrl = window.location.pathname;
@@ -39,12 +39,13 @@ export default function BillingView() {
   }, [location.search]);
 
   const tabs = [
-    { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },
     {
       id: "operating-costs" as Tab,
       label: "Betriebskosten",
       icon: Calculator,
+      premium: true,
     },
+    { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },
     {
       id: "taxes" as Tab,
       label: "Steuern",
@@ -86,8 +87,8 @@ export default function BillingView() {
                   <Icon className="w-5 h-5" />
                   {tab.label}
                   {tab.premium && (
-                    <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>
-                      Bald
+                    <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: tab.disabled ? "#faf8f8" : "#3b82f6", color: tab.disabled ? "#000000" : "#ffffff" }}>
+                      {tab.disabled ? "Bald" : "Pro"}
                     </span>
                   )}
                   {activeTab === tab.id && !tab.disabled && (

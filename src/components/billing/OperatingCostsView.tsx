@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Search, FileText, Copy, Trash2, Download, Mail } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { useSubscription } from "../../hooks/useSubscription";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
 import Badge from "../common/Badge";
@@ -9,6 +10,7 @@ import TableActionsDropdown from "../common/TableActionsDropdown";
 import { generateOperatingCostPdf } from "../../lib/operatingCostPdfGenerator";
 import { sendOperatingCostPdf } from "../../lib/operatingCostMailer";
 import OperatingCostSendView from "./OperatingCostSendView";
+import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 
 interface Property {
   id: string;
@@ -21,6 +23,7 @@ interface StatementWithProperty extends OperatingCostStatement {
 
 export default function OperatingCostsView() {
   const { user } = useAuth();
+  const { isPro, loading: subscriptionLoading } = useSubscription();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [statements, setStatements] = useState<StatementWithProperty[]>([]);
@@ -30,6 +33,32 @@ export default function OperatingCostsView() {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
 
   const sendStatementId = searchParams.get('sendStatement');
+
+  if (subscriptionLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isPro) {
+    return (
+      <PremiumUpgradePrompt
+        featureKey="billing_operating_costs"
+        title="Betriebskostenabrechnung"
+        description="Erstellen Sie professionelle Betriebskostenabrechnungen für Ihre Mieter. Sparen Sie Zeit und vermeiden Sie Fehler mit unserem intelligenten Abrechnungsassistenten."
+        features={[
+          "Automatische Berechnung nach Verteilerschlüsseln",
+          "Rechtssichere Abrechnungen gemäß Betriebskostenverordnung",
+          "Import von Rechnungen und Belegen",
+          "Automatische Zuordnung zu Kostenpositionen",
+          "Export als PDF mit Mieter-Anschreiben",
+          "Versand per E-Mail direkt aus der Software"
+        ]}
+      />
+    );
+  }
 
   useEffect(() => {
     if (user) {
