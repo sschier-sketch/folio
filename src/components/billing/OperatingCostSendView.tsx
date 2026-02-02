@@ -268,17 +268,32 @@ Mit freundlichen Grüßen
           successCount++;
 
           if (includeInPortal) {
-            await supabase.from("property_documents").insert({
-              user_id: user!.id,
-              property_id: statement!.property_id,
-              unit_id: recipient.unitNumber ? undefined : null,
-              title: `Nebenkostenabrechnung ${statement?.year}`,
-              description: `Betriebskostenabrechnung für das Jahr ${statement?.year}`,
-              file_path: pdfData.data!.file_path,
-              file_type: "application/pdf",
-              document_type: "betriebskostenabrechnung",
-              shared_with_tenant: true,
-            });
+            const { data: documentData, error: docInsertError } = await supabase
+              .from("documents")
+              .insert({
+                user_id: user!.id,
+                file_name: `Betriebskostenabrechnung_${statement?.year}_${recipient.tenantName.replace(/\s+/g, "_")}.pdf`,
+                file_path: pdfData.data!.file_path,
+                file_size: 0,
+                file_type: "application/pdf",
+                document_type: "bill",
+                category: "Betriebskosten",
+                description: `Betriebskostenabrechnung für das Jahr ${statement?.year}`,
+                shared_with_tenant: true,
+              })
+              .select()
+              .single();
+
+            if (docInsertError) {
+              console.error(`Error saving document for ${recipient.tenantName}:`, docInsertError);
+            } else if (documentData) {
+              await supabase.from("document_associations").insert({
+                document_id: documentData.id,
+                association_type: "tenant",
+                association_id: recipient.tenantId,
+                created_by: user!.id,
+              });
+            }
           }
         }
       }
