@@ -519,18 +519,19 @@ function createPdf(data: PdfData): Blob {
   doc.text(`${data.daysInPeriod} von ${totalDaysInYear} (${((data.daysInPeriod / totalDaysInYear) * 100).toFixed(2)}%)`, columnXPos + 30, currentY);
   currentY += 15;
 
-  checkPageBreak(80);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('IV. Steuerlich relevante haushaltsnahe Dienstleistungen und Handwerkerleistungen (§35a EStG)', M_LEFT, currentY);
-  currentY += 2;
-  doc.setLineWidth(0.5);
-  doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
-  currentY += 10;
-
   const section35aItems = data.lineItems.filter(item => item.is_section_35a && item.section_35a_category);
+  let nextSectionNumber = 4;
 
   if (section35aItems.length > 0) {
+    checkPageBreak(80);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('IV. Steuerlich relevante haushaltsnahe Dienstleistungen und Handwerkerleistungen (§35a EStG)', M_LEFT, currentY);
+    currentY += 2;
+    doc.setLineWidth(0.5);
+    doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
+    currentY += 10;
+
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     const taxIntroText = 'Folgende Beträge aus dieser Abrechnung können Sie gemäß § 35a EStG (haushaltsnahe Dienstleistungen und Handwerkerleistungen) in Ihrer Einkommensteuererklärung geltend machen:';
@@ -633,19 +634,16 @@ function createPdf(data: PdfData): Blob {
     const taxHinweisLines = doc.splitTextToSize(taxHinweis, contentWidth);
     doc.text(taxHinweisLines, M_LEFT, currentY);
     currentY += taxHinweisLines.length * 4 + 15;
-  } else {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    const noTaxText = 'In dieser Abrechnung sind keine Kosten enthalten, die gemäß § 35a EStG steuerlich geltend gemacht werden können.';
-    const noTaxLines = doc.splitTextToSize(noTaxText, contentWidth);
-    doc.text(noTaxLines, M_LEFT, currentY);
-    currentY += noTaxLines.length * 4.5 + 15;
+
+    nextSectionNumber = 5;
   }
+
+  const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
   checkPageBreak(80);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('V. Rechtliche Hinweise', M_LEFT, currentY);
+  doc.text(`${romanNumerals[nextSectionNumber - 1]}. Rechtliche Hinweise`, M_LEFT, currentY);
   currentY += 2;
   doc.setLineWidth(0.5);
   doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
