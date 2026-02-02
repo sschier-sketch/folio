@@ -516,37 +516,12 @@ export default function TenantDepositTab({
         </div>
       )}
 
-      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-blue-600" />
-            </div>
-          </div>
-          <div className="flex-1">
-            <h4 className="text-base font-semibold text-blue-900 mb-2">
-              Hinweis zur rechtssicheren Verwahrung der Mietkaution
-            </h4>
-            <div className="text-sm text-blue-800 space-y-3">
-              <p>
-                Die vom Mieter geleistete Mietkaution dient ausschließlich der Absicherung berechtigter Ansprüche aus dem Mietverhältnis. Nach § 551 BGB ist der Vermieter verpflichtet, die Kaution getrennt von seinem eigenen Vermögen anzulegen.
-              </p>
-              <p>
-                Die Kaution muss insolvenzsicher und zu dem für Spareinlagen mit dreimonatiger Kündigungsfrist üblichen Zinssatz verwahrt werden. Üblicherweise erfolgt dies auf einem separaten Kautionskonto (z. B. Mietkautionssparbuch oder Treuhandkonto) auf den Namen des Mieters bzw. als offenes Treuhandkonto.
-              </p>
-              <p className="font-medium">
-                Durch die getrennte Anlage wird sichergestellt, dass die Kaution:
-              </p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>im Falle einer Insolvenz des Vermieters geschützt ist,</li>
-                <li>ausschließlich für Ansprüche aus dem konkreten Mietverhältnis verwendet wird,</li>
-                <li>dem Mieter nach Beendigung des Mietverhältnisses ordnungsgemäß und verzinst zurückgezahlt werden kann, sofern keine berechtigten Forderungen bestehen.</li>
-              </ul>
-              <p className="text-blue-900 font-medium mt-3">
-                Eine nicht ordnungsgemäße Verwahrung kann dazu führen, dass der Mieter die sofortige Rückzahlung der Kaution verlangen oder diese mit laufenden Mietzahlungen verrechnen darf.
-              </p>
-            </div>
-          </div>
+      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
+        <div className="text-sm text-blue-900">
+          <p className="font-semibold mb-1">Hinweis zur rechtssicheren Verwahrung der Mietkaution:</p>
+          <p>
+            Die vom Mieter geleistete Mietkaution dient ausschließlich der Absicherung berechtigter Ansprüche aus dem Mietverhältnis. Nach § 551 BGB ist der Vermieter verpflichtet, die Kaution getrennt von seinem eigenen Vermögen anzulegen und insolvenzsicher zu verwahren. Eine nicht ordnungsgemäße Verwahrung kann dazu führen, dass der Mieter die sofortige Rückzahlung der Kaution verlangen oder diese mit laufenden Mietzahlungen verrechnen darf.
+          </p>
         </div>
       </div>
 

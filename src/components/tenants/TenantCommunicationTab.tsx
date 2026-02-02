@@ -553,15 +553,12 @@ export default function TenantCommunicationTab({
         </div>
 
         <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <MessageSquare className="w-5 h-5 text-primary-blue mt-0.5" />
-            <div className="text-sm text-blue-900">
-              <p className="font-semibold mb-1">Mieterportal:</p>
-              <p>
-                Mieter-Anfragen aus dem Mieterportal werden automatisch hier
-                angezeigt und können direkt bearbeitet werden.
-              </p>
-            </div>
+          <div className="text-sm text-blue-900">
+            <p className="font-semibold mb-1">Mieterportal:</p>
+            <p>
+              Mieter-Anfragen aus dem Mieterportal werden automatisch hier
+              angezeigt und können direkt bearbeitet werden.
+            </p>
           </div>
         </div>
 

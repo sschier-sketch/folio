@@ -721,16 +721,13 @@ export default function TenantHandoverTab({
         </div>
 
         <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <ClipboardList className="w-5 h-5 text-primary-blue mt-0.5" />
-            <div className="text-sm text-blue-900">
-              <p className="font-semibold mb-1">Rechtssicher dokumentieren:</p>
-              <p>
-                Übergabeprotokolle dienen als rechtliche Absicherung bei
-                Streitigkeiten über den Wohnungszustand. Alle Protokolle werden
-                mit Zeitstempel versehen und können als PDF exportiert werden.
-              </p>
-            </div>
+          <div className="text-sm text-blue-900">
+            <p className="font-semibold mb-1">Rechtssicher dokumentieren:</p>
+            <p>
+              Übergabeprotokolle dienen als rechtliche Absicherung bei
+              Streitigkeiten über den Wohnungszustand. Alle Protokolle werden
+              mit Zeitstempel versehen und können als PDF exportiert werden.
+            </p>
           </div>
         </div>
 
