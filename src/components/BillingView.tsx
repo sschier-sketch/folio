@@ -14,6 +14,7 @@ import MetersView from "./billing/MetersView";
 import BillingExportView from "./billing/BillingExportView";
 import BillingHistoryView from "./billing/BillingHistoryView";
 import ScrollableTabNav from "./common/ScrollableTabNav";
+import Badge from "./common/Badge";
 
 type Tab =
   | "operating-costs"
@@ -62,7 +63,7 @@ export default function BillingView() {
       <div>
         <h1 className="text-3xl font-bold text-dark">Abrechnungen</h1>
         <p className="text-gray-400 mt-1">
-          Betriebskostenabrechnungen erstellen und verwalten
+          Abrechnungen erstellen und verwalten
         </p>
       </div>
 
@@ -86,11 +87,13 @@ export default function BillingView() {
                 >
                   <Icon className="w-5 h-5" />
                   {tab.label}
-                  {tab.premium && (
-                    <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: tab.disabled ? "#faf8f8" : "#3b82f6", color: tab.disabled ? "#000000" : "#ffffff" }}>
-                      {tab.disabled ? "Bald" : "Pro"}
+                  {tab.premium && tab.disabled ? (
+                    <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>
+                      Bald
                     </span>
-                  )}
+                  ) : tab.premium ? (
+                    <Badge variant="pro" size="sm">Pro</Badge>
+                  ) : null}
                   {activeTab === tab.id && !tab.disabled && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
                   )}
