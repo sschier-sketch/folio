@@ -317,14 +317,11 @@ export default function OperatingCostWizardStep2() {
                   <th className="text-center py-3 px-4 font-semibold text-gray-700">
                     <div className="flex items-center justify-center gap-1.5">
                       <span>§35a EStG</span>
-                      <div className="relative group">
+                      <div className="group relative inline-block">
                         <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                        <div className="invisible group-hover:visible absolute left-1/2 bottom-full -translate-x-1/2 mb-2 w-80 p-4 bg-gray-900 text-white text-sm font-normal rounded-lg shadow-2xl z-[9999] pointer-events-none">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 fixed z-[99999] w-80 p-4 bg-gray-900 text-white text-sm font-normal rounded-lg shadow-2xl pointer-events-none" style={{marginTop: '-100px', marginLeft: '-150px'}}>
                           <div className="text-left leading-relaxed">
                             Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
-                          </div>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
-                            <div className="border-[6px] border-transparent border-t-gray-900"></div>
                           </div>
                         </div>
                       </div>
@@ -473,14 +470,11 @@ export default function OperatingCostWizardStep2() {
                     <th className="text-center py-3 px-4 font-semibold text-gray-700">
                       <div className="flex items-center justify-center gap-1.5">
                         <span>§35a EStG</span>
-                        <div className="relative group">
+                        <div className="group relative inline-block">
                           <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                          <div className="invisible group-hover:visible absolute left-1/2 bottom-full -translate-x-1/2 mb-2 w-80 p-4 bg-gray-900 text-white text-sm font-normal rounded-lg shadow-2xl z-[9999] pointer-events-none">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 fixed z-[99999] w-80 p-4 bg-gray-900 text-white text-sm font-normal rounded-lg shadow-2xl pointer-events-none" style={{marginTop: '-100px', marginLeft: '-150px'}}>
                             <div className="text-left leading-relaxed">
                               Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
-                            </div>
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
-                              <div className="border-[6px] border-transparent border-t-gray-900"></div>
                             </div>
                           </div>
                         </div>

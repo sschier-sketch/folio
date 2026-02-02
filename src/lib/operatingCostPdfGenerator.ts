@@ -543,7 +543,7 @@ function createPdf(data: PdfData): Blob {
 
     if (haushaltsnaheItems.length > 0) {
       taxTableData.push([
-        { content: 'a) Haushaltsnahe Dienstleistungen / Beschäftigungen', colSpan: 4, styles: { fontStyle: 'bold', fillColor: [245, 245, 245] } },
+        { content: 'a) haushaltsnahe Dienstleistungen / Beschäftigungen', colSpan: 4, styles: { fontStyle: 'bold', fillColor: [255, 255, 255] } },
       ]);
 
       haushaltsnaheItems.forEach(item => {
@@ -554,17 +554,11 @@ function createPdf(data: PdfData): Blob {
           `${item.shareAmount.toFixed(2)} €`,
         ]);
       });
-
-      const sumHaushaltsnahe = haushaltsnaheItems.reduce((sum, item) => sum + item.shareAmount, 0);
-      taxTableData.push([
-        { content: 'Summe a)', colSpan: 3, styles: { fontStyle: 'bold' } },
-        { content: `${sumHaushaltsnahe.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
-      ]);
     }
 
     if (handwerkerItems.length > 0) {
       taxTableData.push([
-        { content: 'b) Handwerkerleistungen', colSpan: 4, styles: { fontStyle: 'bold', fillColor: [245, 245, 245] } },
+        { content: 'b) Handwerkerleistungen', colSpan: 4, styles: { fontStyle: 'bold', fillColor: [255, 255, 255] } },
       ]);
 
       handwerkerItems.forEach(item => {
@@ -575,23 +569,17 @@ function createPdf(data: PdfData): Blob {
           `${item.shareAmount.toFixed(2)} €`,
         ]);
       });
-
-      const sumHandwerker = handwerkerItems.reduce((sum, item) => sum + item.shareAmount, 0);
-      taxTableData.push([
-        { content: 'Summe b)', colSpan: 3, styles: { fontStyle: 'bold' } },
-        { content: `${sumHandwerker.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
-      ]);
     }
 
     const totalSection35a = section35aItems.reduce((sum, item) => sum + item.shareAmount, 0);
     taxTableData.push([
-      { content: 'In Ihren Kosten enthaltener Gesamtanteil an Aufwendungen gemäß §35a EStG', colSpan: 3, styles: { fontStyle: 'bold', fillColor: [230, 230, 230] } },
-      { content: `${totalSection35a.toFixed(2)} €`, styles: { fontStyle: 'bold', fillColor: [230, 230, 230] } },
+      { content: 'In Ihren Kosten enthaltener Gesamtanteil an Aufwendungen gem. §35a EStG', colSpan: 3, styles: { fontStyle: 'bold' } },
+      { content: `${totalSection35a.toFixed(2)} €`, styles: { fontStyle: 'bold', halign: 'right' } },
     ]);
 
     autoTable(doc, {
       startY: currentY,
-      head: [['Kostenart', 'Kosten gemäß §35a EStG (Gesamtbetrag)', 'Abrechnungsschlüssel', 'Ihr Anteil']],
+      head: [['Kostenart', 'Kosten gemäß §35a EStG', 'Abrechnungsschlüssel', 'Ihr Anteil']],
       body: taxTableData,
       theme: 'plain',
       margin: { left: M_LEFT, right: M_RIGHT },
@@ -610,30 +598,22 @@ function createPdf(data: PdfData): Blob {
         lineWidth: 0.1,
       },
       columnStyles: {
-        0: { cellWidth: 50 },
-        1: { halign: 'right', cellWidth: 45 },
-        2: { cellWidth: 40 },
-        3: { halign: 'right', cellWidth: 35 },
+        0: { cellWidth: 60 },
+        1: { halign: 'right', cellWidth: 38 },
+        2: { cellWidth: 42 },
+        3: { halign: 'right', cellWidth: 30 },
       },
     });
 
     currentY = (doc as any).lastAutoTable.finalY + 10;
 
-    checkPageBreak(30);
+    checkPageBreak(20);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    const taxDisclaimer = 'Die ausgewiesenen Beträge dienen ausschließlich als Übersicht über potenziell steuerlich begünstigte Aufwendungen gemäß §35a EStG. Eine Gewähr für die steuerliche Anerkennung durch das Finanzamt wird nicht übernommen.';
+    const taxDisclaimer = 'Die Haftung für etwaige Steuerbegünstigungen der Anspruchsberechtigten, die sich aus den jeweilig ausgewiesenen Beträgen ergeben, ist ausgeschlossen.';
     const taxDisclaimerLines = doc.splitTextToSize(taxDisclaimer, contentWidth);
     doc.text(taxDisclaimerLines, M_LEFT, currentY);
-    currentY += taxDisclaimerLines.length * 4 + 3;
-
-    doc.setFontSize(7);
-    doc.setTextColor(120, 120, 120);
-    const materialNote = 'Materialkosten und nicht begünstigte Gebührenanteile können enthalten sein.';
-    const materialNoteLines = doc.splitTextToSize(materialNote, contentWidth);
-    doc.text(materialNoteLines, M_LEFT, currentY);
-    currentY += materialNoteLines.length * 3.5 + 12;
-    doc.setTextColor(0, 0, 0);
+    currentY += taxDisclaimerLines.length * 4 + 12;
 
     nextSectionNumber = 5;
   }
