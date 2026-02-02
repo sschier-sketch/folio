@@ -165,186 +165,477 @@ export async function exportToPDF(data: PropertyWithUnitsAndTenants[] | TenantWi
 }
 
 async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
-  const doc = new jsPDF();
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
   const exportDate = new Date().toLocaleDateString("de-DE");
 
-  doc.setFontSize(20);
-  doc.text("Rentably - Immobilien Export", 14, 20);
+  const PAGE_W = 210;
+  const PAGE_H = 297;
+  const M_LEFT = 20;
+  const M_RIGHT = 20;
+  const M_TOP = 18;
+  const M_BOTTOM = 18;
+  const FOOTER_H = 12;
+  const CONTENT_BOTTOM_Y = PAGE_H - M_BOTTOM - FOOTER_H;
+  const HEADER_END_Y = 32;
 
-  doc.setFontSize(10);
-  doc.text(`Exportdatum: ${exportDate}`, 14, 28);
+  let currentY = HEADER_END_Y;
 
-  let yPosition = 35;
-
-  data.forEach((item, index) => {
-    if (index > 0) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    doc.setFontSize(14);
+  const drawHeader = () => {
+    doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
-    doc.text(item.property.name, 14, yPosition);
-    yPosition += 7;
+    doc.setTextColor(0);
+    doc.text("Rentably", M_LEFT, M_TOP + 4);
 
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
+    doc.text("Immobilienübersicht", M_LEFT, M_TOP + 9);
 
-    const propertyInfo = [
-      ['Adresse', item.property.address],
-      ['Typ', getPropertyTypeLabel(item.property.property_type)],
-      ['Verwaltung', getManagementTypeLabel(item.property.property_management_type)],
-      ['Kaufpreis', formatCurrency(item.property.purchase_price)],
-      ['Aktueller Wert', formatCurrency(item.property.current_value)],
-      ['Kaufdatum', formatDate(item.property.purchase_date)],
-      ['Fläche', item.property.size_sqm ? `${item.property.size_sqm} m²` : '-'],
-      ['Beschreibung', item.property.description || '-'],
-    ];
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    const dateText = `Exportdatum: ${exportDate}`;
+    const dateWidth = doc.getTextWidth(dateText);
+    doc.text(dateText, PAGE_W - M_RIGHT - dateWidth, M_TOP + 4);
+
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.1);
+    doc.line(M_LEFT, 26, PAGE_W - M_RIGHT, 26);
+
+    doc.setTextColor(0);
+  };
+
+  const drawFooter = (pageNum: number, totalPages: number) => {
+    const lineY = PAGE_H - M_BOTTOM - FOOTER_H;
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.1);
+    doc.line(M_LEFT, lineY, PAGE_W - M_RIGHT, lineY);
+
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(`Rentably · Immobilienübersicht · Export vom ${exportDate}`, M_LEFT, PAGE_H - M_BOTTOM);
+
+    const pageText = `Seite ${pageNum} von ${totalPages}`;
+    const pageWidth = doc.getTextWidth(pageText);
+    doc.text(pageText, PAGE_W - M_RIGHT - pageWidth, PAGE_H - M_BOTTOM);
+
+    doc.setTextColor(0);
+  };
+
+  const ensureSpace = (neededHeight: number) => {
+    if (currentY + neededHeight > CONTENT_BOTTOM_Y) {
+      doc.addPage();
+      drawHeader();
+      currentY = HEADER_END_Y;
+    }
+  };
+
+  const renderKeyValueTable = (rows: string[][], startY: number) => {
+    const tableWidth = PAGE_W - M_LEFT - M_RIGHT;
+    const labelWidth = 55;
 
     autoTable(doc, {
-      startY: yPosition,
-      head: [['Stammdaten', '']],
-      body: propertyInfo,
-      theme: 'grid',
-      headStyles: { fillColor: [59, 130, 246] },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 50 },
-        1: { cellWidth: 130 },
+      startY: startY,
+      body: rows,
+      theme: 'plain',
+      margin: { left: M_LEFT, right: M_RIGHT },
+      tableWidth: tableWidth,
+      styles: {
+        fontSize: 10,
+        cellPadding: { top: 1.6, right: 1.6, bottom: 1.6, left: 1.6 },
+        textColor: 20,
+        lineColor: 230,
+        lineWidth: 0.1,
       },
-      margin: { left: 14 },
+      columnStyles: {
+        0: {
+          cellWidth: labelWidth,
+          textColor: 110,
+          fontStyle: 'normal',
+          fontSize: 9
+        },
+        1: {
+          cellWidth: tableWidth - labelWidth,
+          textColor: 20,
+          fontSize: 10
+        },
+      },
+      rowPageBreak: 'avoid',
+      didDrawPage: () => {
+        drawHeader();
+      },
     });
 
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
+    return (doc as any).lastAutoTable.finalY + 6;
+  };
+
+  drawHeader();
+
+  data.forEach((item, index) => {
+    if (index > 0) {
+      ensureSpace(30);
+    }
+
+    ensureSpace(20);
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(0);
+    doc.text(item.property.name, M_LEFT, currentY);
+    currentY += 7;
+
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(100);
+    doc.text(item.property.address, M_LEFT, currentY);
+    doc.setTextColor(0);
+    currentY += 6;
+
+    const totalUnits = item.units.length;
+    const rentedUnits = item.units.filter(u => u.unit.status === 'rented').length;
+    const isFullyRented = totalUnits > 0 && rentedUnits === totalUnits;
+
+    const totalSqm = item.property.size_sqm || item.units.reduce((sum, u) => sum + (u.unit.size_sqm || 0), 0);
+
+    ensureSpace(40);
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text("Kernkennzahlen", M_LEFT, currentY);
+    currentY += 4;
+
+    const coreData: string[][] = [
+      ['Kaufpreis', formatCurrency(item.property.purchase_price)],
+      ['Aktueller Wert', formatCurrency(item.property.current_value)],
+      ['Gesamtfläche', totalSqm ? `${totalSqm} m²` : '-'],
+      ['Einheiten', totalUnits.toString()],
+    ];
+
+    if (totalUnits > 0) {
+      coreData.push(['Voll vermietet', isFullyRented ? 'Ja' : 'Nein']);
+    }
+
+    currentY = renderKeyValueTable(coreData, currentY);
+
+    ensureSpace(30);
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text("Objektinformationen", M_LEFT, currentY);
+    currentY += 4;
+
+    const objectInfo: string[][] = [
+      ['Objekttyp', getPropertyTypeLabel(item.property.property_type)],
+      ['Verwaltung', getManagementTypeLabel(item.property.property_management_type)],
+    ];
+
+    if (item.property.purchase_date) {
+      objectInfo.push(['Kaufdatum', formatDate(item.property.purchase_date)]);
+    }
+
+    if (item.equipment?.construction_type) {
+      objectInfo.push(['Bauweise', getConstructionTypeLabel(item.equipment.construction_type)]);
+    }
+
+    currentY = renderKeyValueTable(objectInfo, currentY);
 
     if (item.equipment) {
-      const equipmentInfo = [
-        ['Heizung', getHeatingTypeLabel(item.equipment.heating_type)],
-        ['Energiequelle', getEnergySourceLabel(item.equipment.energy_source)],
-        ['Bauweise', getConstructionTypeLabel(item.equipment.construction_type)],
-        ['Dachtyp', item.equipment.roof_type || '-'],
-        ['Stellplätze', item.equipment.parking_spots?.toString() || '0'],
-        ['Parkplatz-Typ', item.equipment.parking_type || '-'],
-        ['Aufzug', item.equipment.elevator ? 'Ja' : 'Nein'],
-        ['Balkon/Terrasse', item.equipment.balcony_terrace ? 'Ja' : 'Nein'],
-        ['Garten', item.equipment.garden ? 'Ja' : 'Nein'],
-        ['Keller', item.equipment.basement ? 'Ja' : 'Nein'],
-        ['Einbauküche', item.equipment.fitted_kitchen ? 'Ja' : 'Nein'],
-        ['WG geeignet', item.equipment.wg_suitable ? 'Ja' : 'Nein'],
-        ['Gäste-WC', item.equipment.guest_wc ? 'Ja' : 'Nein'],
-        ['Wohnberechtigungsschein', item.equipment.housing_permit ? 'Ja' : 'Nein'],
-      ];
+      const hasAusstattung =
+        item.equipment.elevator ||
+        item.equipment.fitted_kitchen ||
+        item.equipment.guest_wc ||
+        item.equipment.basement;
 
-      if (item.equipment.equipment_notes) {
-        equipmentInfo.push(['Ausstattungsnotizen', item.equipment.equipment_notes]);
+      if (hasAusstattung) {
+        ensureSpace(30);
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text("Ausstattung", M_LEFT, currentY);
+        currentY += 4;
+
+        const ausstattungData: string[][] = [];
+
+        if (item.equipment.elevator !== undefined) {
+          ausstattungData.push(['Aufzug', item.equipment.elevator ? 'Ja' : 'Nein']);
+        }
+        if (item.equipment.fitted_kitchen !== undefined) {
+          ausstattungData.push(['Einbauküche', item.equipment.fitted_kitchen ? 'Ja' : 'Nein']);
+        }
+        if (item.equipment.guest_wc !== undefined) {
+          ausstattungData.push(['Gäste-WC', item.equipment.guest_wc ? 'Ja' : 'Nein']);
+        }
+        if (item.equipment.basement !== undefined) {
+          ausstattungData.push(['Keller', item.equipment.basement ? 'Ja' : 'Nein']);
+        }
+
+        if (ausstattungData.length > 0) {
+          currentY = renderKeyValueTable(ausstattungData, currentY);
+        }
       }
-      if (item.equipment.special_features) {
-        equipmentInfo.push(['Besonderheiten', item.equipment.special_features]);
+
+      const hasOutdoor =
+        item.equipment.balcony_terrace ||
+        item.equipment.garden ||
+        (item.equipment.parking_spots && item.equipment.parking_spots > 0);
+
+      if (hasOutdoor) {
+        ensureSpace(30);
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text("Außenbereiche & Stellplätze", M_LEFT, currentY);
+        currentY += 4;
+
+        const outdoorData: string[][] = [];
+
+        if (item.equipment.balcony_terrace !== undefined) {
+          outdoorData.push(['Balkon / Terrasse', item.equipment.balcony_terrace ? 'Ja' : 'Nein']);
+        }
+        if (item.equipment.garden !== undefined) {
+          outdoorData.push(['Garten', item.equipment.garden ? 'Ja' : 'Nein']);
+        }
+        if (item.equipment.parking_spots !== undefined) {
+          outdoorData.push(['Stellplätze', item.equipment.parking_spots.toString()]);
+        }
+        if (item.equipment.parking_type) {
+          outdoorData.push(['Parkplatz-Typ', item.equipment.parking_type]);
+        }
+
+        if (outdoorData.length > 0) {
+          currentY = renderKeyValueTable(outdoorData, currentY);
+        }
       }
 
-      autoTable(doc, {
-        startY: yPosition,
-        head: [['Ausstattung & Daten', '']],
-        body: equipmentInfo,
-        theme: 'grid',
-        headStyles: { fillColor: [59, 130, 246] },
-        columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 50 },
-          1: { cellWidth: 130 },
-        },
-        margin: { left: 14 },
-      });
+      const hasEnergy =
+        item.equipment.heating_type ||
+        item.equipment.energy_source;
 
-      yPosition = (doc as any).lastAutoTable.finalY + 10;
+      if (hasEnergy) {
+        ensureSpace(30);
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text("Energie & Technik", M_LEFT, currentY);
+        currentY += 4;
+
+        const energyData: string[][] = [];
+
+        if (item.equipment.heating_type) {
+          energyData.push(['Heizungsart', getHeatingTypeLabel(item.equipment.heating_type)]);
+        }
+        if (item.equipment.energy_source) {
+          energyData.push(['Energiequelle', getEnergySourceLabel(item.equipment.energy_source)]);
+        }
+
+        if (energyData.length > 0) {
+          currentY = renderKeyValueTable(energyData, currentY);
+        }
+      }
     }
 
     if (item.units.length > 0) {
+      ensureSpace(40);
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text("Einheiten", M_LEFT, currentY);
+      currentY += 4;
+
       const unitsData = item.units.map(u => [
         u.unit.unit_number,
-        u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status,
+        u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status === 'self_occupied' ? 'Selbst genutzt' : u.unit.status,
         u.unit.rooms?.toString() || '-',
-        u.unit.floor_number?.toString() || '-',
         u.unit.size_sqm ? `${u.unit.size_sqm} m²` : '-',
         u.unit.cold_rent ? formatCurrency(u.unit.cold_rent) : '-',
-        u.unit.total_rent ? formatCurrency(u.unit.total_rent) : '-',
         u.tenant?.name || '-',
-        u.tenant?.email || '-',
       ]);
 
       autoTable(doc, {
-        startY: yPosition,
-        head: [['Nr.', 'Status', 'Zi.', 'Etage', 'Fläche', 'Kaltmiete', 'Gesamtmiete', 'Mieter', 'E-Mail']],
+        startY: currentY,
+        head: [['Nr.', 'Status', 'Zi.', 'Fläche', 'Kaltmiete', 'Mieter']],
         body: unitsData,
-        theme: 'grid',
-        headStyles: { fillColor: [59, 130, 246], fontSize: 8 },
-        bodyStyles: { fontSize: 8 },
-        columnStyles: {
-          0: { cellWidth: 15 },
-          1: { cellWidth: 22 },
-          2: { cellWidth: 12 },
-          3: { cellWidth: 15 },
-          4: { cellWidth: 20 },
-          5: { cellWidth: 25 },
-          6: { cellWidth: 25 },
-          7: { cellWidth: 30 },
-          8: { cellWidth: 30 },
+        theme: 'plain',
+        margin: { left: M_LEFT, right: M_RIGHT },
+        styles: {
+          fontSize: 9,
+          cellPadding: { top: 1.5, right: 1.5, bottom: 1.5, left: 1.5 },
+          textColor: 20,
+          lineColor: 230,
+          lineWidth: 0.1,
         },
-        margin: { left: 14 },
+        headStyles: {
+          fontSize: 9,
+          fontStyle: 'bold',
+          textColor: 0,
+          fillColor: 245,
+        },
+        columnStyles: {
+          0: { cellWidth: 20 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 15 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 30 },
+          5: { cellWidth: 50 },
+        },
+        rowPageBreak: 'avoid',
+        didDrawPage: () => {
+          drawHeader();
+        },
       });
+
+      currentY = (doc as any).lastAutoTable.finalY + 6;
     }
+
+    currentY += 10;
   });
+
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    drawFooter(i, pageCount);
+  }
 
   doc.save(`Rentably_Immobilien_Export_${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
 async function exportTenantsToPDF(data: TenantWithDetails[]) {
-  const doc = new jsPDF();
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
   const exportDate = new Date().toLocaleDateString("de-DE");
 
-  doc.setFontSize(20);
-  doc.text("Rentably - Mietverhältnisse Export", 14, 20);
+  const PAGE_W = 210;
+  const PAGE_H = 297;
+  const M_LEFT = 20;
+  const M_RIGHT = 20;
+  const M_TOP = 18;
+  const M_BOTTOM = 18;
+  const FOOTER_H = 12;
+  const CONTENT_BOTTOM_Y = PAGE_H - M_BOTTOM - FOOTER_H;
+  const HEADER_END_Y = 32;
 
-  doc.setFontSize(10);
-  doc.text(`Exportdatum: ${exportDate}`, 14, 28);
+  let currentY = HEADER_END_Y;
 
-  let yPosition = 35;
-
-  data.forEach((item, index) => {
-    if (index > 0) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    doc.setFontSize(14);
+  const drawHeader = () => {
+    doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
-    doc.text(item.tenant.name, 14, yPosition);
-    yPosition += 7;
+    doc.setTextColor(0);
+    doc.text("Rentably", M_LEFT, M_TOP + 4);
 
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
+    doc.text("Mietverhältnisse", M_LEFT, M_TOP + 9);
 
-    const tenantInfo = [
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    const dateText = `Exportdatum: ${exportDate}`;
+    const dateWidth = doc.getTextWidth(dateText);
+    doc.text(dateText, PAGE_W - M_RIGHT - dateWidth, M_TOP + 4);
+
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.1);
+    doc.line(M_LEFT, 26, PAGE_W - M_RIGHT, 26);
+
+    doc.setTextColor(0);
+  };
+
+  const drawFooter = (pageNum: number, totalPages: number) => {
+    const lineY = PAGE_H - M_BOTTOM - FOOTER_H;
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.1);
+    doc.line(M_LEFT, lineY, PAGE_W - M_RIGHT, lineY);
+
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(`Rentably · Mietverhältnisse · Export vom ${exportDate}`, M_LEFT, PAGE_H - M_BOTTOM);
+
+    const pageText = `Seite ${pageNum} von ${totalPages}`;
+    const pageWidth = doc.getTextWidth(pageText);
+    doc.text(pageText, PAGE_W - M_RIGHT - pageWidth, PAGE_H - M_BOTTOM);
+
+    doc.setTextColor(0);
+  };
+
+  const ensureSpace = (neededHeight: number) => {
+    if (currentY + neededHeight > CONTENT_BOTTOM_Y) {
+      doc.addPage();
+      drawHeader();
+      currentY = HEADER_END_Y;
+    }
+  };
+
+  const renderKeyValueTable = (rows: string[][], startY: number) => {
+    const tableWidth = PAGE_W - M_LEFT - M_RIGHT;
+    const labelWidth = 55;
+
+    autoTable(doc, {
+      startY: startY,
+      body: rows,
+      theme: 'plain',
+      margin: { left: M_LEFT, right: M_RIGHT },
+      tableWidth: tableWidth,
+      styles: {
+        fontSize: 10,
+        cellPadding: { top: 1.6, right: 1.6, bottom: 1.6, left: 1.6 },
+        textColor: 20,
+        lineColor: 230,
+        lineWidth: 0.1,
+      },
+      columnStyles: {
+        0: {
+          cellWidth: labelWidth,
+          textColor: 110,
+          fontStyle: 'normal',
+          fontSize: 9
+        },
+        1: {
+          cellWidth: tableWidth - labelWidth,
+          textColor: 20,
+          fontSize: 10
+        },
+      },
+      rowPageBreak: 'avoid',
+      didDrawPage: () => {
+        drawHeader();
+      },
+    });
+
+    return (doc as any).lastAutoTable.finalY + 6;
+  };
+
+  drawHeader();
+
+  data.forEach((item, index) => {
+    if (index > 0) {
+      ensureSpace(30);
+    }
+
+    ensureSpace(20);
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(0);
+    doc.text(item.tenant.name, M_LEFT, currentY);
+    currentY += 7;
+
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(100);
+    doc.text(`${item.tenant.property} · ${item.tenant.address}`, M_LEFT, currentY);
+    doc.setTextColor(0);
+    currentY += 6;
+
+    ensureSpace(30);
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text("Mieterdaten", M_LEFT, currentY);
+    currentY += 4;
+
+    const tenantData: string[][] = [
       ['E-Mail', item.tenant.email || '-'],
       ['Telefon', item.tenant.phone || '-'],
       ['Immobilie', item.tenant.property],
       ['Adresse', item.tenant.address],
     ];
 
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Mieterdaten', '']],
-      body: tenantInfo,
-      theme: 'grid',
-      headStyles: { fillColor: [59, 130, 246] },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 50 },
-        1: { cellWidth: 130 },
-      },
-      margin: { left: 14 },
-    });
-
-    yPosition = (doc as any).lastAutoTable.finalY + 10;
+    currentY = renderKeyValueTable(tenantData, currentY);
 
     if (item.contracts.length > 0) {
+      ensureSpace(40);
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text("Mietverträge", M_LEFT, currentY);
+      currentY += 4;
+
       const contractsData = item.contracts.map(c => [
         c.start_date ? formatDate(c.start_date) : '-',
         c.end_date ? formatDate(c.end_date) : 'Unbefristet',
@@ -355,15 +646,49 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
       ]);
 
       autoTable(doc, {
-        startY: yPosition,
+        startY: currentY,
         head: [['Start', 'Ende', 'Einheit', 'Miete', 'Kaution', 'Status']],
         body: contractsData,
-        theme: 'grid',
-        headStyles: { fillColor: [59, 130, 246] },
-        margin: { left: 14 },
+        theme: 'plain',
+        margin: { left: M_LEFT, right: M_RIGHT },
+        styles: {
+          fontSize: 9,
+          cellPadding: { top: 1.5, right: 1.5, bottom: 1.5, left: 1.5 },
+          textColor: 20,
+          lineColor: 230,
+          lineWidth: 0.1,
+        },
+        headStyles: {
+          fontSize: 9,
+          fontStyle: 'bold',
+          textColor: 0,
+          fillColor: 245,
+        },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          1: { cellWidth: 28 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 30 },
+          5: { cellWidth: 25 },
+        },
+        rowPageBreak: 'avoid',
+        didDrawPage: () => {
+          drawHeader();
+        },
       });
+
+      currentY = (doc as any).lastAutoTable.finalY + 6;
     }
+
+    currentY += 10;
   });
+
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    drawFooter(i, pageCount);
+  }
 
   doc.save(`Rentably_Mietverhaeltnisse_Export_${new Date().toISOString().split('T')[0]}.pdf`);
 }
