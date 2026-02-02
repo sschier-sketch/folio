@@ -176,7 +176,7 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
   const M_BOTTOM = 18;
   const FOOTER_H = 12;
   const CONTENT_BOTTOM_Y = PAGE_H - M_BOTTOM - FOOTER_H;
-  const HEADER_END_Y = 32;
+  const HEADER_END_Y = 38;
 
   let currentY = HEADER_END_Y;
 
@@ -190,15 +190,9 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
     doc.setFont(undefined, 'normal');
     doc.text("Immobilienübersicht", M_LEFT, M_TOP + 9);
 
-    doc.setFontSize(9);
-    doc.setTextColor(100);
-    const dateText = `Exportdatum: ${exportDate}`;
-    const dateWidth = doc.getTextWidth(dateText);
-    doc.text(dateText, PAGE_W - M_RIGHT - dateWidth, M_TOP + 4);
-
     doc.setDrawColor(220);
     doc.setLineWidth(0.1);
-    doc.line(M_LEFT, 26, PAGE_W - M_RIGHT, 26);
+    doc.line(M_LEFT, M_TOP + 12, PAGE_W - M_RIGHT, M_TOP + 12);
 
     doc.setTextColor(0);
   };
@@ -210,6 +204,7 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
     doc.line(M_LEFT, lineY, PAGE_W - M_RIGHT, lineY);
 
     doc.setFontSize(8);
+    doc.setFont(undefined, 'normal');
     doc.setTextColor(100);
     doc.text(`Rentably · Immobilienübersicht · Export vom ${exportDate}`, M_LEFT, PAGE_H - M_BOTTOM);
 
@@ -508,7 +503,7 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
   const M_BOTTOM = 18;
   const FOOTER_H = 12;
   const CONTENT_BOTTOM_Y = PAGE_H - M_BOTTOM - FOOTER_H;
-  const HEADER_END_Y = 32;
+  const HEADER_END_Y = 38;
 
   let currentY = HEADER_END_Y;
 
@@ -522,15 +517,9 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
     doc.setFont(undefined, 'normal');
     doc.text("Mietverhältnisse", M_LEFT, M_TOP + 9);
 
-    doc.setFontSize(9);
-    doc.setTextColor(100);
-    const dateText = `Exportdatum: ${exportDate}`;
-    const dateWidth = doc.getTextWidth(dateText);
-    doc.text(dateText, PAGE_W - M_RIGHT - dateWidth, M_TOP + 4);
-
     doc.setDrawColor(220);
     doc.setLineWidth(0.1);
-    doc.line(M_LEFT, 26, PAGE_W - M_RIGHT, 26);
+    doc.line(M_LEFT, M_TOP + 12, PAGE_W - M_RIGHT, M_TOP + 12);
 
     doc.setTextColor(0);
   };
@@ -542,6 +531,7 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
     doc.line(M_LEFT, lineY, PAGE_W - M_RIGHT, lineY);
 
     doc.setFontSize(8);
+    doc.setFont(undefined, 'normal');
     doc.setTextColor(100);
     doc.text(`Rentably · Mietverhältnisse · Export vom ${exportDate}`, M_LEFT, PAGE_H - M_BOTTOM);
 
