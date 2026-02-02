@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, AlertCircle, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight, AlertCircle, Save, Plus, X } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService } from "../../lib/operatingCostService";
 
@@ -27,6 +27,9 @@ const COST_TYPES = [
   "Hauswart",
   "Kabelanschluss/Antenne",
   "Waschraum/Gemeinschaftswaschmaschine",
+  "Rauchwarnmelderwartung",
+  "Wartung Elektro/Türanlagen",
+  "Winterdienst",
   "Sonstige Betriebskosten",
 ];
 
@@ -49,6 +52,8 @@ export default function OperatingCostWizardStep2() {
 
   const [statement, setStatement] = useState<any>(null);
   const [costItems, setCostItems] = useState<CostItem[]>([]);
+  const [customCostItems, setCustomCostItems] = useState<CostItem[]>([]);
+  const [newCostType, setNewCostType] = useState("");
 
   useEffect(() => {
     if (statementId) {
@@ -83,7 +88,12 @@ export default function OperatingCostWizardStep2() {
       };
     });
 
+    const customItems = lineItems?.filter(
+      (item) => !COST_TYPES.includes(item.cost_type)
+    ) || [];
+
     setCostItems(initialItems);
+    setCustomCostItems(customItems);
 
     setLoading(false);
   }
@@ -101,7 +111,39 @@ export default function OperatingCostWizardStep2() {
     setCostItems(updated);
   }
 
-  const totalCosts = costItems.reduce(
+  function updateCustomCostItem(
+    index: number,
+    field: "allocation_key" | "amount",
+    value: any
+  ) {
+    const updated = [...customCostItems];
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+    setCustomCostItems(updated);
+  }
+
+  function addCustomCostType() {
+    if (!newCostType.trim()) return;
+
+    const newItem: CostItem = {
+      cost_type: newCostType.trim(),
+      allocation_key: "area",
+      amount: 0,
+    };
+
+    setCustomCostItems([...customCostItems, newItem]);
+    setNewCostType("");
+  }
+
+  function removeCustomCostItem(index: number) {
+    const updated = customCostItems.filter((_, i) => i !== index);
+    setCustomCostItems(updated);
+  }
+
+  const allCostItems = [...costItems, ...customCostItems];
+  const totalCosts = allCostItems.reduce(
     (sum, item) => sum + Number(item.amount || 0),
     0
   );
@@ -113,7 +155,7 @@ export default function OperatingCostWizardStep2() {
     setError(null);
 
     try {
-      const itemsToSave = costItems.filter((item) => Number(item.amount) > 0);
+      const itemsToSave = allCostItems.filter((item) => Number(item.amount) > 0);
 
       const { error } = await operatingCostService.upsertLineItems({
         statement_id: statementId,
@@ -340,6 +382,109 @@ export default function OperatingCostWizardStep2() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {customCostItems.length > 0 && (
+          <div className="bg-white rounded-lg p-8 shadow-sm mt-6">
+            <h3 className="text-lg font-semibold text-dark mb-4">Eigene Kostenarten</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Kostenart
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                      Umlageschlüssel
+                    </th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">
+                      Betrag (EUR)
+                    </th>
+                    <th className="w-16"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {customCostItems.map((item, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
+                      <td className="py-3 px-4">
+                        <span className="text-gray-900">{item.cost_type}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <select
+                          value={item.allocation_key}
+                          onChange={(e) =>
+                            updateCustomCostItem(
+                              index,
+                              "allocation_key",
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        >
+                          {ALLOCATION_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="py-3 px-4">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={item.amount || ""}
+                          onChange={(e) =>
+                            updateCustomCostItem(
+                              index,
+                              "amount",
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-right"
+                          placeholder="0,00"
+                        />
+                      </td>
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={() => removeCustomCostItem(index)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Entfernen"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white rounded-lg p-8 shadow-sm mt-6">
+          <h3 className="text-lg font-semibold text-dark mb-4">Eigene Kostenart hinzufügen</h3>
+          <div className="flex gap-4">
+            <input
+              type="text"
+              value={newCostType}
+              onChange={(e) => setNewCostType(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && addCustomCostType()}
+              placeholder="z.B. Hausmeisterdienst"
+              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            />
+            <button
+              onClick={addCustomCostType}
+              disabled={!newCostType.trim()}
+              className="px-6 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Hinzufügen
+            </button>
           </div>
         </div>
 
