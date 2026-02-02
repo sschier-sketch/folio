@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { TrendingUp, Plus, Lock, Calendar, Edit, Save, X, AlertCircle } from "lucide-react";
+import { TrendingUp, Plus, Lock, Calendar, Edit, Save, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -35,6 +35,7 @@ interface Contract {
   graduated_rent_date: string;
   graduated_rent_new_amount: number;
   index_first_increase_date: string;
+  index_rent_active: boolean;
   auto_create_rent_increase_tickets: boolean;
   is_sublet: boolean;
   vat_applicable: boolean;
@@ -118,6 +119,10 @@ export default function TenantRentHistoryTab({
 
   const rentIncreaseCalcs = useMemo(() => {
     if (!contract) return null;
+
+    if (contract.index_rent_active || contract.rent_increase_type === 'graduated') {
+      return null;
+    }
 
     const today = new Date();
     today.setHours(12, 0, 0, 0);
@@ -329,87 +334,6 @@ export default function TenantRentHistoryTab({
 
   return (
     <div className="space-y-6">
-      {section558Info && (
-        <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 mt-0.5">
-              <AlertCircle className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-blue-900">
-                Eine Mieterhöhung nach §558 BGB ist frühestens ab <strong>{section558Info.formattedDate}</strong> zulässig (15-Monats-Frist seit der letzten wirksamen Mieterhöhung).
-              </p>
-              <p className="text-xs text-blue-700 mt-2">
-                Hinweis: Diese Frist gilt für Anpassungen an die ortsübliche Vergleichsmiete (§558 BGB).
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {rentIncreaseCalcs && (
-        <div className="bg-white rounded-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-dark">Mieterhöhungen</h3>
-            <button
-              disabled={rentIncreaseCalcs.section558Status === "blocked"}
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                rentIncreaseCalcs.section558Status === "blocked"
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-[#008CFF] text-white hover:bg-blue-600"
-              }`}
-            >
-              Neue Erhöhung
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="text-sm text-gray-500 mb-2">Kappungsgrenze (3 Jahre)</div>
-              <div className="text-2xl font-bold text-dark mb-1">
-                {rentIncreaseCalcs.remainingPercent}% verbleibend
-              </div>
-              <div className="text-xs text-gray-600">
-                Bereits erhöht: {rentIncreaseCalcs.alreadyIncreasedPercent}% von max. {rentIncreaseCalcs.capPercent}%
-              </div>
-            </div>
-
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="text-sm text-gray-500 mb-2">Maximale neue Miete</div>
-              <div className="text-2xl font-bold text-dark mb-1">
-                {rentIncreaseCalcs.maxAllowed.toFixed(2)} €
-              </div>
-              <div className="text-xs text-gray-600">
-                +{rentIncreaseCalcs.delta.toFixed(2)} € möglich
-              </div>
-            </div>
-
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="text-sm text-gray-500 mb-2">15-Monats-Frist (§558)</div>
-              {rentIncreaseCalcs.section558Status === "possible" ? (
-                <>
-                  <div className="text-2xl font-bold text-emerald-600 mb-1">
-                    Erhöhung möglich
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    Frist abgelaufen
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-amber-600 mb-1">
-                    Gesperrt
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    Frühestens ab {rentIncreaseCalcs.section558Date}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="bg-white rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-dark">
@@ -811,6 +735,69 @@ export default function TenantRentHistoryTab({
           </>
         )}
       </div>
+
+      {rentIncreaseCalcs && (
+        <div className="bg-white rounded-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-dark">Mieterhöhungen</h3>
+            <button
+              disabled={rentIncreaseCalcs.section558Status === "blocked"}
+              className={`px-4 py-2 rounded-full font-medium transition-colors ${
+                rentIncreaseCalcs.section558Status === "blocked"
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-[#008CFF] text-white hover:bg-blue-600"
+              }`}
+            >
+              Erhöhung einstellen
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="text-sm text-gray-500 mb-2">Kappungsgrenze (3 Jahre)</div>
+              <div className="text-2xl font-bold text-dark mb-1">
+                {rentIncreaseCalcs.remainingPercent}% verbleibend
+              </div>
+              <div className="text-xs text-gray-600">
+                Bereits erhöht: {rentIncreaseCalcs.alreadyIncreasedPercent}% von max. {rentIncreaseCalcs.capPercent}%
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="text-sm text-gray-500 mb-2">Maximale neue Miete</div>
+              <div className="text-2xl font-bold text-dark mb-1">
+                {rentIncreaseCalcs.maxAllowed.toFixed(2)} €
+              </div>
+              <div className="text-xs text-gray-600">
+                +{rentIncreaseCalcs.delta.toFixed(2)} € möglich
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="text-sm text-gray-500 mb-2">15-Monats-Frist (§558)</div>
+              {rentIncreaseCalcs.section558Status === "possible" ? (
+                <>
+                  <div className="text-2xl font-bold text-emerald-600 mb-1">
+                    Erhöhung möglich
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    Frist abgelaufen
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-amber-600 mb-1">
+                    Gesperrt
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    Frühestens ab {rentIncreaseCalcs.section558Date}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
 {isPremium && (
         <div className="bg-white rounded-lg">
