@@ -286,9 +286,9 @@ export default function TenantPortalDashboard({
                 {formatCurrency(tenantData.heating_costs)}
               </p>
             </div>
-            <div className="bg-primary-blue rounded-lg p-5 border border-blue-600">
-              <label className="text-xs font-semibold text-blue-100 uppercase tracking-wider block mb-2">Warmmiete</label>
-              <p className="text-2xl font-bold text-white">
+            <div className="rounded-lg p-5" style={{ backgroundColor: '#BCBFCC' }}>
+              <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-2">Warmmiete</label>
+              <p className="text-2xl font-bold text-dark">
                 {formatCurrency(tenantData.warm_rent)}
               </p>
             </div>
