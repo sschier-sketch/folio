@@ -518,7 +518,98 @@ function createPdf(data: PdfData): Blob {
   checkPageBreak(80);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('IV. Rechtliche Hinweise', M_LEFT, currentY);
+  doc.text('IV. Steuerlich relevante haushaltsnahe Dienstleistungen und Handwerkerleistungen (§35a EStG)', M_LEFT, currentY);
+  currentY += 2;
+  doc.setLineWidth(0.5);
+  doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
+  currentY += 10;
+
+  const taxRelevantCategories = [
+    'Hauswart',
+    'Hausmeister',
+    'Gartenpflege',
+    'Gebäudereinigung',
+    'Schornsteinreinigung',
+    'Straßenreinigung',
+    'Ungezieferbekämpfung',
+    'Rauchwarnmelderwartung',
+    'Wartung Elektro/Türanlagen',
+    'Winterdienst',
+  ];
+
+  const taxRelevantItems = data.lineItems.filter(item =>
+    taxRelevantCategories.some(cat => item.cost_type.toLowerCase().includes(cat.toLowerCase()))
+  );
+
+  if (taxRelevantItems.length > 0) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    const taxIntroText = 'Folgende Beträge aus dieser Abrechnung können Sie gemäß § 35a EStG (haushaltsnahe Dienstleistungen und Handwerkerleistungen) in Ihrer Einkommensteuererklärung geltend machen:';
+    const taxIntroLines = doc.splitTextToSize(taxIntroText, contentWidth);
+    doc.text(taxIntroLines, M_LEFT, currentY);
+    currentY += taxIntroLines.length * 4.5 + 8;
+
+    checkPageBreak(40);
+
+    const taxTableData = taxRelevantItems.map(item => [
+      item.cost_type,
+      `${item.shareAmount.toFixed(2)} €`,
+    ]);
+
+    const totalTaxRelevant = taxRelevantItems.reduce((sum, item) => sum + item.shareAmount, 0);
+
+    taxTableData.push([
+      { content: 'Summe steuerlich absetzbar', styles: { fontStyle: 'bold' } },
+      { content: `${totalTaxRelevant.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
+    ]);
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Kostenart', 'Ihr Betrag']],
+      body: taxTableData,
+      theme: 'plain',
+      margin: { left: M_LEFT, right: M_RIGHT },
+      headStyles: {
+        fillColor: [255, 255, 255],
+        textColor: 0,
+        fontStyle: 'bold',
+        lineWidth: 0,
+        fontSize: 8.5,
+      },
+      styles: {
+        fontSize: 8.5,
+        cellPadding: 2,
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1,
+      },
+      columnStyles: {
+        0: { cellWidth: 120 },
+        1: { halign: 'right', cellWidth: 50 },
+      },
+    });
+
+    currentY = (doc as any).lastAutoTable.finalY + 10;
+
+    checkPageBreak(25);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    const taxHinweis = 'Hinweis: Sie können 20% der Arbeitskosten für haushaltsnahe Dienstleistungen (max. 4.000 €/Jahr) bzw. Handwerkerleistungen (max. 1.200 €/Jahr) direkt von der Steuerschuld abziehen. Bewahren Sie diese Abrechnung als Nachweis auf. Materialkosten sind nicht absetzbar.';
+    const taxHinweisLines = doc.splitTextToSize(taxHinweis, contentWidth);
+    doc.text(taxHinweisLines, M_LEFT, currentY);
+    currentY += taxHinweisLines.length * 4 + 15;
+  } else {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    const noTaxText = 'In dieser Abrechnung sind keine Kosten enthalten, die gemäß § 35a EStG steuerlich geltend gemacht werden können.';
+    const noTaxLines = doc.splitTextToSize(noTaxText, contentWidth);
+    doc.text(noTaxLines, M_LEFT, currentY);
+    currentY += noTaxLines.length * 4.5 + 15;
+  }
+
+  checkPageBreak(80);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('V. Rechtliche Hinweise', M_LEFT, currentY);
   currentY += 2;
   doc.setLineWidth(0.5);
   doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);

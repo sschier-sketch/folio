@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, AlertCircle, Save, Plus, X } from "lucide-react";
+import { AlertCircle, Plus, X } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService } from "../../lib/operatingCostService";
 
