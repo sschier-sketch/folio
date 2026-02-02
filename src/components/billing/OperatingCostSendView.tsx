@@ -495,6 +495,7 @@ Mit freundlichen Grüßen
         <div className="flex items-center justify-between">
           <div>
             <button
+              type="button"
               onClick={() => setShowPreview(false)}
               className="flex items-center gap-2 text-gray-600 hover:text-dark transition-colors mb-3"
             >
@@ -569,6 +570,7 @@ Mit freundlichen Grüßen
       <div className="flex items-center justify-between">
         <div>
           <button
+            type="button"
             onClick={onBack}
             className="flex items-center gap-2 text-gray-600 hover:text-dark transition-colors mb-3"
           >
@@ -585,6 +587,7 @@ Mit freundlichen Grüßen
 
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => setShowPreview(true)}
             className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={enabledRecipients.length === 0}
@@ -593,6 +596,7 @@ Mit freundlichen Grüßen
             Vorschau
           </button>
           <button
+            type="button"
             onClick={handleSend}
             className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             disabled={enabledRecipients.length === 0 || sending}
@@ -685,6 +689,7 @@ Mit freundlichen Grüßen
                           <Mail className="w-3.5 h-3.5 text-gray-400" />
                           <span className="text-gray-700">{email}</span>
                           <button
+                            type="button"
                             onClick={() => removeEmailFromRecipient(recipient.id, index)}
                             className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded"
                           >
@@ -694,6 +699,7 @@ Mit freundlichen Grüßen
                       ))}
 
                       <button
+                        type="button"
                         onClick={() => addEmailToRecipient(recipient.id)}
                         className="flex items-center gap-1.5 text-sm text-primary-blue hover:text-blue-600 transition-colors mt-1"
                       >
@@ -704,6 +710,7 @@ Mit freundlichen Grüßen
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => removeRecipient(recipient.id)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
                 >
@@ -794,6 +801,7 @@ Mit freundlichen Grüßen
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => removeAttachment(attachment.id)}
                       className="p-2 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                       title="Anhang entfernen"
