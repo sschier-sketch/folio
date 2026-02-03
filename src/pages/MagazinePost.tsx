@@ -1,0 +1,287 @@
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { Header } from "../components/Header";
+import Footer from "../components/Footer";
+import { supabase } from "../lib/supabase";
+import { Calendar, Tag as TagIcon, FolderOpen, ArrowLeft, User } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
+
+interface Post {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  content: string;
+  hero_image_url?: string;
+  author_name: string;
+  published_at: string;
+  topic_name?: string;
+  topic_slug?: string;
+  tags: Array<{ name: string; slug: string }>;
+  seo_title?: string;
+  seo_description?: string;
+  og_image_url?: string;
+}
+
+export function MagazinePost() {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const { language } = useLanguage();
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    loadPost();
+  }, [slug, language]);
+
+  async function loadPost() {
+    if (!slug) return;
+
+    setLoading(true);
+    setNotFound(false);
+
+    try {
+      const { data: redirect } = await supabase
+        .from("mag_slug_history")
+        .select("new_slug")
+        .eq("entity_type", "post")
+        .eq("locale", language)
+        .eq("old_slug", slug)
+        .order("changed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (redirect) {
+        const magazineBasePath = language === "de" ? "/magazin" : "/magazine";
+        navigate(`${magazineBasePath}/${redirect.new_slug}`, { replace: true });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("mag_posts")
+        .select(`
+          id,
+          hero_image_url,
+          author_name,
+          published_at,
+          translations:mag_post_translations!inner(
+            title,
+            slug,
+            excerpt,
+            content,
+            seo_title,
+            seo_description,
+            og_image_url
+          ),
+          topic:mag_topics(
+            translations:mag_topic_translations(name, slug)
+          ),
+          post_tags:mag_post_tags(
+            tag:mag_tags(
+              translations:mag_tag_translations(name, slug)
+            )
+          )
+        `)
+        .eq("status", "PUBLISHED")
+        .eq("translations.locale", language)
+        .eq("translations.slug", slug)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!data) {
+        setNotFound(true);
+        return;
+      }
+
+      const translation = data.translations?.[0];
+      const topicTrans = data.topic?.translations?.find((t: any) => t.locale === language);
+
+      setPost({
+        id: data.id,
+        slug: translation.slug,
+        title: translation.title,
+        excerpt: translation.excerpt,
+        content: translation.content,
+        hero_image_url: data.hero_image_url,
+        author_name: data.author_name,
+        published_at: data.published_at,
+        topic_name: topicTrans?.name,
+        topic_slug: topicTrans?.slug,
+        tags: (data.post_tags || [])
+          .map((pt: any) => {
+            const tagTrans = pt.tag?.translations?.find((t: any) => t.locale === language);
+            return tagTrans ? { name: tagTrans.name, slug: tagTrans.slug } : null;
+          })
+          .filter(Boolean),
+        seo_title: translation.seo_title,
+        seo_description: translation.seo_description,
+        og_image_url: translation.og_image_url
+      });
+
+      if (translation.seo_title) {
+        document.title = translation.seo_title;
+      } else {
+        document.title = `${translation.title} - Rentably`;
+      }
+    } catch (err) {
+      console.error("Error loading post:", err);
+      setNotFound(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function renderMarkdown(content: string): string {
+    let html = content;
+
+    html = html.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-dark mt-8 mb-4">$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-dark mt-10 mb-4">$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-dark mt-12 mb-6">$1</h1>');
+
+    html = html.replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold">$1</strong>');
+    html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+
+    html = html.replace(/^\- (.*$)/gim, '<li class="ml-6">$1</li>');
+    html = html.replace(/(<li.*<\/li>)/gim, '<ul class="list-disc my-4 space-y-2">$1</ul>');
+
+    html = html.replace(/^\d+\. (.*$)/gim, '<li class="ml-6">$1</li>');
+
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" class="text-primary-blue hover:underline">$1</a>');
+
+    html = html.replace(/\n\n/gim, '</p><p class="text-gray-600 leading-relaxed mb-4">');
+    html = '<p class="text-gray-600 leading-relaxed mb-4">' + html + '</p>';
+
+    return html;
+  }
+
+  const magazineBasePath = language === "de" ? "/magazin" : "/magazine";
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (notFound || !post) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-dark mb-4">
+              {language === "de" ? "Artikel nicht gefunden" : "Article not found"}
+            </h1>
+            <p className="text-gray-400 mb-8">
+              {language === "de"
+                ? "Der gesuchte Artikel existiert nicht oder wurde entfernt."
+                : "The requested article does not exist or has been removed."}
+            </p>
+            <Link
+              to={magazineBasePath}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full hover:bg-blue-700 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {language === "de" ? "Zurück zum Magazin" : "Back to Magazine"}
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex flex-col">
+      <Header />
+      <div className="flex-1 pt-24 pb-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <Link
+            to={magazineBasePath}
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-dark transition-colors mb-8"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {language === "de" ? "Zurück zum Magazin" : "Back to Magazine"}
+          </Link>
+
+          {post.hero_image_url && (
+            <div className="mb-8 rounded-lg overflow-hidden">
+              <img
+                src={post.hero_image_url}
+                alt={post.title}
+                className="w-full h-96 object-cover"
+              />
+            </div>
+          )}
+
+          <article className="bg-white rounded-lg shadow-sm p-8 md:p-12">
+            <div className="mb-6">
+              {post.topic_name && (
+                <Link
+                  to={`${magazineBasePath}?topic=${post.topic_slug}`}
+                  className="inline-flex items-center gap-1 text-primary-blue hover:underline text-sm font-medium mb-4"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  {post.topic_name}
+                </Link>
+              )}
+              <h1 className="text-4xl md:text-5xl font-bold text-dark mb-6">
+                {post.title}
+              </h1>
+              <div className="flex items-center gap-6 text-sm text-gray-400">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  {post.author_name}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  {new Date(post.published_at).toLocaleDateString(
+                    language === "de" ? "de-DE" : "en-US",
+                    { year: "numeric", month: "long", day: "numeric" }
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {post.excerpt && (
+              <div className="text-xl text-gray-400 leading-relaxed mb-8 pb-8 border-b">
+                {post.excerpt}
+              </div>
+            )}
+
+            <div
+              className="prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }}
+            />
+
+            {post.tags.length > 0 && (
+              <div className="mt-12 pt-8 border-t">
+                <div className="flex items-center gap-2 mb-4">
+                  <TagIcon className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-400">
+                    {language === "de" ? "Tags" : "Tags"}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {post.tags.map((tag) => (
+                    <Link
+                      key={tag.slug}
+                      to={`${magazineBasePath}?tag=${tag.slug}`}
+                      className="px-4 py-2 bg-gray-100 text-gray-400 rounded-full hover:bg-primary-blue/10 hover:text-primary-blue transition-colors"
+                    >
+                      {tag.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}

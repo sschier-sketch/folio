@@ -32,6 +32,9 @@ import SeoHead from "./components/SeoHead";
 import OperatingCostWizardStep1 from "./components/billing/OperatingCostWizardStep1";
 import OperatingCostWizardStep2 from "./components/billing/OperatingCostWizardStep2";
 import OperatingCostWizardStep3 from "./components/billing/OperatingCostWizardStep3";
+import AdminMagazinePostEditor from "./components/admin/AdminMagazinePostEditor";
+import { Magazine } from "./pages/Magazine";
+import { MagazinePost } from "./pages/MagazinePost";
 
 function PasswordRecoveryHandler() {
   const navigate = useNavigate();
@@ -88,6 +91,10 @@ function App() {
         <Route path="/support" element={<Support />} />
         <Route path="/tenant-portal/:userId" element={<TenantPortalPage />} />
         <Route path="/account-banned" element={<AccountBanned />} />
+        <Route path="/magazin" element={<Magazine />} />
+        <Route path="/magazin/:slug" element={<MagazinePost />} />
+        <Route path="/magazine" element={<Magazine />} />
+        <Route path="/magazine/:slug" element={<MagazinePost />} />
         <Route
           path="/dashboard"
           element={
@@ -149,6 +156,22 @@ function App() {
           element={
             <ProtectedRoute>
               <OperatingCostWizardStep3 />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/magazine/posts/new"
+          element={
+            <ProtectedRoute>
+              <AdminMagazinePostEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/magazine/posts/:postId/edit"
+          element={
+            <ProtectedRoute>
+              <AdminMagazinePostEditor />
             </ProtectedRoute>
           }
         />

@@ -8,6 +8,8 @@ export interface SeoMetadata {
   ogTitle: string;
   ogDescription: string;
   ogImageUrl?: string;
+  hreflang?: Array<{ locale: string; url: string }>;
+  jsonLd?: any;
 }
 
 interface SeoGlobalSettings {
@@ -100,6 +102,35 @@ export function isAppPath(path: string): boolean {
 export async function resolveSeoMetadata(currentPath: string): Promise<SeoMetadata> {
   const cleanPath = currentPath.split('?')[0].split('#')[0];
 
+  const magazinMatch = cleanPath.match(/^\/(magazin|magazine)\/([^/]+)$/);
+  if (magazinMatch) {
+    const [, pathLocale, slug] = magazinMatch;
+    const locale = pathLocale === "magazin" ? "de" : "en";
+    return await resolveMagazineSeoMetadata(slug, locale);
+  }
+
+  const magazinIndexMatch = cleanPath.match(/^\/(magazin|magazine)\/?$/);
+  if (magazinIndexMatch) {
+    const [, pathLocale] = magazinIndexMatch;
+    const locale = pathLocale === "magazin" ? "de" : "en";
+    return {
+      title: locale === "de" ? "Magazin – Rentably" : "Magazine – Rentably",
+      description: locale === "de"
+        ? "Tipps, Tricks und Wissenswertes rund um die Immobilienverwaltung"
+        : "Tips, tricks and knowledge about property management",
+      robots: "index, follow",
+      canonical: `${BASE_URL}/${pathLocale}`,
+      ogTitle: locale === "de" ? "Magazin – Rentably" : "Magazine – Rentably",
+      ogDescription: locale === "de"
+        ? "Tipps, Tricks und Wissenswertes rund um die Immobilienverwaltung"
+        : "Tips, tricks and knowledge about property management",
+      hreflang: [
+        { locale: "de", url: `${BASE_URL}/magazin` },
+        { locale: "en", url: `${BASE_URL}/magazine` }
+      ]
+    };
+  }
+
   const isApp = isAppPath(cleanPath);
 
   if (isApp) {
@@ -169,6 +200,112 @@ export async function resolveSeoMetadata(currentPath: string): Promise<SeoMetada
     ogDescription,
     ogImageUrl
   };
+}
+
+async function resolveMagazineSeoMetadata(slug: string, locale: "de" | "en"): Promise<SeoMetadata> {
+  try {
+    const { data, error } = await supabase
+      .from("mag_posts")
+      .select(`
+        id,
+        author_name,
+        published_at,
+        updated_at,
+        hero_image_url,
+        current_trans:mag_post_translations!inner(
+          title,
+          slug,
+          excerpt,
+          seo_title,
+          seo_description,
+          og_image_url
+        ),
+        other_trans:mag_post_translations(
+          locale,
+          slug
+        )
+      `)
+      .eq("status", "PUBLISHED")
+      .eq("current_trans.locale", locale)
+      .eq("current_trans.slug", slug)
+      .maybeSingle();
+
+    if (error || !data) {
+      return {
+        title: "Artikel nicht gefunden – Rentably",
+        description: "",
+        robots: "noindex, nofollow",
+        canonical: "",
+        ogTitle: "Artikel nicht gefunden",
+        ogDescription: ""
+      };
+    }
+
+    const trans = data.current_trans[0];
+    const title = trans.seo_title || `${trans.title} – Rentably`;
+    const description = trans.seo_description || trans.excerpt || "";
+    const ogImage = trans.og_image_url || data.hero_image_url;
+
+    const hreflang: Array<{ locale: string; url: string }> = [];
+    const otherLocale = locale === "de" ? "en" : "de";
+    const otherPathPrefix = otherLocale === "de" ? "magazin" : "magazine";
+    const currentPathPrefix = locale === "de" ? "magazin" : "magazine";
+
+    hreflang.push({ locale, url: `${BASE_URL}/${currentPathPrefix}/${slug}` });
+
+    const otherTrans = data.other_trans?.find((t: any) => t.locale === otherLocale);
+    if (otherTrans) {
+      hreflang.push({ locale: otherLocale, url: `${BASE_URL}/${otherPathPrefix}/${otherTrans.slug}` });
+    }
+
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": trans.title,
+      "description": trans.excerpt || "",
+      "image": ogImage,
+      "author": {
+        "@type": "Person",
+        "name": data.author_name
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Rentably",
+        "logo": {
+          "@type": "ImageObject",
+          "url": `${BASE_URL}/logo_1.svg`
+        }
+      },
+      "datePublished": data.published_at,
+      "dateModified": data.updated_at,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `${BASE_URL}/${currentPathPrefix}/${slug}`
+      }
+    };
+
+    return {
+      title,
+      description,
+      robots: "index, follow",
+      canonical: `${BASE_URL}/${currentPathPrefix}/${slug}`,
+      ogTitle: trans.seo_title || trans.title,
+      ogDescription: trans.seo_description || trans.excerpt || "",
+      ogImageUrl: ogImage,
+      hreflang,
+      jsonLd
+    };
+  } catch (err) {
+    console.error("Error resolving magazine SEO:", err);
+    return {
+      title: "Rentably",
+      description: "",
+      robots: "noindex, nofollow",
+      canonical: "",
+      ogTitle: "Rentably",
+      ogDescription: ""
+    };
+  }
 }
 
 export function clearSeoCache() {

@@ -38,12 +38,53 @@ export default function SeoHead() {
       if (meta.ogImageUrl) {
         updateMetaTag('name', 'twitter:image', meta.ogImageUrl);
       }
+
+      if (meta.hreflang) {
+        removeAllHreflangTags();
+        meta.hreflang.forEach(({ locale, url }) => {
+          addHreflangTag(locale, url);
+        });
+      }
+
+      if (meta.jsonLd) {
+        updateJsonLd(meta.jsonLd);
+      } else {
+        removeJsonLd();
+      }
     }
 
     loadMetadata();
   }, [location.pathname]);
 
   return null;
+}
+
+function removeAllHreflangTags() {
+  const existingTags = document.querySelectorAll('link[rel="alternate"][hreflang]');
+  existingTags.forEach(tag => tag.remove());
+}
+
+function addHreflangTag(locale: string, url: string) {
+  const link = document.createElement('link');
+  link.setAttribute('rel', 'alternate');
+  link.setAttribute('hreflang', locale);
+  link.setAttribute('href', url);
+  document.head.appendChild(link);
+}
+
+function removeJsonLd() {
+  const existing = document.querySelector('script[type="application/ld+json"]');
+  if (existing) {
+    existing.remove();
+  }
+}
+
+function updateJsonLd(data: any) {
+  removeJsonLd();
+  const script = document.createElement('script');
+  script.setAttribute('type', 'application/ld+json');
+  script.textContent = JSON.stringify(data);
+  document.head.appendChild(script);
 }
 
 function updateMetaTag(attribute: string, key: string, content: string) {
