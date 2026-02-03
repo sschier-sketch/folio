@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, Lock, CheckCircle, Mail, AlertCircle } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { Header } from "../components/Header";
+import Footer from "../components/Footer";
 
 type ViewMode = "request" | "reset" | "success";
 
@@ -151,8 +153,10 @@ export function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex flex-col">
+      <Header />
+      <div className="flex-1 flex items-center justify-center p-4 mt-16">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 bg-primary-blue/10 rounded-full flex items-center justify-center">
             <Lock className="w-6 h-6 text-primary-blue" />
@@ -344,7 +348,9 @@ export function ResetPassword() {
             </button>
           </div>
         )}
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

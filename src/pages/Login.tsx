@@ -4,6 +4,8 @@ import { LoginForm } from "../components/auth/LoginForm";
 import { useAuth } from "../hooks/useAuth";
 import { Sparkles } from "lucide-react";
 import { Header } from "../components/Header";
+import Footer from "../components/Footer";
+
 export function Login() {
   const { user, loading, isBanned, checkingBan } = useAuth();
   if (loading || checkingBan) {
@@ -62,6 +64,7 @@ export function Login() {
           </div>{" "}
         </div>{" "}
       </div>{" "}
+      <Footer />
     </div>
   );
 }

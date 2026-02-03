@@ -68,33 +68,51 @@ export default function Footer() {
             </ul>{" "}
           </div>{" "}
           <div>
-            {" "}
             <h3 className="font-semibold text-dark mb-3">
               {t("footer.company")}
-            </h3>{" "}
+            </h3>
             <ul className="space-y-2">
-              {" "}
               <li>
-                {" "}
                 <Link
                   to="/impressum"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
-                  {" "}
-                  {t("footer.about")}{" "}
-                </Link>{" "}
-              </li>{" "}
+                  {t("footer.about")}
+                </Link>
+              </li>
               <li>
-                {" "}
                 <Link
                   to="/contact"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
-                  {" "}
-                  {t("footer.contact")}{" "}
-                </Link>{" "}
-              </li>{" "}
-            </ul>{" "}
+                  {t("footer.contact")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/datenschutz"
+                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
+                >
+                  {language === "de" ? "Datenschutz" : "Privacy Policy"}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/agb"
+                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
+                >
+                  {language === "de" ? "AGB" : "Terms & Conditions"}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/avv"
+                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
+                >
+                  {language === "de" ? "AVV" : "DPA"}
+                </Link>
+              </li>
+            </ul>
           </div>{" "}
           <div>
             {" "}
