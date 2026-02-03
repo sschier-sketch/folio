@@ -1,38 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
-import { crypto } from 'https://deno.land/std@0.177.0/crypto/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
 };
-
-async function encryptPassword(password: string, key: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const keyData = encoder.encode(key.padEnd(32, '0').slice(0, 32));
-
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt']
-  );
-
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    cryptoKey,
-    data
-  );
-
-  const combined = new Uint8Array(iv.length + encrypted.byteLength);
-  combined.set(iv, 0);
-  combined.set(new Uint8Array(encrypted), iv.length);
-
-  return btoa(String.fromCharCode(...combined));
-}
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -47,21 +19,11 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { email, newPassword } = await req.json();
+    const { email } = await req.json();
 
-    if (!email || !newPassword) {
+    if (!email) {
       return new Response(
-        JSON.stringify({ error: 'E-Mail und neues Passwort sind erforderlich' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    if (newPassword.length < 10) {
-      return new Response(
-        JSON.stringify({ error: 'Passwort muss mindestens 10 Zeichen lang sein' }),
+        JSON.stringify({ error: 'E-Mail ist erforderlich' }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -74,21 +36,20 @@ Deno.serve(async (req: Request) => {
 
     if (!user) {
       return new Response(
-        JSON.stringify({ error: 'Kein Konto mit dieser E-Mail-Adresse gefunden' }),
+        JSON.stringify({
+          message: 'Wenn ein Konto mit dieser E-Mail-Adresse existiert, haben wir Ihnen einen Link zum Zurücksetzen des Passworts gesendet.'
+        }),
         {
-          status: 404,
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
 
-    const encryptedPassword = await encryptPassword(newPassword, supabaseServiceKey);
-
     const { data: resetRequest, error: insertError } = await supabase
       .from('password_reset_requests')
       .insert({
         email,
-        new_password_encrypted: encryptedPassword,
       })
       .select()
       .single();
@@ -149,7 +110,7 @@ Deno.serve(async (req: Request) => {
 
     return new Response(
       JSON.stringify({
-        message: 'Eine Bestätigungs-E-Mail wurde an Ihre Adresse gesendet. Bitte überprüfen Sie Ihr Postfach.'
+        message: 'Eine E-Mail mit einem Link zum Zurücksetzen Ihres Passworts wurde an Ihre Adresse gesendet. Bitte überprüfen Sie Ihr Postfach.'
       }),
       {
         status: 200,
