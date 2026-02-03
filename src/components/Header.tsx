@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
+
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { language } = useLanguage();
   const isActive = (path: string) => location.pathname === path;
   return (
     <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b z-50">
@@ -28,6 +31,13 @@ export function Header() {
             >
               {" "}
               Home{" "}
+            </Link>{" "}
+            <Link
+              to={language === "de" ? "/magazin" : "/magazine"}
+              className={`text-sm font-medium transition-colors ${isActive("/magazin") || isActive("/magazine") ? "text-primary-blue" : "text-gray-400 hover:text-dark"}`}
+            >
+              {" "}
+              {language === "de" ? "Magazin" : "Magazine"}{" "}
             </Link>{" "}
             <Link
               to="/contact"
@@ -85,6 +95,14 @@ export function Header() {
               >
                 {" "}
                 Home{" "}
+              </Link>{" "}
+              <Link
+                to={language === "de" ? "/magazin" : "/magazine"}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${isActive("/magazin") || isActive("/magazine") ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
+              >
+                {" "}
+                {language === "de" ? "Magazin" : "Magazine"}{" "}
               </Link>{" "}
               <Link
                 to="/contact"
