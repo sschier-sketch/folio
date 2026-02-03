@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, Lock, CheckCircle, Mail, AlertCircle } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
-type ViewMode = "request" | "reset" | "success";
+type ViewMode = "request" | "confirm" | "success";
 
 export function ResetPassword() {
+  const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<ViewMode>("request");
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -19,39 +20,11 @@ export function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const hash = window.location.hash;
-
-    if (hash.includes('type=recovery') || hash.includes('access_token')) {
-      setViewMode("reset");
-
-      setTimeout(() => {
-        checkPasswordRecoverySession();
-      }, 1000);
+    const token = searchParams.get('token');
+    if (token) {
+      setViewMode("confirm");
     }
-  }, []);
-
-  const checkPasswordRecoverySession = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session) {
-        setViewMode("reset");
-      } else if (window.location.hash.includes('type=recovery')) {
-        setMessage({
-          type: "error",
-          text: "Der Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen Link an.",
-        });
-        setViewMode("request");
-      }
-    } catch (error) {
-      console.error("Error checking session:", error);
-      setMessage({
-        type: "error",
-        text: "Fehler beim Überprüfen der Session. Bitte versuchen Sie es erneut.",
-      });
-      setViewMode("request");
-    }
-  };
+  }, [searchParams]);
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,34 +39,6 @@ export function ResetPassword() {
       setLoading(false);
       return;
     }
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-
-      setMessage({
-        type: "success",
-        text: "Wenn ein Konto mit dieser E-Mail-Adresse existiert, haben wir Ihnen einen Link zum Zurücksetzen des Passworts gesendet. Bitte überprüfen Sie Ihr Postfach.",
-      });
-      setEmail("");
-    } catch (error: any) {
-      console.error("Error requesting password reset:", error);
-      setMessage({
-        type: "success",
-        text: "Wenn ein Konto mit dieser E-Mail-Adresse existiert, haben wir Ihnen einen Link zum Zurücksetzen des Passworts gesendet.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
 
     if (newPassword.length < 10) {
       setMessage({
@@ -114,15 +59,82 @@ export function ResetPassword() {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/request-password-reset`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            newPassword,
+          }),
+        }
+      );
 
-      if (error) throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Fehler beim Anfordern des Passwort-Resets');
+      }
 
       setMessage({
         type: "success",
-        text: "Ihr Passwort wurde erfolgreich geändert!",
+        text: data.message || "Eine Bestätigungs-E-Mail wurde an Ihre Adresse gesendet. Bitte überprüfen Sie Ihr Postfach.",
+      });
+      setEmail("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      console.error("Error requesting password reset:", error);
+      setMessage({
+        type: "error",
+        text: error.message || "Fehler beim Anfordern des Passwort-Resets",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    const token = searchParams.get('token');
+    if (!token) {
+      setMessage({
+        type: "error",
+        text: "Ungültiger Link. Bitte fordern Sie einen neuen Link an.",
+      });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/confirm-password-reset`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Fehler beim Bestätigen des Passwort-Resets');
+      }
+
+      setMessage({
+        type: "success",
+        text: data.message || "Ihr Passwort wurde erfolgreich geändert!",
       });
       setViewMode("success");
 
@@ -130,10 +142,10 @@ export function ResetPassword() {
         navigate("/login");
       }, 3000);
     } catch (error: any) {
-      console.error("Error resetting password:", error);
+      console.error("Error confirming password reset:", error);
       setMessage({
         type: "error",
-        text: error.message || "Fehler beim Zurücksetzen des Passworts",
+        text: error.message || "Fehler beim Bestätigen des Passwort-Resets",
       });
     } finally {
       setLoading(false);
@@ -150,12 +162,12 @@ export function ResetPassword() {
           <div>
             <h1 className="text-2xl font-bold text-dark">
               {viewMode === "request" && "Passwort zurücksetzen"}
-              {viewMode === "reset" && "Neues Passwort setzen"}
+              {viewMode === "confirm" && "Bestätigung erforderlich"}
               {viewMode === "success" && "Erfolgreich!"}
             </h1>
             <p className="text-sm text-gray-400">
-              {viewMode === "request" && "Geben Sie Ihre E-Mail-Adresse ein"}
-              {viewMode === "reset" && "Wählen Sie ein neues sicheres Passwort"}
+              {viewMode === "request" && "Geben Sie Ihre E-Mail und neues Passwort ein"}
+              {viewMode === "confirm" && "Klicken Sie auf Bestätigen"}
               {viewMode === "success" && "Ihr Passwort wurde geändert"}
             </p>
           </div>
@@ -204,43 +216,6 @@ export function ResetPassword() {
               </div>
             </div>
 
-            <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-              <p className="text-sm text-blue-700">
-                <strong>So funktioniert es:</strong> Sie erhalten eine E-Mail
-                mit einem sicheren Link. Klicken Sie auf den Link, um Ihr
-                Passwort zurückzusetzen.
-              </p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-full shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  <Mail className="w-5 h-5 mr-2" />
-                  Link zum Zurücksetzen senden
-                </>
-              )}
-            </button>
-
-            <div className="text-center pt-4">
-              <button
-                type="button"
-                onClick={() => navigate("/login")}
-                className="text-sm text-gray-400 hover:text-dark transition-colors"
-              >
-                Zurück zur Anmeldung
-              </button>
-            </div>
-          </form>
-        )}
-
-        {viewMode === "reset" && (
-          <form onSubmit={handlePasswordReset} className="space-y-5">
             <div>
               <label
                 htmlFor="new-password"
@@ -292,11 +267,9 @@ export function ResetPassword() {
 
             <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
               <p className="text-sm text-blue-700">
-                <strong>Passwort-Anforderungen:</strong>
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Mindestens 10 Zeichen</li>
-                  <li>Empfohlen: Mix aus Buchstaben, Zahlen und Symbolen</li>
-                </ul>
+                <strong>So funktioniert es:</strong> Sie erhalten eine E-Mail
+                mit einem sicheren Link. Klicken Sie auf den Link, um Ihr
+                Passwort zu bestätigen.
               </p>
             </div>
 
@@ -309,11 +282,56 @@ export function ResetPassword() {
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <Lock className="w-5 h-5 mr-2" />
-                  Passwort speichern
+                  <Mail className="w-5 h-5 mr-2" />
+                  Bestätigungs-E-Mail senden
                 </>
               )}
             </button>
+
+            <div className="text-center pt-4">
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="text-sm text-gray-400 hover:text-dark transition-colors"
+              >
+                Zurück zur Anmeldung
+              </button>
+            </div>
+          </form>
+        )}
+
+        {viewMode === "confirm" && (
+          <form onSubmit={handleConfirmReset} className="space-y-5">
+            <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
+              <p className="text-sm text-blue-700">
+                <strong>Bestätigen Sie die Passwort-Änderung:</strong> Durch Klicken auf den Button unten wird Ihr neues Passwort aktiviert.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-full shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  Passwort-Änderung bestätigen
+                </>
+              )}
+            </button>
+
+            <div className="text-center pt-4">
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="text-sm text-gray-400 hover:text-dark transition-colors"
+              >
+                Zurück zur Anmeldung
+              </button>
+            </div>
           </form>
         )}
 

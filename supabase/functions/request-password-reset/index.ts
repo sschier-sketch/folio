@@ -11,7 +11,7 @@ async function encryptPassword(password: string, key: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
   const keyData = encoder.encode(key.padEnd(32, '0').slice(0, 32));
-  
+
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
     keyData,
@@ -19,18 +19,18 @@ async function encryptPassword(password: string, key: string): Promise<string> {
     false,
     ['encrypt']
   );
-  
+
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encrypted = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     cryptoKey,
     data
   );
-  
+
   const combined = new Uint8Array(iv.length + encrypted.byteLength);
   combined.set(iv, 0);
   combined.set(new Uint8Array(encrypted), iv.length);
-  
+
   return btoa(String.fromCharCode(...combined));
 }
 
@@ -59,9 +59,9 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < 10) {
       return new Response(
-        JSON.stringify({ error: 'Passwort muss mindestens 6 Zeichen lang sein' }),
+        JSON.stringify({ error: 'Passwort muss mindestens 10 Zeichen lang sein' }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -70,9 +70,9 @@ Deno.serve(async (req: Request) => {
     }
 
     const { data: existingUser } = await supabase.auth.admin.listUsers();
-    const userExists = existingUser?.users.some(u => u.email === email);
+    const user = existingUser?.users.find(u => u.email === email);
 
-    if (!userExists) {
+    if (!user) {
       return new Response(
         JSON.stringify({ error: 'Kein Konto mit dieser E-Mail-Adresse gefunden' }),
         {
@@ -104,54 +104,52 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const confirmationUrl = `${req.headers.get('origin') || 'https://rentab.ly'}/reset-password/confirm?token=${resetRequest.verification_token}`;
+    const origin = req.headers.get('origin') || Deno.env.get('APP_BASE_URL') || 'https://rentab.ly';
+    const resetLink = `${origin}/reset-password/confirm?token=${resetRequest.verification_token}`;
 
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({
+        to: email,
+        templateKey: 'password_reset',
+        variables: {
+          reset_link: resetLink,
+        },
+        userId: user.id,
+        mailType: 'password_reset',
+        category: 'transactional',
+        idempotencyKey: `password-reset:${resetRequest.id}`,
+        metadata: {
+          resetRequestId: resetRequest.id,
+        },
+      }),
+    });
 
-    if (!RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured');
-    } else {
-      try {
-        const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
+    const emailData = await emailResponse.json();
 
-        console.log('Sending password reset email from:', EMAIL_FROM, 'to:', email);
-
-        const emailResponse = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${RESEND_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: EMAIL_FROM,
-            to: [email],
-            subject: 'Passwort-Änderung bestätigen',
-            html: `
-              <h2>Passwort-Änderung bestätigen</h2>
-              <p>Sie haben eine Passwort-Änderung angefordert.</p>
-              <p>Klicken Sie auf den folgenden Link, um Ihr neues Passwort zu aktivieren:</p>
-              <p><a href="${confirmationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px;">Passwort bestätigen</a></p>
-              <p>Dieser Link ist 24 Stunden gültig.</p>
-              <p>Falls Sie diese Änderung nicht angefordert haben, ignorieren Sie diese E-Mail.</p>
-            `,
-          }),
-        });
-
-        const emailData = await emailResponse.json();
-
-        if (!emailResponse.ok) {
-          console.error('Resend API error:', emailData);
-        } else {
-          console.log('Password reset email sent successfully:', emailData.id);
+    if (!emailResponse.ok) {
+      console.error('Failed to send password reset email:', emailData);
+      return new Response(
+        JSON.stringify({
+          error: 'Fehler beim Senden der E-Mail',
+          details: emailData
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
-      } catch (emailError) {
-        console.error('Error sending email:', emailError);
-      }
+      );
     }
 
+    console.log('Password reset email sent successfully:', emailData);
+
     return new Response(
-      JSON.stringify({ 
-        message: 'Eine Bestätigungs-E-Mail wurde an Ihre Adresse gesendet. Bitte überprüfen Sie Ihr Postfach.' 
+      JSON.stringify({
+        message: 'Eine Bestätigungs-E-Mail wurde an Ihre Adresse gesendet. Bitte überprüfen Sie Ihr Postfach.'
       }),
       {
         status: 200,
