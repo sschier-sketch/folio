@@ -3,7 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
 import { supabase } from "../lib/supabase";
-import { Search, Calendar, Tag as TagIcon, FolderOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Calendar, Tag as TagIcon, FolderOpen, ChevronLeft, ChevronRight, X, Filter } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface Post {
@@ -19,23 +19,81 @@ interface Post {
   tags: Array<{ name: string; slug: string }>;
 }
 
+interface Topic {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const POSTS_PER_PAGE = 10;
 
 export function Magazine() {
   const { language } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
   const searchTerm = searchParams.get("search") || "";
   const topicSlug = searchParams.get("topic") || "";
-  const tagSlug = searchParams.get("tag") || "";
+  const selectedTags = searchParams.get("tags")?.split(",").filter(Boolean) || [];
   const page = parseInt(searchParams.get("page") || "1");
 
   useEffect(() => {
+    loadTopicsAndTags();
+  }, [language]);
+
+  useEffect(() => {
     loadPosts();
-  }, [language, searchTerm, topicSlug, tagSlug, page]);
+  }, [language, searchTerm, topicSlug, selectedTags.join(","), page]);
+
+  async function loadTopicsAndTags() {
+    try {
+      const { data: topicsData } = await supabase
+        .from("mag_topics")
+        .select(`
+          id,
+          translations:mag_topic_translations!inner(name, slug)
+        `)
+        .eq("translations.locale", language)
+        .order("translations.name");
+
+      const { data: tagsData } = await supabase
+        .from("mag_tags")
+        .select(`
+          id,
+          translations:mag_tag_translations!inner(name, slug)
+        `)
+        .eq("translations.locale", language)
+        .order("translations.name");
+
+      if (topicsData) {
+        setTopics(topicsData.map((t: any) => ({
+          id: t.id,
+          name: t.translations[0]?.name || "",
+          slug: t.translations[0]?.slug || ""
+        })));
+      }
+
+      if (tagsData) {
+        setTags(tagsData.map((t: any) => ({
+          id: t.id,
+          name: t.translations[0]?.name || "",
+          slug: t.translations[0]?.slug || ""
+        })));
+      }
+    } catch (err) {
+      console.error("Error loading topics/tags:", err);
+    }
+  }
 
   async function loadPosts() {
     setLoading(true);
@@ -59,11 +117,12 @@ export function Magazine() {
         `, { count: "exact" })
         .eq("status", "PUBLISHED")
         .eq("translations.locale", language)
-        .not("published_at", "is", null)
-        .order("published_at", { ascending: false });
+        .not("published_at", "is", null);
 
       if (searchTerm) {
-        query = query.ilike("translations.title", `%${searchTerm}%`);
+        query = query.or(
+          `translations.title.ilike.%${searchTerm}%,translations.excerpt.ilike.%${searchTerm}%,translations.content.ilike.%${searchTerm}%`
+        );
       }
 
       if (topicSlug) {
@@ -72,11 +131,11 @@ export function Magazine() {
           .eq("topic.translations.slug", topicSlug);
       }
 
-      if (tagSlug) {
-        query = query
-          .eq("post_tags.tag.translations.locale", language)
-          .eq("post_tags.tag.translations.slug", tagSlug);
+      if (selectedTags.length > 0) {
+        query = query.in("post_tags.tag.translations.slug", selectedTags);
       }
+
+      query = query.order("published_at", { ascending: false });
 
       const from = (page - 1) * POSTS_PER_PAGE;
       const to = from + POSTS_PER_PAGE - 1;
@@ -114,14 +173,42 @@ export function Magazine() {
     }
   }
 
+  function updateSearchParams(updates: Record<string, string | null>) {
+    const params = new URLSearchParams(searchParams);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+    params.delete("page");
+    setSearchParams(params);
+  }
+
+  function toggleTag(tagSlug: string) {
+    const currentTags = searchParams.get("tags")?.split(",").filter(Boolean) || [];
+    let newTags: string[];
+
+    if (currentTags.includes(tagSlug)) {
+      newTags = currentTags.filter(t => t !== tagSlug);
+    } else {
+      newTags = [...currentTags, tagSlug];
+    }
+
+    updateSearchParams({ tags: newTags.length > 0 ? newTags.join(",") : null });
+  }
+
   const totalPages = Math.ceil(totalCount / POSTS_PER_PAGE);
   const magazineBasePath = language === "de" ? "/magazin" : "/magazine";
+
+  const hasFilters = searchTerm || topicSlug || selectedTags.length > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex flex-col">
       <Header />
       <div className="flex-1 pt-24 pb-16 px-4">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-dark mb-4">
               {language === "de" ? "Magazin" : "Magazine"}
@@ -133,65 +220,111 @@ export function Magazine() {
             </p>
           </div>
 
-          <div className="mb-8">
-            <div className="relative max-w-xl mx-auto">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => {
-                  const params = new URLSearchParams(searchParams);
-                  if (e.target.value) {
-                    params.set("search", e.target.value);
-                  } else {
-                    params.delete("search");
-                  }
-                  params.delete("page");
-                  setSearchParams(params);
-                }}
-                placeholder={language === "de" ? "Artikel durchsuchen..." : "Search articles..."}
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />
-            </div>
-          </div>
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div className="grid gap-4 md:grid-cols-2 mb-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => updateSearchParams({ search: e.target.value })}
+                  placeholder={language === "de" ? "Artikel durchsuchen..." : "Search articles..."}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+              </div>
 
-          {(topicSlug || tagSlug) && (
-            <div className="mb-6 flex items-center justify-center gap-2">
-              <span className="text-gray-400">
-                {language === "de" ? "Filter:" : "Filter:"}
-              </span>
-              {topicSlug && (
-                <button
-                  onClick={() => {
-                    const params = new URLSearchParams(searchParams);
-                    params.delete("topic");
-                    params.delete("page");
-                    setSearchParams(params);
-                  }}
-                  className="px-4 py-2 bg-primary-blue/10 text-primary-blue rounded-full flex items-center gap-2 hover:bg-primary-blue/20 transition-colors"
+              <div className="relative">
+                <FolderOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
+                <select
+                  value={topicSlug}
+                  onChange={(e) => updateSearchParams({ topic: e.target.value })}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue appearance-none bg-white"
                 >
-                  <FolderOpen className="w-4 h-4" />
-                  {topicSlug}
-                  <span className="ml-2">×</span>
-                </button>
-              )}
-              {tagSlug && (
-                <button
-                  onClick={() => {
-                    const params = new URLSearchParams(searchParams);
-                    params.delete("tag");
-                    params.delete("page");
-                    setSearchParams(params);
-                  }}
-                  className="px-4 py-2 bg-primary-blue/10 text-primary-blue rounded-full flex items-center gap-2 hover:bg-primary-blue/20 transition-colors"
-                >
-                  <TagIcon className="w-4 h-4" />
-                  {tagSlug}
-                  <span className="ml-2">×</span>
-                </button>
-              )}
+                  <option value="">
+                    {language === "de" ? "Alle Themen" : "All Topics"}
+                  </option>
+                  {topics.map((topic) => (
+                    <option key={topic.id} value={topic.slug}>
+                      {topic.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          )}
+
+            {tags.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <TagIcon className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-400">
+                    {language === "de" ? "Tags filtern" : "Filter by tags"}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      onClick={() => toggleTag(tag.slug)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                        selectedTags.includes(tag.slug)
+                          ? "bg-primary-blue text-white"
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                      }`}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {hasFilters && (
+              <div className="mt-4 flex items-center gap-2">
+                <span className="text-sm text-gray-400">
+                  {language === "de" ? "Aktive Filter:" : "Active filters:"}
+                </span>
+                {searchTerm && (
+                  <button
+                    onClick={() => updateSearchParams({ search: null })}
+                    className="px-3 py-1 bg-primary-blue/10 text-primary-blue rounded-full flex items-center gap-2 text-sm hover:bg-primary-blue/20 transition-colors"
+                  >
+                    {searchTerm}
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+                {topicSlug && (
+                  <button
+                    onClick={() => updateSearchParams({ topic: null })}
+                    className="px-3 py-1 bg-primary-blue/10 text-primary-blue rounded-full flex items-center gap-2 text-sm hover:bg-primary-blue/20 transition-colors"
+                  >
+                    {topics.find(t => t.slug === topicSlug)?.name}
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+                {selectedTags.map((tagSlug) => {
+                  const tag = tags.find(t => t.slug === tagSlug);
+                  return tag ? (
+                    <button
+                      key={tagSlug}
+                      onClick={() => toggleTag(tagSlug)}
+                      className="px-3 py-1 bg-primary-blue/10 text-primary-blue rounded-full flex items-center gap-2 text-sm hover:bg-primary-blue/20 transition-colors"
+                    >
+                      {tag.name}
+                      <X className="w-3 h-3" />
+                    </button>
+                  ) : null;
+                })}
+                <button
+                  onClick={() => {
+                    setSearchParams(new URLSearchParams());
+                  }}
+                  className="px-3 py-1 text-gray-400 hover:text-dark transition-colors text-sm font-medium"
+                >
+                  {language === "de" ? "Alle Filter entfernen" : "Clear all filters"}
+                </button>
+              </div>
+            )}
+          </div>
 
           {loading ? (
             <div className="flex items-center justify-center py-16">
@@ -199,12 +332,34 @@ export function Magazine() {
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-gray-400 text-lg">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-gray-300" />
+              </div>
+              <h3 className="text-xl font-semibold text-dark mb-2">
                 {language === "de" ? "Keine Artikel gefunden" : "No articles found"}
+              </h3>
+              <p className="text-gray-400 mb-6">
+                {language === "de"
+                  ? "Versuchen Sie es mit anderen Suchbegriffen oder Filtern."
+                  : "Try different search terms or filters."}
               </p>
+              {hasFilters && (
+                <button
+                  onClick={() => setSearchParams(new URLSearchParams())}
+                  className="px-6 py-2 bg-primary-blue text-white rounded-full hover:bg-blue-700 transition-colors"
+                >
+                  {language === "de" ? "Alle Filter entfernen" : "Clear all filters"}
+                </button>
+              )}
             </div>
           ) : (
             <>
+              <div className="mb-6 text-sm text-gray-400">
+                {language === "de"
+                  ? `${totalCount} Artikel${totalCount !== 1 ? "" : ""} gefunden`
+                  : `${totalCount} article${totalCount !== 1 ? "s" : ""} found`}
+              </div>
+
               <div className="grid gap-8 mb-12">
                 {posts.map((post) => (
                   <Link
@@ -219,6 +374,7 @@ export function Magazine() {
                             src={post.hero_image_url}
                             alt={post.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
                           />
                         </div>
                       )}
@@ -231,13 +387,9 @@ export function Magazine() {
                           {post.topic_name && (
                             <div className="flex items-center gap-1">
                               <FolderOpen className="w-4 h-4" />
-                              <Link
-                                to={`${magazineBasePath}?topic=${post.topic_slug}`}
-                                className="hover:text-primary-blue transition-colors"
-                                onClick={(e) => e.stopPropagation()}
-                              >
+                              <span className="hover:text-primary-blue transition-colors">
                                 {post.topic_name}
-                              </Link>
+                              </span>
                             </div>
                           )}
                         </div>
@@ -251,16 +403,19 @@ export function Magazine() {
                         )}
                         {post.tags.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            {post.tags.map((tag) => (
-                              <Link
+                            {post.tags.slice(0, 5).map((tag) => (
+                              <span
                                 key={tag.slug}
-                                to={`${magazineBasePath}?tag=${tag.slug}`}
-                                className="px-3 py-1 bg-gray-100 text-gray-400 text-sm rounded-full hover:bg-primary-blue/10 hover:text-primary-blue transition-colors"
-                                onClick={(e) => e.stopPropagation()}
+                                className="px-3 py-1 bg-gray-100 text-gray-400 text-sm rounded-full"
                               >
                                 {tag.name}
-                              </Link>
+                              </span>
                             ))}
+                            {post.tags.length > 5 && (
+                              <span className="px-3 py-1 text-gray-400 text-sm">
+                                +{post.tags.length - 5}
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>
@@ -277,32 +432,47 @@ export function Magazine() {
                         const params = new URLSearchParams(searchParams);
                         params.set("page", String(page - 1));
                         setSearchParams(params);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
                       }
                     }}
                     disabled={page <= 1}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
 
                   <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                      <button
-                        key={pageNum}
-                        onClick={() => {
-                          const params = new URLSearchParams(searchParams);
-                          params.set("page", String(pageNum));
-                          setSearchParams(params);
-                        }}
-                        className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                          pageNum === page
-                            ? "bg-primary-blue text-white"
-                            : "hover:bg-gray-100 text-gray-400"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    ))}
+                    {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                      let pageNum: number;
+                      if (totalPages <= 7) {
+                        pageNum = i + 1;
+                      } else if (page <= 4) {
+                        pageNum = i + 1;
+                      } else if (page >= totalPages - 3) {
+                        pageNum = totalPages - 6 + i;
+                      } else {
+                        pageNum = page - 3 + i;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => {
+                            const params = new URLSearchParams(searchParams);
+                            params.set("page", String(pageNum));
+                            setSearchParams(params);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                          className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                            pageNum === page
+                              ? "bg-primary-blue text-white"
+                              : "hover:bg-gray-100 text-gray-400"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   <button
@@ -311,10 +481,11 @@ export function Magazine() {
                         const params = new URLSearchParams(searchParams);
                         params.set("page", String(page + 1));
                         setSearchParams(params);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
                       }
                     }}
                     disabled={page >= totalPages}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
