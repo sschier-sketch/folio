@@ -12,6 +12,8 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [affiliateCode, setAffiliateCode] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [newsletterOptIn, setNewsletterOptIn] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,15 +33,22 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
-    if (password !== confirmPassword) {
-      setMessage({ type: "error", text: "Passwords do not match" });
+
+    if (!acceptTerms) {
+      setMessage({ type: "error", text: "Sie müssen die Nutzungsbedingungen akzeptieren" });
       setLoading(false);
       return;
     }
-    if (password.length < 6) {
+
+    if (password !== confirmPassword) {
+      setMessage({ type: "error", text: "Die Passwörter stimmen nicht überein" });
+      setLoading(false);
+      return;
+    }
+    if (password.length < 10) {
       setMessage({
         type: "error",
-        text: "Password must be at least 6 characters long",
+        text: "Das Passwort muss mindestens 10 Zeichen lang sein",
       });
       setLoading(false);
       return;
@@ -50,7 +59,10 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
         password,
         options: {
           emailRedirectTo: undefined,
-          data: { affiliate_code: affiliateCode || null },
+          data: {
+            affiliate_code: affiliateCode || null,
+            newsletter_opt_in: newsletterOptIn,
+          },
         },
       });
 
@@ -115,14 +127,12 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
         </div>
       )}{" "}
       <div>
-        {" "}
         <label
           htmlFor="email"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          {" "}
-          Email Address{" "}
-        </label>{" "}
+          E-Mail-Adresse
+        </label>
         <input
           id="email"
           type="email"
@@ -130,20 +140,17 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           onChange={(e) => setEmail(e.target.value)}
           required
           className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-          placeholder="Enter your email"
-        />{" "}
+          placeholder="ihre@email.de"
+        />
       </div>{" "}
       <div>
-        {" "}
         <label
           htmlFor="password"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          {" "}
-          Password{" "}
-        </label>{" "}
+          Passwort
+        </label>
         <div className="relative">
-          {" "}
           <input
             id="password"
             type={showPassword ? "text" : "password"}
@@ -151,33 +158,29 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
             onChange={(e) => setPassword(e.target.value)}
             required
             className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            placeholder="Enter your password"
-          />{" "}
+            placeholder="Mindestens 10 Zeichen"
+          />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
           >
-            {" "}
             {showPassword ? (
               <EyeOff className="h-4 w-4 text-gray-400" />
             ) : (
               <Eye className="h-4 w-4 text-gray-400" />
-            )}{" "}
-          </button>{" "}
-        </div>{" "}
+            )}
+          </button>
+        </div>
       </div>{" "}
       <div>
-        {" "}
         <label
           htmlFor="confirmPassword"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          {" "}
-          Confirm Password{" "}
-        </label>{" "}
+          Passwort bestätigen
+        </label>
         <div className="relative">
-          {" "}
           <input
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
@@ -185,21 +188,20 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            placeholder="Confirm your password"
-          />{" "}
+            placeholder="Passwort wiederholen"
+          />
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
           >
-            {" "}
             {showConfirmPassword ? (
               <EyeOff className="h-4 w-4 text-gray-400" />
             ) : (
               <Eye className="h-4 w-4 text-gray-400" />
-            )}{" "}
-          </button>{" "}
-        </div>{" "}
+            )}
+          </button>
+        </div>
       </div>{" "}
       {affiliateCode && (
         <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-4">
@@ -214,20 +216,60 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           </p>
         </div>
       )}
+
+      <div className="space-y-4">
+        <div className="flex items-start">
+          <input
+            id="acceptTerms"
+            type="checkbox"
+            checked={acceptTerms}
+            onChange={(e) => setAcceptTerms(e.target.checked)}
+            className="mt-1 h-4 w-4 text-primary-blue border-gray-300 rounded focus:ring-primary-blue"
+            required
+          />
+          <label htmlFor="acceptTerms" className="ml-2 text-sm text-gray-600">
+            Ich akzeptiere die{' '}
+            <a href="/agb" target="_blank" className="text-primary-blue hover:underline">
+              allgemeinen Geschäftsbedingungen
+            </a>
+            ,{' '}
+            <a href="/datenschutz" target="_blank" className="text-primary-blue hover:underline">
+              Datenschutzbestimmungen
+            </a>
+            {' '}und{' '}
+            <a href="/avv" target="_blank" className="text-primary-blue hover:underline">
+              AVV
+            </a>
+            {' '}<span className="text-red-500">*</span>
+          </label>
+        </div>
+
+        <div className="flex items-start">
+          <input
+            id="newsletterOptIn"
+            type="checkbox"
+            checked={newsletterOptIn}
+            onChange={(e) => setNewsletterOptIn(e.target.checked)}
+            className="mt-1 h-4 w-4 text-primary-blue border-gray-300 rounded focus:ring-primary-blue"
+          />
+          <label htmlFor="newsletterOptIn" className="ml-2 text-sm text-gray-600">
+            Ja, ich möchte über Neuigkeiten informiert werden
+          </label>
+        </div>
+      </div>
+
       <button
         type="submit"
         disabled={loading}
         className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {" "}
         {loading ? (
           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
           <>
-            {" "}
-            <UserPlus className="w-4 h-4 mr-2" /> Create Account{" "}
+            <UserPlus className="w-4 h-4 mr-2" /> Konto erstellen
           </>
-        )}{" "}
+        )}
       </button>{" "}
     </form>
   );

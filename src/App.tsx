@@ -16,6 +16,9 @@ import { SubscriptionCancelled } from "./pages/SubscriptionCancelled";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Contact from "./pages/Contact";
 import Impressum from "./pages/Impressum";
+import { Datenschutz } from "./pages/Datenschutz";
+import { AGB } from "./pages/AGB";
+import { AVV } from "./pages/AVV";
 import LandingPage from "./components/LandingPage";
 import { Admin } from "./pages/Admin";
 import Features from "./pages/Features";
@@ -77,6 +80,9 @@ function App() {
         <Route path="/reset-password/confirm" element={<ResetPassword />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/impressum" element={<Impressum />} />
+        <Route path="/datenschutz" element={<Datenschutz />} />
+        <Route path="/agb" element={<AGB />} />
+        <Route path="/avv" element={<AVV />} />
         <Route path="/features" element={<Features />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/support" element={<Support />} />
