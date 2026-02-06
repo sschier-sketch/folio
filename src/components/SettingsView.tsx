@@ -381,6 +381,14 @@ export default function SettingsView({
                     );
                     return;
                   }
+                  if (referrerSettings.user_id === user!.id) {
+                    setErrorMessage(
+                      language === "de"
+                        ? "Sie können Ihren eigenen Empfehlungscode nicht einlösen"
+                        : "You cannot redeem your own referral code",
+                    );
+                    return;
+                  }
                   const { error } = await supabase
                     .from("user_referrals")
                     .insert({
