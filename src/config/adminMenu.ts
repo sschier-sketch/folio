@@ -1,0 +1,115 @@
+import {
+  Activity,
+  Users,
+  MessageSquare,
+  Mail,
+  FileText,
+  Bell,
+  Settings,
+  Globe,
+  TrendingUp,
+  DollarSign,
+  Sparkles,
+  BookOpen,
+  type LucideIcon,
+} from "lucide-react";
+
+export type AdminTabKey =
+  | "overview"
+  | "users"
+  | "tickets"
+  | "templates"
+  | "email_logs"
+  | "document_templates"
+  | "system_updates"
+  | "feedback"
+  | "system_settings"
+  | "seo"
+  | "affiliates"
+  | "payouts"
+  | "pro_features"
+  | "magazine";
+
+export interface AdminMenuItem {
+  key: AdminTabKey;
+  label: string;
+  icon: LucideIcon;
+}
+
+export interface AdminMenuGroup {
+  id: string;
+  label: string;
+  items: AdminMenuItem[];
+  defaultOpen?: boolean;
+}
+
+export const adminMenuGroups: AdminMenuGroup[] = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    defaultOpen: true,
+    items: [
+      { key: "overview", label: "Uebersicht", icon: Activity },
+    ],
+  },
+  {
+    id: "users_communication",
+    label: "User & Kommunikation",
+    defaultOpen: true,
+    items: [
+      { key: "users", label: "Benutzer", icon: Users },
+      { key: "tickets", label: "Tickets", icon: MessageSquare },
+      { key: "feedback", label: "Feedback", icon: MessageSquare },
+    ],
+  },
+  {
+    id: "email_documents",
+    label: "E-Mail & Dokumente",
+    defaultOpen: true,
+    items: [
+      { key: "templates", label: "E-Mail Templates", icon: Mail },
+      { key: "email_logs", label: "E-Mail Logs", icon: Activity },
+      { key: "document_templates", label: "Dokument-Vorlagen", icon: FileText },
+    ],
+  },
+  {
+    id: "content_growth",
+    label: "Content & Growth",
+    defaultOpen: true,
+    items: [
+      { key: "magazine", label: "Magazin", icon: BookOpen },
+      { key: "seo", label: "SEO", icon: Globe },
+      { key: "affiliates", label: "Affiliates", icon: TrendingUp },
+      { key: "pro_features", label: "Pro-Features", icon: Sparkles },
+    ],
+  },
+  {
+    id: "finance",
+    label: "Finanzen",
+    defaultOpen: true,
+    items: [
+      { key: "payouts", label: "Auszahlungen", icon: DollarSign },
+    ],
+  },
+  {
+    id: "system",
+    label: "System",
+    defaultOpen: true,
+    items: [
+      { key: "system_settings", label: "Einstellungen", icon: Settings },
+      { key: "system_updates", label: "System-Updates", icon: Bell },
+    ],
+  },
+];
+
+export function getMenuItemByKey(key: AdminTabKey): AdminMenuItem | undefined {
+  for (const group of adminMenuGroups) {
+    const item = group.items.find((i) => i.key === key);
+    if (item) return item;
+  }
+  return undefined;
+}
+
+export function getGroupByKey(key: AdminTabKey): AdminMenuGroup | undefined {
+  return adminMenuGroups.find((g) => g.items.some((i) => i.key === key));
+}
