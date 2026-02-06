@@ -74,6 +74,21 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       if (error) {
         setMessage({ type: "error", text: error.message });
       } else if (authData.user) {
+        fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome-email`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+              userId: authData.user.id,
+              email: authData.user.email,
+            }),
+          }
+        ).catch(() => {});
+
         if (refCode) {
           try {
             const response = await fetch(

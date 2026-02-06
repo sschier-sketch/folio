@@ -14,6 +14,7 @@ import {
   Trash2,
   Mail,
   Settings,
+  Clock,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -49,6 +50,7 @@ interface UserData {
   banned?: boolean;
   ban_reason?: string;
   customer_number?: string;
+  trial_ends_at?: string;
 }
 
 interface Stats {
@@ -423,13 +425,26 @@ export function Admin() {
                   key: "subscription_plan",
                   header: "Tarif",
                   sortable: true,
-                  render: (user: UserData) => (
-                    user.subscription_plan === "pro" ? (
-                      <StatusBadge type="warning" label="Pro" />
-                    ) : (
-                      <StatusBadge type="neutral" label="Gratis" />
-                    )
-                  )
+                  render: (user: UserData) => {
+                    if (user.subscription_plan === "pro") {
+                      return <StatusBadge type="warning" label="Pro" />;
+                    }
+                    if (user.trial_ends_at) {
+                      const trialEnd = new Date(user.trial_ends_at);
+                      const now = new Date();
+                      const diffMs = trialEnd.getTime() - now.getTime();
+                      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                      if (daysLeft > 0) {
+                        return (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200">
+                            <Clock className="w-3 h-3" />
+                            Trial ({daysLeft} {daysLeft === 1 ? 'Tag' : 'Tage'})
+                          </span>
+                        );
+                      }
+                    }
+                    return <StatusBadge type="neutral" label="Gratis" />;
+                  }
                 },
                 {
                   key: "actions",
