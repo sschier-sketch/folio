@@ -29,6 +29,7 @@ import AdminAffiliatesView from "../components/AdminAffiliatesView";
 import AdminPayoutsView from "../components/AdminPayoutsView";
 import AdminEmailLogsView from "../components/AdminEmailLogsView";
 import AdminMagazineView from "../components/admin/AdminMagazineView";
+import AdminEmailSettingsView from "../components/admin/AdminEmailSettingsView";
 import DeleteUserModal from "../components/admin/DeleteUserModal";
 import AdminLayout from "../components/admin/AdminLayout";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell } from "../components/common/BaseTable";
@@ -518,6 +519,7 @@ export function Admin() {
         {activeTab === "pro_features" && <AdminProFeaturesView />}
         {activeTab === "email_logs" && <AdminEmailLogsView />}
         {activeTab === "magazine" && <AdminMagazineView />}
+        {activeTab === "email_settings" && <AdminEmailSettingsView />}
       </AdminLayout>
 
       {deleteTarget && (

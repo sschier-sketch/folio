@@ -234,6 +234,79 @@ Deno.serve(async (req: Request) => {
       `[inbound] from=${fromAddress} to=${toAddresses.join(",")} subject="${subject}" email_id=${emailId || "n/a"}`
     );
 
+    let forwarded = 0;
+    for (const toAddr of toAddresses) {
+      if (!toAddr.endsWith("@rentab.ly")) continue;
+      const fwdAlias = extractLocalPart(toAddr);
+
+      const { data: fwdRule } = await supabase
+        .from("email_forwarding_rules")
+        .select("source_alias, forward_to_email, is_active")
+        .eq("source_alias", fwdAlias)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (fwdRule && resendApiKey) {
+        console.log(
+          `[inbound] Forwarding ${fwdAlias}@rentab.ly -> ${fwdRule.forward_to_email}`
+        );
+
+        const fwdPayload: Record<string, unknown> = {
+          from: `${fwdAlias}@rentab.ly`,
+          to: [fwdRule.forward_to_email],
+          subject: `[Weitergeleitet] ${subject}`,
+          reply_to: fromAddress,
+          text: bodyText || undefined,
+          html: bodyHtml || undefined,
+        };
+
+        const fwdRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(fwdPayload),
+        });
+
+        if (fwdRes.ok) {
+          console.log(
+            `[inbound] Forwarded to ${fwdRule.forward_to_email} successfully`
+          );
+          forwarded++;
+        } else {
+          const errBody = await fwdRes.text();
+          console.error(
+            `[inbound] Forward failed: ${fwdRes.status} ${errBody}`
+          );
+        }
+
+        await supabase.from("email_logs").insert({
+          mail_type: "forwarded_inbound",
+          category: "transactional",
+          to_email: fwdRule.forward_to_email,
+          subject: `[Weitergeleitet] ${subject}`,
+          provider: "resend",
+          status: fwdRes.ok ? "sent" : "failed",
+          metadata: {
+            original_from: fromAddress,
+            original_to: toAddr,
+            forwarding_rule: fwdAlias,
+          },
+        });
+      }
+    }
+
+    if (forwarded > 0) {
+      return new Response(
+        JSON.stringify({ success: true, forwarded }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     let processed = 0;
     let noMailboxFound = true;
 

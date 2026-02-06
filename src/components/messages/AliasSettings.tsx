@@ -42,6 +42,18 @@ export default function AliasSettings({ isOpen, onClose, currentAlias, onUpdated
     setError('');
     setSuccess(false);
 
+    const { data: reserved } = await supabase
+      .from('reserved_email_aliases')
+      .select('alias_localpart')
+      .eq('alias_localpart', cleaned)
+      .maybeSingle();
+
+    if (reserved) {
+      setError('Dieser Alias ist reserviert und kann nicht verwendet werden.');
+      setSaving(false);
+      return;
+    }
+
     const { data, error: rpcError } = await supabase.rpc('update_user_mailbox_alias', {
       new_alias: cleaned,
     });

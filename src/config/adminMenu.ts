@@ -11,6 +11,7 @@ import {
   DollarSign,
   Sparkles,
   BookOpen,
+  AtSign,
   type LucideIcon,
 } from "lucide-react";
 
@@ -28,7 +29,8 @@ export type AdminTabKey =
   | "affiliates"
   | "payouts"
   | "pro_features"
-  | "magazine";
+  | "magazine"
+  | "email_settings";
 
 export interface AdminMenuItem {
   key: AdminTabKey;
@@ -69,6 +71,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
     items: [
       { key: "templates", label: "E-Mail Templates", icon: Mail },
       { key: "email_logs", label: "E-Mail Logs", icon: Activity },
+      { key: "email_settings", label: "E-Mail Einstellungen", icon: AtSign },
       { key: "document_templates", label: "Dokument-Vorlagen", icon: FileText },
     ],
   },
