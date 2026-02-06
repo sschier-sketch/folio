@@ -101,7 +101,7 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
       .select('id, first_name, last_name, email, property_id, unit_id')
       .eq('user_id', user.id)
       .eq('property_id', propertyId)
-      .eq('is_deleted', false)
+      .eq('is_active', true)
       .order('last_name');
 
     if (unitId) {
