@@ -185,12 +185,16 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
             } else if (assoc.association_type === "rental_contract") {
               const { data: contract } = await supabase
                 .from("rental_contracts")
-                .select("id, tenant_id, tenants(first_name, last_name)")
+                .select("id, tenant_id")
                 .eq("id", assoc.association_id)
                 .maybeSingle();
-              if (contract) {
-                const t = contract.tenants as any;
-                name = t ? `${t.first_name} ${t.last_name} - Mietvertrag` : "Mietvertrag";
+              if (contract?.tenant_id) {
+                const { data: tenant } = await supabase
+                  .from("tenants")
+                  .select("first_name, last_name")
+                  .eq("id", contract.tenant_id)
+                  .maybeSingle();
+                name = tenant ? `${tenant.first_name} ${tenant.last_name} - Mietvertrag` : "Mietvertrag";
               } else {
                 name = "Mietvertrag";
               }
@@ -422,6 +426,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
       property: "Immobilie",
       unit: "Einheit",
       tenant: "Mieter",
+      rental_contract: "Mietvertrag",
     };
     return labels[type] || type;
   };
@@ -431,6 +436,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
       property: Building,
       unit: Building,
       tenant: Users,
+      rental_contract: FileText,
     };
     return icons[type] || FileText;
   };
