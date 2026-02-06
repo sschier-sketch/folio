@@ -1,10 +1,33 @@
 import { useState, useEffect, useMemo } from "react";
-import { TrendingUp, Plus, Lock, Calendar, Edit, Save, X } from "lucide-react";
+import { TrendingUp, Plus, Lock, Calendar, Edit, Save, X, Info, Percent } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import Badge from "../common/Badge";
 import { addMonths, differenceInDays, formatDateDE, parseISODate } from "../../lib/dateUtils";
+
+function InfoTooltip({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div className="relative inline-block ml-1.5">
+      <button
+        type="button"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        className="text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <Info className="w-4 h-4" />
+      </button>
+      {show && (
+        <div className="absolute z-50 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg -top-2 left-6">
+          <div className="absolute -left-1 top-3 w-2 h-2 bg-gray-900 transform rotate-45" />
+          {text}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface TenantRentHistoryTabProps {
   tenantId: string;
@@ -753,45 +776,67 @@ export default function TenantRentHistoryTab({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="text-sm text-gray-500 mb-2">Kappungsgrenze (3 Jahre)</div>
-              <div className="text-2xl font-bold text-dark mb-1">
-                {rentIncreaseCalcs.remainingPercent}% verbleibend
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500">Kappungsgrenze (3 Jahre)</span>
+                  <InfoTooltip text="Innerhalb von 3 Jahren darf die Miete maximal um 20% erhöht werden (§558 BGB). Zeigt an, wie viel Spielraum für weitere Erhöhungen noch besteht." />
+                </div>
+                <Percent className="w-5 h-5 text-[#008CFF]" />
               </div>
-              <div className="text-xs text-gray-600">
-                Bereits erhöht: {rentIncreaseCalcs.alreadyIncreasedPercent}% von max. {rentIncreaseCalcs.capPercent}%
-              </div>
+              <p className="text-3xl font-bold text-dark">
+                {rentIncreaseCalcs.remainingPercent}%
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {rentIncreaseCalcs.alreadyIncreasedPercent}% von {rentIncreaseCalcs.capPercent}% genutzt
+              </p>
             </div>
 
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="text-sm text-gray-500 mb-2">Maximale neue Miete</div>
-              <div className="text-2xl font-bold text-dark mb-1">
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500">Maximale neue Miete</span>
+                  <InfoTooltip text="Die maximal mögliche Kaltmiete unter Berücksichtigung der 20%-Kappungsgrenze der letzten 3 Jahre." />
+                </div>
+                <TrendingUp className="w-5 h-5 text-[#008CFF]" />
+              </div>
+              <p className="text-3xl font-bold text-dark">
                 {rentIncreaseCalcs.maxAllowed.toFixed(2)} €
-              </div>
-              <div className="text-xs text-gray-600">
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
                 +{rentIncreaseCalcs.delta.toFixed(2)} € möglich
-              </div>
+              </p>
             </div>
 
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="text-sm text-gray-500 mb-2">15-Monats-Frist (§558)</div>
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500">15-Monats-Frist (§558)</span>
+                  <InfoTooltip text="Nach einer Mieterhöhung muss eine Sperrfrist von 15 Monaten eingehalten werden, bevor die nächste Erhöhung möglich ist (§558 Abs. 1 BGB)." />
+                </div>
+                {rentIncreaseCalcs.section558Status === "possible" ? (
+                  <Calendar className="w-5 h-5 text-emerald-500" />
+                ) : (
+                  <Lock className="w-5 h-5 text-amber-500" />
+                )}
+              </div>
               {rentIncreaseCalcs.section558Status === "possible" ? (
                 <>
-                  <div className="text-2xl font-bold text-emerald-600 mb-1">
-                    Erhöhung möglich
-                  </div>
-                  <div className="text-xs text-gray-600">
+                  <p className="text-3xl font-bold text-emerald-600">
+                    Möglich
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
                     Frist abgelaufen
-                  </div>
+                  </p>
                 </>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-amber-600 mb-1">
+                  <p className="text-3xl font-bold text-amber-600">
                     Gesperrt
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    Frühestens ab {rentIncreaseCalcs.section558Date}
-                  </div>
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    ab {rentIncreaseCalcs.section558Date}
+                  </p>
                 </>
               )}
             </div>
