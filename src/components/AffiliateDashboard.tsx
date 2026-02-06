@@ -98,10 +98,12 @@ export default function AffiliateDashboard() {
           .order("created_at", { ascending: false }),
       ]);
 
+      const referralsData = referralsRes.data || [];
+
       if (affiliateRes.data) {
         setStats({
           affiliateCode: affiliateRes.data.affiliate_code,
-          totalReferrals: affiliateRes.data.total_referrals,
+          totalReferrals: referralsData.length,
           payingReferrals: affiliateRes.data.paying_referrals,
           totalEarned: affiliateRes.data.total_earned,
           totalPaid: affiliateRes.data.total_paid,
@@ -111,7 +113,7 @@ export default function AffiliateDashboard() {
         });
       }
 
-      setReferrals(referralsRes.data || []);
+      setReferrals(referralsData);
       setCommissions(commissionsRes.data || []);
       setPayoutRequests(payoutsRes.data || []);
     } catch (error) {
