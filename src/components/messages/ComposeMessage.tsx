@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X, Send, Search, Users, AtSign, Upload, File as FileIcon, Globe } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Send, Search, Users, AtSign, Upload, File as FileIcon, Globe, Info } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { sanitizeFileName } from '../../lib/utils';
@@ -35,10 +35,23 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
   const [showTenantDropdown, setShowTenantDropdown] = useState(false);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [publishToPortal, setPublishToPortal] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen && user) loadTenants();
   }, [isOpen, user]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowTenantDropdown(false);
+      }
+    }
+    if (showTenantDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showTenantDropdown]);
 
   async function loadTenants() {
     if (!user) return;
@@ -277,8 +290,8 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
           </div>
 
           {recipientType === 'tenant' ? (
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Empfaenger (Mieter)</label>
+            <div ref={dropdownRef}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Empfänger (Mieter)</label>
               {selectedTenant ? (
                 <div className="flex items-center gap-2 px-3 py-2.5 bg-blue-50 border border-blue-200 rounded-lg">
                   <span className="text-sm font-medium text-blue-800 flex-1">
@@ -290,7 +303,7 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
                   </button>
                 </div>
               ) : (
-                <>
+                <div>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
@@ -302,22 +315,28 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
                       className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                     />
                   </div>
-                  {showTenantDropdown && filteredTenants.length > 0 && (
-                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {filteredTenants.map((t) => (
-                        <button
-                          key={t.id}
-                          onClick={() => { setSelectedTenant(t); setShowTenantDropdown(false); setSearchTerm(''); }}
-                          className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm transition-colors"
-                        >
-                          <span className="font-medium text-gray-900">{t.first_name} {t.last_name}</span>
-                          {t.email && <span className="text-gray-500 ml-2">{t.email}</span>}
-                          {t.property_name && <span className="text-gray-400 ml-2 text-xs">({t.property_name})</span>}
-                        </button>
-                      ))}
+                  {showTenantDropdown && (
+                    <div className="mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {filteredTenants.length > 0 ? (
+                        filteredTenants.map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => { setSelectedTenant(t); setShowTenantDropdown(false); setSearchTerm(''); }}
+                            className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm transition-colors"
+                          >
+                            <span className="font-medium text-gray-900">{t.first_name} {t.last_name}</span>
+                            {t.email && <span className="text-gray-500 ml-2">{t.email}</span>}
+                            {t.property_name && <span className="text-gray-400 ml-2 text-xs">({t.property_name})</span>}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-gray-400">
+                          {tenants.length === 0 ? 'Keine Mieter vorhanden' : 'Kein Mieter gefunden'}
+                        </div>
+                      )}
                     </div>
                   )}
-                </>
+                </div>
               )}
             </div>
           ) : (
@@ -396,19 +415,31 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
             )}
           </div>
 
-          {recipientType === 'tenant' && selectedTenant && (
-            <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-              <input
-                type="checkbox"
-                id="publishPortal"
-                checked={publishToPortal}
-                onChange={(e) => setPublishToPortal(e.target.checked)}
-                className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
-              />
-              <label htmlFor="publishPortal" className="flex items-center gap-2 text-sm font-medium text-emerald-800 cursor-pointer">
-                <Globe className="w-4 h-4" />
-                Im Mieterportal anzeigen
+          {recipientType === 'tenant' && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/50">
+              <label className="flex items-center gap-3 px-4 py-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="publishPortal"
+                  checked={publishToPortal}
+                  onChange={(e) => setPublishToPortal(e.target.checked)}
+                  className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                />
+                <div className="flex items-center gap-2 text-sm font-medium text-emerald-800">
+                  <Globe className="w-4 h-4" />
+                  Im Mieterportal bereitstellen
+                </div>
               </label>
+              {publishToPortal && (
+                <div className="px-4 pb-3 flex items-start gap-2 text-xs text-emerald-700">
+                  <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                  <span>
+                    {selectedTenant
+                      ? `Die Nachricht wird im Mieterportal von ${selectedTenant.first_name} ${selectedTenant.last_name} angezeigt.`
+                      : 'Bitte wählen Sie einen Mieter aus, damit die Nachricht im Portal bereitgestellt werden kann.'}
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
