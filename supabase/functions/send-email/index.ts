@@ -197,42 +197,56 @@ Deno.serve(async (req: Request) => {
         .eq('idempotency_key', idempotencyKey)
         .maybeSingle();
 
-      if (existingLog && existingLog.status === 'sent') {
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: 'Email already sent (idempotency)',
-            skipped: true,
-            logId: existingLog.id,
-          }),
-          {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+      if (existingLog) {
+        if (existingLog.status === 'sent') {
+          return new Response(
+            JSON.stringify({
+              success: true,
+              message: 'Email already sent (idempotency)',
+              skipped: true,
+              logId: existingLog.id,
+            }),
+            {
+              status: 200,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+        logId = existingLog.id;
+        await supabase
+          .from('email_logs')
+          .update({
+            status: 'queued',
+            error_code: null,
+            error_message: null,
+            metadata: { ...(metadata || {}), templateKey: templateKey || null, retry: true },
+          })
+          .eq('id', logId);
       }
     }
 
-    const { data: logEntry, error: logError } = await supabase
-      .from('email_logs')
-      .insert({
-        mail_type: finalMailType,
-        category: finalCategory,
-        to_email: to || 'unknown',
-        user_id: userId || null,
-        subject: subject || templateKey || 'unknown',
-        provider: 'resend',
-        status: 'queued',
-        idempotency_key: idempotencyKey || null,
-        metadata: { ...(metadata || {}), templateKey: templateKey || null },
-      })
-      .select('id')
-      .single();
+    if (!logId) {
+      const { data: logEntry, error: logError } = await supabase
+        .from('email_logs')
+        .insert({
+          mail_type: finalMailType,
+          category: finalCategory,
+          to_email: to || 'unknown',
+          user_id: userId || null,
+          subject: subject || templateKey || 'unknown',
+          provider: 'resend',
+          status: 'queued',
+          idempotency_key: idempotencyKey || null,
+          metadata: { ...(metadata || {}), templateKey: templateKey || null },
+        })
+        .select('id')
+        .single();
 
-    if (logError) {
-      console.error('Failed to create email log:', logError);
-    } else {
-      logId = logEntry.id;
+      if (logError) {
+        console.error('Failed to create email log:', logError);
+      } else {
+        logId = logEntry.id;
+      }
     }
 
     if (templateKey) {
