@@ -23,6 +23,7 @@ import {
   Globe,
   Sparkles,
   BookOpen,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -37,6 +38,7 @@ import AdminAffiliatesView from "../components/AdminAffiliatesView";
 import AdminPayoutsView from "../components/AdminPayoutsView";
 import AdminEmailLogsView from "../components/AdminEmailLogsView";
 import AdminMagazineView from "../components/admin/AdminMagazineView";
+import DeleteUserModal from "../components/admin/DeleteUserModal";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "../components/common/BaseTable";
 interface UserData {
   id: string;
@@ -76,6 +78,7 @@ export function Admin() {
   const [loadingData, setLoadingData] = useState(true);
   const [sortField, setSortField] = useState<keyof UserData>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
   console.log(
     "Admin Component - isAdmin:",
     isAdmin,
@@ -665,6 +668,11 @@ export function Admin() {
                           title="Benutzer sperren"
                         />
                       )}
+                      <ActionButton
+                        icon={<Trash2 className="w-4 h-4 text-red-500" />}
+                        onClick={() => setDeleteTarget({ id: user.id, email: user.email })}
+                        title="User komplett loeschen"
+                      />
                     </ActionsCell>
                   )
                 }
@@ -688,6 +696,25 @@ export function Admin() {
         {activeTab === "email_logs" && <AdminEmailLogsView />}{" "}
         {activeTab === "magazine" && <AdminMagazineView />}{" "}
       </div>{" "}
+      {deleteTarget && (
+        <DeleteUserModal
+          userId={deleteTarget.id}
+          userEmail={deleteTarget.email}
+          onClose={() => setDeleteTarget(null)}
+          onDeleted={() => {
+            setDeleteTarget(null);
+            setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));
+            const remaining = users.filter((u) => u.id !== deleteTarget.id);
+            const proCount = remaining.filter((u) => u.subscription_plan === "pro").length;
+            setStats({
+              totalUsers: remaining.length,
+              freeUsers: remaining.length - proCount,
+              premiumUsers: proCount,
+              monthlyRevenue: proCount * 9,
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
