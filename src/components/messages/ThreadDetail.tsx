@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, ArrowLeft, User } from 'lucide-react';
+import { Send, ArrowLeft, User, UserPlus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import AssignSenderModal from './AssignSenderModal';
 import type { MailThread, MailMessage } from './types';
 
 interface ThreadDetailProps {
@@ -36,6 +37,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent 
   const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
+  const [showAssign, setShowAssign] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const recipientName = thread.tenants
@@ -156,10 +158,19 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent 
           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-600">
             {getInitials(recipientName)}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-gray-900 text-sm truncate">{recipientName}</h3>
             <p className="text-xs text-gray-500 truncate">{recipientEmail || thread.subject}</p>
           </div>
+          {thread.folder === 'unknown' && (
+            <button
+              onClick={() => setShowAssign(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors flex-shrink-0"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              Zuordnen
+            </button>
+          )}
         </div>
       </div>
 
@@ -220,6 +231,13 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent 
           </button>
         </div>
       </div>
+
+      <AssignSenderModal
+        isOpen={showAssign}
+        onClose={() => setShowAssign(false)}
+        thread={thread}
+        onAssigned={onMessageSent}
+      />
     </div>
   );
 }
