@@ -219,6 +219,10 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
           tenantId: tenantId || undefined,
           mailType: 'user_message',
           category: 'transactional',
+          attachments: attachment && attachedFile ? [{
+            filename: attachedFile.name,
+            path: attachment.filePath,
+          }] : undefined,
         }),
       });
 
