@@ -25,8 +25,6 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { ticketId, message, senderName, senderEmail }: TicketReplyRequest = await req.json();
@@ -71,8 +69,7 @@ Deno.serve(async (req: Request) => {
       throw new Error('Failed to save message: ' + messageError.message);
     }
 
-    if (ticket.ticket_type === 'contact' && ticket.contact_email && resendApiKey) {
-      const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
+    if (ticket.ticket_type === 'contact' && ticket.contact_email) {
       const emailSubject = `Re: ${ticket.subject} [Ticket #${ticket.ticket_number}]`;
 
       const emailHtml = `
@@ -94,43 +91,45 @@ Deno.serve(async (req: Request) => {
         </div>
       `;
 
-      console.log('Sending ticket reply email from:', EMAIL_FROM, 'to:', ticket.contact_email);
-
-      const emailResponse = await fetch('https://api.resend.com/emails', {
+      const sendEmailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
+          'Authorization': `Bearer ${supabaseKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: EMAIL_FROM,
-          to: [ticket.contact_email],
+          to: ticket.contact_email,
           subject: emailSubject,
           html: emailHtml,
-          reply_to: senderEmail,
+          text: message,
+          replyTo: senderEmail,
+          userId: ticket.user_id || undefined,
+          useUserAlias: !!ticket.user_id,
+          mailType: 'ticket_reply',
+          category: 'transactional',
         }),
       });
 
-      if (!emailResponse.ok) {
-        const errorData = await emailResponse.json();
-        console.error('Failed to send email:', errorData);
-      } else {
-        const emailData = await emailResponse.json();
-        
+      if (sendEmailResponse.ok) {
+        const emailData = await sendEmailResponse.json();
+
         await supabase
           .from('tickets')
-          .update({ 
-            email_thread_id: emailData.id,
+          .update({
+            email_thread_id: emailData.emailId || null,
             updated_at: new Date().toISOString()
           })
           .eq('id', ticketId);
+      } else {
+        const errorData = await sendEmailResponse.json();
+        console.error('Failed to send email via send-email:', errorData);
       }
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Reply sent successfully' 
+      JSON.stringify({
+        success: true,
+        message: 'Reply sent successfully'
       }),
       {
         status: 200,
@@ -139,7 +138,7 @@ Deno.serve(async (req: Request) => {
     );
   } catch (error) {
     console.error('Error sending ticket reply:', error);
-    
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Failed to send reply'

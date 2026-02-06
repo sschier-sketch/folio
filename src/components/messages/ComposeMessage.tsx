@@ -73,7 +73,7 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
       ? selectedTenant?.email || ''
       : manualEmail.trim();
 
-    const recipientName = recipientType === 'tenant'
+    const rName = recipientType === 'tenant'
       ? `${selectedTenant?.first_name} ${selectedTenant?.last_name}`.trim()
       : manualName.trim() || manualEmail.trim();
 
@@ -96,63 +96,59 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
 
     setSending(true);
 
-    const senderAddr = userAlias ? `${userAlias}@rentab.ly` : '';
-    const tenantId = recipientType === 'tenant' ? selectedTenant?.id : null;
+    const tenantId = recipientType === 'tenant' ? selectedTenant?.id : undefined;
 
-    const { data: thread, error: threadErr } = await supabase
-      .from('mail_threads')
-      .insert({
-        user_id: user.id,
-        tenant_id: tenantId,
-        external_email: recipientType === 'manual' ? recipientEmail : null,
-        external_name: recipientType === 'manual' ? manualName.trim() || null : null,
-        subject: subject.trim(),
-        folder: 'sent',
-        status: 'read',
-        last_message_at: new Date().toISOString(),
-        message_count: 1,
-      })
-      .select('id')
-      .maybeSingle();
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    if (threadErr || !thread) {
-      setError('Fehler beim Erstellen der Nachricht.');
+      const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          to: recipientEmail,
+          subject: subject.trim(),
+          text: content.trim(),
+          userId: user.id,
+          useUserAlias: true,
+          storeAsMessage: true,
+          recipientName: rName,
+          tenantId: tenantId || undefined,
+          mailType: 'user_message',
+          category: 'transactional',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        setError(result.error || 'Fehler beim Senden der Nachricht.');
+        setSending(false);
+        return;
+      }
+
+      if (tenantId) {
+        await supabase.from('tenant_communications').insert({
+          user_id: user.id,
+          tenant_id: tenantId,
+          communication_type: 'message',
+          subject: subject.trim(),
+          content: content.trim(),
+          is_internal: false,
+        });
+      }
+
       setSending(false);
-      return;
-    }
-
-    const { error: msgErr } = await supabase.from('mail_messages').insert({
-      thread_id: thread.id,
-      user_id: user.id,
-      direction: 'outbound',
-      sender_address: senderAddr,
-      sender_name: '',
-      recipient_address: recipientEmail,
-      recipient_name: recipientName,
-      body_text: content.trim(),
-    });
-
-    if (msgErr) {
+      resetForm();
+      onSent();
+      onClose();
+    } catch {
       setError('Fehler beim Senden der Nachricht.');
       setSending(false);
-      return;
     }
-
-    if (tenantId) {
-      await supabase.from('tenant_communications').insert({
-        user_id: user.id,
-        tenant_id: tenantId,
-        communication_type: 'message',
-        subject: subject.trim(),
-        content: content.trim(),
-        is_internal: false,
-      });
-    }
-
-    setSending(false);
-    resetForm();
-    onSent();
-    onClose();
   }
 
   function resetForm() {

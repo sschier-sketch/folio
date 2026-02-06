@@ -27,6 +27,12 @@ interface EmailRequest {
   idempotencyKey?: string;
   metadata?: Record<string, any>;
   attachments?: EmailAttachment[];
+  useUserAlias?: boolean;
+  storeAsMessage?: boolean;
+  threadId?: string;
+  recipientName?: string;
+  tenantId?: string;
+  replyTo?: string;
 }
 
 function replaceVariables(content: string, variables: Record<string, string>): string {
@@ -36,6 +42,109 @@ function replaceVariables(content: string, variables: Record<string, string>): s
     result = result.replace(placeholder, value);
   });
   return result;
+}
+
+async function resolveFromAddress(
+  supabase: any,
+  userId: string | undefined,
+  useUserAlias: boolean | undefined,
+  defaultFrom: string
+): Promise<string> {
+  if (!userId || !useUserAlias) return defaultFrom;
+
+  const { data: mailbox } = await supabase
+    .from('user_mailboxes')
+    .select('alias_localpart, is_active')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (!mailbox) return defaultFrom;
+
+  const { data: profile } = await supabase
+    .from('account_profiles')
+    .select('first_name, last_name, company_name')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  const aliasEmail = `${mailbox.alias_localpart}@rentab.ly`;
+
+  if (profile) {
+    const displayName = profile.company_name
+      || [profile.first_name, profile.last_name].filter(Boolean).join(' ')
+      || 'Rentably';
+    return `${displayName} <${aliasEmail}>`;
+  }
+
+  return `Rentably <${aliasEmail}>`;
+}
+
+async function storeOutboundMessage(
+  supabase: any,
+  params: {
+    userId: string;
+    to: string;
+    subject: string;
+    bodyText: string;
+    bodyHtml: string | null;
+    senderAddress: string;
+    providerMessageId: string;
+    threadId?: string;
+    recipientName?: string;
+    tenantId?: string;
+  }
+) {
+  let threadId = params.threadId;
+
+  if (threadId) {
+    await supabase
+      .from('mail_threads')
+      .update({
+        last_message_at: new Date().toISOString(),
+        last_email_message_id: params.providerMessageId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', threadId);
+
+    await supabase.rpc('increment_thread_message_count', { p_thread_id: threadId });
+  } else {
+    const { data: newThread } = await supabase
+      .from('mail_threads')
+      .insert({
+        user_id: params.userId,
+        tenant_id: params.tenantId || null,
+        external_email: params.to,
+        external_name: params.recipientName || null,
+        subject: params.subject,
+        folder: 'sent',
+        status: 'read',
+        last_message_at: new Date().toISOString(),
+        last_email_message_id: params.providerMessageId,
+        message_count: 1,
+      })
+      .select('id')
+      .maybeSingle();
+
+    if (newThread) threadId = newThread.id;
+  }
+
+  if (!threadId) return;
+
+  await supabase.from('mail_messages').insert({
+    thread_id: threadId,
+    user_id: params.userId,
+    direction: 'outbound',
+    sender_address: params.senderAddress,
+    sender_name: '',
+    recipient_address: params.to,
+    recipient_name: params.recipientName || '',
+    body_text: params.bodyText,
+    body_html: params.bodyHtml,
+    email_message_id: params.providerMessageId,
+    provider_message_id: params.providerMessageId,
+  });
+
+  return threadId;
 }
 
 Deno.serve(async (req: Request) => {
@@ -66,7 +175,13 @@ Deno.serve(async (req: Request) => {
       category,
       idempotencyKey,
       metadata,
-      attachments
+      attachments,
+      useUserAlias,
+      storeAsMessage,
+      threadId,
+      recipientName,
+      tenantId,
+      replyTo,
     }: EmailRequest = await req.json();
 
     let finalSubject = subject || '';
@@ -75,7 +190,6 @@ Deno.serve(async (req: Request) => {
     let finalMailType = mailType || templateKey || 'generic';
     let finalCategory = category || 'transactional';
 
-    // Check idempotency
     if (idempotencyKey) {
       const { data: existingLog } = await supabase
         .from('email_logs')
@@ -84,8 +198,6 @@ Deno.serve(async (req: Request) => {
         .maybeSingle();
 
       if (existingLog && (existingLog.status === 'sent' || existingLog.status === 'queued')) {
-        console.log('Email already sent/queued with idempotency key:', idempotencyKey);
-
         return new Response(
           JSON.stringify({
             success: true,
@@ -101,7 +213,6 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Load template if specified
     if (templateKey) {
       let userLanguage = language || 'de';
 
@@ -139,11 +250,14 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    if (!to || !finalSubject || !finalHtml) {
-      throw new Error("Missing required fields: to, and either (subject + html) or templateKey");
+    if (!to || !finalSubject || (!finalHtml && !finalText)) {
+      throw new Error("Missing required fields: to, subject, and html or text");
     }
 
-    // Create email log entry (status: queued)
+    if (!finalHtml && finalText) {
+      finalHtml = `<div style="font-family: Arial, sans-serif; white-space: pre-wrap;">${finalText}</div>`;
+    }
+
     const { data: logEntry, error: logError } = await supabase
       .from('email_logs')
       .insert({
@@ -182,28 +296,20 @@ Deno.serve(async (req: Request) => {
       throw new Error('RESEND_API_KEY not configured');
     }
 
-    const EMAIL_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
-    const NODE_ENV = Deno.env.get('NODE_ENV') || 'production';
-
-    // DEV Mode: Log email preview
-    if (NODE_ENV === 'development') {
-      console.log('=== EMAIL PREVIEW (DEV MODE) ===');
-      console.log('To:', to);
-      console.log('Subject:', finalSubject);
-      console.log('Mail Type:', finalMailType);
-      console.log('Idempotency Key:', idempotencyKey || 'none');
-      console.log('===============================');
-    }
-
-    console.log('Sending email via Resend:', { to, subject: finalSubject, from: EMAIL_FROM });
+    const DEFAULT_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
+    const fromAddress = await resolveFromAddress(supabase, userId, useUserAlias, DEFAULT_FROM);
 
     const emailPayload: any = {
-      from: EMAIL_FROM,
+      from: fromAddress,
       to: [to],
       subject: finalSubject,
       html: finalHtml,
       text: finalText || '',
     };
+
+    if (replyTo) {
+      emailPayload.reply_to = replyTo;
+    }
 
     if (attachments && attachments.length > 0) {
       emailPayload.attachments = await Promise.all(
@@ -244,6 +350,8 @@ Deno.serve(async (req: Request) => {
       ).then(results => results.filter(r => r !== null));
     }
 
+    console.log('Sending email via Resend:', { to, subject: finalSubject, from: fromAddress });
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -270,7 +378,6 @@ Deno.serve(async (req: Request) => {
       throw new Error(data.message || 'Failed to send email via Resend');
     }
 
-    // Update log: success
     await supabase
       .from('email_logs')
       .update({
@@ -279,6 +386,24 @@ Deno.serve(async (req: Request) => {
         sent_at: new Date().toISOString(),
       })
       .eq('id', logId);
+
+    let resultThreadId: string | undefined;
+
+    if (storeAsMessage && userId) {
+      const senderAddr = fromAddress.match(/<(.+)>/)?.[1] || fromAddress;
+      resultThreadId = await storeOutboundMessage(supabase, {
+        userId,
+        to,
+        subject: finalSubject,
+        bodyText: finalText || '',
+        bodyHtml: finalHtml || null,
+        senderAddress: senderAddr,
+        providerMessageId: data.id,
+        threadId,
+        recipientName,
+        tenantId,
+      });
+    }
 
     console.log('Email sent successfully:', { id: data.id, to, subject: finalSubject });
 
@@ -289,6 +414,7 @@ Deno.serve(async (req: Request) => {
         recipient: to,
         emailId: data.id,
         logId: logId,
+        threadId: resultThreadId || null,
       }),
       {
         status: 200,
@@ -298,7 +424,6 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     console.error('Error sending email:', error);
 
-    // Update log if we created one
     if (logId) {
       await supabase
         .from('email_logs')

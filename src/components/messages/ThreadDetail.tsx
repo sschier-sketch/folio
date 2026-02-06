@@ -82,43 +82,51 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent 
     if (!replyText.trim() || !user) return;
     setSending(true);
 
-    const senderAddr = userAlias ? `${userAlias}@rentab.ly` : '';
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    const { error: msgError } = await supabase.from('mail_messages').insert({
-      thread_id: thread.id,
-      user_id: user.id,
-      direction: 'outbound',
-      sender_address: senderAddr,
-      sender_name: '',
-      recipient_address: recipientEmail,
-      recipient_name: recipientName,
-      body_text: replyText.trim(),
-    });
+      const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          to: recipientEmail,
+          subject: `Re: ${thread.subject || ''}`.trim(),
+          text: replyText.trim(),
+          userId: user.id,
+          useUserAlias: true,
+          storeAsMessage: true,
+          threadId: thread.id,
+          recipientName,
+          tenantId: thread.tenant_id || undefined,
+          mailType: 'user_message',
+          category: 'transactional',
+        }),
+      });
 
-    if (!msgError) {
-      await supabase
-        .from('mail_threads')
-        .update({
-          last_message_at: new Date().toISOString(),
-          message_count: thread.message_count + messages.length + 1 - messages.length + 1,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', thread.id);
+      const result = await response.json();
 
-      if (thread.tenant_id) {
-        await supabase.from('tenant_communications').insert({
-          user_id: user.id,
-          tenant_id: thread.tenant_id,
-          communication_type: 'message',
-          subject: thread.subject || 'Antwort',
-          content: replyText.trim(),
-          is_internal: false,
-        });
+      if (response.ok && !result.error) {
+        if (thread.tenant_id) {
+          await supabase.from('tenant_communications').insert({
+            user_id: user.id,
+            tenant_id: thread.tenant_id,
+            communication_type: 'message',
+            subject: thread.subject || 'Antwort',
+            content: replyText.trim(),
+            is_internal: false,
+          });
+        }
+
+        setReplyText('');
+        onMessageSent();
+        loadMessages();
       }
-
-      setReplyText('');
-      onMessageSent();
-      loadMessages();
+    } catch {
+      // silent fail
     }
 
     setSending(false);
