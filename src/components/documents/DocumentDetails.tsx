@@ -832,15 +832,28 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    Im Mieterportal zur Verfuegung stellen
+                    Im Mieterportal zur Verfügung stellen
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {associations.some((a) => a.association_type === "tenant")
-                      ? "Nur der zugeordnete Mieter sieht dieses Dokument in seinem Portal."
-                      : "Alle Mieter der zugeordneten Immobilie/Einheit koennen dieses Dokument einsehen."}
-                  </p>
                 </div>
               </label>
+
+              {document?.shared_with_tenant && (
+                <div className="mt-3 ml-7 space-y-2 text-xs text-gray-500">
+                  <p className="font-medium text-gray-600 mb-1">Sichtbarkeit je nach Zuordnung:</p>
+                  <div className="flex items-start gap-2">
+                    <span className={`mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${associations.some((a) => a.association_type === "tenant") ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                    <span><span className="font-medium text-gray-600">Mieter zugeordnet:</span> Nur der zugeordnete Mieter sieht das Dokument.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className={`mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${associations.some((a) => a.association_type === "property" || a.association_type === "unit") && !associations.some((a) => a.association_type === "tenant") ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                    <span><span className="font-medium text-gray-600">Immobilie/Einheit zugeordnet:</span> Alle Mieter dieser Immobilie bzw. Einheit sehen das Dokument.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className={`mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${associations.length === 0 ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                    <span><span className="font-medium text-gray-600">Keine Zuordnung:</span> Alle angemeldeten Mieter sehen das Dokument in ihrem Portal.</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
