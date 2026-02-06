@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Shield, Lock, CreditCard, Eye, EyeOff } from "lucide-react";
+import { User, Shield, Lock, CreditCard, Eye, EyeOff, Hash } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -36,6 +36,8 @@ export default function ProfileSettingsView() {
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
 
+  const [customerNumber, setCustomerNumber] = useState<string | null>(null);
+
   const [bankDetails, setBankDetails] = useState<BankDetails>({
     account_holder: "",
     iban: "",
@@ -53,6 +55,7 @@ export default function ProfileSettingsView() {
   useEffect(() => {
     loadUserSettings();
     loadBankDetails();
+    loadCustomerNumber();
   }, [user]);
 
   const loadUserSettings = async () => {
@@ -95,6 +98,21 @@ export default function ProfileSettingsView() {
       }
     } catch (error) {
       console.error("Error loading bank details:", error);
+    }
+  };
+
+  const loadCustomerNumber = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("account_profiles")
+        .select("customer_number")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) setCustomerNumber(data.customer_number);
+    } catch (error) {
+      console.error("Error loading customer number:", error);
     }
   };
 
@@ -235,6 +253,17 @@ export default function ProfileSettingsView() {
                 : "Your email address cannot be changed currently."}
             </p>
           </div>
+          {customerNumber && (
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                {language === "de" ? "Kundennummer" : "Customer Number"}
+              </label>
+              <div className="flex items-center gap-2">
+                <Hash className="w-4 h-4 text-gray-300" />
+                <span className="font-mono text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">{customerNumber}</span>
+              </div>
+            </div>
+          )}
           {userSettings && (
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">

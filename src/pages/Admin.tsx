@@ -48,6 +48,7 @@ interface UserData {
   is_admin?: boolean;
   banned?: boolean;
   ban_reason?: string;
+  customer_number?: string;
 }
 
 interface Stats {
@@ -356,6 +357,14 @@ export function Admin() {
                         <StatusBadge type="neutral" label="Gesperrt" icon={<Ban className="w-3 h-3" />} />
                       )}
                     </div>
+                  )
+                },
+                {
+                  key: "customer_number",
+                  header: "Kundennr.",
+                  sortable: true,
+                  render: (user: UserData) => (
+                    <span className="text-xs font-mono text-gray-500">{user.customer_number || "-"}</span>
                   )
                 },
                 {
