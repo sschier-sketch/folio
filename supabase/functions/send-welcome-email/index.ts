@@ -108,14 +108,14 @@ Deno.serve(async (req: Request) => {
       await supabase
         .from("email_logs")
         .update({
-          status: "processing",
+          status: "queued",
           error_code: null,
           error_message: null,
           subject: finalSubject,
         })
         .eq("id", logId);
     } else {
-      const { data: newLog } = await supabase
+      const { data: newLog, error: insertError } = await supabase
         .from("email_logs")
         .insert({
           mail_type: "registration",
@@ -124,13 +124,16 @@ Deno.serve(async (req: Request) => {
           user_id: userId,
           subject: finalSubject,
           provider: "resend",
-          status: "processing",
+          status: "queued",
           idempotency_key: idempotencyKey,
           metadata: { template_key: "registration", trigger: "signup" },
         })
         .select("id")
         .maybeSingle();
 
+      if (insertError) {
+        console.error("send-welcome-email: log insert failed:", insertError.message);
+      }
       if (newLog) logId = newLog.id;
     }
 
