@@ -6,17 +6,20 @@ import {
   Users,
   Award,
   TrendingUp,
-  Share2,
   Mail,
   Send,
-  Calendar,
   Linkedin,
   Clock,
+  Banknote,
+  ArrowUpRight,
+  Link as LinkIcon,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
-import { BaseTable, StatusBadge, TableColumn } from "./common/BaseTable";
+import { BaseTable, StatusBadge } from "./common/BaseTable";
+import ReferralChart from "./referral/ReferralChart";
+import ReferralPayoutSection from "./referral/ReferralPayoutSection";
 
 interface ReferralStats {
   totalReferrals: number;
@@ -33,6 +36,7 @@ interface Referral {
   status: string;
   reward_earned: boolean;
   reward_months: number;
+  cash_reward_eur: number;
   created_at: string;
   completed_at: string | null;
   reward_activated_at: string | null;
@@ -48,11 +52,21 @@ interface ReferralReward {
   created_at: string;
 }
 
+interface PayoutRequest {
+  id: string;
+  amount: number;
+  status: string;
+  created_at: string;
+  processed_at: string | null;
+  rejected_reason: string | null;
+}
+
 export default function ReferralProgramView() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [referralCode, setReferralCode] = useState("");
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -66,6 +80,10 @@ export default function ReferralProgramView() {
   });
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [rewards, setRewards] = useState<ReferralReward[]>([]);
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRequest[]>([]);
+  const [balance, setBalance] = useState(0);
+  const [totalEarned, setTotalEarned] = useState(0);
+  const [totalPaidOut, setTotalPaidOut] = useState(0);
 
   const [recipientEmail, setRecipientEmail] = useState("");
   const [recipientName, setRecipientName] = useState("");
@@ -79,7 +97,7 @@ export default function ReferralProgramView() {
     if (!user) return;
 
     try {
-      const [settingsRes, referralsRes, rewardsRes] = await Promise.all([
+      const [settingsRes, referralsRes, rewardsRes, payoutsRes] = await Promise.all([
         supabase
           .from("user_settings")
           .select("referral_code")
@@ -95,17 +113,25 @@ export default function ReferralProgramView() {
           .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("referral_payout_requests")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
       ]);
 
       if (settingsRes.data) {
         setReferralCode(settingsRes.data.referral_code);
       }
 
-      const referralsData = referralsRes.data || [];
+      const referralsData = (referralsRes.data || []) as Referral[];
       setReferrals(referralsData);
 
       const rewardsData = rewardsRes.data || [];
       setRewards(rewardsData);
+
+      const payoutsData = (payoutsRes.data || []) as PayoutRequest[];
+      setPayoutRequests(payoutsData);
 
       const totalReferrals = referralsData.length;
       const completedReferrals = referralsData.filter(
@@ -134,6 +160,18 @@ export default function ReferralProgramView() {
         activeMonths,
         usedMonths,
       });
+
+      const earned = referralsData
+        .filter((r) => r.status === "completed")
+        .reduce((sum, r) => sum + (r.cash_reward_eur || 10), 0);
+      setTotalEarned(earned);
+
+      const paidOut = payoutsData
+        .filter((p) => p.status === "paid" || p.status === "approved")
+        .reduce((sum, p) => sum + p.amount, 0);
+      setTotalPaidOut(paidOut);
+
+      setBalance(earned - paidOut);
     } catch (error) {
       console.error("Error loading referral data:", error);
     } finally {
@@ -144,8 +182,8 @@ export default function ReferralProgramView() {
   const handleCopyReferralLink = () => {
     const referralUrl = `${window.location.origin}/signup?ref=${referralCode}`;
     navigator.clipboard.writeText(referralUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   const handleCopyCode = () => {
@@ -157,7 +195,7 @@ export default function ReferralProgramView() {
   const handleShareLinkedIn = () => {
     const referralUrl = `${window.location.origin}/signup?ref=${referralCode}`;
     const text = encodeURIComponent(
-      "Ich nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Mit meinem Empfehlungscode erhältst du 2 Monate PRO gratis. 🏘️"
+      "Ich nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Mit meinem Empfehlungscode erhältst du 2 Monate PRO gratis."
     );
     const url = encodeURIComponent(referralUrl);
     window.open(
@@ -221,6 +259,8 @@ export default function ReferralProgramView() {
     );
   }
 
+  const referralUrl = `${window.location.origin}/signup?ref=${referralCode}`;
+
   return (
     <div>
       <div className="mb-8">
@@ -228,7 +268,7 @@ export default function ReferralProgramView() {
           Empfehlungsprogramm
         </h1>
         <p className="text-gray-400 mt-1">
-          Empfehlen Sie rentab.ly und erhalten Sie 2 Monate PRO gratis
+          Empfehlen Sie rentab.ly und erhalten Sie 2 Monate PRO gratis + 10 EUR pro erfolgreiche Empfehlung
         </p>
       </div>
 
@@ -239,7 +279,7 @@ export default function ReferralProgramView() {
               <Gift className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <h2 className="text-lg font-semibold text-dark">
-              Ihr persönlicher Empfehlungscode
+              Ihr persoenlicher Empfehlungscode
             </h2>
           </div>
 
@@ -264,6 +304,40 @@ export default function ReferralProgramView() {
                 ) : (
                   <>
                     <Copy className="w-4 h-4" /> Kopieren
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+            <p className="text-gray-600 text-xs mb-2">Ihr persoenlicher Empfehlungslink:</p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyReferralLink}
+                className="flex-1 flex items-center gap-2 text-left group"
+              >
+                <LinkIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span className="text-sm font-mono text-primary-blue truncate group-hover:underline">
+                  {referralUrl}
+                </span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 group-hover:text-primary-blue transition-colors" />
+              </button>
+              <button
+                onClick={handleCopyReferralLink}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                  linkCopied
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                }`}
+              >
+                {linkCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" /> Kopiert!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" /> Link kopieren
                   </>
                 )}
               </button>
@@ -297,6 +371,28 @@ export default function ReferralProgramView() {
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+                <Banknote className="w-5 h-5 text-[#1e1e24]" />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-dark mb-1">
+              {balance.toFixed(2)} EUR
+            </div>
+            <div className="text-sm text-gray-600">Aktuelles Guthaben</div>
+            <div className="pt-3 mt-3 border-t border-gray-200 space-y-1.5 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500">Verdient</span>
+                <span className="font-medium text-dark">{totalEarned.toFixed(2)} EUR</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500">Ausgezahlt</span>
+                <span className="font-medium text-dark">{totalPaidOut.toFixed(2)} EUR</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
                 <Award className="w-5 h-5 text-[#1e1e24]" />
               </div>
             </div>
@@ -323,6 +419,14 @@ export default function ReferralProgramView() {
           </div>
         </div>
       </div>
+
+      <ReferralPayoutSection
+        balance={balance}
+        payoutRequests={payoutRequests}
+        onPayoutRequested={loadReferralData}
+      />
+
+      <ReferralChart referrals={referrals} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -365,12 +469,12 @@ export default function ReferralProgramView() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Persönliche Nachricht (optional)
+                Persoenliche Nachricht (optional)
               </label>
               <textarea
                 value={personalMessage}
                 onChange={(e) => setPersonalMessage(e.target.value)}
-                placeholder="Fügen Sie eine persönliche Nachricht hinzu..."
+                placeholder="Fuegen Sie eine persoenliche Nachricht hinzu..."
                 rows={3}
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent resize-none"
               />
@@ -402,7 +506,7 @@ export default function ReferralProgramView() {
 
           <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
             <p className="text-xs text-gray-600">
-              Die E-Mail enthält Ihren persönlichen Empfehlungslink und eine
+              Die E-Mail enthaelt Ihren persoenlichen Empfehlungslink und eine
               Beschreibung der Vorteile von rentab.ly.
             </p>
           </div>
@@ -428,7 +532,7 @@ export default function ReferralProgramView() {
                   Teilen Sie Ihren Code
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Teilen Sie Ihren persönlichen Empfehlungscode oder Link mit
+                  Teilen Sie Ihren persoenlichen Empfehlungscode oder Link mit
                   Freunden und Kollegen.
                 </p>
               </div>
@@ -455,12 +559,12 @@ export default function ReferralProgramView() {
               </div>
               <div>
                 <h4 className="font-semibold text-dark mb-1 text-sm">
-                  Belohnungen werden aktiviert
+                  Belohnungen & Guthaben
                 </h4>
                 <p className="text-sm text-gray-600">
-                  <strong>Basic Kunden:</strong> 2 Monate PRO werden sofort aktiviert
+                  <strong>PRO Monate:</strong> 2 Monate werden sofort aktiviert
                   <br />
-                  <strong>PRO Kunden:</strong> 2 Monate werden am Ende Ihrer Laufzeit hinzugefügt
+                  <strong>Guthaben:</strong> 10 EUR pro Empfehlung, auszahlbar ab 25 EUR
                 </p>
               </div>
             </div>
@@ -527,6 +631,18 @@ export default function ReferralProgramView() {
                   <span className="text-gray-400 text-sm">-</span>
                 ),
             },
+            {
+              key: "cash",
+              header: "Guthaben",
+              render: (referral: Referral) =>
+                referral.status === "completed" ? (
+                  <span className="font-semibold text-emerald-600 text-sm">
+                    +{referral.cash_reward_eur || 10} EUR
+                  </span>
+                ) : (
+                  <span className="text-gray-400 text-sm">-</span>
+                ),
+            },
           ]}
           data={referrals}
           loading={false}
@@ -550,7 +666,7 @@ export default function ReferralProgramView() {
                   <span className="text-sm text-gray-900">
                     {reward.reward_type === "pro_upgrade"
                       ? "PRO Upgrade"
-                      : "PRO Verlängerung"}
+                      : "PRO Verlaengerung"}
                   </span>
                 ),
               },
@@ -601,7 +717,7 @@ export default function ReferralProgramView() {
               },
               {
                 key: "expires_at",
-                header: "Läuft ab am",
+                header: "Laeuft ab am",
                 render: (reward: ReferralReward) => (
                   <span className="text-sm text-gray-600">
                     {reward.expires_at
