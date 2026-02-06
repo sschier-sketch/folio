@@ -776,7 +776,7 @@ export default function TenantRentHistoryTab({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg p-6">
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
                   <span className="text-sm text-gray-500">Kappungsgrenze (3 Jahre)</span>
@@ -792,7 +792,7 @@ export default function TenantRentHistoryTab({
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6">
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
                   <span className="text-sm text-gray-500">Maximale neue Miete</span>
@@ -808,7 +808,7 @@ export default function TenantRentHistoryTab({
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6">
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
                   <span className="text-sm text-gray-500">15-Monats-Frist (§558)</span>
