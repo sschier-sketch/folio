@@ -8,22 +8,32 @@ const corsHeaders = {
     "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-interface ResendInboundEmail {
-  from: string;
-  to: string;
-  subject: string;
-  text?: string;
-  html?: string;
-  message_id?: string;
-  in_reply_to?: string;
-  references?: string;
-  created_at?: string;
-  headers?: { name: string; value: string }[];
-}
-
 interface ResendWebhookPayload {
   type: string;
-  data: ResendInboundEmail;
+  created_at?: string;
+  data: {
+    email_id: string;
+    from: string;
+    to: string[];
+    cc?: string[];
+    bcc?: string[];
+    subject: string;
+    message_id?: string;
+    created_at?: string;
+    attachments?: { id: string; filename: string; content_type: string }[];
+  };
+}
+
+interface ResendEmailContent {
+  id: string;
+  from: string;
+  to: string[];
+  subject: string;
+  html: string | null;
+  text: string | null;
+  headers: Record<string, string>;
+  message_id: string | null;
+  created_at: string;
 }
 
 function extractEmail(raw: string): string {
@@ -49,12 +59,86 @@ function normalizeSubject(subject: string): string {
     .toLowerCase();
 }
 
-function parseReferences(refs: string | undefined): string[] {
+function parseReferences(refs: string | undefined | null): string[] {
   if (!refs) return [];
   return refs
     .split(/\s+/)
     .map((r) => r.trim())
     .filter(Boolean);
+}
+
+async function verifyWebhookSignature(
+  body: string,
+  headers: Headers,
+  secret: string
+): Promise<boolean> {
+  const svixId = headers.get("svix-id");
+  const svixTimestamp = headers.get("svix-timestamp");
+  const svixSignature = headers.get("svix-signature");
+
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    return false;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const timestamp = parseInt(svixTimestamp, 10);
+  if (isNaN(timestamp) || Math.abs(now - timestamp) > 300) {
+    return false;
+  }
+
+  const rawSecret = secret.startsWith("whsec_") ? secret.slice(6) : secret;
+  const secretBytes = Uint8Array.from(atob(rawSecret), (c) =>
+    c.charCodeAt(0)
+  );
+
+  const signatureBase = `${svixId}.${svixTimestamp}.${body}`;
+  const encoder = new TextEncoder();
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    secretBytes,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signatureBytes = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(signatureBase)
+  );
+
+  const expectedSignature = btoa(
+    String.fromCharCode(...new Uint8Array(signatureBytes))
+  );
+
+  const signatures = svixSignature.split(" ");
+  return signatures.some((sig) => {
+    const parts = sig.split(",");
+    if (parts.length < 2 || parts[0] !== "v1") return false;
+    return parts[1] === expectedSignature;
+  });
+}
+
+async function fetchEmailContent(
+  emailId: string,
+  apiKey: string
+): Promise<ResendEmailContent | null> {
+  const response = await fetch(
+    `https://api.resend.com/emails/receiving/${emailId}`,
+    {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    }
+  );
+
+  if (!response.ok) {
+    console.error(
+      `Failed to fetch email content: ${response.status} ${response.statusText}`
+    );
+    return null;
+  }
+
+  return await response.json();
 }
 
 Deno.serve(async (req: Request) => {
@@ -67,37 +151,91 @@ Deno.serve(async (req: Request) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET");
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    const payload: ResendWebhookPayload = await req.json();
+    const rawBody = await req.text();
 
-    if (!payload.data || !payload.data.from || !payload.data.to) {
-      return new Response(
-        JSON.stringify({ error: "Invalid payload" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+    if (webhookSecret) {
+      const isValid = await verifyWebhookSignature(
+        rawBody,
+        req.headers,
+        webhookSecret
       );
+      if (!isValid) {
+        console.error("Webhook signature validation failed");
+        return new Response(
+          JSON.stringify({ error: "Invalid webhook signature" }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
     }
 
-    const email = payload.data;
-    const fromAddress = extractEmail(email.from);
-    const fromName = extractName(email.from) || fromAddress;
-    const toRaw = email.to;
-    const toAddresses = toRaw.split(",").map((t: string) => extractEmail(t));
-    const subject = email.subject || "(Kein Betreff)";
-    const bodyText = email.text || "";
-    const bodyHtml = email.html || null;
-    const messageId = email.message_id || null;
-    const inReplyTo = email.in_reply_to || null;
-    const references = parseReferences(email.references);
-    const receivedAt = email.created_at
-      ? new Date(email.created_at).toISOString()
+    const payload: ResendWebhookPayload = JSON.parse(rawBody);
+
+    if (payload.type !== "email.received") {
+      return new Response(JSON.stringify({ ignored: true, type: payload.type }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!payload.data || !payload.data.from || !payload.data.to) {
+      return new Response(JSON.stringify({ error: "Invalid payload" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const webhookData = payload.data;
+    const emailId = webhookData.email_id;
+
+    let bodyText = "";
+    let bodyHtml: string | null = null;
+    let messageId = webhookData.message_id || null;
+    let inReplyTo: string | null = null;
+    let references: string[] = [];
+    let fullHeaders: Record<string, string> = {};
+
+    if (emailId && resendApiKey) {
+      const emailContent = await fetchEmailContent(emailId, resendApiKey);
+      if (emailContent) {
+        bodyText = emailContent.text || "";
+        bodyHtml = emailContent.html || null;
+        fullHeaders = emailContent.headers || {};
+
+        if (emailContent.message_id) {
+          messageId = emailContent.message_id;
+        }
+
+        inReplyTo = fullHeaders["in-reply-to"] || null;
+        references = parseReferences(fullHeaders["references"]);
+      }
+    }
+
+    const fromAddress = extractEmail(webhookData.from);
+    const fromName = extractName(webhookData.from) || fromAddress;
+    const toAddresses = Array.isArray(webhookData.to)
+      ? webhookData.to.map((t: string) => extractEmail(t))
+      : String(webhookData.to)
+          .split(",")
+          .map((t: string) => extractEmail(t));
+    const subject = webhookData.subject || "(Kein Betreff)";
+    const receivedAt = webhookData.created_at
+      ? new Date(webhookData.created_at).toISOString()
       : new Date().toISOString();
 
+    console.log(
+      `[inbound] from=${fromAddress} to=${toAddresses.join(",")} subject="${subject}" email_id=${emailId || "n/a"}`
+    );
+
     let processed = 0;
+    let noMailboxFound = true;
 
     for (const toAddr of toAddresses) {
       if (!toAddr.endsWith("@rentab.ly")) continue;
@@ -111,10 +249,11 @@ Deno.serve(async (req: Request) => {
         .maybeSingle();
 
       if (!mailbox || !mailbox.is_active) {
-        console.log(`No active mailbox for alias: ${aliasLocalpart}`);
+        console.log(`[inbound] No active mailbox for alias: ${aliasLocalpart}`);
         continue;
       }
 
+      noMailboxFound = false;
       const userId = mailbox.user_id;
 
       if (messageId) {
@@ -126,7 +265,7 @@ Deno.serve(async (req: Request) => {
           .maybeSingle();
 
         if (existing) {
-          console.log(`Duplicate message skipped: ${messageId}`);
+          console.log(`[inbound] Duplicate skipped: ${messageId}`);
           processed++;
           continue;
         }
@@ -171,25 +310,31 @@ Deno.serve(async (req: Request) => {
         if (replyThread) {
           threadId = replyThread.id;
           if (replyThread.tenant_id) tenantId = replyThread.tenant_id;
-          if (replyThread.folder === "inbox" || replyThread.folder === "sent")
+          if (
+            replyThread.folder === "inbox" ||
+            replyThread.folder === "sent"
+          )
             folder = "inbox";
         }
       }
 
       if (!threadId && references.length > 0) {
-        for (const ref of references.reverse()) {
-          const { data: refThread } = await supabase
+        for (const ref of [...references].reverse()) {
+          const { data: refMsg } = await supabase
             .from("mail_messages")
-            .select("thread_id, mail_threads!inner(id, user_id, tenant_id, folder)")
+            .select(
+              "thread_id, mail_threads!inner(id, user_id, tenant_id, folder)"
+            )
             .eq("user_id", userId)
             .eq("email_message_id", ref)
             .maybeSingle();
 
-          if (refThread) {
-            threadId = refThread.thread_id;
-            const t = refThread.mail_threads as any;
+          if (refMsg) {
+            threadId = refMsg.thread_id;
+            const t = refMsg.mail_threads as any;
             if (t?.tenant_id) tenantId = t.tenant_id;
-            if (t?.folder === "inbox" || t?.folder === "sent") folder = "inbox";
+            if (t?.folder === "inbox" || t?.folder === "sent")
+              folder = "inbox";
             break;
           }
         }
@@ -213,7 +358,8 @@ Deno.serve(async (req: Request) => {
         ) {
           threadId = subjectThread.id;
           if (subjectThread.tenant_id) tenantId = subjectThread.tenant_id;
-          if (subjectThread.folder !== "unknown") folder = subjectThread.folder as any;
+          if (subjectThread.folder !== "unknown")
+            folder = subjectThread.folder as any;
         }
       }
 
@@ -231,7 +377,6 @@ Deno.serve(async (req: Request) => {
         await supabase.rpc("increment_thread_message_count", {
           p_thread_id: threadId,
         });
-
       } else {
         const { data: newThread, error: threadErr } = await supabase
           .from("mail_threads")
@@ -251,7 +396,7 @@ Deno.serve(async (req: Request) => {
           .single();
 
         if (threadErr || !newThread) {
-          console.error("Failed to create thread:", threadErr);
+          console.error("[inbound] Failed to create thread:", threadErr);
           continue;
         }
 
@@ -275,22 +420,35 @@ Deno.serve(async (req: Request) => {
       });
 
       if (msgErr) {
-        console.error("Failed to insert message:", msgErr);
+        console.error("[inbound] Failed to insert message:", msgErr);
         continue;
       }
 
+      console.log(
+        `[inbound] Stored message for user=${userId} thread=${threadId} folder=${folder}`
+      );
       processed++;
     }
 
-    return new Response(
-      JSON.stringify({ success: true, processed }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    if (noMailboxFound && processed === 0) {
+      console.log(
+        `[inbound] No matching mailbox found for recipients: ${toAddresses.join(", ")}`
+      );
+      return new Response(
+        JSON.stringify({ accepted: true, reason: "no matching mailbox" }),
+        {
+          status: 202,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    return new Response(JSON.stringify({ success: true, processed }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
-    console.error("Inbound webhook error:", error);
+    console.error("[inbound] Webhook error:", error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Internal error",
