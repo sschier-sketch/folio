@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Calculator, TrendingUp, FileText, Clock, CheckCircle, AlertCircle, X } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Calculator, TrendingUp, FileText, Clock, CheckCircle, AlertCircle, X, Info, Users, Euro } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -46,6 +46,29 @@ interface CalculationRun {
   error_message?: string;
 }
 
+function InfoTooltip({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div className="relative inline-block ml-1.5">
+      <button
+        type="button"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        className="text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <Info className="w-4 h-4" />
+      </button>
+      {show && (
+        <div className="absolute z-50 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg -top-2 left-6">
+          <div className="absolute -left-1 top-3 w-2 h-2 bg-gray-900 transform rotate-45" />
+          {text}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function IndexRentView() {
   const { user } = useAuth();
   const [calculations, setCalculations] = useState<IndexRentCalculation[]>([]);
@@ -88,7 +111,6 @@ export default function IndexRentView() {
 
   const loadLastRun = async () => {
     try {
-      // Get the last global run date
       const { data: globalRun, error: globalRunError } = await supabase
         .from("index_rent_calculation_runs")
         .select("*")
@@ -99,7 +121,6 @@ export default function IndexRentView() {
       if (globalRunError) throw globalRunError;
 
       if (globalRun) {
-        // Count user-specific contracts that would be checked
         const { count: userContractsCount, error: contractsError } = await supabase
           .from("rental_contracts")
           .select("id", { count: "exact", head: true })
@@ -110,7 +131,6 @@ export default function IndexRentView() {
 
         if (contractsError) throw contractsError;
 
-        // Count user-specific calculations created during the last run
         const { data: userCalculations, error: calculationsError } = await supabase
           .from("index_rent_calculations")
           .select("id, rental_contracts!contract_id(user_id)")
@@ -118,12 +138,10 @@ export default function IndexRentView() {
 
         if (calculationsError) throw calculationsError;
 
-        // Filter calculations for this user
         const userCalculationsCount = userCalculations?.filter(
           (calc: any) => calc.rental_contracts?.user_id === user?.id
         ).length || 0;
 
-        // Create user-specific run info
         setLastRun({
           ...globalRun,
           contracts_checked: userContractsCount || 0,
@@ -185,21 +203,6 @@ export default function IndexRentView() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="w-5 h-5 text-yellow-500" />;
-      case "calculated":
-        return <Calculator className="w-5 h-5 text-blue-500" />;
-      case "notified":
-        return <AlertCircle className="w-5 h-5 text-orange-500" />;
-      case "applied":
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      default:
-        return null;
-    }
-  };
-
   const getStatusText = (status: string) => {
     switch (status) {
       case "pending":
@@ -241,10 +244,37 @@ export default function IndexRentView() {
     }
   };
 
+  const summaryMetrics = useMemo(() => {
+    const total = calculations.length;
+    const pending = calculations.filter((c) => c.status === "pending" || c.status === "calculated").length;
+    const applied = calculations.filter((c) => c.status === "applied").length;
+
+    const avgIncrease = total > 0
+      ? calculations.reduce((sum, c) => {
+          const pct = c.ausgangsmiete_eur_qm > 0
+            ? ((c.neue_miete_eur_qm / c.ausgangsmiete_eur_qm - 1) * 100)
+            : 0;
+          return sum + pct;
+        }, 0) / total
+      : 0;
+
+    const totalNewRent = calculations
+      .filter((c) => c.gesamtmiete_eur)
+      .reduce((sum, c) => sum + (c.gesamtmiete_eur || 0), 0);
+
+    const totalOldRent = calculations
+      .filter((c) => c.wohnflaeche_qm && c.ausgangsmiete_eur_qm)
+      .reduce((sum, c) => sum + (c.ausgangsmiete_eur_qm * (c.wohnflaeche_qm || 0)), 0);
+
+    const monthlyDiff = totalNewRent - totalOldRent;
+
+    return { total, pending, applied, avgIncrease, totalNewRent, monthlyDiff };
+  }, [calculations]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Lade Indexmieten-Berechnungen...</div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -268,48 +298,92 @@ export default function IndexRentView() {
         </button>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center">
+              <span className="text-sm text-gray-500">Berechnungen gesamt</span>
+              <InfoTooltip text="Anzahl aller erstellten Indexmieten-Berechnungen für Ihre Verträge." />
+            </div>
+            <TrendingUp className="w-5 h-5 text-[#008CFF]" />
+          </div>
+          <p className="text-3xl font-bold text-dark">{summaryMetrics.total}</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {summaryMetrics.pending} ausstehend
+          </p>
+        </div>
+
+        <div className="bg-white rounded-lg p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center">
+              <span className="text-sm text-gray-500">Durchschn. Erhöhung</span>
+              <InfoTooltip text="Durchschnittliche prozentuale Mieterhöhung über alle Indexberechnungen basierend auf dem VPI." />
+            </div>
+            <TrendingUp className="w-5 h-5 text-[#008CFF]" />
+          </div>
+          <p className="text-3xl font-bold text-dark">
+            {summaryMetrics.avgIncrease.toFixed(2)}%
+          </p>
+          <p className="text-sm text-gray-500 mt-1">pro Berechnung</p>
+        </div>
+
+        <div className="bg-white rounded-lg p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center">
+              <span className="text-sm text-gray-500">Neue Gesamtmiete</span>
+              <InfoTooltip text="Summe aller neu berechneten Gesamtmieten nach Indexanpassung." />
+            </div>
+            <Euro className="w-5 h-5 text-[#008CFF]" />
+          </div>
+          <p className="text-3xl font-bold text-dark">
+            {summaryMetrics.totalNewRent > 0
+              ? new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(summaryMetrics.totalNewRent)
+              : "-"}
+          </p>
+          <p className="text-sm text-gray-500 mt-1">pro Monat</p>
+        </div>
+      </div>
+
       {lastRun && (
         <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3 flex-1">
-              <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-dark mb-1">Letzte automatische Berechnung</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  {new Date(lastRun.run_date).toLocaleDateString("de-DE", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })} um {new Date(lastRun.run_date).toLocaleTimeString("de-DE", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })} Uhr
-                </p>
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="text-gray-700">
-                    <span className="font-medium">{lastRun.contracts_checked}</span> {lastRun.contracts_checked === 1 ? 'Vertrag' : 'Verträge'} geprüft
-                  </span>
-                  <span className="text-gray-400">•</span>
-                  <span className={lastRun.calculations_created > 0 ? "text-green-600 font-medium" : "text-gray-700"}>
-                    <span className="font-medium">{lastRun.calculations_created}</span> {lastRun.calculations_created === 1 ? 'Berechnung' : 'Berechnungen'} erstellt
-                  </span>
-                  <span className="text-gray-400">•</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    lastRun.status === 'success' ? 'bg-green-100 text-green-700' :
-                    lastRun.status === 'error' ? 'bg-red-100 text-red-700' :
-                    lastRun.status === 'no_contracts' ? 'bg-gray-100 text-gray-700' :
-                    'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {lastRun.status === 'success' ? 'Erfolgreich' :
-                     lastRun.status === 'error' ? 'Fehler' :
-                     lastRun.status === 'no_contracts' ? 'Keine Verträge' :
-                     'Ausstehend'}
-                  </span>
-                </div>
-                {lastRun.error_message && (
-                  <p className="text-sm text-red-600 mt-2">{lastRun.error_message}</p>
-                )}
+          <div className="flex items-start gap-3">
+            <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-dark mb-1">Letzte automatische Berechnung</h3>
+              <p className="text-sm text-gray-600 mb-2">
+                {new Date(lastRun.run_date).toLocaleDateString("de-DE", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })} um {new Date(lastRun.run_date).toLocaleTimeString("de-DE", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })} Uhr
+              </p>
+              <div className="flex items-center gap-4 text-sm">
+                <span className="text-gray-700">
+                  <span className="font-medium">{lastRun.contracts_checked}</span> {lastRun.contracts_checked === 1 ? 'Vertrag' : 'Verträge'} geprüft
+                </span>
+                <span className="text-gray-400">&bull;</span>
+                <span className={lastRun.calculations_created > 0 ? "text-green-600 font-medium" : "text-gray-700"}>
+                  <span className="font-medium">{lastRun.calculations_created}</span> {lastRun.calculations_created === 1 ? 'Berechnung' : 'Berechnungen'} erstellt
+                </span>
+                <span className="text-gray-400">&bull;</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  lastRun.status === 'success' ? 'bg-green-100 text-green-700' :
+                  lastRun.status === 'error' ? 'bg-red-100 text-red-700' :
+                  lastRun.status === 'no_contracts' ? 'bg-gray-100 text-gray-700' :
+                  'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {lastRun.status === 'success' ? 'Erfolgreich' :
+                   lastRun.status === 'error' ? 'Fehler' :
+                   lastRun.status === 'no_contracts' ? 'Keine Verträge' :
+                   'Ausstehend'}
+                </span>
               </div>
+              {lastRun.error_message && (
+                <p className="text-sm text-red-600 mt-2">{lastRun.error_message}</p>
+              )}
             </div>
           </div>
         </div>
@@ -388,7 +462,7 @@ export default function IndexRentView() {
               key={calc.id}
               className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-6">
                 <div>
                   <h3 className="font-semibold text-dark">
                     {calc.rental_contract?.tenants?.name || "Unbekannter Mieter"}
@@ -412,47 +486,52 @@ export default function IndexRentView() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Basis-Monat</p>
-                  <p className="font-semibold text-dark">{calc.basis_monat}</p>
-                  <p className="text-sm text-gray-600">Index: {calc.basis_index}</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-xs text-gray-500 mb-1">Basis-Monat</p>
+                  <p className="text-lg font-bold text-dark">{calc.basis_monat}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Index: {calc.basis_index}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Aktueller Monat</p>
-                  <p className="font-semibold text-dark">{calc.aktueller_monat}</p>
-                  <p className="text-sm text-gray-600">Index: {calc.aktueller_index}</p>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-xs text-gray-500 mb-1">Aktueller Monat</p>
+                  <p className="text-lg font-bold text-dark">{calc.aktueller_monat}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Index: {calc.aktueller_index}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Ausgangsmiete/m²</p>
-                  <p className="font-semibold text-dark">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-xs text-gray-500 mb-1">Ausgangsmiete/m²</p>
+                  <p className="text-lg font-bold text-dark">
                     {formatCurrency(calc.ausgangsmiete_eur_qm)}
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Neue Miete/m²</p>
-                  <p className="font-semibold text-green-600">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-500 mb-1">Neue Miete/m²</p>
+                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                  </div>
+                  <p className="text-lg font-bold text-emerald-600">
                     {formatCurrency(calc.neue_miete_eur_qm)}
                   </p>
-                  <p className="text-xs text-green-600">
+                  <p className="text-xs text-emerald-600 mt-0.5">
                     +{((calc.neue_miete_eur_qm / calc.ausgangsmiete_eur_qm - 1) * 100).toFixed(2)}%
                   </p>
                 </div>
               </div>
 
               {calc.wohnflaeche_qm && calc.gesamtmiete_eur && (
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Wohnfläche</p>
-                      <p className="font-semibold text-dark">{calc.wohnflaeche_qm} m²</p>
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-xs text-gray-500 mb-1">Wohnfläche</p>
+                    <p className="text-lg font-bold text-dark">{calc.wohnflaeche_qm} m²</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-500 mb-1">Neue Gesamtmiete</p>
+                      <Euro className="w-4 h-4 text-emerald-500" />
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Neue Gesamtmiete</p>
-                      <p className="text-lg font-bold text-green-600">
-                        {formatCurrency(calc.gesamtmiete_eur)}
-                      </p>
-                    </div>
+                    <p className="text-lg font-bold text-emerald-600">
+                      {formatCurrency(calc.gesamtmiete_eur)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">pro Monat</p>
                   </div>
                 </div>
               )}
