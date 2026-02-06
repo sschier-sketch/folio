@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { X, Send, Search, Users, AtSign } from 'lucide-react';
+import { X, Send, Search, Users, AtSign, Upload, File as FileIcon, Globe } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { sanitizeFileName } from '../../lib/utils';
 
 interface Tenant {
   id: string;
   first_name: string;
   last_name: string;
   email: string | null;
+  property_id?: string;
   property_name?: string;
 }
 
@@ -31,6 +33,8 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [showTenantDropdown, setShowTenantDropdown] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [publishToPortal, setPublishToPortal] = useState(false);
 
   useEffect(() => {
     if (isOpen && user) loadTenants();
@@ -40,7 +44,7 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
     if (!user) return;
     const { data } = await supabase
       .from('tenants')
-      .select('id, first_name, last_name, email, properties(name)')
+      .select('id, first_name, last_name, email, property_id, properties(name)')
       .eq('user_id', user.id)
       .eq('is_deleted', false)
       .order('last_name');
@@ -51,6 +55,7 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
         first_name: t.first_name,
         last_name: t.last_name,
         email: t.email,
+        property_id: t.property_id,
         property_name: t.properties?.name || '',
       }))
     );
@@ -64,6 +69,49 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
       (t.email && t.email.toLowerCase().includes(q))
     );
   });
+
+  async function uploadAttachment(): Promise<{ docId: string; filePath: string } | null> {
+    if (!attachedFile || !user) return null;
+
+    const sanitized = sanitizeFileName(attachedFile.name);
+    const fileName = `${Date.now()}_${sanitized}`;
+    const filePath = `${user.id}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('documents')
+      .upload(filePath, attachedFile, { cacheControl: '3600', upsert: false });
+
+    if (uploadError) throw uploadError;
+
+    const { data: doc, error: docError } = await supabase
+      .from('documents')
+      .insert([{
+        user_id: user.id,
+        file_name: attachedFile.name,
+        file_path: filePath,
+        file_size: attachedFile.size,
+        file_type: attachedFile.type,
+        document_type: 'other',
+        category: 'communication',
+        description: `Anhang zu: ${subject.trim()}`,
+        shared_with_tenant: publishToPortal,
+      }])
+      .select()
+      .single();
+
+    if (docError) throw docError;
+
+    if (doc && selectedTenant) {
+      await supabase.from('document_associations').insert([{
+        document_id: doc.id,
+        association_type: 'tenant',
+        association_id: selectedTenant.id,
+        created_by: user.id,
+      }]);
+    }
+
+    return { docId: doc.id, filePath };
+  }
 
   async function handleSend() {
     if (!user) return;
@@ -99,8 +147,18 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
     const tenantId = recipientType === 'tenant' ? selectedTenant?.id : undefined;
 
     try {
+      let attachment: { docId: string; filePath: string } | null = null;
+      if (attachedFile) {
+        attachment = await uploadAttachment();
+      }
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      let emailText = content.trim();
+      if (attachment && attachedFile) {
+        emailText += `\n\nAnhang: ${attachedFile.name}`;
+      }
 
       const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
         method: 'POST',
@@ -111,7 +169,7 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
         body: JSON.stringify({
           to: recipientEmail,
           subject: subject.trim(),
-          text: content.trim(),
+          text: emailText,
           userId: user.id,
           useUserAlias: true,
           storeAsMessage: true,
@@ -138,6 +196,19 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
           subject: subject.trim(),
           content: content.trim(),
           is_internal: false,
+          attachment_id: attachment?.docId || null,
+        });
+      }
+
+      if (publishToPortal && tenantId && content.trim()) {
+        await supabase.from('tenant_communications').insert({
+          user_id: user.id,
+          tenant_id: tenantId,
+          communication_type: 'note',
+          subject: `[Mieterportal] ${subject.trim()}`,
+          content: content.trim(),
+          is_internal: false,
+          attachment_id: attachment?.docId || null,
         });
       }
 
@@ -160,6 +231,8 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
     setSearchTerm('');
     setError('');
     setRecipientType('tenant');
+    setAttachedFile(null);
+    setPublishToPortal(false);
   }
 
   if (!isOpen) return null;
@@ -288,11 +361,56 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              rows={8}
+              rows={6}
               placeholder="Ihre Nachricht..."
               className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Dokument anhaengen (optional)</label>
+            {!attachedFile ? (
+              <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors">
+                <Upload className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-500">Datei auswaehlen</span>
+                <input
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) setAttachedFile(file);
+                  }}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <div className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <FileIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span className="text-sm text-gray-700 flex-1 truncate">{attachedFile.name}</span>
+                <span className="text-xs text-gray-400 flex-shrink-0">
+                  {(attachedFile.size / 1024).toFixed(0)} KB
+                </span>
+                <button onClick={() => setAttachedFile(null)} className="text-gray-400 hover:text-red-500 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {recipientType === 'tenant' && selectedTenant && (
+            <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <input
+                type="checkbox"
+                id="publishPortal"
+                checked={publishToPortal}
+                onChange={(e) => setPublishToPortal(e.target.checked)}
+                className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+              />
+              <label htmlFor="publishPortal" className="flex items-center gap-2 text-sm font-medium text-emerald-800 cursor-pointer">
+                <Globe className="w-4 h-4" />
+                Im Mieterportal anzeigen
+              </label>
+            </div>
+          )}
 
           <div className="text-xs text-gray-400 flex items-center gap-1.5">
             <AtSign className="w-3 h-3" />

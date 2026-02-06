@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Mail, Settings, RefreshCw } from 'lucide-react';
+import { Plus, Mail, Settings, RefreshCw, LayoutDashboard, Inbox } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import FolderList from './FolderList';
@@ -7,12 +7,17 @@ import ThreadList from './ThreadList';
 import ThreadDetail from './ThreadDetail';
 import ComposeMessage from './ComposeMessage';
 import AliasSettings from './AliasSettings';
+import MessagesOverview from './MessagesOverview';
+import ScrollableTabNav from '../common/ScrollableTabNav';
 import type { MailThread, UserMailbox, Folder } from './types';
+
+type MessagesTab = 'overview' | 'inbox';
 
 export default function MessagesView() {
   const { user } = useAuth();
   const [mailbox, setMailbox] = useState<UserMailbox | null>(null);
   const [threads, setThreads] = useState<MailThread[]>([]);
+  const [activeTab, setActiveTab] = useState<MessagesTab>('overview');
   const [activeFolder, setActiveFolder] = useState<Folder>('inbox');
   const [selectedThread, setSelectedThread] = useState<MailThread | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,14 +96,21 @@ export default function MessagesView() {
     loadCounts();
   }
 
+  function handleNavigateToFolder(folder: Folder) {
+    setActiveFolder(folder);
+    setSelectedThread(null);
+    setActiveTab('inbox');
+  }
+
   const totalUnread = unreadCounts.inbox + unreadCounts.sent + unreadCounts.unknown;
+  const totalMessages = folderCounts.inbox + folderCounts.sent + folderCounts.unknown;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Nachrichten</h1>
-          {mailbox && (
+          {mailbox && activeTab === 'inbox' && (
             <div className="flex items-center gap-2 mt-1">
               <Mail className="w-3.5 h-3.5 text-gray-400" />
               <span className="text-sm text-gray-500">{mailbox.alias_localpart}@rentab.ly</span>
@@ -113,13 +125,15 @@ export default function MessagesView() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleRefresh}
-            className="p-2.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Aktualisieren"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
+          {activeTab === 'inbox' && (
+            <button
+              onClick={handleRefresh}
+              className="p-2.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Aktualisieren"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={() => setShowCompose(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
@@ -130,79 +144,129 @@ export default function MessagesView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 240px)', minHeight: '500px' }}>
-        <div className="flex h-full">
-          <div className="w-48 flex-shrink-0 border-r border-gray-200 p-3 hidden md:block">
-            <FolderList
-              activeFolder={activeFolder}
-              onSelect={handleFolderChange}
-              counts={folderCounts}
-              unreadCounts={unreadCounts}
-            />
+      <div className="bg-white rounded-t-xl border-b border-gray-200">
+        <ScrollableTabNav>
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`flex items-center gap-2 px-6 py-3.5 text-sm font-medium transition-colors relative whitespace-nowrap ${
+                activeTab === 'overview' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-700'
+              }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              Uebersicht
+              {activeTab === 'overview' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('inbox')}
+              className={`flex items-center gap-2 px-6 py-3.5 text-sm font-medium transition-colors relative whitespace-nowrap ${
+                activeTab === 'inbox' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-700'
+              }`}
+            >
+              <Inbox className="w-3.5 h-3.5" />
+              Posteingang
+              {totalUnread > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-blue-600 text-white">
+                  {totalUnread}
+                </span>
+              )}
+              {activeTab === 'inbox' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+              )}
+            </button>
           </div>
+        </ScrollableTabNav>
+      </div>
 
-          <div className={`w-80 flex-shrink-0 border-r border-gray-200 overflow-y-auto ${selectedThread ? 'hidden lg:block' : 'flex-1 lg:flex-none lg:w-80'}`}>
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 md:hidden">
-              <div className="flex gap-1">
-                {(['inbox', 'sent', 'unknown'] as Folder[]).map((f) => {
-                  const labels: Record<Folder, string> = { inbox: 'Eingang', sent: 'Gesendet', unknown: 'Unbekannt' };
-                  if (f === 'unknown' && folderCounts.unknown === 0) return null;
-                  return (
-                    <button
-                      key={f}
-                      onClick={() => handleFolderChange(f)}
-                      className={`flex-1 py-2 px-2 text-xs font-medium rounded-lg transition-colors ${
-                        activeFolder === f ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      {labels[f]}
-                      {unreadCounts[f] > 0 && (
-                        <span className="ml-1 inline-flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-semibold rounded-full bg-blue-600 text-white">
-                          {unreadCounts[f]}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <ThreadList
-              threads={threads}
-              selectedThreadId={selectedThread?.id || null}
-              onSelect={handleThreadSelect}
-              loading={loading}
-            />
-          </div>
+      {activeTab === 'overview' && (
+        <MessagesOverview
+          email={mailbox ? `${mailbox.alias_localpart}@rentab.ly` : ''}
+          unreadCount={totalUnread}
+          sentCount={folderCounts.sent}
+          totalCount={totalMessages}
+          onCompose={() => setShowCompose(true)}
+          onNavigateFolder={handleNavigateToFolder}
+          onNavigateTemplates={() => {}}
+        />
+      )}
 
-          <div className={`flex-1 min-w-0 ${!selectedThread ? 'hidden lg:flex' : 'flex'} flex-col`}>
-            {selectedThread ? (
-              <ThreadDetail
-                thread={selectedThread}
-                userAlias={mailbox?.alias_localpart || ''}
-                onBack={() => setSelectedThread(null)}
-                onMessageSent={() => { handleRefresh(); }}
+      {activeTab === 'inbox' && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 310px)', minHeight: '500px' }}>
+          <div className="flex h-full">
+            <div className="w-48 flex-shrink-0 border-r border-gray-200 p-3 hidden md:block">
+              <FolderList
+                activeFolder={activeFolder}
+                onSelect={handleFolderChange}
+                counts={folderCounts}
+                unreadCounts={unreadCounts}
               />
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-                <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-                  <Mail className="w-7 h-7 text-gray-400" />
+            </div>
+
+            <div className={`w-80 flex-shrink-0 border-r border-gray-200 overflow-y-auto ${selectedThread ? 'hidden lg:block' : 'flex-1 lg:flex-none lg:w-80'}`}>
+              <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 md:hidden">
+                <div className="flex gap-1">
+                  {(['inbox', 'sent', 'unknown'] as Folder[]).map((f) => {
+                    const labels: Record<Folder, string> = { inbox: 'Eingang', sent: 'Gesendet', unknown: 'Unbekannt' };
+                    if (f === 'unknown' && folderCounts.unknown === 0) return null;
+                    return (
+                      <button
+                        key={f}
+                        onClick={() => handleFolderChange(f)}
+                        className={`flex-1 py-2 px-2 text-xs font-medium rounded-lg transition-colors ${
+                          activeFolder === f ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {labels[f]}
+                        {unreadCounts[f] > 0 && (
+                          <span className="ml-1 inline-flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-semibold rounded-full bg-blue-600 text-white">
+                            {unreadCounts[f]}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-1">Keine Nachricht ausgewaehlt</h3>
-                <p className="text-sm text-gray-500 max-w-sm">
-                  Waehlen Sie eine Konversation aus der Liste oder starten Sie eine neue Nachricht.
-                </p>
-                <button
-                  onClick={() => setShowCompose(true)}
-                  className="mt-4 flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  Neue Nachricht
-                </button>
               </div>
-            )}
+              <ThreadList
+                threads={threads}
+                selectedThreadId={selectedThread?.id || null}
+                onSelect={handleThreadSelect}
+                loading={loading}
+              />
+            </div>
+
+            <div className={`flex-1 min-w-0 ${!selectedThread ? 'hidden lg:flex' : 'flex'} flex-col`}>
+              {selectedThread ? (
+                <ThreadDetail
+                  thread={selectedThread}
+                  userAlias={mailbox?.alias_localpart || ''}
+                  onBack={() => setSelectedThread(null)}
+                  onMessageSent={() => { handleRefresh(); }}
+                />
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
+                  <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                    <Mail className="w-7 h-7 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-1">Keine Nachricht ausgewaehlt</h3>
+                  <p className="text-sm text-gray-500 max-w-sm">
+                    Waehlen Sie eine Konversation aus der Liste oder starten Sie eine neue Nachricht.
+                  </p>
+                  <button
+                    onClick={() => setShowCompose(true)}
+                    className="mt-4 flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Neue Nachricht
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <ComposeMessage
         isOpen={showCompose}

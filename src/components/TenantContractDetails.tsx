@@ -6,7 +6,6 @@ import {
   TrendingUp,
   Wallet,
   User,
-  MessageSquare,
   ClipboardList,
   Home,
 } from "lucide-react";
@@ -17,7 +16,6 @@ import TenantOverviewTab from "./tenants/TenantOverviewTab";
 import TenantContractTab from "./tenants/TenantContractTab";
 import TenantRentHistoryTab from "./tenants/TenantRentHistoryTab";
 import TenantDepositTab from "./tenants/TenantDepositTab";
-import TenantCommunicationTab from "./tenants/TenantCommunicationTab";
 import TenantHandoverTab from "./tenants/TenantHandoverTab";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
@@ -28,7 +26,6 @@ type Tab =
   | "contract"
   | "rent"
   | "deposit"
-  | "communication"
   | "handover";
 
 interface TenantContractDetailsProps {
@@ -94,12 +91,6 @@ export default function TenantContractDetails({
       label: "Vertrag & Dokumente",
       icon: FileText,
       premium: true
-    },
-    {
-      id: "communication" as Tab,
-      label: "Kommunikation",
-      icon: MessageSquare,
-      premium: true,
     },
     {
       id: "handover" as Tab,
@@ -185,13 +176,6 @@ export default function TenantContractDetails({
         )}
         {activeTab === "rent" && <TenantRentHistoryTab tenantId={tenantId} />}
         {activeTab === "deposit" && <TenantDepositTab tenantId={tenantId} />}
-        {activeTab === "communication" && (
-          isPremium ? (
-            <TenantCommunicationTab tenantId={tenantId} />
-          ) : (
-            <PremiumUpgradePrompt featureKey="tenant_details_communication" />
-          )
-        )}
         {activeTab === "handover" && (
           isPremium ? (
             <TenantHandoverTab tenantId={tenantId} />
