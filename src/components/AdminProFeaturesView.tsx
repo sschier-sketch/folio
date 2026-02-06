@@ -151,18 +151,32 @@ export default function AdminProFeaturesView() {
   }
 
   const pageLabels: Record<string, string> = {
+    dashboard: "Dashboard",
+    billing: "Tarif & Abrechnung",
     rent_payments: "Mieteingänge",
     tenant_details: "Mietverhältnis-Details",
     finances: "Finanzen",
+    property: "Immobilie",
+    documents: "Dokumente",
   };
 
   const tabLabels: Record<string, string> = {
+    trial_banner: "Trial-Banner",
     dunning: "Mahnwesen",
     contract: "Vertrag & Dokumente",
     communication: "Kommunikation",
     handover: "Übergabe & Wechsel",
     cashflow: "Cashflow",
     indexrent: "Indexmiete",
+    operating_costs: "Betriebskosten",
+    contacts: "Kontakte",
+    documents: "Dokumente",
+    history: "Historie",
+    maintenance: "Instandhaltung",
+    metrics: "Kennzahlen",
+    overview: "Übersicht",
+    archive: "Archiv",
+    deposit: "Kaution",
   };
 
   if (loading) {

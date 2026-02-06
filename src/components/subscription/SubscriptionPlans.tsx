@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Check, CreditCard, Info, Loader2, Clock, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Check, CreditCard, Info, Loader2 } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useTrialStatus } from '../../hooks/useTrialStatus';
 import { useAuth } from '../../hooks/useAuth';
@@ -18,6 +18,35 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('month');
   const [loading, setLoading] = useState<string | null>(null);
   const [showDowngradeModal, setShowDowngradeModal] = useState(false);
+  const [billingTrialTexts, setBillingTrialTexts] = useState({
+    activeTitle: 'Gratis-Testphase aktiv',
+    activeDescription: 'Sie haben vollen Zugriff auf alle Pro-Features bis zum {date}. Upgraden Sie jetzt, um alle Funktionen nach Ende der Testphase weiter zu nutzen.',
+    activeFeatures: ['Unbegrenzte Objekte und Mieter', 'Ticketsystem und Mieterkommunikation', 'Finanzanalysen und Renditeberechnung'],
+    expiredTitle: 'Gratis-Testphase beendet',
+    expiredDescription: 'Ihre Gratis-Testphase ist am {date} abgelaufen. Upgrade auf Pro, um alle Funktionen weiter zu nutzen.',
+  });
+
+  useEffect(() => {
+    async function loadTrialTexts() {
+      const { data } = await supabase
+        .from('pro_feature_texts')
+        .select('feature_key, title, description, features')
+        .in('feature_key', ['billing_trial_active', 'billing_trial_expired']);
+
+      if (data && data.length > 0) {
+        const active = data.find(d => d.feature_key === 'billing_trial_active');
+        const expired = data.find(d => d.feature_key === 'billing_trial_expired');
+        setBillingTrialTexts(prev => ({
+          activeTitle: active?.title || prev.activeTitle,
+          activeDescription: active?.description || prev.activeDescription,
+          activeFeatures: active?.features?.length ? active.features : prev.activeFeatures,
+          expiredTitle: expired?.title || prev.expiredTitle,
+          expiredDescription: expired?.description || prev.expiredDescription,
+        }));
+      }
+    }
+    loadTrialTexts();
+  }, []);
 
   const isActive = subscription?.subscription_status === 'active';
   const currentPlan = (subscription?.price_id && isActive) ? getPlanByStripePriceId(subscription.price_id) : null;
@@ -196,69 +225,33 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
           )}
 
           {currentPlanId === 'basic' && trialStatus.hasActiveTrial && (
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 rounded-xl p-6 mb-8">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-bold text-emerald-900">Gratis-Testphase aktiv</h3>
-                    <span className="px-2 py-0.5 bg-emerald-200 rounded-full text-xs font-semibold text-emerald-800">
-                      {trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'Tag' : 'Tage'} verbleibend
-                    </span>
+            <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-6 mb-8">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-lg font-bold text-emerald-900">{billingTrialTexts.activeTitle}</h3>
+                <span className="px-2 py-0.5 bg-emerald-200 rounded-full text-xs font-semibold text-emerald-800">
+                  {trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'Tag' : 'Tage'} verbleibend
+                </span>
+              </div>
+              <p className="text-emerald-800 text-sm mb-3">
+                {billingTrialTexts.activeDescription.replace('{date}', trialStatus.trialEndsAt?.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) || '')}
+              </p>
+              <div className="flex flex-col gap-2 text-sm text-emerald-700">
+                {billingTrialTexts.activeFeatures.map((feat, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    <span>{feat}</span>
                   </div>
-                  <p className="text-emerald-800 text-sm mb-3">
-                    Sie haben vollen Zugriff auf alle Pro-Features bis zum{' '}
-                    <strong>
-                      {trialStatus.trialEndsAt?.toLocaleDateString('de-DE', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                      })}
-                    </strong>
-                    . Upgraden Sie jetzt, um alle Funktionen nach Ende der Testphase weiter zu nutzen.
-                  </p>
-                  <div className="flex flex-col gap-2 text-sm text-emerald-700">
-                    <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4" />
-                      <span>Unbegrenzte Objekte und Mieter</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4" />
-                      <span>Ticketsystem und Mieterkommunikation</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4" />
-                      <span>Finanzanalysen und Renditeberechnung</span>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           )}
 
           {currentPlanId === 'basic' && trialStatus.isTrialExpired && (
-            <div className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl p-6 mb-8">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-amber-900 mb-1">Gratis-Testphase beendet</h3>
-                  <p className="text-amber-800 text-sm">
-                    Ihre Gratis-Testphase ist am{' '}
-                    <strong>
-                      {trialStatus.trialEndsAt?.toLocaleDateString('de-DE', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                      })}
-                    </strong>{' '}
-                    abgelaufen. Upgrade auf Pro, um alle Funktionen weiter zu nutzen.
-                  </p>
-                </div>
-              </div>
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-6 mb-8">
+              <h3 className="text-lg font-bold text-amber-900 mb-1">{billingTrialTexts.expiredTitle}</h3>
+              <p className="text-amber-800 text-sm">
+                {billingTrialTexts.expiredDescription.replace('{date}', trialStatus.trialEndsAt?.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) || '')}
+              </p>
             </div>
           )}
 
