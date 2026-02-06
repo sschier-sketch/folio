@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAffiliateCode } from "../lib/affiliateTracking";
 import {
   Building2,
   Users,
@@ -24,6 +25,10 @@ import { useLanguage } from "../contexts/LanguageContext";
 export default function Features() {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const goToSignup = () => {
+    const ref = getAffiliateCode();
+    navigate(ref ? `/signup?ref=${ref}` : '/signup');
+  };
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const features = [
@@ -188,7 +193,7 @@ export default function Features() {
               <div className="flex items-center justify-center gap-4">
                 {" "}
                 <button
-                  onClick={() => navigate("/signup")}
+                  onClick={goToSignup}
                   className="px-8 py-4 bg-primary-blue text-white rounded-full font-semibold hover:bg-primary-blue transition-all duration-200 hover:"
                 >
                   {" "}
@@ -328,7 +333,7 @@ export default function Features() {
               <div className="text-center mt-12">
                 {" "}
                 <button
-                  onClick={() => navigate("/signup")}
+                  onClick={goToSignup}
                   className="px-8 py-4 bg-white text-primary-blue rounded-full font-bold hover:bg-primary-blue/5 transition-all duration-200 hover:"
                 >
                   {" "}
@@ -401,7 +406,7 @@ export default function Features() {
             <div className="flex items-center justify-center gap-4">
               {" "}
               <button
-                onClick={() => navigate("/signup")}
+                onClick={goToSignup}
                 className="px-8 py-4 bg-primary-blue text-white rounded-full font-semibold hover:bg-primary-blue transition-all duration-200 hover:flex items-center gap-2"
               >
                 {" "}

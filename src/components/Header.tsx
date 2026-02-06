@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { getAffiliateCode } from "../lib/affiliateTracking";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { language } = useLanguage();
   const isActive = (path: string) => location.pathname === path;
+  const ref = getAffiliateCode();
+  const signupPath = ref ? `/signup?ref=${ref}` : '/signup';
   return (
     <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b z-50">
       {" "}
@@ -64,7 +67,7 @@ export function Header() {
               Anmelden{" "}
             </Link>{" "}
             <Link
-              to="/signup"
+              to={signupPath}
               className="px-6 py-2 bg-dark text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
             >
               {" "}
@@ -130,7 +133,7 @@ export function Header() {
                 Anmelden{" "}
               </Link>{" "}
               <Link
-                to="/signup"
+                to={signupPath}
                 onClick={() => setMobileMenuOpen(false)}
                 className="px-4 py-2 bg-dark text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
               >

@@ -12,8 +12,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import { Header } from "./Header";
+import { getAffiliateCode } from "../lib/affiliateTracking";
 export default function LandingPage() {
   const navigate = useNavigate();
+  const goToSignup = () => {
+    const ref = getAffiliateCode();
+    navigate(ref ? `/signup?ref=${ref}` : '/signup');
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {" "}
@@ -48,7 +53,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 {" "}
                 <button
-                  onClick={() => navigate("/signup")}
+                  onClick={goToSignup}
                   className="px-8 py-4 bg-primary-blue text-white text-lg rounded-full font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
                 >
                   {" "}
@@ -302,7 +307,7 @@ export default function LandingPage() {
                     Immobilienverwaltung.{" "}
                   </p>{" "}
                   <button
-                    onClick={() => navigate("/signup")}
+                    onClick={goToSignup}
                     className="w-full px-6 py-3 bg-white text-primary-blue rounded-full font-semibold hover:opacity-90 transition-opacity"
                   >
                     {" "}

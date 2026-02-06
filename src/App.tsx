@@ -6,6 +6,7 @@ import {
   Navigate,
   useNavigate,
 } from "react-router-dom";
+import { initAffiliateTracking } from "./lib/affiliateTracking";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { ResetPassword } from "./pages/ResetPassword";
@@ -68,6 +69,8 @@ function PasswordRecoveryHandler() {
 
   return null;
 }
+
+initAffiliateTracking();
 
 function App() {
   return (

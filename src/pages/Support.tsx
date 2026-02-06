@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAffiliateCode } from "../lib/affiliateTracking";
 import {
   MessageSquare,
   Clock,
@@ -29,6 +30,10 @@ import { useLanguage } from "../contexts/LanguageContext";
 export default function Support() {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const goToSignup = () => {
+    const ref = getAffiliateCode();
+    navigate(ref ? `/signup?ref=${ref}` : '/signup');
+  };
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [ticketsResolved, setTicketsResolved] = useState(0);
   const supportChannels = [
@@ -582,7 +587,7 @@ export default function Support() {
                   : "Contact Support Now"}{" "}
               </button>{" "}
               <button
-                onClick={() => navigate("/signup")}
+                onClick={goToSignup}
                 className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 "
               >
                 {" "}

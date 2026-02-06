@@ -1,20 +1,28 @@
 const AFFILIATE_CODE_KEY = 'rentably_affiliate_code';
 const AFFILIATE_CODE_EXPIRY = 30 * 24 * 60 * 60 * 1000;
 
-export function setAffiliateCookie(code: string): void {
-  const expiryDate = new Date(Date.now() + AFFILIATE_CODE_EXPIRY);
+function saveToAllStorages(code: string, expiryDate: Date): void {
   document.cookie = `${AFFILIATE_CODE_KEY}=${code}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
 
+  const trackingData = {
+    code,
+    timestamp: Date.now(),
+    expiry: expiryDate.getTime()
+  };
+  const json = JSON.stringify(trackingData);
+
   try {
-    const trackingData = {
-      code,
-      timestamp: Date.now(),
-      expiry: expiryDate.getTime()
-    };
-    localStorage.setItem(AFFILIATE_CODE_KEY, JSON.stringify(trackingData));
-  } catch (e) {
-    console.warn('Could not save to localStorage:', e);
-  }
+    localStorage.setItem(AFFILIATE_CODE_KEY, json);
+  } catch (_) {}
+
+  try {
+    sessionStorage.setItem(AFFILIATE_CODE_KEY, json);
+  } catch (_) {}
+}
+
+export function setAffiliateCookie(code: string): void {
+  const expiryDate = new Date(Date.now() + AFFILIATE_CODE_EXPIRY);
+  saveToAllStorages(code, expiryDate);
 }
 
 export function getAffiliateCode(): string | null {
@@ -27,18 +35,18 @@ export function getAffiliateCode(): string | null {
     return cookieValue;
   }
 
-  try {
-    const stored = localStorage.getItem(AFFILIATE_CODE_KEY);
-    if (stored) {
-      const data = JSON.parse(stored);
-      if (data.expiry > Date.now()) {
-        return data.code;
-      } else {
-        localStorage.removeItem(AFFILIATE_CODE_KEY);
+  for (const storage of [localStorage, sessionStorage]) {
+    try {
+      const stored = storage.getItem(AFFILIATE_CODE_KEY);
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.expiry > Date.now()) {
+          return data.code;
+        } else {
+          storage.removeItem(AFFILIATE_CODE_KEY);
+        }
       }
-    }
-  } catch (e) {
-    console.warn('Could not read from localStorage:', e);
+    } catch (_) {}
   }
 
   return null;
@@ -46,11 +54,8 @@ export function getAffiliateCode(): string | null {
 
 export function clearAffiliateCode(): void {
   document.cookie = `${AFFILIATE_CODE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  try {
-    localStorage.removeItem(AFFILIATE_CODE_KEY);
-  } catch (e) {
-    console.warn('Could not clear localStorage:', e);
-  }
+  try { localStorage.removeItem(AFFILIATE_CODE_KEY); } catch (_) {}
+  try { sessionStorage.removeItem(AFFILIATE_CODE_KEY); } catch (_) {}
 }
 
 export function initAffiliateTracking(): void {
@@ -58,9 +63,6 @@ export function initAffiliateTracking(): void {
   const refCode = urlParams.get('ref');
 
   if (refCode) {
-    const existingCode = getAffiliateCode();
-    if (!existingCode) {
-      setAffiliateCookie(refCode.trim().toUpperCase());
-    }
+    setAffiliateCookie(refCode.trim().toUpperCase());
   }
 }
