@@ -21,7 +21,6 @@ interface Association {
   association_id: string;
   property_name?: string;
   tenant_name?: string;
-  contract_name?: string;
 }
 
 interface DocumentsListProps {
@@ -121,17 +120,14 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                         .select("first_name, last_name")
                         .eq("id", contract.tenant_id)
                         .maybeSingle();
-                      name = tenant ? `${tenant.first_name} ${tenant.last_name} - Mietvertrag` : "Mietvertrag";
-                    } else {
-                      name = "Mietvertrag";
+                      name = tenant ? `${tenant.first_name} ${tenant.last_name}` : undefined;
                     }
                   }
 
                   return {
                     ...assoc,
                     property_name: assoc.association_type === "property" ? name : undefined,
-                    tenant_name: assoc.association_type === "tenant" ? name : undefined,
-                    contract_name: assoc.association_type === "rental_contract" ? name : undefined,
+                    tenant_name: (assoc.association_type === "tenant" || assoc.association_type === "rental_contract") ? name : undefined,
                   };
                 })
               );
@@ -223,16 +219,14 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
 
     if (firstAssoc.association_type === "property" && firstAssoc.property_name) {
       label = firstAssoc.property_name;
-    } else if (firstAssoc.association_type === "tenant" && firstAssoc.tenant_name) {
+    } else if ((firstAssoc.association_type === "tenant" || firstAssoc.association_type === "rental_contract") && firstAssoc.tenant_name) {
       label = firstAssoc.tenant_name;
-    } else if (firstAssoc.association_type === "rental_contract" && firstAssoc.contract_name) {
-      label = firstAssoc.contract_name;
     } else {
       const typeLabels: Record<string, string> = {
         property: "Immobilie",
         unit: "Einheit",
         tenant: "Mieter",
-        rental_contract: "Mietvertrag",
+        rental_contract: "Mieter",
       };
       label = typeLabels[firstAssoc.association_type] || firstAssoc.association_type;
     }
