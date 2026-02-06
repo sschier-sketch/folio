@@ -32,6 +32,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useSubscription } from "../hooks/useSubscription";
+import { useTrialStatus } from "../hooks/useTrialStatus";
 import PropertiesView from "./PropertiesView";
 import TenantsView from "./TenantsView";
 import MieterportalView from "./MieterportalView";
@@ -81,6 +82,7 @@ export default function Dashboard() {
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
   const { isPremium } = useSubscription();
+  const trialStatus = useTrialStatus(user?.id);
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -224,6 +226,18 @@ export default function Dashboard() {
             </div>{" "}
             <div className="flex items-center gap-4">
               {" "}
+              {!isPremium && trialStatus.hasActiveTrial && (
+                <button
+                  onClick={() => setCurrentView('settings-billing')}
+                  className="flex items-center gap-2 px-3.5 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span className="font-medium">Testphase: Noch {trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'Tag' : 'Tage'}</span>
+                </button>
+              )}
               <button
                 onClick={() => setShowUpdatesModal(true)}
                 className="relative p-2 text-gray-400 hover:text-dark transition-colors rounded-lg hover:bg-gray-50"
