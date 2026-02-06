@@ -1,6 +1,6 @@
 import { Globe } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
+import { RefLink } from "./common/RefLink";
 export default function Footer() {
   const { language, setLanguage, t } = useLanguage();
   const currentYear = new Date().getFullYear();
@@ -37,33 +37,33 @@ export default function Footer() {
               {" "}
               <li>
                 {" "}
-                <Link
+                <RefLink
                   to="/features"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
                   {" "}
                   {t("footer.features")}{" "}
-                </Link>{" "}
+                </RefLink>{" "}
               </li>{" "}
               <li>
                 {" "}
-                <Link
+                <RefLink
                   to="/pricing"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
                   {" "}
                   {t("footer.pricing")}{" "}
-                </Link>{" "}
+                </RefLink>{" "}
               </li>{" "}
               <li>
                 {" "}
-                <Link
+                <RefLink
                   to="/support"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
                   {" "}
                   {t("footer.support")}{" "}
-                </Link>{" "}
+                </RefLink>{" "}
               </li>{" "}
             </ul>{" "}
           </div>{" "}
@@ -73,44 +73,44 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link
+                <RefLink
                   to="/impressum"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
                   {t("footer.about")}
-                </Link>
+                </RefLink>
               </li>
               <li>
-                <Link
+                <RefLink
                   to="/contact"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
                   {t("footer.contact")}
-                </Link>
+                </RefLink>
               </li>
               <li>
-                <Link
+                <RefLink
                   to="/datenschutz"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
                   {language === "de" ? "Datenschutz" : "Privacy Policy"}
-                </Link>
+                </RefLink>
               </li>
               <li>
-                <Link
+                <RefLink
                   to="/agb"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
                   {language === "de" ? "AGB" : "Terms & Conditions"}
-                </Link>
+                </RefLink>
               </li>
               <li>
-                <Link
+                <RefLink
                   to="/avv"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
                   {language === "de" ? "AVV" : "DPA"}
-                </Link>
+                </RefLink>
               </li>
             </ul>
           </div>{" "}

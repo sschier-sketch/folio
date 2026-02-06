@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
 import { supabase } from "../lib/supabase";
 import { Calendar, Tag as TagIcon, FolderOpen, ArrowLeft, User, Share2, Facebook, Twitter, Linkedin, Mail } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { RefLink } from "../components/common/RefLink";
 
 interface Post {
   id: string;
@@ -286,13 +287,13 @@ export function MagazinePost() {
                 ? "Der gesuchte Artikel existiert nicht oder wurde entfernt."
                 : "The requested article does not exist or has been removed."}
             </p>
-            <Link
+            <RefLink
               to={magazineBasePath}
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full hover:bg-blue-700 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               {language === "de" ? "Zurück zum Magazin" : "Back to Magazine"}
-            </Link>
+            </RefLink>
           </div>
         </div>
         <Footer />
@@ -305,13 +306,13 @@ export function MagazinePost() {
       <Header />
       <div className="flex-1 pt-24 pb-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <Link
+          <RefLink
             to={magazineBasePath}
             className="inline-flex items-center gap-2 text-gray-400 hover:text-dark transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
             {language === "de" ? "Zurück zum Magazin" : "Back to Magazine"}
-          </Link>
+          </RefLink>
 
           {post.hero_image_url && (
             <div className="mb-8 rounded-lg overflow-hidden">
@@ -326,13 +327,13 @@ export function MagazinePost() {
           <article className="bg-white rounded-lg shadow-sm p-8 md:p-12">
             <div className="mb-6">
               {post.topic_name && (
-                <Link
+                <RefLink
                   to={`${magazineBasePath}?topic=${post.topic_slug}`}
                   className="inline-flex items-center gap-1 text-primary-blue hover:underline text-sm font-medium mb-4"
                 >
                   <FolderOpen className="w-4 h-4" />
                   {post.topic_name}
-                </Link>
+                </RefLink>
               )}
               <h1 className="text-4xl md:text-5xl font-bold text-dark mb-6">
                 {post.title}
@@ -381,7 +382,7 @@ export function MagazinePost() {
                         onClick={() => shareOnSocial("linkedin")}
                         className="w-full flex items-center gap-3 px-4 py-2 text-gray-400 hover:bg-gray-50 transition-colors"
                       >
-                        <Linkedin className="w-4 h-4" />
+                        <RefLinkedin className="w-4 h-4" />
                         LinkedIn
                       </button>
                       <button
@@ -418,13 +419,13 @@ export function MagazinePost() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {post.tags.map((tag) => (
-                    <Link
+                    <RefLink
                       key={tag.slug}
                       to={`${magazineBasePath}?tags=${tag.slug}`}
                       className="px-4 py-2 bg-gray-100 text-gray-400 rounded-full hover:bg-primary-blue/10 hover:text-primary-blue transition-colors"
                     >
                       {tag.name}
-                    </Link>
+                    </RefLink>
                   ))}
                 </div>
               </div>
@@ -438,7 +439,7 @@ export function MagazinePost() {
               </h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {relatedPosts.slice(0, 3).map((relatedPost) => (
-                  <Link
+                  <RefLink
                     key={relatedPost.id}
                     to={`${magazineBasePath}/${relatedPost.slug}`}
                     className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden group"
@@ -468,7 +469,7 @@ export function MagazinePost() {
                         </p>
                       )}
                     </div>
-                  </Link>
+                  </RefLink>
                 ))}
               </div>
             </div>

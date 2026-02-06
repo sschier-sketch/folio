@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAffiliateCode } from "../lib/affiliateTracking";
+import { withRef } from "../lib/referralTracking";
 import {
   Building2,
   Users,
@@ -25,10 +25,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 export default function Features() {
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const goToSignup = () => {
-    const ref = getAffiliateCode();
-    navigate(ref ? `/signup?ref=${ref}` : '/signup');
-  };
+  const goToSignup = () => navigate(withRef('/signup'));
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const features = [

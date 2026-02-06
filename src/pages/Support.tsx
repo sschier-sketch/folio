@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAffiliateCode } from "../lib/affiliateTracking";
+import { withRef } from "../lib/referralTracking";
 import {
   MessageSquare,
   Clock,
@@ -30,10 +30,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 export default function Support() {
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const goToSignup = () => {
-    const ref = getAffiliateCode();
-    navigate(ref ? `/signup?ref=${ref}` : '/signup');
-  };
+  const goToSignup = () => navigate(withRef('/signup'));
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [ticketsResolved, setTicketsResolved] = useState(0);
   const supportChannels = [

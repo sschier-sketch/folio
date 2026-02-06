@@ -12,13 +12,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import { Header } from "./Header";
-import { getAffiliateCode } from "../lib/affiliateTracking";
+import { withRef } from "../lib/referralTracking";
 export default function LandingPage() {
   const navigate = useNavigate();
-  const goToSignup = () => {
-    const ref = getAffiliateCode();
-    navigate(ref ? `/signup?ref=${ref}` : '/signup');
-  };
+  const goToSignup = () => navigate(withRef('/signup'));
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {" "}

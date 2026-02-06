@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 import { Eye, EyeOff, UserPlus, Gift } from "lucide-react";
-import { getAffiliateCode, initAffiliateTracking } from "../../lib/affiliateTracking";
+import { getReferralCode, getReferralMetadata, initReferralTracking, clearReferralCode } from "../../lib/referralTracking";
 
 interface SignupFormProps {
   onSuccess?: () => void;
@@ -23,12 +23,13 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
   } | null>(null);
 
   useEffect(() => {
-    initAffiliateTracking();
-    const code = getAffiliateCode();
+    initReferralTracking();
+    const code = getReferralCode();
     if (code) {
       setAffiliateCode(code);
     }
   }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -53,6 +54,10 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       setLoading(false);
       return;
     }
+
+    const refCode = affiliateCode || getReferralCode() || null;
+    const metadata = getReferralMetadata();
+
     try {
       const { data: authData, error } = await supabase.auth.signUp({
         email,
@@ -60,7 +65,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
         options: {
           emailRedirectTo: undefined,
           data: {
-            affiliate_code: affiliateCode || null,
+            affiliate_code: refCode,
             newsletter_opt_in: newsletterOptIn,
           },
         },
@@ -69,7 +74,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       if (error) {
         setMessage({ type: "error", text: error.message });
       } else if (authData.user) {
-        if (affiliateCode) {
+        if (refCode) {
           try {
             const response = await fetch(
               `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-affiliate-referral`,
@@ -81,12 +86,15 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
                 },
                 body: JSON.stringify({
                   userId: authData.user.id,
-                  affiliateCode: affiliateCode,
+                  affiliateCode: refCode,
+                  landingPath: metadata?.landingPath || null,
+                  attributionSource: metadata?.source || 'storage',
                 }),
               }
             );
 
             if (response.ok) {
+              clearReferralCode();
               setMessage({
                 type: "success",
                 text: "Konto erfolgreich erstellt! Sie wurden über einen Partner-Link registriert.",
@@ -115,6 +123,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       setLoading(false);
     }
   };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {" "}
@@ -126,6 +135,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           {message.text}{" "}
         </div>
       )}{" "}
+      <input type="hidden" name="ref" value={affiliateCode} />
       <div>
         <label
           htmlFor="email"

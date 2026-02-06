@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { SignupForm } from "../components/auth/SignupForm";
 import { useAuth } from "../hooks/useAuth";
 import {
@@ -15,15 +15,15 @@ import {
 } from "lucide-react";
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
+import { RefLink } from "../components/common/RefLink";
+import { getReferralCode } from "../lib/referralTracking";
 
 export function Signup() {
   const { user, loading } = useAuth();
   const [hasReferralCode, setHasReferralCode] = useState(false);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const refCode = urlParams.get("ref");
-    setHasReferralCode(!!refCode);
+    setHasReferralCode(!!getReferralCode());
   }, []);
   if (loading) {
     return (
@@ -236,13 +236,13 @@ export function Signup() {
                   <p className="text-sm text-gray-400">
                     {" "}
                     Bereits registriert?{" "}
-                    <Link
+                    <RefLink
                       to="/login"
                       className="font-semibold text-primary-blue hover:text-primary-blue"
                     >
                       {" "}
                       Jetzt anmelden{" "}
-                    </Link>{" "}
+                    </RefLink>{" "}
                   </p>{" "}
                 </div>{" "}
               </div>{" "}

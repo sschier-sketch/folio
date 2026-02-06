@@ -9,6 +9,8 @@ const corsHeaders = {
 interface RequestBody {
   userId: string;
   affiliateCode: string;
+  landingPath?: string | null;
+  attributionSource?: string | null;
 }
 
 Deno.serve(async (req: Request) => {
@@ -31,7 +33,7 @@ Deno.serve(async (req: Request) => {
       }
     );
 
-    const { userId, affiliateCode }: RequestBody = await req.json();
+    const { userId, affiliateCode, landingPath, attributionSource }: RequestBody = await req.json();
 
     if (!userId || !affiliateCode) {
       return new Response(
@@ -43,13 +45,27 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    if (!/^[A-Z0-9]{6,16}$/i.test(affiliateCode)) {
+      console.log(`[referral] Invalid ref code format: ${affiliateCode}`);
+      return new Response(
+        JSON.stringify({ error: 'Invalid affiliate code format' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const normalizedCode = affiliateCode.toUpperCase();
+
     const { data: affiliate, error: affiliateError } = await supabase
       .from('affiliates')
-      .select('id, user_id, status, is_blocked')
-      .eq('affiliate_code', affiliateCode)
+      .select('id, user_id, status, is_blocked, total_referrals')
+      .eq('affiliate_code', normalizedCode)
       .maybeSingle();
 
     if (affiliateError || !affiliate) {
+      console.log(`[referral] Code not found: ${normalizedCode}, source=${attributionSource || 'unknown'}`);
       return new Response(
         JSON.stringify({ error: 'Invalid affiliate code' }),
         {
@@ -95,18 +111,23 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const insertData: Record<string, unknown> = {
+      affiliate_id: affiliate.id,
+      referred_user_id: userId,
+      status: 'registered',
+    };
+
+    if (landingPath) insertData.landing_path = landingPath;
+    if (attributionSource) insertData.attribution_source = attributionSource;
+
     const { data: referral, error: referralError } = await supabase
       .from('affiliate_referrals')
-      .insert({
-        affiliate_id: affiliate.id,
-        referred_user_id: userId,
-        status: 'registered',
-      })
+      .insert(insertData)
       .select()
       .single();
 
     if (referralError) {
-      console.error('Error creating referral:', referralError);
+      console.error('[referral] Insert error:', referralError);
       return new Response(
         JSON.stringify({ error: 'Failed to create referral' }),
         {
@@ -116,6 +137,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    await supabase
+      .from('affiliates')
+      .update({
+        total_referrals: (affiliate.total_referrals || 0) + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', affiliate.id);
+
+    console.log(`[referral] OK: user=${userId}, code=${normalizedCode}, source=${attributionSource || 'unknown'}, landing=${landingPath || 'n/a'}`);
+
     return new Response(
       JSON.stringify({ success: true, referral }),
       {
@@ -124,7 +155,7 @@ Deno.serve(async (req: Request) => {
       }
     );
   } catch (error) {
-    console.error('Error in create-affiliate-referral:', error);
+    console.error('[referral] Error:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       {

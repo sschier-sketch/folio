@@ -1,10 +1,11 @@
 import React from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { LoginForm } from "../components/auth/LoginForm";
 import { useAuth } from "../hooks/useAuth";
 import { Sparkles } from "lucide-react";
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
+import { RefLink } from "../components/common/RefLink";
 
 export function Login() {
   const { user, loading, isBanned, checkingBan } = useAuth();
@@ -45,13 +46,13 @@ export function Login() {
           <p className="mt-2 text-center text-sm text-gray-400">
             {" "}
             Noch kein Konto?{" "}
-            <Link
+            <RefLink
               to="/signup"
               className="font-semibold text-primary-blue hover:text-primary-blue inline-flex items-center gap-1"
             >
               {" "}
               Jetzt kostenlos registrieren <Sparkles className="w-4 h-4" />{" "}
-            </Link>{" "}
+            </RefLink>{" "}
           </p>{" "}
         </div>{" "}
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
 import { supabase } from "../lib/supabase";
 import { Search, Calendar, Tag as TagIcon, FolderOpen, ChevronLeft, ChevronRight, X, Filter } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { RefLink } from "../components/common/RefLink";
 
 interface Post {
   id: string;
@@ -362,7 +363,7 @@ export function Magazine() {
 
               <div className="grid gap-8 mb-12">
                 {posts.map((post) => (
-                  <Link
+                  <RefLink
                     key={post.id}
                     to={`${magazineBasePath}/${post.slug}`}
                     className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden group"
@@ -420,7 +421,7 @@ export function Magazine() {
                         )}
                       </div>
                     </div>
-                  </Link>
+                  </RefLink>
                 ))}
               </div>
 
