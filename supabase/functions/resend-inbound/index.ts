@@ -437,14 +437,20 @@ Deno.serve(async (req: Request) => {
       }
 
       if (threadId) {
+        const threadUpdate: Record<string, unknown> = {
+          last_message_at: receivedAt,
+          last_email_message_id: messageId,
+          status: "unread",
+          updated_at: new Date().toISOString(),
+          folder: folder,
+        };
+        if (tenantId) {
+          threadUpdate.tenant_id = tenantId;
+        }
+
         await supabase
           .from("mail_threads")
-          .update({
-            last_message_at: receivedAt,
-            last_email_message_id: messageId,
-            status: "unread",
-            updated_at: new Date().toISOString(),
-          })
+          .update(threadUpdate)
           .eq("id", threadId);
 
         await supabase.rpc("increment_thread_message_count", {
