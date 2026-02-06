@@ -1,8 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
-import { X, Send, Search, Users, AtSign, Upload, File as FileIcon, Globe, Info } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Send, Users, AtSign, Upload, File as FileIcon, Globe, Info, Building2, DoorOpen, ChevronRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { sanitizeFileName } from '../../lib/utils';
+
+interface Property {
+  id: string;
+  name: string;
+  address: string;
+}
+
+interface Unit {
+  id: string;
+  unit_number: string;
+  unit_type: string;
+}
 
 interface Tenant {
   id: string;
@@ -10,7 +22,7 @@ interface Tenant {
   last_name: string;
   email: string | null;
   property_id?: string;
-  property_name?: string;
+  unit_id?: string;
 }
 
 interface ComposeMessageProps {
@@ -22,8 +34,11 @@ interface ComposeMessageProps {
 
 export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: ComposeMessageProps) {
   const { user } = useAuth();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPropertyId, setSelectedPropertyId] = useState('');
+  const [selectedUnitId, setSelectedUnitId] = useState('');
   const [recipientType, setRecipientType] = useState<'tenant' | 'manual'>('tenant');
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [manualEmail, setManualEmail] = useState('');
@@ -32,56 +47,70 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [showTenantDropdown, setShowTenantDropdown] = useState(false);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [publishToPortal, setPublishToPortal] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen && user) loadTenants();
+    if (isOpen && user) loadProperties();
   }, [isOpen, user]);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowTenantDropdown(false);
-      }
+    if (selectedPropertyId) {
+      loadUnits(selectedPropertyId);
+      loadTenants(selectedPropertyId, '');
+    } else {
+      setUnits([]);
+      setTenants([]);
     }
-    if (showTenantDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showTenantDropdown]);
+    setSelectedUnitId('');
+    setSelectedTenant(null);
+  }, [selectedPropertyId]);
 
-  async function loadTenants() {
+  useEffect(() => {
+    if (selectedPropertyId) {
+      loadTenants(selectedPropertyId, selectedUnitId);
+    }
+    setSelectedTenant(null);
+  }, [selectedUnitId]);
+
+  async function loadProperties() {
     if (!user) return;
     const { data } = await supabase
-      .from('tenants')
-      .select('id, first_name, last_name, email, property_id, properties(name)')
+      .from('properties')
+      .select('id, name, address')
       .eq('user_id', user.id)
+      .order('name');
+    setProperties(data || []);
+  }
+
+  async function loadUnits(propertyId: string) {
+    if (!user) return;
+    const { data } = await supabase
+      .from('property_units')
+      .select('id, unit_number, unit_type')
+      .eq('property_id', propertyId)
+      .eq('user_id', user.id)
+      .order('unit_number');
+    setUnits(data || []);
+  }
+
+  async function loadTenants(propertyId: string, unitId: string) {
+    if (!user) return;
+    let query = supabase
+      .from('tenants')
+      .select('id, first_name, last_name, email, property_id, unit_id')
+      .eq('user_id', user.id)
+      .eq('property_id', propertyId)
       .eq('is_deleted', false)
       .order('last_name');
 
-    setTenants(
-      (data || []).map((t: any) => ({
-        id: t.id,
-        first_name: t.first_name,
-        last_name: t.last_name,
-        email: t.email,
-        property_id: t.property_id,
-        property_name: t.properties?.name || '',
-      }))
-    );
-  }
+    if (unitId) {
+      query = query.eq('unit_id', unitId);
+    }
 
-  const filteredTenants = tenants.filter((t) => {
-    const q = searchTerm.toLowerCase();
-    return (
-      t.first_name.toLowerCase().includes(q) ||
-      t.last_name.toLowerCase().includes(q) ||
-      (t.email && t.email.toLowerCase().includes(q))
-    );
-  });
+    const { data } = await query;
+    setTenants(data || []);
+  }
 
   async function uploadAttachment(): Promise<{ docId: string; filePath: string } | null> {
     if (!attachedFile || !user) return null;
@@ -236,12 +265,13 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
   }
 
   function resetForm() {
+    setSelectedPropertyId('');
+    setSelectedUnitId('');
     setSelectedTenant(null);
     setManualEmail('');
     setManualName('');
     setSubject('');
     setContent('');
-    setSearchTerm('');
     setError('');
     setRecipientType('tenant');
     setAttachedFile(null);
@@ -290,51 +320,79 @@ export default function ComposeMessage({ isOpen, onClose, userAlias, onSent }: C
           </div>
 
           {recipientType === 'tenant' ? (
-            <div ref={dropdownRef}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Empfänger (Mieter)</label>
-              {selectedTenant ? (
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-blue-50 border border-blue-200 rounded-lg">
-                  <span className="text-sm font-medium text-blue-800 flex-1">
-                    {selectedTenant.first_name} {selectedTenant.last_name}
-                    {selectedTenant.email && <span className="text-blue-600 font-normal ml-1">({selectedTenant.email})</span>}
-                  </span>
-                  <button onClick={() => setSelectedTenant(null)} className="text-blue-500 hover:text-blue-700">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Building2 className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                  Immobilie
+                </label>
+                <select
+                  value={selectedPropertyId}
+                  onChange={(e) => setSelectedPropertyId(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                >
+                  <option value="">Immobilie auswählen...</option>
+                  {properties.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}{p.address ? ` - ${p.address}` : ''}</option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedPropertyId && units.length > 0 && (
                 <div>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => { setSearchTerm(e.target.value); setShowTenantDropdown(true); }}
-                      onFocus={() => setShowTenantDropdown(true)}
-                      placeholder="Mieter suchen..."
-                      className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                    />
-                  </div>
-                  {showTenantDropdown && (
-                    <div className="mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {filteredTenants.length > 0 ? (
-                        filteredTenants.map((t) => (
-                          <button
-                            key={t.id}
-                            onClick={() => { setSelectedTenant(t); setShowTenantDropdown(false); setSearchTerm(''); }}
-                            className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm transition-colors"
-                          >
-                            <span className="font-medium text-gray-900">{t.first_name} {t.last_name}</span>
-                            {t.email && <span className="text-gray-500 ml-2">{t.email}</span>}
-                            {t.property_name && <span className="text-gray-400 ml-2 text-xs">({t.property_name})</span>}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-4 py-3 text-sm text-gray-400">
-                          {tenants.length === 0 ? 'Keine Mieter vorhanden' : 'Kein Mieter gefunden'}
-                        </div>
-                      )}
-                    </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <DoorOpen className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                    Einheit
+                  </label>
+                  <select
+                    value={selectedUnitId}
+                    onChange={(e) => setSelectedUnitId(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                  >
+                    <option value="">Alle Einheiten</option>
+                    {units.map((u) => (
+                      <option key={u.id} value={u.id}>{u.unit_number}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {selectedPropertyId && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <Users className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                    Mieter
+                  </label>
+                  {tenants.length > 0 ? (
+                    <select
+                      value={selectedTenant?.id || ''}
+                      onChange={(e) => {
+                        const t = tenants.find((t) => t.id === e.target.value);
+                        setSelectedTenant(t || null);
+                      }}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                    >
+                      <option value="">Mieter auswählen...</option>
+                      {tenants.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.first_name} {t.last_name}{t.email ? ` (${t.email})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="text-sm text-gray-400 py-2">Keine Mieter für diese Auswahl vorhanden.</p>
+                  )}
+                </div>
+              )}
+
+              {selectedTenant && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                  <ChevronRight className="w-3.5 h-3.5 text-blue-500" />
+                  <span className="text-blue-800 font-medium">
+                    {selectedTenant.first_name} {selectedTenant.last_name}
+                  </span>
+                  {selectedTenant.email && (
+                    <span className="text-blue-600">{selectedTenant.email}</span>
                   )}
                 </div>
               )}
