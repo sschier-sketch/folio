@@ -1,0 +1,224 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, Mail, Settings, RefreshCw } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
+import FolderList from './FolderList';
+import ThreadList from './ThreadList';
+import ThreadDetail from './ThreadDetail';
+import ComposeMessage from './ComposeMessage';
+import AliasSettings from './AliasSettings';
+import type { MailThread, UserMailbox, Folder } from './types';
+
+export default function MessagesView() {
+  const { user } = useAuth();
+  const [mailbox, setMailbox] = useState<UserMailbox | null>(null);
+  const [threads, setThreads] = useState<MailThread[]>([]);
+  const [activeFolder, setActiveFolder] = useState<Folder>('inbox');
+  const [selectedThread, setSelectedThread] = useState<MailThread | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showCompose, setShowCompose] = useState(false);
+  const [showAliasSettings, setShowAliasSettings] = useState(false);
+  const [folderCounts, setFolderCounts] = useState<Record<Folder, number>>({ inbox: 0, sent: 0, unknown: 0 });
+  const [unreadCounts, setUnreadCounts] = useState<Record<Folder, number>>({ inbox: 0, sent: 0, unknown: 0 });
+
+  const loadMailbox = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('user_mailboxes')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (data) setMailbox(data);
+  }, [user]);
+
+  const loadThreads = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+
+    const { data } = await supabase
+      .from('mail_threads')
+      .select('*, tenants(first_name, last_name, email)')
+      .eq('user_id', user.id)
+      .eq('folder', activeFolder)
+      .order('last_message_at', { ascending: false });
+
+    setThreads((data as MailThread[]) || []);
+    setLoading(false);
+  }, [user, activeFolder]);
+
+  const loadCounts = useCallback(async () => {
+    if (!user) return;
+    const folders: Folder[] = ['inbox', 'sent', 'unknown'];
+    const counts: Record<Folder, number> = { inbox: 0, sent: 0, unknown: 0 };
+    const unreads: Record<Folder, number> = { inbox: 0, sent: 0, unknown: 0 };
+
+    for (const folder of folders) {
+      const { count: total } = await supabase
+        .from('mail_threads')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('folder', folder);
+      counts[folder] = total || 0;
+
+      const { count: unread } = await supabase
+        .from('mail_threads')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('folder', folder)
+        .eq('status', 'unread');
+      unreads[folder] = unread || 0;
+    }
+
+    setFolderCounts(counts);
+    setUnreadCounts(unreads);
+  }, [user]);
+
+  useEffect(() => { loadMailbox(); }, [loadMailbox]);
+  useEffect(() => { loadThreads(); }, [loadThreads]);
+  useEffect(() => { loadCounts(); }, [loadCounts]);
+
+  function handleFolderChange(folder: Folder) {
+    setActiveFolder(folder);
+    setSelectedThread(null);
+  }
+
+  function handleThreadSelect(thread: MailThread) {
+    setSelectedThread(thread);
+  }
+
+  function handleRefresh() {
+    loadThreads();
+    loadCounts();
+  }
+
+  const totalUnread = unreadCounts.inbox + unreadCounts.sent + unreadCounts.unknown;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Nachrichten</h1>
+          {mailbox && (
+            <div className="flex items-center gap-2 mt-1">
+              <Mail className="w-3.5 h-3.5 text-gray-400" />
+              <span className="text-sm text-gray-500">{mailbox.alias_localpart}@rentab.ly</span>
+              <button
+                onClick={() => setShowAliasSettings(true)}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                title="Adresse aendern"
+              >
+                <Settings className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRefresh}
+            className="p-2.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Aktualisieren"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setShowCompose(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Neue Nachricht
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 240px)', minHeight: '500px' }}>
+        <div className="flex h-full">
+          <div className="w-48 flex-shrink-0 border-r border-gray-200 p-3 hidden md:block">
+            <FolderList
+              activeFolder={activeFolder}
+              onSelect={handleFolderChange}
+              counts={folderCounts}
+              unreadCounts={unreadCounts}
+            />
+          </div>
+
+          <div className={`w-80 flex-shrink-0 border-r border-gray-200 overflow-y-auto ${selectedThread ? 'hidden lg:block' : 'flex-1 lg:flex-none lg:w-80'}`}>
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 md:hidden">
+              <div className="flex gap-1">
+                {(['inbox', 'sent', 'unknown'] as Folder[]).map((f) => {
+                  const labels: Record<Folder, string> = { inbox: 'Eingang', sent: 'Gesendet', unknown: 'Unbekannt' };
+                  if (f === 'unknown' && folderCounts.unknown === 0) return null;
+                  return (
+                    <button
+                      key={f}
+                      onClick={() => handleFolderChange(f)}
+                      className={`flex-1 py-2 px-2 text-xs font-medium rounded-lg transition-colors ${
+                        activeFolder === f ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {labels[f]}
+                      {unreadCounts[f] > 0 && (
+                        <span className="ml-1 inline-flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-semibold rounded-full bg-blue-600 text-white">
+                          {unreadCounts[f]}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <ThreadList
+              threads={threads}
+              selectedThreadId={selectedThread?.id || null}
+              onSelect={handleThreadSelect}
+              loading={loading}
+            />
+          </div>
+
+          <div className={`flex-1 min-w-0 ${!selectedThread ? 'hidden lg:flex' : 'flex'} flex-col`}>
+            {selectedThread ? (
+              <ThreadDetail
+                thread={selectedThread}
+                userAlias={mailbox?.alias_localpart || ''}
+                onBack={() => setSelectedThread(null)}
+                onMessageSent={() => { handleRefresh(); }}
+              />
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
+                <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                  <Mail className="w-7 h-7 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-1">Keine Nachricht ausgewaehlt</h3>
+                <p className="text-sm text-gray-500 max-w-sm">
+                  Waehlen Sie eine Konversation aus der Liste oder starten Sie eine neue Nachricht.
+                </p>
+                <button
+                  onClick={() => setShowCompose(true)}
+                  className="mt-4 flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Neue Nachricht
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <ComposeMessage
+        isOpen={showCompose}
+        onClose={() => setShowCompose(false)}
+        userAlias={mailbox?.alias_localpart || ''}
+        onSent={handleRefresh}
+      />
+
+      <AliasSettings
+        isOpen={showAliasSettings}
+        onClose={() => setShowAliasSettings(false)}
+        currentAlias={mailbox?.alias_localpart || ''}
+        onUpdated={(newAlias) => {
+          setMailbox((prev) => prev ? { ...prev, alias_localpart: newAlias } : prev);
+        }}
+      />
+    </div>
+  );
+}

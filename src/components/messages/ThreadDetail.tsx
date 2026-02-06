@@ -1,0 +1,225 @@
+import { useState, useEffect, useRef } from 'react';
+import { Send, ArrowLeft, User } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
+import type { MailThread, MailMessage } from './types';
+
+interface ThreadDetailProps {
+  thread: MailThread;
+  userAlias: string;
+  onBack: () => void;
+  onMessageSent: () => void;
+}
+
+function formatDateTime(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }) + ', ' + d.toLocaleTimeString('de-DE', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function getInitials(name: string): string {
+  if (!name) return '??';
+  const parts = name.split(' ').filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent }: ThreadDetailProps) {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<MailMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const recipientName = thread.tenants
+    ? `${thread.tenants.first_name} ${thread.tenants.last_name}`.trim()
+    : thread.external_name || thread.external_email || 'Unbekannt';
+
+  const recipientEmail = thread.tenants?.email || thread.external_email || '';
+
+  useEffect(() => {
+    loadMessages();
+    markAsRead();
+  }, [thread.id]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  async function loadMessages() {
+    setLoading(true);
+    const { data } = await supabase
+      .from('mail_messages')
+      .select('*')
+      .eq('thread_id', thread.id)
+      .order('created_at', { ascending: true });
+
+    setMessages(data || []);
+    setLoading(false);
+  }
+
+  async function markAsRead() {
+    if (thread.status === 'unread') {
+      await supabase
+        .from('mail_threads')
+        .update({ status: 'read', updated_at: new Date().toISOString() })
+        .eq('id', thread.id);
+    }
+  }
+
+  async function handleSendReply() {
+    if (!replyText.trim() || !user) return;
+    setSending(true);
+
+    const senderAddr = userAlias ? `${userAlias}@rentab.ly` : '';
+
+    const { error: msgError } = await supabase.from('mail_messages').insert({
+      thread_id: thread.id,
+      user_id: user.id,
+      direction: 'outbound',
+      sender_address: senderAddr,
+      sender_name: '',
+      recipient_address: recipientEmail,
+      recipient_name: recipientName,
+      body_text: replyText.trim(),
+    });
+
+    if (!msgError) {
+      await supabase
+        .from('mail_threads')
+        .update({
+          last_message_at: new Date().toISOString(),
+          message_count: thread.message_count + messages.length + 1 - messages.length + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', thread.id);
+
+      if (thread.tenant_id) {
+        await supabase.from('tenant_communications').insert({
+          user_id: user.id,
+          tenant_id: thread.tenant_id,
+          communication_type: 'message',
+          subject: thread.subject || 'Antwort',
+          content: replyText.trim(),
+          is_internal: false,
+        });
+      }
+
+      setReplyText('');
+      onMessageSent();
+      loadMessages();
+    }
+
+    setSending(false);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="p-4 border-b border-gray-200 flex items-center gap-3">
+          <button onClick={onBack} className="lg:hidden p-1 hover:bg-gray-100 rounded">
+            <ArrowLeft className="w-5 h-5 text-gray-500" />
+          </button>
+          <div className="animate-pulse flex-1 space-y-2">
+            <div className="h-5 bg-gray-200 rounded w-48" />
+            <div className="h-3 bg-gray-100 rounded w-32" />
+          </div>
+        </div>
+        <div className="flex-1 p-4 space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="animate-pulse space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-24" />
+              <div className="h-16 bg-gray-100 rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-5 py-4 border-b border-gray-200 bg-white flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="lg:hidden p-1 hover:bg-gray-100 rounded-lg transition-colors">
+            <ArrowLeft className="w-5 h-5 text-gray-500" />
+          </button>
+          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-600">
+            {getInitials(recipientName)}
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-gray-900 text-sm truncate">{recipientName}</h3>
+            <p className="text-xs text-gray-500 truncate">{recipientEmail || thread.subject}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-gray-50/50">
+        {messages.map((msg) => {
+          const isOutbound = msg.direction === 'outbound';
+          return (
+            <div key={msg.id} className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] ${isOutbound ? 'order-1' : 'order-1'}`}>
+                <div className={`flex items-center gap-2 mb-1 ${isOutbound ? 'justify-end' : 'justify-start'}`}>
+                  {!isOutbound && (
+                    <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                      <User className="w-3 h-3 text-gray-500" />
+                    </div>
+                  )}
+                  <span className="text-[11px] text-gray-400">
+                    {isOutbound ? 'Du' : (msg.sender_name || msg.sender_address || recipientName)}
+                    {' -- '}
+                    {formatDateTime(msg.created_at)}
+                  </span>
+                </div>
+                <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  isOutbound
+                    ? 'bg-blue-600 text-white rounded-br-md'
+                    : 'bg-white text-gray-800 border border-gray-200 rounded-bl-md shadow-sm'
+                }`}>
+                  <p className="whitespace-pre-wrap break-words">{msg.body_text}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="px-5 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+        <div className="flex gap-3">
+          <textarea
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendReply();
+              }
+            }}
+            placeholder="Nachricht schreiben..."
+            rows={2}
+            className="flex-1 resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+          />
+          <button
+            onClick={handleSendReply}
+            disabled={!replyText.trim() || sending}
+            className="self-end px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
+          >
+            <Send className="w-4 h-4" />
+            <span className="hidden sm:inline">Senden</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

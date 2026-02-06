@@ -25,6 +25,7 @@ import {
   KeyRound,
   ExternalLink,
   Copy,
+  Mail,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -48,6 +49,7 @@ import DocumentsView from "./DocumentsView";
 import TemplatesView from "./TemplatesView";
 import BillingView from "./BillingView";
 import TicketsView from "./TicketsView";
+import MessagesView from "./messages/MessagesView";
 import Footer from "./Footer";
 import SystemUpdatesModal from "./SystemUpdatesModal";
 import Badge from "./common/Badge";
@@ -56,6 +58,7 @@ type View =
   | "properties"
   | "tenants"
   | "mieterportal"
+  | "messages"
   | "payments"
   | "financial"
   | "documents"
@@ -89,7 +92,7 @@ export default function Dashboard() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
-    if (view && ['home', 'properties', 'tenants', 'mieterportal', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'referral'].includes(view)) {
+    if (view && ['home', 'properties', 'tenants', 'mieterportal', 'messages', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'referral'].includes(view)) {
       setCurrentView(view as View);
       window.history.replaceState({}, '', '/dashboard');
     }
@@ -122,6 +125,7 @@ export default function Dashboard() {
     { id: "properties", labelKey: "nav.properties", icon: Building2 },
     { id: "tenants", labelKey: "nav.tenants", icon: Users },
     { id: "payments", labelKey: "nav.payments", icon: Wallet },
+    { id: "messages", labelKey: "nav.messages", icon: Mail },
     { id: "mieterportal", labelKey: "nav.mieterportal", icon: MessageSquare },
     { id: "financial", labelKey: "nav.financial", icon: TrendingUp },
     { id: "documents", labelKey: "nav.documents", icon: FileText },
@@ -573,6 +577,7 @@ export default function Dashboard() {
             {currentView === "properties" && <PropertiesView selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
             {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} />}{" "}
             {currentView === "payments" && <RentPaymentsView />}{" "}
+            {currentView === "messages" && <MessagesView />}{" "}
             {currentView === "mieterportal" && <MieterportalView />}{" "}
             {currentView === "financial" && <FinancesView />}{" "}
             {currentView === "documents" && <DocumentsView />}{" "}
