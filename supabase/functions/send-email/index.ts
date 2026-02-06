@@ -197,7 +197,7 @@ Deno.serve(async (req: Request) => {
         .eq('idempotency_key', idempotencyKey)
         .maybeSingle();
 
-      if (existingLog && (existingLog.status === 'sent' || existingLog.status === 'queued')) {
+      if (existingLog && existingLog.status === 'sent') {
         return new Response(
           JSON.stringify({
             success: true,
@@ -211,6 +211,28 @@ Deno.serve(async (req: Request) => {
           }
         );
       }
+    }
+
+    const { data: logEntry, error: logError } = await supabase
+      .from('email_logs')
+      .insert({
+        mail_type: finalMailType,
+        category: finalCategory,
+        to_email: to || 'unknown',
+        user_id: userId || null,
+        subject: subject || templateKey || 'unknown',
+        provider: 'resend',
+        status: 'queued',
+        idempotency_key: idempotencyKey || null,
+        metadata: { ...(metadata || {}), templateKey: templateKey || null },
+      })
+      .select('id')
+      .single();
+
+    if (logError) {
+      console.error('Failed to create email log:', logError);
+    } else {
+      logId = logEntry.id;
     }
 
     if (templateKey) {
@@ -236,7 +258,14 @@ Deno.serve(async (req: Request) => {
         .maybeSingle();
 
       if (templateError || !template) {
-        throw new Error(`Template not found: ${templateKey}`);
+        const errMsg = `Template not found: ${templateKey} (language: ${userLanguage})`;
+        if (logId) {
+          await supabase
+            .from('email_logs')
+            .update({ status: 'failed', error_code: 'TEMPLATE_NOT_FOUND', error_message: errMsg })
+            .eq('id', logId);
+        }
+        throw new Error(errMsg);
       }
 
       finalSubject = template.subject;
@@ -251,35 +280,26 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!to || !finalSubject || (!finalHtml && !finalText)) {
-      throw new Error("Missing required fields: to, subject, and html or text");
+      const errMsg = "Missing required fields: to, subject, and html or text";
+      if (logId) {
+        await supabase
+          .from('email_logs')
+          .update({ status: 'failed', error_code: 'MISSING_FIELDS', error_message: errMsg })
+          .eq('id', logId);
+      }
+      throw new Error(errMsg);
     }
 
     if (!finalHtml && finalText) {
       finalHtml = `<div style="font-family: Arial, sans-serif; white-space: pre-wrap;">${finalText}</div>`;
     }
 
-    const { data: logEntry, error: logError } = await supabase
-      .from('email_logs')
-      .insert({
-        mail_type: finalMailType,
-        category: finalCategory,
-        to_email: to,
-        user_id: userId || null,
-        subject: finalSubject,
-        provider: 'resend',
-        status: 'queued',
-        idempotency_key: idempotencyKey || null,
-        metadata: metadata || {},
-      })
-      .select('id')
-      .single();
-
-    if (logError) {
-      console.error('Failed to create email log:', logError);
-      throw new Error('Failed to create email log');
+    if (logId) {
+      await supabase
+        .from('email_logs')
+        .update({ subject: finalSubject })
+        .eq('id', logId);
     }
-
-    logId = logEntry.id;
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 

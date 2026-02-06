@@ -33,6 +33,18 @@ Deno.serve(async (req: Request) => {
 
     console.log('Sending welcome email to:', email, 'userId:', userId);
 
+    const { data: profile } = await supabase
+      .from('account_profiles')
+      .select('first_name, last_name')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    let userName = email.split('@')[0];
+    if (profile) {
+      const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(' ');
+      if (fullName) userName = fullName;
+    }
+
     const origin = req.headers.get('origin') || Deno.env.get('APP_BASE_URL') || 'https://rentab.ly';
     const dashboardLink = `${origin}/dashboard`;
 
@@ -48,6 +60,7 @@ Deno.serve(async (req: Request) => {
         to: email,
         templateKey: 'registration',
         variables: {
+          userName: userName,
           dashboard_link: dashboardLink,
         },
         userId: userId,
