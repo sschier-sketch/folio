@@ -87,28 +87,10 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { data: landlord, error: landlordError } = await supabase
-      .from("users")
-      .select("email, first_name, last_name")
-      .eq("id", userId)
-      .maybeSingle();
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
 
-    if (landlordError) {
-      console.error("Error fetching landlord:", landlordError);
-      return new Response(
-        JSON.stringify({
-          error: "Error fetching landlord data",
-          details: landlordError.message,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    if (!landlord) {
-      console.error("Landlord not found:", userId);
+    if (authError || !authUser?.user) {
+      console.error("Error fetching landlord:", authError);
       return new Response(
         JSON.stringify({
           error: "Landlord not found",
@@ -120,12 +102,20 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const landlordEmail = authUser.user.email || '';
+
+    const { data: profile } = await supabase
+      .from("account_profiles")
+      .select("first_name, last_name")
+      .eq("user_id", userId)
+      .maybeSingle();
+
     const origin = req.headers.get("origin") || "https://rentab.ly";
     const portalLink = `${origin}/tenant-portal/${userId}`;
 
-    const landlordName = landlord.first_name && landlord.last_name
-      ? `${landlord.first_name} ${landlord.last_name}`
-      : landlord.email;
+    const landlordName = profile?.first_name && profile?.last_name
+      ? `${profile.first_name} ${profile.last_name}`
+      : landlordEmail;
 
     const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`;
     const emailResponse = await fetch(sendEmailUrl, {
@@ -142,7 +132,7 @@ Deno.serve(async (req: Request) => {
           tenant_email: tenant.email,
           portal_link: portalLink,
           landlord_name: landlordName,
-          landlord_email: landlord.email,
+          landlord_email: landlordEmail,
         },
       }),
     });
