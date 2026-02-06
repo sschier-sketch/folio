@@ -21,6 +21,7 @@ interface Association {
   association_id: string;
   property_name?: string;
   tenant_name?: string;
+  contract_name?: string;
 }
 
 interface DocumentsListProps {
@@ -108,12 +109,29 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                       .eq("id", assoc.association_id)
                       .maybeSingle();
                     name = tenant ? `${tenant.first_name} ${tenant.last_name}` : undefined;
+                  } else if (assoc.association_type === "rental_contract") {
+                    const { data: contract } = await supabase
+                      .from("rental_contracts")
+                      .select("id, tenant_id")
+                      .eq("id", assoc.association_id)
+                      .maybeSingle();
+                    if (contract?.tenant_id) {
+                      const { data: tenant } = await supabase
+                        .from("tenants")
+                        .select("first_name, last_name")
+                        .eq("id", contract.tenant_id)
+                        .maybeSingle();
+                      name = tenant ? `${tenant.first_name} ${tenant.last_name} - Mietvertrag` : "Mietvertrag";
+                    } else {
+                      name = "Mietvertrag";
+                    }
                   }
 
                   return {
                     ...assoc,
                     property_name: assoc.association_type === "property" ? name : undefined,
                     tenant_name: assoc.association_type === "tenant" ? name : undefined,
+                    contract_name: assoc.association_type === "rental_contract" ? name : undefined,
                   };
                 })
               );
@@ -207,8 +225,16 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
       label = firstAssoc.property_name;
     } else if (firstAssoc.association_type === "tenant" && firstAssoc.tenant_name) {
       label = firstAssoc.tenant_name;
+    } else if (firstAssoc.association_type === "rental_contract" && firstAssoc.contract_name) {
+      label = firstAssoc.contract_name;
     } else {
-      label = firstAssoc.association_type;
+      const typeLabels: Record<string, string> = {
+        property: "Immobilie",
+        unit: "Einheit",
+        tenant: "Mieter",
+        rental_contract: "Mietvertrag",
+      };
+      label = typeLabels[firstAssoc.association_type] || firstAssoc.association_type;
     }
 
     if (associations.length > 1) {
