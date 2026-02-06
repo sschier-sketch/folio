@@ -46,12 +46,12 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         to: email,
-        templateKey: 'welcome',
+        templateKey: 'registration',
         variables: {
           dashboard_link: dashboardLink,
         },
         userId: userId,
-        mailType: 'welcome',
+        mailType: 'registration',
         category: 'transactional',
         idempotencyKey: idempotencyKey,
         metadata: {

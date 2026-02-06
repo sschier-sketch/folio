@@ -60,6 +60,11 @@ Deno.serve(async (req: Request) => {
       processedCount++;
 
       try {
+        await supabase
+          .from("email_logs")
+          .update({ status: "processing" })
+          .eq("id", emailLog.id);
+
         const metadata = emailLog.metadata || {};
         const templateKey = metadata.template_key || emailLog.mail_type;
         const variables = metadata.variables || {};
@@ -70,13 +75,12 @@ Deno.serve(async (req: Request) => {
 
         const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`;
 
-        const emailPayload = {
+        const emailPayload: Record<string, unknown> = {
           to: emailLog.to_email,
           templateKey: templateKey,
           userId: emailLog.user_id,
           mailType: emailLog.mail_type,
           category: emailLog.category,
-          idempotencyKey: emailLog.idempotency_key,
           variables: variables,
         };
 
@@ -107,6 +111,16 @@ Deno.serve(async (req: Request) => {
         } else {
           const result = await response.json();
           console.log(`Email ${emailLog.id} sent successfully:`, result);
+
+          await supabase
+            .from("email_logs")
+            .update({
+              status: "sent",
+              provider_message_id: result.emailId || null,
+              sent_at: new Date().toISOString(),
+            })
+            .eq("id", emailLog.id);
+
           successCount++;
         }
       } catch (error) {
