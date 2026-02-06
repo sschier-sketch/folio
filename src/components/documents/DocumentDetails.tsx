@@ -78,9 +78,11 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   const [newAssociation, setNewAssociation] = useState({
     type: "property",
     id: "",
+    propertyIdForUnit: "",
   });
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
-  const [contracts, setContracts] = useState<{ id: string; tenant_name: string }[]>([]);
+  const [units, setUnits] = useState<{ id: string; unit_number: string; property_id: string }[]>([]);
+  const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     if (user && documentId) {
@@ -166,20 +168,20 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                 .eq("id", assoc.association_id)
                 .maybeSingle();
               name = prop?.name || "Unbekannt";
-            } else if (assoc.association_type === "rental_contract") {
-              const { data: contract } = await supabase
-                .from("rental_contracts")
-                .select("tenants(name)")
+            } else if (assoc.association_type === "unit") {
+              const { data: unit } = await supabase
+                .from("property_units")
+                .select("unit_number, properties(name)")
                 .eq("id", assoc.association_id)
                 .maybeSingle();
-              name = (contract as any)?.tenants?.name || "Unbekannt";
+              name = unit ? `${(unit as any).properties?.name || ''} - ${unit.unit_number}` : "Unbekannt";
             } else if (assoc.association_type === "tenant") {
               const { data: tenant } = await supabase
                 .from("tenants")
-                .select("name")
+                .select("first_name, last_name")
                 .eq("id", assoc.association_id)
                 .maybeSingle();
-              name = tenant?.name || "Unbekannt";
+              name = tenant ? `${tenant.first_name} ${tenant.last_name}` : "Unbekannt";
             }
 
             return { ...assoc, name };
@@ -211,23 +213,19 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
 
   async function loadReferences() {
     try {
-      const [propsRes, contractsRes] = await Promise.all([
+      const [propsRes, unitsRes, tenantsRes] = await Promise.all([
         supabase.from("properties").select("id, name").order("name"),
-        supabase
-          .from("rental_contracts")
-          .select("id, tenants(name)")
-          .eq("status", "active")
-          .order("start_date", { ascending: false }),
+        supabase.from("property_units").select("id, unit_number, property_id").order("unit_number"),
+        supabase.from("tenants").select("id, first_name, last_name").eq("is_active", true).order("last_name"),
       ]);
 
       if (propsRes.data) setProperties(propsRes.data);
-      if (contractsRes.data) {
-        setContracts(
-          contractsRes.data.map((c: any) => ({
-            id: c.id,
-            tenant_name: c.tenants?.name || "Unbekannt",
-          }))
-        );
+      if (unitsRes.data) setUnits(unitsRes.data);
+      if (tenantsRes.data) {
+        setTenants(tenantsRes.data.map((t) => ({
+          id: t.id,
+          name: `${t.first_name} ${t.last_name}`,
+        })));
       }
     } catch (error) {
       console.error("Error loading references:", error);
@@ -411,9 +409,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
     const labels: Record<string, string> = {
       property: "Immobilie",
       unit: "Einheit",
-      rental_contract: "Mietverhältnis",
       tenant: "Mieter",
-      finance: "Finanzen",
     };
     return labels[type] || type;
   };
@@ -422,9 +418,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
     const icons: Record<string, any> = {
       property: Building,
       unit: Building,
-      rental_contract: FileCheck,
       tenant: Users,
-      finance: FileText,
     };
     return icons[type] || FileText;
   };
@@ -601,31 +595,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                   />
                 </div>
 
-                <div className="border-t border-gray-200 pt-4">
-                  <label className="flex items-start gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      id="share_with_tenant_edit"
-                      checked={editForm.shared_with_tenant}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, shared_with_tenant: e.target.checked })
-                      }
-                      className="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        Im Mieterportal zur Verfügung stellen
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {associations.some((a) => a.association_type === "tenant")
-                          ? 'Wenn Sie einen Mieter zugeordnet haben, sieht nur dieser Mieter das Dokument in seinem Portal.'
-                          : 'Alle Mieter der zugeordneten Immobilie/Einheit können dieses Dokument in ihrem Portal einsehen. Ohne Zuordnung bleibt das Dokument privat.'}
-                      </p>
-                    </div>
-                  </label>
-                </div>
-
                 <div className="flex gap-2">
                   <button
                     onClick={handleSave}
@@ -720,18 +689,41 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                     <select
                       value={newAssociation.type}
                       onChange={(e) =>
-                        setNewAssociation({ ...newAssociation, type: e.target.value, id: "" })
+                        setNewAssociation({ type: e.target.value, id: "", propertyIdForUnit: "" })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="property">Immobilie</option>
-                      <option value="rental_contract">Mietverhältnis</option>
+                      <option value="unit">Einheit</option>
+                      <option value="tenant">Mieter</option>
                     </select>
                   </div>
 
+                  {newAssociation.type === "unit" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Immobilie
+                      </label>
+                      <select
+                        value={newAssociation.propertyIdForUnit}
+                        onChange={(e) =>
+                          setNewAssociation({ ...newAssociation, propertyIdForUnit: e.target.value, id: "" })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Bitte waehlen...</option>
+                        {properties.map((prop) => (
+                          <option key={prop.id} value={prop.id}>{prop.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Objekt
+                      {newAssociation.type === "property" && "Immobilie auswaehlen"}
+                      {newAssociation.type === "unit" && "Einheit auswaehlen"}
+                      {newAssociation.type === "tenant" && "Mieter auswaehlen"}
                     </label>
                     <select
                       value={newAssociation.id}
@@ -740,18 +732,20 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="">Bitte wählen...</option>
+                      <option value="">Bitte waehlen...</option>
                       {newAssociation.type === "property" &&
                         properties.map((prop) => (
-                          <option key={prop.id} value={prop.id}>
-                            {prop.name}
-                          </option>
+                          <option key={prop.id} value={prop.id}>{prop.name}</option>
                         ))}
-                      {newAssociation.type === "rental_contract" &&
-                        contracts.map((contract) => (
-                          <option key={contract.id} value={contract.id}>
-                            {contract.tenant_name}
-                          </option>
+                      {newAssociation.type === "unit" &&
+                        units
+                          .filter((u) => !newAssociation.propertyIdForUnit || u.property_id === newAssociation.propertyIdForUnit)
+                          .map((u) => (
+                            <option key={u.id} value={u.id}>{u.unit_number}</option>
+                          ))}
+                      {newAssociation.type === "tenant" &&
+                        tenants.map((t) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
                         ))}
                     </select>
                   </div>
@@ -761,12 +755,12 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                       onClick={handleAddAssociation}
                       className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                      Hinzufügen
+                      Hinzufuegen
                     </button>
                     <button
                       onClick={() => {
                         setShowAddAssociation(false);
-                        setNewAssociation({ type: "property", id: "" });
+                        setNewAssociation({ type: "property", id: "", propertyIdForUnit: "" });
                       }}
                       style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
                       className="px-3 py-1.5 text-sm rounded-full hover:bg-gray-200 transition-colors"
@@ -814,6 +808,40 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                 })}
               </div>
             )}
+
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={document?.shared_with_tenant || false}
+                  onChange={async (e) => {
+                    const val = e.target.checked;
+                    try {
+                      await supabase
+                        .from("documents")
+                        .update({ shared_with_tenant: val })
+                        .eq("id", documentId);
+                      loadDocument();
+                      onUpdate();
+                    } catch (err) {
+                      console.error("Error updating shared_with_tenant:", err);
+                    }
+                  }}
+                  className="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Im Mieterportal zur Verfuegung stellen
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {associations.some((a) => a.association_type === "tenant")
+                      ? "Nur der zugeordnete Mieter sieht dieses Dokument in seinem Portal."
+                      : "Alle Mieter der zugeordneten Immobilie/Einheit koennen dieses Dokument einsehen."}
+                  </p>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
 
