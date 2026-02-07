@@ -1,10 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import Stripe from "npm:stripe@^17.4.0";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import Stripe from "npm:stripe@17.7.0";
+import { createClient } from "npm:@supabase/supabase-js@2.49.1";
 
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2024-12-18.acacia",
-  httpClient: Stripe.createFetchHttpClient(),
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
+  appInfo: {
+    name: "Bolt Integration",
+    version: "1.0.0",
+  },
 });
 
 const supabase = createClient(
@@ -15,7 +17,8 @@ const supabase = createClient(
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
 Deno.serve(async (req: Request) => {
@@ -30,7 +33,10 @@ Deno.serve(async (req: Request) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user: adminUser }, error: authError } = await supabase.auth.getUser(token);
+    const {
+      data: { user: adminUser },
+      error: authError,
+    } = await supabase.auth.getUser(token);
 
     if (authError || !adminUser) {
       throw new Error("Unauthorized");
@@ -59,7 +65,7 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
 
     if (!customer?.customer_id) {
-      throw new Error("No Stripe customer found for this user");
+      throw new Error("Kein Stripe-Kunde fuer diesen Benutzer gefunden");
     }
 
     const charges = await stripe.charges.list({
@@ -68,13 +74,13 @@ Deno.serve(async (req: Request) => {
     });
 
     if (charges.data.length === 0) {
-      throw new Error("No charges found for this customer");
+      throw new Error("Keine Zahlungen fuer diesen Kunden gefunden");
     }
 
     const latestCharge = charges.data[0];
 
     if (latestCharge.refunded) {
-      throw new Error("Latest charge has already been fully refunded");
+      throw new Error("Letzte Zahlung wurde bereits erstattet");
     }
 
     const refund = await stripe.refunds.create({

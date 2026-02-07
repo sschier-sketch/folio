@@ -6,16 +6,11 @@ import {
   DollarSign,
   TrendingUp,
   UserCheck,
-  Eye,
-  XCircle,
   Ban,
-  UserCog,
   ShieldCheck,
-  Trash2,
   Mail,
   Settings,
   Clock,
-  RotateCcw,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -33,8 +28,11 @@ import AdminMagazineView from "../components/admin/AdminMagazineView";
 import AdminEmailSettingsView from "../components/admin/AdminEmailSettingsView";
 import DeleteUserModal from "../components/admin/DeleteUserModal";
 import AdminLayout from "../components/admin/AdminLayout";
-import { BaseTable, StatusBadge, ActionButton, ActionsCell } from "../components/common/BaseTable";
+import UserActionsDropdown from "../components/admin/UserActionsDropdown";
+import { BaseTable, StatusBadge } from "../components/common/BaseTable";
 import type { AdminTabKey } from "../config/adminMenu";
+
+type UserFilter = 'all' | 'pro' | 'cancelling' | 'trial' | 'free';
 
 interface UserData {
   id: string;
@@ -53,6 +51,7 @@ interface UserData {
   ban_reason?: string;
   customer_number?: string;
   trial_ends_at?: string;
+  subscription_ends_at?: string;
 }
 
 interface Stats {
@@ -76,6 +75,7 @@ export function Admin() {
   const [sortField, setSortField] = useState<keyof UserData>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
+  const [userFilter, setUserFilter] = useState<UserFilter>('all');
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -129,7 +129,26 @@ export function Admin() {
     }
   }
 
-  const sortedUsers = [...users].sort((a, b) => {
+  function isUserCancelling(user: UserData) {
+    return user.subscription_plan === 'pro' && !!user.subscription_ends_at;
+  }
+
+  function isUserTrial(user: UserData) {
+    if (!user.trial_ends_at) return false;
+    return new Date(user.trial_ends_at) > new Date();
+  }
+
+  const filteredUsers = users.filter((user) => {
+    switch (userFilter) {
+      case 'pro': return user.subscription_plan === 'pro' && !isUserCancelling(user);
+      case 'cancelling': return isUserCancelling(user);
+      case 'trial': return isUserTrial(user);
+      case 'free': return user.subscription_plan !== 'pro' && !isUserTrial(user);
+      default: return true;
+    }
+  });
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
     const aValue = a[sortField];
     const bValue = b[sortField];
     if (aValue === undefined || aValue === null) return 1;
@@ -143,6 +162,14 @@ export function Admin() {
       ? (aValue > bValue ? 1 : -1)
       : (bValue > aValue ? 1 : -1);
   });
+
+  const filterCounts = {
+    all: users.length,
+    pro: users.filter(u => u.subscription_plan === 'pro' && !isUserCancelling(u)).length,
+    cancelling: users.filter(u => isUserCancelling(u)).length,
+    trial: users.filter(u => isUserTrial(u)).length,
+    free: users.filter(u => u.subscription_plan !== 'pro' && !isUserTrial(u)).length,
+  };
 
   async function handleCancelSubscription(userId: string) {
     if (!confirm("Moechten Sie das Abonnement dieses Nutzers wirklich zum Ende der Laufzeit kuendigen?"))
@@ -390,9 +417,35 @@ export function Admin() {
         {activeTab === "users" && (
           <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
             <div className="p-5 border-b border-gray-100">
-              <h2 className="text-base font-semibold text-gray-800">
-                Alle Benutzer
+              <h2 className="text-base font-semibold text-gray-800 mb-4">
+                Benutzer
               </h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                {([
+                  { key: 'all', label: 'Alle' },
+                  { key: 'pro', label: 'Pro' },
+                  { key: 'cancelling', label: 'In Kuendigung' },
+                  { key: 'trial', label: 'Trial' },
+                  { key: 'free', label: 'Gratis' },
+                ] as { key: UserFilter; label: string }[]).map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setUserFilter(key)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      userFilter === key
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {label}
+                    <span className={`ml-1.5 text-xs ${
+                      userFilter === key ? 'text-gray-300' : 'text-gray-400'
+                    }`}>
+                      {filterCounts[key]}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
             <BaseTable
               columns={[
@@ -477,83 +530,50 @@ export function Admin() {
                   header: "Tarif",
                   sortable: true,
                   render: (user: UserData) => {
+                    if (user.subscription_plan === "pro" && isUserCancelling(user)) {
+                      const endDate = new Date(user.subscription_ends_at!).toLocaleDateString("de-DE", { day: '2-digit', month: '2-digit', year: '2-digit' });
+                      return (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                          Pro (bis {endDate})
+                        </span>
+                      );
+                    }
                     if (user.subscription_plan === "pro") {
                       return <StatusBadge type="warning" label="Pro" />;
                     }
-                    if (user.trial_ends_at) {
-                      const trialEnd = new Date(user.trial_ends_at);
-                      const now = new Date();
-                      const diffMs = trialEnd.getTime() - now.getTime();
-                      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                      if (daysLeft > 0) {
-                        return (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200">
-                            <Clock className="w-3 h-3" />
-                            Trial ({daysLeft} {daysLeft === 1 ? 'Tag' : 'Tage'})
-                          </span>
-                        );
-                      }
+                    if (isUserTrial(user)) {
+                      const daysLeft = Math.ceil((new Date(user.trial_ends_at!).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                      return (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200">
+                          <Clock className="w-3 h-3" />
+                          Trial ({daysLeft} {daysLeft === 1 ? 'Tag' : 'Tage'})
+                        </span>
+                      );
                     }
                     return <StatusBadge type="neutral" label="Gratis" />;
                   }
                 },
                 {
                   key: "actions",
-                  header: "Aktionen",
+                  header: "",
                   align: "center" as const,
                   render: (user: UserData) => (
-                    <ActionsCell>
-                      <ActionButton
-                        icon={<Eye className="w-4 h-4" />}
-                        onClick={() => handleImpersonate(user.id, user.email)}
-                        title="Als Nutzer anmelden"
-                      />
-                      {user.subscription_plan === "pro" && (
-                        <>
-                          <ActionButton
-                            icon={<XCircle className="w-4 h-4" />}
-                            onClick={() => handleCancelSubscription(user.id)}
-                            title="Abo zum Laufzeitende kuendigen"
-                          />
-                          <ActionButton
-                            icon={<RotateCcw className="w-4 h-4" />}
-                            onClick={() => handleRefund(user.id, user.email)}
-                            title="Letzte Zahlung erstatten"
-                          />
-                        </>
-                      )}
-                      {user.is_admin ? (
-                        <ActionButton
-                          icon={<ShieldCheck className="w-4 h-4" />}
-                          onClick={() => handleRevokeAdmin(user.id, user.email)}
-                          title="Admin-Rechte entziehen"
-                        />
-                      ) : (
-                        <ActionButton
-                          icon={<UserCog className="w-4 h-4" />}
-                          onClick={() => handleGrantAdmin(user.id, user.email)}
-                          title="Zum Admin machen"
-                        />
-                      )}
-                      {user.banned ? (
-                        <ActionButton
-                          icon={<UserCheck className="w-4 h-4" />}
-                          onClick={() => handleUnbanUser(user.id, user.email)}
-                          title="Sperre aufheben"
-                        />
-                      ) : (
-                        <ActionButton
-                          icon={<Ban className="w-4 h-4" />}
-                          onClick={() => handleBanUser(user.id, user.email)}
-                          title="Benutzer sperren"
-                        />
-                      )}
-                      <ActionButton
-                        icon={<Trash2 className="w-4 h-4 text-red-500" />}
-                        onClick={() => setDeleteTarget({ id: user.id, email: user.email })}
-                        title="User komplett loeschen"
-                      />
-                    </ActionsCell>
+                    <UserActionsDropdown
+                      userId={user.id}
+                      userEmail={user.email}
+                      isPro={user.subscription_plan === "pro"}
+                      isCancelling={isUserCancelling(user)}
+                      isAdmin={!!user.is_admin}
+                      isBanned={!!user.banned}
+                      onImpersonate={handleImpersonate}
+                      onCancelSubscription={handleCancelSubscription}
+                      onRefund={handleRefund}
+                      onGrantAdmin={handleGrantAdmin}
+                      onRevokeAdmin={handleRevokeAdmin}
+                      onBan={handleBanUser}
+                      onUnban={handleUnbanUser}
+                      onDelete={(id, email) => setDeleteTarget({ id, email })}
+                    />
                   )
                 }
               ]}
