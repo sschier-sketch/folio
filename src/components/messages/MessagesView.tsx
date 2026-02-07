@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Mail, Settings, RefreshCw, LayoutDashboard, Inbox, Trash2 } from 'lucide-react';
+import { Plus, Mail, RefreshCw, LayoutDashboard, Inbox, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import FolderList from './FolderList';
@@ -7,7 +7,6 @@ import type { SidebarView } from './FolderList';
 import ThreadList from './ThreadList';
 import ThreadDetail from './ThreadDetail';
 import ComposeInline from './ComposeInline';
-import AliasSettings from './AliasSettings';
 import MessagesOverview from './MessagesOverview';
 import MessagesSettings from './MessagesSettings';
 import MailTemplatesList from './MailTemplatesList';
@@ -37,7 +36,6 @@ export default function MessagesView() {
   const [selectedThread, setSelectedThread] = useState<MailThread | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCompose, setShowCompose] = useState(false);
-  const [showAliasSettings, setShowAliasSettings] = useState(false);
   const [folderCounts, setFolderCounts] = useState<Record<Folder, number>>({ inbox: 0, sent: 0, unknown: 0, trash: 0 });
   const [unreadCounts, setUnreadCounts] = useState<Record<Folder, number>>({ inbox: 0, sent: 0, unknown: 0, trash: 0 });
   const [editingTemplate, setEditingTemplate] = useState<MailTemplate | null>(null);
@@ -193,7 +191,14 @@ export default function MessagesView() {
 
   function renderMainContent() {
     if (activeView === 'settings') {
-      return <MessagesSettings />;
+      return (
+        <MessagesSettings
+          currentAlias={mailbox?.alias_localpart || ''}
+          onAliasUpdated={(newAlias) => {
+            setMailbox((prev) => prev ? { ...prev, alias_localpart: newAlias } : prev);
+          }}
+        />
+      );
     }
 
     if (activeView === 'templates') {
@@ -305,13 +310,6 @@ export default function MessagesView() {
             <div className="flex items-center gap-2 mt-1">
               <Mail className="w-3.5 h-3.5 text-gray-400" />
               <span className="text-sm text-gray-500">{mailbox.alias_localpart}@rentab.ly</span>
-              <button
-                onClick={() => setShowAliasSettings(true)}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
-                title="Adresse aendern"
-              >
-                <Settings className="w-3.5 h-3.5 text-gray-400" />
-              </button>
             </div>
           )}
         </div>
@@ -421,14 +419,6 @@ export default function MessagesView() {
         </div>
       )}
 
-      <AliasSettings
-        isOpen={showAliasSettings}
-        onClose={() => setShowAliasSettings(false)}
-        currentAlias={mailbox?.alias_localpart || ''}
-        onUpdated={(newAlias) => {
-          setMailbox((prev) => prev ? { ...prev, alias_localpart: newAlias } : prev);
-        }}
-      />
     </div>
   );
 }

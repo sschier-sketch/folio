@@ -1,24 +1,33 @@
 import { useState, useEffect } from 'react';
-import { Save, Check, AlertCircle, User, FileSignature } from 'lucide-react';
+import { Save, Check, AlertCircle, User, FileSignature, AtSign, ToggleLeft, ToggleRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface MessagesSettingsProps {
   onSettingsChanged?: () => void;
+  currentAlias?: string;
+  onAliasUpdated?: (newAlias: string) => void;
 }
 
-export default function MessagesSettings({ onSettingsChanged }: MessagesSettingsProps) {
+export default function MessagesSettings({ onSettingsChanged, currentAlias, onAliasUpdated }: MessagesSettingsProps) {
   const { user } = useAuth();
   const [senderName, setSenderName] = useState('');
   const [signature, setSignature] = useState('');
+  const [signatureDefaultOn, setSignatureDefaultOn] = useState(true);
+  const [alias, setAlias] = useState(currentAlias || '');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [savingAlias, setSavingAlias] = useState(false);
+  const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (user) loadSettings();
   }, [user]);
+
+  useEffect(() => {
+    if (currentAlias) setAlias(currentAlias);
+  }, [currentAlias]);
 
   async function loadSettings() {
     if (!user) return;
@@ -32,6 +41,7 @@ export default function MessagesSettings({ onSettingsChanged }: MessagesSettings
     if (data) {
       setSenderName(data.sender_name || '');
       setSignature(data.signature || '');
+      setSignatureDefaultOn(data.signature_default_on ?? true);
     }
     setLoading(false);
   }
@@ -40,7 +50,7 @@ export default function MessagesSettings({ onSettingsChanged }: MessagesSettings
     if (!user) return;
     setSaving(true);
     setError('');
-    setSuccess(false);
+    setSuccess('');
 
     const { error: upsertError } = await supabase
       .from('user_mail_settings')
@@ -48,6 +58,7 @@ export default function MessagesSettings({ onSettingsChanged }: MessagesSettings
         user_id: user.id,
         sender_name: senderName.trim(),
         signature: signature.trim(),
+        signature_default_on: signatureDefaultOn,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
 
@@ -58,9 +69,65 @@ export default function MessagesSettings({ onSettingsChanged }: MessagesSettings
     }
 
     setSaving(false);
-    setSuccess(true);
+    setSuccess('settings');
     onSettingsChanged?.();
-    setTimeout(() => setSuccess(false), 2500);
+    setTimeout(() => setSuccess(''), 2500);
+  }
+
+  function validateAlias(val: string): string | null {
+    const v = val.toLowerCase().trim();
+    if (v.length < 3) return 'Mindestens 3 Zeichen erforderlich.';
+    if (v.length > 64) return 'Maximal 64 Zeichen erlaubt.';
+    if (!/^[a-z0-9][a-z0-9._-]*[a-z0-9]$/.test(v)) {
+      return 'Erlaubt: a-z, 0-9, Punkt, Minus, Unterstrich. Muss mit Buchstabe/Zahl beginnen und enden.';
+    }
+    if (v.includes('..')) return 'Keine aufeinanderfolgenden Punkte erlaubt.';
+    return null;
+  }
+
+  async function handleSaveAlias() {
+    const cleaned = alias.toLowerCase().trim();
+    const validationError = validateAlias(cleaned);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    if (cleaned === currentAlias) {
+      setSuccess('alias');
+      setTimeout(() => setSuccess(''), 2500);
+      return;
+    }
+
+    setSavingAlias(true);
+    setError('');
+    setSuccess('');
+
+    const { data: reserved } = await supabase
+      .from('reserved_email_aliases')
+      .select('alias_localpart')
+      .eq('alias_localpart', cleaned)
+      .maybeSingle();
+
+    if (reserved) {
+      setError('Dieser Alias ist reserviert und kann nicht verwendet werden.');
+      setSavingAlias(false);
+      return;
+    }
+
+    const { error: rpcError } = await supabase.rpc('update_user_mailbox_alias', {
+      new_alias: cleaned,
+    });
+
+    if (rpcError) {
+      setError(rpcError.message || 'Fehler beim Speichern der Adresse.');
+      setSavingAlias(false);
+      return;
+    }
+
+    setSavingAlias(false);
+    setSuccess('alias');
+    onAliasUpdated?.(cleaned);
+    setTimeout(() => setSuccess(''), 2500);
   }
 
   if (loading) {
@@ -77,10 +144,10 @@ export default function MessagesSettings({ onSettingsChanged }: MessagesSettings
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-xl">
+    <div className="p-6 md:p-8 max-w-xl overflow-y-auto h-full">
       <h2 className="text-lg font-semibold text-gray-900 mb-1">E-Mail Einstellungen</h2>
       <p className="text-sm text-gray-500 mb-8">
-        Konfigurieren Sie Ihren Absendernamen und Ihre Signatur fuer ausgehende E-Mails.
+        Konfigurieren Sie Ihre E-Mail-Adresse, Absendernamen und Signatur.
       </p>
 
       {error && (
@@ -90,66 +157,136 @@ export default function MessagesSettings({ onSettingsChanged }: MessagesSettings
         </div>
       )}
 
-      {success && (
+      {success === 'settings' && (
         <div className="flex items-center gap-2 px-4 py-3 bg-green-50 text-green-700 text-sm rounded-lg border border-green-200 mb-6">
           <Check className="w-4 h-4" />
           <span>Einstellungen erfolgreich gespeichert!</span>
         </div>
       )}
 
-      <div className="space-y-6">
-        <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-            <User className="w-4 h-4 text-gray-400" />
-            Absendername
-          </label>
-          <input
-            type="text"
-            value={senderName}
-            onChange={(e) => setSenderName(e.target.value)}
-            placeholder="z.B. Max Mustermann oder Hausverwaltung Mustermann"
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-          />
-          <p className="mt-1.5 text-xs text-gray-400">
-            Wird als Absender in ausgehenden E-Mails angezeigt.
-          </p>
+      {success === 'alias' && (
+        <div className="flex items-center gap-2 px-4 py-3 bg-green-50 text-green-700 text-sm rounded-lg border border-green-200 mb-6">
+          <Check className="w-4 h-4" />
+          <span>E-Mail-Adresse erfolgreich gespeichert!</span>
         </div>
+      )}
 
-        <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-            <FileSignature className="w-4 h-4 text-gray-400" />
-            Signatur
-          </label>
-          <textarea
-            value={signature}
-            onChange={(e) => setSignature(e.target.value)}
-            rows={6}
-            placeholder={"Mit freundlichen Gruessen\nMax Mustermann\nHausverwaltung Mustermann\nTel: +49 123 456789"}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none font-mono leading-relaxed"
-          />
-          <p className="mt-1.5 text-xs text-gray-400">
-            Wird automatisch am Ende jeder neuen E-Mail eingefuegt.
-          </p>
-        </div>
-
-        {signature.trim() && (
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">E-Mail-Adresse</h3>
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Vorschau</p>
-            <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{signature}</p>
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+              <AtSign className="w-4 h-4 text-gray-400" />
+              Ihre Rentably E-Mail
+            </label>
+            <div className="flex items-center gap-0">
+              <input
+                type="text"
+                value={alias}
+                onChange={(e) => { setAlias(e.target.value.toLowerCase()); setError(''); }}
+                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                placeholder="mein-alias"
+              />
+              <span className="px-4 py-2.5 bg-gray-50 border border-l-0 border-gray-200 rounded-r-lg text-sm text-gray-500 font-medium whitespace-nowrap">
+                @rentab.ly
+              </span>
             </div>
+            <p className="mt-1.5 text-xs text-gray-400">
+              Unter dieser Adresse empfangen und senden Sie E-Mails.
+            </p>
           </div>
-        )}
+          {alias.trim() !== currentAlias && alias.trim().length >= 3 && (
+            <button
+              onClick={handleSaveAlias}
+              disabled={savingAlias}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {savingAlias ? 'Speichern...' : 'Adresse speichern'}
+            </button>
+          )}
+        </div>
 
-        <div className="pt-2">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <Save className="w-4 h-4" />
-            {saving ? 'Speichern...' : 'Einstellungen speichern'}
-          </button>
+        <div className="border-t border-gray-100 pt-8 space-y-6">
+          <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Absender & Signatur</h3>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+              <User className="w-4 h-4 text-gray-400" />
+              Absendername
+            </label>
+            <input
+              type="text"
+              value={senderName}
+              onChange={(e) => setSenderName(e.target.value)}
+              placeholder="z.B. Max Mustermann oder Hausverwaltung Mustermann"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            />
+            <p className="mt-1.5 text-xs text-gray-400">
+              Wird als Absender in ausgehenden E-Mails angezeigt.
+            </p>
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+              <FileSignature className="w-4 h-4 text-gray-400" />
+              Signatur
+            </label>
+            <textarea
+              value={signature}
+              onChange={(e) => setSignature(e.target.value)}
+              rows={6}
+              placeholder={"Mit freundlichen Gruessen\nMax Mustermann\nHausverwaltung Mustermann\nTel: +49 123 456789"}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none font-mono leading-relaxed"
+            />
+            <p className="mt-1.5 text-xs text-gray-400">
+              Wird automatisch am Ende jeder neuen E-Mail eingefuegt.
+            </p>
+          </div>
+
+          <div>
+            <button
+              type="button"
+              onClick={() => setSignatureDefaultOn(!signatureDefaultOn)}
+              className="flex items-center gap-3 w-full text-left group"
+            >
+              {signatureDefaultOn ? (
+                <ToggleRight className="w-8 h-8 text-blue-600 flex-shrink-0" />
+              ) : (
+                <ToggleLeft className="w-8 h-8 text-gray-300 flex-shrink-0" />
+              )}
+              <div>
+                <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                  Signatur standardmaessig anhaengen
+                </p>
+                <p className="text-xs text-gray-400">
+                  {signatureDefaultOn
+                    ? 'Die Signatur wird beim Antworten automatisch angehangen.'
+                    : 'Die Signatur wird beim Antworten nicht automatisch angehangen.'}
+                </p>
+              </div>
+            </button>
+          </div>
+
+          {signature.trim() && (
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Vorschau</p>
+              <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{signature}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Save className="w-4 h-4" />
+              {saving ? 'Speichern...' : 'Einstellungen speichern'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

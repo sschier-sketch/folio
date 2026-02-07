@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, ArrowLeft, User, UserPlus, Flag, Trash2, RotateCcw } from 'lucide-react';
+import { Send, ArrowLeft, User, UserPlus, Flag, Trash2, RotateCcw, FileSignature } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import AssignSenderModal from './AssignSenderModal';
@@ -54,6 +54,8 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
   const [showAssign, setShowAssign] = useState(false);
+  const [signature, setSignature] = useState('');
+  const [appendSignature, setAppendSignature] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const recipientName = thread.tenants
@@ -64,6 +66,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
 
   useEffect(() => {
     loadMessages();
+    loadMailSettings();
     const timer = setTimeout(markAsRead, 1500);
     return () => clearTimeout(timer);
   }, [thread.id]);
@@ -86,6 +89,19 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
     setLoading(false);
   }
 
+  async function loadMailSettings() {
+    if (!user) return;
+    const { data } = await supabase
+      .from('user_mail_settings')
+      .select('signature, signature_default_on')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (data) {
+      setSignature(data.signature || '');
+      setAppendSignature(data.signature_default_on ?? true);
+    }
+  }
+
   async function markAsRead() {
     if (thread.status === 'unread') {
       await supabase
@@ -103,6 +119,11 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+      let fullText = replyText.trim();
+      if (appendSignature && signature.trim()) {
+        fullText += '\n\n--\n' + signature.trim();
+      }
+
       const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
         method: 'POST',
         headers: {
@@ -112,7 +133,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
         body: JSON.stringify({
           to: recipientEmail,
           subject: `Re: ${thread.subject || ''}`.trim(),
-          text: replyText.trim(),
+          text: fullText,
           userId: user.id,
           useUserAlias: true,
           storeAsMessage: true,
@@ -269,7 +290,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
       </div>
 
       {thread.folder !== 'trash' && (
-        <div className="px-5 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+        <div className="px-5 py-3 border-t border-gray-200 bg-white flex-shrink-0">
           <div className="flex gap-3">
             <textarea
               value={replyText}
@@ -293,6 +314,18 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
               <span className="hidden sm:inline">Senden</span>
             </button>
           </div>
+          {signature.trim() && (
+            <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={appendSignature}
+                onChange={(e) => setAppendSignature(e.target.checked)}
+                className="w-3.5 h-3.5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <FileSignature className="w-3 h-3 text-gray-400" />
+              <span className="text-xs text-gray-500">Signatur anhaengen</span>
+            </label>
+          )}
         </div>
       )}
 
