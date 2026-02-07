@@ -77,35 +77,34 @@ export function Admin() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
   const [userFilter, setUserFilter] = useState<UserFilter>('all');
 
+  async function reloadUsers() {
+    try {
+      const { data: usersData, error: usersError } =
+        await supabase.rpc("admin_get_users");
+      if (usersError) {
+        console.error("Error loading users:", usersError);
+        return;
+      }
+      setUsers(usersData as UserData[]);
+      const proCount = (usersData || []).filter(
+        (u) => u.subscription_plan === "pro",
+      ).length;
+      const freeCount = (usersData || []).length - proCount;
+      setStats({
+        totalUsers: (usersData || []).length,
+        freeUsers: freeCount,
+        premiumUsers: proCount,
+        monthlyRevenue: proCount * 9,
+      });
+    } catch (err) {
+      console.error("Error loading admin data:", err);
+    }
+  }
+
   useEffect(() => {
     if (!isAdmin) return;
-    async function loadData() {
-      try {
-        const { data: usersData, error: usersError } =
-          await supabase.rpc("admin_get_users");
-        if (usersError) {
-          console.error("Error loading users:", usersError);
-          setLoadingData(false);
-          return;
-        }
-        setUsers(usersData as UserData[]);
-        const proCount = (usersData || []).filter(
-          (u) => u.subscription_plan === "pro",
-        ).length;
-        const freeCount = (usersData || []).length - proCount;
-        setStats({
-          totalUsers: (usersData || []).length,
-          freeUsers: freeCount,
-          premiumUsers: proCount,
-          monthlyRevenue: proCount * 9,
-        });
-      } catch (err) {
-        console.error("Error loading admin data:", err);
-      } finally {
-        setLoadingData(false);
-      }
-    }
-    loadData();
+    setLoadingData(true);
+    reloadUsers().finally(() => setLoadingData(false));
   }, [isAdmin]);
 
   if (adminLoading) {
@@ -220,7 +219,7 @@ export function Admin() {
           details: { timestamp: new Date().toISOString() },
         });
       alert("Abonnement wird zum Ende der Laufzeit gekuendigt.");
-      window.location.reload();
+      await reloadUsers();
     } catch (err) {
       console.error("Error canceling subscription:", err);
       alert("Fehler beim Beenden des Abonnements");
@@ -257,7 +256,7 @@ export function Admin() {
       }
 
       alert(`Rueckerstattung erfolgreich: ${result.amount} ${result.currency?.toUpperCase()}`);
-      window.location.reload();
+      await reloadUsers();
     } catch (err) {
       console.error("Error processing refund:", err);
       alert(`Fehler bei der Rueckerstattung: ${err instanceof Error ? err.message : "Unbekannter Fehler"}`);
@@ -292,7 +291,7 @@ export function Admin() {
       });
       if (error) throw error;
       alert("Benutzer wurde gesperrt");
-      window.location.reload();
+      await reloadUsers();
     } catch (err) {
       console.error("Error banning user:", err);
       alert("Fehler beim Sperren des Benutzers");
@@ -307,7 +306,7 @@ export function Admin() {
       });
       if (error) throw error;
       alert("Sperre wurde aufgehoben");
-      window.location.reload();
+      await reloadUsers();
     } catch (err) {
       console.error("Error unbanning user:", err);
       alert("Fehler beim Aufheben der Sperre");
@@ -327,7 +326,7 @@ export function Admin() {
       });
       if (error) throw error;
       alert("Admin-Rechte wurden erteilt");
-      window.location.reload();
+      await reloadUsers();
     } catch (err) {
       console.error("Error granting admin access:", err);
       alert("Fehler beim Erteilen der Admin-Rechte");
@@ -347,7 +346,7 @@ export function Admin() {
       });
       if (error) throw error;
       alert("Admin-Rechte wurden entzogen");
-      window.location.reload();
+      await reloadUsers();
     } catch (err) {
       console.error("Error revoking admin access:", err);
       alert("Fehler beim Entziehen der Admin-Rechte");
