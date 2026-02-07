@@ -373,20 +373,20 @@ Deno.serve(async (req: Request) => {
       }
 
       if (inReplyTo) {
-        const { data: replyThread } = await supabase
-          .from("mail_threads")
-          .select("id, tenant_id, folder")
+        const { data: replyMsg } = await supabase
+          .from("mail_messages")
+          .select(
+            "thread_id, mail_threads!inner(id, user_id, tenant_id, folder)"
+          )
           .eq("user_id", userId)
-          .eq("last_email_message_id", inReplyTo)
+          .eq("email_message_id", inReplyTo)
           .maybeSingle();
 
-        if (replyThread) {
-          threadId = replyThread.id;
-          if (replyThread.tenant_id) tenantId = replyThread.tenant_id;
-          if (
-            replyThread.folder === "inbox" ||
-            replyThread.folder === "sent"
-          )
+        if (replyMsg) {
+          threadId = replyMsg.thread_id;
+          const t = replyMsg.mail_threads as any;
+          if (t?.tenant_id) tenantId = t.tenant_id;
+          if (t?.folder === "inbox" || t?.folder === "sent")
             folder = "inbox";
         }
       }

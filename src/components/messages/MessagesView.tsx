@@ -154,7 +154,7 @@ export default function MessagesView() {
               }`}
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
-              Uebersicht
+              Übersicht
               {activeTab === 'overview' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
               )}
@@ -166,7 +166,7 @@ export default function MessagesView() {
               }`}
             >
               <Inbox className="w-3.5 h-3.5" />
-              Posteingang
+              Nachrichten
               {totalUnread > 0 && (
                 <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-blue-600 text-white">
                   {totalUnread}
@@ -208,7 +208,7 @@ export default function MessagesView() {
               <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 md:hidden">
                 <div className="flex gap-1">
                   {(['inbox', 'sent', 'unknown'] as Folder[]).map((f) => {
-                    const labels: Record<Folder, string> = { inbox: 'Eingang', sent: 'Gesendet', unknown: 'Unbekannt' };
+                    const labels: Record<Folder, string> = { inbox: 'Nachrichten', sent: 'Gesendet', unknown: 'Unbekannt' };
                     if (f === 'unknown' && folderCounts.unknown === 0) return null;
                     return (
                       <button
