@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, ArrowLeft, User, UserPlus, Flag } from 'lucide-react';
+import { Send, ArrowLeft, User, UserPlus, Flag, Trash2, RotateCcw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import AssignSenderModal from './AssignSenderModal';
@@ -24,6 +24,8 @@ interface ThreadDetailProps {
   userAlias: string;
   onBack: () => void;
   onMessageSent: () => void;
+  onTrash: () => void;
+  onRestore?: () => void;
 }
 
 function formatDateTime(dateStr: string): string {
@@ -45,7 +47,7 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
-export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent }: ThreadDetailProps) {
+export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent, onTrash, onRestore }: ThreadDetailProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<MailMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -202,15 +204,35 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent 
               )}
             </div>
           </div>
-          {thread.folder === 'unknown' && (
-            <button
-              onClick={() => setShowAssign(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors flex-shrink-0"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              Zuordnen
-            </button>
-          )}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {thread.folder === 'unknown' && (
+              <button
+                onClick={() => setShowAssign(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                Zuordnen
+              </button>
+            )}
+            {onRestore ? (
+              <button
+                onClick={onRestore}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                title="Wiederherstellen"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Wiederherstellen
+              </button>
+            ) : (
+              <button
+                onClick={onTrash}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                title="In Papierkorb verschieben"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -246,31 +268,33 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent 
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="px-5 py-4 border-t border-gray-200 bg-white flex-shrink-0">
-        <div className="flex gap-3">
-          <textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendReply();
-              }
-            }}
-            placeholder="Nachricht schreiben..."
-            rows={2}
-            className="flex-1 resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
-          />
-          <button
-            onClick={handleSendReply}
-            disabled={!replyText.trim() || sending}
-            className="self-end px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
-          >
-            <Send className="w-4 h-4" />
-            <span className="hidden sm:inline">Senden</span>
-          </button>
+      {thread.folder !== 'trash' && (
+        <div className="px-5 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+          <div className="flex gap-3">
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendReply();
+                }
+              }}
+              placeholder="Nachricht schreiben..."
+              rows={2}
+              className="flex-1 resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+            />
+            <button
+              onClick={handleSendReply}
+              disabled={!replyText.trim() || sending}
+              className="self-end px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
+            >
+              <Send className="w-4 h-4" />
+              <span className="hidden sm:inline">Senden</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <AssignSenderModal
         isOpen={showAssign}

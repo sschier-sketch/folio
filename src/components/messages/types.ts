@@ -8,7 +8,7 @@ export interface MailThread {
   external_email: string | null;
   external_name: string | null;
   subject: string;
-  folder: 'inbox' | 'sent' | 'unknown';
+  folder: 'inbox' | 'sent' | 'unknown' | 'trash';
   status: 'unread' | 'read' | 'archived';
   last_message_at: string;
   message_count: number;
@@ -47,4 +47,4 @@ export interface UserMailbox {
   updated_at: string;
 }
 
-export type Folder = 'inbox' | 'sent' | 'unknown';
+export type Folder = 'inbox' | 'sent' | 'unknown' | 'trash';

@@ -1,4 +1,4 @@
-import { Inbox, Send, HelpCircle, FileText, Settings } from 'lucide-react';
+import { Inbox, Send, HelpCircle, FileText, Settings, Trash2 } from 'lucide-react';
 import type { Folder } from './types';
 
 export type SidebarView = Folder | 'templates' | 'settings';
@@ -23,6 +23,7 @@ export default function FolderList({ activeFolder, activeView, onSelect, onViewC
     { id: 'inbox', label: 'Eingang', icon: Inbox },
     { id: 'sent', label: 'Gesendet', icon: Send },
     { id: 'unknown', label: 'Unbekannt', icon: HelpCircle },
+    { id: 'trash', label: 'Papierkorb', icon: Trash2 },
   ];
 
   const extras: FolderItem[] = [
@@ -30,7 +31,7 @@ export default function FolderList({ activeFolder, activeView, onSelect, onViewC
   ];
 
   function isFolder(id: SidebarView): id is Folder {
-    return id === 'inbox' || id === 'sent' || id === 'unknown';
+    return id === 'inbox' || id === 'sent' || id === 'unknown' || id === 'trash';
   }
 
   function handleClick(id: SidebarView) {

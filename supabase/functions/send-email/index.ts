@@ -61,13 +61,23 @@ async function resolveFromAddress(
 
   if (!mailbox) return defaultFrom;
 
+  const aliasEmail = `${mailbox.alias_localpart}@rentab.ly`;
+
+  const { data: mailSettings } = await supabase
+    .from('user_mail_settings')
+    .select('sender_name')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (mailSettings?.sender_name?.trim()) {
+    return `${mailSettings.sender_name.trim()} <${aliasEmail}>`;
+  }
+
   const { data: profile } = await supabase
     .from('account_profiles')
     .select('first_name, last_name, company_name')
     .eq('user_id', userId)
     .maybeSingle();
-
-  const aliasEmail = `${mailbox.alias_localpart}@rentab.ly`;
 
   if (profile) {
     const displayName = profile.company_name

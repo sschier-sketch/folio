@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Mail, Settings, RefreshCw, LayoutDashboard, Inbox } from 'lucide-react';
+import { Plus, Mail, Settings, RefreshCw, LayoutDashboard, Inbox, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import FolderList from './FolderList';
@@ -38,8 +38,8 @@ export default function MessagesView() {
   const [loading, setLoading] = useState(true);
   const [showCompose, setShowCompose] = useState(false);
   const [showAliasSettings, setShowAliasSettings] = useState(false);
-  const [folderCounts, setFolderCounts] = useState<Record<Folder, number>>({ inbox: 0, sent: 0, unknown: 0 });
-  const [unreadCounts, setUnreadCounts] = useState<Record<Folder, number>>({ inbox: 0, sent: 0, unknown: 0 });
+  const [folderCounts, setFolderCounts] = useState<Record<Folder, number>>({ inbox: 0, sent: 0, unknown: 0, trash: 0 });
+  const [unreadCounts, setUnreadCounts] = useState<Record<Folder, number>>({ inbox: 0, sent: 0, unknown: 0, trash: 0 });
   const [editingTemplate, setEditingTemplate] = useState<MailTemplate | null>(null);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [templateListKey, setTemplateListKey] = useState(0);
@@ -69,9 +69,9 @@ export default function MessagesView() {
 
   const loadCounts = useCallback(async () => {
     if (!user) return;
-    const folders: Folder[] = ['inbox', 'sent', 'unknown'];
-    const counts: Record<Folder, number> = { inbox: 0, sent: 0, unknown: 0 };
-    const unreads: Record<Folder, number> = { inbox: 0, sent: 0, unknown: 0 };
+    const folders: Folder[] = ['inbox', 'sent', 'unknown', 'trash'];
+    const counts: Record<Folder, number> = { inbox: 0, sent: 0, unknown: 0, trash: 0 };
+    const unreads: Record<Folder, number> = { inbox: 0, sent: 0, unknown: 0, trash: 0 };
     for (const folder of folders) {
       const { count: total } = await supabase
         .from('mail_threads')
@@ -114,6 +114,44 @@ export default function MessagesView() {
     setShowCompose(false);
   }
 
+  async function handleTrashThread(threadId: string) {
+    if (!user) return;
+    await supabase
+      .from('mail_threads')
+      .update({ folder: 'trash', updated_at: new Date().toISOString() })
+      .eq('id', threadId)
+      .eq('user_id', user.id);
+    setSelectedThread(null);
+    loadThreads();
+    loadCounts();
+  }
+
+  async function handleRestoreThread(threadId: string) {
+    if (!user) return;
+    await supabase
+      .from('mail_threads')
+      .update({ folder: 'inbox', updated_at: new Date().toISOString() })
+      .eq('id', threadId)
+      .eq('user_id', user.id);
+    setSelectedThread(null);
+    loadThreads();
+    loadCounts();
+  }
+
+  async function handleEmptyTrash() {
+    if (!user) return;
+    const confirmed = window.confirm('Papierkorb endgueltig leeren? Alle Nachrichten darin werden unwiderruflich geloescht.');
+    if (!confirmed) return;
+    await supabase
+      .from('mail_threads')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('folder', 'trash');
+    setSelectedThread(null);
+    loadThreads();
+    loadCounts();
+  }
+
   function handleRefresh() {
     loadThreads();
     loadCounts();
@@ -151,7 +189,7 @@ export default function MessagesView() {
   const totalUnread = unreadCounts.inbox + unreadCounts.sent + unreadCounts.unknown;
   const totalMessages = folderCounts.inbox + folderCounts.sent + folderCounts.unknown;
 
-  const isFolderView = activeView === 'inbox' || activeView === 'sent' || activeView === 'unknown';
+  const isFolderView = activeView === 'inbox' || activeView === 'sent' || activeView === 'unknown' || activeView === 'trash';
 
   function renderMainContent() {
     if (activeView === 'settings') {
@@ -196,8 +234,8 @@ export default function MessagesView() {
         <div className={`w-80 flex-shrink-0 border-r border-gray-200 overflow-y-auto ${selectedThread ? 'hidden lg:block' : 'flex-1 lg:flex-none lg:w-80'}`}>
           <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 md:hidden">
             <div className="flex gap-1">
-              {(['inbox', 'sent', 'unknown'] as Folder[]).map((f) => {
-                const labels: Record<Folder, string> = { inbox: 'Eingang', sent: 'Gesendet', unknown: 'Unbekannt' };
+              {(['inbox', 'sent', 'unknown', 'trash'] as Folder[]).map((f) => {
+                const labels: Record<Folder, string> = { inbox: 'Eingang', sent: 'Gesendet', unknown: 'Unbekannt', trash: 'Papierkorb' };
                 return (
                   <button
                     key={f}
@@ -232,6 +270,8 @@ export default function MessagesView() {
               userAlias={mailbox?.alias_localpart || ''}
               onBack={() => setSelectedThread(null)}
               onMessageSent={handleRefresh}
+              onTrash={() => handleTrashThread(selectedThread.id)}
+              onRestore={activeFolder === 'trash' ? () => handleRestoreThread(selectedThread.id) : undefined}
             />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
@@ -283,6 +323,15 @@ export default function MessagesView() {
               title="Aktualisieren"
             >
               <RefreshCw className="w-4 h-4" />
+            </button>
+          )}
+          {activeTab === 'inbox' && activeFolder === 'trash' && folderCounts.trash > 0 && (
+            <button
+              onClick={handleEmptyTrash}
+              className="flex items-center gap-2 px-4 py-2.5 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 text-sm font-medium rounded-lg transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Papierkorb leeren
             </button>
           )}
           <button
