@@ -11,9 +11,6 @@ import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { ResetPassword } from "./pages/ResetPassword";
 import Dashboard from "./components/Dashboard";
-import { Subscription } from "./pages/Subscription";
-import { SubscriptionSuccess } from "./pages/SubscriptionSuccess";
-import { SubscriptionCancelled } from "./pages/SubscriptionCancelled";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Contact from "./pages/Contact";
 import Impressum from "./pages/Impressum";
@@ -106,30 +103,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/subscription"
-          element={
-            <ProtectedRoute>
-              <Subscription />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/subscription/success"
-          element={
-            <ProtectedRoute>
-              <SubscriptionSuccess />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/subscription/cancelled"
-          element={
-            <ProtectedRoute>
-              <SubscriptionCancelled />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/subscription" element={<Navigate to="/dashboard?view=settings-billing" replace />} />
+        <Route path="/subscription/success" element={<Navigate to="/dashboard?payment=success" replace />} />
+        <Route path="/subscription/cancelled" element={<Navigate to="/dashboard?view=settings-billing" replace />} />
         <Route
           path="/admin"
           element={

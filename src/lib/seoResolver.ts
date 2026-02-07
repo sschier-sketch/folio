@@ -41,9 +41,6 @@ const APP_PATHS = [
   '/signup',
   '/reset-password',
   '/einstellungen',
-  '/subscription',
-  '/subscription-success',
-  '/subscription-cancelled',
   '/account-banned'
 ];
 

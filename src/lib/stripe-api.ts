@@ -24,8 +24,8 @@ export async function createCheckoutSession(params: CheckoutSessionParams): Prom
         },
         body: JSON.stringify({
           price_id: params.priceId,
-          success_url: params.successUrl || `${window.location.origin}/subscription/success`,
-          cancel_url: params.cancelUrl || `${window.location.origin}/subscription/cancelled`,
+          success_url: params.successUrl || `${window.location.origin}/dashboard?payment=success`,
+          cancel_url: params.cancelUrl || `${window.location.origin}/dashboard?view=settings-billing`,
           mode: 'subscription',
         }),
       }
@@ -81,7 +81,7 @@ export async function createPortalSession(): Promise<string> {
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          returnUrl: `${window.location.origin}/subscription`,
+          returnUrl: `${window.location.origin}/dashboard?view=settings-billing`,
         }),
       }
     );

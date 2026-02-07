@@ -70,7 +70,7 @@ Deno.serve(async (req: Request) => {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: returnUrl || `${req.headers.get("origin")}/subscription`,
+      return_url: returnUrl || `${req.headers.get("origin")}/dashboard?view=settings-billing`,
     });
 
     return new Response(
