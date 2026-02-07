@@ -15,6 +15,7 @@ import {
   Mail,
   Settings,
   Clock,
+  RotateCcw,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -144,7 +145,7 @@ export function Admin() {
   });
 
   async function handleCancelSubscription(userId: string) {
-    if (!confirm("Moechten Sie das Abonnement dieses Nutzers wirklich beenden?"))
+    if (!confirm("Moechten Sie das Abonnement dieses Nutzers wirklich zum Ende der Laufzeit kuendigen?"))
       return;
     try {
       const { data: customer } = await supabase
@@ -154,22 +155,34 @@ export function Admin() {
         .maybeSingle();
 
       if (customer) {
-        const { error: subError } = await supabase
+        const { data: sub } = await supabase
+          .from("stripe_subscriptions")
+          .select("current_period_end")
+          .eq("customer_id", customer.customer_id)
+          .maybeSingle();
+
+        const periodEndDate = sub?.current_period_end
+          ? new Date(sub.current_period_end * 1000).toISOString()
+          : null;
+
+        await supabase
           .from("stripe_subscriptions")
           .update({
-            status: "canceled",
             cancel_at_period_end: true,
             updated_at: new Date().toISOString()
           })
           .eq("customer_id", customer.customer_id);
-        if (subError) throw subError;
-      }
 
-      const { error: billingError } = await supabase
-        .from("billing_info")
-        .update({ subscription_plan: "free", subscription_status: "canceled" })
-        .eq("user_id", userId);
-      if (billingError) console.error("Billing info update error:", billingError);
+        if (periodEndDate) {
+          await supabase
+            .from("billing_info")
+            .update({
+              subscription_ends_at: periodEndDate,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", userId);
+        }
+      }
 
       await supabase
         .from("admin_activity_log")
@@ -179,11 +192,48 @@ export function Admin() {
           target_user_id: userId,
           details: { timestamp: new Date().toISOString() },
         });
-      alert("Abonnement wurde beendet");
+      alert("Abonnement wird zum Ende der Laufzeit gekuendigt.");
       window.location.reload();
     } catch (err) {
       console.error("Error canceling subscription:", err);
       alert("Fehler beim Beenden des Abonnements");
+    }
+  }
+
+  async function handleRefund(userId: string, userEmail: string) {
+    const reason = prompt(`Rueckerstattung fuer ${userEmail}.\nGrund (optional):`);
+    if (reason === null) return;
+
+    if (!confirm(`Letzte Zahlung von ${userEmail} wirklich erstatten? Das Abo wird sofort beendet.`))
+      return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-refund`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId, reason: reason || undefined }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Refund failed");
+      }
+
+      alert(`Rueckerstattung erfolgreich: ${result.amount} ${result.currency?.toUpperCase()}`);
+      window.location.reload();
+    } catch (err) {
+      console.error("Error processing refund:", err);
+      alert(`Fehler bei der Rueckerstattung: ${err instanceof Error ? err.message : "Unbekannter Fehler"}`);
     }
   }
 
@@ -459,11 +509,18 @@ export function Admin() {
                         title="Als Nutzer anmelden"
                       />
                       {user.subscription_plan === "pro" && (
-                        <ActionButton
-                          icon={<XCircle className="w-4 h-4" />}
-                          onClick={() => handleCancelSubscription(user.id)}
-                          title="Abo beenden"
-                        />
+                        <>
+                          <ActionButton
+                            icon={<XCircle className="w-4 h-4" />}
+                            onClick={() => handleCancelSubscription(user.id)}
+                            title="Abo zum Laufzeitende kuendigen"
+                          />
+                          <ActionButton
+                            icon={<RotateCcw className="w-4 h-4" />}
+                            onClick={() => handleRefund(user.id, user.email)}
+                            title="Letzte Zahlung erstatten"
+                          />
+                        </>
                       )}
                       {user.is_admin ? (
                         <ActionButton

@@ -141,10 +141,11 @@ Deno.serve(async (req: Request) => {
 
     const subscription = await stripeResponse.json();
 
+    const periodEndDate = new Date(subscription.current_period_end * 1000).toISOString();
+
     await supabase
       .from("stripe_subscriptions")
       .update({
-        status: "canceled",
         cancel_at_period_end: true,
         updated_at: new Date().toISOString(),
       })
@@ -153,8 +154,7 @@ Deno.serve(async (req: Request) => {
     await supabase
       .from("billing_info")
       .update({
-        subscription_plan: "free",
-        subscription_status: "canceled",
+        subscription_ends_at: periodEndDate,
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", user.id);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, CreditCard, Info, Loader2 } from 'lucide-react';
+import { Check, CreditCard, Info, Loader2, AlertTriangle } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useTrialStatus } from '../../hooks/useTrialStatus';
 import { useAuth } from '../../hooks/useAuth';
@@ -13,7 +13,7 @@ interface SubscriptionPlansProps {
 
 export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPlansProps) {
   const { user } = useAuth();
-  const { subscription, loading: subscriptionLoading, isPro } = useSubscription();
+  const { subscription, loading: subscriptionLoading, isPro, isCancelledButActive, cancelDate } = useSubscription();
   const trialStatus = useTrialStatus(user?.id);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('month');
   const [loading, setLoading] = useState<string | null>(null);
@@ -93,7 +93,13 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
         throw new Error(error.error || 'Failed to cancel subscription');
       }
 
-      alert('Ihr Abonnement wurde erfolgreich gekündigt. Sie befinden sich jetzt im Basic-Tarif.');
+      const result = await response.json();
+      if (result.currentPeriodEnd) {
+        const endDate = new Date(result.currentPeriodEnd * 1000).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        alert(`Ihr Abonnement wurde gekündigt. Sie haben noch bis zum ${endDate} Zugriff auf alle Pro-Features.`);
+      } else {
+        alert('Ihr Abonnement wurde erfolgreich gekündigt.');
+      }
       window.location.reload();
     } catch (error) {
       console.error('Error downgrading:', error);
@@ -188,7 +194,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               </div>
             </div>
 
-            {isActive && currentPlanId === 'pro' && (
+            {isActive && currentPlanId === 'pro' && !isCancelledButActive && (
               <button
                 onClick={handleManageSubscription}
                 disabled={loading === 'portal'}
@@ -205,6 +211,34 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               </button>
             )}
           </div>
+
+          {isCancelledButActive && cancelDate && (
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5 mb-8 flex items-start gap-4">
+              <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-bold text-amber-900 mb-1">Abo gekündigt</h3>
+                <p className="text-sm text-amber-800">
+                  Ihr Pro-Abonnement wurde gekündigt. Sie haben noch bis zum{' '}
+                  <strong>{cancelDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</strong>{' '}
+                  vollen Zugriff auf alle Pro-Features. Danach wechseln Sie automatisch in den Basic-Tarif.
+                </p>
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={loading === 'portal'}
+                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors disabled:opacity-50"
+                >
+                  {loading === 'portal' ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Wird geladen...
+                    </>
+                  ) : (
+                    'Kündigung widerrufen'
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
 
           {subscription?.subscription_status && !isActive && currentPlanId === 'pro' && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8 flex items-start gap-3">
@@ -340,13 +374,22 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               ))}
             </ul>
 
-            <button
-              onClick={() => setShowDowngradeModal(true)}
-              disabled={!!loading}
-              className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Zu Basic wechseln
-            </button>
+            {isCancelledButActive ? (
+              <button
+                disabled
+                className="w-full py-3 bg-gray-100 text-gray-500 rounded-lg font-semibold cursor-not-allowed"
+              >
+                Wechsel zum {cancelDate?.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} vorgemerkt
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowDowngradeModal(true)}
+                disabled={!!loading}
+                className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Zu Basic wechseln
+              </button>
+            )}
           </div>
         )}
 

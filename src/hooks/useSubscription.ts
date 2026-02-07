@@ -49,7 +49,9 @@ export function useSubscription() {
           setBillingInfo(billingResult.data);
         }
 
-        if (billingResult.data && billingResult.data.subscription_plan === "pro" && billingResult.data.subscription_status === "active") {
+        if (stripeResult.data) {
+          setSubscription(stripeResult.data);
+        } else if (billingResult.data && billingResult.data.subscription_plan === "pro" && billingResult.data.subscription_status === "active") {
           setSubscription({
             customer_id: billingResult.data.stripe_customer_id,
             subscription_id: null,
@@ -57,12 +59,10 @@ export function useSubscription() {
             price_id: "pro_plan",
             current_period_start: null,
             current_period_end: billingResult.data.subscription_ends_at ? Math.floor(new Date(billingResult.data.subscription_ends_at).getTime() / 1000) : null,
-            cancel_at_period_end: false,
+            cancel_at_period_end: !!billingResult.data.subscription_ends_at,
             payment_method_brand: null,
             payment_method_last4: null,
           });
-        } else if (stripeResult.data) {
-          setSubscription(stripeResult.data);
         } else if (stripeResult.error) {
           console.error("Error fetching subscription:", stripeResult.error);
           setSubscription(null);
@@ -132,6 +132,26 @@ export function useSubscription() {
     return false;
   };
 
+  const isCancelledButActive = () => {
+    if (subscription?.cancel_at_period_end && subscription?.subscription_status === "active") {
+      return true;
+    }
+    if (billingInfo?.subscription_ends_at && billingInfo?.subscription_plan === "pro" && billingInfo?.subscription_status === "active") {
+      return true;
+    }
+    return false;
+  };
+
+  const cancelDate = () => {
+    if (subscription?.cancel_at_period_end && subscription?.current_period_end) {
+      return new Date(subscription.current_period_end * 1000);
+    }
+    if (billingInfo?.subscription_ends_at) {
+      return new Date(billingInfo.subscription_ends_at);
+    }
+    return null;
+  };
+
   return {
     subscription,
     billingInfo,
@@ -141,5 +161,7 @@ export function useSubscription() {
     isPro: hasProAccess(),
     isPremium: hasProAccess(),
     hasProAccess: hasProAccess(),
+    isCancelledButActive: isCancelledButActive(),
+    cancelDate: cancelDate(),
   };
 }
