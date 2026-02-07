@@ -113,13 +113,15 @@ export function useSubscription() {
   };
 
   const hasProAccess = () => {
-    if (!billingInfo) return false;
-
-    if (billingInfo.subscription_plan === "pro" && billingInfo.subscription_status === "active") {
+    if (subscription?.subscription_status === "active" && subscription.price_id && subscription.price_id !== "free") {
       return true;
     }
 
-    if (billingInfo.trial_ends_at) {
+    if (billingInfo?.subscription_plan === "pro" && billingInfo?.subscription_status === "active") {
+      return true;
+    }
+
+    if (billingInfo?.trial_ends_at) {
       const trialEndsAt = new Date(billingInfo.trial_ends_at);
       const now = new Date();
       if (trialEndsAt > now) {

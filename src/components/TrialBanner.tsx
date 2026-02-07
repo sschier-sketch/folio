@@ -26,7 +26,7 @@ const defaultTexts: TrialTexts = {
 
 export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
   const { user } = useAuth();
-  const { billingInfo } = useSubscription();
+  const { isPro } = useSubscription();
   const trialStatus = useTrialStatus(user?.id);
   const [texts, setTexts] = useState<TrialTexts>(defaultTexts);
 
@@ -56,7 +56,7 @@ export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
     return null;
   }
 
-  if (billingInfo?.subscription_plan === 'pro' && billingInfo?.subscription_status === 'active') {
+  if (isPro) {
     return null;
   }
 
