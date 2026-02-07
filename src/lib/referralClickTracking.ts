@@ -1,20 +1,28 @@
-function getSessionId(): string {
-  let sessionId = sessionStorage.getItem('referral_session_id');
+/*
+ * Robust Referral Click Tracking with ref_sid support
+ *
+ * Integrates with:
+ * - referralTracking.ts: For ref_code management
+ * - referralSession.ts: For ref_sid management
+ * - track-referral-click edge function: Server-side tracking with cookie setting
+ */
 
-  if (!sessionId) {
-    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem('referral_session_id', sessionId);
-  }
+import { getRefSid, setRefSid } from './referralSession';
 
-  return sessionId;
-}
-
-function getUTMParams(): { utmSource?: string; utmMedium?: string; utmCampaign?: string } {
+function getUTMParams(): {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+} {
   const params = new URLSearchParams(window.location.search);
   return {
     utmSource: params.get('utm_source') || undefined,
     utmMedium: params.get('utm_medium') || undefined,
     utmCampaign: params.get('utm_campaign') || undefined,
+    utmTerm: params.get('utm_term') || undefined,
+    utmContent: params.get('utm_content') || undefined,
   };
 }
 
@@ -26,8 +34,8 @@ export async function trackReferralClick(referralCode: string): Promise<void> {
     return;
   }
 
-  const sessionId = getSessionId();
-  const { utmSource, utmMedium, utmCampaign } = getUTMParams();
+  const existingRefSid = getRefSid();
+  const { utmSource, utmMedium, utmCampaign, utmTerm, utmContent } = getUTMParams();
 
   try {
     const response = await fetch(
@@ -37,20 +45,28 @@ export async function trackReferralClick(referralCode: string): Promise<void> {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           referralCode,
-          sessionId,
+          refSid: existingRefSid || undefined,
           landingPath: window.location.pathname,
           referrerUrl: document.referrer || undefined,
           utmSource,
           utmMedium,
           utmCampaign,
+          utmTerm,
+          utmContent,
+          fullQueryString: window.location.search,
           userAgent: navigator.userAgent,
         }),
       }
     );
 
     if (response.ok) {
+      const data = await response.json();
+      if (data.refSid) {
+        setRefSid(data.refSid, referralCode);
+      }
       sessionStorage.setItem(`tracked_ref_${referralCode}`, 'true');
     }
   } catch (error) {
@@ -60,5 +76,6 @@ export async function trackReferralClick(referralCode: string): Promise<void> {
 
 export function getReferralCodeFromURL(): string | null {
   const params = new URLSearchParams(window.location.search);
-  return params.get('ref');
+  const ref = params.get('ref');
+  return ref ? ref.toUpperCase() : null;
 }

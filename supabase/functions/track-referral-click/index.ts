@@ -4,17 +4,21 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, Cookie",
+  "Access-Control-Allow-Credentials": "true",
 };
 
 interface TrackClickPayload {
   referralCode: string;
-  sessionId: string;
+  refSid?: string;
   landingPath?: string;
   referrerUrl?: string;
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  fullQueryString?: string;
   userAgent?: string;
 }
 
@@ -24,6 +28,12 @@ async function hashString(input: string): Promise<string> {
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function getCookieValue(cookieHeader: string | null, name: string): string | null {
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(new RegExp(`(^|;)\\s*${name}\\s*=\\s*([^;]+)`));
+  return match ? match[2] : null;
 }
 
 Deno.serve(async (req: Request) => {
@@ -41,9 +51,9 @@ Deno.serve(async (req: Request) => {
 
     const payload: TrackClickPayload = await req.json();
 
-    if (!payload.referralCode || !payload.sessionId) {
+    if (!payload.referralCode) {
       return new Response(
-        JSON.stringify({ error: "Missing referralCode or sessionId" }),
+        JSON.stringify({ error: "Missing referralCode" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -51,68 +61,106 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Check for duplicate clicks (same session + referral code within 30 minutes)
+    const forwarded = req.headers.get("x-forwarded-for");
+    const clientIp = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+    const ipHash = await hashString(clientIp);
+    const userAgentHash = payload.userAgent ? await hashString(payload.userAgent) : null;
+
+    const cookieHeader = req.headers.get("cookie");
+    let refSid = payload.refSid || getCookieValue(cookieHeader, "ref_sid");
+    let session = null;
+
+    if (refSid) {
+      const { data: existingSession } = await supabase
+        .from("referral_sessions")
+        .select("*")
+        .eq("ref_sid", refSid)
+        .maybeSingle();
+
+      if (existingSession) {
+        session = existingSession;
+        await supabase
+          .from("referral_sessions")
+          .update({
+            last_seen_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          })
+          .eq("ref_sid", refSid);
+      }
+    }
+
+    if (!session) {
+      refSid = crypto.randomUUID();
+      const { data: newSession, error: sessionError } = await supabase
+        .from("referral_sessions")
+        .insert({
+          ref_sid: refSid,
+          ref_code: payload.referralCode,
+          landing_path: payload.landingPath || null,
+          referrer_url: payload.referrerUrl || null,
+          utm_source: payload.utmSource || null,
+          utm_medium: payload.utmMedium || null,
+          utm_campaign: payload.utmCampaign || null,
+          utm_term: payload.utmTerm || null,
+          utm_content: payload.utmContent || null,
+          full_query_string: payload.fullQueryString || null,
+          ip_hash: ipHash,
+          ua_hash: userAgentHash,
+        })
+        .select()
+        .single();
+
+      if (sessionError) {
+        console.error("Error creating session:", sessionError);
+      } else {
+        session = newSession;
+      }
+    }
+
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
     const { data: existingClick } = await supabase
       .from("referral_click_events")
       .select("id")
-      .eq("session_id", payload.sessionId)
+      .eq("ref_sid", refSid)
       .eq("referral_code", payload.referralCode)
       .gte("created_at", thirtyMinutesAgo)
       .maybeSingle();
 
-    if (existingClick) {
-      return new Response(
-        JSON.stringify({ message: "Click already tracked (duplicate)" }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Get client IP from X-Forwarded-For header (Deno Deploy provides this)
-    const forwarded = req.headers.get("x-forwarded-for");
-    const clientIp = forwarded ? forwarded.split(",")[0].trim() : "unknown";
-
-    // Hash IP and user agent for privacy
-    const ipHash = await hashString(clientIp);
-    const userAgentHash = payload.userAgent
-      ? await hashString(payload.userAgent)
-      : null;
-
-    // Insert click event
-    const { error: insertError } = await supabase
-      .from("referral_click_events")
-      .insert({
+    if (!existingClick) {
+      await supabase.from("referral_click_events").insert({
         referral_code: payload.referralCode,
-        session_id: payload.sessionId,
+        ref_sid: refSid,
+        session_id: refSid,
         landing_path: payload.landingPath || null,
         referrer_url: payload.referrerUrl || null,
         utm_source: payload.utmSource || null,
         utm_medium: payload.utmMedium || null,
         utm_campaign: payload.utmCampaign || null,
+        utm_term: payload.utmTerm || null,
+        utm_content: payload.utmContent || null,
         user_agent_hash: userAgentHash,
         ip_hash: ipHash,
         country_code: null,
       });
-
-    if (insertError) {
-      console.error("Error inserting click event:", insertError);
-      return new Response(
-        JSON.stringify({ error: "Failed to track click" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
     }
 
+    const isProd = supabaseUrl.includes("supabase.co");
+    const maxAge = 30 * 24 * 60 * 60;
+    const cookieValue = `ref_sid=${refSid}; Max-Age=${maxAge}; Path=/; SameSite=Lax${isProd ? "; Secure" : ""}`;
+
     return new Response(
-      JSON.stringify({ message: "Click tracked successfully" }),
+      JSON.stringify({
+        success: true,
+        refSid,
+        message: existingClick ? "Session updated" : "Click tracked",
+      }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "Set-Cookie": cookieValue,
+        },
       }
     );
   } catch (error) {

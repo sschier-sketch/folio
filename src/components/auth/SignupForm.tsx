@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 import { Eye, EyeOff, UserPlus, Gift } from "lucide-react";
 import { getReferralCode, getReferralMetadata, initReferralTracking, clearReferralCode } from "../../lib/referralTracking";
+import { getRefSid } from "../../lib/referralSession";
 
 interface SignupFormProps {
   onSuccess?: () => void;
@@ -97,7 +98,8 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           console.error("Welcome email error:", welcomeErr);
         }
 
-        if (refCode) {
+        const refSid = getRefSid();
+        if (refCode || refSid) {
           try {
             const response = await fetch(
               `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-affiliate-referral`,
@@ -107,9 +109,11 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
                   "Content-Type": "application/json",
                   "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                   userId: authData.user.id,
-                  affiliateCode: refCode,
+                  affiliateCode: refCode || null,
+                  refSid: refSid || null,
                   landingPath: metadata?.landingPath || null,
                   attributionSource: metadata?.source || 'storage',
                 }),
