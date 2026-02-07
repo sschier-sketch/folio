@@ -27,6 +27,7 @@ import AdminEmailLogsView from "../components/AdminEmailLogsView";
 import AdminMagazineView from "../components/admin/AdminMagazineView";
 import AdminEmailSettingsView from "../components/admin/AdminEmailSettingsView";
 import DeleteUserModal from "../components/admin/DeleteUserModal";
+import RefundWizard from "../components/admin/RefundWizard";
 import AdminLayout from "../components/admin/AdminLayout";
 import UserActionsDropdown from "../components/admin/UserActionsDropdown";
 import { BaseTable, StatusBadge } from "../components/common/BaseTable";
@@ -75,6 +76,7 @@ export function Admin() {
   const [sortField, setSortField] = useState<keyof UserData>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
+  const [refundTarget, setRefundTarget] = useState<{ id: string; email: string } | null>(null);
   const [userFilter, setUserFilter] = useState<UserFilter>('all');
 
   async function reloadUsers() {
@@ -226,41 +228,8 @@ export function Admin() {
     }
   }
 
-  async function handleRefund(userId: string, userEmail: string) {
-    const reason = prompt(`Rueckerstattung fuer ${userEmail}.\nGrund (optional):`);
-    if (reason === null) return;
-
-    if (!confirm(`Letzte Zahlung von ${userEmail} wirklich erstatten? Das Abo wird sofort beendet.`))
-      return;
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-refund`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId, reason: reason || undefined }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Refund failed");
-      }
-
-      alert(`Rueckerstattung erfolgreich: ${result.amount} ${result.currency?.toUpperCase()}`);
-      await reloadUsers();
-    } catch (err) {
-      console.error("Error processing refund:", err);
-      alert(`Fehler bei der Rueckerstattung: ${err instanceof Error ? err.message : "Unbekannter Fehler"}`);
-    }
+  function handleRefund(userId: string, userEmail: string) {
+    setRefundTarget({ id: userId, email: userEmail });
   }
 
   async function handleImpersonate(userId: string, userEmail: string) {
@@ -597,6 +566,15 @@ export function Admin() {
         {activeTab === "magazine" && <AdminMagazineView />}
         {activeTab === "email_settings" && <AdminEmailSettingsView />}
       </AdminLayout>
+
+      {refundTarget && (
+        <RefundWizard
+          userId={refundTarget.id}
+          userEmail={refundTarget.email}
+          onClose={() => setRefundTarget(null)}
+          onComplete={() => reloadUsers()}
+        />
+      )}
 
       {deleteTarget && (
         <DeleteUserModal
