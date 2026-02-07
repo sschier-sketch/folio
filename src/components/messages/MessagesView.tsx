@@ -154,16 +154,6 @@ export default function MessagesView() {
   const isFolderView = activeView === 'inbox' || activeView === 'sent' || activeView === 'unknown';
 
   function renderMainContent() {
-    if (showCompose && isFolderView) {
-      return (
-        <ComposeInline
-          userAlias={mailbox?.alias_localpart || ''}
-          onSent={handleComposeSent}
-          onCancel={() => setShowCompose(false)}
-        />
-      );
-    }
-
     if (activeView === 'settings') {
       return <MessagesSettings />;
     }
@@ -354,7 +344,17 @@ export default function MessagesView() {
         />
       )}
 
-      {activeTab === 'inbox' && (
+      {activeTab === 'inbox' && showCompose && isFolderView && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 310px)', minHeight: '500px' }}>
+          <ComposeInline
+            userAlias={mailbox?.alias_localpart || ''}
+            onSent={handleComposeSent}
+            onCancel={() => setShowCompose(false)}
+          />
+        </div>
+      )}
+
+      {activeTab === 'inbox' && !showCompose && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 310px)', minHeight: '500px' }}>
           <div className="flex h-full">
             <div className="w-48 flex-shrink-0 border-r border-gray-200 p-3 hidden md:flex flex-col">
