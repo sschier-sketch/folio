@@ -339,30 +339,92 @@ export default function ReferralProgramView() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="bg-white rounded-lg border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-9 h-9 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+              <Users className="w-4 h-4 text-[#1e1e24]" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-dark mb-0.5">
+            {stats.totalReferrals}
+          </div>
+          <div className="text-sm text-gray-600">Gesamt Empfehlungen</div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-9 h-9 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+              <Banknote className="w-4 h-4 text-[#1e1e24]" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-dark mb-0.5">
+            {balance.toFixed(2)} EUR
+          </div>
+          <div className="text-sm text-gray-600">Aktuelles Guthaben</div>
+          <div className="pt-2 mt-2 border-t border-gray-200 space-y-1 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">Verdient</span>
+              <span className="font-medium text-dark">{totalEarned.toFixed(2)} EUR</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">Ausgezahlt</span>
+              <span className="font-medium text-dark">{totalPaidOut.toFixed(2)} EUR</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-9 h-9 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+              <Award className="w-4 h-4 text-[#1e1e24]" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-dark mb-0.5">
+            {stats.totalMonthsEarned}
+          </div>
+          <div className="text-sm text-gray-600">Verdiente Monate</div>
+          <div className="pt-2 mt-2 border-t border-gray-200 space-y-1 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-gray-500">
+                <Clock className="w-3 h-3" /> Aktiv
+              </span>
+              <span className="font-medium text-dark">{stats.activeMonths}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-gray-500">
+                <Check className="w-3 h-3" /> Verwendet
+              </span>
+              <span className="font-medium text-dark">{stats.usedMonths}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
               <Gift className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <h2 className="text-lg font-semibold text-dark">
-              Ihr persoenlicher Empfehlungscode
+              Empfehlungscode & Link
             </h2>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-sky-50 border-2 border-blue-200 rounded-xl p-6 mb-4">
-            <p className="text-gray-700 text-sm font-medium mb-2">
+          <div className="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-gray-700 text-xs font-medium mb-1.5">
               Ihr persoenlicher Empfehlungslink:
             </p>
-            <div className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-200 mb-4 min-w-0 overflow-hidden">
+            <div className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-200 mb-3 min-w-0 overflow-hidden">
               <LinkIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <span className="text-sm font-mono text-gray-700 truncate">
+              <span className="text-xs font-mono text-gray-700 truncate">
                 {referralUrl}
               </span>
             </div>
             <button
               onClick={handleCopyReferralLink}
-              className={`w-full py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm shadow-sm ${
+              className={`w-full py-2.5 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm shadow-sm ${
                 linkCopied
                   ? "bg-emerald-500 text-white"
                   : "bg-primary-blue hover:bg-blue-600 text-white"
@@ -370,35 +432,35 @@ export default function ReferralProgramView() {
             >
               {linkCopied ? (
                 <>
-                  <Check className="w-5 h-5" /> Link kopiert!
+                  <Check className="w-4 h-4" /> Link kopiert!
                 </>
               ) : (
                 <>
-                  <Copy className="w-5 h-5" /> Link kopieren
+                  <Copy className="w-4 h-4" /> Link kopieren
                 </>
               )}
             </button>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
             <div className="flex items-center justify-between gap-3">
-              <div className="flex-1">
-                <p className="text-gray-500 text-xs mb-1">Empfehlungscode (alternativ):</p>
-                <p className="text-lg font-bold font-mono tracking-wider text-dark">
+              <div className="flex-1 min-w-0">
+                <p className="text-gray-500 text-xs mb-0.5">Empfehlungscode:</p>
+                <p className="text-base font-bold font-mono tracking-wider text-dark">
                   {referralCode}
                 </p>
               </div>
               <button
                 onClick={handleCopyCode}
-                className="flex-shrink-0 px-3 py-2 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+                className="flex-shrink-0 px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center gap-1.5 text-xs"
               >
                 {copied ? (
                   <>
-                    <Check className="w-4 h-4" /> Kopiert
+                    <Check className="w-3.5 h-3.5" /> Kopiert
                   </>
                 ) : (
                   <>
-                    <Code className="w-4 h-4" /> Code
+                    <Code className="w-3.5 h-3.5" /> Code
                   </>
                 )}
               </button>
@@ -408,14 +470,14 @@ export default function ReferralProgramView() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleShareLinkedIn}
-              className="bg-[#0A66C2] hover:bg-[#004182] text-white px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+              className="bg-[#0A66C2] hover:bg-[#004182] text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
             >
               <Linkedin className="w-4 h-4" />
               LinkedIn
             </button>
             <button
               onClick={handleShareEmail}
-              className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+              className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
             >
               <Mail className="w-4 h-4" />
               E-Mail
@@ -423,76 +485,12 @@ export default function ReferralProgramView() {
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
-                <Users className="w-5 h-5 text-[#1e1e24]" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-dark mb-1">
-              {stats.totalReferrals}
-            </div>
-            <div className="text-sm text-gray-600">Gesamt Empfehlungen</div>
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
-                <Banknote className="w-5 h-5 text-[#1e1e24]" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-dark mb-1">
-              {balance.toFixed(2)} EUR
-            </div>
-            <div className="text-sm text-gray-600">Aktuelles Guthaben</div>
-            <div className="pt-3 mt-3 border-t border-gray-200 space-y-1.5 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-500">Verdient</span>
-                <span className="font-medium text-dark">{totalEarned.toFixed(2)} EUR</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-500">Ausgezahlt</span>
-                <span className="font-medium text-dark">{totalPaidOut.toFixed(2)} EUR</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
-                <Award className="w-5 h-5 text-[#1e1e24]" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-dark mb-1">
-              {stats.totalMonthsEarned}
-            </div>
-            <div className="text-sm text-gray-600 mb-4">
-              Verdiente Belohnungen (Monate)
-            </div>
-            <div className="pt-4 border-t border-gray-200 space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-gray-600">
-                  <Clock className="w-4 h-4" /> Aktiv
-                </span>
-                <span className="font-semibold text-dark">{stats.activeMonths} Monate</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-gray-600">
-                  <Check className="w-4 h-4" /> Verwendet
-                </span>
-                <span className="font-semibold text-dark">{stats.usedMonths} Monate</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ReferralPayoutSection
+          balance={balance}
+          payoutRequests={payoutRequests}
+          onPayoutRequested={loadReferralData}
+        />
       </div>
-
-      <ReferralPayoutSection
-        balance={balance}
-        payoutRequests={payoutRequests}
-        onPayoutRequested={loadReferralData}
-      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="lg:col-span-2">
