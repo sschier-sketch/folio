@@ -62,17 +62,18 @@ interface RentIncrease {
   increase_type: string;
 }
 
-interface OpenTicket {
+interface UnreadTicketThread {
   id: string;
-  ticket_number: string;
   subject: string;
-  status: string;
-  priority: string;
+  priority: string | null;
+  category: string | null;
   created_at: string;
-  tenant_id: string;
+  last_message_at: string;
+  tenant_id: string | null;
   tenants: {
-    name: string;
-  };
+    first_name: string;
+    last_name: string;
+  } | null;
 }
 
 interface DashboardHomeProps {
@@ -105,7 +106,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const [loading, setLoading] = useState(true);
   const [upcomingTasks, setUpcomingTasks] = useState<MaintenanceTask[]>([]);
   const [rentIncreases, setRentIncreases] = useState<RentIncrease[]>([]);
-  const [openTickets, setOpenTickets] = useState<OpenTicket[]>([]);
+  const [openTickets, setOpenTickets] = useState<UnreadTicketThread[]>([]);
   const [showTasksCard, setShowTasksCard] = useState(true);
   const [showTicketsCard, setShowTicketsCard] = useState(true);
   const [showRentIncreasesCard, setShowRentIncreasesCard] = useState(true);
@@ -406,20 +407,19 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
 
     try {
       const { data, error } = await supabase
-        .from("tickets")
+        .from("mail_threads")
         .select(`
-          *,
-          tenants (
-            name
-          )
+          id, subject, priority, category, created_at, last_message_at, tenant_id,
+          tenants (first_name, last_name)
         `)
         .eq("user_id", user.id)
-        .in("status", ["open", "in_progress"])
-        .order("created_at", { ascending: false })
+        .not("ticket_id", "is", null)
+        .eq("status", "unread")
+        .order("last_message_at", { ascending: false })
         .limit(5);
 
       if (error) throw error;
-      setOpenTickets(data || []);
+      setOpenTickets((data as UnreadTicketThread[]) || []);
     } catch (error) {
       console.error("Error loading open tickets:", error);
     }
@@ -842,55 +842,53 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       {openTickets.length > 0 && showTicketsCard && (
         <div className="mt-8">
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-dark">Offene Mieter-Anfragen</h2>
+            <h2 className="text-xl font-bold text-dark">Ungelesene Mieter-Anfragen</h2>
           </div>
           <div className="bg-white rounded-lg">
-            {openTickets.map((ticket, index) => (
-              <div
-                key={ticket.id}
-                className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => {
-                  window.location.href = `/dashboard?view=tenants&tenantId=${ticket.tenant_id}&tab=communication`;
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-                      <AlertCircle className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-dark truncate">{ticket.subject}</h3>
-                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">
-                          #{ticket.ticket_number}
-                        </span>
-                        {ticket.status === "open" && (
-                          <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium">
-                            Offen
-                          </span>
-                        )}
-                        {ticket.status === "in_progress" && (
-                          <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">
-                            In Bearbeitung
-                          </span>
-                        )}
-                        {ticket.status === "resolved" && (
-                          <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-medium">
-                            Gelöst
-                          </span>
-                        )}
+            {openTickets.map((ticket) => {
+              const tenantName = ticket.tenants
+                ? `${ticket.tenants.first_name} ${ticket.tenants.last_name}`.trim()
+                : '';
+              const priorityFlag = ticket.priority === 'high'
+                ? 'text-red-600'
+                : ticket.priority === 'medium'
+                  ? 'text-amber-500'
+                  : 'text-emerald-500';
+              return (
+                <div
+                  key={ticket.id}
+                  className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => onChangeView?.("messages")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                        <AlertCircle className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-gray-500">
-                        {ticket.tenants && <span>{ticket.tenants.name}</span>}
-                        {ticket.tenants && <span>•</span>}
-                        <span>{new Date(ticket.created_at).toLocaleDateString("de-DE")}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {ticket.priority && (
+                            <span className={`${priorityFlag} flex-shrink-0`}>&#9873;</span>
+                          )}
+                          <h3 className="font-semibold text-dark truncate">{ticket.subject}</h3>
+                          {ticket.category && (
+                            <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium">
+                              {ticket.category === 'general' ? 'Allgemein' : ticket.category === 'maintenance' ? 'Wartung' : ticket.category === 'repair' ? 'Reparatur' : ticket.category === 'complaint' ? 'Beschwerde' : ticket.category === 'question' ? 'Frage' : ticket.category}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          {tenantName && <span>{tenantName}</span>}
+                          {tenantName && <span>&bull;</span>}
+                          <span>{new Date(ticket.last_message_at).toLocaleDateString("de-DE")}</span>
+                        </div>
                       </div>
                     </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

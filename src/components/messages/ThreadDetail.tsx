@@ -62,7 +62,8 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent 
 
   useEffect(() => {
     loadMessages();
-    markAsRead();
+    const timer = setTimeout(markAsRead, 1500);
+    return () => clearTimeout(timer);
   }, [thread.id]);
 
   useEffect(() => {
