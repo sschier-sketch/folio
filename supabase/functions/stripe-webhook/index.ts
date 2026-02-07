@@ -242,6 +242,13 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
       console.info(`Setting pro_activated_at for customer ${customerId}`);
     }
 
+    // End trial immediately when upgrading to Pro
+    if (plan === 'pro' && status === 'active') {
+      updateData.trial_started_at = null;
+      updateData.trial_ends_at = null;
+      console.info(`Ending trial for customer ${customerId} due to Pro upgrade`);
+    }
+
     // Update the billing info
     const { error: updateError } = await supabase
       .from('billing_info')
