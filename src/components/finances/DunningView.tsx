@@ -156,15 +156,54 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
     setSendingReminder(payment.id);
 
     try {
-      const { data: template } = await supabase
+      let { data: template } = await supabase
         .from("dunning_email_templates")
         .select("*")
         .eq("user_id", user.id)
         .eq("dunning_level", level)
-        .single();
+        .maybeSingle();
 
       if (!template) {
-        alert("Kein Template gefunden. Bitte konfigurieren Sie die Email-Templates.");
+        const defaults = [
+          {
+            user_id: user.id,
+            dunning_level: 1,
+            subject: "Freundliche Erinnerung: Mietzahlung",
+            message: `Sehr geehrte/r [TENANT_NAME],\n\nwir möchten Sie freundlich daran erinnern, dass die Miete für [PROPERTY_NAME] in Höhe von [AMOUNT] zum [DUE_DATE] fällig war.\n\nMöglicherweise haben Sie die Überweisung vergessen. Bitte überweisen Sie den Betrag zeitnah.\n\nMit freundlichen Grüßen`,
+            is_active: true,
+          },
+          {
+            user_id: user.id,
+            dunning_level: 2,
+            subject: "Zahlungsaufforderung: Ausstehende Miete",
+            message: `Sehr geehrte/r [TENANT_NAME],\n\ntrotz freundlicher Erinnerung ist die Miete für [PROPERTY_NAME] in Höhe von [AMOUNT] noch nicht eingegangen.\n\nWir fordern Sie hiermit formell auf, den Betrag innerhalb von 7 Tagen zu überweisen. Andernfalls müssen wir weitere Schritte einleiten.\n\nMit freundlichen Grüßen`,
+            is_active: true,
+          },
+          {
+            user_id: user.id,
+            dunning_level: 3,
+            subject: "MAHNUNG: Überfällige Mietzahlung",
+            message: `Sehr geehrte/r [TENANT_NAME],\n\ntrotz mehrfacher Erinnerung ist die Miete für [PROPERTY_NAME] in Höhe von [AMOUNT] noch nicht eingegangen.\n\nWir mahnen Sie hiermit offiziell und fordern Sie auf, den ausstehenden Betrag zzgl. Mahngebühren in Höhe von 5,00 € (Gesamt: [TOTAL_AMOUNT]) innerhalb von 5 Tagen zu überweisen.\n\nBei weiterer Nichtzahlung behalten wir uns rechtliche Schritte vor.\n\nMit freundlichen Grüßen`,
+            is_active: true,
+          },
+        ];
+
+        await supabase
+          .from("dunning_email_templates")
+          .upsert(defaults, { onConflict: "user_id,dunning_level" });
+
+        const { data: retry } = await supabase
+          .from("dunning_email_templates")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("dunning_level", level)
+          .maybeSingle();
+
+        template = retry;
+      }
+
+      if (!template) {
+        alert("Kein Template gefunden. Bitte konfigurieren Sie die Email-Templates unter dem Tab 'Email-Templates'.");
         setSendingReminder(null);
         return;
       }
