@@ -1,3 +1,6 @@
+export type TicketPriority = 'low' | 'medium' | 'high';
+export type TicketCategory = 'general' | 'maintenance' | 'repair' | 'complaint' | 'question';
+
 export interface MailThread {
   id: string;
   user_id: string;
@@ -11,6 +14,9 @@ export interface MailThread {
   message_count: number;
   created_at: string;
   updated_at: string;
+  priority: TicketPriority | null;
+  category: TicketCategory | null;
+  ticket_id: string | null;
   tenants?: {
     first_name: string;
     last_name: string;

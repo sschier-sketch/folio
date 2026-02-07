@@ -81,6 +81,7 @@ export default function Dashboard() {
   const [showUpdatesModal, setShowUpdatesModal] = useState(false);
   const [hasNewUpdates, setHasNewUpdates] = useState(false);
   const [copiedPortalUrl, setCopiedPortalUrl] = useState(false);
+  const [unreadMailCount, setUnreadMailCount] = useState(0);
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
@@ -97,6 +98,21 @@ export default function Dashboard() {
       window.history.replaceState({}, '', '/dashboard');
     }
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const loadUnreadCount = async () => {
+      const { count } = await supabase
+        .from('mail_threads')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', 'unread');
+      setUnreadMailCount(count || 0);
+    };
+    loadUnreadCount();
+    const interval = setInterval(loadUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleNavigateToTenant = (tenantId: string) => {
     setSelectedTenantId(tenantId);
@@ -413,6 +429,11 @@ export default function Dashboard() {
                           Demnächst
                         </span>
                       )}
+                      {item.id === "messages" && unreadMailCount > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-blue-600 text-white">
+                          {unreadMailCount > 99 ? '99+' : unreadMailCount}
+                        </span>
+                      )}
                       {item.id === "mieterportal" && (
                         <Badge variant="pro" size="sm">Pro</Badge>
                       )}
@@ -509,6 +530,11 @@ export default function Dashboard() {
                       {item.comingSoon && (
                         <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">
                           Demnächst
+                        </span>
+                      )}
+                      {item.id === "messages" && unreadMailCount > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-blue-600 text-white">
+                          {unreadMailCount > 99 ? '99+' : unreadMailCount}
                         </span>
                       )}
                       {item.id === "mieterportal" && (

@@ -1,5 +1,5 @@
-import { Mail, MailOpen } from 'lucide-react';
-import type { MailThread } from './types';
+import { Mail, Flag } from 'lucide-react';
+import type { MailThread, TicketPriority, TicketCategory } from './types';
 
 interface ThreadListProps {
   threads: MailThread[];
@@ -36,6 +36,20 @@ function getInitials(name: string): string {
   if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
 }
+
+const priorityConfig: Record<TicketPriority, { color: string; bg: string; label: string }> = {
+  low: { color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Niedrig' },
+  medium: { color: 'text-amber-600', bg: 'bg-amber-50', label: 'Mittel' },
+  high: { color: 'text-red-600', bg: 'bg-red-50', label: 'Hoch' },
+};
+
+const categoryLabels: Record<TicketCategory, string> = {
+  general: 'Allgemein',
+  maintenance: 'Wartung',
+  repair: 'Reparatur',
+  complaint: 'Beschwerde',
+  question: 'Frage',
+};
 
 export default function ThreadList({ threads, selectedThreadId, onSelect, loading }: ThreadListProps) {
   if (loading) {
@@ -93,9 +107,14 @@ export default function ThreadList({ threads, selectedThreadId, onSelect, loadin
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <span className={`text-sm truncate ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
-                  {name}
-                </span>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  {thread.priority && (
+                    <Flag className={`w-3 h-3 flex-shrink-0 ${priorityConfig[thread.priority].color}`} fill="currentColor" />
+                  )}
+                  <span className={`text-sm truncate ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
+                    {name}
+                  </span>
+                </div>
                 <span className="text-xs text-gray-400 flex-shrink-0">
                   {formatRelativeDate(thread.last_message_at)}
                 </span>
@@ -108,11 +127,18 @@ export default function ThreadList({ threads, selectedThreadId, onSelect, loadin
                   <span className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0" />
                 )}
               </div>
-              {thread.message_count > 1 && (
-                <span className="text-[10px] text-gray-400 mt-0.5 inline-block">
-                  {thread.message_count} Nachrichten
-                </span>
-              )}
+              <div className="flex items-center gap-1.5 mt-1">
+                {thread.category && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-gray-100 text-gray-600">
+                    {categoryLabels[thread.category] || thread.category}
+                  </span>
+                )}
+                {thread.message_count > 1 && (
+                  <span className="text-[10px] text-gray-400">
+                    {thread.message_count} Nachrichten
+                  </span>
+                )}
+              </div>
             </div>
           </button>
         );

@@ -1,9 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, ArrowLeft, User, UserPlus } from 'lucide-react';
+import { Send, ArrowLeft, User, UserPlus, Flag } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import AssignSenderModal from './AssignSenderModal';
-import type { MailThread, MailMessage } from './types';
+import type { MailThread, MailMessage, TicketPriority, TicketCategory } from './types';
+
+const priorityConfig: Record<TicketPriority, { color: string; bg: string; border: string; label: string }> = {
+  low: { color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', label: 'Niedrig' },
+  medium: { color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200', label: 'Mittel' },
+  high: { color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', label: 'Dringend' },
+};
+
+const categoryLabels: Record<TicketCategory, string> = {
+  general: 'Allgemein',
+  maintenance: 'Wartung',
+  repair: 'Reparatur',
+  complaint: 'Beschwerde',
+  question: 'Frage',
+};
 
 interface ThreadDetailProps {
   thread: MailThread;
@@ -117,7 +131,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent 
             communication_type: 'message',
             subject: thread.subject || 'Antwort',
             content: replyText.trim(),
-            is_internal: false,
+            is_internal: !thread.ticket_id,
           });
         }
 
@@ -167,8 +181,25 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent 
             {getInitials(recipientName)}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-gray-900 text-sm truncate">{recipientName}</h3>
-            <p className="text-xs text-gray-500 truncate">{recipientEmail || thread.subject}</p>
+            <div className="flex items-center gap-2">
+              {thread.priority && (
+                <Flag className={`w-3.5 h-3.5 flex-shrink-0 ${priorityConfig[thread.priority].color}`} fill="currentColor" />
+              )}
+              <h3 className="font-semibold text-gray-900 text-sm truncate">{recipientName}</h3>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-xs text-gray-500 truncate">{recipientEmail || thread.subject}</p>
+              {thread.category && (
+                <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-gray-100 text-gray-600 flex-shrink-0">
+                  {categoryLabels[thread.category as TicketCategory] || thread.category}
+                </span>
+              )}
+              {thread.priority && (
+                <span className={`inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded border flex-shrink-0 ${priorityConfig[thread.priority].bg} ${priorityConfig[thread.priority].color} ${priorityConfig[thread.priority].border}`}>
+                  {priorityConfig[thread.priority].label}
+                </span>
+              )}
+            </div>
           </div>
           {thread.folder === 'unknown' && (
             <button
