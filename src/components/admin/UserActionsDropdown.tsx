@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   MoreHorizontal,
   Eye,
@@ -54,19 +55,47 @@ export default function UserActionsDropdown({
   onDelete,
 }: UserActionsDropdownProps) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const updatePosition = useCallback(() => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const menuWidth = 288;
+    let left = rect.right - menuWidth;
+    if (left < 8) left = 8;
+    setPosition({ top: rect.bottom + 4, left });
+  }, []);
 
   useEffect(() => {
+    if (!open) return;
+    updatePosition();
+
     function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        buttonRef.current && !buttonRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
         setOpen(false);
       }
     }
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
+
+    function handleScroll() {
+      setOpen(false);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [open, updatePosition]);
 
   const actions: ActionItem[] = [
     {
@@ -129,16 +158,21 @@ export default function UserActionsDropdown({
   const visibleActions = actions.filter(a => !a.hidden);
 
   return (
-    <div ref={ref} className="relative" onClick={(e) => e.stopPropagation()}>
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
       <button
+        ref={buttonRef}
         onClick={() => setOpen(!open)}
         className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
       >
         <MoreHorizontal className="w-5 h-5" />
       </button>
 
-      {open && (
-        <div className="absolute right-0 top-full mt-1 w-72 bg-white rounded-xl border border-gray-200 shadow-xl z-50 py-1 overflow-hidden">
+      {open && createPortal(
+        <div
+          ref={menuRef}
+          className="fixed w-72 bg-white rounded-xl border border-gray-200 shadow-xl z-[9999] py-1 overflow-hidden"
+          style={{ top: position.top, left: position.left }}
+        >
           <div className="px-3 py-2 border-b border-gray-100">
             <p className="text-xs font-medium text-gray-500 truncate">{userEmail}</p>
           </div>
@@ -172,7 +206,8 @@ export default function UserActionsDropdown({
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
