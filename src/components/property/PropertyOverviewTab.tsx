@@ -177,16 +177,16 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
         });
 
         if (property.ownership_type === 'units_only') {
-          const totalPurchasePrice = unitsRes.data.reduce((sum, u) => sum + (Number(u.purchase_price) || 0), 0);
-          const totalCurrentValue = unitsRes.data.reduce((sum, u) => sum + (Number(u.current_value) || 0), 0);
+          const unitPurchasePrice = unitsRes.data.reduce((sum, u) => sum + (Number(u.purchase_price) || 0), 0);
+          const unitCurrentValue = unitsRes.data.reduce((sum, u) => sum + (Number(u.current_value) || 0), 0);
           setAggregatedValues({
-            totalPurchasePrice,
-            totalCurrentValue,
+            totalPurchasePrice: unitPurchasePrice > 0 ? unitPurchasePrice : (Number(property.purchase_price) || 0),
+            totalCurrentValue: unitCurrentValue > 0 ? unitCurrentValue : (Number(property.current_value) || 0),
           });
         } else {
           setAggregatedValues({
-            totalPurchasePrice: property.purchase_price,
-            totalCurrentValue: property.current_value,
+            totalPurchasePrice: Number(property.purchase_price) || 0,
+            totalCurrentValue: Number(property.current_value) || 0,
           });
         }
       }
@@ -623,7 +623,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                 <div className="border-t border-slate-700 my-2"></div>
                 <div>Monatliche Kaltmiete: {formatCurrency(monthlyRent)}</div>
                 <div>Jahresmiete: {formatCurrency(monthlyRent * 12)}</div>
-                <div>Aktueller Wert: {formatCurrency(property.current_value)}</div>
+                <div>Aktueller Wert: {formatCurrency(aggregatedValues.totalCurrentValue)}</div>
                 <div className="border-t border-slate-700 my-2"></div>
                 <div className="font-semibold">= {calculateGrossYield().toFixed(2)}%</div>
               </div>
@@ -664,7 +664,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                   Netto-Jahreseinkommen:{" "}
                   {formatCurrency(monthlyRent * 12 - totalLoanPayments * 12)}
                 </div>
-                <div>Aktueller Wert: {formatCurrency(property.current_value)}</div>
+                <div>Aktueller Wert: {formatCurrency(aggregatedValues.totalCurrentValue)}</div>
                 <div className="border-t border-slate-700 my-2"></div>
                 <div className="font-semibold">= {calculateNetYield().toFixed(2)}%</div>
               </div>
