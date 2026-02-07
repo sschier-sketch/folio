@@ -198,7 +198,6 @@ export default function MessagesView() {
             <div className="flex gap-1">
               {(['inbox', 'sent', 'unknown'] as Folder[]).map((f) => {
                 const labels: Record<Folder, string> = { inbox: 'Eingang', sent: 'Gesendet', unknown: 'Unbekannt' };
-                if (f === 'unknown' && folderCounts.unknown === 0) return null;
                 return (
                   <button
                     key={f}

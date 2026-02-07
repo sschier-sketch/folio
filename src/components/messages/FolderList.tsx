@@ -51,8 +51,6 @@ export default function FolderList({ activeFolder, activeView, onSelect, onViewC
           const unread = isFolder(folder.id) ? (unreadCounts[folderId] || 0) : 0;
           const total = isFolder(folder.id) ? (counts[folderId] || 0) : 0;
 
-          if (folder.id === 'unknown' && total === 0) return null;
-
           return (
             <button
               key={folder.id}

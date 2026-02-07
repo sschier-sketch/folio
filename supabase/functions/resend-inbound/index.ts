@@ -345,8 +345,9 @@ Deno.serve(async (req: Request) => {
       }
 
       let threadId: string | null = null;
-      const folder = "inbox";
+      let folder: "inbox" | "unknown" = "unknown";
       let tenantId: string | null = null;
+      let isReplyToExistingThread = false;
 
       const { data: knownTenant } = await supabase
         .from("tenants")
@@ -358,6 +359,18 @@ Deno.serve(async (req: Request) => {
 
       if (knownTenant) {
         tenantId = knownTenant.id;
+        folder = "inbox";
+      } else {
+        const { data: knownContact } = await supabase
+          .from("property_contacts")
+          .select("id")
+          .eq("user_id", userId)
+          .ilike("email", fromAddress)
+          .maybeSingle();
+
+        if (knownContact) {
+          folder = "inbox";
+        }
       }
 
       if (inReplyTo) {
@@ -372,6 +385,7 @@ Deno.serve(async (req: Request) => {
 
         if (replyMsg) {
           threadId = replyMsg.thread_id;
+          isReplyToExistingThread = true;
           const t = replyMsg.mail_threads as any;
           if (t?.tenant_id) tenantId = t.tenant_id;
         }
@@ -390,6 +404,7 @@ Deno.serve(async (req: Request) => {
 
           if (refMsg) {
             threadId = refMsg.thread_id;
+            isReplyToExistingThread = true;
             const t = refMsg.mail_threads as any;
             if (t?.tenant_id) tenantId = t.tenant_id;
             break;
@@ -414,8 +429,13 @@ Deno.serve(async (req: Request) => {
           normalizeSubject(subjectThread.subject || "") === normalizedSubj
         ) {
           threadId = subjectThread.id;
+          isReplyToExistingThread = true;
           if (subjectThread.tenant_id) tenantId = subjectThread.tenant_id;
         }
+      }
+
+      if (isReplyToExistingThread) {
+        folder = "inbox";
       }
 
       if (threadId) {
