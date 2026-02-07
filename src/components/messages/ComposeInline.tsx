@@ -272,19 +272,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
           communication_type: 'message',
           subject: subject.trim(),
           content: getMessageBody(),
-          is_internal: false,
-          attachment_id: attachment?.docId || null,
-        });
-      }
-
-      if (publishToPortal && tenantId && getMessageBody()) {
-        await supabase.from('tenant_communications').insert({
-          user_id: user.id,
-          tenant_id: tenantId,
-          communication_type: 'note',
-          subject: `[Mieterportal] ${subject.trim()}`,
-          content: getMessageBody(),
-          is_internal: false,
+          is_internal: !publishToPortal,
           attachment_id: attachment?.docId || null,
         });
       }

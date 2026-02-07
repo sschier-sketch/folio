@@ -82,22 +82,29 @@ export default function TenantPortalDashboard({
       let heatingCosts = 0;
 
       if (contract) {
+        const toNum = (val: unknown, fallback?: unknown): number => {
+          const n = parseFloat(String(val ?? "0"));
+          if (!isNaN(n) && n > 0) return n;
+          if (fallback !== undefined) {
+            const f = parseFloat(String(fallback ?? "0"));
+            if (!isNaN(f) && f > 0) return f;
+          }
+          return 0;
+        };
+
         if (contract.rent_type === "flat_rate") {
-          coldRent = parseFloat(contract.flat_rate_amount || "0");
-          operatingCosts = 0;
-          heatingCosts = 0;
+          coldRent = toNum(contract.flat_rate_amount, contract.base_rent);
         } else if (contract.rent_type === "cold_rent_advance") {
-          coldRent = parseFloat(contract.cold_rent || "0");
-          operatingCosts = parseFloat(contract.total_advance || "0");
-          heatingCosts = 0;
+          coldRent = toNum(contract.cold_rent, contract.base_rent);
+          operatingCosts = toNum(contract.total_advance);
         } else if (contract.rent_type === "cold_rent_utilities_heating") {
-          coldRent = parseFloat(contract.cold_rent || "0");
-          operatingCosts = parseFloat(contract.operating_costs || "0");
-          heatingCosts = parseFloat(contract.heating_costs || "0");
+          coldRent = toNum(contract.cold_rent, contract.base_rent);
+          operatingCosts = toNum(contract.operating_costs);
+          heatingCosts = toNum(contract.heating_costs);
         } else {
-          coldRent = parseFloat(contract.cold_rent || contract.base_rent || "0");
-          operatingCosts = parseFloat(contract.operating_costs || "0");
-          heatingCosts = parseFloat(contract.heating_costs || "0");
+          coldRent = toNum(contract.cold_rent, contract.base_rent);
+          operatingCosts = toNum(contract.operating_costs);
+          heatingCosts = toNum(contract.heating_costs);
         }
       }
 
