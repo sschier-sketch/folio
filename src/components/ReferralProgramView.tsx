@@ -13,6 +13,7 @@ import {
   Banknote,
   Link as LinkIcon,
   Code,
+  AlertCircle,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -89,6 +90,7 @@ export default function ReferralProgramView() {
   const [totalPaidOut, setTotalPaidOut] = useState(0);
   const [totalClicks, setTotalClicks] = useState(0);
   const [totalConversions, setTotalConversions] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   const [recipientEmail, setRecipientEmail] = useState("");
   const [recipientName, setRecipientName] = useState("");
@@ -130,7 +132,7 @@ export default function ReferralProgramView() {
     if (!user) return;
 
     try {
-      const [settingsRes, referralsRes, rewardsRes, payoutsRes] = await Promise.all([
+      const [settingsRes, referralsRes, rewardsRes, payoutsRes, affiliateRes] = await Promise.all([
         supabase
           .from("user_settings")
           .select("referral_code")
@@ -151,10 +153,19 @@ export default function ReferralProgramView() {
           .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("affiliates")
+          .select("is_blocked")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
 
       if (settingsRes.data) {
         setReferralCode(settingsRes.data.referral_code);
+      }
+
+      if (affiliateRes.data?.is_blocked) {
+        setIsBlocked(true);
       }
 
       const referralsData = (referralsRes.data || []) as Referral[];
@@ -303,6 +314,20 @@ export default function ReferralProgramView() {
 
   const referralUrl = `${window.location.origin}/signup?ref=${referralCode}`;
 
+  if (isBlocked) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+        <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-red-900 mb-2">
+          Partner-Konto gesperrt
+        </h3>
+        <p className="text-red-700">
+          Ihr Partner-Konto wurde gesperrt. Bitte kontaktieren Sie den Support für weitere Informationen.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-8">
@@ -325,19 +350,15 @@ export default function ReferralProgramView() {
             </h2>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-4">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div className="flex-1">
-                <p className="text-gray-700 text-sm font-medium mb-2">
-                  Ihr persoenlicher Empfehlungslink:
-                </p>
-                <div className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-200">
-                  <LinkIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <span className="text-sm font-mono text-gray-700 truncate flex-1">
-                    {referralUrl}
-                  </span>
-                </div>
-              </div>
+          <div className="bg-gradient-to-br from-blue-50 to-sky-50 border-2 border-blue-200 rounded-xl p-6 mb-4">
+            <p className="text-gray-700 text-sm font-medium mb-2">
+              Ihr persoenlicher Empfehlungslink:
+            </p>
+            <div className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-200 mb-4 min-w-0 overflow-hidden">
+              <LinkIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <span className="text-sm font-mono text-gray-700 truncate">
+                {referralUrl}
+              </span>
             </div>
             <button
               onClick={handleCopyReferralLink}
