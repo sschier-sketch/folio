@@ -17,7 +17,7 @@ interface FolderListProps {
 
 export default function FolderList({ activeFolder, onSelect, counts, unreadCounts }: FolderListProps) {
   const folders: FolderItem[] = [
-    { id: 'inbox', label: 'Nachrichten', icon: Inbox },
+    { id: 'inbox', label: 'Eingang', icon: Inbox },
     { id: 'sent', label: 'Gesendet', icon: Send },
     { id: 'unknown', label: 'Unbekannt', icon: HelpCircle },
   ];
