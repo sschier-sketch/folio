@@ -345,7 +345,7 @@ Deno.serve(async (req: Request) => {
       }
 
       let threadId: string | null = null;
-      let folder: "inbox" | "unknown" = "unknown";
+      const folder = "inbox";
       let tenantId: string | null = null;
 
       const { data: knownTenant } = await supabase
@@ -358,25 +358,13 @@ Deno.serve(async (req: Request) => {
 
       if (knownTenant) {
         tenantId = knownTenant.id;
-        folder = "inbox";
-      } else {
-        const { data: knownContact } = await supabase
-          .from("property_contacts")
-          .select("id")
-          .eq("user_id", userId)
-          .ilike("email", fromAddress)
-          .maybeSingle();
-
-        if (knownContact) {
-          folder = "inbox";
-        }
       }
 
       if (inReplyTo) {
         const { data: replyMsg } = await supabase
           .from("mail_messages")
           .select(
-            "thread_id, mail_threads!inner(id, user_id, tenant_id, folder)"
+            "thread_id, mail_threads!inner(id, user_id, tenant_id)"
           )
           .eq("user_id", userId)
           .eq("email_message_id", inReplyTo)
@@ -386,8 +374,6 @@ Deno.serve(async (req: Request) => {
           threadId = replyMsg.thread_id;
           const t = replyMsg.mail_threads as any;
           if (t?.tenant_id) tenantId = t.tenant_id;
-          if (t?.folder === "inbox" || t?.folder === "sent")
-            folder = "inbox";
         }
       }
 
@@ -396,7 +382,7 @@ Deno.serve(async (req: Request) => {
           const { data: refMsg } = await supabase
             .from("mail_messages")
             .select(
-              "thread_id, mail_threads!inner(id, user_id, tenant_id, folder)"
+              "thread_id, mail_threads!inner(id, user_id, tenant_id)"
             )
             .eq("user_id", userId)
             .eq("email_message_id", ref)
@@ -406,8 +392,6 @@ Deno.serve(async (req: Request) => {
             threadId = refMsg.thread_id;
             const t = refMsg.mail_threads as any;
             if (t?.tenant_id) tenantId = t.tenant_id;
-            if (t?.folder === "inbox" || t?.folder === "sent")
-              folder = "inbox";
             break;
           }
         }
@@ -418,7 +402,7 @@ Deno.serve(async (req: Request) => {
 
         const { data: subjectThread } = await supabase
           .from("mail_threads")
-          .select("id, subject, tenant_id, folder")
+          .select("id, subject, tenant_id")
           .eq("user_id", userId)
           .eq("external_email", fromAddress)
           .order("last_message_at", { ascending: false })
@@ -431,8 +415,6 @@ Deno.serve(async (req: Request) => {
         ) {
           threadId = subjectThread.id;
           if (subjectThread.tenant_id) tenantId = subjectThread.tenant_id;
-          if (subjectThread.folder !== "unknown")
-            folder = subjectThread.folder as any;
         }
       }
 
