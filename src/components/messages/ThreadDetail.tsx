@@ -56,7 +56,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
   const [showAssign, setShowAssign] = useState(false);
   const [signature, setSignature] = useState('');
   const [appendSignature, setAppendSignature] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const recipientName = thread.tenants
     ? `${thread.tenants.first_name} ${thread.tenants.last_name}`.trim()
@@ -72,8 +72,9 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
   }, [thread.id]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 0 && messagesContainerRef.current) {
+      const el = messagesContainerRef.current;
+      el.scrollTop = el.scrollHeight;
     }
   }, [messages]);
 
@@ -257,7 +258,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-gray-50/50">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-gray-50/50">
         {messages.map((msg) => {
           const isOutbound = msg.direction === 'outbound';
           return (
@@ -286,7 +287,6 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
             </div>
           );
         })}
-        <div ref={messagesEndRef} />
       </div>
 
       {thread.folder !== 'trash' && (

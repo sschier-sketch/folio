@@ -144,8 +144,7 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-xl overflow-y-auto h-full">
-      <h2 className="text-lg font-semibold text-gray-900 mb-1">E-Mail Einstellungen</h2>
+    <div className="p-6 md:p-8 max-w-xl">
       <p className="text-sm text-gray-500 mb-8">
         Konfigurieren Sie Ihre E-Mail-Adresse, Absendernamen und Signatur.
       </p>

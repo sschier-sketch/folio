@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Mail, RefreshCw, LayoutDashboard, Inbox, Trash2 } from 'lucide-react';
+import { Plus, Mail, RefreshCw, LayoutDashboard, Inbox, Trash2, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import FolderList from './FolderList';
@@ -190,17 +190,6 @@ export default function MessagesView() {
   const isFolderView = activeView === 'inbox' || activeView === 'sent' || activeView === 'unknown' || activeView === 'trash';
 
   function renderMainContent() {
-    if (activeView === 'settings') {
-      return (
-        <MessagesSettings
-          currentAlias={mailbox?.alias_localpart || ''}
-          onAliasUpdated={(newAlias) => {
-            setMailbox((prev) => prev ? { ...prev, alias_localpart: newAlias } : prev);
-          }}
-        />
-      );
-    }
-
     if (activeView === 'templates') {
       if (showTemplateEditor) {
         return (
@@ -390,8 +379,8 @@ export default function MessagesView() {
         />
       )}
 
-      {activeTab === 'inbox' && showCompose && isFolderView && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 310px)', minHeight: '500px' }}>
+      {activeTab === 'inbox' && showCompose && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <ComposeInline
             userAlias={mailbox?.alias_localpart || ''}
             onSent={handleComposeSent}
@@ -400,7 +389,27 @@ export default function MessagesView() {
         </div>
       )}
 
-      {activeTab === 'inbox' && !showCompose && (
+      {activeTab === 'inbox' && !showCompose && activeView === 'settings' && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
+            <button
+              onClick={() => { setActiveView('inbox'); setActiveFolder('inbox'); }}
+              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-500" />
+            </button>
+            <h2 className="text-base font-semibold text-gray-900">Nachrichten-Einstellungen</h2>
+          </div>
+          <MessagesSettings
+            currentAlias={mailbox?.alias_localpart || ''}
+            onAliasUpdated={(newAlias) => {
+              setMailbox((prev) => prev ? { ...prev, alias_localpart: newAlias } : prev);
+            }}
+          />
+        </div>
+      )}
+
+      {activeTab === 'inbox' && !showCompose && activeView !== 'settings' && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 310px)', minHeight: '500px' }}>
           <div className="flex h-full">
             <div className="w-48 flex-shrink-0 border-r border-gray-200 p-3 hidden md:flex flex-col">
