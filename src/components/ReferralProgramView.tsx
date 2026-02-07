@@ -11,8 +11,8 @@ import {
   Linkedin,
   Clock,
   Banknote,
-  ArrowUpRight,
   Link as LinkIcon,
+  Code,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -20,6 +20,9 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { BaseTable, StatusBadge } from "./common/BaseTable";
 import ReferralChart from "./referral/ReferralChart";
 import ReferralPayoutSection from "./referral/ReferralPayoutSection";
+import ReferralAnalytics from "./referral/ReferralAnalytics";
+import ConversionFunnel from "./referral/ConversionFunnel";
+import EnhancedReferredUsersTable from "./referral/EnhancedReferredUsersTable";
 
 interface ReferralStats {
   totalReferrals: number;
@@ -84,6 +87,8 @@ export default function ReferralProgramView() {
   const [balance, setBalance] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
   const [totalPaidOut, setTotalPaidOut] = useState(0);
+  const [totalClicks, setTotalClicks] = useState(0);
+  const [totalConversions, setTotalConversions] = useState(0);
 
   const [recipientEmail, setRecipientEmail] = useState("");
   const [recipientName, setRecipientName] = useState("");
@@ -91,7 +96,35 @@ export default function ReferralProgramView() {
 
   useEffect(() => {
     loadReferralData();
+    loadAnalyticsSummary();
   }, [user]);
+
+  const loadAnalyticsSummary = async () => {
+    if (!user) return;
+
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data: clickData } = await supabase
+        .from('referral_click_events')
+        .select('id', { count: 'exact', head: true })
+        .eq('referral_code', referralCode || '');
+
+      const { data: affiliateData } = await supabase
+        .from('affiliate_referrals')
+        .select('id, status')
+        .eq('affiliate_id', user.id);
+
+      const clickCount = clickData || 0;
+      const conversionCount = affiliateData?.filter((a: any) => a.status === 'paying').length || 0;
+
+      setTotalClicks(typeof clickCount === 'number' ? clickCount : 0);
+      setTotalConversions(conversionCount);
+    } catch (error) {
+      console.error('Error loading analytics summary:', error);
+    }
+  };
 
   const loadReferralData = async () => {
     if (!user) return;
@@ -193,7 +226,7 @@ export default function ReferralProgramView() {
   };
 
   const handleShareLinkedIn = () => {
-    const referralUrl = `${window.location.origin}/signup?ref=${referralCode}`;
+    const referralUrl = `${window.location.origin}/signup?ref=${referralCode}&utm_source=linkedin&utm_medium=referral&utm_campaign=partner_program`;
     const text = encodeURIComponent(
       "Ich nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Mit meinem Empfehlungscode erhältst du 2 Monate PRO gratis."
     );
@@ -202,6 +235,15 @@ export default function ReferralProgramView() {
       `https://www.linkedin.com/sharing/share-offsite/?url=${url}&summary=${text}`,
       "_blank"
     );
+  };
+
+  const handleShareEmail = () => {
+    const referralUrl = `${window.location.origin}/signup?ref=${referralCode}&utm_source=email&utm_medium=referral&utm_campaign=partner_program`;
+    const subject = encodeURIComponent('Entdecke rentab.ly - Die beste Immobilienverwaltung');
+    const body = encodeURIComponent(
+      `Hallo,\n\nIch nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Die Software macht die Verwaltung von Immobilien so viel einfacher.\n\nMit meinem persönlichen Empfehlungslink erhältst du 2 Monate PRO gratis:\n${referralUrl}\n\nViel Erfolg!\n\nViele Grüße`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   const handleSendInvitation = async (e: React.FormEvent) => {
@@ -283,74 +325,79 @@ export default function ReferralProgramView() {
             </h2>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
-            <div className="flex items-center justify-between gap-4">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-4">
+            <div className="flex items-center justify-between gap-4 mb-4">
               <div className="flex-1">
-                <p className="text-gray-600 text-sm mb-2">
-                  Ihr Empfehlungscode:
+                <p className="text-gray-700 text-sm font-medium mb-2">
+                  Ihr persoenlicher Empfehlungslink:
                 </p>
-                <p className="text-2xl font-bold font-mono tracking-wider text-dark">
+                <div className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-200">
+                  <LinkIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <span className="text-sm font-mono text-gray-700 truncate flex-1">
+                    {referralUrl}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleCopyReferralLink}
+              className={`w-full py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm shadow-sm ${
+                linkCopied
+                  ? "bg-emerald-500 text-white"
+                  : "bg-primary-blue hover:bg-blue-600 text-white"
+              }`}
+            >
+              {linkCopied ? (
+                <>
+                  <Check className="w-5 h-5" /> Link kopiert!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-5 h-5" /> Link kopieren
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <p className="text-gray-500 text-xs mb-1">Empfehlungscode (alternativ):</p>
+                <p className="text-lg font-bold font-mono tracking-wider text-dark">
                   {referralCode}
                 </p>
               </div>
               <button
                 onClick={handleCopyCode}
-                className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+                className="flex-shrink-0 px-3 py-2 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
               >
                 {copied ? (
                   <>
-                    <Check className="w-4 h-4" /> Kopiert!
+                    <Check className="w-4 h-4" /> Kopiert
                   </>
                 ) : (
                   <>
-                    <Copy className="w-4 h-4" /> Kopieren
+                    <Code className="w-4 h-4" /> Code
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-            <p className="text-gray-600 text-xs mb-2">Ihr persoenlicher Empfehlungslink:</p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleCopyReferralLink}
-                className="flex-1 flex items-center gap-2 text-left group"
-              >
-                <LinkIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                <span className="text-sm font-mono text-primary-blue truncate group-hover:underline">
-                  {referralUrl}
-                </span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 group-hover:text-primary-blue transition-colors" />
-              </button>
-              <button
-                onClick={handleCopyReferralLink}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
-                  linkCopied
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                }`}
-              >
-                {linkCopied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5" /> Kopiert!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" /> Link kopieren
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleShareLinkedIn}
-              className="flex-1 bg-[#0A66C2] hover:bg-[#004182] text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+              className="bg-[#0A66C2] hover:bg-[#004182] text-white px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
             >
               <Linkedin className="w-4 h-4" />
-              Auf LinkedIn teilen
+              LinkedIn
+            </button>
+            <button
+              onClick={handleShareEmail}
+              className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+            >
+              <Mail className="w-4 h-4" />
+              E-Mail
             </button>
           </div>
         </div>
@@ -425,6 +472,19 @@ export default function ReferralProgramView() {
         payoutRequests={payoutRequests}
         onPayoutRequested={loadReferralData}
       />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="lg:col-span-2">
+          <ReferralAnalytics userId={user?.id || ''} />
+        </div>
+        <div>
+          <ConversionFunnel
+            clicks={totalClicks}
+            signups={stats.totalReferrals}
+            conversions={totalConversions}
+          />
+        </div>
+      </div>
 
       <ReferralChart referrals={referrals} />
 
@@ -572,83 +632,7 @@ export default function ReferralProgramView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b bg-gray-50">
-          <h3 className="text-lg font-semibold text-dark">
-            Ihre Empfehlungen
-          </h3>
-        </div>
-        <BaseTable
-          columns={[
-            {
-              key: "status",
-              header: "Status",
-              render: (referral: Referral) =>
-                referral.status === "completed" ? (
-                  <StatusBadge
-                    type="success"
-                    label="Abgeschlossen"
-                    icon={<Check className="w-3 h-3" />}
-                  />
-                ) : (
-                  <StatusBadge
-                    type="warning"
-                    label="Ausstehend"
-                    icon={<Clock className="w-3 h-3" />}
-                  />
-                ),
-            },
-            {
-              key: "date",
-              header: "Datum",
-              render: (referral: Referral) => (
-                <span className="text-sm text-gray-600">
-                  {new Date(referral.created_at).toLocaleDateString("de-DE")}
-                </span>
-              ),
-            },
-            {
-              key: "reward",
-              header: "Belohnung",
-              render: (referral: Referral) =>
-                referral.reward_earned ? (
-                  <span className="inline-flex items-center gap-1 text-primary-blue font-semibold text-sm">
-                    <Award className="w-4 h-4" /> Verdient
-                  </span>
-                ) : (
-                  <span className="text-gray-400 text-sm">Ausstehend</span>
-                ),
-            },
-            {
-              key: "months",
-              header: "Monate",
-              render: (referral: Referral) =>
-                referral.reward_earned ? (
-                  <span className="font-semibold text-dark text-sm">
-                    {referral.reward_months} Monate
-                  </span>
-                ) : (
-                  <span className="text-gray-400 text-sm">-</span>
-                ),
-            },
-            {
-              key: "cash",
-              header: "Guthaben",
-              render: (referral: Referral) =>
-                referral.status === "completed" ? (
-                  <span className="font-semibold text-emerald-600 text-sm">
-                    +{referral.cash_reward_eur || 10} EUR
-                  </span>
-                ) : (
-                  <span className="text-gray-400 text-sm">-</span>
-                ),
-            },
-          ]}
-          data={referrals}
-          loading={false}
-          emptyMessage="Noch keine Empfehlungen. Teilen Sie Ihren Empfehlungscode, um Ihre ersten Belohnungen zu verdienen."
-        />
-      </div>
+      <EnhancedReferredUsersTable userId={user?.id || ''} />
 
       {rewards.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
