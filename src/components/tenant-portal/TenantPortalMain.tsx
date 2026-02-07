@@ -4,16 +4,14 @@ import {
   FileText,
   MessageSquare,
   Gauge,
-  Mail,
   User,
   LogOut,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import TenantPortalDashboard from "./TenantPortalDashboard";
 import TenantPortalDocuments from "./TenantPortalDocuments";
-import TenantPortalTickets from "./TenantPortalTickets";
+import TenantPortalCommunication from "./TenantPortalCommunication";
 import TenantPortalMeters from "./TenantPortalMeters";
-import TenantPortalMessages from "./TenantPortalMessages";
 import TenantPortalProfile from "./TenantPortalProfile";
 
 interface TenantData {
@@ -34,9 +32,8 @@ interface TenantPortalMainProps {
 type TabType =
   | "dashboard"
   | "documents"
-  | "tickets"
+  | "communication"
   | "meters"
-  | "messages"
   | "profile";
 
 export default function TenantPortalMain({
@@ -73,9 +70,8 @@ export default function TenantPortalMain({
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "documents", label: "Dokumente", icon: FileText },
-    { id: "tickets", label: "Tickets", icon: MessageSquare },
-    { id: "meters", label: "Zählerstände", icon: Gauge },
-    { id: "messages", label: "Nachrichten", icon: Mail },
+    { id: "communication", label: "Kommunikation", icon: MessageSquare },
+    { id: "meters", label: "Zaehlerstaende", icon: Gauge },
     { id: "profile", label: "Profil", icon: User },
   ];
 
@@ -96,6 +92,14 @@ export default function TenantPortalMain({
       </div>
     );
   }
+
+  const handleNavigateToTab = (tab: string) => {
+    if (tab === "tickets" || tab === "messages") {
+      setActiveTab("communication");
+    } else {
+      setActiveTab(tab as TabType);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -145,7 +149,7 @@ export default function TenantPortalMain({
             {activeTab === "dashboard" && (
               <TenantPortalDashboard
                 tenantId={tenantId}
-                onNavigateToTab={(tab) => setActiveTab(tab as TabType)}
+                onNavigateToTab={handleNavigateToTab}
               />
             )}
             {activeTab === "documents" && (
@@ -154,8 +158,8 @@ export default function TenantPortalMain({
                 propertyId={tenantData.property_id}
               />
             )}
-            {activeTab === "tickets" && (
-              <TenantPortalTickets
+            {activeTab === "communication" && (
+              <TenantPortalCommunication
                 tenantId={tenantId}
                 tenantEmail={tenantData.email}
                 propertyId={tenantData.property_id}
@@ -167,12 +171,6 @@ export default function TenantPortalMain({
                 tenantId={tenantId}
                 propertyId={tenantData.property_id}
                 unitId={tenantData.unit_id}
-              />
-            )}
-            {activeTab === "messages" && (
-              <TenantPortalMessages
-                tenantId={tenantId}
-                tenantEmail={tenantData.email}
               />
             )}
             {activeTab === "profile" && (

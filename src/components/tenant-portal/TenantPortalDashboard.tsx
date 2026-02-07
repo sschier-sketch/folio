@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, FileText, Wrench, Gauge, MessageSquare } from "lucide-react";
+import { Home, FileText, Wrench, Gauge } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
 interface TenantData {
@@ -29,7 +29,6 @@ export default function TenantPortalDashboard({
   const [loading, setLoading] = useState(true);
   const [newDocumentsCount, setNewDocumentsCount] = useState(0);
   const [openTicketsCount, setOpenTicketsCount] = useState(0);
-  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
   useEffect(() => {
     loadTenantData();
@@ -303,10 +302,10 @@ export default function TenantPortalDashboard({
         </div>
       </div>
 
-      {(newDocumentsCount > 0 || openTicketsCount > 0 || unreadMessagesCount > 0) && (
+      {(newDocumentsCount > 0 || openTicketsCount > 0) && (
         <div className="bg-white rounded-lg p-6">
           <h2 className="text-lg font-semibold text-dark mb-4">Updates</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {newDocumentsCount > 0 && (
               <button
                 onClick={() => onNavigateToTab("documents")}
@@ -330,7 +329,7 @@ export default function TenantPortalDashboard({
 
             {openTicketsCount > 0 && (
               <button
-                onClick={() => onNavigateToTab("tickets")}
+                onClick={() => onNavigateToTab("communication")}
                 className="relative bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-6 text-left hover:shadow-md transition-all border-2 border-transparent hover:border-amber-600"
               >
                 <div className="flex items-center justify-between mb-3">
@@ -341,29 +340,9 @@ export default function TenantPortalDashboard({
                     {openTicketsCount}
                   </span>
                 </div>
-                <h3 className="font-bold text-dark text-lg mb-1">Ticket-Updates</h3>
+                <h3 className="font-bold text-dark text-lg mb-1">Offene Anfragen</h3>
                 <p className="text-sm text-gray-600">
                   Ihre Anfragen werden bearbeitet
-                </p>
-              </button>
-            )}
-
-            {unreadMessagesCount > 0 && (
-              <button
-                onClick={() => onNavigateToTab("messages")}
-                className="relative bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 text-left hover:shadow-md transition-all border-2 border-transparent hover:border-emerald-600"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-                    <MessageSquare className="w-6 h-6" style={{ color: '#1e1e24' }} />
-                  </div>
-                  <span className="bg-emerald-600 text-white text-sm font-bold px-3 py-1 rounded-full">
-                    {unreadMessagesCount}
-                  </span>
-                </div>
-                <h3 className="font-bold text-dark text-lg mb-1">Neue Nachrichten</h3>
-                <p className="text-sm text-gray-600">
-                  Sie haben ungelesene Nachrichten
                 </p>
               </button>
             )}
@@ -377,7 +356,7 @@ export default function TenantPortalDashboard({
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
-            onClick={() => onNavigateToTab("tickets")}
+            onClick={() => onNavigateToTab("communication")}
             className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-red-50 to-red-100 rounded-lg hover:bg-gradient-to-br hover:from-red-100 hover:to-red-200 transition-all"
           >
             <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
