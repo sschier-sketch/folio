@@ -96,17 +96,40 @@ export default function TenantDepositTab({
     if (!contract || !user) return;
 
     try {
+      const newAmount = parseFloat(editData.deposit_amount) || 0;
+      const newStatus = editData.deposit_type === "none" ? "complete" : editData.deposit_status;
+
       const { error } = await supabase
         .from("rental_contracts")
         .update({
           deposit_type: editData.deposit_type,
-          deposit_amount: parseFloat(editData.deposit_amount) || 0,
-          deposit_status: editData.deposit_type === "none" ? "complete" : editData.deposit_status,
+          deposit_amount: newAmount,
+          deposit: newAmount,
+          deposit_status: newStatus,
           deposit_due_date: editData.deposit_payment_date || null,
         })
         .eq("id", contract.id);
 
       if (error) throw error;
+
+      if (newStatus === "complete" && newAmount > 0 && history.length === 0) {
+        const { data: contractFull } = await supabase
+          .from("rental_contracts")
+          .select("contract_start")
+          .eq("id", contract.id)
+          .maybeSingle();
+
+        const txDate = contractFull?.contract_start || new Date().toISOString().split("T")[0];
+
+        await supabase.from("deposit_history").insert({
+          contract_id: contract.id,
+          user_id: user.id,
+          transaction_date: txDate,
+          amount: newAmount,
+          transaction_type: "payment",
+          notes: "Kaution bei Mietbeginn erhalten",
+        });
+      }
 
       setIsEditing(false);
       await loadData();

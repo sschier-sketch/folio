@@ -186,6 +186,9 @@ export default function RentalContractModal({
     try {
       const totalRent =
         Number(formData.base_rent) + Number(formData.additional_costs);
+      const depositAmount = Number(formData.deposit);
+      const hasDepositReceived = !!formData.deposit_received_date && depositAmount > 0;
+
       const contractData = {
         property_id: formData.property_id,
         unit_id: formData.unit_id || null,
@@ -193,10 +196,12 @@ export default function RentalContractModal({
         base_rent: Number(formData.base_rent),
         additional_costs: Number(formData.additional_costs),
         total_rent: totalRent,
-        deposit: Number(formData.deposit),
+        deposit: depositAmount,
+        deposit_amount: depositAmount,
         deposit_type: formData.deposit_type || null,
         deposit_account: formData.deposit_account || null,
         deposit_received_date: formData.deposit_received_date || null,
+        deposit_status: hasDepositReceived ? 'complete' : (depositAmount > 0 ? 'open' : 'complete'),
         contract_start: formData.contract_start,
         contract_end: formData.contract_end || null,
         contract_type: formData.contract_type,
@@ -255,6 +260,17 @@ export default function RentalContractModal({
         if (error) throw error;
         contractId = data.id;
       }
+      if (!contract && hasDepositReceived) {
+        await supabase.from("deposit_history").insert({
+          contract_id: contractId,
+          user_id: user.id,
+          transaction_date: formData.contract_start,
+          amount: depositAmount,
+          transaction_type: "payment",
+          notes: "Kaution bei Mietbeginn erhalten",
+        });
+      }
+
       for (const tenant of tenants) {
         const tenantData = {
           contract_id: contractId,
