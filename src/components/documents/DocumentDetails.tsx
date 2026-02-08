@@ -417,6 +417,12 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
       receipt: "Beleg",
       report: "Bericht",
       other: "Sonstiges",
+      rental_agreement: "Mietvertrag",
+      floor_plan: "Grundriss",
+      energy_certificate: "Energieausweis",
+      insurance: "Versicherung",
+      property_deed: "Grundbuchauszug",
+      blueprint: "Bauplan",
     };
     return labels[type] || type;
   };
