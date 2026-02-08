@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, ArrowLeft, User, UserPlus, Flag, Trash2, RotateCcw, FileSignature } from 'lucide-react';
+import { Send, ArrowLeft, User, UserPlus, Flag, Trash2, RotateCcw, FileSignature, Paperclip, Download, FileText, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import AssignSenderModal from './AssignSenderModal';
-import type { MailThread, MailMessage, TicketPriority, TicketCategory } from './types';
+import type { MailThread, MailMessage, MailAttachment, TicketPriority, TicketCategory } from './types';
 
 const priorityConfig: Record<TicketPriority, { color: string; bg: string; border: string; label: string }> = {
   low: { color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', label: 'Niedrig' },
@@ -47,6 +47,37 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getFileIcon(contentType: string) {
+  if (contentType.startsWith('image/')) return ImageIcon;
+  return FileText;
+}
+
+async function downloadAttachment(att: MailAttachment) {
+  const { data, error } = await supabase.storage
+    .from('mail-attachments')
+    .createSignedUrl(att.storage_path, 300);
+
+  if (error || !data?.signedUrl) {
+    console.error('Failed to create signed URL:', error);
+    return;
+  }
+
+  const link = document.createElement('a');
+  link.href = data.signedUrl;
+  link.download = att.filename;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent, onTrash, onRestore }: ThreadDetailProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<MailMessage[]>([]);
@@ -82,7 +113,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
     setLoading(true);
     const { data } = await supabase
       .from('mail_messages')
-      .select('*')
+      .select('*, mail_attachments(id, message_id, filename, content_type, file_size, storage_path)')
       .eq('thread_id', thread.id)
       .order('created_at', { ascending: true });
 
@@ -282,6 +313,43 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
                     : 'bg-white text-gray-800 border border-gray-200 rounded-bl-md shadow-sm'
                 }`}>
                   <p className="whitespace-pre-wrap break-words">{msg.body_text}</p>
+                  {msg.mail_attachments && msg.mail_attachments.length > 0 && (
+                    <div className={`mt-3 pt-3 space-y-2 ${isOutbound ? 'border-t border-blue-500/30' : 'border-t border-gray-100'}`}>
+                      <div className={`flex items-center gap-1.5 text-xs font-medium ${isOutbound ? 'text-blue-200' : 'text-gray-500'}`}>
+                        <Paperclip className="w-3 h-3" />
+                        {msg.mail_attachments.length === 1 ? '1 Anhang' : `${msg.mail_attachments.length} Anhaenge`}
+                      </div>
+                      {msg.mail_attachments.map((att) => {
+                        const Icon = getFileIcon(att.content_type);
+                        return (
+                          <button
+                            key={att.id}
+                            onClick={() => downloadAttachment(att)}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left ${
+                              isOutbound
+                                ? 'bg-blue-500/30 hover:bg-blue-500/50'
+                                : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                            }`}
+                          >
+                            <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${
+                              isOutbound ? 'bg-blue-400/30' : 'bg-blue-50'
+                            }`}>
+                              <Icon className={`w-4 h-4 ${isOutbound ? 'text-white' : 'text-blue-600'}`} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className={`text-xs font-medium truncate ${isOutbound ? 'text-white' : 'text-gray-800'}`}>
+                                {att.filename}
+                              </p>
+                              <p className={`text-[10px] ${isOutbound ? 'text-blue-200' : 'text-gray-400'}`}>
+                                {formatFileSize(att.file_size)}
+                              </p>
+                            </div>
+                            <Download className={`w-4 h-4 flex-shrink-0 ${isOutbound ? 'text-blue-200' : 'text-gray-400'}`} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

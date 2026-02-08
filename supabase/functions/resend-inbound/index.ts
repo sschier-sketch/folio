@@ -120,6 +120,17 @@ async function verifyWebhookSignature(
   });
 }
 
+interface ResendAttachment {
+  id: string;
+  filename: string;
+  size: number;
+  content_type: string;
+  content_disposition: string;
+  content_id: string | null;
+  download_url: string;
+  expires_at: string;
+}
+
 async function fetchEmailContent(
   emailId: string,
   apiKey: string
@@ -139,6 +150,52 @@ async function fetchEmailContent(
   }
 
   return await response.json();
+}
+
+async function fetchAttachmentsList(
+  emailId: string,
+  apiKey: string
+): Promise<ResendAttachment[]> {
+  try {
+    const response = await fetch(
+      `https://api.resend.com/emails/receiving/${emailId}/attachments`,
+      {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      }
+    );
+
+    if (!response.ok) {
+      console.error(
+        `[inbound] Failed to fetch attachments list: ${response.status}`
+      );
+      return [];
+    }
+
+    const result = await response.json();
+    return result.data || [];
+  } catch (err) {
+    console.error("[inbound] Error fetching attachments list:", err);
+    return [];
+  }
+}
+
+async function downloadAttachmentBuffer(
+  downloadUrl: string
+): Promise<{ buffer: ArrayBuffer; size: number } | null> {
+  try {
+    const response = await fetch(downloadUrl);
+    if (!response.ok) {
+      console.error(
+        `[inbound] Failed to download attachment: ${response.status}`
+      );
+      return null;
+    }
+    const buffer = await response.arrayBuffer();
+    return { buffer, size: buffer.byteLength };
+  } catch (err) {
+    console.error("[inbound] Error downloading attachment:", err);
+    return null;
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -484,25 +541,75 @@ Deno.serve(async (req: Request) => {
         threadId = newThread.id;
       }
 
-      const { error: msgErr } = await supabase.from("mail_messages").insert({
-        thread_id: threadId,
-        user_id: userId,
-        direction: "inbound",
-        sender_address: fromAddress,
-        sender_name: fromName,
-        recipient_address: toAddr,
-        recipient_name: "",
-        body_text: bodyText,
-        body_html: bodyHtml,
-        email_message_id: messageId,
-        in_reply_to: inReplyTo,
-        email_references: references.length > 0 ? references : null,
-        received_at: receivedAt,
-      });
+      const { data: insertedMsg, error: msgErr } = await supabase
+        .from("mail_messages")
+        .insert({
+          thread_id: threadId,
+          user_id: userId,
+          direction: "inbound",
+          sender_address: fromAddress,
+          sender_name: fromName,
+          recipient_address: toAddr,
+          recipient_name: "",
+          body_text: bodyText,
+          body_html: bodyHtml,
+          email_message_id: messageId,
+          in_reply_to: inReplyTo,
+          email_references: references.length > 0 ? references : null,
+          received_at: receivedAt,
+        })
+        .select("id")
+        .single();
 
-      if (msgErr) {
+      if (msgErr || !insertedMsg) {
         console.error("[inbound] Failed to insert message:", msgErr);
         continue;
+      }
+
+      const messageDbId = insertedMsg.id;
+
+      if (emailId && resendApiKey && webhookData.attachments && webhookData.attachments.length > 0) {
+        console.log(
+          `[inbound] Processing ${webhookData.attachments.length} attachment(s) for message=${messageDbId}`
+        );
+
+        const attachmentsList = await fetchAttachmentsList(emailId, resendApiKey);
+
+        for (const att of attachmentsList) {
+          try {
+            const downloaded = await downloadAttachmentBuffer(att.download_url);
+            if (!downloaded) continue;
+
+            const safeName = att.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+            const storagePath = `${userId}/${messageDbId}/${Date.now()}_${safeName}`;
+
+            const { error: uploadErr } = await supabase.storage
+              .from("mail-attachments")
+              .upload(storagePath, downloaded.buffer, {
+                contentType: att.content_type || "application/octet-stream",
+                upsert: false,
+              });
+
+            if (uploadErr) {
+              console.error(`[inbound] Failed to upload attachment ${att.filename}:`, uploadErr);
+              continue;
+            }
+
+            await supabase.from("mail_attachments").insert({
+              message_id: messageDbId,
+              user_id: userId,
+              filename: att.filename,
+              content_type: att.content_type || "application/octet-stream",
+              file_size: att.size || downloaded.size,
+              storage_path: storagePath,
+              resend_attachment_id: att.id,
+            });
+
+            console.log(`[inbound] Stored attachment: ${att.filename} (${att.size} bytes)`);
+          } catch (attErr) {
+            console.error(`[inbound] Error processing attachment ${att.filename}:`, attErr);
+          }
+        }
       }
 
       console.log(

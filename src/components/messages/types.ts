@@ -24,6 +24,15 @@ export interface MailThread {
   } | null;
 }
 
+export interface MailAttachment {
+  id: string;
+  message_id: string;
+  filename: string;
+  content_type: string;
+  file_size: number;
+  storage_path: string;
+}
+
 export interface MailMessage {
   id: string;
   thread_id: string;
@@ -37,6 +46,7 @@ export interface MailMessage {
   body_html: string | null;
   tenant_communication_id: string | null;
   created_at: string;
+  mail_attachments?: MailAttachment[];
 }
 
 export interface UserMailbox {
