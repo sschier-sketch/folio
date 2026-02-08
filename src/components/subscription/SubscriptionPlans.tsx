@@ -30,19 +30,24 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
     description: 'Sie nutzen derzeit den Basic-Tarif. Upgraden Sie auf Pro und erhalten Sie Zugriff auf alle Premium-Features für eine professionelle Immobilienverwaltung.',
     features: ['Unbegrenzte Objekte & Mieter', 'Erweiterte Finanzen', 'Dokumente & Vorlagen', 'Alle Pro-Features'],
   });
+  const [proPlanTexts, setProPlanTexts] = useState({
+    description: PLANS.pro.description,
+    features: PLANS.pro.features.map(f => f.text),
+  });
 
   useEffect(() => {
     async function loadProTexts() {
       const { data } = await supabase
         .from('pro_feature_texts')
         .select('feature_key, title, description, features')
-        .in('feature_key', ['billing_trial_active', 'billing_trial_expired', 'billing_upgrade_prompt'])
+        .in('feature_key', ['billing_trial_active', 'billing_trial_expired', 'billing_upgrade_prompt', 'billing_pro_plan'])
         .eq('is_active', true);
 
       if (data && data.length > 0) {
         const active = data.find(d => d.feature_key === 'billing_trial_active');
         const expired = data.find(d => d.feature_key === 'billing_trial_expired');
         const upgrade = data.find(d => d.feature_key === 'billing_upgrade_prompt');
+        const proPlan = data.find(d => d.feature_key === 'billing_pro_plan');
         setBillingTrialTexts(prev => ({
           activeTitle: active?.title || prev.activeTitle,
           activeDescription: active?.description || prev.activeDescription,
@@ -55,6 +60,12 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             title: upgrade.title || prev.title,
             description: upgrade.description || prev.description,
             features: upgrade.features?.length ? upgrade.features : prev.features,
+          }));
+        }
+        if (proPlan) {
+          setProPlanTexts(prev => ({
+            description: proPlan.description || prev.description,
+            features: proPlan.features?.length ? proPlan.features : prev.features,
           }));
         }
       }
@@ -323,26 +334,18 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                   ))}
                 </ul>
               </div>
-              <button
-                onClick={() => {
-                  document.getElementById('pro-plan-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-                className="px-8 py-3 bg-primary-blue text-white font-semibold rounded-full hover:shadow-lg transition-all"
-              >
-                Jetzt auf Pro upgraden
-              </button>
             </div>
           )}
         </>
       )}
 
-      <div className="mb-6">
-        <h3 className="text-xl font-bold text-gray-900">
-          {currentPlanId === 'basic' ? 'Upgraden Sie auf Pro' : 'Verfügbare Tarife'}
-        </h3>
-      </div>
+      {currentPlanId === 'pro' && (
+        <div className="mb-6">
+          <h3 className="text-xl font-bold text-gray-900">Verfügbare Tarife</h3>
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <div className={`mb-8 ${currentPlanId === 'pro' ? 'grid grid-cols-1 md:grid-cols-2 gap-8' : ''}`}>
         {currentPlanId === 'pro' && (
           <div className="bg-white rounded-lg border-2 border-gray-200 p-8 hover:shadow-lg transition-all relative">
             <div className="mb-6">
@@ -403,11 +406,11 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 {PLANS.pro.name}
               </h3>
-              <p className="text-gray-600">{PLANS.pro.description}</p>
+              <p className="text-gray-600">{proPlanTexts.description}</p>
             </div>
 
             <div className="mb-6">
-              <div className="flex items-center justify-center gap-2 bg-gray-100 rounded-lg p-1 mb-4">
+              <div className="flex items-center justify-center gap-2 bg-gray-100 rounded-lg p-1 mb-4 max-w-xs">
                 <button
                   onClick={() => setBillingInterval('month')}
                   className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
@@ -450,10 +453,10 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             </div>
 
             <ul className="space-y-3 mb-8">
-              {PLANS.pro.features.map((feature, index) => (
+              {proPlanTexts.features.map((feature, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{feature.text}</span>
+                  <Check className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -461,7 +464,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             <button
               onClick={() => handleUpgrade(billingInterval)}
               disabled={!!loading}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading === getStripePriceId('pro', billingInterval) ? (
                 <>

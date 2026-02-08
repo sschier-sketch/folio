@@ -165,6 +165,7 @@ export default function AdminProFeaturesView() {
     trial_banner: "Trial-Banner",
     dunning: "Mahnwesen",
     upgrade: "Upgrade-Prompt",
+    pro_plan: "Pro-Plan Karte",
     contract: "Vertrag & Dokumente",
     communication: "Kommunikation",
     handover: "Übergabe & Wechsel",
