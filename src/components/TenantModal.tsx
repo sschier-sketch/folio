@@ -92,6 +92,7 @@ export default function TenantModal({
     graduated_rent_new_amount: "",
     is_sublet: false,
     vat_applicable: false,
+    auto_create_rent_increase_tickets: false,
   });
 
   const [depositData, setDepositData] = useState({
@@ -151,6 +152,7 @@ export default function TenantModal({
             graduated_rent_new_amount: contract.graduated_rent_new_amount?.toString() || "",
             is_sublet: contract.is_sublet || false,
             vat_applicable: contract.vat_applicable || false,
+            auto_create_rent_increase_tickets: contract.auto_create_rent_increase_tickets || false,
           });
 
           setDepositData({
@@ -387,6 +389,7 @@ export default function TenantModal({
             graduated_rent_new_amount: rentData.graduated_rent_new_amount ? parseFloat(rentData.graduated_rent_new_amount) : null,
             is_sublet: rentData.is_sublet,
             vat_applicable: rentData.vat_applicable,
+            auto_create_rent_increase_tickets: rentData.rent_increase_type !== "none" ? rentData.auto_create_rent_increase_tickets : false,
             base_rent: monthlyRent,
             monthly_rent: monthlyRent,
             additional_costs: utilitiesAdvance,
@@ -511,6 +514,7 @@ export default function TenantModal({
                 graduated_rent_new_amount: rentData.graduated_rent_new_amount ? parseFloat(rentData.graduated_rent_new_amount) : null,
                 is_sublet: rentData.is_sublet,
                 vat_applicable: rentData.vat_applicable,
+                auto_create_rent_increase_tickets: rentData.rent_increase_type !== "none" ? rentData.auto_create_rent_increase_tickets : false,
                 base_rent: monthlyRent,
                 monthly_rent: monthlyRent,
                 additional_costs: utilitiesAdvance,
@@ -1263,6 +1267,27 @@ export default function TenantModal({
                 Die neue Kaltmiete, die ab dem angegebenen Datum gelten soll.
               </p>
             </div>
+          </div>
+        )}
+
+        {rentData.rent_increase_type !== "none" && (
+          <div className="mt-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rentData.auto_create_rent_increase_tickets}
+                onChange={(e) =>
+                  setRentData({ ...rentData, auto_create_rent_increase_tickets: e.target.checked })
+                }
+                className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Automatisches Erinnerungs-Ticket erstellen (3 Monate vor Erhöhung)
+              </span>
+            </label>
+            <p className="text-xs text-gray-400 mt-1 ml-6">
+              Es wird automatisch ein Ticket erstellt, um Sie an die bevorstehende Mieterhöhung zu erinnern
+            </p>
           </div>
         )}
       </div>
