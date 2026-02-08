@@ -143,9 +143,28 @@ Deno.serve(async (req) => {
 
       customerId = newCustomer.id;
 
+      await supabase
+        .from('billing_info')
+        .update({ stripe_customer_id: newCustomer.id, updated_at: new Date().toISOString() })
+        .eq('user_id', user.id);
+
       console.log(`Successfully set up new customer ${customerId} with subscription record`);
     } else {
       customerId = customer.customer_id;
+
+      const { data: existingBilling } = await supabase
+        .from('billing_info')
+        .select('stripe_customer_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existingBilling && !existingBilling.stripe_customer_id) {
+        await supabase
+          .from('billing_info')
+          .update({ stripe_customer_id: customerId, updated_at: new Date().toISOString() })
+          .eq('user_id', user.id);
+        console.log(`Backfilled stripe_customer_id in billing_info for user ${user.id}`);
+      }
 
       // Verify the customer exists in Stripe
       try {

@@ -213,8 +213,9 @@ async function syncCustomerFromStripe(customerId: string) {
 
 async function updateBillingInfo(customerId: string, plan: string, status: string) {
   try {
-    // Find user by stripe_customer_id
-    const { data: billingData, error: findError } = await supabase
+    let billingData: { user_id: string; subscription_plan: string | null; pro_activated_at: string | null } | null = null;
+
+    const { data: directMatch, error: findError } = await supabase
       .from('billing_info')
       .select('user_id, subscription_plan, pro_activated_at')
       .eq('stripe_customer_id', customerId)
@@ -223,6 +224,33 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
     if (findError) {
       console.error('Error finding billing info:', findError);
       return;
+    }
+
+    billingData = directMatch;
+
+    if (!billingData) {
+      const { data: stripeCustomer } = await supabase
+        .from('stripe_customers')
+        .select('user_id')
+        .eq('customer_id', customerId)
+        .maybeSingle();
+
+      if (stripeCustomer) {
+        const { data: billingByUser } = await supabase
+          .from('billing_info')
+          .select('user_id, subscription_plan, pro_activated_at')
+          .eq('user_id', stripeCustomer.user_id)
+          .maybeSingle();
+
+        if (billingByUser) {
+          billingData = billingByUser;
+          await supabase
+            .from('billing_info')
+            .update({ stripe_customer_id: customerId, updated_at: new Date().toISOString() })
+            .eq('user_id', stripeCustomer.user_id);
+          console.info(`Backfilled stripe_customer_id in billing_info for user ${stripeCustomer.user_id}`);
+        }
+      }
     }
 
     if (!billingData) {
