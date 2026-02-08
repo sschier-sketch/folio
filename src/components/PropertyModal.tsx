@@ -31,11 +31,12 @@ interface PropertyModalProps {
 
 interface Unit {
   unit_number: string;
-  floor: string;
+  location: string;
   size_sqm: string;
   rooms: string;
   unit_type: string;
   description: string;
+  mea: string;
   purchase_price?: string;
   current_value?: string;
   purchase_date?: string;
@@ -159,11 +160,12 @@ export default function PropertyModal({
   const handleAddUnit = () => {
     const newUnit: Unit = {
       unit_number: "",
-      floor: "",
+      location: "",
       size_sqm: "",
       rooms: "",
       unit_type: "apartment",
       description: "",
+      mea: "",
     };
 
     if (formData.ownership_type === "units_only") {
@@ -188,7 +190,7 @@ export default function PropertyModal({
 
   const handleUnitChange = (index: number, field: keyof Unit, value: string) => {
     const newUnits = [...units];
-    newUnits[index][field] = value;
+    (newUnits[index] as any)[field] = value;
     setUnits(newUnits);
   };
 
@@ -283,12 +285,14 @@ export default function PropertyModal({
               property_id: propertyId,
               user_id: user.id,
               unit_number: unit.unit_number,
-              floor: unit.floor ? parseInt(unit.floor) : null,
+              floor: null,
+              location: unit.location || null,
               area_sqm: unit.size_sqm ? parseNumberInput(unit.size_sqm) : null,
               rooms: unit.rooms ? parseInt(unit.rooms) : null,
               unit_type: unit.unit_type,
               status: "vacant",
               description: unit.description || '',
+              mea: unit.mea || null,
             };
 
             if (formData.ownership_type === 'units_only') {
@@ -843,20 +847,20 @@ export default function PropertyModal({
                             value={unit.unit_number}
                             onChange={(e) => handleUnitChange(index, 'unit_number', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
-                            placeholder="z.B. 1.OG links"
+                            placeholder="z.B. WE01"
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-gray-500 mb-1">
-                            Stockwerk
+                            Etage / Lage
                           </label>
                           <input
                             type="text"
-                            value={unit.floor}
-                            onChange={(e) => handleUnitChange(index, 'floor', e.target.value)}
+                            value={unit.location}
+                            onChange={(e) => handleUnitChange(index, 'location', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
-                            placeholder="z.B. 1. OG"
+                            placeholder="z.B. 2. OG rechts, EG links"
                           />
                         </div>
                         <div>
@@ -898,6 +902,18 @@ export default function PropertyModal({
                             <option value="storage">Lager</option>
                             <option value="commercial">Gewerbe</option>
                           </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Miteigentumsanteil (MEA)
+                          </label>
+                          <input
+                            type="text"
+                            value={unit.mea}
+                            onChange={(e) => handleUnitChange(index, 'mea', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                            placeholder="z.B. 50/1000"
+                          />
                         </div>
                         <div className="col-span-2">
                           <label className="block text-xs font-medium text-gray-500 mb-1">
@@ -952,6 +968,9 @@ export default function PropertyModal({
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                               />
                             </div>
+                            <div className="col-span-2 pt-3 border-t border-gray-300 mt-1">
+                              <h5 className="text-xs font-semibold text-gray-700 mb-2">Kaufnebenkosten</h5>
+                            </div>
                             <div>
                               <label className="block text-xs font-medium text-gray-500 mb-1">
                                 Maklerkosten (€)
@@ -978,6 +997,18 @@ export default function PropertyModal({
                             </div>
                             <div>
                               <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Anwaltskosten (€)
+                              </label>
+                              <input
+                                type="text"
+                                value={unit.lawyer_costs || ""}
+                                onChange={(e) => handleUnitChange(index, 'lawyer_costs', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                                placeholder="z.B. 1500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
                                 Grunderwerbsteuer (€)
                               </label>
                               <input
@@ -986,6 +1017,30 @@ export default function PropertyModal({
                                 onChange={(e) => handleUnitChange(index, 'real_estate_transfer_tax', e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                                 placeholder="z.B. 15000"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Eintragungskosten (€)
+                              </label>
+                              <input
+                                type="text"
+                                value={unit.registration_costs || ""}
+                                onChange={(e) => handleUnitChange(index, 'registration_costs', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                                placeholder="z.B. 500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Gutachterkosten (€)
+                              </label>
+                              <input
+                                type="text"
+                                value={unit.expert_costs || ""}
+                                onChange={(e) => handleUnitChange(index, 'expert_costs', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                                placeholder="z.B. 800"
                               />
                             </div>
                           </>

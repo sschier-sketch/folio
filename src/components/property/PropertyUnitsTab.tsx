@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Home, X, FileText } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
+import { parseNumberInput } from "../../lib/utils";
 import TenantModal from "../TenantModal";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 
@@ -22,6 +23,16 @@ interface PropertyUnit {
   notes: string;
   mea?: string | null;
   location?: string | null;
+  description?: string | null;
+  purchase_price?: number | null;
+  current_value?: number | null;
+  purchase_date?: string | null;
+  broker_costs?: number | null;
+  notary_costs?: number | null;
+  lawyer_costs?: number | null;
+  real_estate_transfer_tax?: number | null;
+  registration_costs?: number | null;
+  expert_costs?: number | null;
   tenant?: {
     id: string;
     first_name: string;
@@ -44,16 +55,26 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
   const [showTenantModal, setShowTenantModal] = useState(false);
   const [selectedUnitForTenant, setSelectedUnitForTenant] = useState<PropertyUnit | null>(null);
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
+  const [ownershipType, setOwnershipType] = useState<string>("full_property");
   const [formData, setFormData] = useState({
     unit_number: "",
     unit_type: "apartment",
-    floor: "",
+    location: "",
     area_sqm: "",
     rooms: "",
     status: "vacant",
-    notes: "",
     mea: "",
-    location: "",
+    description: "",
+    notes: "",
+    purchase_price: "",
+    current_value: "",
+    purchase_date: "",
+    broker_costs: "",
+    notary_costs: "",
+    lawyer_costs: "",
+    real_estate_transfer_tax: "",
+    registration_costs: "",
+    expert_costs: "",
   });
 
   useEffect(() => {
@@ -67,13 +88,14 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     try {
       const { data, error } = await supabase
         .from("properties")
-        .select("id, name")
+        .select("id, name, ownership_type")
         .eq("id", propertyId)
         .single();
 
       if (error) throw error;
       if (data) {
         setProperties([data]);
+        setOwnershipType(data.ownership_type || "full_property");
       }
     } catch (error) {
       console.error("Error loading property:", error);
@@ -155,19 +177,32 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     if (!user) return;
 
     try {
-      const unitData = {
+      const unitData: any = {
         property_id: propertyId,
         user_id: user.id,
         unit_number: formData.unit_number,
         unit_type: formData.unit_type,
-        floor: formData.floor ? parseInt(formData.floor) : null,
+        floor: null,
         area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
         rooms: formData.rooms ? parseInt(formData.rooms) : null,
         status: formData.status,
         notes: formData.notes,
         mea: formData.mea || null,
         location: formData.location || null,
+        description: formData.description || null,
       };
+
+      if (ownershipType === "units_only") {
+        unitData.purchase_price = formData.purchase_price ? parseNumberInput(formData.purchase_price) : 0;
+        unitData.current_value = formData.current_value ? parseNumberInput(formData.current_value) : 0;
+        unitData.purchase_date = formData.purchase_date && formData.purchase_date.trim() !== "" ? formData.purchase_date : null;
+        unitData.broker_costs = formData.broker_costs ? parseNumberInput(formData.broker_costs) : 0;
+        unitData.notary_costs = formData.notary_costs ? parseNumberInput(formData.notary_costs) : 0;
+        unitData.lawyer_costs = formData.lawyer_costs ? parseNumberInput(formData.lawyer_costs) : 0;
+        unitData.real_estate_transfer_tax = formData.real_estate_transfer_tax ? parseNumberInput(formData.real_estate_transfer_tax) : 0;
+        unitData.registration_costs = formData.registration_costs ? parseNumberInput(formData.registration_costs) : 0;
+        unitData.expert_costs = formData.expert_costs ? parseNumberInput(formData.expert_costs) : 0;
+      }
 
       if (editingUnit) {
         const { error } = await supabase
@@ -241,13 +276,22 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     setFormData({
       unit_number: unit.unit_number,
       unit_type: unit.unit_type,
-      floor: unit.floor ? unit.floor.toString() : "",
+      location: unit.location || (unit.floor ? `${unit.floor}. OG` : ""),
       area_sqm: unit.area_sqm ? unit.area_sqm.toString() : "",
       rooms: unit.rooms ? unit.rooms.toString() : "",
       status: unit.status,
-      notes: unit.notes || "",
       mea: unit.mea || "",
-      location: unit.location || "",
+      description: unit.description || "",
+      notes: unit.notes || "",
+      purchase_price: unit.purchase_price ? String(unit.purchase_price) : "",
+      current_value: unit.current_value ? String(unit.current_value) : "",
+      purchase_date: unit.purchase_date || "",
+      broker_costs: unit.broker_costs ? String(unit.broker_costs) : "",
+      notary_costs: unit.notary_costs ? String(unit.notary_costs) : "",
+      lawyer_costs: unit.lawyer_costs ? String(unit.lawyer_costs) : "",
+      real_estate_transfer_tax: unit.real_estate_transfer_tax ? String(unit.real_estate_transfer_tax) : "",
+      registration_costs: unit.registration_costs ? String(unit.registration_costs) : "",
+      expert_costs: unit.expert_costs ? String(unit.expert_costs) : "",
     });
     setShowModal(true);
   }
@@ -256,13 +300,22 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     setFormData({
       unit_number: "",
       unit_type: "apartment",
-      floor: "",
+      location: "",
       area_sqm: "",
       rooms: "",
       status: "vacant",
-      notes: "",
       mea: "",
-      location: "",
+      description: "",
+      notes: "",
+      purchase_price: "",
+      current_value: "",
+      purchase_date: "",
+      broker_costs: "",
+      notary_costs: "",
+      lawyer_costs: "",
+      real_estate_transfer_tax: "",
+      registration_costs: "",
+      expert_costs: "",
     });
   }
 
@@ -295,6 +348,12 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       self_occupied: "bg-purple-100 text-purple-700",
     };
     return colors[status] || "bg-gray-100 text-gray-700";
+  };
+
+  const getLocationDisplay = (unit: PropertyUnit) => {
+    if (unit.location) return unit.location;
+    if (unit.floor !== null) return `${unit.floor}. OG`;
+    return null;
   };
 
   if (loading) {
@@ -353,7 +412,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                   </th>
                   {isPremium && (
                     <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                      Etage
+                      Etage / Lage
                     </th>
                   )}
                   <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
@@ -394,7 +453,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                     </td>
                     {isPremium && (
                       <td className="py-4 px-6 text-sm text-gray-700">
-                        {unit.floor !== null ? `${unit.floor}. OG` : <span className="text-gray-400">-</span>}
+                        {getLocationDisplay(unit) || <span className="text-gray-400">-</span>}
                       </td>
                     )}
                     <td className="py-4 px-6 text-sm text-gray-700">
@@ -533,15 +592,16 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Etage
+                    Etage / Lage
                   </label>
                   <input
-                    type="number"
-                    value={formData.floor}
+                    type="text"
+                    value={formData.location}
                     onChange={(e) =>
-                      setFormData({ ...formData, floor: e.target.value })
+                      setFormData({ ...formData, location: e.target.value })
                     }
                     className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    placeholder="z.B. 2. OG rechts, EG links"
                   />
                 </div>
 
@@ -609,18 +669,154 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Lage
+                    Beschreibung
                   </label>
                   <input
                     type="text"
-                    value={formData.location}
+                    value={formData.description}
                     onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
+                      setFormData({ ...formData, description: e.target.value })
                     }
                     className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="z.B. Erdgeschoss links, 2. OG rechts"
+                    placeholder="Zusätzliche Informationen..."
                   />
                 </div>
+
+                {ownershipType === "units_only" && (
+                  <>
+                    <div className="col-span-2 pt-3 border-t border-gray-200 mt-2">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-1">Kaufdaten</h3>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Kaufpreis (€)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.purchase_price}
+                        onChange={(e) =>
+                          setFormData({ ...formData, purchase_price: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        placeholder="z.B. 250000 oder 250.000,50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Aktueller Wert (€)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.current_value}
+                        onChange={(e) =>
+                          setFormData({ ...formData, current_value: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        placeholder="z.B. 280000 oder 280.000,00"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Kaufdatum
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.purchase_date}
+                        onChange={(e) =>
+                          setFormData({ ...formData, purchase_date: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                    <div className="col-span-2 pt-3 border-t border-gray-200 mt-2">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-1">Kaufnebenkosten</h3>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Maklerkosten (€)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.broker_costs}
+                        onChange={(e) =>
+                          setFormData({ ...formData, broker_costs: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        placeholder="z.B. 7500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Notarkosten (€)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.notary_costs}
+                        onChange={(e) =>
+                          setFormData({ ...formData, notary_costs: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        placeholder="z.B. 3000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Anwaltskosten (€)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.lawyer_costs}
+                        onChange={(e) =>
+                          setFormData({ ...formData, lawyer_costs: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        placeholder="z.B. 1500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Grunderwerbsteuer (€)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.real_estate_transfer_tax}
+                        onChange={(e) =>
+                          setFormData({ ...formData, real_estate_transfer_tax: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        placeholder="z.B. 15000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Eintragungskosten (€)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.registration_costs}
+                        onChange={(e) =>
+                          setFormData({ ...formData, registration_costs: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        placeholder="z.B. 500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Gutachterkosten (€)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.expert_costs}
+                        onChange={(e) =>
+                          setFormData({ ...formData, expert_costs: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        placeholder="z.B. 800"
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div className="col-span-2">
                   <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-3">
