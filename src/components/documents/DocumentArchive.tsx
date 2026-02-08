@@ -135,19 +135,20 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
 
   return (
     <div className="space-y-6">
-      <div style={{ backgroundColor: "#eff4fe" }} className="rounded-lg p-4">
+      <div className="bg-white rounded-lg p-6">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 border border-[#DDE7FF]">
-            <Archive className="w-5 h-5 text-blue-600" />
+          <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center flex-shrink-0 border border-[#DDE7FF]">
+            <Archive className="w-5 h-5 text-[#1e1e24]" />
           </div>
           <div className="flex-1">
-            <h3 className="font-medium text-blue-900 mb-1">Archivierte Dokumente</h3>
-            <p className="text-sm text-blue-700">
+            <div className="text-sm text-gray-400 mb-1">Archiv</div>
+            <div className="font-semibold text-dark mb-1">Archivierte Dokumente</div>
+            <p className="text-sm text-gray-500">
               Archivierte Dokumente sind schreibgeschützt und werden in der normalen Dokumentenliste
               nicht angezeigt. Sie können diese jederzeit wiederherstellen oder endgültig löschen.
             </p>
             {!isPro && (
-              <p className="text-sm text-blue-600 mt-2 font-medium">
+              <p className="text-sm text-gray-500 mt-2 font-medium">
                 Mit Pro können Sie Dokumente wiederherstellen und endgültig löschen.
               </p>
             )}

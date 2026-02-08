@@ -502,9 +502,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                   Zuordnung
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                    PRO
-                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EEF4FF] text-[#1e1e24] border border-[#DDE7FF]">PRO</span>
                 </label>
                 <div className="relative">
                   <select
@@ -525,9 +523,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                   Zuordnung (Optional)
-                  <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Lock className="w-3 h-3 text-white" />
-                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EEF4FF] text-[#1e1e24] border border-[#DDE7FF]">PRO</span>
                 </label>
                 <select
                   value={associationType}
@@ -657,9 +653,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex items-center gap-2">
                     Im Mieterportal zur Verfügung stellen
-                    <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Lock className="w-3 h-3 text-white" />
-                    </div>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EEF4FF] text-[#1e1e24] border border-[#DDE7FF]">PRO</span>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     {associationType === 'tenant' && associationId
