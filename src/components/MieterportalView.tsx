@@ -144,7 +144,7 @@ export default function MieterportalView() {
 
       if (error) throw error;
 
-      const impersonationUrl = `${window.location.origin}/tenant-portal/${user.id}?token=${token}`;
+      const impersonationUrl = `${window.location.origin}/tenant-portal?token=${token}`;
       window.open(impersonationUrl, "_blank");
     } catch (error) {
       console.error("Error creating impersonation token:", error);
@@ -306,12 +306,12 @@ export default function MieterportalView() {
             </p>
             <div className="flex items-center gap-2 mb-3">
               <code className="text-sm bg-white px-3 py-2 rounded border border-amber-300 flex-1">
-                {window.location.origin}/tenant-portal/{user?.id}
+                {window.location.origin}/tenant-portal
               </code>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    `${window.location.origin}/tenant-portal/${user?.id}`
+                    `${window.location.origin}/tenant-portal`
                   );
                   alert("Link kopiert!");
                 }}

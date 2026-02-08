@@ -122,11 +122,11 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const loadStats = async () => {
     if (!user) return;
     try {
-      const [propertiesRes, tenantsRes, contractsRes, loansRes, paymentsRes] =
+      const [propertiesRes, tenantsRes, contractsRes, loansRes, paymentsRes, unitsValueRes] =
         await Promise.all([
           supabase
             .from("properties")
-            .select("current_value")
+            .select("id, current_value, ownership_type")
             .eq("user_id", user.id),
           supabase
             .from("tenants")
@@ -147,17 +147,35 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             .select("amount, paid, due_date")
             .eq("user_id", user.id)
             .eq("paid", false),
+          supabase
+            .from("property_units")
+            .select("property_id, current_value")
+            .eq("user_id", user.id),
         ]);
       const propertiesCount = propertiesRes.data?.length || 0;
       const tenantsCount = tenantsRes.data?.length || 0;
       const totalMonthlyRent =
         contractsRes.data?.reduce((sum, c) => sum + Number(c.base_rent), 0) ||
         0;
+      const unitsByProperty = new Map<string, number>();
+      if (unitsValueRes.data) {
+        for (const unit of unitsValueRes.data) {
+          const prev = unitsByProperty.get(unit.property_id) || 0;
+          unitsByProperty.set(unit.property_id, prev + (Number(unit.current_value) || 0));
+        }
+      }
+
       const totalPropertyValue =
-        propertiesRes.data?.reduce(
-          (sum, p) => sum + Number(p.current_value),
-          0,
-        ) || 0;
+        propertiesRes.data?.reduce((sum, p) => {
+          const unitTotal = unitsByProperty.get(p.id) || 0;
+          if (p.ownership_type === 'units_only' && unitTotal > 0) {
+            return sum + unitTotal;
+          }
+          if (unitTotal > 0 && !(Number(p.current_value) > 0)) {
+            return sum + unitTotal;
+          }
+          return sum + (Number(p.current_value) || 0);
+        }, 0) || 0;
 
       // Calculate property value trend
       const { data: historyData } = await supabase

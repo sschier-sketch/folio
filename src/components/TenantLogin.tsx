@@ -7,7 +7,7 @@ import {
   verifyPassword,
 } from "../lib/passwordUtils";
 interface TenantLoginProps {
-  landlordId: string;
+  landlordId?: string;
   onLoginSuccess: (tenantId: string, tenantEmail: string) => void;
 }
 export default function TenantLogin({
@@ -96,10 +96,14 @@ export default function TenantLogin({
     setError("");
     setLoading(true);
     try {
-      const { data: allTenants, error: allFetchError } = await supabase
+      let tenantsQuery = supabase
         .from("tenants")
         .select("*")
         .eq("email", email.toLowerCase().trim());
+      if (landlordId) {
+        tenantsQuery = tenantsQuery.eq("user_id", landlordId);
+      }
+      const { data: allTenants, error: allFetchError } = await tenantsQuery;
       if (allFetchError) throw allFetchError;
       if (!allTenants || allTenants.length === 0) {
         setError(
@@ -108,15 +112,7 @@ export default function TenantLogin({
         setLoading(false);
         return;
       }
-      const tenant = allTenants.find((t) => t.user_id === landlordId);
-      if (!tenant) {
-        setError(
-          "Diese E-Mail-Adresse ist für einen anderen Vermieter registriert. Bitte verwenden Sie den korrekten Portal-Link, den Sie von Ihrem Vermieter erhalten haben.",
-        );
-        setLoading(false);
-        return;
-      }
-      const tenants = tenant;
+      const tenants = allTenants[0];
       if (!tenants.password_hash || !tenants.password_salt) {
         setMode("setup");
         setLoading(false);
@@ -174,13 +170,16 @@ export default function TenantLogin({
       return;
     }
     try {
-      const { data: tenant, error: fetchError } = await supabase
+      let setupQuery = supabase
         .from("tenants")
         .select("*")
-        .eq("user_id", landlordId)
-        .eq("email", email.toLowerCase().trim())
-        .maybeSingle();
+        .eq("email", email.toLowerCase().trim());
+      if (landlordId) {
+        setupQuery = setupQuery.eq("user_id", landlordId);
+      }
+      const { data: tenantResults, error: fetchError } = await setupQuery;
       if (fetchError) throw fetchError;
+      const tenant = tenantResults?.[0] || null;
       if (!tenant) {
         setError("Kein Mieter mit dieser E-Mail-Adresse gefunden.");
         setLoading(false);
@@ -234,13 +233,16 @@ export default function TenantLogin({
       return;
     }
     try {
-      const { data: tenant, error: fetchError } = await supabase
+      let resetQuery = supabase
         .from("tenants")
         .select("*")
-        .eq("user_id", landlordId)
-        .eq("email", email.toLowerCase().trim())
-        .maybeSingle();
+        .eq("email", email.toLowerCase().trim());
+      if (landlordId) {
+        resetQuery = resetQuery.eq("user_id", landlordId);
+      }
+      const { data: resetResults, error: fetchError } = await resetQuery;
       if (fetchError) throw fetchError;
+      const tenant = resetResults?.[0] || null;
       if (!tenant) {
         setError("Kein Mieter mit dieser E-Mail-Adresse gefunden.");
         setLoading(false);

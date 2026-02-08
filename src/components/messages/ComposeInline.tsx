@@ -152,42 +152,16 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
     setShowTemplates(false);
   }
 
-  async function uploadAttachment(): Promise<{ docId: string; filePath: string } | null> {
+  async function uploadAttachment(): Promise<{ filePath: string } | null> {
     if (!attachedFile || !user) return null;
     const sanitized = sanitizeFileName(attachedFile.name);
     const fileName = `${Date.now()}_${sanitized}`;
-    const filePath = `${user.id}/${fileName}`;
+    const filePath = `${user.id}/mail-attachments/${fileName}`;
     const { error: uploadError } = await supabase.storage
       .from('documents')
       .upload(filePath, attachedFile, { cacheControl: '3600', upsert: false });
     if (uploadError) throw uploadError;
-
-    const { data: doc, error: docError } = await supabase
-      .from('documents')
-      .insert([{
-        user_id: user.id,
-        file_name: attachedFile.name,
-        file_path: filePath,
-        file_size: attachedFile.size,
-        file_type: attachedFile.type,
-        document_type: 'other',
-        category: 'communication',
-        description: `Anhang zu: ${subject.trim()}`,
-        shared_with_tenant: publishToPortal,
-      }])
-      .select()
-      .single();
-    if (docError) throw docError;
-
-    if (doc && selectedTenant) {
-      await supabase.from('document_associations').insert([{
-        document_id: doc.id,
-        association_type: 'tenant',
-        association_id: selectedTenant.id,
-        created_by: user.id,
-      }]);
-    }
-    return { docId: doc.id, filePath };
+    return { filePath };
   }
 
   function getMessageBody() {
@@ -225,7 +199,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
     const tenantId = recipientType === 'tenant' ? selectedTenant?.id : undefined;
 
     try {
-      let attachment: { docId: string; filePath: string } | null = null;
+      let attachment: { filePath: string } | null = null;
       if (attachedFile) attachment = await uploadAttachment();
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;

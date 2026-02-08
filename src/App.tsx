@@ -89,6 +89,7 @@ function App() {
         <Route path="/features" element={<Features />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/tenant-portal" element={<TenantPortalPage />} />
         <Route path="/tenant-portal/:userId" element={<TenantPortalPage />} />
         <Route path="/account-banned" element={<AccountBanned />} />
         <Route path="/magazin" element={<Magazine />} />

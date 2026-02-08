@@ -143,12 +143,12 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
             if (rentalContract) {
               const { data: payments } = await supabase
                 .from("rent_payments")
-                .select("amount_due, amount_paid")
+                .select("amount, paid_amount, payment_status")
                 .eq("contract_id", rentalContract.id)
-                .eq("status", "outstanding");
+                .in("payment_status", ["unpaid", "partial"]);
 
               if (payments && payments.length > 0) {
-                outstandingRent = payments.reduce((sum, p) => sum + (p.amount_due - (p.amount_paid || 0)), 0);
+                outstandingRent = payments.reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
               }
             }
           }

@@ -215,11 +215,17 @@ export default function CashflowView() {
 
         const monthLoanPayments = loans
           .filter((l) => {
-            if (!l.start_date) return false;
-            const loanStart = new Date(l.start_date);
-            const loanEnd = l.end_date ? new Date(l.end_date) : new Date(2099, 11, 31);
+            if (l.loan_status && l.loan_status !== 'active') return false;
             const currentMonthDate = new Date(year, month, 1);
-            return currentMonthDate >= loanStart && currentMonthDate <= loanEnd && l.loan_status === 'active';
+            if (l.start_date) {
+              const loanStart = new Date(l.start_date);
+              if (currentMonthDate < loanStart) return false;
+            }
+            if (l.end_date) {
+              const loanEnd = new Date(l.end_date);
+              if (currentMonthDate > loanEnd) return false;
+            }
+            return true;
           })
           .reduce((sum, l) => sum + parseFloat(l.monthly_payment?.toString() || '0'), 0);
 

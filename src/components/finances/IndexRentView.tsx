@@ -125,9 +125,8 @@ export default function IndexRentView() {
           .from("rental_contracts")
           .select("id", { count: "exact", head: true })
           .eq("user_id", user?.id)
-          .eq("rent_type", "index_rent")
-          .is("contract_end", null)
-          .or(`contract_end.gte.${new Date().toISOString().split('T')[0]}`);
+          .eq("rent_increase_type", "index")
+          .or(`contract_end.is.null,contract_end.gte.${new Date().toISOString().split('T')[0]}`);
 
         if (contractsError) throw contractsError;
 
