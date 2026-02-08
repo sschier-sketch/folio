@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Mail, RefreshCw, LayoutDashboard, Inbox, Trash2, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubscription } from '../../hooks/useSubscription';
+import { PremiumUpgradePrompt } from '../PremiumUpgradePrompt';
 import FolderList from './FolderList';
 import type { SidebarView } from './FolderList';
 import ThreadList from './ThreadList';
@@ -28,6 +30,7 @@ interface MailTemplate {
 
 export default function MessagesView() {
   const { user } = useAuth();
+  const { isPro } = useSubscription();
   const [mailbox, setMailbox] = useState<UserMailbox | null>(null);
   const [threads, setThreads] = useState<MailThread[]>([]);
   const [activeTab, setActiveTab] = useState<MessagesTab>('overview');
@@ -287,6 +290,17 @@ export default function MessagesView() {
           )}
         </div>
       </>
+    );
+  }
+
+  if (!isPro) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Nachrichten</h1>
+        </div>
+        <PremiumUpgradePrompt featureKey="messages_overview" />
+      </div>
     );
   }
 

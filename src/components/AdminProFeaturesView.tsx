@@ -158,6 +158,7 @@ export default function AdminProFeaturesView() {
     finances: "Finanzen",
     property: "Immobilie",
     documents: "Dokumente",
+    messages: "Nachrichten",
   };
 
   const tabLabels: Record<string, string> = {

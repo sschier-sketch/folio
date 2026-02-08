@@ -408,7 +408,7 @@ export default function Dashboard() {
             <nav className="bg-white rounded p-2">
               {" "}
               {navigation.map((item) => {
-                const isLocked = item.id === "mieterportal" && !isPremium;
+                const isLocked = (item.id === "mieterportal" || item.id === "messages") && !isPremium;
                 return (
                   <button
                     key={item.id}
@@ -434,12 +434,12 @@ export default function Dashboard() {
                           Demnächst
                         </span>
                       )}
-                      {item.id === "messages" && unreadMailCount > 0 && (
+                      {item.id === "messages" && isPremium && unreadMailCount > 0 && (
                         <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-blue-600 text-white">
                           {unreadMailCount > 99 ? '99+' : unreadMailCount}
                         </span>
                       )}
-                      {item.id === "mieterportal" && (
+                      {(item.id === "mieterportal" || item.id === "messages") && (
                         <Badge variant="pro" size="sm">Pro</Badge>
                       )}
                     </div>{" "}
@@ -512,7 +512,7 @@ export default function Dashboard() {
             <nav className="bg-white rounded p-2">
               {" "}
               {navigation.map((item) => {
-                const isLocked = item.id === "mieterportal" && !isPremium;
+                const isLocked = (item.id === "mieterportal" || item.id === "messages") && !isPremium;
                 return (
                   <button
                     key={item.id}
@@ -537,12 +537,12 @@ export default function Dashboard() {
                           Demnächst
                         </span>
                       )}
-                      {item.id === "messages" && unreadMailCount > 0 && (
+                      {item.id === "messages" && isPremium && unreadMailCount > 0 && (
                         <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-blue-600 text-white">
                           {unreadMailCount > 99 ? '99+' : unreadMailCount}
                         </span>
                       )}
-                      {item.id === "mieterportal" && (
+                      {(item.id === "mieterportal" || item.id === "messages") && (
                         <Badge variant="pro" size="sm">Pro</Badge>
                       )}
                     </div>{" "}
