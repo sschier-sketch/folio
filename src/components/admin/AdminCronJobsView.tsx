@@ -72,6 +72,16 @@ const KNOWN_JOBS: Record<string, JobMeta> = {
       "Sendet automatische E-Mail-Erinnerungen fuer Darlehensereignisse (Zinsbindungsende, Laufzeitende, Sondertilgungen).",
     type: "edge_function",
   },
+  "create-rent-increase-reminders": {
+    description:
+      "Erstellt automatisch Erinnerungs-Tickets fuer anstehende Mieterhoehungen basierend auf Vertragskonditionen.",
+    type: "edge_function",
+  },
+  "run-index-rent-calculations": {
+    description:
+      "Fuehrt automatische Indexmieten-Berechnungen durch und aktualisiert Mietpreise basierend auf dem VPI.",
+    type: "edge_function",
+  },
 };
 
 const EXPECTED_EDGE_JOBS = [
@@ -79,6 +89,8 @@ const EXPECTED_EDGE_JOBS = [
   "cron-trial-ended",
   "process-email-queue",
   "process-loan-reminders",
+  "create-rent-increase-reminders",
+  "run-index-rent-calculations",
 ];
 
 function parseCronSchedule(schedule: string): string {

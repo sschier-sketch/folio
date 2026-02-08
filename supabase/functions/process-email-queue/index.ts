@@ -12,6 +12,11 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  let cronRunId: string | null = null;
+
   try {
     const cronSecret = req.headers.get("x-cron-secret");
     const expectedSecret = Deno.env.get("CRON_SECRET");
@@ -23,9 +28,13 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data: cronRun } = await supabase
+      .from("cron_runs")
+      .insert({ job_name: "process-email-queue", status: "running" })
+      .select("id")
+      .single();
+
+    cronRunId = cronRun?.id || null;
 
     const { data: queuedEmails, error: fetchError } = await supabase
       .from("email_logs")
@@ -35,17 +44,26 @@ Deno.serve(async (req: Request) => {
       .limit(50);
 
     if (fetchError) {
-      console.error("Error fetching queued emails:", fetchError);
-      throw new Error("Failed to fetch queued emails");
+      throw new Error(`Failed to fetch queued emails: ${fetchError.message}`);
     }
 
     if (!queuedEmails || queuedEmails.length === 0) {
+      if (cronRunId) {
+        await supabase
+          .from("cron_runs")
+          .update({
+            status: "completed",
+            finished_at: new Date().toISOString(),
+            processed_count: 0,
+            sent_count: 0,
+            failed_count: 0,
+            skipped_count: 0,
+          })
+          .eq("id", cronRunId);
+      }
+
       return new Response(
-        JSON.stringify({
-          success: true,
-          message: "No queued emails to process",
-          processed: 0,
-        }),
+        JSON.stringify({ success: true, message: "No queued emails to process", processed: 0 }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -73,8 +91,6 @@ Deno.serve(async (req: Request) => {
           variables.dashboard_link = metadata.dashboard_link;
         }
 
-        const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`;
-
         const emailPayload: Record<string, unknown> = {
           to: emailLog.to_email,
           templateKey: templateKey,
@@ -84,9 +100,7 @@ Deno.serve(async (req: Request) => {
           variables: variables,
         };
 
-        console.log(`Sending email ${emailLog.id} to ${emailLog.to_email}`);
-
-        const response = await fetch(sendEmailUrl, {
+        const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -110,7 +124,6 @@ Deno.serve(async (req: Request) => {
           errorCount++;
         } else {
           const result = await response.json();
-          console.log(`Email ${emailLog.id} sent successfully:`, result);
 
           await supabase
             .from("email_logs")
@@ -138,12 +151,26 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    if (cronRunId) {
+      await supabase
+        .from("cron_runs")
+        .update({
+          status: "completed",
+          finished_at: new Date().toISOString(),
+          processed_count: processedCount,
+          sent_count: successCount,
+          failed_count: errorCount,
+          skipped_count: 0,
+        })
+        .eq("id", cronRunId);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         message: `Processed ${processedCount} emails`,
         processed: processedCount,
-        success: successCount,
+        sent: successCount,
         errors: errorCount,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -151,10 +178,21 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     console.error("Error in process-email-queue:", error);
 
+    if (cronRunId) {
+      try {
+        await supabase
+          .from("cron_runs")
+          .update({
+            status: "failed",
+            finished_at: new Date().toISOString(),
+            error_message: error instanceof Error ? error.message : "Unknown error",
+          })
+          .eq("id", cronRunId);
+      } catch (_) {}
+    }
+
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Unknown error",
-      }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

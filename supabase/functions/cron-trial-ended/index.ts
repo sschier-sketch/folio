@@ -41,7 +41,7 @@ Deno.serve(async (req: Request) => {
     const { data: cronRun, error: cronError } = await supabase
       .from('cron_runs')
       .insert({
-        job_name: 'trial-ended',
+        job_name: 'cron-trial-ended',
         status: 'running',
       })
       .select('id')
@@ -184,6 +184,24 @@ Deno.serve(async (req: Request) => {
     );
   } catch (error) {
     console.error('Error in trial-ended cron:', error);
+
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (supabaseUrl && supabaseKey) {
+        const sb = createClient(supabaseUrl, supabaseKey);
+        await sb
+          .from('cron_runs')
+          .update({
+            status: 'failed',
+            finished_at: new Date().toISOString(),
+            error_message: error instanceof Error ? error.message : 'Unknown error',
+          })
+          .eq('job_name', 'cron-trial-ended')
+          .eq('status', 'running');
+      }
+    } catch (_) {}
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Unknown error',
