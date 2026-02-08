@@ -199,10 +199,12 @@ async function syncCustomerFromStripe(customerId: string) {
       throw new Error('Failed to sync subscription in database');
     }
 
-    // Update billing_info based on subscription status
     const plan = ['active', 'trialing'].includes(subscription.status) ? 'pro' : 'free';
     const status = ['active', 'trialing'].includes(subscription.status) ? 'active' : 'inactive';
-    await updateBillingInfo(customerId, plan, status);
+    const subscriptionEndsAt = subscription.cancel_at_period_end && subscription.current_period_end
+      ? new Date(subscription.current_period_end * 1000).toISOString()
+      : null;
+    await updateBillingInfo(customerId, plan, status, subscriptionEndsAt);
 
     console.info(`Successfully synced subscription for customer: ${customerId}`);
   } catch (error) {
@@ -211,7 +213,7 @@ async function syncCustomerFromStripe(customerId: string) {
   }
 }
 
-async function updateBillingInfo(customerId: string, plan: string, status: string) {
+async function updateBillingInfo(customerId: string, plan: string, status: string, subscriptionEndsAt: string | null = null) {
   try {
     let billingData: { user_id: string; subscription_plan: string | null; pro_activated_at: string | null } | null = null;
 
@@ -222,33 +224,44 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
       .maybeSingle();
 
     if (findError) {
-      console.error('Error finding billing info:', findError);
-      return;
+      console.error('Error finding billing info by stripe_customer_id:', findError);
     }
 
     billingData = directMatch;
 
     if (!billingData) {
-      const { data: stripeCustomer } = await supabase
+      const { data: stripeCustomer, error: scError } = await supabase
         .from('stripe_customers')
         .select('user_id')
         .eq('customer_id', customerId)
         .maybeSingle();
 
+      if (scError) {
+        console.error('Error looking up stripe_customers:', scError);
+      }
+
       if (stripeCustomer) {
-        const { data: billingByUser } = await supabase
+        const { data: billingByUser, error: biError } = await supabase
           .from('billing_info')
           .select('user_id, subscription_plan, pro_activated_at')
           .eq('user_id', stripeCustomer.user_id)
           .maybeSingle();
 
+        if (biError) {
+          console.error('Error looking up billing_info by user_id:', biError);
+        }
+
         if (billingByUser) {
           billingData = billingByUser;
-          await supabase
+          const { error: backfillError } = await supabase
             .from('billing_info')
             .update({ stripe_customer_id: customerId, updated_at: new Date().toISOString() })
             .eq('user_id', stripeCustomer.user_id);
-          console.info(`Backfilled stripe_customer_id in billing_info for user ${stripeCustomer.user_id}`);
+          if (backfillError) {
+            console.error('Error backfilling stripe_customer_id:', backfillError);
+          } else {
+            console.info(`Backfilled stripe_customer_id in billing_info for user ${stripeCustomer.user_id}`);
+          }
         }
       }
     }
@@ -261,23 +274,24 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
     const updateData: any = {
       subscription_plan: plan,
       subscription_status: status,
+      stripe_customer_id: customerId,
       updated_at: new Date().toISOString(),
     };
 
-    // If upgrading to Pro and pro_activated_at is not set, set it now
+    if (subscriptionEndsAt !== undefined) {
+      updateData.subscription_ends_at = subscriptionEndsAt;
+    }
+
     if (plan === 'pro' && status === 'active' && !billingData.pro_activated_at) {
       updateData.pro_activated_at = new Date().toISOString();
       console.info(`Setting pro_activated_at for customer ${customerId}`);
     }
 
-    // End trial immediately when upgrading to Pro
     if (plan === 'pro' && status === 'active') {
       updateData.trial_started_at = null;
       updateData.trial_ends_at = null;
-      console.info(`Ending trial for customer ${customerId} due to Pro upgrade`);
     }
 
-    // Update the billing info
     const { error: updateError } = await supabase
       .from('billing_info')
       .update(updateData)
@@ -288,7 +302,7 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
       throw new Error('Failed to update billing info');
     }
 
-    console.info(`Updated billing info for customer ${customerId}: plan=${plan}, status=${status}`);
+    console.info(`Updated billing info for customer ${customerId}: plan=${plan}, status=${status}, ends_at=${subscriptionEndsAt}`);
   } catch (error) {
     console.error(`Failed to update billing info for customer ${customerId}:`, error);
     throw error;

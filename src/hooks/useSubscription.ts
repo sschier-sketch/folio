@@ -41,7 +41,7 @@ export function useSubscription() {
     const fetchSubscription = async () => {
       try {
         const [stripeResult, billingResult] = await Promise.all([
-          supabase.from("stripe_user_subscriptions").select("*").maybeSingle(),
+          supabase.rpc("get_my_stripe_subscription").maybeSingle(),
           supabase.from("billing_info").select("subscription_plan, subscription_status, trial_started_at, trial_ends_at, stripe_customer_id, subscription_ends_at").eq("user_id", user.id).maybeSingle(),
         ]);
 
