@@ -22,6 +22,7 @@ interface Property {
   address: string;
   property_type: string;
   property_management_type?: string;
+  ownership_type?: string;
   purchase_price: number;
   current_value: number;
   purchase_date: string | null;
@@ -30,6 +31,7 @@ interface Property {
   description: string;
   photo_url?: string | null;
   labels?: PropertyLabel[];
+  display_current_value?: number;
   units?: {
     total: number;
     rented: number;
@@ -110,7 +112,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
         (data || []).map(async (property) => {
           const { data: units } = await supabase
             .from("property_units")
-            .select("id")
+            .select("id, current_value, purchase_price")
             .eq("property_id", property.id);
 
           const total = units?.length || 0;
@@ -133,6 +135,14 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
 
           const vacant = total - rented;
 
+          let displayCurrentValue = Number(property.current_value) || 0;
+          if (property.ownership_type === 'units_only' && units && units.length > 0) {
+            const unitCurrentValue = units.reduce((sum: number, u: any) => sum + (Number(u.current_value) || 0), 0);
+            if (unitCurrentValue > 0) {
+              displayCurrentValue = unitCurrentValue;
+            }
+          }
+
           const { data: labels } = await supabase
             .from("property_labels")
             .select("id, label, color")
@@ -140,6 +150,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
 
           return {
             ...property,
+            display_current_value: displayCurrentValue,
             units: { total, rented, vacant },
             labels: labels || [],
           };
@@ -680,7 +691,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                       <div className="text-sm">
                         <span className="text-gray-500 font-medium">Aktueller Wert:</span>{" "}
                         <span className="font-medium text-dark">
-                          {formatCurrency(property.current_value)}
+                          {formatCurrency(property.display_current_value ?? property.current_value)}
                         </span>
                       </div>
                     </div>
@@ -791,7 +802,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                   header: "Wert",
                   render: (property: Property) => (
                     <span className="text-sm font-medium text-dark">
-                      {formatCurrency(property.current_value)}
+                      {formatCurrency(property.display_current_value ?? property.current_value)}
                     </span>
                   ),
                 },
