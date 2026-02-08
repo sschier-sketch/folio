@@ -77,7 +77,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       const [propertyRes, unitsRes, contractsRes, expensesRes, loansRes] = await Promise.all([
         supabase.from("properties").select("*").eq("id", propertyId).eq("user_id", user.id).single(),
         supabase.from("property_units").select("id, status, area_sqm, purchase_price, current_value").eq("property_id", propertyId),
-        supabase.from("rental_contracts").select("base_rent, contract_start, contract_end").eq("property_id", propertyId).eq("user_id", user.id),
+        supabase.from("rental_contracts").select("base_rent, contract_start, contract_end, property_id, unit_id").eq("user_id", user.id),
         supabase
           .from("expenses")
           .select("amount")
@@ -91,10 +91,15 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       if (propertyRes.data) {
         setProperty(propertyRes.data);
 
-        const totalUnits = unitsRes.data?.length || 0;
+        const units = unitsRes.data || [];
+        const totalUnits = units.length;
+        const unitIds = new Set(units.map(u => u.id));
 
         const today = new Date();
-        const allContracts = contractsRes.data || [];
+        const allContracts = (contractsRes.data || []).filter(c =>
+          c.property_id === propertyId ||
+          (c.unit_id && unitIds.has(c.unit_id))
+        );
         const activeStartedContracts = allContracts.filter(c => {
           const startDate = new Date(c.contract_start);
           const endDate = c.contract_end ? new Date(c.contract_end) : null;
@@ -105,13 +110,15 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           return startDate > today;
         });
 
-        const occupiedCount = Math.min(activeStartedContracts.length, totalUnits || activeStartedContracts.length);
-        const vacantUnits = totalUnits > 0
-          ? Math.max(0, totalUnits - activeStartedContracts.length)
-          : 0;
-
+        let vacantUnits = 0;
         let vacancyRate = 0;
         if (totalUnits > 0) {
+          const occupiedByStatus = units.filter(u =>
+            u.status === 'rented' || u.status === 'occupied' || u.status === 'self_occupied'
+          ).length;
+          const occupiedByContracts = Math.min(activeStartedContracts.length, totalUnits);
+          const occupiedCount = Math.max(occupiedByStatus, occupiedByContracts);
+          vacantUnits = Math.max(0, totalUnits - occupiedCount);
           vacancyRate = (vacantUnits / totalUnits) * 100;
         } else if (activeStartedContracts.length === 0) {
           vacancyRate = 100;

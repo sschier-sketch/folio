@@ -99,7 +99,7 @@ export function useSubscription() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user?.id]);
 
   const getSubscriptionPlan = () => {
     if (!subscription?.price_id) return "Free";

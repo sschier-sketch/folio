@@ -76,15 +76,26 @@ export default function TenantContractTab({
 
       setContractId(tenantData.contract_id);
 
-      const { data: associations } = await supabase
-        .from("document_associations")
-        .select("document_id, association_id, association_type")
-        .eq("association_type", "tenant")
-        .eq("association_id", tenantId);
+      const [tenantAssocs, contractAssocs] = await Promise.all([
+        supabase
+          .from("document_associations")
+          .select("document_id, association_id, association_type")
+          .eq("association_type", "tenant")
+          .eq("association_id", tenantId),
+        supabase
+          .from("document_associations")
+          .select("document_id, association_id, association_type")
+          .eq("association_type", "rental_contract")
+          .eq("association_id", tenantData.contract_id),
+      ]);
 
-      if (associations && associations.length > 0) {
-        const documentIds = associations.map((a) => a.document_id);
+      const allAssociations = [
+        ...(tenantAssocs.data || []),
+        ...(contractAssocs.data || []),
+      ];
+      const documentIds = [...new Set(allAssociations.map((a) => a.document_id))];
 
+      if (documentIds.length > 0) {
         const { data: docs } = await supabase
           .from("documents")
           .select("*")
@@ -92,11 +103,7 @@ export default function TenantContractTab({
           .eq("is_archived", false)
           .order("upload_date", { ascending: false });
 
-        if (docs) {
-          setDocuments(docs);
-        } else {
-          setDocuments([]);
-        }
+        setDocuments(docs || []);
       } else {
         setDocuments([]);
       }
@@ -113,15 +120,26 @@ export default function TenantContractTab({
     try {
       setLoading(true);
 
-      const { data: associations } = await supabase
-        .from("document_associations")
-        .select("document_id, association_id, association_type")
-        .eq("association_type", "tenant")
-        .eq("association_id", tenantId);
+      const [tenantAssocs, contractAssocs] = await Promise.all([
+        supabase
+          .from("document_associations")
+          .select("document_id, association_id, association_type")
+          .eq("association_type", "tenant")
+          .eq("association_id", tenantId),
+        supabase
+          .from("document_associations")
+          .select("document_id, association_id, association_type")
+          .eq("association_type", "rental_contract")
+          .eq("association_id", contractId),
+      ]);
 
-      if (associations && associations.length > 0) {
-        const documentIds = associations.map((a) => a.document_id);
+      const allAssociations = [
+        ...(tenantAssocs.data || []),
+        ...(contractAssocs.data || []),
+      ];
+      const documentIds = [...new Set(allAssociations.map((a) => a.document_id))];
 
+      if (documentIds.length > 0) {
         const { data: docs } = await supabase
           .from("documents")
           .select("*")
@@ -129,9 +147,7 @@ export default function TenantContractTab({
           .eq("is_archived", false)
           .order("upload_date", { ascending: false });
 
-        if (docs) {
-          setDocuments(docs);
-        }
+        setDocuments(docs || []);
       } else {
         setDocuments([]);
       }

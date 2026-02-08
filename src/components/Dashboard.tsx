@@ -87,6 +87,11 @@ export default function Dashboard() {
   const { isAdmin } = useAdmin();
   const { isPremium } = useSubscription();
   const trialStatus = useTrialStatus(user?.id);
+  const trialConfirmedRef = useRef(false);
+  if (!trialStatus.isLoading && trialStatus.hasActiveTrial) {
+    trialConfirmedRef.current = true;
+  }
+  const showTrialIndicator = trialStatus.hasActiveTrial || (trialConfirmedRef.current && trialStatus.isLoading);
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -246,7 +251,7 @@ export default function Dashboard() {
             </div>{" "}
             <div className="flex items-center gap-4">
               {" "}
-              {trialStatus.hasActiveTrial && (
+              {showTrialIndicator && (
                 <button
                   onClick={() => setCurrentView('settings-billing')}
                   className="flex items-center gap-2 px-3.5 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"

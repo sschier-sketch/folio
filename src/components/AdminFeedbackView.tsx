@@ -10,6 +10,7 @@ import {
   X,
   TrendingUp,
   Trash2,
+  User,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -24,6 +25,9 @@ interface Feedback {
   upvotes: number;
   downvotes: number;
   net_votes: number;
+  user_email?: string;
+  user_name?: string;
+  subscription_plan?: string;
 }
 
 type StatusFilter = "all" | "pending" | "reviewed" | "planned" | "implemented";
@@ -79,7 +83,55 @@ export function AdminFeedbackView() {
 
       if (error) throw error;
 
-      setFeedbackList(data || []);
+      const feedbackItems: Feedback[] = data || [];
+
+      if (feedbackItems.length > 0) {
+        const userIds = [...new Set(feedbackItems.map((f) => f.user_id))];
+
+        const [profilesRes, billingRes] = await Promise.all([
+          supabase
+            .from("account_profiles")
+            .select("user_id, first_name, last_name")
+            .in("user_id", userIds),
+          supabase
+            .from("billing_info")
+            .select("user_id, subscription_plan, trial_ends_at")
+            .in("user_id", userIds),
+        ]);
+
+        const profilesMap = new Map(
+          (profilesRes.data || []).map((p) => [p.user_id, p])
+        );
+        const billingMap = new Map(
+          (billingRes.data || []).map((b) => [b.user_id, b])
+        );
+
+        for (const item of feedbackItems) {
+          const profile = profilesMap.get(item.user_id);
+          const billing = billingMap.get(item.user_id);
+
+          if (profile?.first_name || profile?.last_name) {
+            item.user_name = [profile.first_name, profile.last_name]
+              .filter(Boolean)
+              .join(" ");
+          }
+
+          if (billing) {
+            if (billing.subscription_plan === "pro") {
+              item.subscription_plan = "Pro";
+            } else if (
+              billing.trial_ends_at &&
+              new Date(billing.trial_ends_at) > new Date()
+            ) {
+              item.subscription_plan = "Trial";
+            } else {
+              item.subscription_plan = "Free";
+            }
+          }
+        }
+      }
+
+      setFeedbackList(feedbackItems);
 
       const { data: allFeedback, error: statsError } = await supabase
         .from("user_feedback")
@@ -354,16 +406,37 @@ export function AdminFeedbackView() {
                       </span>
                     </div>
                     <p className="text-dark mb-2">{feedback.feedback_text}</p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(feedback.created_at).toLocaleDateString(
-                        "de-DE",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        },
+                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                      <span>
+                        {new Date(feedback.created_at).toLocaleDateString(
+                          "de-DE",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          },
+                        )}
+                      </span>
+                      {feedback.user_name && (
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          {feedback.user_name}
+                        </span>
                       )}
-                    </p>
+                      {feedback.subscription_plan && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            feedback.subscription_plan === "Pro"
+                              ? "bg-blue-100 text-blue-700"
+                              : feedback.subscription_plan === "Trial"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {feedback.subscription_plan}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <select
