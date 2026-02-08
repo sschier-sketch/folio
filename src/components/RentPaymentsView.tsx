@@ -270,12 +270,8 @@ export default function RentPaymentsView() {
 
   const isPending = (payment: RentPayment) => {
     if (payment.paid) return false;
-    const dueDate = new Date(payment.due_date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    dueDate.setHours(0, 0, 0, 0);
-    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-    return daysDiff >= -1 && daysDiff <= 1;
+    if (payment.payment_status === 'paid' || payment.payment_status === 'partial') return false;
+    return !isOverdue(payment);
   };
 
   const handleSort = (column: "date" | "property" | "tenant" | "amount" | "status") => {
