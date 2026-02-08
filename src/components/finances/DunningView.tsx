@@ -43,7 +43,7 @@ interface DunningReminderHistory {
 
 export default function DunningView({ payments, onReloadPayments }: DunningViewProps) {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"overview" | "templates" | "history">("overview");
+  const activeTab = "overview";
   const [stats, setStats] = useState<DunningStats>({
     openItems: 0,
     remindersSent: 0,
@@ -350,51 +350,6 @@ ${message}
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg overflow-hidden">
-        <div className="border-b border-gray-200">
-          <nav className="flex">
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={`px-6 py-4 text-sm font-medium transition-colors ${
-                activeTab === "overview"
-                  ? "text-primary-blue border-b-2 border-primary-blue"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4" />
-                Übersicht
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab("templates")}
-              className={`px-6 py-4 text-sm font-medium transition-colors ${
-                activeTab === "templates"
-                  ? "text-primary-blue border-b-2 border-primary-blue"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                Email-Templates
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`px-6 py-4 text-sm font-medium transition-colors ${
-                activeTab === "history"
-                  ? "text-primary-blue border-b-2 border-primary-blue"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Historie
-              </div>
-            </button>
-          </nav>
-        </div>
-      </div>
 
       {activeTab === "overview" && (
         <>
@@ -669,9 +624,6 @@ ${message}
         </>
       )}
 
-      {activeTab === "templates" && <DunningTemplates />}
-
-      {activeTab === "history" && <DunningHistory />}
     </div>
   );
 }

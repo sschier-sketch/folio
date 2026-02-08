@@ -399,7 +399,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             {PLANS.pro.popular && (
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="inline-block px-4 py-1 bg-blue-600 text-white text-sm font-semibold rounded-full whitespace-nowrap">
-                  1 Tarif mit allen Funktionen
+                  Ein Tarif mit allen Funktionen
                 </span>
               </div>
             )}

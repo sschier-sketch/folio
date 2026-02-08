@@ -325,12 +325,12 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
                   key={entry.id}
                   className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
                 >
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shrink-0">
                     {getEventIcon(entry.event_type)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="px-3 py-1 bg-white text-xs font-medium text-gray-700 rounded-full shadow-sm">
+                      <span className="px-3 py-1 bg-white text-xs font-medium text-gray-700 rounded-full">
                         {getEventTypeLabel(entry.event_type)}
                       </span>
                       <span className="text-xs text-gray-500">

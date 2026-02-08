@@ -492,22 +492,17 @@ export default function IndexRentView() {
 
       <div
         style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }}
-        className="border rounded-lg p-4 flex items-start gap-3"
+        className="border rounded-lg p-4"
       >
-        <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-        <div className="flex-1">
-          <h3 className="font-semibold text-blue-900 mb-1">
-            Wichtiger Hinweis
-          </h3>
-          <p className="text-sm text-blue-800">
-            Indexmieten werden rechtlich erst nach schriftlicher
-            Mieterhoehungserklaerung wirksam (&sect;557b BGB). Die hier
-            berechneten Werte sind Empfehlungen basierend auf dem
-            Verbraucherpreisindex (VPI) der Deutschen Bundesbank. Sie
-            entscheiden, ob und wann Sie die Erhoehung gegenueber dem Mieter
-            geltend machen.
-          </p>
-        </div>
+        <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
+        <p className="text-sm text-blue-900">
+          Indexmieten werden rechtlich erst nach schriftlicher
+          Mieterhoehungserklaerung wirksam (&sect;557b BGB). Die hier
+          berechneten Werte sind Empfehlungen basierend auf dem
+          Verbraucherpreisindex (VPI) der Deutschen Bundesbank. Sie
+          entscheiden, ob und wann Sie die Erhoehung gegenueber dem Mieter
+          geltend machen.
+        </p>
       </div>
 
       <div className="flex items-center gap-1 border-b border-gray-200">

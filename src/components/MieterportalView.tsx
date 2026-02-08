@@ -292,39 +292,32 @@ export default function MieterportalView() {
         emptyMessage="Keine Mieter mit E-Mail-Adresse"
       />
 
-      <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
-        <div className="flex gap-3">
-          <div className="flex-shrink-0">
-            <ExternalLink className="w-5 h-5 text-amber-600" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-sm font-semibold text-amber-900 mb-1">
-              Portal-Link für Ihre Mieter
-            </h3>
-            <p className="text-sm text-amber-800 mb-3">
-              Teilen Sie diesen Link mit Ihren Mietern:
-            </p>
-            <div className="flex items-center gap-2 mb-3">
-              <code className="text-sm bg-white px-3 py-2 rounded border border-amber-300 flex-1">
-                {window.location.origin}/tenant-portal
-              </code>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    `${window.location.origin}/tenant-portal`
-                  );
-                  alert("Link kopiert!");
-                }}
-                className="px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium whitespace-nowrap"
-              >
-                Kopieren
-              </button>
-            </div>
-            <div className="text-xs text-amber-700 space-y-1">
-              <p><strong>Tipp:</strong> Mit "Als Mieter anmelden" können Sie auch selbst das Portal als Mieter testen</p>
-              <p><strong>Optional:</strong> Versenden Sie eine E-Mail-Einladung</p>
-            </div>
-          </div>
+      <div className="mt-6 bg-amber-50 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-amber-900 mb-1">
+          Portal-Link für Ihre Mieter
+        </h3>
+        <p className="text-sm text-amber-800 mb-3">
+          Teilen Sie diesen Link mit Ihren Mietern:
+        </p>
+        <div className="flex items-center gap-2 mb-3">
+          <code className="text-sm bg-white px-3 py-2 rounded border border-amber-300 flex-1">
+            {window.location.origin}/tenant-portal
+          </code>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(
+                `${window.location.origin}/tenant-portal`
+              );
+              alert("Link kopiert!");
+            }}
+            className="px-3 py-2 bg-amber-600 text-white rounded-full hover:bg-amber-700 transition-colors text-sm font-medium whitespace-nowrap"
+          >
+            Kopieren
+          </button>
+        </div>
+        <div className="text-xs text-amber-700 space-y-1">
+          <p><strong>Tipp:</strong> Mit "Als Mieter anmelden" können Sie auch selbst das Portal als Mieter testen</p>
+          <p><strong>Optional:</strong> Versenden Sie eine E-Mail-Einladung</p>
         </div>
       </div>
     </div>

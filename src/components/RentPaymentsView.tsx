@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell, ArrowUpDown } from "lucide-react";
+import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell, ArrowUpDown, FileText, Clock } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import DunningView from "./finances/DunningView";
+import DunningTemplates from "./finances/DunningTemplates";
+import DunningHistory from "./finances/DunningHistory";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 import Badge from "./common/Badge";
@@ -37,7 +39,7 @@ interface RentPayment {
 export default function RentPaymentsView() {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
-  const [activeTab, setActiveTab] = useState<"payments" | "dunning">("payments");
+  const [activeTab, setActiveTab] = useState<"payments" | "dunning" | "dunning-templates" | "dunning-history">("payments");
   const [payments, setPayments] = useState<RentPayment[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
@@ -386,6 +388,36 @@ export default function RentPaymentsView() {
               Mahnwesen
               <Badge variant="pro" size="sm">Pro</Badge>
               {activeTab === "dunning" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("dunning-templates")}
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                activeTab === "dunning-templates"
+                  ? "text-primary-blue"
+                  : "text-gray-400 hover:text-dark"
+              }`}
+            >
+              <FileText className="w-3 h-3" />
+              Email-Templates
+              <Badge variant="pro" size="sm">Pro</Badge>
+              {activeTab === "dunning-templates" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("dunning-history")}
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                activeTab === "dunning-history"
+                  ? "text-primary-blue"
+                  : "text-gray-400 hover:text-dark"
+              }`}
+            >
+              <Clock className="w-3 h-3" />
+              Historie
+              <Badge variant="pro" size="sm">Pro</Badge>
+              {activeTab === "dunning-history" && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>
@@ -812,11 +844,25 @@ export default function RentPaymentsView() {
         </div>
       )}
         </div>
-      ) : isPremium ? (
-        <DunningView payments={payments} onReloadPayments={loadPayments} />
-      ) : (
-        <PremiumUpgradePrompt featureKey="rent_payments_dunning" />
-      )}
+      ) : activeTab === "dunning" ? (
+        isPremium ? (
+          <DunningView payments={payments} onReloadPayments={loadPayments} />
+        ) : (
+          <PremiumUpgradePrompt featureKey="rent_payments_dunning" />
+        )
+      ) : activeTab === "dunning-templates" ? (
+        isPremium ? (
+          <DunningTemplates />
+        ) : (
+          <PremiumUpgradePrompt featureKey="rent_payments_dunning" />
+        )
+      ) : activeTab === "dunning-history" ? (
+        isPremium ? (
+          <DunningHistory />
+        ) : (
+          <PremiumUpgradePrompt featureKey="rent_payments_dunning" />
+        )
+      ) : null}
     </div>
   );
 }
