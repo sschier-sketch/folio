@@ -104,6 +104,7 @@ Deno.serve(async (req: Request) => {
 
     if (messageError) {
       console.error("Error creating message:", messageError);
+      throw new Error("Failed to create ticket message");
     }
 
     return new Response(
