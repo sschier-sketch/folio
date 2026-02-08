@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lock, Sparkles, Zap } from "lucide-react";
+import { Lock, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
@@ -66,16 +66,15 @@ export function PremiumUpgradePrompt({
   }
 
   return (
-    <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-8 text-center">
+    <div className="rounded-lg p-8 text-center" style={{ backgroundColor: '#eff4fe' }}>
       <div className="inline-flex w-16 h-16 bg-primary-blue rounded-full items-center justify-center mb-4">
         <Lock className="w-8 h-8 text-white" />
       </div>
       <h3 className="text-2xl font-bold text-dark mb-2">{content.title}</h3>
       <p className="text-gray-600 mb-6 max-w-md mx-auto">{content.description}</p>
 
-      <div className="bg-white rounded-lg p-6 mb-6 max-w-md mx-auto shadow-sm">
-        <h4 className="font-semibold text-dark mb-4 flex items-center justify-center gap-2">
-          <Sparkles className="w-5 h-5 text-amber-500" />
+      <div className="bg-white rounded-lg p-6 mb-6 max-w-md mx-auto">
+        <h4 className="font-semibold text-dark mb-4 text-center">
           Das erwartet Sie im Pro-Plan
         </h4>
         <ul className="text-left space-y-3 text-sm text-gray-700">
@@ -90,10 +89,9 @@ export function PremiumUpgradePrompt({
 
       <button
         onClick={() => navigate("/dashboard?view=settings-billing")}
-        className="px-8 py-3 bg-primary-blue text-white font-semibold rounded-full hover:shadow-lg transition-all inline-flex items-center gap-2"
+        className="px-8 py-3 bg-primary-blue text-white font-semibold rounded-full hover:shadow-lg transition-all"
       >
-        <Sparkles className="w-5 h-5" />
-        Jetzt für 9 EUR/Monat upgraden
+        Jetzt upgraden
       </button>
     </div>
   );
