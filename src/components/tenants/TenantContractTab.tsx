@@ -78,8 +78,8 @@ export default function TenantContractTab({
       const { data: associations } = await supabase
         .from("document_associations")
         .select("document_id, association_id, association_type")
-        .eq("association_type", "rental_contract")
-        .eq("association_id", tenantData.contract_id);
+        .eq("association_type", "tenant")
+        .eq("association_id", tenantId);
 
       if (associations && associations.length > 0) {
         const documentIds = associations.map((a) => a.document_id);
@@ -115,8 +115,8 @@ export default function TenantContractTab({
       const { data: associations } = await supabase
         .from("document_associations")
         .select("document_id, association_id, association_type")
-        .eq("association_type", "rental_contract")
-        .eq("association_id", contractId);
+        .eq("association_type", "tenant")
+        .eq("association_id", tenantId);
 
       if (associations && associations.length > 0) {
         const documentIds = associations.map((a) => a.document_id);
@@ -219,8 +219,8 @@ export default function TenantContractTab({
 
         const { error: assocError } = await supabase.from("document_associations").insert({
           document_id: docData.id,
-          association_type: "rental_contract",
-          association_id: contractId,
+          association_type: "tenant",
+          association_id: tenantId,
           created_by: user.id,
         });
 
