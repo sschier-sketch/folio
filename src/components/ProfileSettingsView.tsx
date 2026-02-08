@@ -465,8 +465,8 @@ export default function ProfileSettingsView() {
 
           <p className="text-sm text-gray-500 mt-2">
             {language === "de"
-              ? "Ihre Bankverbindung wird sicher gespeichert und kann für zukünftige Transaktionen verwendet werden."
-              : "Your bank details are stored securely and can be used for future transactions."}
+              ? "Diese Bankverbindung wird ausschließlich für Nachzahlungen bei Betriebskostenabrechnungen verwendet, nicht für Ihr rentably-Abo."
+              : "These bank details are used exclusively for operating cost settlement payments, not for your rentably subscription."}
           </p>
         </div>
       </div>
