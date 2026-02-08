@@ -12,6 +12,7 @@ import {
   Sparkles,
   BookOpen,
   AtSign,
+  Timer,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,7 +31,8 @@ export type AdminTabKey =
   | "payouts"
   | "pro_features"
   | "magazine"
-  | "email_settings";
+  | "email_settings"
+  | "cron_jobs";
 
 export interface AdminMenuItem {
   key: AdminTabKey;
@@ -101,6 +103,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
     items: [
       { key: "system_settings", label: "Einstellungen", icon: Settings },
       { key: "system_updates", label: "System-Updates", icon: Bell },
+      { key: "cron_jobs", label: "Cron Jobs", icon: Timer },
     ],
   },
 ];
