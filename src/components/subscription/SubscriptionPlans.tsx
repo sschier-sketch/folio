@@ -15,7 +15,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
   const { user } = useAuth();
   const { subscription, loading: subscriptionLoading, isPro, isCancelledButActive, cancelDate } = useSubscription();
   const trialStatus = useTrialStatus(user?.id);
-  const [billingInterval, setBillingInterval] = useState<BillingInterval>('month');
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>('year');
   const [loading, setLoading] = useState<string | null>(null);
   const [showDowngradeModal, setShowDowngradeModal] = useState(false);
   const [billingTrialTexts, setBillingTrialTexts] = useState({
@@ -172,6 +172,10 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
 
   const yearlySavings = calculateYearlySavings();
 
+  const formatPrice = (price: number): string => {
+    return price.toFixed(2).replace('.', ',');
+  };
+
   return (
     <div>
       {showCurrentPlanCard && (
@@ -195,25 +199,23 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                 <div className="text-3xl font-bold text-gray-900">
                   {currentPlanId === 'basic' ? (
                     <>
-                      {PLANS[currentPlanId].currencySymbol}0
+                      0,00 {PLANS[currentPlanId].currencySymbol}
                     </>
                   ) : currentInterval === 'year' ? (
                     <>
-                      {PLANS[currentPlanId].currencySymbol}
-                      {((PLANS[currentPlanId].priceYearly || 0) / 12).toFixed(2)}
+                      {formatPrice((PLANS[currentPlanId].priceYearly || 0) / 12)} {PLANS[currentPlanId].currencySymbol}
                       <span className="text-lg text-gray-500 font-normal">/Monat</span>
                     </>
                   ) : (
                     <>
-                      {PLANS[currentPlanId].currencySymbol}
-                      {PLANS[currentPlanId].priceMonthly}
+                      {formatPrice(PLANS[currentPlanId].priceMonthly)} {PLANS[currentPlanId].currencySymbol}
                       <span className="text-lg text-gray-500 font-normal">/Monat</span>
                     </>
                   )}
                 </div>
                 {currentPlanId === 'pro' && currentInterval === 'year' && (
                   <p className="text-sm text-green-600 mt-1">
-                    Jährlich: {PLANS.pro.currencySymbol}{PLANS.pro.priceYearly}
+                    Jährlich: {formatPrice(PLANS.pro.priceYearly || 0)} {PLANS.pro.currencySymbol}
                   </p>
                 )}
               </div>
@@ -358,7 +360,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             <div className="mb-6">
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-bold text-gray-900">
-                  {PLANS.basic.currencySymbol}{PLANS.basic.priceMonthly}
+                  {formatPrice(PLANS.basic.priceMonthly)} {PLANS.basic.currencySymbol}
                 </span>
                 <span className="text-gray-500">/Monat</span>
               </div>
@@ -393,11 +395,11 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
         )}
 
         {currentPlanId === 'basic' && (
-          <div id="pro-plan-card" className="bg-white rounded-lg border-2 border-blue-500 p-8 hover:shadow-lg transition-all relative">
+          <div id="pro-plan-card" className="bg-white rounded-lg border-2 border-blue-500 p-8 hover:shadow-lg transition-all relative text-center">
             {PLANS.pro.popular && (
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="inline-block px-4 py-1 bg-blue-600 text-white text-sm font-semibold rounded-full">
-                  Empfohlen
+                <span className="inline-block px-4 py-1 bg-blue-600 text-white text-sm font-semibold rounded-full whitespace-nowrap">
+                  1 Tarif mit allen Funktionen
                 </span>
               </div>
             )}
@@ -410,10 +412,10 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             </div>
 
             <div className="mb-6">
-              <div className="flex items-center justify-center gap-2 bg-gray-100 rounded-lg p-1 mb-4 max-w-xs">
+              <div className="inline-flex items-center gap-2 bg-gray-100 rounded-lg p-1 mb-4">
                 <button
                   onClick={() => setBillingInterval('month')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                  className={`py-2 px-4 rounded-md text-sm font-medium transition-all ${
                     billingInterval === 'month'
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -423,7 +425,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                 </button>
                 <button
                   onClick={() => setBillingInterval('year')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                  className={`py-2 px-4 rounded-md text-sm font-medium transition-all ${
                     billingInterval === 'year'
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -436,23 +438,22 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                 </button>
               </div>
 
-              <div className="flex items-baseline gap-1">
+              <div className="flex items-baseline gap-1 justify-center">
                 <span className="text-4xl font-bold text-gray-900">
-                  {PLANS.pro.currencySymbol}
                   {billingInterval === 'month'
-                    ? PLANS.pro.priceMonthly
-                    : ((PLANS.pro.priceYearly || 0) / 12).toFixed(2)}
+                    ? formatPrice(PLANS.pro.priceMonthly)
+                    : formatPrice((PLANS.pro.priceYearly || 0) / 12)} {PLANS.pro.currencySymbol}
                 </span>
                 <span className="text-gray-500">/Monat</span>
               </div>
               {billingInterval === 'year' && (
                 <p className="text-sm text-gray-500 mt-1">
-                  Jährlich: {PLANS.pro.currencySymbol}{PLANS.pro.priceYearly}
+                  Jährlich: {formatPrice(PLANS.pro.priceYearly || 0)} {PLANS.pro.currencySymbol}
                 </p>
               )}
             </div>
 
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-3 mb-8 inline-block text-left">
               {proPlanTexts.features.map((feature, index) => (
                 <li key={index} className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5" />
@@ -461,20 +462,22 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               ))}
             </ul>
 
-            <button
-              onClick={() => handleUpgrade(billingInterval)}
-              disabled={!!loading}
-              className="w-full py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading === getStripePriceId('pro', billingInterval) ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Wird geladen...
-                </>
-              ) : (
-                'Jetzt upgraden'
-              )}
-            </button>
+            <div>
+              <button
+                onClick={() => handleUpgrade(billingInterval)}
+                disabled={!!loading}
+                className="px-12 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+              >
+                {loading === getStripePriceId('pro', billingInterval) ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Wird geladen...
+                  </>
+                ) : (
+                  'Kostenpflichtig buchen'
+                )}
+              </button>
+            </div>
           </div>
         )}
 
@@ -522,16 +525,15 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
 
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-bold text-gray-900">
-                  {PLANS.pro.currencySymbol}
                   {billingInterval === 'month'
-                    ? PLANS.pro.priceMonthly
-                    : ((PLANS.pro.priceYearly || 0) / 12).toFixed(2)}
+                    ? formatPrice(PLANS.pro.priceMonthly)
+                    : formatPrice((PLANS.pro.priceYearly || 0) / 12)} {PLANS.pro.currencySymbol}
                 </span>
                 <span className="text-gray-500">/Monat</span>
               </div>
               {billingInterval === 'year' && (
                 <p className="text-sm text-gray-500 mt-1">
-                  Jährlich: {PLANS.pro.currencySymbol}{PLANS.pro.priceYearly}
+                  Jährlich: {formatPrice(PLANS.pro.priceYearly || 0)} {PLANS.pro.currencySymbol}
                 </p>
               )}
             </div>
@@ -588,6 +590,9 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             </p>
             <p>
               <strong>Flexible Abrechnung:</strong> Wechseln Sie jederzeit zwischen monatlicher und jährlicher Abrechnung.
+            </p>
+            <p>
+              <strong>Werbungskosten absetzen:</strong> Die Kosten für Verwaltungssoftware können in der Regel als Werbungskosten bei den Einkünften aus Vermietung und Verpachtung steuerlich abgesetzt werden.
             </p>
           </div>
         </div>
