@@ -27,6 +27,8 @@ interface Metrics {
   totalUnits: number;
   vacantUnits: number;
   futureContracts: Array<{ contract_start: string; base_rent: number }>;
+  effectiveArea: number;
+  roiBase: 'purchase' | 'value' | 'none';
 }
 
 interface Comparison {
@@ -49,6 +51,8 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
     totalUnits: 0,
     vacantUnits: 0,
     futureContracts: [],
+    effectiveArea: 0,
+    roiBase: 'none',
   });
 
   const currentYear = new Date().getFullYear();
@@ -72,7 +76,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
 
       const [propertyRes, unitsRes, contractsRes, expensesRes, loansRes] = await Promise.all([
         supabase.from("properties").select("*").eq("id", propertyId).eq("user_id", user.id).single(),
-        supabase.from("property_units").select("id, status").eq("property_id", propertyId),
+        supabase.from("property_units").select("id, status, area_sqm, purchase_price, current_value").eq("property_id", propertyId),
         supabase.from("rental_contracts").select("base_rent, status, contract_start, contract_end").eq("property_id", propertyId).eq("user_id", user.id).eq("status", "active"),
         supabase
           .from("expenses")
@@ -122,22 +126,40 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
 
         const costRatio = monthlyRent > 0 ? (monthlyExpenses / monthlyRent) * 100 : 0;
 
-        const rentPerSqm =
-          propertyRes.data.size_sqm && propertyRes.data.size_sqm > 0
-            ? monthlyRent / propertyRes.data.size_sqm
-            : 0;
+        const unitsTotalArea = unitsRes.data?.reduce((sum, u) => sum + Number(u.area_sqm || 0), 0) || 0;
+        const effectiveSqm = (propertyRes.data.size_sqm && propertyRes.data.size_sqm > 0)
+          ? propertyRes.data.size_sqm
+          : unitsTotalArea;
+
+        const rentPerSqm = effectiveSqm > 0
+          ? monthlyRent / effectiveSqm
+          : 0;
 
         const annualRent = monthlyRent * 12;
         const annualExpenses = monthlyExpenses * 12;
         const netAnnualIncome = annualRent - annualExpenses;
 
-        const investmentBase = propertyRes.data.purchase_price > 0
+        const unitsTotalPurchasePrice = unitsRes.data?.reduce((sum, u) => sum + Number(u.purchase_price || 0), 0) || 0;
+        const unitsTotalCurrentValue = unitsRes.data?.reduce((sum, u) => sum + Number(u.current_value || 0), 0) || 0;
+
+        const effectivePurchasePrice = propertyRes.data.purchase_price > 0
           ? propertyRes.data.purchase_price
-          : propertyRes.data.current_value;
+          : unitsTotalPurchasePrice;
+        const effectiveCurrentValue = propertyRes.data.current_value > 0
+          ? propertyRes.data.current_value
+          : unitsTotalCurrentValue;
+
+        const investmentBase = effectivePurchasePrice > 0
+          ? effectivePurchasePrice
+          : effectiveCurrentValue;
 
         const roi = investmentBase > 0
           ? (netAnnualIncome / investmentBase) * 100
           : 0;
+
+        const roiBase = effectivePurchasePrice > 0 ? 'purchase' as const
+          : effectiveCurrentValue > 0 ? 'value' as const
+          : 'none' as const;
 
         setMetrics({
           rentPerSqm,
@@ -149,6 +171,8 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           totalUnits,
           vacantUnits,
           futureContracts: futureContracts.map(c => ({ contract_start: c.contract_start, base_rent: c.base_rent })),
+          effectiveArea: effectiveSqm,
+          roiBase,
         });
       }
     } catch (error) {
@@ -249,7 +273,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
             </div>
           </div>
           <div className="text-xs text-gray-500">
-            Basierend auf {property?.size_sqm || 0} m² Gesamtfläche
+            Basierend auf {metrics.effectiveArea.toFixed(1)} m² Gesamtfläche
           </div>
         </div>
 
@@ -303,7 +327,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
             </div>
           </div>
           <div className="text-xs text-gray-500">
-            Jährliche Nettorendite auf {property?.purchase_price && property.purchase_price > 0 ? 'Kaufpreis' : 'aktuellen Wert'}
+            {metrics.roiBase === 'purchase' ? 'Jährliche Nettorendite auf Kaufpreis' : metrics.roiBase === 'value' ? 'Jährliche Nettorendite auf aktuellen Wert' : 'Kein Kaufpreis oder Wert hinterlegt'}
           </div>
         </div>
 
