@@ -30,7 +30,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAdmin } from "../hooks/useAdmin";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useSubscription } from "../hooks/useSubscription";
 import { useTrialStatus } from "../hooks/useTrialStatus";
@@ -93,16 +93,16 @@ export default function Dashboard() {
   }
   const showTrialIndicator = trialStatus.hasActiveTrial || (trialConfirmedRef.current && trialStatus.isLoading);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const view = params.get('view');
+    const view = searchParams.get('view');
     if (view && ['home', 'properties', 'tenants', 'mieterportal', 'messages', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'referral'].includes(view)) {
       setCurrentView(view as View);
-      window.history.replaceState({}, '', '/dashboard');
+      setSearchParams({}, { replace: true });
     }
-  }, []);
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!user) return;
