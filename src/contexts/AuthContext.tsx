@@ -43,12 +43,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!user) {
+    if (!user?.id) {
       setIsBanned(false);
       setBanReason(null);
       setCheckingBan(false);
       return;
     }
+
+    const userId = user.id;
 
     const checkBanStatus = async () => {
       setCheckingBan(true);
@@ -56,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data, error } = await supabase
           .from("account_profiles")
           .select("banned, ban_reason")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .maybeSingle();
 
         if (error) {
@@ -80,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkBanStatus();
-  }, [user]);
+  }, [user?.id]);
 
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({

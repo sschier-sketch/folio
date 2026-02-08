@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
 }
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading, isBanned, checkingBan } = useAuth();
-  if (loading || checkingBan) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         {" "}
