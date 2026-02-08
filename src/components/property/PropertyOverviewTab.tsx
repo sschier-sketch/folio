@@ -97,6 +97,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     totalPurchasePrice: property.purchase_price,
     totalCurrentValue: property.current_value,
   });
+  const [unitsData, setUnitsData] = useState<any[]>([]);
   const [editData, setEditData] = useState({
     name: property.name,
     address: property.address,
@@ -154,6 +155,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
       setContracts(contractsWithTenants);
 
       if (unitsRes.data) {
+        setUnitsData(unitsRes.data);
         const totalUnits = unitsRes.data.length;
         const rentedUnits = unitsRes.data.filter((u) => u.status === "rented").length;
         const vacantUnits = unitsRes.data.filter((u) => u.status === "vacant").length;
@@ -519,31 +521,33 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Kaufdatum
-            </label>
-            {isEditingMasterData ? (
-              <input
-                type="date"
-                value={editData.purchase_date}
-                onChange={(e) => setEditData({ ...editData, purchase_date: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />
-            ) : property.purchase_date ? (
-              <div className="text-dark font-medium">
-                {new Date(property.purchase_date).toLocaleDateString("de-DE")}
-              </div>
-            ) : (
-              <div className="text-gray-400 italic">Nicht angegeben</div>
-            )}
-          </div>
+          {property.ownership_type !== 'units_only' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Kaufdatum
+              </label>
+              {isEditingMasterData ? (
+                <input
+                  type="date"
+                  value={editData.purchase_date}
+                  onChange={(e) => setEditData({ ...editData, purchase_date: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+              ) : property.purchase_date ? (
+                <div className="text-dark font-medium">
+                  {new Date(property.purchase_date).toLocaleDateString("de-DE")}
+                </div>
+              ) : (
+                <div className="text-gray-400 italic">Nicht angegeben</div>
+              )}
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Kaufpreis
+              Kaufpreis {property.ownership_type === 'units_only' ? '(Summe Einheiten)' : ''}
             </label>
-            {isEditingMasterData ? (
+            {isEditingMasterData && property.ownership_type !== 'units_only' ? (
               <input
                 type="number"
                 value={editData.purchase_price}
@@ -552,16 +556,16 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
               />
             ) : (
               <div className="text-dark font-medium">
-                {formatCurrency(property.purchase_price)}
+                {formatCurrency(aggregatedValues.totalPurchasePrice)}
               </div>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Aktueller Wert
+              Aktueller Wert {property.ownership_type === 'units_only' ? '(Summe Einheiten)' : ''}
             </label>
-            {isEditingMasterData ? (
+            {isEditingMasterData && property.ownership_type !== 'units_only' ? (
               <input
                 type="number"
                 value={editData.current_value}
@@ -570,7 +574,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
               />
             ) : (
               <div className="text-dark font-medium">
-                {formatCurrency(property.current_value)}
+                {formatCurrency(aggregatedValues.totalCurrentValue)}
               </div>
             )}
           </div>
@@ -594,6 +598,84 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           )}
         </div>
       </div>
+
+      {property.ownership_type === 'units_only' && unitsData.length > 0 && (
+        <div className="bg-white rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-dark mb-4">Kaufdaten der Einheiten</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Einheit</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Kaufdatum</th>
+                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Kaufpreis</th>
+                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Aktueller Wert</th>
+                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Wertentwicklung</th>
+                </tr>
+              </thead>
+              <tbody>
+                {unitsData.map((unit) => {
+                  const purchasePrice = Number(unit.purchase_price) || 0;
+                  const currentValue = Number(unit.current_value) || 0;
+                  const valueChange = currentValue - purchasePrice;
+                  const valueChangePercent = purchasePrice > 0 ? (valueChange / purchasePrice) * 100 : 0;
+                  return (
+                    <tr key={unit.id} className="border-b border-gray-100">
+                      <td className="py-3 px-4 text-sm font-medium text-dark">{unit.unit_number}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">
+                        {unit.purchase_date
+                          ? new Date(unit.purchase_date).toLocaleDateString("de-DE")
+                          : <span className="text-gray-400 italic">Nicht angegeben</span>}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-700 text-right">
+                        {purchasePrice > 0
+                          ? formatCurrency(purchasePrice)
+                          : <span className="text-gray-400 italic">-</span>}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-700 text-right">
+                        {currentValue > 0
+                          ? formatCurrency(currentValue)
+                          : <span className="text-gray-400 italic">-</span>}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-right">
+                        {purchasePrice > 0 && currentValue > 0 ? (
+                          <span className={valueChange >= 0 ? "text-emerald-600 font-medium" : "text-red-600 font-medium"}>
+                            {valueChange >= 0 ? "+" : ""}{formatCurrency(valueChange)} ({valueChangePercent >= 0 ? "+" : ""}{valueChangePercent.toFixed(1)}%)
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-gray-300 bg-gray-50">
+                  <td className="py-3 px-4 text-sm font-semibold text-dark">Gesamt</td>
+                  <td className="py-3 px-4"></td>
+                  <td className="py-3 px-4 text-sm font-semibold text-dark text-right">
+                    {formatCurrency(aggregatedValues.totalPurchasePrice)}
+                  </td>
+                  <td className="py-3 px-4 text-sm font-semibold text-dark text-right">
+                    {formatCurrency(aggregatedValues.totalCurrentValue)}
+                  </td>
+                  <td className="py-3 px-4 text-sm font-semibold text-right">
+                    {aggregatedValues.totalPurchasePrice > 0 ? (
+                      <span className={aggregatedValues.totalCurrentValue - aggregatedValues.totalPurchasePrice >= 0 ? "text-emerald-600" : "text-red-600"}>
+                        {aggregatedValues.totalCurrentValue - aggregatedValues.totalPurchasePrice >= 0 ? "+" : ""}
+                        {formatCurrency(aggregatedValues.totalCurrentValue - aggregatedValues.totalPurchasePrice)}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg p-6 relative">
