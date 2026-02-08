@@ -123,17 +123,12 @@ export default function AdminSeoPagesView() {
   return (
     <div className="space-y-6">
       <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <Lock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-blue-700">
-            <p className="font-medium mb-1">Wichtiger Hinweis:</p>
-            <p>
-              App-Seiten (Dashboard, Admin, Mieterportal, Login, etc.) sind immer noindex und können
-              nicht öffentlich indexiert werden. Nur Marketing-, Feature- und Blog-Seiten können für
-              Suchmaschinen freigegeben werden.
-            </p>
-          </div>
-        </div>
+        <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
+        <p className="text-sm text-blue-900">
+          App-Seiten (Dashboard, Admin, Mieterportal, Login, etc.) sind immer noindex und können
+          nicht öffentlich indexiert werden. Nur Marketing-, Feature- und Blog-Seiten können für
+          Suchmaschinen freigegeben werden.
+        </p>
       </div>
 
       <div className="flex items-center gap-4">

@@ -233,19 +233,14 @@ Mit freundlichen Grüßen`
   return (
     <div className="space-y-6">
       <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-primary-blue mt-0.5" />
-          <div className="text-sm text-blue-900">
-            <p className="font-semibold mb-1">Platzhalter:</p>
-            <ul className="space-y-1">
-              <li><code className="bg-blue-100 px-2 py-0.5 rounded">[TENANT_NAME]</code> - Name des Mieters</li>
-              <li><code className="bg-blue-100 px-2 py-0.5 rounded">[PROPERTY_NAME]</code> - Name der Immobilie/Einheit</li>
-              <li><code className="bg-blue-100 px-2 py-0.5 rounded">[AMOUNT]</code> - Offener Betrag</li>
-              <li><code className="bg-blue-100 px-2 py-0.5 rounded">[DUE_DATE]</code> - Fälligkeitsdatum</li>
-              <li><code className="bg-blue-100 px-2 py-0.5 rounded">[TOTAL_AMOUNT]</code> - Gesamtbetrag inkl. Mahngebühren</li>
-            </ul>
-          </div>
-        </div>
+        <p className="text-sm font-medium text-blue-900 mb-1">Platzhalter:</p>
+        <ul className="space-y-1 text-sm text-blue-900">
+          <li><code className="bg-white/60 px-2 py-0.5 rounded">[TENANT_NAME]</code> - Name des Mieters</li>
+          <li><code className="bg-white/60 px-2 py-0.5 rounded">[PROPERTY_NAME]</code> - Name der Immobilie/Einheit</li>
+          <li><code className="bg-white/60 px-2 py-0.5 rounded">[AMOUNT]</code> - Offener Betrag</li>
+          <li><code className="bg-white/60 px-2 py-0.5 rounded">[DUE_DATE]</code> - Fälligkeitsdatum</li>
+          <li><code className="bg-white/60 px-2 py-0.5 rounded">[TOTAL_AMOUNT]</code> - Gesamtbetrag inkl. Mahngebühren</li>
+        </ul>
       </div>
 
       {templates.map((template) => {

@@ -421,17 +421,12 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       )}
 
       <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-blue-900 mb-1">Hinweis zu Kennzahlen</p>
-            <p className="text-xs text-blue-700">
-              Die Kennzahlen werden basierend auf bereits begonnenen Mietverträgen berechnet. Kostenquote und ROI berücksichtigen
-              Ausgaben im gewählten Zeitraum sowie laufende Kreditraten. Für genauere Analysen können Sie im
-              Finanzbereich detaillierte Auswertungen vornehmen.
-            </p>
-          </div>
-        </div>
+        <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
+        <p className="text-sm text-blue-900">
+          Die Kennzahlen werden basierend auf bereits begonnenen Mietverträgen berechnet. Kostenquote und ROI berücksichtigen
+          Ausgaben im gewählten Zeitraum sowie laufende Kreditraten. Für genauere Analysen können Sie im
+          Finanzbereich detaillierte Auswertungen vornehmen.
+        </p>
       </div>
     </div>
   );

@@ -520,10 +520,8 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                     {document.file_name}
                   </h1>
                 )}
-                <div className="flex items-center gap-4 text-sm text-gray-500">
+                <div className="text-sm text-gray-500">
                   <span>{formatFileSize(document.file_size)}</span>
-                  <span>•</span>
-                  <span>{document.file_type}</span>
                 </div>
               </div>
             </div>
@@ -925,8 +923,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
             }
           >
             <div className="bg-white rounded-lg p-6 ">
-              <h2 className="text-lg font-semibold text-dark mb-4 flex items-center gap-2">
-                <Clock className="w-5 h-5" />
+              <h2 className="text-lg font-semibold text-dark mb-4">
                 Änderungsverlauf
               </h2>
               {history.length === 0 ? (

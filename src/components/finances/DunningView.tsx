@@ -659,17 +659,12 @@ ${message}
       </div>
 
       <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <TrendingUp className="w-5 h-5 text-primary-blue mt-0.5" />
-          <div className="text-sm text-blue-900">
-            <p className="font-semibold mb-1">Erfolgsquote:</p>
-            <p>
-              Im Durchschnitt werden 85% der offenen Posten nach der ersten
-              freundlichen Erinnerung beglichen. Nur 5% erreichen die dritte
-              Eskalationsstufe.
-            </p>
-          </div>
-        </div>
+        <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
+        <p className="text-sm text-blue-900">
+          Im Durchschnitt werden 85% der offenen Posten nach der ersten
+          freundlichen Erinnerung beglichen. Nur 5% erreichen die dritte
+          Eskalationsstufe.
+        </p>
       </div>
         </>
       )}

@@ -272,18 +272,13 @@ export default function OperatingCostWizardStep1() {
               </div>
 
               {selectedYear && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-blue-900 mb-1">
-                      Hinweis zur Abrechnungsfrist
-                    </h4>
-                    <p className="text-sm text-blue-700">
-                      Die Betriebskostenabrechnung für das Jahr {selectedYear}{" "}
-                      muss bis zum <strong>31.12.{deadlineYear}</strong>{" "}
-                      erstellt und versendet werden.
-                    </p>
-                  </div>
+                <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
+                  <p className="text-sm font-medium text-blue-900 mb-1">Hinweis zur Abrechnungsfrist</p>
+                  <p className="text-sm text-blue-900">
+                    Die Betriebskostenabrechnung für das Jahr {selectedYear}{" "}
+                    muss bis zum <strong>31.12.{deadlineYear}</strong>{" "}
+                    erstellt und versendet werden.
+                  </p>
                 </div>
               )}
             </div>

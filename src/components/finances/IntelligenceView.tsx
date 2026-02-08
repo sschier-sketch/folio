@@ -102,24 +102,17 @@ export default function IntelligenceView() {
               </div>
             </div>
 
-            <div className="border-l-4 border-blue-500 bg-blue-50 rounded-r-lg p-4">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="w-5 h-5 text-primary-blue mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="font-semibold text-dark mb-1">
-                    Optimierungspotenzial erkannt
-                  </h4>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Ihre Instandhaltungskosten sind in den letzten 6 Monaten um
-                    45% gestiegen. Prüfen Sie mögliche präventive Maßnahmen.
-                  </p>
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <span>Analyse: Letzte 6 Monate</span>
-                    <button className="text-primary-blue font-medium hover:underline">
-                      Empfehlungen ansehen
-                    </button>
-                  </div>
-                </div>
+            <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
+              <p className="text-sm font-medium text-blue-900 mb-1">Optimierungspotenzial erkannt</p>
+              <p className="text-sm text-blue-900 mb-2">
+                Ihre Instandhaltungskosten sind in den letzten 6 Monaten um
+                45% gestiegen. Prüfen Sie mögliche präventive Maßnahmen.
+              </p>
+              <div className="flex items-center gap-4 text-xs text-blue-700">
+                <span>Analyse: Letzte 6 Monate</span>
+                <button className="text-primary-blue font-medium hover:underline">
+                  Empfehlungen ansehen
+                </button>
               </div>
             </div>
           </div>

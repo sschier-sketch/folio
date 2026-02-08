@@ -513,24 +513,19 @@ export default function CashflowView() {
       </div>
 
       <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <BarChart3 className="w-5 h-5 text-primary-blue mt-0.5" />
-          <div className="text-sm text-blue-900">
-            <p className="font-semibold mb-1">Cashflow-Analyse:</p>
-            <p>
-              Im ausgewählten Zeitraum haben Sie einen{" "}
-              {totalCashflow >= 0 ? "positiven" : "negativen"} Cashflow von{" "}
-              <span className="font-semibold">
-                {totalCashflow.toFixed(2)} €
-              </span>
-              . Das entspricht durchschnittlich{" "}
-              <span className="font-semibold">
-                {averageCashflow.toFixed(2)} €
-              </span>{" "}
-              pro Monat.
-            </p>
-          </div>
-        </div>
+        <p className="text-sm font-medium text-blue-900 mb-1">Cashflow-Analyse:</p>
+        <p className="text-sm text-blue-900">
+          Im ausgewählten Zeitraum haben Sie einen{" "}
+          {totalCashflow >= 0 ? "positiven" : "negativen"} Cashflow von{" "}
+          <span className="font-semibold">
+            {totalCashflow.toFixed(2)} €
+          </span>
+          . Das entspricht durchschnittlich{" "}
+          <span className="font-semibold">
+            {averageCashflow.toFixed(2)} €
+          </span>{" "}
+          pro Monat.
+        </p>
       </div>
     </div>
   );

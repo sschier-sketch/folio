@@ -127,18 +127,13 @@ export default function BankConnectionView() {
         </div>
 
         <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <Shield className="w-5 h-5 text-primary-blue mt-0.5" />
-            <div className="text-sm text-blue-900">
-              <p className="font-semibold mb-1">Sicherheitshinweis:</p>
-              <p>
-                Die Bankanbindung erfolgt über eine verschlüsselte,
-                PSD2-konforme Schnittstelle. Ihre Zugangsdaten werden nie bei
-                uns gespeichert. Sie behalten die volle Kontrolle über Ihre
-                Daten.
-              </p>
-            </div>
-          </div>
+          <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
+          <p className="text-sm text-blue-900">
+            Die Bankanbindung erfolgt über eine verschlüsselte,
+            PSD2-konforme Schnittstelle. Ihre Zugangsdaten werden nie bei
+            uns gespeichert. Sie behalten die volle Kontrolle über Ihre
+            Daten.
+          </p>
         </div>
       </div>
     </PremiumFeatureGuard>

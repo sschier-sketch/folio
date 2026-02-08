@@ -431,23 +431,18 @@ export default function OperatingCostWizardStep2() {
           </div>
 
           <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4 mt-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-primary-blue mt-0.5" />
-              <div className="text-sm text-blue-900">
-                <p className="font-semibold mb-2">Hinweise zur Erfassung:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>
-                    Der <strong>Umlageschlüssel</strong> bestimmt, wie die Kosten auf die Mieter verteilt werden.
-                  </li>
-                  <li>
-                    Markieren Sie Kosten als <strong>§35a EStG-relevant</strong>, wenn diese steuerlich absetzbar sind (z.B. Hauswart, Gartenpflege, Schornsteinreinigung).
-                  </li>
-                  <li>
-                    Wählen Sie die passende <strong>Kategorie</strong>: Haushaltsnahe Dienstleistungen (max. 4.000€/Jahr) oder Handwerkerleistungen (max. 1.200€/Jahr).
-                  </li>
-                </ul>
-              </div>
-            </div>
+            <p className="text-sm font-medium text-blue-900 mb-2">Hinweise zur Erfassung:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-blue-900">
+              <li>
+                Der <strong>Umlageschlüssel</strong> bestimmt, wie die Kosten auf die Mieter verteilt werden.
+              </li>
+              <li>
+                Markieren Sie Kosten als <strong>§35a EStG-relevant</strong>, wenn diese steuerlich absetzbar sind (z.B. Hauswart, Gartenpflege, Schornsteinreinigung).
+              </li>
+              <li>
+                Wählen Sie die passende <strong>Kategorie</strong>: Haushaltsnahe Dienstleistungen (max. 4.000€/Jahr) oder Handwerkerleistungen (max. 1.200€/Jahr).
+              </li>
+            </ul>
           </div>
         </div>
 

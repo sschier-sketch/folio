@@ -344,18 +344,13 @@ export default function BillingPreview() {
             </div>
 
             <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="mt-6 border rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-primary-blue mt-0.5" />
-                <div className="text-sm text-blue-900">
-                  <p className="font-semibold mb-1">Hinweis zur Vorschau:</p>
-                  <p>
-                    Diese Vorschau zeigt eine vereinfachte Berechnung der
-                    Betriebskostenaufteilung. Vorauszahlungen und
-                    Verbrauchsdaten müssen für die finale Abrechnung noch
-                    erfasst werden.
-                  </p>
-                </div>
-              </div>
+              <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
+              <p className="text-sm text-blue-900">
+                Diese Vorschau zeigt eine vereinfachte Berechnung der
+                Betriebskostenaufteilung. Vorauszahlungen und
+                Verbrauchsdaten müssen für die finale Abrechnung noch
+                erfasst werden.
+              </p>
             </div>
           </>
         )}

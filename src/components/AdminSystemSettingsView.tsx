@@ -267,18 +267,13 @@ export default function AdminSystemSettingsView() {
             )}
           </div>
 
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">ENV Fallback</p>
-                <p>
-                  Falls keine Datenbank-Einstellung vorhanden ist, werden die
-                  Umgebungsvariablen VITE_GTM_ENABLED und VITE_GTM_ID
-                  verwendet.
-                </p>
-              </div>
-            </div>
+          <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
+            <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
+            <p className="text-sm text-blue-900">
+              Falls keine Datenbank-Einstellung vorhanden ist, werden die
+              Umgebungsvariablen VITE_GTM_ENABLED und VITE_GTM_ID
+              verwendet.
+            </p>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t">
