@@ -246,7 +246,7 @@ export default function Dashboard() {
             </div>{" "}
             <div className="flex items-center gap-4">
               {" "}
-              {!isPremium && trialStatus.hasActiveTrial && (
+              {trialStatus.hasActiveTrial && (
                 <button
                   onClick={() => setCurrentView('settings-billing')}
                   className="flex items-center gap-2 px-3.5 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
