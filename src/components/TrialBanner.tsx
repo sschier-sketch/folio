@@ -56,7 +56,7 @@ export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
     return null;
   }
 
-  if (isPro) {
+  if (isPro && !trialStatus.hasActiveTrial) {
     return null;
   }
 
