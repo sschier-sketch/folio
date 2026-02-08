@@ -77,7 +77,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       const [propertyRes, unitsRes, contractsRes, expensesRes, loansRes] = await Promise.all([
         supabase.from("properties").select("*").eq("id", propertyId).eq("user_id", user.id).single(),
         supabase.from("property_units").select("id, status, area_sqm, purchase_price, current_value").eq("property_id", propertyId),
-        supabase.from("rental_contracts").select("base_rent, status, contract_start, contract_end").eq("property_id", propertyId).eq("user_id", user.id).eq("status", "active"),
+        supabase.from("rental_contracts").select("base_rent, contract_start, contract_end").eq("property_id", propertyId).eq("user_id", user.id),
         supabase
           .from("expenses")
           .select("amount")
@@ -92,19 +92,23 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         setProperty(propertyRes.data);
 
         const totalUnits = unitsRes.data?.length || 0;
-        const vacantUnits = unitsRes.data?.filter((u) => u.status === "vacant").length || 0;
 
         const today = new Date();
-        const allActiveContracts = contractsRes.data?.filter((c) => c.status === "active") || [];
-        const activeStartedContracts = allActiveContracts.filter(c => {
+        const allContracts = contractsRes.data || [];
+        const activeStartedContracts = allContracts.filter(c => {
           const startDate = new Date(c.contract_start);
           const endDate = c.contract_end ? new Date(c.contract_end) : null;
           return startDate <= today && (!endDate || endDate >= today);
         });
-        const futureContracts = allActiveContracts.filter(c => {
+        const futureContracts = allContracts.filter(c => {
           const startDate = new Date(c.contract_start);
           return startDate > today;
         });
+
+        const occupiedCount = Math.min(activeStartedContracts.length, totalUnits || activeStartedContracts.length);
+        const vacantUnits = totalUnits > 0
+          ? Math.max(0, totalUnits - activeStartedContracts.length)
+          : 0;
 
         let vacancyRate = 0;
         if (totalUnits > 0) {
