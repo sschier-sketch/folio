@@ -166,20 +166,12 @@ export default function LoanModal({
         alert("Bitte geben Sie die Kreditsumme ein");
         return false;
       }
-      if (!formData.remaining_balance || formData.remaining_balance < 0) {
-        alert("Bitte geben Sie die Restschuld ein");
-        return false;
-      }
       if (!formData.interest_rate || formData.interest_rate <= 0) {
         alert("Bitte geben Sie den Zinssatz ein");
         return false;
       }
       if (!formData.monthly_payment || formData.monthly_payment <= 0) {
         alert("Bitte geben Sie die monatliche Rate ein");
-        return false;
-      }
-      if (!formData.monthly_principal || formData.monthly_principal < 0) {
-        alert("Bitte geben Sie die monatliche Tilgung ein");
         return false;
       }
     }
@@ -311,7 +303,7 @@ export default function LoanModal({
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-400 mb-1">
-            Restschuld (€) *
+            Restschuld (€)
           </label>
           <input
             type="text"
@@ -319,7 +311,6 @@ export default function LoanModal({
             onChange={(e) => setRemainingBalanceInput(e.target.value)}
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             placeholder="z.B. 185000 oder 185.000,00"
-            required
           />
         </div>
       </div>
@@ -355,7 +346,7 @@ export default function LoanModal({
 
       <div>
         <label className="block text-sm font-medium text-gray-400 mb-1">
-          Monatliche Tilgung *
+          Monatliche Tilgung
         </label>
         <div className="flex gap-2">
           <input
@@ -366,7 +357,6 @@ export default function LoanModal({
             placeholder={
               principalType === "euro" ? "z.B. 800" : "z.B. 1,5 oder 2"
             }
-            required
           />
           <select
             value={principalType}
