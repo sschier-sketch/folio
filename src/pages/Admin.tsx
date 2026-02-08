@@ -87,13 +87,20 @@ export function Admin() {
         console.error("Error loading users:", usersError);
         return;
       }
-      setUsers(usersData as UserData[]);
-      const proCount = (usersData || []).filter(
+      const enriched = (usersData as UserData[] || []).map((u) => {
+        if (u.subscription_plan === 'pro') return u;
+        if (u.subscription_ends_at && new Date(u.subscription_ends_at) > new Date()) {
+          return { ...u, subscription_plan: 'pro', subscription_status: 'active' };
+        }
+        return u;
+      });
+      setUsers(enriched);
+      const proCount = enriched.filter(
         (u) => u.subscription_plan === "pro",
       ).length;
-      const freeCount = (usersData || []).length - proCount;
+      const freeCount = enriched.length - proCount;
       setStats({
-        totalUsers: (usersData || []).length,
+        totalUsers: enriched.length,
         freeUsers: freeCount,
         premiumUsers: proCount,
         monthlyRevenue: proCount * 9,
@@ -583,15 +590,7 @@ export function Admin() {
           onClose={() => setDeleteTarget(null)}
           onDeleted={() => {
             setDeleteTarget(null);
-            setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));
-            const remaining = users.filter((u) => u.id !== deleteTarget.id);
-            const proCount = remaining.filter((u) => u.subscription_plan === "pro").length;
-            setStats({
-              totalUsers: remaining.length,
-              freeUsers: remaining.length - proCount,
-              premiumUsers: proCount,
-              monthlyRevenue: proCount * 9,
-            });
+            reloadUsers();
           }}
         />
       )}
