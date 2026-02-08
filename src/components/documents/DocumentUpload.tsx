@@ -284,7 +284,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg p-6 border border-gray-100">
+      <div className="bg-white rounded-lg p-6 ">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-dark">Speicherplatz</h2>
           {!isPro && (
@@ -337,7 +337,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         </div>
       )}
 
-      <div className="bg-white rounded-lg p-6 border border-gray-100">
+      <div className="bg-white rounded-lg p-6 ">
         <h2 className="text-lg font-semibold text-dark mb-4">Dateien auswählen</h2>
 
         <div
@@ -421,7 +421,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         )}
       </div>
 
-      <div className="bg-white rounded-lg p-6 border border-gray-100">
+      <div className="bg-white rounded-lg p-6 ">
         <h2 className="text-lg font-semibold text-dark mb-4">Dokumentinformationen</h2>
 
         <div className="space-y-4">
@@ -525,9 +525,9 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                   Zuordnung (Optional)
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                    PRO
-                  </span>
+                  <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Lock className="w-3 h-3 text-white" />
+                  </div>
                 </label>
                 <select
                   value={associationType}
@@ -657,9 +657,9 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex items-center gap-2">
                     Im Mieterportal zur Verfügung stellen
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                      PRO
-                    </span>
+                    <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Lock className="w-3 h-3 text-white" />
+                    </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     {associationType === 'tenant' && associationId

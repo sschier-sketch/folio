@@ -500,7 +500,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-lg p-6 border border-gray-100">
+          <div className="bg-white rounded-lg p-6 ">
             <div className="flex items-start gap-4 mb-6">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <FileText className="w-6 h-6 text-blue-600" />
@@ -636,7 +636,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
             )}
           </div>
 
-          <div className="bg-white rounded-lg p-6 border border-gray-100">
+          <div className="bg-white rounded-lg p-6 ">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-dark flex items-center gap-2">
                 <LinkIcon className="w-5 h-5" />
@@ -831,7 +831,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-lg p-6 border border-gray-100">
+          <div className="bg-white rounded-lg p-6 ">
             <h2 className="text-lg font-semibold text-dark mb-4">Details</h2>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
@@ -898,7 +898,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
           <DocumentFeatureGuard
             feature="document-history"
             fallback={
-              <div className="bg-white rounded-lg p-6 border border-gray-100 relative">
+              <div className="bg-white rounded-lg p-6  relative">
                 <div className="absolute inset-0 bg-white bg-opacity-80 rounded-lg flex items-center justify-center z-10">
                   <div className="text-center">
                     <Lock className="w-12 h-12 text-gray-400 mx-auto mb-2" />
@@ -924,7 +924,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
               </div>
             }
           >
-            <div className="bg-white rounded-lg p-6 border border-gray-100">
+            <div className="bg-white rounded-lg p-6 ">
               <h2 className="text-lg font-semibold text-dark mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 Änderungsverlauf

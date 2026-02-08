@@ -135,10 +135,12 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
 
   return (
     <div className="space-y-6">
-      <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
+      <div style={{ backgroundColor: "#eff4fe" }} className="rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <Archive className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <div>
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 border border-[#DDE7FF]">
+            <Archive className="w-5 h-5 text-blue-600" />
+          </div>
+          <div className="flex-1">
             <h3 className="font-medium text-blue-900 mb-1">Archivierte Dokumente</h3>
             <p className="text-sm text-blue-700">
               Archivierte Dokumente sind schreibgeschützt und werden in der normalen Dokumentenliste
