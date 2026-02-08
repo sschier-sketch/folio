@@ -164,6 +164,7 @@ export default function AdminProFeaturesView() {
   const tabLabels: Record<string, string> = {
     trial_banner: "Trial-Banner",
     dunning: "Mahnwesen",
+    upgrade: "Upgrade-Prompt",
     contract: "Vertrag & Dokumente",
     communication: "Kommunikation",
     handover: "Übergabe & Wechsel",

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lock, Zap } from "lucide-react";
+import { Lock, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
@@ -80,7 +80,7 @@ export function PremiumUpgradePrompt({
         <ul className="text-left space-y-3 text-sm text-gray-700">
           {content.features.map((feature, index) => (
             <li key={index} className="flex items-start gap-3">
-              <Zap className="w-4 h-4 text-primary-blue flex-shrink-0 mt-0.5" />
+              <Check className="w-4 h-4 text-gray-700 flex-shrink-0 mt-0.5" />
               <span>{feature}</span>
             </li>
           ))}

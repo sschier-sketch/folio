@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Lock, Zap } from "lucide-react";
+import { Lock, Check } from "lucide-react";
 import { useSubscription } from "../hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 
@@ -72,19 +72,19 @@ export function PremiumFeatureGuard({
         </h4>
         <ul className="text-left space-y-2 text-sm text-gray-400">
           <li className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-primary-blue flex-shrink-0" />
+            <Check className="w-4 h-4 text-gray-400 flex-shrink-0" />
             Ticketsystem für Mieter-Kommunikation
           </li>
           <li className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-primary-blue flex-shrink-0" />
+            <Check className="w-4 h-4 text-gray-400 flex-shrink-0" />
             Automatische Mieterhöhungs-Erinnerungen
           </li>
           <li className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-primary-blue flex-shrink-0" />
+            <Check className="w-4 h-4 text-gray-400 flex-shrink-0" />
             Erweiterte Renditeberechnung
           </li>
           <li className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-primary-blue flex-shrink-0" />
+            <Check className="w-4 h-4 text-gray-400 flex-shrink-0" />
             Detaillierte Finanzanalysen
           </li>
         </ul>

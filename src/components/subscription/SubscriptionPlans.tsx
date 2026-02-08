@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, CreditCard, Info, Loader2, AlertTriangle } from 'lucide-react';
+import { Check, CreditCard, Info, Loader2, AlertTriangle, Lock } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useTrialStatus } from '../../hooks/useTrialStatus';
 import { useAuth } from '../../hooks/useAuth';
@@ -25,17 +25,24 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
     expiredTitle: 'Gratis-Testphase beendet',
     expiredDescription: 'Ihre Gratis-Testphase ist am {date} abgelaufen. Upgrade auf Pro, um alle Funktionen weiter zu nutzen.',
   });
+  const [upgradePrompt, setUpgradePrompt] = useState({
+    title: 'Schalten Sie Ihr volles Potenzial frei!',
+    description: 'Sie nutzen derzeit den Basic-Tarif. Upgraden Sie auf Pro und erhalten Sie Zugriff auf alle Premium-Features für eine professionelle Immobilienverwaltung.',
+    features: ['Unbegrenzte Objekte & Mieter', 'Erweiterte Finanzen', 'Dokumente & Vorlagen', 'Alle Pro-Features'],
+  });
 
   useEffect(() => {
-    async function loadTrialTexts() {
+    async function loadProTexts() {
       const { data } = await supabase
         .from('pro_feature_texts')
         .select('feature_key, title, description, features')
-        .in('feature_key', ['billing_trial_active', 'billing_trial_expired']);
+        .in('feature_key', ['billing_trial_active', 'billing_trial_expired', 'billing_upgrade_prompt'])
+        .eq('is_active', true);
 
       if (data && data.length > 0) {
         const active = data.find(d => d.feature_key === 'billing_trial_active');
         const expired = data.find(d => d.feature_key === 'billing_trial_expired');
+        const upgrade = data.find(d => d.feature_key === 'billing_upgrade_prompt');
         setBillingTrialTexts(prev => ({
           activeTitle: active?.title || prev.activeTitle,
           activeDescription: active?.description || prev.activeDescription,
@@ -43,9 +50,16 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
           expiredTitle: expired?.title || prev.expiredTitle,
           expiredDescription: expired?.description || prev.expiredDescription,
         }));
+        if (upgrade) {
+          setUpgradePrompt(prev => ({
+            title: upgrade.title || prev.title,
+            description: upgrade.description || prev.description,
+            features: upgrade.features?.length ? upgrade.features : prev.features,
+          }));
+        }
       }
     }
-    loadTrialTexts();
+    loadProTexts();
   }, []);
 
   const isActive = subscription?.subscription_status === 'active';
@@ -213,7 +227,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
           </div>
 
           {isCancelledButActive && cancelDate && (
-            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5 mb-8 flex items-start gap-4">
+            <div className="bg-amber-50 rounded-xl p-5 mb-8 flex items-start gap-4">
               <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h3 className="font-bold text-amber-900 mb-1">Abo gekündigt</h3>
@@ -225,7 +239,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                 <button
                   onClick={handleManageSubscription}
                   disabled={loading === 'portal'}
-                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors disabled:opacity-50"
+                  className="mt-3 inline-flex items-center gap-2 px-5 py-2 bg-amber-600 text-white rounded-full text-sm font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50"
                 >
                   {loading === 'portal' ? (
                     <>
@@ -290,51 +304,33 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
           )}
 
           {currentPlanId === 'basic' && !trialStatus.hasActiveTrial && !trialStatus.isTrialExpired && (
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    Schalten Sie Ihr volles Potenzial frei!
-                  </h3>
-                  <p className="text-sm text-gray-700 mb-4">
-                    Sie nutzen derzeit den Basic-Tarif. Upgraden Sie auf <strong>Pro</strong> und erhalten Sie Zugriff auf alle Premium-Features für eine professionelle Immobilienverwaltung.
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Check className="w-4 h-4 text-green-600" />
-                      <span>Unbegrenzte Objekte & Mieter</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Check className="w-4 h-4 text-green-600" />
-                      <span>Erweiterte Finanzen</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Check className="w-4 h-4 text-green-600" />
-                      <span>Dokumente & Vorlagen</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Check className="w-4 h-4 text-green-600" />
-                      <span>Alle Pro-Features</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      document.getElementById('pro-plan-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Jetzt auf Pro upgraden
-                  </button>
-                </div>
+            <div className="rounded-lg p-8 text-center mb-8" style={{ backgroundColor: '#eff4fe' }}>
+              <div className="inline-flex w-16 h-16 bg-primary-blue rounded-full items-center justify-center mb-4">
+                <Lock className="w-8 h-8 text-white" />
               </div>
+              <h3 className="text-2xl font-bold text-dark mb-2">{upgradePrompt.title}</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">{upgradePrompt.description}</p>
+              <div className="bg-white rounded-lg p-6 mb-6 max-w-md mx-auto">
+                <h4 className="font-semibold text-dark mb-4 text-center">
+                  Das erwartet Sie im Pro-Plan
+                </h4>
+                <ul className="text-left space-y-3 text-sm text-gray-700">
+                  {upgradePrompt.features.map((feature, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <Check className="w-4 h-4 text-gray-700 flex-shrink-0 mt-0.5" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <button
+                onClick={() => {
+                  document.getElementById('pro-plan-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="px-8 py-3 bg-primary-blue text-white font-semibold rounded-full hover:shadow-lg transition-all"
+              >
+                Jetzt auf Pro upgraden
+              </button>
             </div>
           )}
         </>
