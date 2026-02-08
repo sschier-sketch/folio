@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
+import { DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
 
 interface DocumentUploadProps {
   onSuccess: () => void;
@@ -26,7 +27,6 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const { isPro } = useSubscription();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [documentType, setDocumentType] = useState("other");
-  const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [documentDate, setDocumentDate] = useState("");
   const [associationType, setAssociationType] = useState("");
@@ -196,7 +196,6 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           file_size: uploadFile.file.size,
           file_type: uploadFile.file.type,
           document_type: documentType,
-          category: category || null,
           description: description || null,
           document_date: documentDate || null,
           shared_with_tenant: sharedWithTenant,
@@ -435,47 +434,17 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               onChange={(e) => setDocumentType(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="contract">Vertrag</option>
-              <option value="invoice">Rechnung</option>
-              <option value="bill">Abrechnung</option>
-              <option value="receipt">Beleg</option>
-              <option value="report">Bericht</option>
-              <option value="other">Sonstiges</option>
+              {DOCUMENT_TYPE_GROUPS.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.types.map((type) => (
+                    <option key={type} value={type}>
+                      {DOCUMENT_TYPE_LABELS[type] || type}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
             </select>
           </div>
-
-          <DocumentFeatureGuard
-            feature="document-category"
-            fallback={
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kategorie
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    disabled
-                    placeholder="Pro Feature"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed"
-                  />
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-            }
-          >
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Kategorie (Optional)
-              </label>
-              <input
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="z.B. Steuer, Versicherung, Wartung"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </DocumentFeatureGuard>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

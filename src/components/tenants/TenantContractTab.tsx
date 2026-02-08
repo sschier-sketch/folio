@@ -6,6 +6,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import DocumentDetails from "../documents/DocumentDetails";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 import TableActionsDropdown from "../common/TableActionsDropdown";
+import { getDocumentTypeLabel as sharedGetDocumentTypeLabel, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
 
 interface TenantContractTabProps {
   tenantId: string;
@@ -311,38 +312,7 @@ export default function TenantContractTab({
     loadDocuments();
   }
 
-  const getDocumentTypeLabel = (type: string) => {
-    switch (type) {
-      case "contract":
-        return "Vertrag";
-      case "rental_agreement":
-        return "Mietvertrag";
-      case "invoice":
-        return "Rechnung";
-      case "receipt":
-        return "Quittung";
-      case "report":
-        return "Bericht";
-      case "main_contract":
-        return "Hauptvertrag";
-      case "amendment":
-        return "Nachtrag";
-      case "addendum":
-        return "Zusatzvereinbarung";
-      case "termination":
-        return "Kündigung";
-      case "protocol":
-        return "Protokoll";
-      case "correspondence":
-        return "Schriftverkehr";
-      case "bill":
-        return "Abrechnung";
-      case "other":
-        return "Sonstiges";
-      default:
-        return type;
-    }
-  };
+  const getDocumentTypeLabel = sharedGetDocumentTypeLabel;
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + " B";
@@ -538,17 +508,15 @@ export default function TenantContractTab({
                   onChange={(e) => setSelectedDocType(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
-                  <option value="rental_agreement">Mietvertrag</option>
-                  <option value="amendment">Nachtrag</option>
-                  <option value="addendum">Zusatzvereinbarung</option>
-                  <option value="termination">Kündigung</option>
-                  <option value="protocol">Protokoll</option>
-                  <option value="correspondence">Schriftverkehr</option>
-                  <option value="invoice">Rechnung</option>
-                  <option value="receipt">Quittung</option>
-                  <option value="bill">Abrechnung</option>
-                  <option value="report">Bericht</option>
-                  <option value="other">Sonstiges</option>
+                  {DOCUMENT_TYPE_GROUPS.map((group) => (
+                    <optgroup key={group.label} label={group.label}>
+                      {group.types.map((type) => (
+                        <option key={type} value={type}>
+                          {DOCUMENT_TYPE_LABELS[type] || type}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
 

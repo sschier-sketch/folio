@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
+import { getDocumentTypeLabel as sharedGetDocumentTypeLabel, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
 
 interface PropertyDocumentsTabProps {
   propertyId: string;
@@ -356,27 +357,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
     }).format(date);
   };
 
-  const getDocumentTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      floor_plan: "Grundriss",
-      energy_certificate: "Energieausweis",
-      insurance: "Versicherung",
-      property_deed: "Grundbuchauszug",
-      rental_agreement: "Mietvertrag",
-      utility_bill: "Nebenkostenabrechnung",
-      maintenance: "Wartung",
-      photo: "Foto",
-      blueprint: "Bauplan",
-      expose: "Exposé",
-      contract: "Vertrag",
-      invoice: "Rechnung",
-      bill: "Abrechnung",
-      receipt: "Beleg",
-      report: "Bericht",
-      other: "Sonstiges",
-    };
-    return labels[type] || type;
-  };
+  const getDocumentTypeLabel = sharedGetDocumentTypeLabel;
 
   const filteredDocuments = documents.filter((doc) => {
     if (!filterDateFrom && !filterDateTo) return true;
@@ -740,38 +721,15 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                   onChange={(e) => setSelectedDocType(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <optgroup label="Grundrisse & Pläne">
-                    <option value="floor_plan">Grundriss</option>
-                    <option value="blueprint">Bauplan</option>
-                    <option value="expose">Exposé</option>
-                  </optgroup>
-                  <optgroup label="Zertifikate">
-                    <option value="energy_certificate">Energieausweis</option>
-                  </optgroup>
-                  <optgroup label="Versicherungen">
-                    <option value="insurance">Versicherung</option>
-                  </optgroup>
-                  <optgroup label="Verträge & Urkunden">
-                    <option value="property_deed">Grundbuchauszug/Kaufvertrag</option>
-                    <option value="rental_agreement">Mietvertrag</option>
-                    <option value="contract">Vertrag (Sonstige)</option>
-                  </optgroup>
-                  <optgroup label="Rechnungen">
-                    <option value="utility_bill">Nebenkostenabrechnung</option>
-                    <option value="invoice">Rechnung</option>
-                    <option value="bill">Abrechnung</option>
-                    <option value="receipt">Beleg</option>
-                  </optgroup>
-                  <optgroup label="Wartung">
-                    <option value="maintenance">Wartungsunterlagen</option>
-                  </optgroup>
-                  <optgroup label="Medien">
-                    <option value="photo">Foto</option>
-                  </optgroup>
-                  <optgroup label="Sonstiges">
-                    <option value="report">Bericht</option>
-                    <option value="other">Sonstiges</option>
-                  </optgroup>
+                  {DOCUMENT_TYPE_GROUPS.map((group) => (
+                    <optgroup key={group.label} label={group.label}>
+                      {group.types.map((type) => (
+                        <option key={type} value={type}>
+                          {DOCUMENT_TYPE_LABELS[type] || type}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
 

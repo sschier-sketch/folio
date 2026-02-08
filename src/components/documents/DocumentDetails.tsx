@@ -20,6 +20,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
+import { getDocumentTypeLabel, getDocumentTypeColor, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
 
 interface DocumentDetailsProps {
   documentId: string;
@@ -70,7 +71,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   const [editForm, setEditForm] = useState({
     file_name: "",
     document_type: "",
-    category: "",
     description: "",
     shared_with_tenant: false,
   });
@@ -109,7 +109,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
         setEditForm({
           file_name: data.file_name,
           document_type: data.document_type,
-          category: data.category || "",
           description: data.description || "",
           shared_with_tenant: data.shared_with_tenant || false,
         });
@@ -257,7 +256,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
         .update({
           file_name: editForm.file_name,
           document_type: editForm.document_type,
-          category: editForm.category || null,
           description: editForm.description || null,
           shared_with_tenant: editForm.shared_with_tenant,
         })
@@ -409,23 +407,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
     }).format(date);
   };
 
-  const getDocumentTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      contract: "Vertrag",
-      invoice: "Rechnung",
-      bill: "Abrechnung",
-      receipt: "Beleg",
-      report: "Bericht",
-      other: "Sonstiges",
-      rental_agreement: "Mietvertrag",
-      floor_plan: "Grundriss",
-      energy_certificate: "Energieausweis",
-      insurance: "Versicherung",
-      property_deed: "Grundbuchauszug",
-      blueprint: "Bauplan",
-    };
-    return labels[type] || type;
-  };
 
   const getAssociationTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -560,49 +541,17 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="contract">Vertrag</option>
-                    <option value="invoice">Rechnung</option>
-                    <option value="bill">Abrechnung</option>
-                    <option value="receipt">Beleg</option>
-                    <option value="report">Bericht</option>
-                    <option value="other">Sonstiges</option>
+                    {DOCUMENT_TYPE_GROUPS.map((group) => (
+                      <optgroup key={group.label} label={group.label}>
+                        {group.types.map((type) => (
+                          <option key={type} value={type}>
+                            {DOCUMENT_TYPE_LABELS[type] || type}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
                   </select>
                 </div>
-
-                <DocumentFeatureGuard
-                  feature="document-category"
-                  fallback={
-                    <div className="relative">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Kategorie
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          disabled
-                          placeholder="Pro Feature"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed"
-                        />
-                        <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      </div>
-                    </div>
-                  }
-                >
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Kategorie
-                    </label>
-                    <input
-                      type="text"
-                      value={editForm.category}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, category: e.target.value })
-                      }
-                      placeholder="z.B. Steuer, Versicherung, Wartung"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </DocumentFeatureGuard>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -632,7 +581,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                       setEditForm({
                         file_name: document.file_name,
                         document_type: document.document_type,
-                        category: document.category || "",
                         description: document.description || "",
                         shared_with_tenant: document.shared_with_tenant || false,
                       });
@@ -895,16 +843,6 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                   </div>
                 </div>
               </div>
-
-              {isPro && document.category && (
-                <div className="flex items-start gap-3">
-                  <Tag className="w-5 h-5 text-gray-400 mt-0.5" />
-                  <div className="flex-1">
-                    <div className="text-sm text-gray-500">Kategorie</div>
-                    <div className="text-sm font-medium text-dark">{document.category}</div>
-                  </div>
-                </div>
-              )}
 
               <div className="flex items-start gap-3">
                 <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />

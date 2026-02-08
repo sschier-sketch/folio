@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FileText, Download } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { getDocumentTypeLabel as sharedGetDocumentTypeLabel, getDocumentTypeColor as sharedGetDocumentTypeColor } from "../../lib/documentTypes";
 
 interface Document {
   id: string;
@@ -50,45 +51,8 @@ export default function TenantPortalDocuments({
     }
   };
 
-  const getDocumentTypeLabel = (type: string) => {
-    const types: { [key: string]: string } = {
-      floor_plan: "Grundriss",
-      energy_certificate: "Energieausweis",
-      insurance: "Versicherung",
-      property_deed: "Grundbuchauszug",
-      rental_agreement: "Mietvertrag",
-      utility_bill: "Nebenkostenabrechnung",
-      maintenance: "Wartung",
-      photo: "Foto",
-      blueprint: "Bauplan",
-      expose: "Exposé",
-      contract: "Vertrag",
-      invoice: "Rechnung",
-      bill: "Abrechnung",
-      receipt: "Beleg",
-      report: "Bericht",
-      automatische_vorlage: "Automatische Vorlage",
-      other: "Sonstiges",
-    };
-    return types[type] || type;
-  };
-
-  const getDocumentTypeColor = (type: string) => {
-    const colors: { [key: string]: string } = {
-      floor_plan: "bg-blue-100 text-blue-700",
-      energy_certificate: "bg-emerald-100 text-emerald-700",
-      rental_agreement: "bg-blue-100 text-blue-700",
-      contract: "bg-blue-100 text-blue-700",
-      utility_bill: "bg-emerald-100 text-emerald-700",
-      invoice: "bg-orange-100 text-orange-700",
-      bill: "bg-orange-100 text-orange-700",
-      receipt: "bg-orange-100 text-orange-700",
-      maintenance: "bg-slate-100 text-slate-700",
-      automatische_vorlage: "bg-purple-100 text-purple-700",
-      other: "bg-gray-100 text-gray-700",
-    };
-    return colors[type] || colors.other;
-  };
+  const getDocumentTypeLabel = sharedGetDocumentTypeLabel;
+  const getDocumentTypeColor = sharedGetDocumentTypeColor;
 
   const handleDownload = async (document: Document) => {
     try {

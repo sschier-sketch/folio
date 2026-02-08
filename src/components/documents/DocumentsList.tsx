@@ -5,6 +5,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import TableActionsDropdown from "../common/TableActionsDropdown";
+import { getDocumentTypeLabel, getDocumentTypeColor, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
 
 interface Document {
   id: string;
@@ -148,49 +149,6 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
     }
   }
 
-  const getDocumentTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      contract: "Vertrag",
-      invoice: "Rechnung",
-      bill: "Abrechnung",
-      receipt: "Beleg",
-      report: "Bericht",
-      other: "Sonstiges",
-      floor_plan: "Grundriss",
-      energy_certificate: "Energieausweis",
-      insurance: "Versicherung",
-      property_deed: "Grundbuchauszug",
-      rental_agreement: "Mietvertrag",
-      utility_bill: "Nebenkostenabrechnung",
-      maintenance: "Wartung",
-      photo: "Foto",
-      blueprint: "Bauplan",
-      expose: "Exposé",
-    };
-    return labels[type] || type;
-  };
-
-  const getDocumentTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      contract: "bg-blue-100 text-blue-700",
-      invoice: "bg-emerald-100 text-emerald-700",
-      bill: "bg-orange-100 text-orange-700",
-      receipt: "bg-violet-100 text-violet-700",
-      report: "bg-gray-100 text-gray-700",
-      other: "bg-gray-100 text-gray-700",
-      floor_plan: "bg-blue-100 text-blue-700",
-      energy_certificate: "bg-emerald-100 text-emerald-700",
-      insurance: "bg-violet-100 text-violet-700",
-      property_deed: "bg-amber-100 text-amber-700",
-      rental_agreement: "bg-amber-100 text-amber-700",
-      utility_bill: "bg-orange-100 text-orange-700",
-      maintenance: "bg-slate-100 text-slate-700",
-      photo: "bg-pink-100 text-pink-700",
-      blueprint: "bg-blue-100 text-blue-700",
-      expose: "bg-blue-100 text-blue-700",
-    };
-    return colors[type] || "bg-gray-100 text-gray-700";
-  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 B";
@@ -373,12 +331,15 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Alle Typen</option>
-                <option value="contract">Vertrag</option>
-                <option value="invoice">Rechnung</option>
-                <option value="bill">Abrechnung</option>
-                <option value="receipt">Beleg</option>
-                <option value="report">Bericht</option>
-                <option value="other">Sonstiges</option>
+                {DOCUMENT_TYPE_GROUPS.map((group) => (
+                  <optgroup key={group.label} label={group.label}>
+                    {group.types.map((type) => (
+                      <option key={type} value={type}>
+                        {DOCUMENT_TYPE_LABELS[type] || type}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
             </div>
 

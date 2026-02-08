@@ -5,6 +5,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
+import { getDocumentTypeLabel, getDocumentTypeColor } from "../../lib/documentTypes";
 
 interface Document {
   id: string;
@@ -106,29 +107,6 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
     }
   }
 
-  const getDocumentTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      contract: "Vertrag",
-      invoice: "Rechnung",
-      bill: "Abrechnung",
-      receipt: "Beleg",
-      report: "Bericht",
-      other: "Sonstiges",
-    };
-    return labels[type] || type;
-  };
-
-  const getDocumentTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      contract: "bg-blue-100 text-blue-700",
-      invoice: "bg-emerald-100 text-emerald-700",
-      bill: "bg-orange-100 text-orange-700",
-      receipt: "bg-violet-100 text-violet-700",
-      report: "bg-gray-100 text-gray-700",
-      other: "bg-gray-100 text-gray-700",
-    };
-    return colors[type] || "bg-gray-100 text-gray-700";
-  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 B";
