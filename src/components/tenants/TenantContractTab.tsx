@@ -217,20 +217,12 @@ export default function TenantContractTab({
 
         if (docError) throw docError;
 
-        const { error: assocError } = await supabase.from("document_associations").insert([
-          {
-            document_id: docData.id,
-            association_type: "rental_contract",
-            association_id: contractId,
-            created_by: user.id,
-          },
-          {
-            document_id: docData.id,
-            association_type: "tenant",
-            association_id: tenantId,
-            created_by: user.id,
-          },
-        ]);
+        const { error: assocError } = await supabase.from("document_associations").insert({
+          document_id: docData.id,
+          association_type: "rental_contract",
+          association_id: contractId,
+          created_by: user.id,
+        });
 
         if (assocError) throw assocError;
 
