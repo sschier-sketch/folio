@@ -38,7 +38,7 @@ export default function TenantContractTab({
   const [documents, setDocuments] = useState<Document[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
-  const [selectedDocType, setSelectedDocType] = useState("contract");
+  const [selectedDocType, setSelectedDocType] = useState("rental_agreement");
   const [uploadDescription, setUploadDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -262,7 +262,7 @@ export default function TenantContractTab({
       setShowUploadModal(false);
       setUploadFiles([]);
       setUploadDescription("");
-      setSelectedDocType("contract");
+      setSelectedDocType("rental_agreement");
       setShareWithTenant(true);
     }
   }
@@ -546,10 +546,15 @@ export default function TenantContractTab({
                   onChange={(e) => setSelectedDocType(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 >
-                  <option value="contract">Hauptvertrag</option>
                   <option value="rental_agreement">Mietvertrag</option>
+                  <option value="amendment">Nachtrag</option>
+                  <option value="addendum">Zusatzvereinbarung</option>
+                  <option value="termination">Kündigung</option>
+                  <option value="protocol">Protokoll</option>
+                  <option value="correspondence">Schriftverkehr</option>
                   <option value="invoice">Rechnung</option>
                   <option value="receipt">Quittung</option>
+                  <option value="bill">Abrechnung</option>
                   <option value="report">Bericht</option>
                   <option value="other">Sonstiges</option>
                 </select>
