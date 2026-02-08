@@ -93,6 +93,7 @@ export default function TenantModal({
     is_sublet: false,
     vat_applicable: false,
     auto_create_rent_increase_tickets: false,
+    generate_historic_payments: true,
   });
 
   const [depositData, setDepositData] = useState({
@@ -532,6 +533,7 @@ export default function TenantModal({
                 is_unlimited: tenantData.is_unlimited,
                 contract_type: tenantData.is_unlimited ? "unlimited" : "limited",
                 status: "active",
+                generate_historic_payments: rentData.generate_historic_payments,
               },
             ])
             .select()
@@ -1187,7 +1189,7 @@ export default function TenantModal({
       )}
 
       <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 flex-wrap">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -1209,6 +1211,27 @@ export default function TenantModal({
               className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
             />
             <span className="text-sm font-medium text-gray-700">Mehrwertsteuer berechnen</span>
+          </label>
+        </div>
+
+        <div className="pt-2 border-t border-gray-200">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!rentData.generate_historic_payments}
+              onChange={(e) =>
+                setRentData({ ...rentData, generate_historic_payments: !e.target.checked })
+              }
+              className="w-4 h-4 mt-0.5 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+            />
+            <div>
+              <span className="text-sm font-medium text-gray-700">
+                Mietzahlungen erst ab jetzt berechnen
+              </span>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Wenn aktiviert, werden Mietzahlungen erst ab dem aktuellen Monat erstellt statt rückwirkend ab Mietbeginn. Ideal für bestehende Mietverhältnisse, die erst jetzt in Rentably erfasst werden.
+              </p>
+            </div>
           </label>
         </div>
       </div>
