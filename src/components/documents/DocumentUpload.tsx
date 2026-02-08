@@ -525,7 +525,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                   Zuordnung (Optional)
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
                     PRO
                   </span>
                 </label>
@@ -657,7 +657,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                 <div className="flex-1">
                   <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex items-center gap-2">
                     Im Mieterportal zur Verfügung stellen
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
                       PRO
                     </span>
                   </div>
