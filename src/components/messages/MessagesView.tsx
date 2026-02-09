@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Mail, RefreshCw, LayoutDashboard, Inbox, Trash2, Settings } from 'lucide-react';
+import { Plus, Mail, RefreshCw, Eye, Inbox, Trash2, Settings } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -297,7 +297,8 @@ export default function MessagesView() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Nachrichten</h1>
+          <h1 className="text-3xl font-bold text-dark">Nachrichten</h1>
+          <p className="text-gray-400 mt-1">Verwalten Sie Ihre E-Mails, Vorlagen und Kommunikationseinstellungen</p>
         </div>
         <PremiumUpgradePrompt featureKey="messages_overview" />
       </div>
@@ -306,15 +307,12 @@ export default function MessagesView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Nachrichten</h1>
-          {mailbox && activeTab === 'inbox' && (
-            <div className="flex items-center gap-2 mt-1">
-              <Mail className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-sm text-gray-500">{mailbox.alias_localpart}@rentab.ly</span>
-            </div>
-          )}
+          <h1 className="text-3xl font-bold text-dark">Nachrichten</h1>
+          <p className="text-gray-400 mt-1">
+            Verwalten Sie Ihre E-Mails, Vorlagen und Kommunikationseinstellungen
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {activeTab === 'inbox' && isFolderView && !showCompose && (
@@ -329,7 +327,7 @@ export default function MessagesView() {
           {activeTab === 'inbox' && activeFolder === 'trash' && folderCounts.trash > 0 && (
             <button
               onClick={handleEmptyTrash}
-              className="flex items-center gap-2 px-4 py-2.5 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 text-sm font-medium rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 text-sm font-medium rounded-lg transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               Papierkorb leeren
@@ -337,7 +335,7 @@ export default function MessagesView() {
           )}
           <button
             onClick={handleStartCompose}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Neue Nachricht
@@ -345,28 +343,28 @@ export default function MessagesView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-t-xl border-b border-gray-200">
+      <div className="bg-white rounded-lg mb-6">
         <ScrollableTabNav>
           <div className="flex">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`flex items-center gap-2 px-6 py-3.5 text-sm font-medium transition-colors relative whitespace-nowrap ${
-                activeTab === 'overview' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-700'
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                activeTab === 'overview' ? 'text-primary-blue' : 'text-gray-400 hover:text-dark'
               }`}
             >
-              <LayoutDashboard className="w-3.5 h-3.5" />
+              <Eye className="w-3 h-3" />
               Übersicht
               {activeTab === 'overview' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>
             <button
               onClick={() => { setActiveTab('inbox'); if (!isFolderView) { setActiveView('inbox'); setActiveFolder('inbox'); } }}
-              className={`flex items-center gap-2 px-6 py-3.5 text-sm font-medium transition-colors relative whitespace-nowrap ${
-                activeTab === 'inbox' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-700'
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                activeTab === 'inbox' ? 'text-primary-blue' : 'text-gray-400 hover:text-dark'
               }`}
             >
-              <Inbox className="w-3.5 h-3.5" />
+              <Inbox className="w-3 h-3" />
               Nachrichten
               {totalUnread > 0 && (
                 <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-blue-600 text-white">
@@ -374,19 +372,19 @@ export default function MessagesView() {
                 </span>
               )}
               {activeTab === 'inbox' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>
             <button
               onClick={() => setActiveTab('settings')}
-              className={`flex items-center gap-2 px-6 py-3.5 text-sm font-medium transition-colors relative whitespace-nowrap ${
-                activeTab === 'settings' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-700'
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                activeTab === 'settings' ? 'text-primary-blue' : 'text-gray-400 hover:text-dark'
               }`}
             >
-              <Settings className="w-3.5 h-3.5" />
+              <Settings className="w-3 h-3" />
               Einstellungen
               {activeTab === 'settings' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>
           </div>
@@ -406,7 +404,7 @@ export default function MessagesView() {
       )}
 
       {activeTab === 'inbox' && showCompose && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg overflow-hidden">
           <ComposeInline
             userAlias={mailbox?.alias_localpart || ''}
             onSent={handleComposeSent}
@@ -416,7 +414,7 @@ export default function MessagesView() {
       )}
 
       {activeTab === 'settings' && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg overflow-hidden">
           <MessagesSettings
             currentAlias={mailbox?.alias_localpart || ''}
             onAliasUpdated={(newAlias) => {
@@ -427,7 +425,7 @@ export default function MessagesView() {
       )}
 
       {activeTab === 'inbox' && !showCompose && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 310px)', minHeight: '500px' }}>
+        <div className="bg-white rounded-lg overflow-hidden" style={{ height: 'calc(100vh - 310px)', minHeight: '500px' }}>
           <div className="flex h-full">
             <div className="w-48 flex-shrink-0 border-r border-gray-200 p-3 hidden md:flex flex-col">
               <FolderList
