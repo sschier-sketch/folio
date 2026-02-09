@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Mail, RefreshCw, Eye, Inbox, Trash2, Settings } from 'lucide-react';
+import { Plus, Mail, RefreshCw, Eye, Inbox, Trash2, Settings, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -16,7 +16,7 @@ import MailTemplateEditor from './MailTemplateEditor';
 import ScrollableTabNav from '../common/ScrollableTabNav';
 import type { MailThread, UserMailbox, Folder } from './types';
 
-type MessagesTab = 'overview' | 'inbox' | 'settings';
+type MessagesTab = 'overview' | 'inbox' | 'settings' | 'templates';
 
 interface MailTemplate {
   id: string;
@@ -182,8 +182,7 @@ export default function MessagesView() {
   }
 
   function handleNavigateTemplates() {
-    setActiveView('templates');
-    setActiveTab('inbox');
+    setActiveTab('templates');
     setShowCompose(false);
   }
 
@@ -193,39 +192,6 @@ export default function MessagesView() {
   const isFolderView = activeView === 'inbox' || activeView === 'sent' || activeView === 'unknown' || activeView === 'trash';
 
   function renderMainContent() {
-    if (activeView === 'templates') {
-      if (showTemplateEditor) {
-        return (
-          <MailTemplateEditor
-            template={editingTemplate}
-            onBack={() => {
-              setShowTemplateEditor(false);
-              setEditingTemplate(null);
-              setTemplateListKey((k) => k + 1);
-            }}
-            onSaved={() => {
-              setShowTemplateEditor(false);
-              setEditingTemplate(null);
-              setTemplateListKey((k) => k + 1);
-            }}
-          />
-        );
-      }
-      return (
-        <MailTemplatesList
-          key={templateListKey}
-          onEdit={(t) => {
-            setEditingTemplate(t as MailTemplate);
-            setShowTemplateEditor(true);
-          }}
-          onCreate={() => {
-            setEditingTemplate(null);
-            setShowTemplateEditor(true);
-          }}
-        />
-      );
-    }
-
     return (
       <>
         <div className={`w-80 flex-shrink-0 border-r border-gray-200 overflow-y-auto ${selectedThread ? 'hidden lg:block' : 'flex-1 lg:flex-none lg:w-80'}`}>
@@ -387,6 +353,18 @@ export default function MessagesView() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>
+            <button
+              onClick={() => { setActiveTab('templates'); setShowCompose(false); setShowTemplateEditor(false); setEditingTemplate(null); }}
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                activeTab === 'templates' ? 'text-primary-blue' : 'text-gray-400 hover:text-dark'
+              }`}
+            >
+              <FileText className="w-3 h-3" />
+              Vorlagen
+              {activeTab === 'templates' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+              )}
+            </button>
           </div>
         </ScrollableTabNav>
       </div>
@@ -397,9 +375,7 @@ export default function MessagesView() {
           unreadCount={totalUnread}
           sentCount={folderCounts.sent}
           totalCount={totalMessages}
-          onCompose={handleStartCompose}
           onNavigateFolder={handleNavigateToFolder}
-          onNavigateTemplates={handleNavigateTemplates}
         />
       )}
 
@@ -421,6 +397,38 @@ export default function MessagesView() {
               setMailbox((prev) => prev ? { ...prev, alias_localpart: newAlias } : prev);
             }}
           />
+        </div>
+      )}
+
+      {activeTab === 'templates' && (
+        <div className="bg-white rounded-lg overflow-hidden">
+          {showTemplateEditor ? (
+            <MailTemplateEditor
+              template={editingTemplate}
+              onBack={() => {
+                setShowTemplateEditor(false);
+                setEditingTemplate(null);
+                setTemplateListKey((k) => k + 1);
+              }}
+              onSaved={() => {
+                setShowTemplateEditor(false);
+                setEditingTemplate(null);
+                setTemplateListKey((k) => k + 1);
+              }}
+            />
+          ) : (
+            <MailTemplatesList
+              key={templateListKey}
+              onEdit={(t) => {
+                setEditingTemplate(t as MailTemplate);
+                setShowTemplateEditor(true);
+              }}
+              onCreate={() => {
+                setEditingTemplate(null);
+                setShowTemplateEditor(true);
+              }}
+            />
+          )}
         </div>
       )}
 

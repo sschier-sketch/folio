@@ -8,7 +8,6 @@ import {
   X,
   CheckCircle2,
   HelpCircle,
-  FileText,
 } from 'lucide-react';
 import type { Folder } from './types';
 
@@ -17,9 +16,7 @@ interface MessagesOverviewProps {
   unreadCount: number;
   sentCount: number;
   totalCount: number;
-  onCompose: () => void;
   onNavigateFolder: (folder: Folder) => void;
-  onNavigateTemplates: () => void;
 }
 
 export default function MessagesOverview({
@@ -27,9 +24,7 @@ export default function MessagesOverview({
   unreadCount,
   sentCount,
   totalCount,
-  onCompose,
   onNavigateFolder,
-  onNavigateTemplates,
 }: MessagesOverviewProps) {
   const [showSpamNotice, setShowSpamNotice] = useState(true);
 
@@ -84,112 +79,62 @@ export default function MessagesOverview({
         </div>
       </div>
 
-      <div className="bg-white rounded-lg">
-        <h3 className="text-lg font-semibold text-dark px-6 pt-6 pb-4">Postfaecher</h3>
-        <table className="w-full">
-          <thead>
-            <tr className="border-t border-gray-100">
-              <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Ordner</th>
-              <th className="text-right text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Gesamt</th>
-              <th className="text-right text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Ungelesen</th>
-              <th className="text-right text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            <FolderRow
-              icon={<Inbox className="w-4 h-4" />}
-              label="Posteingang"
-              total={totalCount - sentCount}
-              unread={unreadCount}
-              onClick={() => onNavigateFolder('inbox')}
-            />
-            <FolderRow
-              icon={<Send className="w-4 h-4" />}
-              label="Gesendet"
-              total={sentCount}
-              unread={0}
-              onClick={() => onNavigateFolder('sent')}
-            />
-            <FolderRow
-              icon={<HelpCircle className="w-4 h-4" />}
-              label="Unbekannt"
-              total={0}
-              unread={0}
-              onClick={() => onNavigateFolder('unknown')}
-            />
-          </tbody>
-        </table>
-      </div>
-
-      <div className="bg-white rounded-lg">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4">
-          <h3 className="text-lg font-semibold text-dark">Schnellaktionen</h3>
-        </div>
-        <div className="px-6 pb-6 space-y-3">
-          <button
-            onClick={onCompose}
-            className="w-full flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left"
-          >
-            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-              <Send className="w-5 h-5" style={{ color: '#1e1e24' }} />
-            </div>
-            <div>
-              <div className="font-medium text-dark">Neue Nachricht verfassen</div>
-              <div className="text-sm text-gray-500">E-Mail an Mieter oder Kontakt senden</div>
-            </div>
-          </button>
-
-          <button
-            onClick={onNavigateTemplates}
-            className="w-full flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-left"
-          >
-            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-              <FileText className="w-5 h-5" style={{ color: '#1e1e24' }} />
-            </div>
-            <div>
-              <div className="font-medium text-dark">Vorlagen verwalten</div>
-              <div className="text-sm text-gray-500">Textbausteine erstellen und bearbeiten</div>
-            </div>
-          </button>
+      <div>
+        <h3 className="text-lg font-semibold text-dark mb-4">Postfaecher</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <FolderCard
+            icon={<Inbox className="w-6 h-6" />}
+            label="Posteingang"
+            count={totalCount - sentCount}
+            unread={unreadCount}
+            onClick={() => onNavigateFolder('inbox')}
+          />
+          <FolderCard
+            icon={<Send className="w-6 h-6" />}
+            label="Gesendet"
+            count={sentCount}
+            unread={0}
+            onClick={() => onNavigateFolder('sent')}
+          />
+          <FolderCard
+            icon={<HelpCircle className="w-6 h-6" />}
+            label="Unbekannt"
+            count={0}
+            unread={0}
+            onClick={() => onNavigateFolder('unknown')}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-function FolderRow({ icon, label, total, unread, onClick }: {
+function FolderCard({ icon, label, count, unread, onClick }: {
   icon: React.ReactNode;
   label: string;
-  total: number;
+  count: number;
   unread: number;
   onClick: () => void;
 }) {
   return (
-    <tr
+    <button
       onClick={onClick}
-      className="hover:bg-gray-50 cursor-pointer transition-colors"
+      className="bg-white rounded-lg p-5 text-left hover:shadow-md transition-all border border-transparent hover:border-gray-200 group w-full"
     >
-      <td className="px-6 py-4">
-        <div className="flex items-center gap-3">
-          <span className="text-gray-400">{icon}</span>
-          <span className="text-sm font-medium text-dark">{label}</span>
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors">
+          {icon}
         </div>
-      </td>
-      <td className="px-6 py-4 text-right">
-        <span className="text-sm text-gray-500">{total}</span>
-      </td>
-      <td className="px-6 py-4 text-right">
-        {unread > 0 ? (
-          <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-semibold rounded-full bg-blue-600 text-white">
+        {unread > 0 && (
+          <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 text-xs font-semibold rounded-full bg-blue-600 text-white">
             {unread}
           </span>
-        ) : (
-          <span className="text-sm text-gray-400">0</span>
         )}
-      </td>
-      <td className="px-6 py-4 text-right">
-        <span className="text-xs text-gray-400">Oeffnen &rarr;</span>
-      </td>
-    </tr>
+      </div>
+      <p className="text-sm font-semibold text-dark">{label}</p>
+      <p className="text-xs text-gray-400 mt-0.5">
+        {count} {count === 1 ? 'Nachricht' : 'Nachrichten'}
+      </p>
+    </button>
   );
 }
