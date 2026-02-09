@@ -19,7 +19,6 @@ import { useLanguage } from "../contexts/LanguageContext";
 import ProfileCompletionCard from "./profile/ProfileCompletionCard";
 import ProfileWizard from "./profile/ProfileWizard";
 import TrialBanner from "./TrialBanner";
-import { Button } from "./ui/Button";
 
 interface Stats {
   propertiesCount: number;
@@ -700,10 +699,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           </h3>{" "}
           <div className="grid grid-cols-2 gap-4">
             {" "}
-            <Button
+            <button
               onClick={() => onChangeView?.('properties')}
-              variant="cancel"
-              className="flex flex-col items-center gap-3 p-6 rounded-xl"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors"
             >
               <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                 <Building2 className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
@@ -711,11 +709,10 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <span className="text-sm font-semibold text-dark text-center">
                 Neue Immobilie
               </span>
-            </Button>{" "}
-            <Button
+            </button>
+            <button
               onClick={() => onChangeView?.('tenants')}
-              variant="cancel"
-              className="flex flex-col items-center gap-3 p-6 rounded-xl"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors"
             >
               <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                 <Users className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
@@ -723,11 +720,10 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <span className="text-sm font-semibold text-dark text-center">
                 Neue Mieter
               </span>
-            </Button>{" "}
-            <Button
+            </button>
+            <button
               onClick={() => onChangeView?.('payments')}
-              variant="cancel"
-              className="flex flex-col items-center gap-3 p-6 rounded-xl"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors"
             >
               <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                 <Receipt className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
@@ -735,11 +731,10 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <span className="text-sm font-semibold text-dark text-center">
                 Mieteingänge prüfen
               </span>
-            </Button>{" "}
-            <Button
+            </button>
+            <button
               onClick={() => onChangeView?.('financial')}
-              variant="cancel"
-              className="flex flex-col items-center gap-3 p-6 rounded-xl"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors"
             >
               <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                 <BarChart3 className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
@@ -747,7 +742,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               <span className="text-sm font-semibold text-dark text-center">
                 Finanzübersicht
               </span>
-            </Button>{" "}
+            </button>{" "}
           </div>{" "}
         </div>{" "}
       </div>{" "}
