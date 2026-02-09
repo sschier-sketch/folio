@@ -66,7 +66,7 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
     text = text.replace(/\{\{mieter_name\}\}/g, 'Max Mustermann');
     text = text.replace(/\{\{mieter_vorname\}\}/g, 'Max');
     text = text.replace(/\{\{mieter_nachname\}\}/g, 'Mustermann');
-    text = text.replace(/\{\{immobilie\}\}/g, 'Musterstrasse 12');
+    text = text.replace(/\{\{immobilie\}\}/g, 'Musterstraße 12');
     text = text.replace(/\{\{einheit\}\}/g, 'Wohnung 3A');
     text = text.replace(/\{\{datum\}\}/g, new Date().toLocaleDateString('de-DE'));
     text = text.replace(/\{\{betrag\}\}/g, '750,00 EUR');
@@ -76,11 +76,11 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
   async function handleSave() {
     if (!user) return;
     if (!name.trim()) {
-      setError('Bitte geben Sie einen Namen fuer die Vorlage ein.');
+      setError('Bitte geben Sie einen Namen für die Vorlage ein.');
       return;
     }
     if (!content.trim()) {
-      setError('Bitte geben Sie einen Inhalt fuer die Vorlage ein.');
+      setError('Bitte geben Sie einen Inhalt für die Vorlage ein.');
       return;
     }
 
@@ -128,7 +128,7 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
         className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Zurueck zu Vorlagen
+        Zurück zu Vorlagen
       </button>
 
       <h2 className="text-lg font-semibold text-gray-900 mb-6">
@@ -238,11 +238,11 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={10}
-              placeholder={"Schreiben Sie hier Ihre Vorlage...\n\nVerwenden Sie Platzhalter wie {{mieter_name}} fuer dynamische Inhalte."}
+              placeholder={"Schreiben Sie hier Ihre Vorlage...\n\nVerwenden Sie Platzhalter wie {{mieter_name}} für dynamische Inhalte."}
               className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-y leading-relaxed"
             />
             <p className="mt-1.5 text-xs text-gray-400">
-              Diese Vorlage kann fuer E-Mails verwendet werden.
+              Diese Vorlage kann für E-Mails verwendet werden.
             </p>
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#008CFF] text-white text-sm font-medium rounded-full hover:bg-[#0073CC] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Speichern...' : 'Speichern'}

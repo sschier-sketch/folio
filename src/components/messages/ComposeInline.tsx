@@ -183,7 +183,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
       return;
     }
     if (recipientType === 'tenant' && !selectedTenant) {
-      setError('Bitte waehlen Sie einen Mieter aus.');
+      setError('Bitte wählen Sie einen Mieter aus.');
       return;
     }
     if (!subject.trim()) {
@@ -336,7 +336,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
                 onChange={(e) => setSelectedPropertyId(e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
               >
-                <option value="">Immobilie auswaehlen...</option>
+                <option value="">Immobilie auswählen...</option>
                 {properties.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}{p.address ? ` - ${p.address}` : ''}</option>
                 ))}
@@ -377,7 +377,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
                     }}
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                   >
-                    <option value="">Mieter auswaehlen...</option>
+                    <option value="">Mieter auswählen...</option>
                     {tenants.map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.first_name} {t.last_name}{t.email ? ` (${t.email})` : ''}
@@ -385,7 +385,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
                     ))}
                   </select>
                 ) : (
-                  <p className="text-sm text-gray-400 py-2">Keine Mieter fuer diese Auswahl vorhanden.</p>
+                  <p className="text-sm text-gray-400 py-2">Keine Mieter für diese Auswahl vorhanden.</p>
                 )}
               </div>
             )}
@@ -410,7 +410,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
                 type="email"
                 value={manualEmail}
                 onChange={(e) => setManualEmail(e.target.value)}
-                placeholder="empfaenger@beispiel.de"
+                placeholder="empfänger@beispiel.de"
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
             </div>
@@ -420,7 +420,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
                 type="text"
                 value={manualName}
                 onChange={(e) => setManualName(e.target.value)}
-                placeholder="Name des Empfaengers"
+                placeholder="Name des Empfängers"
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
             </div>
@@ -450,11 +450,11 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Dokument anhaengen (optional)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Dokument anhängen (optional)</label>
           {!attachedFile ? (
             <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors">
               <Upload className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-500">Datei auswaehlen</span>
+              <span className="text-sm text-gray-500">Datei auswählen</span>
               <input
                 type="file"
                 onChange={(e) => {
@@ -498,7 +498,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
                 <span>
                   {selectedTenant
                     ? `Die Nachricht wird im Mieterportal von ${selectedTenant.first_name} ${selectedTenant.last_name} angezeigt.`
-                    : 'Bitte waehlen Sie einen Mieter aus.'}
+                    : 'Bitte wählen Sie einen Mieter aus.'}
                 </span>
               </div>
             )}

@@ -119,10 +119,10 @@ function FolderCard({ icon, label, count, unread, onClick }: {
   return (
     <button
       onClick={onClick}
-      className="bg-white rounded-lg p-5 text-left hover:shadow-md transition-all border border-transparent hover:border-gray-200 group w-full"
+      className="bg-white rounded-lg p-5 text-left transition-all group w-full"
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+        <div className="w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
           {icon}
         </div>
         {unread > 0 && (

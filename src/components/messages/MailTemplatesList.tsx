@@ -45,7 +45,7 @@ export default function MailTemplatesList({ onEdit, onCreate }: MailTemplatesLis
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Vorlage wirklich loeschen?')) return;
+    if (!confirm('Vorlage wirklich löschen?')) return;
     await supabase.from('user_mail_templates').delete().eq('id', id);
     setTemplates((prev) => prev.filter((t) => t.id !== id));
     setOpenMenuId(null);
@@ -82,7 +82,7 @@ export default function MailTemplatesList({ onEdit, onCreate }: MailTemplatesLis
         </div>
         <button
           onClick={onCreate}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#008CFF] text-white text-sm font-medium rounded-full hover:bg-[#0073CC] transition-colors"
         >
           <Plus className="w-4 h-4" />
           Neue Vorlage
@@ -127,7 +127,7 @@ export default function MailTemplatesList({ onEdit, onCreate }: MailTemplatesLis
           {templates.length === 0 && (
             <button
               onClick={onCreate}
-              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#008CFF] text-white text-sm font-medium rounded-full hover:bg-[#0073CC] transition-colors"
             >
               <Plus className="w-4 h-4" />
               Erste Vorlage erstellen
@@ -173,7 +173,7 @@ export default function MailTemplatesList({ onEdit, onCreate }: MailTemplatesLis
                       onClick={() => handleDelete(template.id)}
                       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Loeschen
+                      <Trash2 className="w-3.5 h-3.5" /> Löschen
                     </button>
                   </div>
                 )}

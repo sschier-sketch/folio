@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Mail, RefreshCw, Eye, Inbox, Trash2, Settings, FileText } from 'lucide-react';
+import { Plus, Mail, RefreshCw, Eye, Inbox, Trash2, Settings } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -141,7 +141,7 @@ export default function MessagesView() {
 
   async function handleEmptyTrash() {
     if (!user) return;
-    const confirmed = window.confirm('Papierkorb endgueltig leeren? Alle Nachrichten darin werden unwiderruflich geloescht.');
+    const confirmed = window.confirm('Papierkorb endgültig leeren? Alle Nachrichten darin werden unwiderruflich gelöscht.');
     if (!confirmed) return;
     await supabase
       .from('mail_threads')
@@ -241,9 +241,9 @@ export default function MessagesView() {
               <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
                 <Mail className="w-7 h-7 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-1">Keine Nachricht ausgewaehlt</h3>
+              <h3 className="text-lg font-semibold text-gray-700 mb-1">Keine Nachricht ausgewählt</h3>
               <p className="text-sm text-gray-500 max-w-sm">
-                Waehlen Sie eine Konversation aus der Liste oder starten Sie eine neue Nachricht.
+                Wählen Sie eine Konversation aus der Liste oder starten Sie eine neue Nachricht.
               </p>
               <button
                 onClick={handleStartCompose}
@@ -264,7 +264,7 @@ export default function MessagesView() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-dark">Nachrichten</h1>
-          <p className="text-gray-400 mt-1">Verwalten Sie Ihre E-Mails, Vorlagen und Kommunikationseinstellungen</p>
+          <p className="text-gray-400 mt-1">Verwalten Sie Ihre E-Mails und Kommunikationseinstellungen</p>
         </div>
         <PremiumUpgradePrompt featureKey="messages_overview" />
       </div>
@@ -277,7 +277,7 @@ export default function MessagesView() {
         <div>
           <h1 className="text-3xl font-bold text-dark">Nachrichten</h1>
           <p className="text-gray-400 mt-1">
-            Verwalten Sie Ihre E-Mails, Vorlagen und Kommunikationseinstellungen
+            Verwalten Sie Ihre E-Mails und Kommunikationseinstellungen
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -350,18 +350,6 @@ export default function MessagesView() {
               <Settings className="w-3 h-3" />
               Einstellungen
               {activeTab === 'settings' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
-              )}
-            </button>
-            <button
-              onClick={() => { setActiveTab('templates'); setShowCompose(false); setShowTemplateEditor(false); setEditingTemplate(null); }}
-              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
-                activeTab === 'templates' ? 'text-primary-blue' : 'text-gray-400 hover:text-dark'
-              }`}
-            >
-              <FileText className="w-3 h-3" />
-              Vorlagen
-              {activeTab === 'templates' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>

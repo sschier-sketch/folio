@@ -317,7 +317,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
                     <div className={`mt-3 pt-3 space-y-2 ${isOutbound ? 'border-t border-blue-500/30' : 'border-t border-gray-100'}`}>
                       <div className={`flex items-center gap-1.5 text-xs font-medium ${isOutbound ? 'text-blue-200' : 'text-gray-500'}`}>
                         <Paperclip className="w-3 h-3" />
-                        {msg.mail_attachments.length === 1 ? '1 Anhang' : `${msg.mail_attachments.length} Anhaenge`}
+                        {msg.mail_attachments.length === 1 ? '1 Anhang' : `${msg.mail_attachments.length} Anhänge`}
                       </div>
                       {msg.mail_attachments.map((att) => {
                         const Icon = getFileIcon(att.content_type);
@@ -391,7 +391,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
                 className="w-3.5 h-3.5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <FileSignature className="w-3 h-3 text-gray-400" />
-              <span className="text-xs text-gray-500">Signatur anhaengen</span>
+              <span className="text-xs text-gray-500">Signatur anhängen</span>
             </label>
           )}
         </div>
