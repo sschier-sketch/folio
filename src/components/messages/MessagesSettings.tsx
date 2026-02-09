@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, Check, AlertCircle, User, FileSignature, AtSign, ToggleLeft, ToggleRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { Button } from '../ui/Button';
 
 interface MessagesSettingsProps {
   onSettingsChanged?: () => void;
@@ -195,14 +196,9 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
             </p>
           </div>
           {alias.trim() !== currentAlias && alias.trim().length >= 3 && (
-            <button
-              onClick={handleSaveAlias}
-              disabled={savingAlias}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#008CFF] text-white text-sm font-medium rounded-full hover:bg-[#0073CC] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Save className="w-3.5 h-3.5" />
+            <Button variant="primary" onClick={handleSaveAlias} disabled={savingAlias}>
               {savingAlias ? 'Speichern...' : 'Adresse speichern'}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -277,14 +273,9 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
           )}
 
           <div className="pt-2">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#008CFF] text-white text-sm font-medium rounded-full hover:bg-[#0073CC] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Save className="w-4 h-4" />
+            <Button variant="primary" onClick={handleSave} disabled={saving}>
               {saving ? 'Speichern...' : 'Einstellungen speichern'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-  ArrowLeft,
   Home,
   Package,
   Zap,
@@ -26,6 +25,7 @@ import PropertyMetricsTab from "./property/PropertyMetricsTab";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
 import { supabase } from "../lib/supabase";
+import { Button } from "./ui/Button";
 
 interface Property {
   id: string;
@@ -196,14 +196,12 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
 
   return (
     <div>
-      <button
+      <Button
         onClick={onBack}
-        style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#bdbfcb] mb-6 transition-colors"
+        variant="cancel"
       >
-        <ArrowLeft className="w-5 h-5" />
         Zurück zur Übersicht
-      </button>
+      </Button>
 
       <div className="bg-white rounded-lg p-6 mb-6">
         <div className="flex items-center gap-6">

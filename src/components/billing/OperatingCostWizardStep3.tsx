@@ -466,28 +466,27 @@ export default function OperatingCostWizardStep3() {
         </div>
 
         <div className="flex items-center justify-between mt-6">
-          <button
+          <Button
             onClick={handleBack}
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
+            variant="secondary"
             disabled={saving}
           >
             Zurück
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleSaveStatement}
             disabled={saving || results.length === 0}
-            className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="primary"
           >
             {saving ? (
               <>
-                <div className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Wird fertiggestellt...
               </>
             ) : (
               'Abrechnung fertigstellen'
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

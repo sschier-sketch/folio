@@ -4,6 +4,7 @@ import { Eye, EyeOff, Lock, CheckCircle, Mail, AlertCircle } from "lucide-react"
 import { supabase } from "../lib/supabase";
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
+import { Button } from "../components/ui/Button";
 
 type ViewMode = "request" | "reset" | "success";
 
@@ -226,20 +227,18 @@ export function ResetPassword() {
               </p>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-full shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              variant="primary"
+              fullWidth
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                "Wird gesendet..."
               ) : (
-                <>
-                  <Mail className="w-5 h-5 mr-2" />
-                  Link zum Zurücksetzen senden
-                </>
+                "Link zum Zurücksetzen senden"
               )}
-            </button>
+            </Button>
 
             <div className="text-center pt-4">
               <button
@@ -314,20 +313,18 @@ export function ResetPassword() {
               </p>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-full shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              variant="primary"
+              fullWidth
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                "Wird gespeichert..."
               ) : (
-                <>
-                  <Lock className="w-5 h-5 mr-2" />
-                  Passwort speichern
-                </>
+                "Passwort speichern"
               )}
-            </button>
+            </Button>
           </form>
         )}
 

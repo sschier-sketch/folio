@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Save, Lock, AlertCircle } from "lucide-react";
+import { Lock } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { clearSeoCache } from "../../lib/seoResolver";
+import { Button } from '../ui/Button';
 
 interface GlobalSettings {
   id: string;
@@ -198,14 +199,13 @@ export default function AdminSeoGlobalView() {
         </div>
 
         <div className="flex items-center justify-end">
-          <button
+          <Button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="primary"
           >
-            <Save className="w-5 h-5" />
             {saving ? "Speichern..." : "Änderungen speichern"}
-          </button>
+          </Button>
         </div>
       </form>
 

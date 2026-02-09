@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import { TrendingUp, Plus, Lock, Calendar, Edit, Save, X, Info, Percent } from "lucide-react";
+import { TrendingUp, Lock, Calendar, Edit, Save, X, Info, Percent } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import Badge from "../common/Badge";
 import { addMonths, differenceInDays, formatDateDE, parseISODate } from "../../lib/dateUtils";
+import { Button } from '../ui/Button';
 
 function InfoTooltip({ text }: { text: string }) {
   const [show, setShow] = useState(false);
@@ -363,31 +364,20 @@ export default function TenantRentHistoryTab({
             Aktuelle Miete
           </h3>
           {!isEditing ? (
-            <button
-              onClick={() => setIsEditing(true)}
-              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-              className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
-            >
+            <Button onClick={() => setIsEditing(true)} variant="secondary">
               Bearbeiten
-            </button>
+            </Button>
           ) : (
             <div className="flex gap-2">
-              <button
-                onClick={() => {
+              <Button onClick={() => {
                   setIsEditing(false);
                   loadData();
-                }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
-              >
+                }} variant="cancel">
                 Abbrechen
-              </button>
-              <button
-                onClick={handleSaveRent}
-                className="px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
-              >
+              </Button>
+              <Button onClick={handleSaveRent} variant="primary">
                 Speichern
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -763,16 +753,9 @@ export default function TenantRentHistoryTab({
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-dark">Mieterhöhungen</h3>
-            <button
-              disabled={rentIncreaseCalcs.section558Status === "blocked"}
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                rentIncreaseCalcs.section558Status === "blocked"
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-[#008CFF] text-white hover:bg-blue-600"
-              }`}
-            >
+            <Button disabled={rentIncreaseCalcs.section558Status === "blocked"} variant="primary">
               Erhöhung einstellen
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

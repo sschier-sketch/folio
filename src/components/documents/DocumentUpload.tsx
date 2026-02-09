@@ -6,6 +6,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import Badge from "../common/Badge";
 import { DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
+import { Button } from "../ui/Button";
 
 interface DocumentUploadProps {
   onSuccess: () => void;
@@ -361,13 +362,13 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               : "Eine Datei pro Upload (Pro: bis zu 10 gleichzeitig)"}
           </p>
           <p className="text-xs text-gray-400 mb-4">Maximale Dateigröße: 50MB</p>
-          <button
+          <Button
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+            variant="primary"
           >
             <Upload className="w-4 h-4" />
             Dateien auswählen
-          </button>
+          </Button>
           <input
             ref={fileInputRef}
             type="file"
@@ -673,14 +674,10 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
             : "Keine Dateien ausgewählt"}
         </p>
 
-        <button
+        <Button
+          variant="primary"
           onClick={handleUpload}
           disabled={files.length === 0 || isUploading || allSuccess}
-          className={`px-6 py-2 rounded-full font-medium transition-colors ${
-            files.length === 0 || isUploading || allSuccess
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
         >
           {isUploading ? (
             "Wird hochgeladen..."
@@ -689,7 +686,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           ) : (
             "Jetzt hochladen"
           )}
-        </button>
+        </Button>
       </div>
 
       {!isPro && (
@@ -723,9 +720,9 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                   Erweiterte Kategorisierung und Metadaten
                 </li>
               </ul>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">
+              <Button variant="primary">
                 Jetzt auf Pro upgraden
-              </button>
+              </Button>
             </div>
           </div>
         </div>

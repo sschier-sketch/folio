@@ -1,8 +1,9 @@
-import { Mail, MessageSquare, Send } from "lucide-react";
+import { Mail, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import Footer from "../components/Footer";
 import { Header } from "../components/Header";
+import { Button } from "../components/ui/Button";
 export default function Contact() {
   const { language } = useLanguage();
   const [formData, setFormData] = useState({
@@ -238,30 +239,20 @@ export default function Contact() {
               </div>{" "}
               <div className="flex justify-end">
                 {" "}
-                <button
+                <Button
                   type="submit"
                   disabled={submitting}
-                  className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="primary"
                 >
                   {" "}
-                  {submitting ? (
-                    <>
-                      {" "}
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>{" "}
-                      {language === "de"
-                        ? "Wird gesendet..."
-                        : "Sending..."}{" "}
-                    </>
-                  ) : (
-                    <>
-                      {" "}
-                      <Send className="w-5 h-5" />{" "}
-                      {language === "de"
-                        ? "Nachricht senden"
-                        : "Send Message"}{" "}
-                    </>
-                  )}{" "}
-                </button>{" "}
+                  {submitting
+                    ? language === "de"
+                      ? "Wird gesendet..."
+                      : "Sending..."
+                    : language === "de"
+                      ? "Nachricht senden"
+                      : "Send Message"}{" "}
+                </Button>{" "}
               </div>{" "}
             </form>{" "}
           </div>{" "}

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Wrench, Plus, CheckCircle2, Clock, AlertCircle, Trash2, Edit2, Calendar, Euro, FileText, Receipt, Bell } from "lucide-react";
+import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, Edit2, Calendar, Euro, FileText, Receipt, Bell } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
+import { Button } from '../ui/Button';
 
 interface PropertyMaintenanceTabProps {
   propertyId: string;
@@ -272,13 +273,9 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
             {tasks.length} Aufgabe{tasks.length !== 1 ? "n" : ""} gesamt
           </p>
         </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
+        <Button onClick={openAddModal} variant="primary">
           Aufgabe hinzufügen
-        </button>
+        </Button>
       </div>
 
       <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200 w-fit">
@@ -310,13 +307,9 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
           <p className="text-sm text-gray-400 mb-4">
             Erstellen Sie Wartungsaufgaben und behalten Sie alle Instandhaltungsarbeiten im Blick
           </p>
-          <button
-            onClick={openAddModal}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
+          <Button onClick={openAddModal} variant="primary">
             Erste Aufgabe hinzufügen
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -583,19 +576,12 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
-                >
+                <Button onClick={() => setShowAddModal(false)} variant="cancel">
                   Abbrechen
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
-                >
+                </Button>
+                <Button onClick={handleSubmit} variant="primary">
                   {editingTask ? "Speichern" : "Hinzufügen"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

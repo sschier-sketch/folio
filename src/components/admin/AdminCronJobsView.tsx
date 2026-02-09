@@ -13,6 +13,7 @@ import {
   Database,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { Button } from '../ui/Button';
 
 interface CronRun {
   runid: number;
@@ -266,12 +267,12 @@ export default function AdminCronJobsView() {
         <p className="text-xs text-red-500 mt-1 max-w-md mx-auto break-words">
           {error}
         </p>
-        <button
+        <Button
           onClick={handleRefresh}
-          className="mt-4 px-4 py-2 text-sm font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors"
+          variant="secondary"
         >
           Erneut versuchen
-        </button>
+        </Button>
       </div>
     );
   }
@@ -285,16 +286,13 @@ export default function AdminCronJobsView() {
             Alle automatischen Hintergrundprozesse und deren Ausfuehrungsstatus
           </p>
         </div>
-        <button
+        <Button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-50"
+          variant="outlined"
         >
-          <RefreshCw
-            className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
-          />
           Aktualisieren
-        </button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

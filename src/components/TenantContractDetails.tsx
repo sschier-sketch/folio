@@ -20,6 +20,7 @@ import TenantHandoverTab from "./tenants/TenantHandoverTab";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
+import { Button } from './ui/Button';
 
 type Tab =
   | "overview"
@@ -108,12 +109,12 @@ export default function TenantContractDetails({
     return (
       <div className="text-center py-12">
         <p className="text-gray-400 mb-4">Mietverhältnis nicht gefunden</p>
-        <button
+        <Button
           onClick={onBack}
-          className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+          variant="primary"
         >
           Zurück zur Übersicht
-        </button>
+        </Button>
       </div>
     );
   }

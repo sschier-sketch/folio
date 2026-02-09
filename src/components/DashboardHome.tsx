@@ -19,6 +19,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import ProfileCompletionCard from "./profile/ProfileCompletionCard";
 import ProfileWizard from "./profile/ProfileWizard";
 import TrialBanner from "./TrialBanner";
+import { Button } from "./ui/Button";
 
 interface Stats {
   propertiesCount: number;
@@ -699,62 +700,54 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           </h3>{" "}
           <div className="grid grid-cols-2 gap-4">
             {" "}
-            <button
+            <Button
               onClick={() => onChangeView?.('properties')}
-              style={{ backgroundColor: "#faf8f8" }}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl transition-all group"
+              variant="cancel"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl"
             >
-              {" "}
-              <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-                {" "}
-                <Building2 className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />{" "}
-              </div>{" "}
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                <Building2 className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+              </div>
               <span className="text-sm font-semibold text-dark text-center">
                 Neue Immobilie
-              </span>{" "}
-            </button>{" "}
-            <button
+              </span>
+            </Button>{" "}
+            <Button
               onClick={() => onChangeView?.('tenants')}
-              style={{ backgroundColor: "#faf8f8" }}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl transition-all group"
+              variant="cancel"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl"
             >
-              {" "}
-              <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-                {" "}
-                <Users className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />{" "}
-              </div>{" "}
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                <Users className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+              </div>
               <span className="text-sm font-semibold text-dark text-center">
                 Neue Mieter
-              </span>{" "}
-            </button>{" "}
-            <button
+              </span>
+            </Button>{" "}
+            <Button
               onClick={() => onChangeView?.('payments')}
-              style={{ backgroundColor: "#faf8f8" }}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl transition-all group"
+              variant="cancel"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl"
             >
-              {" "}
-              <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-                {" "}
-                <Receipt className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />{" "}
-              </div>{" "}
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                <Receipt className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+              </div>
               <span className="text-sm font-semibold text-dark text-center">
                 Mieteingänge prüfen
-              </span>{" "}
-            </button>{" "}
-            <button
+              </span>
+            </Button>{" "}
+            <Button
               onClick={() => onChangeView?.('financial')}
-              style={{ backgroundColor: "#faf8f8" }}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl transition-all group"
+              variant="cancel"
+              className="flex flex-col items-center gap-3 p-6 rounded-xl"
             >
-              {" "}
-              <div className="w-14 h-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-                {" "}
-                <BarChart3 className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />{" "}
-              </div>{" "}
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                <BarChart3 className="w-7 h-7" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+              </div>
               <span className="text-sm font-semibold text-dark text-center">
                 Finanzübersicht
-              </span>{" "}
-            </button>{" "}
+              </span>
+            </Button>{" "}
           </div>{" "}
         </div>{" "}
       </div>{" "}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { Button } from '../ui/Button';
 
 interface ProfileWizardProps {
   isOpen: boolean;
@@ -465,31 +466,30 @@ export default function ProfileWizard({ isOpen, onClose, onComplete }: ProfileWi
             )}
           </div>
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={onClose}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="px-4 py-2 rounded-lg hover:bg-[#bdbfcb] transition-colors"
+              variant="cancel"
             >
               Abbrechen
-            </button>
+            </Button>
             {currentStep === 1 && (
-              <button
+              <Button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                variant="primary"
               >
                 Weiter
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </Button>
             )}
             {currentStep === 2 && (
-              <button
+              <Button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+                variant="primary"
               >
                 {loading ? "Speichern..." : "Abschließen"}
                 <Check className="w-4 h-4" />
-              </button>
+              </Button>
             )}
           </div>
         </div>

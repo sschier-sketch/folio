@@ -3,6 +3,7 @@ import { X, ChevronDown, ChevronUp, Upload, Image as ImageIcon, Trash2, Building
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { sanitizeFileName } from "../../lib/utils";
+import { Button } from "../ui/Button";
 
 interface MeterReadingModalProps {
   meter: any;
@@ -418,26 +419,27 @@ export default function MeterReadingModal({ meter, onClose, onSuccess }: MeterRe
           </div>
 
           <div className="bg-gray-50 px-6 py-4 flex gap-3 border-t border-gray-100">
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+              variant="cancel"
+              fullWidth
               disabled={loading}
             >
               Abbrechen
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              fullWidth
             >
               {loading
                 ? uploadingPhotos
                   ? "Fotos werden hochgeladen..."
                   : "Speichern..."
                 : "Zählerstand speichern"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -14,6 +14,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import ProfileManagement from "./profile/ProfileManagement";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import { SubscriptionPlans } from "./subscription/SubscriptionPlans";
+import { Button } from './ui/Button';
 interface UserSettings {
   role: string;
   can_invite_users: boolean;
@@ -435,13 +436,12 @@ export default function SettingsView({
                 className="flex-1 px-4 py-2 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase font-mono"
                 maxLength={8}
               />{" "}
-              <button
+              <Button
                 type="submit"
-                className="px-6 py-2 bg-emerald-600 text-white rounded-full font-medium hover:bg-emerald-700 transition-colors"
+                variant="primary"
               >
-                {" "}
-                {language === "de" ? "Einlösen" : "Redeem"}{" "}
-              </button>{" "}
+                {language === "de" ? "Einlösen" : "Redeem"}
+              </Button>{" "}
             </form>{" "}
           </div>{" "}
           <div className="bg-white rounded shadow-sm p-6">

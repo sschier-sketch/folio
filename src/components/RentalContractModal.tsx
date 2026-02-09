@@ -3,6 +3,7 @@ import { X, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { parseNumberInput } from "../lib/utils";
+import { Button } from "./ui/Button";
 interface Tenant {
   id?: string;
   first_name: string;
@@ -421,15 +422,13 @@ export default function RentalContractModal({
             <div className="flex justify-between items-center">
               {" "}
               <h3 className="font-semibold text-dark text-lg">Mieter</h3>{" "}
-              <button
+              <Button
                 type="button"
                 onClick={addTenant}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
               >
-                {" "}
-                <Plus className="w-4 h-4" /> Mieter hinzufügen{" "}
-              </button>{" "}
+                Mieter hinzufügen
+              </Button>{" "}
             </div>{" "}
             <div className="space-y-3">
               {" "}
@@ -940,23 +939,22 @@ export default function RentalContractModal({
           </div>{" "}
           <div className="flex gap-3 pt-4">
             {" "}
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+              variant="cancel"
+              fullWidth
             >
-              {" "}
-              Abbrechen{" "}
-            </button>{" "}
-            <button
+              Abbrechen
+            </Button>{" "}
+            <Button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+              variant="primary"
+              fullWidth
             >
-              {" "}
-              {loading ? "Speichern..." : "Speichern"}{" "}
-            </button>{" "}
+              {loading ? "Speichern..." : "Speichern"}
+            </Button>{" "}
           </div>{" "}
         </form>{" "}
       </div>{" "}

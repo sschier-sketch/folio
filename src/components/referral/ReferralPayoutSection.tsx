@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   Banknote,
-  ArrowRight,
   Check,
   Clock,
   XCircle,
@@ -10,6 +9,7 @@ import {
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { StatusBadge } from "../common/BaseTable";
+import { Button } from '../ui/Button';
 
 interface PayoutRequest {
   id: string;
@@ -120,14 +120,13 @@ export default function ReferralPayoutSection({
               Eine Auszahlungsanfrage wird aktuell bearbeitet
             </div>
           ) : canRequestPayout ? (
-            <button
+            <Button
               onClick={() => setShowForm(true)}
-              className="px-5 py-2.5 bg-primary-blue hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+              variant="primary"
             >
               <Banknote className="w-4 h-4" />
               Auszahlung anfordern
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            </Button>
           ) : (
             <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
               <AlertTriangle className="w-4 h-4" />
@@ -174,10 +173,10 @@ export default function ReferralPayoutSection({
           </div>
 
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={handleRequestPayout}
               disabled={requesting}
-              className="px-5 py-2.5 bg-primary-blue hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+              variant="primary"
             >
               {requesting ? (
                 <>
@@ -190,16 +189,16 @@ export default function ReferralPayoutSection({
                   Auszahlung anfordern
                 </>
               )}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => {
                 setShowForm(false);
                 setError("");
               }}
-              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors text-sm"
+              variant="secondary"
             >
               Abbrechen
-            </button>
+            </Button>
           </div>
         </div>
       )}

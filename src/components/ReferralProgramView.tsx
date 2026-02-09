@@ -24,6 +24,7 @@ import ReferralPayoutSection from "./referral/ReferralPayoutSection";
 import ReferralAnalytics from "./referral/ReferralAnalytics";
 import ConversionFunnel from "./referral/ConversionFunnel";
 import EnhancedReferredUsersTable from "./referral/EnhancedReferredUsersTable";
+import { Button } from './ui/Button';
 
 interface ReferralStats {
   totalReferrals: number;
@@ -422,13 +423,11 @@ export default function ReferralProgramView() {
                 {referralUrl}
               </span>
             </div>
-            <button
+            <Button
               onClick={handleCopyReferralLink}
-              className={`w-full py-2.5 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm shadow-sm ${
-                linkCopied
-                  ? "bg-emerald-500 text-white"
-                  : "bg-primary-blue hover:bg-blue-600 text-white"
-              }`}
+              variant="primary"
+              fullWidth
+              className={`py-2.5 flex items-center justify-center gap-2 text-sm shadow-sm ${linkCopied ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
             >
               {linkCopied ? (
                 <>
@@ -439,7 +438,7 @@ export default function ReferralProgramView() {
                   <Copy className="w-4 h-4" /> Link kopieren
                 </>
               )}
-            </button>
+            </Button>
           </div>
 
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
@@ -450,9 +449,10 @@ export default function ReferralProgramView() {
                   {referralCode}
                 </p>
               </div>
-              <button
+              <Button
                 onClick={handleCopyCode}
-                className="flex-shrink-0 px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center gap-1.5 text-xs"
+                variant="outlined"
+                className="flex-shrink-0 px-3 py-1.5 flex items-center gap-1.5 text-xs"
               >
                 {copied ? (
                   <>
@@ -463,25 +463,27 @@ export default function ReferralProgramView() {
                     <Code className="w-3.5 h-3.5" /> Code
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <button
+            <Button
               onClick={handleShareLinkedIn}
-              className="bg-[#0A66C2] hover:bg-[#004182] text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+              variant="primary"
+              className="bg-[#0A66C2] hover:bg-[#004182] px-4 py-2 flex items-center justify-center gap-2 text-sm"
             >
               <Linkedin className="w-4 h-4" />
               LinkedIn
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleShareEmail}
-              className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+              variant="dark"
+              className="px-4 py-2 flex items-center justify-center gap-2 text-sm"
             >
               <Mail className="w-4 h-4" />
               E-Mail
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -559,10 +561,11 @@ export default function ReferralProgramView() {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={sendingEmail || !recipientEmail}
-              className="w-full bg-primary-blue hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              variant="primary"
+              fullWidth
             >
               {sendingEmail ? (
                 <>
@@ -580,7 +583,7 @@ export default function ReferralProgramView() {
                   Einladung senden
                 </>
               )}
-            </button>
+            </Button>
           </form>
 
           <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">

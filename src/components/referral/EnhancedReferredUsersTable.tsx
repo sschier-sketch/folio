@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Download, Check, Clock, CreditCard, User } from 'lucide-react';
+import { Check, Clock, CreditCard, User } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { BaseTable, StatusBadge } from '../common/BaseTable';
+import { Button } from '../ui/Button';
 
 interface ReferredUser {
   id: string;
@@ -147,14 +148,13 @@ export default function EnhancedReferredUsersTable({ userId, startDate, endDate 
             <option value="pending">Ausstehend</option>
             <option value="completed">Zahlend</option>
           </select>
-          <button
+          <Button
             onClick={exportToCSV}
             disabled={referredUsers.length === 0}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 rounded-lg transition-colors"
+            variant="secondary"
           >
-            <Download className="w-4 h-4" />
             CSV Export
-          </button>
+          </Button>
         </div>
       </div>
 

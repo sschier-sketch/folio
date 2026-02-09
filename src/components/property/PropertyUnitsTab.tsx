@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Home, X, FileText } from "lucide-react";
+import { Edit, Trash2, Home, X, FileText } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import { parseNumberInput } from "../../lib/utils";
 import TenantModal from "../TenantModal";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
+import { Button } from '../ui/Button';
 
 interface PropertyUnitsTabProps {
   propertyId: string;
@@ -370,34 +371,32 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
               Verwalten Sie die Einheiten dieser Immobilie
             </p>
           </div>
-          <button
+          <Button
             onClick={() => {
               setEditingUnit(null);
               resetForm();
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
-            <Plus className="w-4 h-4" />
             Einheit hinzufügen
-          </button>
+          </Button>
         </div>
 
         {units.length === 0 ? (
           <div className="p-12 text-center">
             <Home className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-400 mb-4">Noch keine Einheiten angelegt</p>
-            <button
+            <Button
               onClick={() => {
                 setEditingUnit(null);
                 resetForm();
                 setShowModal(true);
               }}
-              className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
+              variant="primary"
             >
-              <Plus className="w-4 h-4" />
               Erste Einheit hinzufügen
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -842,24 +841,21 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
               </div>
 
               <div className="flex gap-3 pt-4 border-t">
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     setEditingUnit(null);
                     resetForm();
                   }}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  variant="cancel"
+                  fullWidth
                 >
                   Abbrechen
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
-                >
+                </Button>
+                <Button type="submit" variant="primary" fullWidth>
                   {editingUnit ? "Speichern" : "Hinzufügen"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

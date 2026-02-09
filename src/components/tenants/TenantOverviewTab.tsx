@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { Button } from '../ui/Button';
 
 interface TenantOverviewTabProps {
   tenantId: string;
@@ -295,39 +296,24 @@ export default function TenantOverviewTab({
           <div className="flex gap-2">
             {!isEditing ? (
               <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
-                >
+                <Button onClick={() => setIsEditing(true)} variant="cancel">
                   Bearbeiten
-                </button>
-                <button
-                  onClick={handleDelete}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
-                >
+                </Button>
+                <Button onClick={handleDelete} variant="cancel">
                   Löschen
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <button
-                  onClick={() => {
+                <Button onClick={() => {
                     setIsEditing(false);
                     setFormData(tenant);
-                  }}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
-                >
+                  }} variant="cancel">
                   Abbrechen
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
-                >
+                </Button>
+                <Button onClick={handleSave} variant="primary">
                   Speichern
-                </button>
+                </Button>
               </>
             )}
           </div>

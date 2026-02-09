@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { MessageSquare, Plus, FileText, Calendar, Lock, Wrench, X, Upload, File as FileIcon, Trash2, Mail } from "lucide-react";
+import { MessageSquare, FileText, Calendar, Lock, Wrench, X, Upload, File as FileIcon, Trash2, Mail } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumFeatureGuard } from "../PremiumFeatureGuard";
 import { sanitizeFileName } from "../../lib/utils";
 import { getCategoryLabel } from "../../lib/ticketUtils";
+import { Button } from '../ui/Button';
 
 interface TenantCommunicationTabProps {
   tenantId: string;
@@ -424,13 +425,9 @@ export default function TenantCommunicationTab({
                 Alle Nachrichten von Ihnen oder dem Mieter zentral verwaltet
               </p>
             </div>
-            <button
-              onClick={() => setShowNewEntry(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
+            <Button onClick={() => setShowNewEntry(true)} variant="primary">
               Nachricht versenden
-            </button>
+            </Button>
           </div>
 
           {loading ? (
@@ -445,12 +442,9 @@ export default function TenantCommunicationTab({
                 Erfassen Sie Nachrichten, versendete Dokumente oder interne
                 Notizen
               </p>
-              <button
-                onClick={() => setShowNewEntry(true)}
-                className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
-              >
+              <Button onClick={() => setShowNewEntry(true)} variant="primary">
                 Ersten Eintrag erstellen
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="p-6">
@@ -716,22 +710,18 @@ export default function TenantCommunicationTab({
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowNewEntry(false)}
-                    style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                    className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
-                  >
+                  <Button type="button" onClick={() => setShowNewEntry(false)} variant="cancel" fullWidth>
                     Abbrechen
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={handleSaveEntry}
                     disabled={loading || !newEntryForm.subject.trim()}
-                    className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    variant="primary"
+                    fullWidth
                   >
                     {loading ? "Speichern..." : "Eintrag speichern"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -871,13 +861,9 @@ export default function TenantCommunicationTab({
                     placeholder="Ihre Antwort..."
                   />
                   <div className="flex justify-end mt-3">
-                    <button
-                      onClick={handleTicketReply}
-                      disabled={loading || !newReply.trim()}
-                      className="px-6 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-                    >
+                    <Button onClick={handleTicketReply} disabled={loading || !newReply.trim()} variant="primary">
                       {loading ? "Senden..." : "Antwort senden"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}

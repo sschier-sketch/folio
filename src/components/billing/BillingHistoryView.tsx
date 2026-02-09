@@ -1,5 +1,6 @@
 import { History, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
 import { PremiumFeatureGuard } from "../PremiumFeatureGuard";
+import { Button } from "../ui/Button";
 
 export default function BillingHistoryView() {
   return (
@@ -133,9 +134,9 @@ export default function BillingHistoryView() {
                     Die Vorauszahlung für Einheit 3 liegt deutlich unter den
                     tatsächlichen Kosten. Nachzahlung: 850,00 €
                   </p>
-                  <button className="text-sm text-primary-blue font-medium hover:underline">
+                  <Button variant="primary">
                     Vorauszahlung anpassen
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

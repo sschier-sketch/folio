@@ -3,6 +3,7 @@ import { ThumbsUp, ThumbsDown, Filter } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Button } from './ui/Button';
 interface Feedback {
   id: string;
   user_id: string;
@@ -212,17 +213,18 @@ export default function FeedbackListView() {
               />
             )}
           </div>
-          <button
+          <Button
             type="submit"
             disabled={submitting || !newFeedback.trim()}
-            className="w-full py-3 bg-primary-blue text-white rounded-full hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            variant="primary"
+            fullWidth
           >
             {submitting
               ? language === "de"
                 ? "Wird gesendet..."
                 : "Submitting..."
               : t("settings.feedback.submit")}
-          </button>
+          </Button>
         </form>
       </div>
       <div className="flex gap-3 mb-6">

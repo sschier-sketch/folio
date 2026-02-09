@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { FileText, Upload, Eye, Calendar, Download, X, Image, FileCheck, Shield, Home, FileSignature, Receipt, Wrench, Plus, Trash2, AlertCircle } from "lucide-react";
+import { FileText, Upload, Eye, Calendar, Download, X, Image, FileCheck, Shield, Home, FileSignature, Receipt, Wrench, Trash2, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 import { getDocumentTypeLabel as sharedGetDocumentTypeLabel, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
+import { Button } from '../ui/Button';
 
 interface PropertyDocumentsTabProps {
   propertyId: string;
@@ -477,14 +478,9 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
               {filteredDocuments.length} von {documents.length} Dokument{documents.length !== 1 ? "en" : ""} {filterDateFrom || filterDateTo ? "gefiltert" : "gespeichert"}
             </p>
           </div>
-          <button
-            onClick={() => setShowUploadModal(true)}
-            style={{ backgroundColor: '#3c8af7' }}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-full font-medium hover:opacity-90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
+          <Button onClick={() => setShowUploadModal(true)} variant="primary">
             Dokument hochladen
-          </button>
+          </Button>
         </div>
 
         <div className="bg-white rounded-lg p-4">
@@ -531,14 +527,9 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
           <p className="text-sm text-gray-400 mb-4">
             Laden Sie Grundrisse, Energieausweise, Versicherungen und mehr hoch
           </p>
-          <button
-            onClick={() => setShowUploadModal(true)}
-            style={{ backgroundColor: '#3c8af7' }}
-            className="inline-flex items-center gap-2 px-4 py-2 text-white rounded-full font-medium hover:opacity-90 transition-colors"
-          >
-            <Upload className="w-4 h-4" />
+          <Button onClick={() => setShowUploadModal(true)} variant="primary">
             Erstes Dokument hochladen
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -649,43 +640,26 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                 <div className="text-3xl font-bold text-blue-600 mb-3 tracking-wider">
                   RET-736AD5
                 </div>
-                <button
+                <Button
                   onClick={() => {
                     navigator.clipboard.writeText("RET-736AD5");
                     setCopiedCode(true);
                     setTimeout(() => setCopiedCode(false), 2000);
                   }}
-                  style={{ backgroundColor: '#3c8af7' }}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-white rounded-full font-medium hover:opacity-90 transition-colors"
+                  variant="primary"
                 >
-                  {copiedCode ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      Code kopiert
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="w-4 h-4" />
-                      Code kopieren
-                    </>
-                  )}
-                </button>
+                  {copiedCode ? "Code kopiert" : "Code kopieren"}
+                </Button>
               </div>
             </div>
 
             <div className="border-t px-6 py-4 flex justify-end">
-              <a
-                href="https://mcenergieausweis.de"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ backgroundColor: '#3c8af7' }}
-                className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-full font-medium hover:opacity-90 transition-colors"
+              <Button
+                onClick={() => window.open("https://mcenergieausweis.de", "_blank", "noopener noreferrer")}
+                variant="primary"
               >
                 Zu McEnergieausweis
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </a>
+              </Button>
             </div>
           </div>
         </div>
@@ -809,13 +783,9 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                 <p className="text-xs text-gray-400 mb-4">
                   Mehrere Dateien werden unterstützt (max. {isPro ? "10" : "3"})
                 </p>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{ backgroundColor: '#3c8af7' }}
-                  className="px-4 py-2 text-white rounded-full hover:opacity-90 transition-colors"
-                >
+                <Button onClick={() => fileInputRef.current?.click()} variant="primary">
                   Dateien auswählen
-                </button>
+                </Button>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -874,7 +844,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
               )}
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-                <button
+                <Button
                   onClick={() => {
                     setShowUploadModal(false);
                     setUploadFiles([]);
@@ -882,20 +852,14 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                     setSelectedUnitId("");
                     setUploadDescription("");
                   }}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  variant="cancel"
                 >
                   Abbrechen
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleUpload}
                   disabled={uploadFiles.length === 0 || isUploading || allSuccess}
-                  style={uploadFiles.length === 0 || isUploading || allSuccess ? {} : { backgroundColor: '#3c8af7' }}
-                  className={`px-6 py-2 rounded-full font-medium transition-colors ${
-                    uploadFiles.length === 0 || isUploading || allSuccess
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "text-white hover:opacity-90"
-                  }`}
+                  variant="primary"
                 >
                   {isUploading ? (
                     "Wird hochgeladen..."
@@ -904,7 +868,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
                   ) : (
                     "Hochladen"
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

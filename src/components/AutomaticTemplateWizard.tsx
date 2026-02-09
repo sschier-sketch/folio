@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, Check, ChevronLeft, ChevronRight, Eye, Download, Loader, Plus, Trash2 } from "lucide-react";
+import { X, Check, Eye, Loader, Trash2, ChevronRight } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import jsPDF from "jspdf";
+import { Button } from "./ui/Button";
 
 interface AutomaticTemplateWizardProps {
   onClose: () => void;
@@ -773,13 +774,13 @@ export default function AutomaticTemplateWizard({ onClose }: AutomaticTemplateWi
                 </div>
               ))}
 
-              <button
+              <Button
                 onClick={addTenant}
-                className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-blue hover:text-primary-blue transition-colors w-full justify-center"
+                variant="dashed"
+                fullWidth
               >
-                <Plus className="w-5 h-5" />
                 Weiteren Empfänger:in hinzufügen
-              </button>
+              </Button>
             </div>
           )}
 
@@ -875,61 +876,41 @@ export default function AutomaticTemplateWizard({ onClose }: AutomaticTemplateWi
                 </div>
               </div>
 
-              <button
+              <Button
                 onClick={generatePDF}
                 disabled={loading}
-                className="px-8 py-4 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="primary"
               >
-                {loading ? (
-                  <>
-                    <Loader className="w-5 h-5 animate-spin" />
-                    Wird erstellt...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-5 h-5" />
-                    PDF herunterladen
-                  </>
-                )}
-              </button>
+                {loading ? "Wird erstellt..." : "PDF herunterladen"}
+              </Button>
             </div>
           )}
         </div>
 
         <div className="p-6 border-t border-gray-200 flex items-center justify-between bg-gray-50">
-          <button
+          <Button
             onClick={currentStep === 1 ? onClose : goToPreviousStep}
-            style={currentStep === 1 ? { backgroundColor: "#faf8f8", color: "#000000" } : undefined}
-            className={currentStep === 1 ? "px-6 py-3 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors flex items-center gap-2" : "px-6 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium flex items-center gap-2"}
+            variant={currentStep === 1 ? "cancel" : "secondary"}
           >
-            {currentStep === 1 ? (
-              <>Abbrechen</>
-            ) : (
-              <>
-                <ChevronLeft className="w-5 h-5" />
-                Zurück
-              </>
-            )}
-          </button>
+            {currentStep === 1 ? "Abbrechen" : "Zurück"}
+          </Button>
 
           <div className="flex gap-3">
             {currentStep < 5 && (
-              <button
+              <Button
                 onClick={() => {}}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center gap-2"
+                variant="outlined"
               >
-                <Eye className="w-5 h-5" />
                 Vorschau
-              </button>
+              </Button>
             )}
             {currentStep < 5 && (
-              <button
+              <Button
                 onClick={goToNextStep}
-                className="px-6 py-3 bg-dark text-white rounded-lg hover:bg-gray-800 transition-colors font-medium flex items-center gap-2"
+                variant="dark"
               >
                 Weiter
-                <ChevronRight className="w-5 h-5" />
-              </button>
+              </Button>
             )}
           </div>
         </div>

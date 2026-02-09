@@ -2,16 +2,15 @@ import { useState, useEffect } from 'react';
 import {
   ShieldBan,
   Forward,
-  Plus,
   Trash2,
   AlertCircle,
   CheckCircle,
   ToggleLeft,
   ToggleRight,
   AtSign,
-  Loader2,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { Button } from '../ui/Button';
 
 interface ReservedAlias {
   alias_localpart: string;
@@ -201,14 +200,13 @@ function ReservedAliasesSection() {
             placeholder="Grund (optional)"
             className="sm:w-48 px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
           />
-          <button
+          <Button
             onClick={handleAdd}
             disabled={saving || !newAlias.trim()}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            variant="danger"
           >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Sperren
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -408,13 +406,12 @@ function ForwardingRulesSection() {
             </div>
           </div>
           {!showForm && (
-            <button
+            <Button
               onClick={() => { resetForm(); setShowForm(true); }}
-              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+              variant="primary"
             >
-              <Plus className="w-4 h-4" />
               Neue Regel
-            </button>
+            </Button>
           )}
         </div>
 
@@ -474,20 +471,19 @@ function ForwardingRulesSection() {
               </button>
 
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   onClick={resetForm}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  variant="secondary"
                 >
                   Abbrechen
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSave}
                   disabled={saving || !formSource.trim() || !formTarget.trim()}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  variant="primary"
                 >
-                  {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editAlias ? 'Aktualisieren' : 'Erstellen'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

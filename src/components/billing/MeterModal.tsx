@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, ChevronDown } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "../ui/Button";
 
 interface MeterModalProps {
   meter?: any;
@@ -435,22 +436,23 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
           </div>
 
           <div className="bg-gray-50 px-6 py-4 flex gap-3 border-t border-gray-100">
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+              variant="cancel"
+              fullWidth
               disabled={loading}
             >
               Abbrechen
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              fullWidth
             >
               {loading ? "Speichern..." : meter ? "Zähler speichern" : "Zähler anlegen"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

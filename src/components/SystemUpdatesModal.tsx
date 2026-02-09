@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, Bell, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Bell, Calendar } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../hooks/useAuth";
 import { useSubscription } from "../hooks/useSubscription";
+import { Button } from "./ui/Button";
 
 interface SystemUpdate {
   id: string;
@@ -188,29 +189,25 @@ export default function SystemUpdatesModal({
 
         {!loading && totalPages > 1 && (
           <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-            <button
+            <Button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-[#bdbfcb] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              variant="cancel"
             >
-              <ChevronLeft className="w-4 h-4" />
               Zurück
-            </button>
+            </Button>
             <span className="text-sm text-gray-400">
               Seite {currentPage} von {totalPages}
             </span>
-            <button
+            <Button
               onClick={() =>
                 setCurrentPage((prev) => Math.min(totalPages, prev + 1))
               }
               disabled={currentPage === totalPages}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-[#bdbfcb] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              variant="cancel"
             >
               Weiter
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         )}
       </div>

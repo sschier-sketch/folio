@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Eye, Pencil, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { Button } from '../ui/Button';
 
 interface MailTemplate {
   id: string;
@@ -269,20 +270,12 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
       )}
 
       <div className="flex items-center gap-3 mt-8 pt-6 border-t border-gray-200">
-        <button
-          onClick={onBack}
-          className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-        >
+        <Button variant="secondary" onClick={onBack}>
           Abbrechen
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#008CFF] text-white text-sm font-medium rounded-full hover:bg-[#0073CC] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <Save className="w-4 h-4" />
+        </Button>
+        <Button variant="primary" onClick={handleSave} disabled={saving}>
           {saving ? 'Speichern...' : 'Speichern'}
-        </button>
+        </Button>
       </div>
     </div>
   );

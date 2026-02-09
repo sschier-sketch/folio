@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Clock, Mail, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "../ui/Button";
 
 interface ReminderHistory {
   id: string;
@@ -307,12 +308,12 @@ export default function DunningHistory() {
             </div>
 
             <div className="bg-gray-50 px-6 py-4 flex justify-end rounded-b-lg border-t border-gray-200">
-              <button
+              <Button
                 onClick={() => setSelectedReminder(null)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                variant="secondary"
               >
                 Schließen
-              </button>
+              </Button>
             </div>
           </div>
         </div>

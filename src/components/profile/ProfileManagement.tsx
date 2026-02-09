@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Save, AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { Button } from '../ui/Button';
 
 interface ProfileData {
   first_name: string;
@@ -370,13 +371,13 @@ export default function ProfileManagement() {
         </div>
 
         <div className="flex justify-end">
-          <button
+          <Button
             type="submit"
             disabled={saving}
-            className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+            variant="primary"
           >
             {saving ? "Speichern..." : "Änderungen speichern"}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

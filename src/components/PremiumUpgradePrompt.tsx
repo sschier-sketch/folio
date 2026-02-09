@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Lock, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { Button } from "./ui/Button";
 
 interface PremiumUpgradePromptProps {
   featureKey: string;
@@ -87,12 +88,12 @@ export function PremiumUpgradePrompt({
         </ul>
       </div>
 
-      <button
+      <Button
         onClick={() => navigate("/dashboard?view=settings-billing")}
-        className="px-8 py-3 bg-primary-blue text-white font-semibold rounded-full hover:shadow-lg transition-all"
+        variant="pro"
       >
         Jetzt upgraden
-      </button>
+      </Button>
     </div>
   );
 }

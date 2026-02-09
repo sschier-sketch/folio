@@ -22,6 +22,7 @@ import {
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Button } from "../components/ui/Button";
 export default function Features() {
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -189,22 +190,22 @@ export default function Features() {
               </p>{" "}
               <div className="flex items-center justify-center gap-4">
                 {" "}
-                <button
+                <Button
                   onClick={goToSignup}
-                  className="px-8 py-4 bg-primary-blue text-white rounded-full font-semibold hover:bg-primary-blue transition-all duration-200 hover:"
+                  variant="primary"
                 >
                   {" "}
                   {language === "de"
                     ? "Jetzt starten - Kostenlos"
                     : "Start Now - Free"}{" "}
-                </button>{" "}
-                <button
+                </Button>{" "}
+                <Button
                   onClick={() => navigate("/pricing")}
-                  className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 "
+                  variant="outlined"
                 >
                   {" "}
                   {language === "de" ? "Preise ansehen" : "View Pricing"}{" "}
-                </button>{" "}
+                </Button>{" "}
               </div>{" "}
             </div>{" "}
           </div>{" "}
@@ -329,15 +330,15 @@ export default function Features() {
               </div>{" "}
               <div className="text-center mt-12">
                 {" "}
-                <button
+                <Button
                   onClick={goToSignup}
-                  className="px-8 py-4 bg-white text-primary-blue rounded-full font-bold hover:bg-primary-blue/5 transition-all duration-200 hover:"
+                  variant="outlined"
                 >
                   {" "}
                   {language === "de"
                     ? "Jetzt Journey starten!"
                     : "Start Journey Now!"}{" "}
-                </button>{" "}
+                </Button>{" "}
               </div>{" "}
             </div>{" "}
           </div>{" "}
@@ -402,21 +403,20 @@ export default function Features() {
             </p>{" "}
             <div className="flex items-center justify-center gap-4">
               {" "}
-              <button
+              <Button
                 onClick={goToSignup}
-                className="px-8 py-4 bg-primary-blue text-white rounded-full font-semibold hover:bg-primary-blue transition-all duration-200 hover:flex items-center gap-2"
+                variant="primary"
               >
                 {" "}
-                <Sparkles className="w-5 h-5" />{" "}
                 {language === "de" ? "Kostenlos starten" : "Start Free"}{" "}
-              </button>{" "}
-              <button
+              </Button>{" "}
+              <Button
                 onClick={() => navigate("/contact")}
-                className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 "
+                variant="outlined"
               >
                 {" "}
                 {language === "de" ? "Kontakt aufnehmen" : "Contact Us"}{" "}
-              </button>{" "}
+              </Button>{" "}
             </div>{" "}
           </div>{" "}
         </div>{" "}

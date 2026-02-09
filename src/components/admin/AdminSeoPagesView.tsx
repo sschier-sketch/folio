@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Edit, CheckCircle, XCircle, Lock, Calendar } from "lucide-react";
+import { Search, CheckCircle, XCircle, Lock, Calendar } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import AdminSeoPageEdit from "./AdminSeoPageEdit";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
+import { Button } from '../ui/Button';
 
 interface SeoPage {
   id: string;
@@ -165,13 +166,12 @@ export default function AdminSeoPagesView() {
           <option value="noindex">Noindex</option>
         </select>
 
-        <button
+        <Button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          variant="primary"
         >
-          <Plus className="w-5 h-5" />
           Neue Seite
-        </button>
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg overflow-hidden">

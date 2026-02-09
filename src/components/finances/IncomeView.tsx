@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Calendar, CheckCircle2, Plus, Trash2, Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, Trash2, Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
+import { Button } from "../ui/Button";
 
 interface ExpenseCategory {
   id: string;
@@ -628,7 +629,7 @@ export default function IncomeView() {
       <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">Sonstige Einnahmen</h3>
-          <button
+          <Button
             onClick={() => {
               setEditingIncome(null);
               setExistingDocument(null);
@@ -652,11 +653,10 @@ export default function IncomeView() {
               });
               setShowAddModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
-            <Plus className="w-4 h-4" />
             Einnahme hinzufügen
-          </button>
+          </Button>
         </div>
 
         {manualIncomes.length === 0 ? (
@@ -1187,25 +1187,26 @@ export default function IncomeView() {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button
+              <Button
                 onClick={() => {
                   setShowAddModal(false);
                   setEditingIncome(null);
                   setExistingDocument(null);
                   setUploadedFile(null);
                 }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
+                fullWidth
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSaveIncome}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+                variant="primary"
+                fullWidth
                 disabled={!formData.property_id || !formData.amount || !formData.description || !formData.category_id}
               >
                 {editingIncome ? "Aktualisieren" : "Hinzufügen"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { Eye, EyeOff, LogIn, Mail } from "lucide-react";
+import { Button } from '../ui/Button';
 interface LoginFormProps {
   onSuccess?: () => void;
 }
@@ -182,10 +183,11 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               </button>{" "}
             </div>{" "}
           </div>{" "}
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-full shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            variant="primary"
+            fullWidth
           >
             {" "}
             {loading ? (
@@ -196,7 +198,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 <LogIn className="w-5 h-5 mr-2" /> Anmelden{" "}
               </>
             )}{" "}
-          </button>{" "}
+          </Button>{" "}
         </form>
       ) : (
         <form onSubmit={handleMagicLinkLogin} className="space-y-6">
@@ -224,10 +226,11 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               Wir senden Ihnen einen sicheren Login-Link per E-Mail zu{" "}
             </p>{" "}
           </div>{" "}
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-full shadow-sm text-sm font-semibold text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            variant="primary"
+            fullWidth
           >
             {" "}
             {loading ? (
@@ -238,7 +241,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 <Mail className="w-5 h-5 mr-2" /> Magic Link senden{" "}
               </>
             )}{" "}
-          </button>{" "}
+          </Button>{" "}
         </form>
       )}{" "}
     </div>

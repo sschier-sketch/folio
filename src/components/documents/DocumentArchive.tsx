@@ -6,6 +6,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 import { getDocumentTypeLabel, getDocumentTypeColor } from "../../lib/documentTypes";
+import { Button } from "../ui/Button";
 
 interface Document {
   id: string;
@@ -273,9 +274,9 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                   Rechtssichere Aufbewahrung mit Änderungsverlauf
                 </li>
               </ul>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">
+              <Button variant="primary">
                 Jetzt auf Pro upgraden
-              </button>
+              </Button>
             </div>
           </div>
         </div>

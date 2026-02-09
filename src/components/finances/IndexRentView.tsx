@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "../ui/Button";
 
 interface IndexRentCalculation {
   id: string;
@@ -326,13 +327,13 @@ export default function IndexRentView() {
             (taeglich um 3:00 Uhr)
           </p>
         </div>
-        <button
+        <Button
           onClick={processCalculations}
           disabled={processing}
-          className="px-6 py-3 bg-[#008CFF] text-white rounded-full font-medium hover:bg-[#0073CC] transition-colors disabled:opacity-50"
+          variant="primary"
         >
           {processing ? "Prüfe..." : "Jetzt prüfen"}
-        </button>
+        </Button>
       </div>
 
       {summaryMetrics.totalPending > 0 && (
@@ -744,30 +745,27 @@ function CalculationCard({
           <div className="flex items-center gap-2">
             {isOpen && (
               <>
-                <button
+                <Button
                   onClick={() => onDismiss(calc.id)}
-                  className="px-4 py-2 text-sm font-medium text-gray-500 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+                  variant="secondary"
                 >
-                  <EyeOff className="w-4 h-4" />
                   Ausblenden
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => onApply(calc.id)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors flex items-center gap-1.5"
+                  variant="primary"
                 >
-                  <CheckCircle className="w-4 h-4" />
                   Als durchgefuehrt markieren
-                </button>
+                </Button>
               </>
             )}
             {calc.status === "dismissed" && (
-              <button
+              <Button
                 onClick={() => onRestore(calc.id)}
-                className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+                variant="secondary"
               >
-                <Eye className="w-4 h-4" />
                 Wiederherstellen
-              </button>
+              </Button>
             )}
           </div>
         </div>

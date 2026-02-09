@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Lock, Check } from "lucide-react";
 import { useSubscription } from "../hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/Button";
 
 interface PremiumFeatureGuardProps {
   children: ReactNode;
@@ -44,12 +45,13 @@ export function PremiumFeatureGuard({
               <span className="font-bold text-dark">Pro Feature</span>
             </div>
             <p className="text-sm text-gray-400 mb-3">{featureName}</p>
-            <button
+            <Button
               onClick={() => navigate("/dashboard?view=settings-billing")}
-              className="w-full px-4 py-2 bg-primary-blue text-white text-sm font-semibold rounded-full transition-all flex items-center justify-center"
+              variant="pro"
+              fullWidth
             >
               Jetzt upgraden
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -89,12 +91,12 @@ export function PremiumFeatureGuard({
           </li>
         </ul>
       </div>
-      <button
+      <Button
         onClick={() => navigate("/dashboard?view=settings-billing")}
-        className="px-8 py-3 bg-primary-blue text-white font-semibold rounded-full hover:shadow-lg transition-all"
+        variant="pro"
       >
         Jetzt upgraden
-      </button>
+      </Button>
     </div>
   );
 }

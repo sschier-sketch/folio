@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
+import { Button } from './ui/Button';
 
 interface Tenant {
   id: string;
@@ -303,17 +304,17 @@ export default function MieterportalView() {
           <code className="text-sm bg-white px-3 py-2 rounded border border-amber-300 flex-1">
             {window.location.origin}/tenant-portal
           </code>
-          <button
+          <Button
             onClick={() => {
               navigator.clipboard.writeText(
                 `${window.location.origin}/tenant-portal`
               );
               alert("Link kopiert!");
             }}
-            className="px-3 py-2 bg-amber-600 text-white rounded-full hover:bg-amber-700 transition-colors text-sm font-medium whitespace-nowrap"
+            variant="warning"
           >
             Kopieren
-          </button>
+          </Button>
         </div>
         <div className="text-xs text-amber-700 space-y-1">
           <p><strong>Tipp:</strong> Mit "Als Mieter anmelden" können Sie auch selbst das Portal als Mieter testen</p>

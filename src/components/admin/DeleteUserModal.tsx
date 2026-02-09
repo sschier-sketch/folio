@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { Button } from '../ui/Button';
 
 interface DeleteUserModalProps {
   userId: string;
@@ -126,27 +127,22 @@ export default function DeleteUserModal({ userId, userEmail, onClose, onDeleted 
         )}
 
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={onClose}
             disabled={loading}
-            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            variant="outlined"
+            fullWidth
           >
             Abbrechen
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleDelete}
             disabled={!isConfirmed || loading}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="danger"
+            fullWidth
           >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <Trash2 className="w-4 h-4" />
-                Endgueltig loeschen
-              </>
-            )}
-          </button>
+            Endgueltig loeschen
+          </Button>
         </div>
       </div>
     </div>

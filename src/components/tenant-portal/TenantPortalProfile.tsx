@@ -6,6 +6,7 @@ import {
   generateSalt,
   verifyPassword,
 } from "../../lib/passwordUtils";
+import { Button } from '../ui/Button';
 
 interface TenantPortalProfileProps {
   tenantId: string;
@@ -218,13 +219,14 @@ export default function TenantPortalProfile({
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="primary"
+            fullWidth
           >
             {loading ? "Wird geändert..." : "Passwort ändern"}
-          </button>
+          </Button>
         </form>
       </div>
 

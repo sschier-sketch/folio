@@ -11,6 +11,7 @@ import { useAuth } from "../contexts/AuthContext";
 import TicketModal from "./TicketModal";
 import TicketDetails from "./TicketDetails";
 import { PremiumFeatureGuard } from "./PremiumFeatureGuard";
+import { Button } from './ui/Button';
 interface Property {
   id: string;
   name: string;
@@ -179,16 +180,15 @@ export default function TicketsView({ initialTicketId }: TicketsViewProps) {
               Verwalten Sie Anfragen und Nachrichten Ihrer Mieter
             </p>{" "}
           </div>{" "}
-          <button
+          <Button
             onClick={() => {
               setSelectedTicket(null);
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-all hover:flex-shrink-0"
+            variant="primary"
           >
-            {" "}
-            <Plus className="w-5 h-5" /> Ticket erstellen{" "}
-          </button>{" "}
+            Ticket erstellen
+          </Button>{" "}
         </div>{" "}
         <div className="flex gap-2 mb-6">
           {" "}
@@ -238,16 +238,15 @@ export default function TicketsView({ initialTicketId }: TicketsViewProps) {
                 : `Es gibt keine Tickets mit dem Status "${getStatusLabel(filterStatus)}".`}{" "}
             </p>{" "}
             {filterStatus === "all" && (
-              <button
+              <Button
                 onClick={() => {
                   setSelectedTicket(null);
                   setShowModal(true);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+                variant="primary"
               >
-                {" "}
-                <Plus className="w-5 h-5" /> Erstes Ticket erstellen{" "}
-              </button>
+                Erstes Ticket erstellen
+              </Button>
             )}{" "}
           </div>
         ) : (

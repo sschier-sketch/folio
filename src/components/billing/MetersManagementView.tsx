@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import * as XLSX from "xlsx";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
+import { Button } from "../ui/Button";
 
 interface Meter {
   id: string;
@@ -233,12 +234,12 @@ export default function MetersManagementView({
         <p className="text-gray-400 mb-6">
           Legen Sie Ihren ersten Zähler an, um Verbrauchsdaten zu erfassen.
         </p>
-        <button
+        <Button
           onClick={onAddMeter}
-          className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
+          variant="primary"
         >
           Ersten Zähler hinzufügen
-        </button>
+        </Button>
       </div>
     );
   }
@@ -298,12 +299,12 @@ export default function MetersManagementView({
             )}
           </div>
 
-          <button
+          <Button
             onClick={onAddMeter}
-            className="px-4 py-2.5 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
+            variant="primary"
           >
             Neuen Zähler anlegen
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -364,17 +365,18 @@ export default function MetersManagementView({
             </div>
 
             <div className="flex items-end">
-              <button
+              <Button
                 onClick={() => {
                   setFilterType("all");
                   setFilterProperty("all");
                   setFilterPeriod("all");
                   setSearchQuery("");
                 }}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                variant="secondary"
+                fullWidth
               >
                 Filter zurücksetzen
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -511,20 +513,20 @@ export default function MetersManagementView({
             Seite {currentPage} von {totalPages}
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="secondary"
             >
               Zurück
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="secondary"
             >
               Weiter
-            </button>
+            </Button>
           </div>
         </div>
       )}

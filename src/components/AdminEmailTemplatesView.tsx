@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Mail, Save, Eye, Code, FileText } from "lucide-react";
+import { Mail, Eye, Code, FileText } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { Button } from "./ui/Button";
 interface EmailTemplate {
   id: string;
   template_key: string;
@@ -214,25 +215,13 @@ export function AdminEmailTemplatesView() {
                     {editedTemplate.description}
                   </p>{" "}
                 </div>{" "}
-                <button
+                <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="primary"
                 >
-                  {" "}
-                  {saving ? (
-                    <>
-                      {" "}
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{" "}
-                      Speichern...{" "}
-                    </>
-                  ) : (
-                    <>
-                      {" "}
-                      <Save className="w-4 h-4" /> Speichern{" "}
-                    </>
-                  )}{" "}
-                </button>{" "}
+                  {saving ? "Speichern..." : "Speichern"}
+                </Button>{" "}
               </div>{" "}
               <div className="space-y-4">
                 {" "}

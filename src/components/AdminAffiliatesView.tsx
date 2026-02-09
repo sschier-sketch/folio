@@ -3,14 +3,13 @@ import {
   Users,
   TrendingUp,
   DollarSign,
-  Ban,
-  CheckCircle,
   Search,
   ChevronRight,
   AlertCircle,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { BaseTable, StatusBadge } from "./common/BaseTable";
+import { Button } from './ui/Button';
 
 interface Affiliate {
   id: string;
@@ -206,21 +205,19 @@ export default function AdminAffiliatesView() {
               </div>
               <div className="flex gap-2">
                 {selectedAffiliate.is_blocked ? (
-                  <button
+                  <Button
                     onClick={() => handleUnblockAffiliate(selectedAffiliate.id)}
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                    variant="primary"
                   >
-                    <CheckCircle className="w-4 h-4" />
                     Entsperren
-                  </button>
+                  </Button>
                 ) : (
-                  <button
+                  <Button
                     onClick={() => setShowBlockModal(true)}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                    variant="danger"
                   >
-                    <Ban className="w-4 h-4" />
                     Sperren
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -354,24 +351,25 @@ export default function AdminAffiliatesView() {
                 />
               </div>
               <div className="flex gap-3">
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setShowBlockModal(false);
                     setBlockReason("");
                   }}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  variant="cancel"
+                  fullWidth
                 >
                   Abbrechen
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleBlockAffiliate}
                   disabled={blocking || !blockReason.trim()}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  variant="danger"
+                  fullWidth
                 >
                   {blocking ? "Wird gesperrt..." : "Sperren"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

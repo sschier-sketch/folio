@@ -1,5 +1,6 @@
 import { Download, FileText, Users, CheckCircle } from "lucide-react";
 import { PremiumFeatureGuard } from "../PremiumFeatureGuard";
+import { Button } from "../ui/Button";
 
 export default function BillingExportView() {
   return (
@@ -45,9 +46,9 @@ export default function BillingExportView() {
                   Verbrauchsübersicht
                 </li>
               </ul>
-              <button className="w-full px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
+              <Button variant="primary" fullWidth>
                 PDF erstellen
-              </button>
+              </Button>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-6">
@@ -74,9 +75,9 @@ export default function BillingExportView() {
                   ZIP-Download
                 </li>
               </ul>
-              <button style={{ backgroundColor: "#faf8f8", color: "#000000" }} className="w-full px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors">
+              <Button variant="cancel" fullWidth>
                 Alle exportieren
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -96,9 +97,9 @@ export default function BillingExportView() {
                 <p className="text-sm text-gray-400 mb-2">
                   Ziehen Sie Ihr Logo hierher oder klicken Sie zum Auswählen
                 </p>
-                <button style={{ backgroundColor: "#faf8f8", color: "#000000" }} className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#bdbfcb] transition-colors">
+                <Button variant="cancel">
                   Datei auswählen
-                </button>
+                </Button>
               </div>
             </div>
 

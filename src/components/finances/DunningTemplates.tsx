@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Mail, Save, RotateCcw, Info } from "lucide-react";
+import { Mail, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "../ui/Button";
 
 interface EmailTemplate {
   id: string;
@@ -256,39 +257,35 @@ Mit freundlichen Grüßen`
                 <h3 className="text-lg font-semibold text-dark">{levelInfo.title}</h3>
               </div>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   onClick={() => handleResetTemplate(template.dunning_level)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-3 py-1.5 text-sm rounded-lg hover:bg-[#bdbfcb] transition-colors flex items-center gap-2"
+                  variant="cancel"
                 >
-                  <RotateCcw className="w-4 h-4" />
                   Zurücksetzen
-                </button>
+                </Button>
                 {isEditing ? (
                   <>
-                    <button
+                    <Button
                       onClick={() => setEditingTemplate(null)}
-                      style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                      className="px-3 py-1.5 text-sm rounded-lg hover:bg-[#bdbfcb] transition-colors"
+                      variant="cancel"
                     >
                       Abbrechen
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleSaveTemplate(currentTemplate)}
                       disabled={saving === template.dunning_level}
-                      className="px-3 py-1.5 text-sm text-white bg-primary-blue rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      variant="primary"
                     >
-                      <Save className="w-4 h-4" />
                       {saving === template.dunning_level ? "Speichert..." : "Speichern"}
-                    </button>
+                    </Button>
                   </>
                 ) : (
-                  <button
+                  <Button
                     onClick={() => setEditingTemplate({ ...template })}
-                    className="px-3 py-1.5 text-sm text-primary-blue hover:text-blue-700 border border-primary-blue rounded-lg hover:bg-blue-50 transition-colors"
+                    variant="outlined"
                   >
                     Bearbeiten
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>

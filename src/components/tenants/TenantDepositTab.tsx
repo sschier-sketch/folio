@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Wallet, Plus, Calendar, Edit, Save, X } from "lucide-react";
+import { Wallet, Calendar, Edit, Save, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
+import { Button } from '../ui/Button';
 
 interface TenantDepositTabProps {
   tenantId: string;
@@ -286,31 +287,20 @@ export default function TenantDepositTab({
             Kautionsinformationen
           </h3>
           {!isEditing ? (
-            <button
-              onClick={() => setIsEditing(true)}
-              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-              className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
-            >
+            <Button onClick={() => setIsEditing(true)} variant="secondary">
               Bearbeiten
-            </button>
+            </Button>
           ) : (
             <div className="flex gap-2">
-              <button
-                onClick={() => {
+              <Button onClick={() => {
                   setIsEditing(false);
                   loadData();
-                }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
-              >
+                }} variant="cancel">
                 Abbrechen
-              </button>
-              <button
-                onClick={handleSaveDeposit}
-                className="px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
-              >
+              </Button>
+              <Button onClick={handleSaveDeposit} variant="primary">
                 Speichern
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -435,13 +425,9 @@ export default function TenantDepositTab({
             <h3 className="text-lg font-semibold text-dark">
               Kautionshistorie
             </h3>
-            <button
-              onClick={() => setShowTransactionModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
-            >
-              <Plus className="w-4 h-4" />
+            <Button onClick={() => setShowTransactionModal(true)} variant="primary">
               Transaktion erfassen
-            </button>
+            </Button>
           </div>
 
           {history.length === 0 ? (
@@ -641,21 +627,12 @@ export default function TenantDepositTab({
             </div>
 
             <div className="border-t px-6 py-4 flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowTransactionModal(false)}
-                style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
-              >
+              <Button type="button" onClick={() => setShowTransactionModal(false)} variant="secondary" fullWidth>
                 Abbrechen
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveTransaction}
-                className="flex-1 px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
-              >
+              </Button>
+              <Button type="button" onClick={handleSaveTransaction} variant="primary" fullWidth>
                 Speichern
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Edit, Building2, Calendar, Euro, TrendingUp, Users, Plus, Edit2, Trash2, CreditCard, Info, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { Edit, Building2, Calendar, Euro, TrendingUp, Users, Edit2, Trash2, CreditCard, Info, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import LoanModal from "../LoanModal";
+import { Button } from '../ui/Button';
 
 interface PropertyOverviewTabProps {
   property: {
@@ -406,16 +407,12 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-dark">Stammdaten</h3>
           {!isEditingMasterData ? (
-            <button
-              onClick={() => setIsEditingMasterData(true)}
-              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-              className="px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
-            >
+            <Button onClick={() => setIsEditingMasterData(true)} variant="secondary">
               Bearbeiten
-            </button>
+            </Button>
           ) : (
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={() => {
                   setIsEditingMasterData(false);
                   setEditData({
@@ -429,17 +426,13 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                     description: property.description,
                   });
                 }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
               >
                 Abbrechen
-              </button>
-              <button
-                onClick={handleSaveMasterData}
-                className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
-              >
+              </Button>
+              <Button onClick={handleSaveMasterData} variant="primary">
                 Speichern
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -771,15 +764,15 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           <h2 className="text-xl font-semibold text-dark">
             Kredite & Finanzierungen
           </h2>
-          <button
+          <Button
             onClick={() => {
               setSelectedLoan(null);
               setShowLoanModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
-            <Plus className="w-4 h-4" /> Kredit hinzufügen
-          </button>
+            Kredit hinzufügen
+          </Button>
         </div>
 
         {loans.length === 0 ? (

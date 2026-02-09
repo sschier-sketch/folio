@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Plus, Calendar, Building, TrendingUp, AlertCircle } from "lucide-react";
+import { Calendar, Building, TrendingUp, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { Button } from "../ui/Button";
 
 interface BillingPeriod {
   id: string;
@@ -149,13 +150,12 @@ export default function BillingOverview() {
           <h2 className="text-lg font-semibold text-dark">
             Abrechnungszeiträume
           </h2>
-          <button
+          <Button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
-            <Plus className="w-4 h-4" />
             Neue Abrechnung
-          </button>
+          </Button>
         </div>
 
         {billingPeriods.length === 0 ? (
@@ -169,13 +169,12 @@ export default function BillingOverview() {
             <p className="text-gray-400 mb-6">
               Erstellen Sie Ihre erste Betriebskostenabrechnung
             </p>
-            <button
+            <Button
               onClick={() => setShowCreateModal(true)}
-              className="px-6 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
+              variant="primary"
             >
-              <Plus className="w-4 h-4" />
               Neue Abrechnung erstellen
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="p-6">
@@ -308,16 +307,17 @@ export default function BillingOverview() {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button
+              <Button
                 onClick={() => setShowCreateModal(false)}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
+                fullWidth
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleCreate}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+                variant="primary"
+                fullWidth
                 disabled={
                   !formData.property_id ||
                   !formData.name ||
@@ -326,7 +326,7 @@ export default function BillingOverview() {
                 }
               >
                 Erstellen
-              </button>
+              </Button>
             </div>
           </div>
         </div>

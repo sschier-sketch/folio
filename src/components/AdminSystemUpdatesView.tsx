@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Bell, Plus, Edit2, Trash2, Eye, EyeOff, Calendar } from "lucide-react";
+import { Bell, Plus, Calendar } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../hooks/useAuth";
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
+import { Button } from './ui/Button';
 
 interface SystemUpdate {
   id: string;
@@ -172,13 +173,12 @@ export default function AdminSystemUpdatesView() {
             Verwalten Sie Änderungen und neue Features
           </p>
         </div>
-        <button
+        <Button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-700 transition-colors"
+          variant="primary"
         >
-          <Plus className="w-5 h-5" />
           Neues Update
-        </button>
+        </Button>
       </div>
 
       <div className="grid gap-4">
@@ -333,20 +333,21 @@ export default function AdminSystemUpdatesView() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  variant="cancel"
+                  fullWidth
                 >
                   Abbrechen
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  variant="primary"
+                  fullWidth
                 >
                   {editingUpdate ? "Speichern" : "Erstellen"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { getCategoryLabel } from "../../lib/ticketUtils";
+import { Button } from '../ui/Button';
 
 interface Ticket {
   id: string;
@@ -394,18 +395,18 @@ export default function TenantPortalCommunication({
                   <p className="text-sm font-medium text-dark">{selectedComm.attachment_name}</p>
                   <p className="text-xs text-gray-500">Anhang</p>
                 </div>
-                <button
+                <Button
                   onClick={() => {
                     const { data } = supabase.storage
                       .from("documents")
                       .getPublicUrl(selectedComm.attachment_path!);
                     window.open(data.publicUrl, "_blank");
                   }}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-primary-blue text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                  variant="primary"
                 >
                   <Download className="w-4 h-4" />
                   Download
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -522,13 +523,13 @@ export default function TenantPortalCommunication({
                   placeholder="Ihre Nachricht..."
                   required
                 />
-                <button
+                <Button
                   type="submit"
-                  className="self-end px-5 py-3 bg-primary-blue text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  variant="primary"
                 >
                   <Send className="w-4 h-4" />
                   Senden
-                </button>
+                </Button>
               </form>
             </div>
           )}
@@ -550,13 +551,13 @@ export default function TenantPortalCommunication({
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h2 className="text-xl font-semibold text-dark">Kommunikation</h2>
-        <button
+        <Button
           onClick={() => setShowNewTicket(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
+          variant="primary"
         >
           <Plus className="w-5 h-5" />
           Neue Anfrage
-        </button>
+        </Button>
       </div>
 
       <div className="flex gap-2 mb-5">
@@ -779,21 +780,22 @@ export default function TenantPortalCommunication({
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowNewTicket(false)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  variant="cancel"
+                  fullWidth
                 >
                   Abbrechen
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  variant="primary"
+                  fullWidth
                 >
                   {submitting ? "Erstellen..." : "Anfrage erstellen"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

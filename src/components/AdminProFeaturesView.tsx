@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Sparkles, Edit, Save, X, Plus, Trash2, AlertCircle } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { Button } from "./ui/Button";
 
 interface ProFeatureText {
   id: string;
@@ -202,13 +203,12 @@ export default function AdminProFeaturesView() {
             Verwalten Sie die Upgrade-Prompts für alle Pro-Features
           </p>
         </div>
-        <button
+        <Button
           onClick={createNewFeature}
-          className="px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center gap-2"
+          variant="primary"
         >
-          <Plus className="w-4 h-4" />
           Neues Feature
-        </button>
+        </Button>
       </div>
 
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex gap-3">
@@ -325,12 +325,12 @@ export default function AdminProFeaturesView() {
                               placeholder="Neues Feature hinzufügen..."
                               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                             />
-                            <button
+                            <Button
                               onClick={addFeatureToEdit}
-                              className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                              variant="secondary"
                             >
                               <Plus className="w-4 h-4" />
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -420,12 +420,12 @@ export default function AdminProFeaturesView() {
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
           <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-3" />
           <p className="text-gray-600">Noch keine Pro-Feature Texte vorhanden</p>
-          <button
+          <Button
             onClick={createNewFeature}
-            className="mt-4 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors"
+            variant="primary"
           >
             Erstes Feature erstellen
-          </button>
+          </Button>
         </div>
       )}
     </div>

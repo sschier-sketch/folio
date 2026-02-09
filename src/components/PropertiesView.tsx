@@ -9,6 +9,7 @@ import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 import Badge from "./common/Badge";
+import { Button } from './ui/Button';
 
 interface PropertyLabel {
   id: string;
@@ -454,15 +455,15 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               </div>
             </>
           )}
-          <button
+          <Button
             onClick={() => {
               setSelectedProperty(null);
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
-            <Plus className="w-5 h-5" /> Immobilie hinzufügen
-          </button>
+            Immobilie hinzufügen
+          </Button>
         </div>
       </div>
       {properties.length === 0 ? (
@@ -474,15 +475,15 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
           <p className="text-gray-400 mb-6">
             Fügen Sie Ihre erste Immobilie hinzu, um mit der Verwaltung zu beginnen.
           </p>
-          <button
+          <Button
             onClick={() => {
               setSelectedProperty(null);
               setShowModal(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
-            <Plus className="w-5 h-5" /> Erste Immobilie hinzufügen
-          </button>
+            Erste Immobilie hinzufügen
+          </Button>
         </div>
       ) : (
         <>
@@ -574,13 +575,13 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               </div>
 
               <div className="flex items-end">
-                <button
+                <Button
                   onClick={() => setFilters({ status: "", property_type: "", label: "" })}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="w-full px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  variant="cancel"
+                  fullWidth
                 >
                   Zurücksetzen
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -907,28 +908,27 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button
+              <Button
                 onClick={() => {
                   setShowLabelModal(null);
                   setNewLabelText("");
                   setSelectedColor("blue");
                 }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   if (newLabelText.trim()) {
                     handleAddLabel(showLabelModal, newLabelText, selectedColor);
                   }
                 }}
                 disabled={!newLabelText.trim()}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="primary"
               >
                 Hinzufügen
-              </button>
+              </Button>
             </div>
           </div>
         </div>

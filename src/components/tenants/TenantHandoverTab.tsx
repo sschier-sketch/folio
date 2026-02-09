@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   ClipboardList,
-  Plus,
   Calendar,
   Image,
   CheckSquare,
@@ -25,6 +24,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumFeatureGuard } from "../PremiumFeatureGuard";
 import HandoverProtocolModal from "./HandoverProtocolModal";
 import { generateHandoverPDF } from "../../lib/handoverPdfExport";
+import { Button } from '../ui/Button';
 
 interface TenantHandoverTabProps {
   tenantId: string;
@@ -275,14 +275,9 @@ export default function TenantHandoverTab({
                 Dokumentation von Ein- und Auszügen
               </p>
             </div>
-            <button
-              onClick={() => setShowModal(true)}
-              disabled={!contractId}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Plus className="w-4 h-4" />
+            <Button onClick={() => setShowModal(true)} disabled={!contractId} variant="primary">
               Neues Protokoll
-            </button>
+            </Button>
           </div>
 
           {loading ? (
@@ -297,13 +292,9 @@ export default function TenantHandoverTab({
                 Erstellen Sie Protokolle für Ein- und Auszüge mit Zählerständen,
                 Checklisten und Fotos
               </p>
-              <button
-                onClick={() => setShowModal(true)}
-                disabled={!contractId}
-                className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <Button onClick={() => setShowModal(true)} disabled={!contractId} variant="primary">
                 Erstes Protokoll erstellen
-              </button>
+              </Button>
               {!contractId && (
                 <p className="text-xs text-red-500 mt-2">
                   Für diesen Mieter existiert kein Mietvertrag
@@ -351,29 +342,17 @@ export default function TenantHandoverTab({
                     <div className="flex items-center gap-2">
                       {protocol.status === "draft" && (
                         <>
-                          <button
-                            onClick={() => handleFinalizeProtocol(protocol.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 text-white rounded-full text-sm font-medium hover:bg-emerald-600 transition-colors"
-                          >
-                            <Check className="w-4 h-4" />
+                          <Button onClick={() => handleFinalizeProtocol(protocol.id)} variant="primary">
                             Finalisieren
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirmId(protocol.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                          <Button onClick={() => setDeleteConfirmId(protocol.id)} variant="danger">
                             Löschen
-                          </button>
+                          </Button>
                         </>
                       )}
-                      <button
-                        onClick={() => handleDownloadPDF(protocol)}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-primary-blue text-white rounded-full text-sm font-medium hover:bg-blue-600 transition-colors"
-                      >
-                        <Download className="w-4 h-4" />
+                      <Button onClick={() => handleDownloadPDF(protocol)} variant="primary">
                         PDF
-                      </button>
+                      </Button>
                       <button
                         onClick={() => setExpandedProtocolId(
                           expandedProtocolId === protocol.id ? null : protocol.id
@@ -760,19 +739,12 @@ export default function TenantHandoverTab({
                 </div>
               </div>
               <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setDeleteConfirmId(null)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
-                >
+                <Button onClick={() => setDeleteConfirmId(null)} variant="cancel">
                   Abbrechen
-                </button>
-                <button
-                  onClick={() => handleDeleteProtocol(deleteConfirmId)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-full font-medium hover:bg-red-600 transition-colors"
-                >
+                </Button>
+                <Button onClick={() => handleDeleteProtocol(deleteConfirmId)} variant="danger">
                   Löschen
-                </button>
+                </Button>
               </div>
             </div>
           </div>

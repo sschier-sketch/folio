@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, FileText, Search, Pencil, Trash2, MoreVertical } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { Button } from '../ui/Button';
 
 interface MailTemplate {
   id: string;
@@ -80,13 +81,9 @@ export default function MailTemplatesList({ onEdit, onCreate }: MailTemplatesLis
           <h2 className="text-lg font-semibold text-gray-900">Vorlagen</h2>
           <p className="text-sm text-gray-500 mt-0.5">{templates.length} {templates.length === 1 ? 'Vorlage' : 'Vorlagen'} gespeichert</p>
         </div>
-        <button
-          onClick={onCreate}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#008CFF] text-white text-sm font-medium rounded-full hover:bg-[#0073CC] transition-colors"
-        >
-          <Plus className="w-4 h-4" />
+        <Button variant="primary" onClick={onCreate}>
           Neue Vorlage
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -125,13 +122,9 @@ export default function MailTemplatesList({ onEdit, onCreate }: MailTemplatesLis
               : 'Passen Sie die Suchkriterien an.'}
           </p>
           {templates.length === 0 && (
-            <button
-              onClick={onCreate}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#008CFF] text-white text-sm font-medium rounded-full hover:bg-[#0073CC] transition-colors"
-            >
-              <Plus className="w-4 h-4" />
+            <Button variant="primary" onClick={onCreate}>
               Erste Vorlage erstellen
-            </button>
+            </Button>
           )}
         </div>
       ) : (

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { Button } from "./ui/Button";
 interface AuthModalProps {
   onClose: () => void;
 }
@@ -122,10 +123,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 </p>
               )}{" "}
             </div>{" "}
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full px-4 py-3 bg-primary-blue text-white rounded-full font-semibold hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              fullWidth
             >
               {" "}
               {loading
@@ -133,22 +135,22 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 : isLogin
                   ? "Anmelden"
                   : "Account erstellen"}{" "}
-            </button>{" "}
+            </Button>{" "}
           </form>{" "}
           <div className="mt-6 text-center">
             {" "}
-            <button
+            <Button
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError("");
               }}
-              className="text-primary-blue hover:text-primary-blue font-medium transition-colors"
+              variant="text-danger"
             >
               {" "}
               {isLogin
                 ? "Noch kein Account? Jetzt registrieren"
                 : "Bereits registriert? Jetzt anmelden"}{" "}
-            </button>{" "}
+            </Button>{" "}
           </div>{" "}
         </div>{" "}
       </div>{" "}

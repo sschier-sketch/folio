@@ -3,6 +3,7 @@ import { X, Search, UserPlus, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import type { MailThread } from './types';
+import { Button } from '../ui/Button';
 
 interface Tenant {
   id: string;
@@ -155,12 +156,9 @@ export default function AssignSenderModal({ isOpen, onClose, thread, onAssigned 
         </div>
 
         <div className="px-6 py-4 border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className="w-full px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-          >
+          <Button variant="secondary" onClick={onClose} fullWidth>
             Abbrechen
-          </button>
+          </Button>
         </div>
       </div>
     </div>

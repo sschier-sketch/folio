@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Plus, TrendingDown, Trash2, Building, Tag, Upload, X, Filter, Edit, FileText, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { TrendingDown, Trash2, Building, Tag, Upload, X, Filter, Edit, FileText, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
+import { Button } from "../ui/Button";
 
 interface Expense {
   id: string;
@@ -571,25 +572,24 @@ export default function ExpensesView() {
       <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">Ausgaben</h3>
-          <button
+          <Button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
-            <Plus className="w-4 h-4" />
             Ausgabe hinzufügen
-          </button>
+          </Button>
         </div>
 
         {expenses.length === 0 ? (
           <div className="p-12 text-center">
             <TrendingDown className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-400 mb-4">Keine Ausgaben erfasst</p>
-            <button
+            <Button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+              variant="primary"
             >
               Erste Ausgabe hinzufügen
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -1054,21 +1054,22 @@ export default function ExpensesView() {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button
+              <Button
                 onClick={() => {
                   setShowAddModal(false);
                   setEditingExpense(null);
                   setExistingDocument(null);
                   setUploadedFile(null);
                 }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
+                fullWidth
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleAddExpense}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+                variant="primary"
+                fullWidth
                 disabled={
                   !formData.property_id ||
                   !formData.category_id ||
@@ -1077,7 +1078,7 @@ export default function ExpensesView() {
                 }
               >
                 {editingExpense ? "Aktualisieren" : "Hinzufügen"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

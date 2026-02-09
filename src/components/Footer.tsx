@@ -1,6 +1,7 @@
 import { Globe } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { RefLink } from "./common/RefLink";
+import { Button } from "./ui/Button";
 export default function Footer() {
   const { language, setLanguage, t } = useLanguage();
   const currentYear = new Date().getFullYear();
@@ -150,20 +151,18 @@ export default function Footer() {
             </span>{" "}
             <div className="flex gap-2">
               {" "}
-              <button
+              <Button
                 onClick={() => setLanguage("de")}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${language === "de" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
+                variant={language === "de" ? "primary" : "secondary"}
               >
-                {" "}
-                Deutsch{" "}
-              </button>{" "}
-              <button
+                Deutsch
+              </Button>{" "}
+              <Button
                 onClick={() => setLanguage("en")}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${language === "en" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
+                variant={language === "en" ? "primary" : "secondary"}
               >
-                {" "}
-                English{" "}
-              </button>{" "}
+                English
+              </Button>{" "}
             </div>{" "}
           </div>{" "}
         </div>{" "}

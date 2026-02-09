@@ -10,6 +10,7 @@ import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 import Badge from "./common/Badge";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
+import { Button } from './ui/Button';
 interface PartialPayment {
   amount: number;
   date: string;
@@ -820,25 +821,24 @@ export default function RentPaymentsView() {
             </div>
 
             <div className="bg-gray-50 px-6 py-4 flex gap-3 rounded-b-lg">
-              <button
+              <Button
                 onClick={() => {
                   setShowPartialPaymentModal(false);
                   setSelectedPayment(null);
                   setPartialAmount("");
                   setPartialNote("");
                 }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handlePartialPayment}
                 disabled={!partialAmount || !partialDate}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="primary"
               >
                 Teilzahlung speichern
-              </button>
+              </Button>
             </div>
           </div>
         </div>

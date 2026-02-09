@@ -21,6 +21,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import { getDocumentTypeLabel, getDocumentTypeColor, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
+import { Button } from "../ui/Button";
 
 interface DocumentDetailsProps {
   documentId: string;
@@ -460,41 +461,25 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
         </button>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
-          >
-            <Download className="w-4 h-4" />
+          <Button variant="primary" onClick={handleDownload}>
             Download
-          </button>
+          </Button>
 
           {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-              className="px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
-            >
+            <Button variant="cancel" onClick={() => setIsEditing(true)}>
               Bearbeiten
-            </button>
+            </Button>
           )}
 
           <DocumentFeatureGuard feature="document-archive">
-            <button
-              onClick={handleArchive}
-              style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-              className="px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
-            >
+            <Button variant="cancel" onClick={handleArchive}>
               Archivieren
-            </button>
+            </Button>
           </DocumentFeatureGuard>
 
-          <button
-            onClick={handleDelete}
-            style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-            className="px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
-          >
+          <Button variant="cancel" onClick={handleDelete}>
             Löschen
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -567,13 +552,11 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                 </div>
 
                 <div className="flex gap-2">
-                  <button
-                    onClick={handleSave}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
-                  >
+                  <Button variant="primary" onClick={handleSave}>
                     Speichern
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="cancel"
                     onClick={() => {
                       setIsEditing(false);
                       setEditForm({
@@ -583,11 +566,9 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                         shared_with_tenant: document.shared_with_tenant || false,
                       });
                     }}
-                    style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                    className="px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
                   >
                     Abbrechen
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -640,13 +621,13 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                 <LinkIcon className="w-5 h-5" />
                 Zuordnungen
               </h2>
-              <button
+              <Button
                 onClick={() => setShowAddAssociation(true)}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                variant="primary"
               >
                 <Plus className="w-4 h-4" />
                 Hinzufügen
-              </button>
+              </Button>
             </div>
 
             {showAddAssociation && (
@@ -721,22 +702,18 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                   </div>
 
                   <div className="flex gap-2">
-                    <button
-                      onClick={handleAddAssociation}
-                      className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-                    >
+                    <Button variant="primary" onClick={handleAddAssociation}>
                       Hinzufuegen
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="cancel"
                       onClick={() => {
                         setShowAddAssociation(false);
                         setNewAssociation({ type: "property", id: "", propertyIdForUnit: "" });
                       }}
-                      style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                      className="px-3 py-1.5 text-sm rounded-full hover:bg-gray-200 transition-colors"
                     >
                       Abbrechen
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

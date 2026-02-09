@@ -3,6 +3,7 @@ import { X, Plus, Trash2, ArrowLeft, Check, Building2, Info } from "lucide-react
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { parseNumberInput } from "../lib/utils";
+import { Button } from "./ui/Button";
 
 interface Property {
   id: string;
@@ -776,21 +777,22 @@ export default function PropertyModal({
             </div>
 
             <div className="flex gap-3 pt-4">
-              <button
+              <Button
                 type="button"
                 onClick={onClose}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
+                fullWidth
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+                variant="primary"
+                fullWidth
               >
                 {loading ? "Speichern..." : property ? "Speichern" : "Weiter zu Einheiten"}
-              </button>
+              </Button>
             </div>
           </form>
         )}
@@ -813,14 +815,13 @@ export default function PropertyModal({
               <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
                 <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500 mb-4">Noch keine Einheiten hinzugefügt</p>
-                <button
+                <Button
                   type="button"
                   onClick={handleAddUnit}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue/90 transition-colors"
+                  variant="primary"
                 >
-                  <Plus className="w-4 h-4" />
                   Erste Einheit hinzufügen
-                </button>
+                </Button>
               </div>
             ) : (
               <>
@@ -1060,28 +1061,24 @@ export default function PropertyModal({
             )}
 
             <div className="flex gap-3 pt-4">
-              <button
+              <Button
                 type="button"
                 onClick={handleSkipUnits}
                 disabled={loading}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors disabled:opacity-50"
+                variant="cancel"
+                fullWidth
               >
                 Überspringen
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading || units.length === 0 || units.some(u => !u.unit_number)}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                variant="primary"
+                fullWidth
               >
-                {loading ? "Speichern..." : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Immobilie erstellen
-                  </>
-                )}
-              </button>
+                {loading ? "Speichern..." : "Immobilie erstellen"}
+              </Button>
             </div>
           </div>
         )}

@@ -27,6 +27,7 @@ import {
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Button } from "../components/ui/Button";
 export default function Support() {
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -236,23 +237,22 @@ export default function Support() {
               </p>{" "}
               <div className="flex items-center justify-center gap-4">
                 {" "}
-                <button
+                <Button
                   onClick={() => navigate("/contact")}
-                  className="px-8 py-4 bg-emerald-600 text-white rounded font-semibold hover:bg-emerald-700 transition-all duration-200 hover:flex items-center gap-2"
+                  variant="primary"
                 >
                   {" "}
-                  <MessageSquare className="w-5 h-5" />{" "}
                   {language === "de" ? "Kontakt aufnehmen" : "Contact Us"}{" "}
-                </button>{" "}
-                <button
+                </Button>{" "}
+                <Button
                   onClick={() => navigate("/tenant-login")}
-                  className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 "
+                  variant="outlined"
                 >
                   {" "}
                   {language === "de"
                     ? "Zum Mieterportal"
                     : "To Tenant Portal"}{" "}
-                </button>{" "}
+                </Button>{" "}
               </div>{" "}
             </div>{" "}
           </div>{" "}
@@ -407,16 +407,15 @@ export default function Support() {
               </div>{" "}
               <div className="text-center">
                 {" "}
-                <button
+                <Button
                   onClick={() => navigate("/tenant-login")}
-                  className="px-8 py-4 bg-white text-emerald-600 rounded font-bold hover:bg-emerald-50 transition-all duration-200 hover:inline-flex items-center gap-2"
+                  variant="outlined"
                 >
                   {" "}
-                  <Sparkles className="w-5 h-5" />{" "}
                   {language === "de"
                     ? "Zum Mieterportal"
                     : "Go to Tenant Portal"}{" "}
-                </button>{" "}
+                </Button>{" "}
               </div>{" "}
             </div>{" "}
           </div>{" "}
@@ -486,11 +485,10 @@ export default function Support() {
                     />{" "}
                   </div>{" "}
                 </div>{" "}
-                <button className="px-8 py-4 bg-emerald-600 text-white rounded font-semibold hover:bg-emerald-700 transition-all duration-200 flex items-center gap-2">
+                <Button variant="primary">
                   {" "}
-                  <HelpCircle className="w-5 h-5" />{" "}
                   {language === "de" ? "Suchen" : "Search"}{" "}
-                </button>{" "}
+                </Button>{" "}
               </div>{" "}
             </div>{" "}
           </div>{" "}
@@ -574,22 +572,22 @@ export default function Support() {
             </p>{" "}
             <div className="flex items-center justify-center gap-4">
               {" "}
-              <button
+              <Button
                 onClick={() => navigate("/contact")}
-                className="px-8 py-4 bg-emerald-600 text-white rounded font-semibold hover:bg-emerald-700 transition-all duration-200 hover:"
+                variant="primary"
               >
                 {" "}
                 {language === "de"
                   ? "Jetzt Support kontaktieren"
                   : "Contact Support Now"}{" "}
-              </button>{" "}
-              <button
+              </Button>{" "}
+              <Button
                 onClick={goToSignup}
-                className="px-8 py-4 bg-white text-gray-400 rounded font-semibold hover:bg-gray-50 transition-all duration-200 border-2 "
+                variant="outlined"
               >
                 {" "}
                 {language === "de" ? "Kostenlos starten" : "Start Free"}{" "}
-              </button>{" "}
+              </Button>{" "}
             </div>{" "}
           </div>{" "}
         </div>{" "}

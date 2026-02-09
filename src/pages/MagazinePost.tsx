@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 import { Calendar, Tag as TagIcon, FolderOpen, ArrowLeft, User, Share2, Facebook, Twitter, Linkedin, Mail } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { RefLink } from "../components/common/RefLink";
+import { Button } from "../components/ui/Button";
 
 interface Post {
   id: string;

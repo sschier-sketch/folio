@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Send, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { Button } from './ui/Button';
 interface Ticket {
   id: string;
   ticket_number: string;
@@ -202,31 +203,28 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
             <div className="flex gap-2">
               {" "}
               {ticket.status === "open" && (
-                <button
+                <Button
                   onClick={() => handleStatusChange("in_progress")}
-                  className="px-4 py-2 bg-amber-600 text-white rounded-full text-sm font-medium hover:bg-amber-700 transition-all hover:"
+                  variant="warning"
                 >
-                  {" "}
-                  In Bearbeitung{" "}
-                </button>
+                  In Bearbeitung
+                </Button>
               )}{" "}
               {ticket.status !== "closed" && (
-                <button
+                <Button
                   onClick={() => handleStatusChange("closed")}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-full text-sm font-medium hover:bg-emerald-700 transition-all hover:"
+                  variant="primary"
                 >
-                  {" "}
-                  Schließen{" "}
-                </button>
+                  Schließen
+                </Button>
               )}{" "}
               {ticket.status === "closed" && (
-                <button
+                <Button
                   onClick={() => handleStatusChange("open")}
-                  className="px-4 py-2 bg-primary-blue text-white rounded-full text-sm font-medium hover:bg-primary-blue transition-all hover:"
+                  variant="primary"
                 >
-                  {" "}
-                  Wieder öffnen{" "}
-                </button>
+                  Wieder öffnen
+                </Button>
               )}{" "}
             </div>{" "}
           </div>{" "}
@@ -408,14 +406,13 @@ export default function TicketDetails({ ticket, onBack }: TicketDetailsProps) {
               className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               placeholder="Nachricht schreiben..."
             />{" "}
-            <button
+            <Button
               type="submit"
               disabled={sending || !newMessage.trim()}
-              className="px-6 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 flex items-center gap-2"
+              variant="primary"
             >
-              {" "}
-              <Send className="w-4 h-4" /> Senden{" "}
-            </button>{" "}
+              Senden
+            </Button>{" "}
           </form>
         )}{" "}
       </div>{" "}

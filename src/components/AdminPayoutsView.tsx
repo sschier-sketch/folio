@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import {
   DollarSign,
   Check,
-  X,
   Clock,
   AlertCircle,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { BaseTable, StatusBadge } from "./common/BaseTable";
+import { Button } from "./ui/Button";
 
 interface PayoutRequest {
   id: string;
@@ -314,24 +314,24 @@ export default function AdminPayoutsView() {
               render: (payout: PayoutRequest) =>
                 payout.status === "pending" && (
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={() => {
                         setSelectedPayout(payout);
                         setShowProcessModal(true);
                       }}
-                      className="px-3 py-1 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 transition-colors"
+                      variant="primary"
                     >
                       Bezahlt
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => {
                         setSelectedPayout(payout);
                         setShowRejectModal(true);
                       }}
-                      className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+                      variant="danger"
                     >
                       Ablehnen
-                    </button>
+                    </Button>
                   </div>
                 ),
             },
@@ -383,25 +383,26 @@ export default function AdminPayoutsView() {
               </div>
             </div>
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={() => {
                   setShowProcessModal(false);
                   setNotes("");
                   setTransactionId("");
                   setSelectedPayout(null);
                 }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
+                fullWidth
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleProcessPayout}
                 disabled={processing}
-                className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                variant="primary"
+                fullWidth
               >
                 {processing ? "Wird bearbeitet..." : "Als bezahlt markieren"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -424,24 +425,25 @@ export default function AdminPayoutsView() {
               />
             </div>
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={() => {
                   setShowRejectModal(false);
                   setRejectReason("");
                   setSelectedPayout(null);
                 }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
+                fullWidth
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleRejectPayout}
                 disabled={processing || !rejectReason.trim()}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                variant="danger"
+                fullWidth
               >
                 {processing ? "Wird abgelehnt..." : "Ablehnen"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

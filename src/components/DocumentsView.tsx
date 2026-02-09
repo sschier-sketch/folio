@@ -9,6 +9,7 @@ import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
 import { useSubscription } from "../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
+import { Button } from './ui/Button';
 
 type Tab = "overview" | "list" | "upload" | "archive";
 
@@ -58,13 +59,12 @@ export default function DocumentsView() {
             Zentrales Dokumentenmanagement für alle Immobilien und Mietverhältnisse
           </p>
         </div>
-        <button
+        <Button
           onClick={() => setActiveTab("upload")}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
+          variant="primary"
         >
-          <Upload className="w-4 h-4" />
           Dokument hochladen
-        </button>
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg mb-6">

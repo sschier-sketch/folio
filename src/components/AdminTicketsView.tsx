@@ -5,10 +5,9 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Send,
-  Filter,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { Button } from './ui/Button';
 interface Ticket {
   id: string;
   ticket_number: string;
@@ -477,25 +476,20 @@ ${badge.text}`}
                     />{" "}
                     Ticket nach Antwort schließen{" "}
                   </label>{" "}
-                  <button
+                  <Button
                     onClick={handleSendReply}
                     disabled={!replyMessage.trim() || sending}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    variant="primary"
                   >
-                    {" "}
                     {sending ? (
                       <>
-                        {" "}
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{" "}
-                        Wird gesendet...{" "}
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Wird gesendet...
                       </>
                     ) : (
-                      <>
-                        {" "}
-                        <Send className="w-4 h-4" /> Antworten{" "}
-                      </>
+                      "Antworten"
                     )}
-                  </button>{" "}
+                  </Button>{" "}
                 </div>{" "}
               </div>
             )}

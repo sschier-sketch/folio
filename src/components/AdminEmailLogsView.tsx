@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Mail, Filter, Search, CheckCircle, XCircle, Clock, Ban, RefreshCw, ExternalLink } from 'lucide-react';
+import { Mail, Filter, Search, CheckCircle, XCircle, Clock, Ban, ExternalLink } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Badge from './common/Badge';
+import { Button } from './ui/Button';
 
 interface EmailLog {
   id: string;
@@ -128,13 +129,9 @@ export default function AdminEmailLogsView() {
             Alle ausgehenden E-Mails nachverfolgen und debuggen
           </p>
         </div>
-        <button
-          onClick={loadLogs}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
+        <Button onClick={loadLogs} variant="outlined">
           Aktualisieren
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -332,20 +329,20 @@ export default function AdminEmailLogsView() {
                 Zeige {page * pageSize + 1} bis {Math.min((page + 1) * pageSize, totalCount)} von {totalCount} Einträgen
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={() => setPage(Math.max(0, page - 1))}
                   disabled={page === 0}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="outlined"
                 >
                   Zurück
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                   disabled={page >= totalPages - 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="outlined"
                 >
                   Weiter
-                </button>
+                </Button>
               </div>
             </div>
           </>

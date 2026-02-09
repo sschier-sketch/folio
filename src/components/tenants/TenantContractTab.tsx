@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { FileText, Upload, X, Calendar, Plus } from "lucide-react";
+import { FileText, Upload, X, Calendar } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -7,6 +7,7 @@ import DocumentDetails from "../documents/DocumentDetails";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 import TableActionsDropdown from "../common/TableActionsDropdown";
 import { getDocumentTypeLabel as sharedGetDocumentTypeLabel, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
+import { Button } from '../ui/Button';
 
 interface TenantContractTabProps {
   tenantId: string;
@@ -386,26 +387,18 @@ export default function TenantContractTab({
               Hier werden alle Dokumente angezeigt, die diesem Mietverhältnis zugeordnet sind
             </p>
           </div>
-          <button
-            onClick={() => setShowUploadModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
-          >
-            <Upload className="w-4 h-4" />
+          <Button onClick={() => setShowUploadModal(true)} variant="primary">
             Dokument hochladen
-          </button>
+          </Button>
         </div>
 
         {documents.length === 0 ? (
           <div className="p-12 text-center">
             <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-400 mb-4">Keine Dokumente vorhanden</p>
-            <button
-              onClick={() => setShowUploadModal(true)}
-              className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2"
-            >
-              <Upload className="w-4 h-4" />
+            <Button onClick={() => setShowUploadModal(true)} variant="primary">
               Erstes Dokument hochladen
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -595,13 +588,9 @@ export default function TenantContractTab({
                     className="hidden"
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                   />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
-                  >
+                  <Button type="button" onClick={() => fileInputRef.current?.click()} variant="primary">
                     Datei auswählen
-                  </button>
+                  </Button>
                   <p className="text-xs text-gray-400 mt-2">
                     PDF, Word, Bilder (max. 10 MB pro Datei)
                   </p>
@@ -659,7 +648,7 @@ export default function TenantContractTab({
             </div>
 
             <div className="border-t px-6 py-4 flex gap-3">
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setShowUploadModal(false);
@@ -667,19 +656,14 @@ export default function TenantContractTab({
                   setUploadDescription("");
                 }}
                 disabled={isUploading}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors disabled:opacity-50"
+                variant="cancel"
+                fullWidth
               >
                 Abbrechen
-              </button>
-              <button
-                type="button"
-                onClick={handleUpload}
-                disabled={isUploading || uploadFiles.length === 0}
-                className="flex-1 px-4 py-2 bg-[#008CFF] text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
-              >
+              </Button>
+              <Button type="button" onClick={handleUpload} disabled={isUploading || uploadFiles.length === 0} variant="primary" fullWidth>
                 {isUploading ? "Lädt hoch..." : "Hochladen"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

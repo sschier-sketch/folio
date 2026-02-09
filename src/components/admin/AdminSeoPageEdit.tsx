@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Save, Lock, AlertCircle, Eye } from "lucide-react";
+import { ArrowLeft, Lock, AlertCircle, Eye } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { clearSeoCache } from "../../lib/seoResolver";
+import { Button } from '../ui/Button';
 
 interface SeoPageData {
   path: string;
@@ -367,22 +368,20 @@ export default function AdminSeoPageEdit({ pageId, onBack }: AdminSeoPageEditPro
         </div>
 
         <div className="flex items-center justify-between">
-          <button
+          <Button
             type="button"
             onClick={onBack}
-            style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-            className="px-6 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+            variant="cancel"
           >
             Abbrechen
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="primary"
           >
-            <Save className="w-5 h-5" />
             {saving ? "Speichern..." : "Speichern"}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

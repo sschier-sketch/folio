@@ -3,6 +3,7 @@ import { X, Upload } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { parseNumberInput } from "../lib/utils";
+import { Button } from "./ui/Button";
 interface Tenant {
   id: string;
   property_id: string;
@@ -505,27 +506,26 @@ export default function ContractModal({
           </div>{" "}
           <div className="flex gap-3 pt-4">
             {" "}
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+              variant="cancel"
+              fullWidth
             >
-              {" "}
-              Abbrechen{" "}
-            </button>{" "}
-            <button
+              Abbrechen
+            </Button>{" "}
+            <Button
               type="submit"
               disabled={loading || uploadingFile}
-              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+              variant="primary"
+              fullWidth
             >
-              {" "}
               {loading
                 ? "Speichern..."
                 : uploadingFile
                   ? "Hochladen..."
-                  : "Speichern"}{" "}
-            </button>{" "}
+                  : "Speichern"}
+            </Button>{" "}
           </div>{" "}
         </form>{" "}
       </div>{" "}

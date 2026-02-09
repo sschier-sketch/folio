@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import AutomaticTemplateWizard from "./AutomaticTemplateWizard";
 import Badge from "./common/Badge";
+import { Button } from './ui/Button';
 
 interface Template {
   id: string;
@@ -245,15 +246,15 @@ export default function TemplatesView() {
           <p className="text-gray-400 mb-6">
             Es wurden keine Vorlagen gefunden, die Ihren Suchkriterien entsprechen.
           </p>
-          <button
+          <Button
             onClick={() => {
               setSearchQuery("");
               setSelectedCategory(null);
             }}
-            className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
+            variant="primary"
           >
             Filter zurücksetzen
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-8">

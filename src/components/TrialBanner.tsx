@@ -3,6 +3,7 @@ import { useTrialStatus } from '../hooks/useTrialStatus';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
 import { supabase } from '../lib/supabase';
+import { Button } from './ui/Button';
 
 interface TrialBannerProps {
   onUpgradeClick?: () => void;
@@ -82,12 +83,12 @@ export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+          <Button
             onClick={() => onUpgradeClick?.()}
-            className="px-5 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm font-semibold"
+            variant="pro"
           >
             {texts.buttonText}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -101,12 +102,12 @@ export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
           <p className="text-white/90 text-sm mb-3">
             {texts.expiredDescription}
           </p>
-          <button
+          <Button
             onClick={() => onUpgradeClick?.()}
-            className="px-5 py-2.5 bg-white text-amber-600 rounded-full font-semibold hover:bg-white/90 transition-colors text-sm"
+            variant="warning"
           >
             {texts.buttonText}
-          </button>
+          </Button>
         </div>
       </div>
     );

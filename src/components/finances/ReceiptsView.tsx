@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Receipt, Upload, Link as LinkIcon, Archive } from "lucide-react";
+import { Receipt, Link as LinkIcon, Archive } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { Button } from "../ui/Button";
 
 interface ReceiptItem {
   id: string;
@@ -165,20 +166,18 @@ export default function ReceiptsView() {
               </button>
             </div>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors">
-            <Upload className="w-4 h-4" />
+          <Button variant="primary">
             Beleg hochladen
-          </button>
+          </Button>
         </div>
 
         {receipts.length === 0 ? (
           <div className="p-12 text-center">
             <Receipt className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-400 mb-4">Keine Belege vorhanden</p>
-            <button className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors inline-flex items-center gap-2">
-              <Upload className="w-4 h-4" />
+            <Button variant="primary">
               Ersten Beleg hochladen
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto">

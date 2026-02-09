@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save, Eye, Globe, Image as ImageIcon, Tag, FolderOpen } from "lucide-react";
+import { ArrowLeft, Globe, Image as ImageIcon, Tag, FolderOpen } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { Button } from '../ui/Button';
 
 interface Topic {
   id: string;
@@ -330,23 +331,21 @@ export default function AdminMagazinePostEditor() {
               </button>
             </div>
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={() => handleSave(false)}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                variant="outlined"
               >
-                <Save className="w-4 h-4" />
                 Speichern
-              </button>
+              </Button>
               {status !== "PUBLISHED" && (
-                <button
+                <Button
                   onClick={() => handleSave(true)}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  variant="primary"
                 >
-                  <Eye className="w-4 h-4" />
                   Veröffentlichen
-                </button>
+                </Button>
               )}
             </div>
           </div>

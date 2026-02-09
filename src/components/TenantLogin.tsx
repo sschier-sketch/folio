@@ -6,6 +6,7 @@ import {
   generateSalt,
   verifyPassword,
 } from "../lib/passwordUtils";
+import { Button } from "./ui/Button";
 interface TenantLoginProps {
   landlordId?: string;
   onLoginSuccess: (tenantId: string, tenantEmail: string) => void;
@@ -362,28 +363,29 @@ export default function TenantLogin({
                 />{" "}
               </div>{" "}
             </div>{" "}
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              fullWidth
             >
               {" "}
               {loading ? "Anmelden..." : "Anmelden"}{" "}
-            </button>{" "}
+            </Button>{" "}
             <div className="text-center">
               {" "}
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setMode("reset");
                   setError("");
                   setPassword("");
                 }}
-                className="text-sm text-primary-blue hover:text-primary-blue transition-colors"
+                variant="text-danger"
               >
                 {" "}
                 Passwort vergessen?{" "}
-              </button>{" "}
+              </Button>{" "}
             </div>{" "}
           </form>
         )}{" "}
@@ -452,17 +454,18 @@ export default function TenantLogin({
                 />{" "}
               </div>{" "}
             </div>{" "}
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              fullWidth
             >
               {" "}
               {loading ? "Einrichten..." : "Passwort einrichten"}{" "}
-            </button>{" "}
+            </Button>{" "}
             <div className="text-center">
               {" "}
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setMode("login");
@@ -470,11 +473,11 @@ export default function TenantLogin({
                   setPassword("");
                   setConfirmPassword("");
                 }}
-                className="text-sm text-gray-400 hover:text-gray-400 transition-colors"
+                variant="text-danger"
               >
                 {" "}
                 Zurück zur Anmeldung{" "}
-              </button>{" "}
+              </Button>{" "}
             </div>{" "}
           </form>
         )}{" "}
@@ -544,17 +547,18 @@ export default function TenantLogin({
                 />{" "}
               </div>{" "}
             </div>{" "}
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              fullWidth
             >
               {" "}
               {loading ? "Zurücksetzen..." : "Passwort zurücksetzen"}{" "}
-            </button>{" "}
+            </Button>{" "}
             <div className="text-center">
               {" "}
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setMode("login");
@@ -562,11 +566,11 @@ export default function TenantLogin({
                   setPassword("");
                   setConfirmPassword("");
                 }}
-                className="text-sm text-gray-400 hover:text-gray-400 transition-colors"
+                variant="text-danger"
               >
                 {" "}
                 Zurück zur Anmeldung{" "}
-              </button>{" "}
+              </Button>{" "}
             </div>{" "}
           </form>
         )}{" "}

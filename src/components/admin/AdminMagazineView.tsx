@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { BookOpen, Plus, Search, Edit, Trash2, Eye, Check, X, FolderOpen, Tag as TagIcon, ExternalLink } from "lucide-react";
+import { BookOpen, Search, Edit, Trash2, Check, X, ExternalLink } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell } from "../common/BaseTable";
+import { Button } from '../ui/Button';
 
 interface Post {
   id: string;
@@ -442,16 +443,15 @@ export default function AdminMagazineView() {
             </div>
           </div>
           {activeTab === "posts" && (
-            <button
+            <Button
               onClick={() => window.location.href = '/admin/magazine/posts/new'}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full hover:bg-blue-700 transition-colors"
+              variant="primary"
             >
-              <Plus className="w-4 h-4" />
               Neuer Artikel
-            </button>
+            </Button>
           )}
           {activeTab === "topics" && (
-            <button
+            <Button
               onClick={() => {
                 setEditingTopic({
                   id: `new-${Date.now()}`,
@@ -463,14 +463,13 @@ export default function AdminMagazineView() {
                 });
                 setShowTopicModal(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full hover:bg-blue-700 transition-colors"
+              variant="primary"
             >
-              <Plus className="w-4 h-4" />
               Neues Thema
-            </button>
+            </Button>
           )}
           {activeTab === "tags" && (
-            <button
+            <Button
               onClick={() => {
                 setEditingTag({
                   id: `new-${Date.now()}`,
@@ -482,11 +481,10 @@ export default function AdminMagazineView() {
                 });
                 setShowTagModal(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full hover:bg-blue-700 transition-colors"
+              variant="primary"
             >
-              <Plus className="w-4 h-4" />
               Neuer Tag
-            </button>
+            </Button>
           )}
         </div>
 
@@ -858,12 +856,12 @@ export default function AdminMagazineView() {
                     className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     placeholder="immobilienverwaltung"
                   />
-                  <button
+                  <Button
                     onClick={() => setEditingTopic({ ...editingTopic, de_slug: generateSlug(editingTopic.de_name) })}
-                    className="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg hover:bg-gray-200 transition-colors"
+                    variant="secondary"
                   >
                     Generieren
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div>
@@ -890,32 +888,32 @@ export default function AdminMagazineView() {
                     className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     placeholder="property-management"
                   />
-                  <button
+                  <Button
                     onClick={() => setEditingTopic({ ...editingTopic, en_slug: generateSlug(editingTopic.en_name || editingTopic.de_name) })}
-                    className="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg hover:bg-gray-200 transition-colors"
+                    variant="secondary"
                   >
                     Generieren
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
             <div className="p-6 border-t flex justify-end gap-3">
-              <button
+              <Button
                 onClick={() => {
                   setShowTopicModal(false);
                   setEditingTopic(null);
                 }}
-                className="px-4 py-2 text-gray-400 hover:text-dark transition-colors"
+                variant="secondary"
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSaveTopic}
                 disabled={!editingTopic.de_name}
-                className="px-6 py-2 bg-primary-blue text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="primary"
               >
                 Speichern
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -954,12 +952,12 @@ export default function AdminMagazineView() {
                     className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     placeholder="mietrecht"
                   />
-                  <button
+                  <Button
                     onClick={() => setEditingTag({ ...editingTag, de_slug: generateSlug(editingTag.de_name) })}
-                    className="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg hover:bg-gray-200 transition-colors"
+                    variant="secondary"
                   >
                     Generieren
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div>
@@ -986,32 +984,32 @@ export default function AdminMagazineView() {
                     className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     placeholder="rental-law"
                   />
-                  <button
+                  <Button
                     onClick={() => setEditingTag({ ...editingTag, en_slug: generateSlug(editingTag.en_name || editingTag.de_name) })}
-                    className="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg hover:bg-gray-200 transition-colors"
+                    variant="secondary"
                   >
                     Generieren
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
             <div className="p-6 border-t flex justify-end gap-3">
-              <button
+              <Button
                 onClick={() => {
                   setShowTagModal(false);
                   setEditingTag(null);
                 }}
-                className="px-4 py-2 text-gray-400 hover:text-dark transition-colors"
+                variant="secondary"
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSaveTag}
                 disabled={!editingTag.de_name}
-                className="px-6 py-2 bg-primary-blue text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="primary"
               >
                 Speichern
-              </button>
+              </Button>
             </div>
           </div>
         </div>

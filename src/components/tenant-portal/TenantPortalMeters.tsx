@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Gauge, Plus, Camera, Calendar, Upload, X as XIcon, Image as ImageIcon } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { Button } from '../ui/Button';
 
 interface Meter {
   id: string;
@@ -209,13 +210,13 @@ export default function TenantPortalMeters({
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-dark">Ihre Zähler</h2>
-          <button
+          <Button
             onClick={() => setShowNewReading(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
+            variant="primary"
           >
             <Plus className="w-5 h-5" />
             Zählerstand melden
-          </button>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -451,21 +452,22 @@ export default function TenantPortalMeters({
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowNewReading(false)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  variant="cancel"
+                  fullWidth
                 >
                   Abbrechen
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  variant="primary"
+                  fullWidth
                 >
                   {loading ? "Speichern..." : "Melden"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

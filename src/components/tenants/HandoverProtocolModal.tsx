@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { Button } from '../ui/Button';
 
 interface HandoverProtocolModalProps {
   contractId: string;
@@ -1304,47 +1305,34 @@ export default function HandoverProtocolModal({
 
           <div className="flex gap-3 pt-6 mt-6 border-t border-gray-200">
             {currentStep > 1 && (
-              <button
-                type="button"
-                onClick={() => setCurrentStep(currentStep - 1)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
-              >
+              <Button type="button" onClick={() => setCurrentStep(currentStep - 1)} variant="secondary">
                 Zurück
-              </button>
+              </Button>
             )}
 
-            <button
-              type="button"
-              onClick={onClose}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
-            >
+            <Button type="button" onClick={onClose} variant="cancel" fullWidth>
               Abbrechen
-            </button>
+            </Button>
 
             {currentStep === 3 && (
-              <button
-                type="button"
-                onClick={(e) => handleSubmit(e, true)}
-                disabled={loading}
-                className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition-colors disabled:opacity-50"
-              >
+              <Button type="button" onClick={(e) => handleSubmit(e, true)} disabled={loading} variant="warning" fullWidth>
                 {loading ? "Speichern..." : "Als Entwurf speichern"}
-              </button>
+              </Button>
             )}
 
-            <button
+            <Button
               type={currentStep === 3 ? "submit" : "button"}
               onClick={currentStep < 3 ? handleNext : undefined}
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+              variant="primary"
+              fullWidth
             >
               {loading
                 ? "Speichern..."
                 : currentStep === 3
                   ? "Finalisieren & speichern"
                   : "Weiter"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

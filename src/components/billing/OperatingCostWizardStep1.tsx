@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
 import { operatingCostService } from "../../lib/operatingCostService";
+import { Button } from "../ui/Button";
 
 interface Property {
   id: string;
@@ -197,12 +198,12 @@ export default function OperatingCostWizardStep1() {
                       Sie haben noch keine Immobilien angelegt. Bitte erstellen
                       Sie zuerst eine Immobilie.
                     </p>
-                    <button
+                    <Button
                       onClick={() => navigate("/dashboard?view=properties")}
-                      className="mt-3 px-4 py-2 bg-primary-blue text-white rounded-full text-sm font-medium hover:bg-primary-blue transition-colors"
+                      variant="primary"
                     >
                       Zur Immobilienverwaltung
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <select
@@ -286,28 +287,27 @@ export default function OperatingCostWizardStep1() {
         </div>
 
         <div className="flex items-center justify-between mt-6">
-          <button
+          <Button
             onClick={() => navigate("/dashboard?view=billing&tab=operating-costs")}
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
+            variant="secondary"
             disabled={creating}
           >
             Zurück
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleNext}
             disabled={!canProceed || creating || properties.length === 0}
-            className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="primary"
           >
             {creating ? (
               <>
-                <div className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Erstelle...
               </>
             ) : (
               'Weiter'
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

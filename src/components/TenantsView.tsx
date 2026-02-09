@@ -6,6 +6,7 @@ import TenantContractDetails from "./TenantContractDetails";
 import TenantModal from "./TenantModal";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
 import TableActionsDropdown from "./common/TableActionsDropdown";
+import { Button } from './ui/Button';
 
 interface Property {
   id: string;
@@ -320,13 +321,12 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
               )}
             </div>
           )}
-          <button
+          <Button
             onClick={() => setShowTenantModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
-            <Plus className="w-5 h-5" />
             Mietverhältnis anlegen
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -340,13 +340,12 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
             Fügen Sie Ihr erstes Mietverhältnis hinzu, um mit der Verwaltung zu
             beginnen.
           </p>
-          <button
+          <Button
             onClick={() => setShowTenantModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
-            <Plus className="w-5 h-5" />
             Erstes Mietverhältnis hinzufügen
-          </button>
+          </Button>
         </div>
       ) : (
         <>
@@ -392,13 +391,13 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
               </div>
 
               <div className="flex items-end">
-                <button
+                <Button
                   onClick={() => setFilters({ property_id: "", status: "" })}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="w-full px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  variant="cancel"
+                  fullWidth
                 >
                   Zurücksetzen
-                </button>
+                </Button>
               </div>
             </div>
           </div>

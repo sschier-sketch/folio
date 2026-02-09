@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldOff, Mail } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { Button } from "../components/ui/Button";
 
 export function AccountBanned() {
   const { banReason, signOut } = useAuth();
@@ -65,12 +66,13 @@ export function AccountBanned() {
             </div>
           </div>
 
-          <button
+          <Button
             onClick={handleLogout}
-            className="w-full bg-dark text-white py-3 px-4 rounded-lg hover:bg-opacity-90 transition-colors font-medium"
+            variant="dark"
+            fullWidth
           >
             Abmelden
-          </button>
+          </Button>
 
           <p className="text-xs text-gray-400 mt-4">
             Sie werden automatisch in 10 Sekunden abgemeldet

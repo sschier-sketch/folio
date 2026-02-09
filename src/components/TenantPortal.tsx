@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
   LogOut,
-  Plus,
   MessageSquare,
   Clock,
   CheckCircle,
@@ -13,6 +12,7 @@ import {
 import { supabase } from "../lib/supabase";
 import TenantLogin from "./TenantLogin";
 import Footer from "./Footer";
+import { Button } from "./ui/Button";
 interface Ticket {
   id: string;
   ticket_number: string;
@@ -367,13 +367,13 @@ export default function TenantPortal() {
                   />{" "}
                   <div className="flex justify-end mt-2">
                     {" "}
-                    <button
+                    <Button
                       type="submit"
-                      className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+                      variant="primary"
                     >
                       {" "}
                       Nachricht senden{" "}
-                    </button>{" "}
+                    </Button>{" "}
                   </div>{" "}
                 </form>{" "}
               </div>
@@ -412,13 +412,13 @@ export default function TenantPortal() {
           <h2 className="text-xl font-semibold text-dark">
             Meine Anfragen
           </h2>{" "}
-          <button
+          <Button
             onClick={() => setShowNewTicket(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+            variant="primary"
           >
             {" "}
-            <Plus className="w-5 h-5" /> Neue Anfrage{" "}
-          </button>{" "}
+            Neue Anfrage{" "}
+          </Button>{" "}
         </div>{" "}
         {tickets.length === 0 ? (
           <div className="bg-white rounded shadow-sm p-12 text-center">
@@ -626,23 +626,22 @@ export default function TenantPortal() {
               </div>{" "}
               <div className="flex gap-3 pt-4">
                 {" "}
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowNewTicket(false)}
-                  style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                  className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                  variant="cancel"
                 >
                   {" "}
                   Abbrechen{" "}
-                </button>{" "}
-                <button
+                </Button>{" "}
+                <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
+                  variant="primary"
                 >
                   {" "}
                   {loading ? "Erstellen..." : "Anfrage erstellen"}{" "}
-                </button>{" "}
+                </Button>{" "}
               </div>{" "}
             </form>{" "}
           </div>{" "}

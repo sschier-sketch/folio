@@ -6,14 +6,13 @@ import {
   Calendar,
   AlertTriangle,
   CheckCircle2,
-  ArrowRight,
-  ArrowLeft,
   RotateCcw,
   Clock,
   Zap,
   XCircle,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { Button } from '../ui/Button';
 
 interface RefundPreview {
   charge: {
@@ -420,73 +419,70 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
         <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-3">
           {step === 'details' && !preview?.charge.refunded && (
             <>
-              <button
+              <Button
                 onClick={onClose}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                variant="secondary"
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setStep('confirm')}
-                className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-colors"
+                variant="dark"
               >
                 Weiter
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              </Button>
             </>
           )}
 
           {step === 'details' && preview?.charge.refunded && (
-            <button
+            <Button
               onClick={onClose}
-              className="ml-auto px-5 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200 transition-colors"
+              variant="secondary"
             >
               Schliessen
-            </button>
+            </Button>
           )}
 
           {step === 'confirm' && (
             <>
-              <button
+              <Button
                 onClick={() => setStep('details')}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                variant="secondary"
               >
-                <ArrowLeft className="w-4 h-4" />
                 Zurueck
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={executeRefund}
-                className="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 transition-colors"
+                variant="danger"
               >
-                <RotateCcw className="w-4 h-4" />
                 Jetzt erstatten
-              </button>
+              </Button>
             </>
           )}
 
           {step === 'success' && (
-            <button
+            <Button
               onClick={() => { onComplete(); onClose(); }}
-              className="ml-auto px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-colors"
+              variant="dark"
             >
               Fertig
-            </button>
+            </Button>
           )}
 
           {step === 'error' && (
             <>
-              <button
+              <Button
                 onClick={onClose}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                variant="secondary"
               >
                 Schliessen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={loadPreview}
-                className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-colors"
+                variant="dark"
               >
                 Erneut versuchen
-              </button>
+              </Button>
             </>
           )}
 

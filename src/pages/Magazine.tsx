@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 import { Search, Calendar, Tag as TagIcon, FolderOpen, ChevronLeft, ChevronRight, X, Filter } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { RefLink } from "../components/common/RefLink";
+import { Button } from "../components/ui/Button";
 
 interface Post {
   id: string;
@@ -345,12 +346,12 @@ export function Magazine() {
                   : "Try different search terms or filters."}
               </p>
               {hasFilters && (
-                <button
+                <Button
                   onClick={() => setSearchParams(new URLSearchParams())}
-                  className="px-6 py-2 bg-primary-blue text-white rounded-full hover:bg-blue-700 transition-colors"
+                  variant="primary"
                 >
                   {language === "de" ? "Alle Filter entfernen" : "Clear all filters"}
-                </button>
+                </Button>
               )}
             </div>
           ) : (

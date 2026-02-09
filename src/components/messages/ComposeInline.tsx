@@ -3,6 +3,7 @@ import { Send, Users, AtSign, Upload, File as FileIcon, Globe, Info, Building2, 
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { sanitizeFileName } from '../../lib/utils';
+import { Button } from '../ui/Button';
 
 interface Property {
   id: string;
@@ -512,20 +513,12 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
       </div>
 
       <div className="px-5 py-4 border-t border-gray-200 bg-white flex justify-end gap-3 flex-shrink-0">
-        <button
-          onClick={onCancel}
-          className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-        >
+        <Button variant="secondary" onClick={onCancel}>
           Abbrechen
-        </button>
-        <button
-          onClick={handleSend}
-          disabled={sending}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <Send className="w-4 h-4" />
+        </Button>
+        <Button variant="primary" onClick={handleSend} disabled={sending}>
           {sending ? 'Wird gesendet...' : 'Senden'}
-        </button>
+        </Button>
       </div>
     </div>
   );

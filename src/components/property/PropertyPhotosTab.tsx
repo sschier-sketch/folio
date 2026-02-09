@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Upload, X, ChevronLeft, ChevronRight, MoreVertical, Check } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { Button } from '../ui/Button';
 
 interface PropertyImage {
   id: string;
@@ -215,12 +216,9 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
             <h2 className="text-2xl font-bold text-dark">Bilder zur Immobilie</h2>
             <p className="text-gray-400 mt-1">Laden Sie Fotos hoch, um Zustand, Ausstattung und Besonderheiten zu dokumentieren.</p>
           </div>
-          <button
-            onClick={() => setUploadModalOpen(true)}
-            className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-full font-medium transition-colors"
-          >
+          <Button onClick={() => setUploadModalOpen(true)} variant="primary">
             Bilder hochladen
-          </button>
+          </Button>
         </div>
 
         <div
@@ -263,12 +261,9 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
           >
             {multiSelectMode ? "Abbrechen" : "Auswählen"}
           </button>
-          <button
-            onClick={() => setUploadModalOpen(true)}
-            className="px-4 py-2 bg-primary-blue hover:bg-blue-600 text-white rounded-full font-medium transition-colors"
-          >
+          <Button onClick={() => setUploadModalOpen(true)} variant="primary">
             Bilder hochladen
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -690,20 +685,12 @@ function UploadModal({ propertyId, onClose, onSuccess }: UploadModalProps) {
         </div>
 
         <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            disabled={uploading}
-            className="px-4 py-2 rounded-full font-medium bg-gray-100 hover:bg-gray-200 text-dark transition-colors"
-          >
+          <Button onClick={onClose} disabled={uploading} variant="secondary">
             Abbrechen
-          </button>
-          <button
-            onClick={handleUpload}
-            disabled={files.length === 0 || uploading}
-            className="px-4 py-2 rounded-full font-medium bg-primary-blue hover:bg-blue-600 text-white transition-colors disabled:opacity-50"
-          >
+          </Button>
+          <Button onClick={handleUpload} disabled={files.length === 0 || uploading} variant="primary">
             {uploading ? "Lädt hoch..." : "Hochladen"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -855,27 +842,17 @@ function ImageDetailModal({
             </div>
 
             <div className="pt-4 border-t border-gray-200 space-y-3">
-              <button
-                onClick={onSetCover}
-                className="w-full px-4 py-2 rounded-full font-medium bg-gray-100 hover:bg-gray-200 text-dark transition-colors"
-              >
+              <Button onClick={onSetCover} variant="secondary" fullWidth>
                 Als Titelbild setzen
-              </button>
+              </Button>
 
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full px-4 py-2 rounded-full font-medium bg-primary-blue hover:bg-blue-600 text-white transition-colors"
-              >
+              <Button onClick={handleSave} disabled={saving} variant="primary" fullWidth>
                 {saving ? "Speichert..." : "Speichern"}
-              </button>
+              </Button>
 
-              <button
-                onClick={onDelete}
-                className="w-full px-4 py-2 rounded-full font-medium bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
-              >
+              <Button onClick={onDelete} variant="danger" fullWidth>
                 Löschen
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { PLANS, type BillingInterval, getPlanByStripePriceId, getStripePriceId, calculateYearlySavings } from '../../config/plans';
 import { createCheckoutSession, createPortalSession } from '../../lib/stripe-api';
 import { supabase } from '../../lib/supabase';
+import { Button } from '../ui/Button';
 
 interface SubscriptionPlansProps {
   showCurrentPlanCard?: boolean;
@@ -222,10 +223,11 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             </div>
 
             {isActive && currentPlanId === 'pro' && !isCancelledButActive && (
-              <button
+              <Button
                 onClick={handleManageSubscription}
                 disabled={loading === 'portal'}
-                className="mt-4 w-full py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                variant="secondary"
+                fullWidth
               >
                 {loading === 'portal' ? (
                   <>
@@ -235,7 +237,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                 ) : (
                   'Abo verwalten'
                 )}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -249,10 +251,10 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                   <strong>{cancelDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</strong>{' '}
                   vollen Zugriff auf alle Pro-Features. Danach wechseln Sie automatisch in den Basic-Tarif.
                 </p>
-                <button
+                <Button
                   onClick={handleManageSubscription}
                   disabled={loading === 'portal'}
-                  className="mt-3 inline-flex items-center gap-2 px-5 py-2 bg-amber-600 text-white rounded-full text-sm font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50"
+                  variant="warning"
                 >
                   {loading === 'portal' ? (
                     <>
@@ -262,7 +264,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                   ) : (
                     'Kündigung widerrufen'
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -383,13 +385,14 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                 Wechsel zum {cancelDate?.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} vorgemerkt
               </button>
             ) : (
-              <button
+              <Button
                 onClick={() => setShowDowngradeModal(true)}
                 disabled={!!loading}
-                className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="secondary"
+                fullWidth
               >
                 Zu Basic wechseln
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -463,10 +466,10 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             </ul>
 
             <div>
-              <button
+              <Button
                 onClick={() => handleUpgrade(billingInterval)}
                 disabled={!!loading}
-                className="px-12 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+                variant="primary"
               >
                 {loading === getStripePriceId('pro', billingInterval) ? (
                   <>
@@ -476,7 +479,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                 ) : (
                   'Kostenpflichtig buchen'
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -548,10 +551,11 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
             </ul>
 
             {currentInterval !== billingInterval && (
-              <button
+              <Button
                 onClick={() => handleChangeBillingInterval(billingInterval)}
                 disabled={!!loading}
-                className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                variant="primary"
+                fullWidth
               >
                 {loading === getStripePriceId('pro', billingInterval) ? (
                   <>
@@ -563,7 +567,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                     Auf {billingInterval === 'month' ? 'monatlich' : 'jährlich'} wechseln
                   </>
                 )}
-              </button>
+              </Button>
             )}
 
             {currentInterval === billingInterval && (
@@ -608,17 +612,18 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               Sind Sie sicher, dass Sie zu Basic wechseln möchten? Sie verlieren den Zugriff auf alle Pro-Features.
             </p>
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={() => setShowDowngradeModal(false)}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
+                fullWidth
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleDowngrade}
                 disabled={!!loading}
-                className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                variant="danger"
+                fullWidth
               >
                 {loading ? (
                   <>
@@ -628,7 +633,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                 ) : (
                   'Ja, downgraden'
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

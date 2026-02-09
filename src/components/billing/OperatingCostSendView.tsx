@@ -4,6 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
 import { generateOperatingCostPdf } from "../../lib/operatingCostPdfGenerator";
+import { Button } from "../ui/Button";
 
 interface Recipient {
   id: string;
@@ -586,33 +587,30 @@ Mit freundlichen Grüßen
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+          <Button
             type="button"
             onClick={() => setShowPreview(true)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="secondary"
             disabled={enabledRecipients.length === 0}
           >
-            <Eye className="w-4 h-4" />
             Vorschau
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSend}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            variant="primary"
             disabled={enabledRecipients.length === 0 || sending}
           >
             {sending ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 Wird gesendet...
               </>
             ) : (
               <>
-                <Send className="w-4 h-4" />
                 Senden ({totalEmailCount} E-Mails)
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
 

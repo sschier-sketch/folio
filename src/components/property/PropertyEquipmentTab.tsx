@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Save, Zap, Droplet, Home as HomeIcon } from "lucide-react";
+import { Zap, Droplet, Home as HomeIcon } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { Button } from '../ui/Button';
 
 interface PropertyEquipmentTabProps {
   propertyId: string;
@@ -554,13 +555,9 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
       </div>
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={saving}
-          className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50"
-        >
+        <Button type="submit" disabled={saving} variant="primary">
           {saving ? "Speichert..." : "Speichern"}
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -15,6 +15,7 @@ import MailTemplatesList from './MailTemplatesList';
 import MailTemplateEditor from './MailTemplateEditor';
 import ScrollableTabNav from '../common/ScrollableTabNav';
 import type { MailThread, UserMailbox, Folder } from './types';
+import { Button } from '../ui/Button';
 
 type MessagesTab = 'overview' | 'inbox' | 'settings' | 'templates';
 
@@ -245,13 +246,9 @@ export default function MessagesView() {
               <p className="text-sm text-gray-500 max-w-sm">
                 Wählen Sie eine Konversation aus der Liste oder starten Sie eine neue Nachricht.
               </p>
-              <button
-                onClick={handleStartCompose}
-                className="mt-4 flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
+              <Button variant="primary" onClick={handleStartCompose}>
                 Neue Nachricht
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -291,21 +288,13 @@ export default function MessagesView() {
             </button>
           )}
           {activeTab === 'inbox' && activeFolder === 'trash' && folderCounts.trash > 0 && (
-            <button
-              onClick={handleEmptyTrash}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 text-sm font-medium rounded-lg transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
+            <Button variant="danger" onClick={handleEmptyTrash}>
               Papierkorb leeren
-            </button>
+            </Button>
           )}
-          <button
-            onClick={handleStartCompose}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
+          <Button variant="primary" onClick={handleStartCompose}>
             Neue Nachricht
-          </button>
+          </Button>
         </div>
       </div>
 

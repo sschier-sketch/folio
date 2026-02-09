@@ -11,6 +11,7 @@ import { generateOperatingCostPdf } from "../../lib/operatingCostPdfGenerator";
 import { sendOperatingCostPdf } from "../../lib/operatingCostMailer";
 import OperatingCostSendView from "./OperatingCostSendView";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
+import { Button } from "../ui/Button";
 
 interface Property {
   id: string;
@@ -444,13 +445,12 @@ export default function OperatingCostsView() {
             ))}
           </select>
 
-          <button
+          <Button
             onClick={() => navigate("/abrechnungen/betriebskosten/neu")}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors whitespace-nowrap"
+            variant="primary"
           >
-            <Plus className="w-4 h-4" />
             Neue Abrechnung
-          </button>
+          </Button>
         </div>
 
         {loading ? (
@@ -469,12 +469,12 @@ export default function OperatingCostsView() {
                 : "Keine Abrechnungen für dieses Jahr"}
             </p>
             {!searchQuery && statements.length === 0 && (
-              <button
+              <Button
                 onClick={() => navigate("/abrechnungen/betriebskosten/neu")}
-                className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+                variant="primary"
               >
                 Erste Abrechnung erstellen
-              </button>
+              </Button>
             )}
           </div>
         ) : (

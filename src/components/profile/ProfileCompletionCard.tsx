@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
+import { Button } from '../ui/Button';
 
 interface ProfileCompletionCardProps {
   onStartWizard: () => void;
@@ -148,18 +149,18 @@ export default function ProfileCompletionCard({ onStartWizard }: ProfileCompleti
       </div>
 
       <div className="flex items-center gap-3">
-        <button
+        <Button
           onClick={onStartWizard}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          variant="primary"
         >
           Jetzt ergänzen
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={handleDismissReminder}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors text-sm"
+          variant="secondary"
         >
           Später erinnern
-        </button>
+        </Button>
       </div>
     </div>
   );

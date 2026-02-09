@@ -3,6 +3,7 @@ import { Plus, Calendar, FileText, Edit, Copy, Trash2, Eye, Filter } from "lucid
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
+import { Button } from '../ui/Button';
 
 interface HandoverProtocol {
   id: string;
@@ -166,13 +167,13 @@ export default function HandoverProtocolsList({ tenantId, onClose }: HandoverPro
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-dark">Übergabeprotokolle</h2>
-        <button
+        <Button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors"
+          variant="primary"
         >
           <Plus className="w-5 h-5" />
           Neues Protokoll
-        </button>
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg p-4 flex gap-4">
@@ -215,12 +216,12 @@ export default function HandoverProtocolsList({ tenantId, onClose }: HandoverPro
           <p className="text-gray-500 mb-6">
             Erstellen Sie Ihr erstes Protokoll mit Zählerständen, Checkliste und Fotos
           </p>
-          <button
+          <Button
             onClick={() => setShowForm(true)}
-            className="px-6 py-3 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors"
+            variant="primary"
           >
             Erstes Protokoll erstellen
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">

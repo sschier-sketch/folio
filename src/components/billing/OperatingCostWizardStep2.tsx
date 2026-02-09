@@ -270,25 +270,23 @@ export default function OperatingCostWizardStep2() {
             <h2 className="text-xl font-semibold text-dark">
               Schritt 2: Betriebskosten erfassen
             </h2>
-            <button
+            <Button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+              variant="secondary"
             >
               {saving ? (
                 <>
-                  <div className="inline-block w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2"></div>
                   Speichert...
                 </>
               ) : saveSuccess ? (
                 <>
-                  <span className="text-green-600 mr-2">✓</span>
                   Gespeichert
                 </>
               ) : (
                 'Speichern'
               )}
-            </button>
+            </Button>
           </div>
 
           {error && (
@@ -586,40 +584,38 @@ export default function OperatingCostWizardStep2() {
               placeholder="z.B. Hausmeisterdienst"
               className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             />
-            <button
+            <Button
               onClick={addCustomCostType}
               disabled={!newCostType.trim()}
-              className="px-6 py-2 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              variant="primary"
             >
-              <Plus className="w-4 h-4" />
               Hinzufügen
-            </button>
+            </Button>
           </div>
         </div>
 
         <div className="flex items-center justify-between mt-6">
-          <button
+          <Button
             onClick={handleBack}
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors"
+            variant="secondary"
             disabled={saving}
           >
             Zurück
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleNext}
             disabled={saving || totalCosts === 0}
-            className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="primary"
           >
             {saving ? (
               <>
-                <div className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Speichert...
               </>
             ) : (
               'Weiter'
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

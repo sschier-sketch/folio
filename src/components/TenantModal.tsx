@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { Button } from "./ui/Button";
 
 interface Tenant {
   id: string;
@@ -1446,42 +1447,42 @@ export default function TenantModal({
 
           <div className="flex gap-3 pt-4 border-t border-gray-100">
             {currentStep > 1 && !tenant && (
-              <button
+              <Button
                 type="button"
                 onClick={handleBack}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="px-6 py-3 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
               >
                 Zurück
-              </button>
+              </Button>
             )}
 
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="px-6 py-3 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+              variant="cancel"
             >
               Abbrechen
-            </button>
+            </Button>
 
             {tenant || currentStep === 3 ? (
-              <button
+              <Button
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-[#008CFF] text-white rounded-full font-medium hover:bg-[#0073CC] transition-colors disabled:opacity-50"
+                variant="primary"
+                fullWidth
               >
                 {loading ? "Speichern..." : "Speichern"}
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
                 onClick={handleNext}
-                className="flex-1 px-6 py-3 bg-[#008CFF] text-white rounded-full font-medium hover:bg-[#0073CC] transition-colors"
+                variant="primary"
+                fullWidth
               >
                 Weiter
-              </button>
+              </Button>
             )}
           </div>
         </div>

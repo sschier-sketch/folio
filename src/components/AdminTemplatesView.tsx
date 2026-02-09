@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Trash2, Upload, X, FileText, Loader, Download, Edit2, Save } from "lucide-react";
+import { Plus, Upload, X, Loader, Edit2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
+import { Button } from './ui/Button';
 
 interface Template {
   id: string;
@@ -246,13 +247,12 @@ export function AdminTemplatesView() {
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="text-lg font-semibold text-dark">{cat.title}</h3>
                   {editingCategory === cat.id ? (
-                    <button
+                    <Button
                       onClick={() => handleSaveCategoryDescription(cat.id)}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                      variant="primary"
                     >
-                      <Save className="w-4 h-4" />
                       Speichern
-                    </button>
+                    </Button>
                   ) : (
                     <button
                       onClick={() => {
@@ -287,13 +287,12 @@ export function AdminTemplatesView() {
           <h2 className="text-2xl font-bold text-dark">Vorlagen verwalten</h2>
           <p className="text-gray-400">Laden Sie Vorlagen für Benutzer hoch</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowUploadModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors"
+          variant="primary"
         >
-          <Plus className="w-5 h-5" />
           Vorlage hochladen
-        </button>
+        </Button>
       </div>
 
       <BaseTable
@@ -510,19 +509,20 @@ export function AdminTemplatesView() {
             </div>
 
             <div className="bg-gray-50 px-6 py-4 flex gap-3 rounded-b-lg">
-              <button
+              <Button
                 onClick={() => setShowUploadModal(false)}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
+                fullWidth
               >
                 Abbrechen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleUpload}
                 disabled={
                   !uploadData.title || !selectedFile || uploading
                 }
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                variant="primary"
+                fullWidth
               >
                 {uploading ? (
                   <>
@@ -530,12 +530,9 @@ export function AdminTemplatesView() {
                     Lädt hoch...
                   </>
                 ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    Hochladen
-                  </>
+                  "Hochladen"
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

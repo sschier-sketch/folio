@@ -33,6 +33,7 @@ import AdminLayout from "../components/admin/AdminLayout";
 import UserActionsDropdown from "../components/admin/UserActionsDropdown";
 import { BaseTable, StatusBadge } from "../components/common/BaseTable";
 import type { AdminTabKey } from "../config/adminMenu";
+import { Button } from "../components/ui/Button";
 
 type UserFilter = 'all' | 'pro' | 'cancelling' | 'trial' | 'free';
 

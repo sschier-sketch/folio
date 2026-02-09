@@ -3,6 +3,7 @@ import { Check, Info } from "lucide-react";
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Button } from "../components/ui/Button";
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -110,16 +111,13 @@ export default function Pricing() {
                   ))}
                 </ul>
 
-                <button
+                <Button
                   onClick={() => navigate("/dashboard?view=settings-billing")}
-                  className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                    plan.popular
-                      ? "bg-dark text-white hover:bg-gray-800"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  variant={plan.popular ? "dark" : "secondary"}
+                  fullWidth
                 >
                   {plan.cta}
-                </button>
+                </Button>
               </div>
             ))}
           </div>

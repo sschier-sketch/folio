@@ -3,6 +3,7 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { parseNumberInput } from "../lib/utils";
+import { Button } from "./ui/Button";
 
 interface Loan {
   id: string;
@@ -831,41 +832,38 @@ export default function LoanModal({
 
           <div className="flex gap-3 pt-6 mt-6 border-t border-gray-200">
             {currentStep > 1 && (
-              <button
+              <Button
                 type="button"
                 onClick={handleBack}
-                style={{ backgroundColor: "#fbf8f8", color: "#000000" }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
               >
-                <ChevronLeft className="w-4 h-4" />
                 Zurück
-              </button>
+              </Button>
             )}
 
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-              className="flex-1 px-4 py-2 rounded-lg font-medium hover:bg-[#bdbfcb] transition-colors"
+              variant="cancel"
+              fullWidth
             >
               Abbrechen
-            </button>
+            </Button>
 
             {currentStep < 4 ? (
-              <button
+              <Button
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   handleNext();
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors"
+                variant="primary"
               >
                 Weiter
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
@@ -873,10 +871,11 @@ export default function LoanModal({
                   handleSubmit(e);
                 }}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+                variant="primary"
+                fullWidth
               >
                 {loading ? "Speichern..." : "Speichern"}
-              </button>
+              </Button>
             )}
           </div>
         </form>

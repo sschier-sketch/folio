@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import ProfileManagement from "./profile/ProfileManagement";
+import { Button } from './ui/Button';
 
 interface UserSettings {
   role: string;
@@ -306,12 +307,12 @@ export default function ProfileSettingsView() {
         </div>
 
         {!showPasswordSection ? (
-          <button
+          <Button
             onClick={() => setShowPasswordSection(true)}
-            className="px-4 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
+            variant="primary"
           >
             {language === "de" ? "Passwort ändern" : "Change Password"}
-          </button>
+          </Button>
         ) : (
           <div className="space-y-4 max-w-2xl">
             {passwordError && (
@@ -370,25 +371,24 @@ export default function ProfileSettingsView() {
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={handlePasswordChange}
                 disabled={changingPassword}
-                className="px-6 py-2 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                variant="primary"
               >
                 {changingPassword ? (language === "de" ? "Wird gespeichert..." : "Saving...") : (language === "de" ? "Speichern" : "Save")}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   setShowPasswordSection(false);
                   setPasswordData({ newPassword: "", confirmPassword: "" });
                   setPasswordError("");
                   setPasswordSuccess("");
                 }}
-                style={{ backgroundColor: "#faf8f8", color: "#000000" }}
-                className="px-6 py-2 rounded-full font-medium hover:bg-[#bdbfcb] transition-colors"
+                variant="cancel"
               >
                 {language === "de" ? "Abbrechen" : "Cancel"}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -455,13 +455,13 @@ export default function ProfileSettingsView() {
             />
           </div>
 
-          <button
+          <Button
             onClick={handleSaveBankDetails}
             disabled={savingBankDetails}
-            className="px-6 py-3 bg-primary-blue text-white rounded-full font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            variant="primary"
           >
             {savingBankDetails ? (language === "de" ? "Wird gespeichert..." : "Saving...") : (language === "de" ? "Bankverbindung speichern" : "Save Bank Details")}
-          </button>
+          </Button>
 
           <p className="text-sm text-gray-500 mt-2">
             {language === "de"
