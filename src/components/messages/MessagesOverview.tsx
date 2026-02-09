@@ -38,7 +38,7 @@ export default function MessagesOverview({
               <h4 className="font-medium text-amber-900 mb-1">Spam-Schutz aktiv</h4>
               <p className="text-sm text-amber-700">
                 E-Mails von unbekannten Absendern werden im Ordner "Unbekannt" gesammelt und
-                koennen dort zugeordnet werden. So bleiben Ihre Konversationen uebersichtlich und Spam-frei.
+                können dort zugeordnet werden. So bleiben Ihre Konversationen übersichtlich und Spam-frei.
               </p>
             </div>
             <button
@@ -72,7 +72,7 @@ export default function MessagesOverview({
       )}
 
       <div className="bg-white rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-dark mb-1">E-Mail-Adresse</h3>
+        <h3 className="text-lg font-semibold text-dark mb-1">Ihre E-Mail-Adresse</h3>
         <div className="flex items-center gap-2 mt-2">
           <Mail className="w-4 h-4 text-gray-400" />
           <span className="text-sm text-gray-500">{email || 'Noch nicht eingerichtet'}</span>
@@ -80,24 +80,24 @@ export default function MessagesOverview({
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-dark mb-4">Postfaecher</h3>
+        <h3 className="text-lg font-semibold text-dark mb-4">Postfächer</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <FolderCard
-            icon={<Inbox className="w-6 h-6" />}
+            icon={<Inbox className="w-6 h-6" style={{ color: '#1E1E24' }} strokeWidth={1.5} />}
             label="Posteingang"
             count={totalCount - sentCount}
             unread={unreadCount}
             onClick={() => onNavigateFolder('inbox')}
           />
           <FolderCard
-            icon={<Send className="w-6 h-6" />}
+            icon={<Send className="w-6 h-6" style={{ color: '#1E1E24' }} strokeWidth={1.5} />}
             label="Gesendet"
             count={sentCount}
             unread={0}
             onClick={() => onNavigateFolder('sent')}
           />
           <FolderCard
-            icon={<HelpCircle className="w-6 h-6" />}
+            icon={<HelpCircle className="w-6 h-6" style={{ color: '#1E1E24' }} strokeWidth={1.5} />}
             label="Unbekannt"
             count={0}
             unread={0}
@@ -122,7 +122,7 @@ function FolderCard({ icon, label, count, unread, onClick }: {
       className="bg-white rounded-lg p-5 text-left hover:shadow-md transition-all border border-transparent hover:border-gray-200 group w-full"
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
           {icon}
         </div>
         {unread > 0 && (
