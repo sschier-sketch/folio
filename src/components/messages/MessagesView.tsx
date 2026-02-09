@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Mail, RefreshCw, LayoutDashboard, Inbox, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, Mail, RefreshCw, LayoutDashboard, Inbox, Trash2, Settings } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -16,7 +16,7 @@ import MailTemplateEditor from './MailTemplateEditor';
 import ScrollableTabNav from '../common/ScrollableTabNav';
 import type { MailThread, UserMailbox, Folder } from './types';
 
-type MessagesTab = 'overview' | 'inbox';
+type MessagesTab = 'overview' | 'inbox' | 'settings';
 
 interface MailTemplate {
   id: string;
@@ -169,7 +169,7 @@ export default function MessagesView() {
   function handleStartCompose() {
     setShowCompose(true);
     setSelectedThread(null);
-    if (activeView === 'templates' || activeView === 'settings') {
+    if (activeView === 'templates') {
       setActiveView('inbox');
       setActiveFolder('inbox');
     }
@@ -377,6 +377,18 @@ export default function MessagesView() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
               )}
             </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center gap-2 px-6 py-3.5 text-sm font-medium transition-colors relative whitespace-nowrap ${
+                activeTab === 'settings' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-700'
+              }`}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Einstellungen
+              {activeTab === 'settings' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+              )}
+            </button>
           </div>
         </ScrollableTabNav>
       </div>
@@ -403,17 +415,8 @@ export default function MessagesView() {
         </div>
       )}
 
-      {activeTab === 'inbox' && !showCompose && activeView === 'settings' && (
+      {activeTab === 'settings' && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
-            <button
-              onClick={() => { setActiveView('inbox'); setActiveFolder('inbox'); }}
-              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-500" />
-            </button>
-            <h2 className="text-base font-semibold text-gray-900">Nachrichten-Einstellungen</h2>
-          </div>
           <MessagesSettings
             currentAlias={mailbox?.alias_localpart || ''}
             onAliasUpdated={(newAlias) => {
@@ -423,7 +426,7 @@ export default function MessagesView() {
         </div>
       )}
 
-      {activeTab === 'inbox' && !showCompose && activeView !== 'settings' && (
+      {activeTab === 'inbox' && !showCompose && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 310px)', minHeight: '500px' }}>
           <div className="flex h-full">
             <div className="w-48 flex-shrink-0 border-r border-gray-200 p-3 hidden md:flex flex-col">

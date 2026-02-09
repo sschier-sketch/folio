@@ -1,4 +1,4 @@
-import { Inbox, Send, HelpCircle, FileText, Settings, Trash2 } from 'lucide-react';
+import { Inbox, Send, HelpCircle, FileText, Trash2 } from 'lucide-react';
 import type { Folder } from './types';
 
 export type SidebarView = Folder | 'templates' | 'settings';
@@ -95,20 +95,6 @@ export default function FolderList({ activeFolder, activeView, onSelect, onViewC
             </button>
           );
         })}
-      </div>
-
-      <div className="pt-2 border-t border-gray-100 mt-2">
-        <button
-          onClick={() => handleClick('settings')}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-            activeView === 'settings'
-              ? 'bg-blue-50 text-blue-700'
-              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-          }`}
-        >
-          <Settings className="w-4 h-4 flex-shrink-0" />
-          <span className="flex-1 text-left">Einstellungen</span>
-        </button>
       </div>
     </div>
   );
