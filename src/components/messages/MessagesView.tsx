@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Mail, RefreshCw, Eye, Inbox, Trash2, Settings } from 'lucide-react';
+import { Plus, Mail, RefreshCw, Eye, Inbox, Trash2, Settings, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -264,7 +264,7 @@ export default function MessagesView() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-dark">Nachrichten</h1>
-          <p className="text-gray-400 mt-1">Verwalten Sie Ihre E-Mails und Kommunikationseinstellungen</p>
+          <p className="text-gray-400 mt-1">Verwalten Sie Ihre E-Mails, Vorlagen und Kommunikationseinstellungen</p>
         </div>
         <PremiumUpgradePrompt featureKey="messages_overview" />
       </div>
@@ -277,7 +277,7 @@ export default function MessagesView() {
         <div>
           <h1 className="text-3xl font-bold text-dark">Nachrichten</h1>
           <p className="text-gray-400 mt-1">
-            Verwalten Sie Ihre E-Mails und Kommunikationseinstellungen
+            Verwalten Sie Ihre E-Mails, Vorlagen und Kommunikationseinstellungen
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -338,6 +338,18 @@ export default function MessagesView() {
                 </span>
               )}
               {activeTab === 'inbox' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+              )}
+            </button>
+            <button
+              onClick={() => { setActiveTab('templates'); setShowCompose(false); setShowTemplateEditor(false); setEditingTemplate(null); }}
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                activeTab === 'templates' ? 'text-primary-blue' : 'text-gray-400 hover:text-dark'
+              }`}
+            >
+              <FileText className="w-3 h-3" />
+              Vorlagen
+              {activeTab === 'templates' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
               )}
             </button>

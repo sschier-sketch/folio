@@ -1,10 +1,10 @@
-import { Inbox, Send, HelpCircle, FileText, Trash2 } from 'lucide-react';
+import { Inbox, Send, HelpCircle, Trash2 } from 'lucide-react';
 import type { Folder } from './types';
 
 export type SidebarView = Folder | 'templates' | 'settings';
 
 interface FolderItem {
-  id: SidebarView;
+  id: Folder;
   label: string;
   icon: typeof Inbox;
 }
@@ -26,36 +26,18 @@ export default function FolderList({ activeFolder, activeView, onSelect, onViewC
     { id: 'trash', label: 'Papierkorb', icon: Trash2 },
   ];
 
-  const extras: FolderItem[] = [
-    { id: 'templates', label: 'Vorlagen', icon: FileText },
-  ];
-
-  function isFolder(id: SidebarView): id is Folder {
-    return id === 'inbox' || id === 'sent' || id === 'unknown' || id === 'trash';
-  }
-
-  function handleClick(id: SidebarView) {
-    if (isFolder(id)) {
-      onSelect(id);
-      onViewChange(id);
-    } else {
-      onViewChange(id);
-    }
-  }
-
   return (
     <div className="flex flex-col h-full">
       <div className="space-y-1 flex-1">
         {folders.map((folder) => {
           const isActive = activeView === folder.id;
-          const folderId = folder.id as Folder;
-          const unread = isFolder(folder.id) ? (unreadCounts[folderId] || 0) : 0;
-          const total = isFolder(folder.id) ? (counts[folderId] || 0) : 0;
+          const unread = unreadCounts[folder.id] || 0;
+          const total = counts[folder.id] || 0;
 
           return (
             <button
               key={folder.id}
-              onClick={() => handleClick(folder.id)}
+              onClick={() => { onSelect(folder.id); onViewChange(folder.id); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-50 text-blue-700'
@@ -72,26 +54,6 @@ export default function FolderList({ activeFolder, activeView, onSelect, onViewC
               {unread === 0 && total > 0 && (
                 <span className="text-xs text-gray-400">{total}</span>
               )}
-            </button>
-          );
-        })}
-
-        <div className="my-2 border-t border-gray-100" />
-
-        {extras.map((item) => {
-          const isActive = activeView === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleClick(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              <item.icon className="w-4 h-4 flex-shrink-0" />
-              <span className="flex-1 text-left">{item.label}</span>
             </button>
           );
         })}
