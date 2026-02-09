@@ -318,15 +318,10 @@ export default function TemplatesView() {
                           </div>
                         </div>
 
-                        <button
+                        <Button
                           onClick={() => handleDownload(template)}
                           disabled={downloading === template.id || (template.is_premium && !isPremium)}
-                          className={`px-6 py-2 rounded-full font-medium transition-colors flex-shrink-0 ${
-                            template.is_premium && !isPremium
-                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                              : "bg-primary-blue text-white hover:bg-blue-600"
-                          } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title={template.is_premium && !isPremium ? "Pro-Tarif erforderlich" : ""}
+                          variant={template.is_premium && !isPremium ? "secondary" : "primary"}
                         >
                           {downloading === template.id ? (
                             "Lädt..."
@@ -335,7 +330,7 @@ export default function TemplatesView() {
                           ) : (
                             "Herunterladen"
                           )}
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>

@@ -575,7 +575,7 @@ export default function TenantModal({
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
                   currentStep >= step.number
-                    ? "bg-[#008CFF] text-white"
+                    ? "bg-[#3c8af7] text-white"
                     : "bg-gray-50 text-gray-400"
                 }`}
               >
@@ -598,7 +598,7 @@ export default function TenantModal({
             {index < steps.length - 1 && (
               <div
                 className={`flex-1 h-0.5 mx-4 ${
-                  currentStep > step.number ? "bg-[#008CFF]" : "bg-gray-50"
+                  currentStep > step.number ? "bg-[#3c8af7]" : "bg-gray-50"
                 }`}
               />
             )}
@@ -622,7 +622,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, property_id: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             required
           >
             <option value="">Bitte wählen...</option>
@@ -644,7 +644,7 @@ export default function TenantModal({
               onChange={(e) =>
                 setTenantData({ ...tenantData, unit_id: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             >
               <option value="">Keine Einheit zuweisen</option>
               {units.map((unit) => (
@@ -665,7 +665,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, salutation: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           >
             <option value="">Bitte wählen...</option>
             <option value="Herr">Herr</option>
@@ -685,7 +685,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, household_size: parseInt(e.target.value) || 1 })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             required
           />
         </div>
@@ -700,7 +700,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, first_name: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             required
           />
         </div>
@@ -715,7 +715,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, last_name: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             required
           />
         </div>
@@ -730,7 +730,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, company_name: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           />
         </div>
 
@@ -744,7 +744,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, date_of_birth: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           />
         </div>
 
@@ -758,7 +758,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, street: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           />
         </div>
 
@@ -772,7 +772,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, house_number: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           />
         </div>
 
@@ -786,7 +786,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, zip_code: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           />
         </div>
 
@@ -800,7 +800,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, city: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           />
         </div>
 
@@ -814,7 +814,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, country: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           />
         </div>
 
@@ -828,7 +828,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, email: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           />
         </div>
 
@@ -842,7 +842,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, phone: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
           />
         </div>
 
@@ -856,7 +856,7 @@ export default function TenantModal({
             onChange={(e) =>
               setTenantData({ ...tenantData, move_in_date: e.target.value })
             }
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             required
           />
         </div>
@@ -869,7 +869,7 @@ export default function TenantModal({
               onChange={(e) =>
                 setTenantData({ ...tenantData, is_unlimited: e.target.checked })
               }
-              className="w-4 h-4 text-[#008CFF] rounded focus:ring-[#008CFF]"
+              className="w-4 h-4 text-[#3c8af7] rounded focus:ring-[#3c8af7]"
             />
             <span className="text-sm font-medium text-gray-400">
               Unbefristet
@@ -888,7 +888,7 @@ export default function TenantModal({
               onChange={(e) =>
                 setTenantData({ ...tenantData, move_out_date: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             />
           </div>
         )}
@@ -903,7 +903,7 @@ export default function TenantModal({
       </h3>
 
       <div className="space-y-3">
-        <label className="flex items-center gap-3 p-4 border-2 border-gray-100 rounded-lg cursor-pointer hover:border-[#008CFF] transition-colors">
+        <label className="flex items-center gap-3 p-4 border-2 border-gray-100 rounded-lg cursor-pointer hover:border-[#3c8af7] transition-colors">
           <input
             type="radio"
             name="rent_type"
@@ -912,14 +912,14 @@ export default function TenantModal({
             onChange={(e) =>
               setRentData({ ...rentData, rent_type: e.target.value as RentType })
             }
-            className="w-5 h-5 text-[#008CFF]"
+            className="w-5 h-5 text-[#3c8af7]"
           />
           <div className="flex-1">
             <div className="font-medium text-dark">Pauschalmiete</div>
           </div>
         </label>
 
-        <label className="flex items-center gap-3 p-4 border-2 border-gray-100 rounded-lg cursor-pointer hover:border-[#008CFF] transition-colors">
+        <label className="flex items-center gap-3 p-4 border-2 border-gray-100 rounded-lg cursor-pointer hover:border-[#3c8af7] transition-colors">
           <input
             type="radio"
             name="rent_type"
@@ -928,14 +928,14 @@ export default function TenantModal({
             onChange={(e) =>
               setRentData({ ...rentData, rent_type: e.target.value as RentType })
             }
-            className="w-5 h-5 text-[#008CFF]"
+            className="w-5 h-5 text-[#3c8af7]"
           />
           <div className="flex-1">
             <div className="font-medium text-dark">Kaltmiete + Gesamtvorauszahlung</div>
           </div>
         </label>
 
-        <label className="flex items-center gap-3 p-4 border-2 border-gray-100 rounded-lg cursor-pointer hover:border-[#008CFF] transition-colors">
+        <label className="flex items-center gap-3 p-4 border-2 border-gray-100 rounded-lg cursor-pointer hover:border-[#3c8af7] transition-colors">
           <input
             type="radio"
             name="rent_type"
@@ -944,7 +944,7 @@ export default function TenantModal({
             onChange={(e) =>
               setRentData({ ...rentData, rent_type: e.target.value as RentType })
             }
-            className="w-5 h-5 text-[#008CFF]"
+            className="w-5 h-5 text-[#3c8af7]"
           />
           <div className="flex-1">
             <div className="font-medium text-dark">Kaltmiete + Betriebskosten + Heizkosten</div>
@@ -957,7 +957,7 @@ export default function TenantModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">
-                Pauschalmiete <span className="text-[#008CFF]">*</span>
+                Pauschalmiete <span className="text-[#3c8af7]">*</span>
               </label>
               <div className="relative">
                 <input
@@ -966,7 +966,7 @@ export default function TenantModal({
                   onChange={(e) =>
                     setRentData({ ...rentData, flat_rate_amount: e.target.value })
                   }
-                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
                   placeholder="z.B. 850 oder 850,50"
                   required
                 />
@@ -983,7 +983,7 @@ export default function TenantModal({
                 onChange={(e) =>
                   setRentData({ ...rentData, valid_from: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
               />
             </div>
           </div>
@@ -1001,7 +1001,7 @@ export default function TenantModal({
                 setRentData({ ...rentData, rent_due_day: e.target.value })
               }
               placeholder="z.B. 1"
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             />
           </div>
         </div>
@@ -1012,7 +1012,7 @@ export default function TenantModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">
-                Kaltmiete <span className="text-[#008CFF]">*</span>
+                Kaltmiete <span className="text-[#3c8af7]">*</span>
               </label>
               <div className="relative">
                 <input
@@ -1021,7 +1021,7 @@ export default function TenantModal({
                   onChange={(e) =>
                     setRentData({ ...rentData, cold_rent: e.target.value })
                   }
-                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
                   placeholder="z.B. 750 oder 750,00"
                   required
                 />
@@ -1030,7 +1030,7 @@ export default function TenantModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">
-                Gesamtvorauszahlung <span className="text-[#008CFF]">*</span>
+                Gesamtvorauszahlung <span className="text-[#3c8af7]">*</span>
               </label>
               <div className="relative">
                 <input
@@ -1039,7 +1039,7 @@ export default function TenantModal({
                   onChange={(e) =>
                     setRentData({ ...rentData, total_advance: e.target.value })
                   }
-                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
                   placeholder="z.B. 100 oder 100,50"
                   required
                 />
@@ -1056,7 +1056,7 @@ export default function TenantModal({
                 onChange={(e) =>
                   setRentData({ ...rentData, valid_from: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
               />
             </div>
           </div>
@@ -1083,7 +1083,7 @@ export default function TenantModal({
                 setRentData({ ...rentData, rent_due_day: e.target.value })
               }
               placeholder="z.B. 1"
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             />
           </div>
         </div>
@@ -1094,7 +1094,7 @@ export default function TenantModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">
-                Kaltmiete <span className="text-[#008CFF]">*</span>
+                Kaltmiete <span className="text-[#3c8af7]">*</span>
               </label>
               <div className="relative">
                 <input
@@ -1103,7 +1103,7 @@ export default function TenantModal({
                   onChange={(e) =>
                     setRentData({ ...rentData, cold_rent: e.target.value })
                   }
-                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
                   placeholder="z.B. 750 oder 750,00"
                   required
                 />
@@ -1112,7 +1112,7 @@ export default function TenantModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">
-                Betriebskosten <span className="text-[#008CFF]">*</span>
+                Betriebskosten <span className="text-[#3c8af7]">*</span>
               </label>
               <div className="relative">
                 <input
@@ -1121,7 +1121,7 @@ export default function TenantModal({
                   onChange={(e) =>
                     setRentData({ ...rentData, operating_costs: e.target.value })
                   }
-                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
                   placeholder="z.B. 60 oder 60,75"
                   required
                 />
@@ -1130,7 +1130,7 @@ export default function TenantModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">
-                Heizkosten <span className="text-[#008CFF]">*</span>
+                Heizkosten <span className="text-[#3c8af7]">*</span>
               </label>
               <div className="relative">
                 <input
@@ -1139,7 +1139,7 @@ export default function TenantModal({
                   onChange={(e) =>
                     setRentData({ ...rentData, heating_costs: e.target.value })
                   }
-                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
                   placeholder="z.B. 40 oder 40,25"
                   required
                 />
@@ -1156,7 +1156,7 @@ export default function TenantModal({
                 onChange={(e) =>
                   setRentData({ ...rentData, valid_from: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
               />
             </div>
           </div>
@@ -1183,7 +1183,7 @@ export default function TenantModal({
                 setRentData({ ...rentData, rent_due_day: e.target.value })
               }
               placeholder="z.B. 1"
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             />
           </div>
         </div>
@@ -1198,7 +1198,7 @@ export default function TenantModal({
               onChange={(e) =>
                 setRentData({ ...rentData, is_sublet: e.target.checked })
               }
-              className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+              className="w-4 h-4 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
             />
             <span className="text-sm font-medium text-gray-700">Untermietverhältnis</span>
           </label>
@@ -1209,7 +1209,7 @@ export default function TenantModal({
               onChange={(e) =>
                 setRentData({ ...rentData, vat_applicable: e.target.checked })
               }
-              className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+              className="w-4 h-4 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
             />
             <span className="text-sm font-medium text-gray-700">Mehrwertsteuer berechnen</span>
           </label>
@@ -1223,7 +1223,7 @@ export default function TenantModal({
               onChange={(e) =>
                 setRentData({ ...rentData, generate_historic_payments: !e.target.checked })
               }
-              className="w-4 h-4 mt-0.5 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+              className="w-4 h-4 mt-0.5 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
             />
             <div>
               <span className="text-sm font-medium text-gray-700">
@@ -1246,7 +1246,7 @@ export default function TenantModal({
           onChange={(e) =>
             setRentData({ ...rentData, rent_increase_type: e.target.value })
           }
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
         >
           <option value="none">Keine automatische Erhöhung</option>
           <option value="index">Indexmiete</option>
@@ -1265,7 +1265,7 @@ export default function TenantModal({
                 onChange={(e) =>
                   setRentData({ ...rentData, graduated_rent_date: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
               />
               <p className="text-xs text-gray-400 mt-1">
                 Das Datum der ersten Mieterhöhung (normalerweise 12 Monate nach Mietbeginn).
@@ -1282,7 +1282,7 @@ export default function TenantModal({
                   onChange={(e) =>
                     setRentData({ ...rentData, graduated_rent_new_amount: e.target.value })
                   }
-                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
                   placeholder="z.B. 850 oder 850,00"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">€</span>
@@ -1303,7 +1303,7 @@ export default function TenantModal({
                 onChange={(e) =>
                   setRentData({ ...rentData, auto_create_rent_increase_tickets: e.target.checked })
                 }
-                className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+                className="w-4 h-4 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
               />
               <span className="text-sm font-medium text-gray-700">
                 Automatisches Erinnerungs-Ticket erstellen (3 Monate vor Erhöhung)
@@ -1332,8 +1332,8 @@ export default function TenantModal({
         ].map((option) => (
           <label
             key={option.value}
-            className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-[#008CFF] transition-colors ${
-              depositData.deposit_type === option.value ? "border-[#008CFF] bg-blue-50" : "border-gray-100"
+            className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-[#3c8af7] transition-colors ${
+              depositData.deposit_type === option.value ? "border-[#3c8af7] bg-blue-50" : "border-gray-100"
             }`}
           >
             <input
@@ -1344,7 +1344,7 @@ export default function TenantModal({
               onChange={(e) =>
                 setDepositData({ ...depositData, deposit_type: e.target.value as DepositType })
               }
-              className="w-5 h-5 text-[#008CFF]"
+              className="w-5 h-5 text-[#3c8af7]"
             />
             <div className="font-medium text-dark">{option.label}</div>
           </label>
@@ -1365,7 +1365,7 @@ export default function TenantModal({
                   onChange={(e) =>
                     setDepositData({ ...depositData, deposit_amount: e.target.value })
                   }
-                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                  className="w-full px-4 py-2 pr-8 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
                   placeholder="z.B. 2550 oder 2550,00"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">€</span>
@@ -1380,7 +1380,7 @@ export default function TenantModal({
                 onChange={(e) =>
                   setDepositData({ ...depositData, deposit_status: e.target.value as DepositStatus })
                 }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
               >
                 <option value="open">Offen</option>
                 <option value="partial">Teilweise bezahlt</option>
@@ -1399,7 +1399,7 @@ export default function TenantModal({
               onChange={(e) =>
                 setDepositData({ ...depositData, deposit_payment_date: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#008CFF] focus:border-[#008CFF] outline-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
             />
           </div>
         </div>

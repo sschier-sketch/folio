@@ -765,7 +765,7 @@ export default function TenantRentHistoryTab({
                   <span className="text-sm text-gray-500">Kappungsgrenze (3 Jahre)</span>
                   <InfoTooltip text="Innerhalb von 3 Jahren darf die Miete maximal um 20% erhöht werden (§558 BGB). Zeigt an, wie viel Spielraum für weitere Erhöhungen noch besteht." />
                 </div>
-                <Percent className="w-5 h-5 text-[#008CFF]" />
+                <Percent className="w-5 h-5 text-[#3c8af7]" />
               </div>
               <p className="text-3xl font-bold text-dark">
                 {rentIncreaseCalcs.remainingPercent}%
@@ -781,7 +781,7 @@ export default function TenantRentHistoryTab({
                   <span className="text-sm text-gray-500">Maximale neue Miete</span>
                   <InfoTooltip text="Die maximal mögliche Kaltmiete unter Berücksichtigung der 20%-Kappungsgrenze der letzten 3 Jahre." />
                 </div>
-                <TrendingUp className="w-5 h-5 text-[#008CFF]" />
+                <TrendingUp className="w-5 h-5 text-[#3c8af7]" />
               </div>
               <p className="text-3xl font-bold text-dark">
                 {rentIncreaseCalcs.maxAllowed.toFixed(2)} €

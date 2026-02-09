@@ -508,7 +508,7 @@ export default function LoanModal({
                   : formData.fixed_interest_end_date,
               });
             }}
-            className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+            className="w-4 h-4 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
           />
           <span className="text-sm font-medium text-gray-700">
             Zinsbindung entspricht Kreditende
@@ -532,7 +532,7 @@ export default function LoanModal({
                   email_notification_enabled: e.target.checked,
                 })
               }
-              className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+              className="w-4 h-4 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
             />
             <span className="text-sm font-medium text-blue-900">
               E-Mail-Erinnerung aktivieren
@@ -585,7 +585,7 @@ export default function LoanModal({
                 special_repayment_allowed: e.target.checked,
               })
             }
-            className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+            className="w-4 h-4 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
           />
           <span className="text-sm font-medium text-gray-700">
             Sondertilgung erlaubt
@@ -665,7 +665,7 @@ export default function LoanModal({
                       special_repayment_annual_end: e.target.checked,
                     })
                   }
-                  className="w-4 h-4 text-[#008CFF] border-gray-300 rounded focus:ring-2 focus:ring-[#008CFF]"
+                  className="w-4 h-4 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
                 />
                 <span className="text-sm font-medium text-gray-700">
                   Jährlich zum Jahresende
