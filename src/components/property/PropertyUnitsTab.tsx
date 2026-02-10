@@ -25,6 +25,7 @@ interface PropertyUnit {
   mea?: string | null;
   location?: string | null;
   description?: string | null;
+  housegeld_monthly_cents?: number | null;
   purchase_price?: number | null;
   current_value?: number | null;
   purchase_date?: string | null;
@@ -66,6 +67,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     status: "vacant",
     mea: "",
     description: "",
+    hausgeld: "",
     notes: "",
     purchase_price: "",
     current_value: "",
@@ -193,6 +195,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
         mea: formData.mea || null,
         location: formData.location || null,
         description: formData.description || null,
+        housegeld_monthly_cents: formData.hausgeld ? Math.round(parseNumberInput(formData.hausgeld) * 100) : 0,
       };
 
       if (ownershipType === "units_only") {
@@ -285,6 +288,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       status: unit.status,
       mea: unit.mea || "",
       description: unit.description || "",
+      hausgeld: unit.housegeld_monthly_cents ? (unit.housegeld_monthly_cents / 100).toFixed(2) : "",
       notes: unit.notes || "",
       purchase_price: unit.purchase_price ? String(unit.purchase_price) : "",
       current_value: unit.current_value ? String(unit.current_value) : "",
@@ -309,6 +313,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       status: "vacant",
       mea: "",
       description: "",
+      hausgeld: "",
       notes: "",
       purchase_price: "",
       current_value: "",
@@ -681,6 +686,30 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                     className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     placeholder="Zusätzliche Informationen..."
                   />
+                </div>
+
+                <div className="col-span-2 pt-3 border-t border-gray-200 mt-2">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Laufende Kosten</h3>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Hausgeld (monatlich)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formData.hausgeld}
+                      onChange={(e) =>
+                        setFormData({ ...formData, hausgeld: e.target.value })
+                      }
+                      className="w-full px-4 py-2 pr-8 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      placeholder="z.B. 350,00"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
+                      &euro;
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Monatliche Hausgeldzahlung f&uuml;r diese Einheit.</p>
                 </div>
 
                 {ownershipType === "units_only" && (
