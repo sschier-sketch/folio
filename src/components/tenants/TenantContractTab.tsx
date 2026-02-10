@@ -65,36 +65,69 @@ export default function TenantContractTab({
 
       const { data: tenantData } = await supabase
         .from("tenants")
-        .select("contract_id")
+        .select("contract_id, property_id, unit_id")
         .eq("id", tenantId)
         .maybeSingle();
 
-      if (!tenantData?.contract_id) {
+      if (!tenantData) {
         setContractId(null);
         setDocuments([]);
         return;
       }
 
-      setContractId(tenantData.contract_id);
+      let resolvedContractId = tenantData.contract_id;
 
-      const [tenantAssocs, contractAssocs] = await Promise.all([
+      if (!resolvedContractId) {
+        const { data: contract } = await supabase
+          .from("rental_contracts")
+          .select("id")
+          .eq("tenant_id", tenantId)
+          .maybeSingle();
+
+        resolvedContractId = contract?.id || null;
+      }
+
+      setContractId(resolvedContractId);
+
+      const assocQueries = [
         supabase
           .from("document_associations")
-          .select("document_id, association_id, association_type")
+          .select("document_id")
           .eq("association_type", "tenant")
           .eq("association_id", tenantId),
-        supabase
-          .from("document_associations")
-          .select("document_id, association_id, association_type")
-          .eq("association_type", "rental_contract")
-          .eq("association_id", tenantData.contract_id),
-      ]);
-
-      const allAssociations = [
-        ...(tenantAssocs.data || []),
-        ...(contractAssocs.data || []),
       ];
-      const documentIds = [...new Set(allAssociations.map((a) => a.document_id))];
+
+      if (resolvedContractId) {
+        assocQueries.push(
+          supabase
+            .from("document_associations")
+            .select("document_id")
+            .eq("association_type", "rental_contract")
+            .eq("association_id", resolvedContractId)
+        );
+      }
+
+      if (tenantData.unit_id) {
+        assocQueries.push(
+          supabase
+            .from("document_associations")
+            .select("document_id")
+            .eq("association_type", "unit")
+            .eq("association_id", tenantData.unit_id)
+        );
+      }
+
+      const results = await Promise.all(assocQueries);
+
+      const allDocIds: string[] = [];
+      for (const result of results) {
+        if (result.data) {
+          for (const row of result.data) {
+            allDocIds.push(row.document_id);
+          }
+        }
+      }
+      const documentIds = [...new Set(allDocIds)];
 
       if (documentIds.length > 0) {
         const { data: docs } = await supabase
@@ -116,47 +149,7 @@ export default function TenantContractTab({
   }
 
   async function loadDocuments() {
-    if (!contractId) return;
-
-    try {
-      setLoading(true);
-
-      const [tenantAssocs, contractAssocs] = await Promise.all([
-        supabase
-          .from("document_associations")
-          .select("document_id, association_id, association_type")
-          .eq("association_type", "tenant")
-          .eq("association_id", tenantId),
-        supabase
-          .from("document_associations")
-          .select("document_id, association_id, association_type")
-          .eq("association_type", "rental_contract")
-          .eq("association_id", contractId),
-      ]);
-
-      const allAssociations = [
-        ...(tenantAssocs.data || []),
-        ...(contractAssocs.data || []),
-      ];
-      const documentIds = [...new Set(allAssociations.map((a) => a.document_id))];
-
-      if (documentIds.length > 0) {
-        const { data: docs } = await supabase
-          .from("documents")
-          .select("*")
-          .in("id", documentIds)
-          .eq("is_archived", false)
-          .order("upload_date", { ascending: false });
-
-        setDocuments(docs || []);
-      } else {
-        setDocuments([]);
-      }
-    } catch (error) {
-      console.error("Error loading documents:", error);
-    } finally {
-      setLoading(false);
-    }
+    await loadTenantContractAndDocuments();
   }
 
   const handleFileSelect = (files: FileList | null) => {
@@ -359,7 +352,7 @@ export default function TenantContractTab({
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
   }
 
-  if (!contractId) {
+  if (!contractId && documents.length === 0) {
     return (
       <div className="text-center py-12">
         <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />

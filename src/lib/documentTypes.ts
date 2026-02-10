@@ -1,5 +1,5 @@
 export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-  contract: "Mietvertrag",
+  contract: "Vertrag (Allgemein)",
   rental_agreement: "Mietvertrag",
   main_contract: "Kaufvertrag",
   amendment: "Nachtrag",
