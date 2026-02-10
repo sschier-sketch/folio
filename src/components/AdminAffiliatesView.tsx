@@ -129,22 +129,11 @@ export default function AdminAffiliatesView() {
 
   const loadAffiliates = async () => {
     try {
-      const { data: affiliatesData, error } = await supabase
-        .from("affiliates")
-        .select(`
-          *,
-          user_email:user_id(email)
-        `)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.rpc("admin_get_affiliates");
 
       if (error) throw error;
 
-      const formatted = (affiliatesData || []).map((a: any) => ({
-        ...a,
-        user_email: a.user_email?.[0]?.email || "Unknown",
-      }));
-
-      setAffiliates(formatted);
+      setAffiliates((data || []) as Affiliate[]);
     } catch (error) {
       console.error("Error loading affiliates:", error);
     } finally {
@@ -154,23 +143,13 @@ export default function AdminAffiliatesView() {
 
   const loadReferrals = async (affiliateId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("affiliate_referrals")
-        .select(`
-          *,
-          referred_user_email:referred_user_id(email)
-        `)
-        .eq("affiliate_id", affiliateId)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.rpc("admin_get_affiliate_referrals", {
+        p_affiliate_id: affiliateId,
+      });
 
       if (error) throw error;
 
-      const formatted = (data || []).map((r: any) => ({
-        ...r,
-        referred_user_email: r.referred_user_email?.[0]?.email || "Unknown",
-      }));
-
-      setReferrals(formatted);
+      setReferrals((data || []) as Referral[]);
     } catch (error) {
       console.error("Error loading referrals:", error);
     }
