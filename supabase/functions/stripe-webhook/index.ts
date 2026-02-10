@@ -2,54 +2,81 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
-const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
-const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
-const stripe = new Stripe(stripeSecret, {
-  appInfo: {
-    name: 'Bolt Integration',
-    version: '1.0.0',
-  },
-});
+let stripe: Stripe | null = null;
+let supabase: ReturnType<typeof createClient> | null = null;
 
-const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+function getStripe(): Stripe {
+  if (!stripe) {
+    const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeSecret) {
+      throw new Error('STRIPE_SECRET_KEY is not configured');
+    }
+    stripe = new Stripe(stripeSecret, {
+      appInfo: { name: 'Bolt Integration', version: '1.0.0' },
+    });
+  }
+  return stripe;
+}
+
+function getSupabase() {
+  if (!supabase) {
+    supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+  }
+  return supabase;
+}
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+};
 
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
   try {
-    // Handle OPTIONS request for CORS preflight
-    if (req.method === 'OPTIONS') {
-      return new Response(null, { status: 204 });
-    }
-
     if (req.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+      return new Response('Method not allowed', { status: 405, headers: corsHeaders });
     }
 
-    // get the signature from the header
+    const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+    if (!stripeWebhookSecret) {
+      console.error('STRIPE_WEBHOOK_SECRET is not configured');
+      return Response.json(
+        { error: 'Webhook secret not configured' },
+        { status: 500, headers: corsHeaders },
+      );
+    }
+
     const signature = req.headers.get('stripe-signature');
-
     if (!signature) {
-      return new Response('No signature found', { status: 400 });
+      return new Response('No signature found', { status: 400, headers: corsHeaders });
     }
 
-    // get the raw body
     const body = await req.text();
 
-    // verify the webhook signature
     let event: Stripe.Event;
-
     try {
-      event = await stripe.webhooks.constructEventAsync(body, signature, stripeWebhookSecret);
+      event = await getStripe().webhooks.constructEventAsync(body, signature, stripeWebhookSecret);
     } catch (error: any) {
       console.error(`Webhook signature verification failed: ${error.message}`);
-      return new Response(`Webhook signature verification failed: ${error.message}`, { status: 400 });
+      return new Response(
+        `Webhook signature verification failed: ${error.message}`,
+        { status: 400, headers: corsHeaders },
+      );
     }
 
     EdgeRuntime.waitUntil(handleEvent(event));
 
-    return Response.json({ received: true });
+    return Response.json({ received: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error('Error processing webhook:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
   }
 });
 
@@ -112,7 +139,7 @@ async function handleEvent(event: Stripe.Event) {
         } = stripeData as Stripe.Checkout.Session;
 
         // Insert the order into the stripe_orders table
-        const { error: orderError } = await supabase.from('stripe_orders').insert({
+        const { error: orderError } = await getSupabase().from('stripe_orders').insert({
           checkout_session_id,
           payment_intent_id: payment_intent,
           customer_id: customerId,
@@ -139,7 +166,7 @@ async function handleEvent(event: Stripe.Event) {
 async function syncCustomerFromStripe(customerId: string) {
   try {
     // fetch latest subscription data from Stripe
-    const subscriptions = await stripe.subscriptions.list({
+    const subscriptions = await getStripe().subscriptions.list({
       customer: customerId,
       limit: 1,
       status: 'all',
@@ -149,7 +176,7 @@ async function syncCustomerFromStripe(customerId: string) {
     // TODO verify if needed
     if (subscriptions.data.length === 0) {
       console.info(`No active subscriptions found for customer: ${customerId}`);
-      const { error: noSubError } = await supabase.from('stripe_subscriptions').upsert(
+      const { error: noSubError } = await getSupabase().from('stripe_subscriptions').upsert(
         {
           customer_id: customerId,
           subscription_status: 'not_started',
@@ -173,7 +200,7 @@ async function syncCustomerFromStripe(customerId: string) {
     const subscription = subscriptions.data[0];
 
     // store subscription state
-    const { error: subError } = await supabase.from('stripe_subscriptions').upsert(
+    const { error: subError } = await getSupabase().from('stripe_subscriptions').upsert(
       {
         customer_id: customerId,
         subscription_id: subscription.id,
@@ -217,7 +244,7 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
   try {
     let billingData: { user_id: string; subscription_plan: string | null; pro_activated_at: string | null } | null = null;
 
-    const { data: directMatch, error: findError } = await supabase
+    const { data: directMatch, error: findError } = await getSupabase()
       .from('billing_info')
       .select('user_id, subscription_plan, pro_activated_at')
       .eq('stripe_customer_id', customerId)
@@ -230,7 +257,7 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
     billingData = directMatch;
 
     if (!billingData) {
-      const { data: stripeCustomer, error: scError } = await supabase
+      const { data: stripeCustomer, error: scError } = await getSupabase()
         .from('stripe_customers')
         .select('user_id')
         .eq('customer_id', customerId)
@@ -241,7 +268,7 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
       }
 
       if (stripeCustomer) {
-        const { data: billingByUser, error: biError } = await supabase
+        const { data: billingByUser, error: biError } = await getSupabase()
           .from('billing_info')
           .select('user_id, subscription_plan, pro_activated_at')
           .eq('user_id', stripeCustomer.user_id)
@@ -253,7 +280,7 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
 
         if (billingByUser) {
           billingData = billingByUser;
-          const { error: backfillError } = await supabase
+          const { error: backfillError } = await getSupabase()
             .from('billing_info')
             .update({ stripe_customer_id: customerId, updated_at: new Date().toISOString() })
             .eq('user_id', stripeCustomer.user_id);
@@ -292,7 +319,7 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
       updateData.trial_ends_at = null;
     }
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await getSupabase()
       .from('billing_info')
       .update(updateData)
       .eq('user_id', billingData.user_id);
@@ -323,7 +350,7 @@ async function handleInvoicePaid(event: Stripe.Event) {
       return;
     }
 
-    const { data: referral } = await supabase
+    const { data: referral } = await getSupabase()
       .from('affiliate_referrals')
       .select('id, affiliate_id, status')
       .eq('customer_id', invoice.customer)
@@ -335,7 +362,7 @@ async function handleInvoicePaid(event: Stripe.Event) {
     }
 
     if (referral.status !== 'paying') {
-      await supabase
+      await getSupabase()
         .from('affiliate_referrals')
         .update({
           status: 'paying',
@@ -345,7 +372,7 @@ async function handleInvoicePaid(event: Stripe.Event) {
         })
         .eq('id', referral.id);
     } else {
-      await supabase
+      await getSupabase()
         .from('affiliate_referrals')
         .update({
           last_payment_at: new Date().toISOString(),
@@ -354,7 +381,7 @@ async function handleInvoicePaid(event: Stripe.Event) {
         .eq('id', referral.id);
     }
 
-    const { data: existingCommission } = await supabase
+    const { data: existingCommission } = await getSupabase()
       .from('affiliate_commissions')
       .select('id')
       .eq('stripe_event_id', event.id)
@@ -365,7 +392,7 @@ async function handleInvoicePaid(event: Stripe.Event) {
       return;
     }
 
-    const { data: affiliate } = await supabase
+    const { data: affiliate } = await getSupabase()
       .from('affiliates')
       .select('id, commission_rate, is_blocked')
       .eq('id', referral.affiliate_id)
@@ -383,7 +410,7 @@ async function handleInvoicePaid(event: Stripe.Event) {
     const holdUntil = new Date();
     holdUntil.setDate(holdUntil.getDate() + holdPeriodDays);
 
-    const { error: commissionError } = await supabase
+    const { error: commissionError } = await getSupabase()
       .from('affiliate_commissions')
       .insert({
         affiliate_id: affiliate.id,
@@ -404,10 +431,10 @@ async function handleInvoicePaid(event: Stripe.Event) {
       return;
     }
 
-    const { error: updateLifetimeError } = await supabase
+    const { error: updateLifetimeError } = await getSupabase()
       .from('affiliate_referrals')
       .update({
-        lifetime_value: supabase.rpc('increment', { x: amountTotal }),
+        lifetime_value: getSupabase().rpc('increment', { x: amountTotal }),
       })
       .eq('id', referral.id);
 
@@ -430,7 +457,7 @@ async function handleChargeRefunded(event: Stripe.Event) {
       return;
     }
 
-    const { data: commission } = await supabase
+    const { data: commission } = await getSupabase()
       .from('affiliate_commissions')
       .select('id, commission_amount, status, affiliate_id, referral_id')
       .eq('invoice_id', charge.invoice)
@@ -446,7 +473,7 @@ async function handleChargeRefunded(event: Stripe.Event) {
       return;
     }
 
-    await supabase
+    await getSupabase()
       .from('affiliate_commissions')
       .update({
         status: 'reversed',
@@ -455,14 +482,14 @@ async function handleChargeRefunded(event: Stripe.Event) {
       .eq('id', commission.id);
 
     const refundEventId = `refund_${event.id}`;
-    const { data: existingReversal } = await supabase
+    const { data: existingReversal } = await getSupabase()
       .from('affiliate_commissions')
       .select('id')
       .eq('stripe_event_id', refundEventId)
       .maybeSingle();
 
     if (!existingReversal) {
-      await supabase
+      await getSupabase()
         .from('affiliate_commissions')
         .insert({
           affiliate_id: commission.affiliate_id,
@@ -486,7 +513,7 @@ async function handleChargeRefunded(event: Stripe.Event) {
 
 async function updateReferralCustomerId(customerId: string) {
   try {
-    const { data: stripeCustomer } = await supabase
+    const { data: stripeCustomer } = await getSupabase()
       .from('stripe_customers')
       .select('user_id')
       .eq('customer_id', customerId)
@@ -497,7 +524,7 @@ async function updateReferralCustomerId(customerId: string) {
       return;
     }
 
-    const { data: referral } = await supabase
+    const { data: referral } = await getSupabase()
       .from('affiliate_referrals')
       .select('id, customer_id')
       .eq('referred_user_id', stripeCustomer.user_id)
@@ -509,7 +536,7 @@ async function updateReferralCustomerId(customerId: string) {
     }
 
     if (!referral.customer_id) {
-      await supabase
+      await getSupabase()
         .from('affiliate_referrals')
         .update({
           customer_id: customerId,
