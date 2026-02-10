@@ -22,7 +22,7 @@ import AdminSystemSettingsView from "../components/AdminSystemSettingsView";
 import AdminSeoView from "../components/AdminSeoView";
 import AdminProFeaturesView from "../components/AdminProFeaturesView";
 import AdminAffiliatesView from "../components/AdminAffiliatesView";
-import AdminPayoutsView from "../components/AdminPayoutsView";
+
 import AdminEmailLogsView from "../components/AdminEmailLogsView";
 import AdminMagazineView from "../components/admin/AdminMagazineView";
 import AdminEmailSettingsView from "../components/admin/AdminEmailSettingsView";
@@ -569,7 +569,6 @@ export function Admin() {
         {activeTab === "system_settings" && <AdminSystemSettingsView />}
         {activeTab === "seo" && <AdminSeoView />}
         {activeTab === "affiliates" && <AdminAffiliatesView />}
-        {activeTab === "payouts" && <AdminPayoutsView />}
         {activeTab === "pro_features" && <AdminProFeaturesView />}
         {activeTab === "email_logs" && <AdminEmailLogsView />}
         {activeTab === "magazine" && <AdminMagazineView />}

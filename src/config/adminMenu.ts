@@ -8,7 +8,6 @@ import {
   Settings,
   Globe,
   TrendingUp,
-  DollarSign,
   Sparkles,
   BookOpen,
   AtSign,
@@ -28,7 +27,6 @@ export type AdminTabKey =
   | "system_settings"
   | "seo"
   | "affiliates"
-  | "payouts"
   | "pro_features"
   | "magazine"
   | "email_settings"
@@ -86,14 +84,6 @@ export const adminMenuGroups: AdminMenuGroup[] = [
       { key: "seo", label: "SEO", icon: Globe },
       { key: "affiliates", label: "Affiliates", icon: TrendingUp },
       { key: "pro_features", label: "Pro-Features", icon: Sparkles },
-    ],
-  },
-  {
-    id: "finance",
-    label: "Finanzen",
-    defaultOpen: true,
-    items: [
-      { key: "payouts", label: "Auszahlungen", icon: DollarSign },
     ],
   },
   {

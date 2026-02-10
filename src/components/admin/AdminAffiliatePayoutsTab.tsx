@@ -3,37 +3,34 @@ import {
   DollarSign,
   Check,
   Clock,
-  AlertCircle,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-import { useAuth } from "../contexts/AuthContext";
-import { BaseTable, StatusBadge } from "./common/BaseTable";
-import { Button } from "./ui/Button";
+import { supabase } from "../../lib/supabase";
+import { useAuth } from "../../contexts/AuthContext";
+import { BaseTable, StatusBadge } from "../common/BaseTable";
+import { Button } from "../ui/Button";
 
 interface PayoutRequest {
   id: string;
-  affiliate_id: string;
+  user_id: string;
   amount: number;
   status: string;
+  iban: string | null;
+  account_holder: string | null;
   notes: string | null;
-  transaction_id: string | null;
   processed_at: string | null;
   rejected_reason: string | null;
   created_at: string;
-  affiliate_code: string;
-  affiliate_email: string;
-  account_holder_name: string | null;
-  iban: string | null;
+  user_email: string;
+  affiliate_code: string | null;
 }
 
-export default function AdminPayoutsView() {
+export default function AdminAffiliatePayoutsTab() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [payoutRequests, setPayoutRequests] = useState<PayoutRequest[]>([]);
   const [selectedPayout, setSelectedPayout] = useState<PayoutRequest | null>(null);
   const [showProcessModal, setShowProcessModal] = useState(false);
   const [notes, setNotes] = useState("");
-  const [transactionId, setTransactionId] = useState("");
   const [processing, setProcessing] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
@@ -45,39 +42,39 @@ export default function AdminPayoutsView() {
   const loadPayoutRequests = async () => {
     try {
       const { data, error } = await supabase
-        .from("affiliate_payout_requests")
-        .select(`
-          *,
-          affiliates!inner(
-            affiliate_code,
-            user_id
-          ),
-          affiliate_payout_methods(
-            account_holder_name,
-            iban
-          )
-        `)
+        .from("referral_payout_requests")
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      const formatted = await Promise.all(
-        (data || []).map(async (p: any) => {
-          const { data: userData } = await supabase
-            .from("auth.users")
-            .select("email")
-            .eq("id", p.affiliates.user_id)
-            .maybeSingle();
+      const uniqueUserIds = [...new Set((data || []).map((p: any) => p.user_id))];
 
-          return {
-            ...p,
-            affiliate_code: p.affiliates.affiliate_code,
-            affiliate_email: userData?.email || "Unknown",
-            account_holder_name: p.affiliate_payout_methods?.[0]?.account_holder_name || null,
-            iban: p.affiliate_payout_methods?.[0]?.iban || null,
-          };
-        })
-      );
+      const profileMap: Record<string, { email?: string; affiliate_code?: string }> = {};
+      for (const uid of uniqueUserIds) {
+        const [profileRes, affiliateRes] = await Promise.all([
+          supabase
+            .from("account_profiles")
+            .select("email")
+            .eq("user_id", uid)
+            .maybeSingle(),
+          supabase
+            .from("affiliates")
+            .select("affiliate_code")
+            .eq("user_id", uid)
+            .maybeSingle(),
+        ]);
+        profileMap[uid] = {
+          email: profileRes.data?.email || undefined,
+          affiliate_code: affiliateRes.data?.affiliate_code || undefined,
+        };
+      }
+
+      const formatted = (data || []).map((p: any) => ({
+        ...p,
+        user_email: profileMap[p.user_id]?.email || p.user_id,
+        affiliate_code: profileMap[p.user_id]?.affiliate_code || null,
+      }));
 
       setPayoutRequests(formatted);
     } catch (error) {
@@ -94,11 +91,10 @@ export default function AdminPayoutsView() {
 
     try {
       const { error } = await supabase
-        .from("affiliate_payout_requests")
+        .from("referral_payout_requests")
         .update({
           status: "paid",
           notes: notes || null,
-          transaction_id: transactionId || null,
           processed_by: user!.id,
           processed_at: new Date().toISOString(),
         })
@@ -106,32 +102,42 @@ export default function AdminPayoutsView() {
 
       if (error) throw error;
 
-      const { data: commissions } = await supabase
-        .from("affiliate_commissions")
-        .select("id, commission_amount")
-        .eq("affiliate_id", selectedPayout.affiliate_id)
-        .eq("status", "available");
+      const { data: affiliate } = await supabase
+        .from("affiliates")
+        .select("id")
+        .eq("user_id", selectedPayout.user_id)
+        .maybeSingle();
 
-      if (commissions && commissions.length > 0) {
-        const totalAmount = commissions.reduce((sum, c) => sum + c.commission_amount, 0);
+      if (affiliate) {
+        const { data: commissions } = await supabase
+          .from("affiliate_commissions")
+          .select("id, commission_amount")
+          .eq("affiliate_id", affiliate.id)
+          .eq("status", "available");
 
-        if (Math.abs(totalAmount - selectedPayout.amount) < 0.01) {
-          await supabase
-            .from("affiliate_commissions")
-            .update({
-              status: "paid",
-              paid_at: new Date().toISOString(),
-              payout_request_id: selectedPayout.id,
-            })
-            .eq("affiliate_id", selectedPayout.affiliate_id)
-            .eq("status", "available");
+        if (commissions && commissions.length > 0) {
+          let remaining = selectedPayout.amount;
+          const idsToMark: string[] = [];
+          for (const c of commissions) {
+            if (remaining <= 0) break;
+            idsToMark.push(c.id);
+            remaining -= c.commission_amount;
+          }
+          if (idsToMark.length > 0) {
+            await supabase
+              .from("affiliate_commissions")
+              .update({
+                status: "paid",
+                paid_at: new Date().toISOString(),
+              })
+              .in("id", idsToMark);
+          }
         }
       }
 
       alert("Auszahlung erfolgreich als bezahlt markiert");
       setShowProcessModal(false);
       setNotes("");
-      setTransactionId("");
       setSelectedPayout(null);
       loadPayoutRequests();
     } catch (error) {
@@ -149,7 +155,7 @@ export default function AdminPayoutsView() {
 
     try {
       const { error } = await supabase
-        .from("affiliate_payout_requests")
+        .from("referral_payout_requests")
         .update({
           status: "rejected",
           rejected_reason: rejectReason,
@@ -174,10 +180,10 @@ export default function AdminPayoutsView() {
   };
 
   const pendingPayouts = payoutRequests.filter((p) => p.status === "pending");
-  const totalPending = pendingPayouts.reduce((sum, p) => sum + p.amount, 0);
+  const totalPending = pendingPayouts.reduce((sum, p) => sum + Number(p.amount), 0);
   const totalPaid = payoutRequests
     .filter((p) => p.status === "paid")
-    .reduce((sum, p) => sum + p.amount, 0);
+    .reduce((sum, p) => sum + Number(p.amount), 0);
 
   if (loading) {
     return (
@@ -189,11 +195,6 @@ export default function AdminPayoutsView() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-dark mb-2">Auszahlungs-Verwaltung</h1>
-        <p className="text-gray-600">Verwalten Sie Affiliate-Auszahlungen</p>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-sm p-6 text-white">
           <div className="flex items-center justify-between mb-4">
@@ -237,16 +238,18 @@ export default function AdminPayoutsView() {
         <BaseTable
           columns={[
             {
-              key: "affiliate",
-              header: "Affiliate",
+              key: "user",
+              header: "Benutzer",
               render: (payout: PayoutRequest) => (
                 <div>
                   <div className="text-sm font-medium text-dark">
-                    {payout.affiliate_email}
+                    {payout.user_email}
                   </div>
-                  <div className="text-xs text-gray-500 font-mono">
-                    {payout.affiliate_code}
-                  </div>
+                  {payout.affiliate_code && (
+                    <div className="text-xs text-gray-500 font-mono">
+                      {payout.affiliate_code}
+                    </div>
+                  )}
                 </div>
               ),
             },
@@ -255,7 +258,7 @@ export default function AdminPayoutsView() {
               header: "Betrag",
               render: (payout: PayoutRequest) => (
                 <span className="font-semibold text-dark text-lg">
-                  {payout.amount.toFixed(2)} EUR
+                  {Number(payout.amount).toFixed(2)} EUR
                 </span>
               ),
             },
@@ -264,11 +267,14 @@ export default function AdminPayoutsView() {
               header: "Kontodaten",
               render: (payout: PayoutRequest) => (
                 <div className="text-sm">
-                  {payout.account_holder_name && (
-                    <div className="text-gray-900">{payout.account_holder_name}</div>
+                  {payout.account_holder && (
+                    <div className="text-gray-900">{payout.account_holder}</div>
                   )}
                   {payout.iban && (
                     <div className="text-gray-500 font-mono text-xs">{payout.iban}</div>
+                  )}
+                  {!payout.account_holder && !payout.iban && (
+                    <span className="text-gray-400 text-xs">Keine Kontodaten</span>
                   )}
                 </div>
               ),
@@ -279,9 +285,6 @@ export default function AdminPayoutsView() {
               render: (payout: PayoutRequest) => {
                 if (payout.status === "pending") {
                   return <StatusBadge type="warning" label="Ausstehend" />;
-                }
-                if (payout.status === "processing") {
-                  return <StatusBadge type="info" label="In Bearbeitung" />;
                 }
                 if (payout.status === "paid") {
                   return (
@@ -351,24 +354,24 @@ export default function AdminPayoutsView() {
             <div className="mb-4 p-4 bg-gray-50 rounded-lg">
               <div className="text-sm text-gray-600 mb-1">Betrag</div>
               <div className="text-2xl font-bold text-dark">
-                {selectedPayout.amount.toFixed(2)} EUR
+                {Number(selectedPayout.amount).toFixed(2)} EUR
               </div>
-              <div className="text-sm text-gray-600 mt-2">Affiliate</div>
-              <div className="text-sm text-dark">{selectedPayout.affiliate_email}</div>
+              <div className="text-sm text-gray-600 mt-2">Benutzer</div>
+              <div className="text-sm text-dark">{selectedPayout.user_email}</div>
+              {selectedPayout.iban && (
+                <>
+                  <div className="text-sm text-gray-600 mt-2">IBAN</div>
+                  <div className="text-sm text-dark font-mono">{selectedPayout.iban}</div>
+                </>
+              )}
+              {selectedPayout.account_holder && (
+                <>
+                  <div className="text-sm text-gray-600 mt-2">Kontoinhaber</div>
+                  <div className="text-sm text-dark">{selectedPayout.account_holder}</div>
+                </>
+              )}
             </div>
             <div className="space-y-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Transaktions-ID (optional)
-                </label>
-                <input
-                  type="text"
-                  value={transactionId}
-                  onChange={(e) => setTransactionId(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-                  placeholder="z.B. TXN-12345"
-                />
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Notizen (optional)
@@ -387,7 +390,6 @@ export default function AdminPayoutsView() {
                 onClick={() => {
                   setShowProcessModal(false);
                   setNotes("");
-                  setTransactionId("");
                   setSelectedPayout(null);
                 }}
                 variant="cancel"
@@ -414,7 +416,7 @@ export default function AdminPayoutsView() {
             <h3 className="text-xl font-bold text-dark mb-4">Auszahlung ablehnen</h3>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Grund für Ablehnung *
+                Grund fuer Ablehnung *
               </label>
               <textarea
                 value={rejectReason}
