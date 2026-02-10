@@ -142,7 +142,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const redirectUrl = new URL("/signup", supabaseUrl.replace(/\/.*$/, ''));
+    const redirectUrl = new URL("/", supabaseUrl.replace(/\/.*$/, ''));
     redirectUrl.searchParams.set("ref", code);
 
     for (const [key, value] of url.searchParams.entries()) {

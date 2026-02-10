@@ -7,6 +7,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { initReferralTracking } from "./lib/referralTracking";
+import { trackReferralClick, getReferralCodeFromURL } from "./lib/referralClickTracking";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { ResetPassword } from "./pages/ResetPassword";
@@ -68,6 +69,11 @@ function PasswordRecoveryHandler() {
 }
 
 initReferralTracking();
+
+const urlRefCode = getReferralCodeFromURL();
+if (urlRefCode) {
+  trackReferralClick(urlRefCode);
+}
 
 function App() {
   return (

@@ -14,6 +14,8 @@ import {
   Link as LinkIcon,
   Code,
   AlertCircle,
+  ChevronDown,
+  BarChart3,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -93,6 +95,7 @@ export default function ReferralProgramView() {
   const [totalConversions, setTotalConversions] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
 
+  const [expertMode, setExpertMode] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [personalMessage, setPersonalMessage] = useState("");
@@ -226,7 +229,7 @@ export default function ReferralProgramView() {
   };
 
   const handleCopyReferralLink = () => {
-    const referralUrl = `${window.location.origin}/signup?ref=${referralCode}`;
+    const referralUrl = `${window.location.origin}/?ref=${referralCode}`;
     navigator.clipboard.writeText(referralUrl);
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 2000);
@@ -239,7 +242,7 @@ export default function ReferralProgramView() {
   };
 
   const handleShareLinkedIn = () => {
-    const referralUrl = `${window.location.origin}/signup?ref=${referralCode}&utm_source=linkedin&utm_medium=referral&utm_campaign=partner_program`;
+    const referralUrl = `${window.location.origin}/?ref=${referralCode}&utm_source=linkedin&utm_medium=referral&utm_campaign=partner_program`;
     const text = encodeURIComponent(
       "Ich nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Mit meinem Empfehlungscode erhältst du 2 Monate PRO gratis."
     );
@@ -251,7 +254,7 @@ export default function ReferralProgramView() {
   };
 
   const handleShareEmail = () => {
-    const referralUrl = `${window.location.origin}/signup?ref=${referralCode}&utm_source=email&utm_medium=referral&utm_campaign=partner_program`;
+    const referralUrl = `${window.location.origin}/?ref=${referralCode}&utm_source=email&utm_medium=referral&utm_campaign=partner_program`;
     const subject = encodeURIComponent('Entdecke rentab.ly - Die beste Immobilienverwaltung');
     const body = encodeURIComponent(
       `Hallo,\n\nIch nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Die Software macht die Verwaltung von Immobilien so viel einfacher.\n\nMit meinem persönlichen Empfehlungslink erhältst du 2 Monate PRO gratis:\n${referralUrl}\n\nViel Erfolg!\n\nViele Grüße`
@@ -314,7 +317,7 @@ export default function ReferralProgramView() {
     );
   }
 
-  const referralUrl = `${window.location.origin}/signup?ref=${referralCode}`;
+  const referralUrl = `${window.location.origin}/?ref=${referralCode}`;
 
   if (isBlocked) {
     return (
@@ -495,20 +498,35 @@ export default function ReferralProgramView() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2">
-          <ReferralAnalytics userId={user?.id || ''} />
-        </div>
-        <div>
-          <ConversionFunnel
-            clicks={totalClicks}
-            signups={stats.totalReferrals}
-            conversions={totalConversions}
-          />
-        </div>
+      <div className="mb-8">
+        <button
+          onClick={() => setExpertMode(!expertMode)}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <BarChart3 className="w-4 h-4" />
+          {expertMode ? 'Standardansicht' : 'Expertenansicht'}
+          <ChevronDown className={`w-4 h-4 transition-transform ${expertMode ? 'rotate-180' : ''}`} />
+        </button>
       </div>
 
-      <ReferralChart referrals={referrals} />
+      {expertMode && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="lg:col-span-2">
+              <ReferralAnalytics userId={user?.id || ''} />
+            </div>
+            <div>
+              <ConversionFunnel
+                clicks={totalClicks}
+                signups={stats.totalReferrals}
+                conversions={totalConversions}
+              />
+            </div>
+          </div>
+
+          <ReferralChart referrals={referrals} />
+        </>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg border border-gray-200 p-6">

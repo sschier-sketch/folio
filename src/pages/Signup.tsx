@@ -17,7 +17,6 @@ import { Header } from "../components/Header";
 import Footer from "../components/Footer";
 import { RefLink } from "../components/common/RefLink";
 import { getReferralCode } from "../lib/referralTracking";
-import { trackReferralClick, getReferralCodeFromURL } from "../lib/referralClickTracking";
 
 export function Signup() {
   const { user, loading } = useAuth();
@@ -26,11 +25,6 @@ export function Signup() {
   useEffect(() => {
     const refCode = getReferralCode();
     setHasReferralCode(!!refCode);
-
-    const urlRefCode = getReferralCodeFromURL();
-    if (urlRefCode) {
-      trackReferralClick(urlRefCode);
-    }
   }, []);
   if (loading) {
     return (
