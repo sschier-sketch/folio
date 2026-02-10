@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { TrendingDown, Trash2, Building, Tag, Upload, X, Filter, Edit, FileText, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { TrendingDown, Trash2, Building, Tag, Upload, X, Filter, Edit, FileText, CheckCircle, Clock, AlertCircle, Settings2 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
@@ -46,6 +46,23 @@ interface Unit {
   id: string;
   unit_number: string;
   property_id: string;
+  housegeld_monthly_cents: number;
+}
+
+interface DisplayRow {
+  id: string;
+  amount: number;
+  expense_date: string;
+  description: string;
+  notes: string;
+  status: string;
+  category_id: string;
+  category_name: string;
+  property_id: string;
+  unit_id: string | null;
+  document_id: string | null;
+  is_system: boolean;
+  system_unit_number?: string;
 }
 
 export default function ExpensesView() {
@@ -137,7 +154,7 @@ export default function ExpensesView() {
           supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
           supabase.from("expense_categories").select("*").order("name"),
           supabase.from("tenants").select("id, name").eq("user_id", user!.id).order("name"),
-          supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", user!.id).order("unit_number"),
+          supabase.from("property_units").select("id, unit_number, property_id, housegeld_monthly_cents").eq("user_id", user!.id).order("unit_number"),
         ]);
 
       if (expensesRes.data) setExpenses(expensesRes.data);
@@ -327,12 +344,89 @@ export default function ExpensesView() {
     }
   }
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const paidExpenses = expenses
+  const displayRows = useMemo<DisplayRow[]>(() => {
+    const rows: DisplayRow[] = expenses.map((e) => ({
+      id: e.id,
+      amount: e.amount,
+      expense_date: e.expense_date,
+      description: e.description,
+      notes: e.notes,
+      status: e.status,
+      category_id: e.category_id,
+      category_name: "",
+      property_id: e.property_id,
+      unit_id: e.unit_id,
+      document_id: e.document_id,
+      is_system: false,
+    }));
+
+    const hausgeldUnits = units.filter((u) => u.housegeld_monthly_cents > 0);
+    if (hausgeldUnits.length > 0) {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      let rangeStart: Date;
+      let rangeEnd: Date;
+
+      if (startDate && endDate) {
+        rangeStart = new Date(startDate);
+        rangeEnd = new Date(endDate);
+      } else if (timePeriod === "current") {
+        rangeStart = new Date(currentYear, 0, 1);
+        rangeEnd = new Date(currentYear, 11, 31);
+      } else if (timePeriod === "last") {
+        rangeStart = new Date(currentYear - 1, 0, 1);
+        rangeEnd = new Date(currentYear - 1, 11, 31);
+      } else {
+        rangeStart = new Date(currentYear, 0, 1);
+        rangeEnd = new Date(currentYear, 11, 31);
+      }
+
+      const filtered = hausgeldUnits.filter((u) => {
+        if (selectedProperty && u.property_id !== selectedProperty) return false;
+        if (selectedUnit && u.id !== selectedUnit) return false;
+        return true;
+      });
+
+      const cur = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
+      const endMonth = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), 1);
+
+      while (cur <= endMonth) {
+        const y = cur.getFullYear();
+        const m = cur.getMonth();
+        const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-01`;
+
+        for (const unit of filtered) {
+          rows.push({
+            id: `hausgeld-${unit.id}-${dateStr}`,
+            amount: unit.housegeld_monthly_cents / 100,
+            expense_date: dateStr,
+            description: `Hausgeld – Einheit ${unit.unit_number}`,
+            notes: "",
+            status: "paid",
+            category_id: "",
+            category_name: "Hausgeld",
+            property_id: unit.property_id,
+            unit_id: unit.id,
+            document_id: null,
+            is_system: true,
+            system_unit_number: unit.unit_number,
+          });
+        }
+
+        cur.setMonth(cur.getMonth() + 1);
+      }
+    }
+
+    rows.sort((a, b) => b.expense_date.localeCompare(a.expense_date));
+    return rows;
+  }, [expenses, units, selectedProperty, selectedUnit, timePeriod, startDate, endDate]);
+
+  const totalExpenses = displayRows.reduce((sum, e) => sum + e.amount, 0);
+  const paidExpenses = displayRows
     .filter((e) => e.status === "paid")
     .reduce((sum, e) => sum + e.amount, 0);
-  const openExpenses = expenses
-    .filter((e) => e.status === "open")
+  const openExpenses = displayRows
+    .filter((e) => e.status === "open" && !e.is_system)
     .reduce((sum, e) => sum + e.amount, 0);
 
   const getCategoryName = (categoryId: string) => {
@@ -580,7 +674,7 @@ export default function ExpensesView() {
           </Button>
         </div>
 
-        {expenses.length === 0 ? (
+        {displayRows.length === 0 ? (
           <div className="p-12 text-center">
             <TrendingDown className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-400 mb-4">Keine Ausgaben erfasst</p>
@@ -620,64 +714,75 @@ export default function ExpensesView() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {expenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
+                {displayRows.map((row) => (
+                  <tr key={row.id} className={`hover:bg-gray-50 transition-colors ${row.is_system ? "bg-slate-50/60" : ""}`}>
                     <td className="py-4 px-6 text-sm text-gray-700 whitespace-nowrap">
-                      {new Date(expense.expense_date).toLocaleDateString(
-                        "de-DE"
-                      )}
+                      {new Date(row.expense_date).toLocaleDateString("de-DE")}
                     </td>
                     <td className="py-4 px-6">
-                      <div className="text-sm font-medium text-dark">{expense.description}</div>
-                      {expense.notes && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-dark">{row.description}</span>
+                        {row.is_system && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-200 text-slate-600 uppercase tracking-wide">
+                            <Settings2 className="w-3 h-3" />
+                            System
+                          </span>
+                        )}
+                      </div>
+                      {row.notes && (
                         <div className="text-xs text-gray-500 mt-1">
-                          {expense.notes}
+                          {row.notes}
                         </div>
                       )}
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-700">
                       <div className="flex items-center gap-2">
                         <Tag className="w-4 h-4 text-gray-400" />
-                        {getCategoryName(expense.category_id)}
+                        {row.is_system ? row.category_name : getCategoryName(row.category_id)}
                       </div>
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-700">
                       <div className="flex items-center gap-2">
                         <Building className="w-4 h-4 text-gray-400" />
-                        {getPropertyName(expense.property_id)}
+                        {getPropertyName(row.property_id)}
                       </div>
                     </td>
                     <td className="py-4 px-6 text-sm font-medium text-dark whitespace-nowrap">
-                      {expense.amount.toFixed(2)} €
+                      {row.amount.toFixed(2)} &euro;
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          expense.status
-                        )}`}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(row.status)}`}
                       >
-                        {getStatusLabel(expense.status)}
+                        {getStatusLabel(row.status)}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-center">
                       <div className="flex items-center justify-center">
-                        <TableActionsDropdown
-                          actions={[
-                            ...(expense.document_id ? [{
-                              label: 'Beleg herunterladen',
-                              onClick: () => handleDownloadDocument(expense.document_id!)
-                            }] : []),
-                            {
-                              label: 'Bearbeiten',
-                              onClick: () => handleEditExpense(expense)
-                            },
-                            {
-                              label: 'Löschen',
-                              onClick: () => handleDeleteExpense(expense.id),
-                              variant: 'danger' as const
-                            }
-                          ]}
-                        />
+                        {row.is_system ? (
+                          <span className="text-xs text-gray-400 italic">In Einheit bearbeiten</span>
+                        ) : (
+                          <TableActionsDropdown
+                            actions={[
+                              ...(row.document_id ? [{
+                                label: 'Beleg herunterladen',
+                                onClick: () => handleDownloadDocument(row.document_id!)
+                              }] : []),
+                              {
+                                label: 'Bearbeiten',
+                                onClick: () => {
+                                  const orig = expenses.find((e) => e.id === row.id);
+                                  if (orig) handleEditExpense(orig);
+                                }
+                              },
+                              {
+                                label: 'Loeschen',
+                                onClick: () => handleDeleteExpense(row.id),
+                                variant: 'danger' as const
+                              }
+                            ]}
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>

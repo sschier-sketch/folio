@@ -29,6 +29,7 @@ interface Unit {
   id: string;
   unit_number: string;
   property_id: string;
+  housegeld_monthly_cents: number;
 }
 
 export default function CashflowView() {
@@ -54,7 +55,7 @@ export default function CashflowView() {
     try {
       const [propertiesRes, unitsRes] = await Promise.all([
         supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
-        supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", user!.id).order("unit_number"),
+        supabase.from("property_units").select("id, unit_number, property_id, housegeld_monthly_cents").eq("user_id", user!.id).order("unit_number"),
       ]);
 
       if (propertiesRes.data) setProperties(propertiesRes.data);
@@ -206,12 +207,23 @@ export default function CashflowView() {
 
         const monthIncome = monthRentIncome + monthManualIncome;
 
-        const monthExpenses = expenses
+        const monthDbExpenses = expenses
           .filter((e) => {
             const date = new Date(e.expense_date);
             return date.getFullYear() === year && date.getMonth() === month;
           })
           .reduce((sum, e) => sum + parseFloat(e.amount?.toString() || '0'), 0);
+
+        const monthHausgeld = units
+          .filter((u) => {
+            if (u.housegeld_monthly_cents <= 0) return false;
+            if (selectedProperty && u.property_id !== selectedProperty) return false;
+            if (selectedUnit && u.id !== selectedUnit) return false;
+            return true;
+          })
+          .reduce((sum, u) => sum + u.housegeld_monthly_cents / 100, 0);
+
+        const monthExpenses = monthDbExpenses + monthHausgeld;
 
         const monthLoanPayments = loans
           .filter((l) => {
