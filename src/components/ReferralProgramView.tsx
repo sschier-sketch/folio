@@ -99,30 +99,31 @@ export default function ReferralProgramView() {
 
   useEffect(() => {
     loadReferralData();
-    loadAnalyticsSummary();
   }, [user]);
 
-  const loadAnalyticsSummary = async () => {
-    if (!user) return;
+  useEffect(() => {
+    if (referralCode) {
+      loadAnalyticsSummary(referralCode);
+    }
+  }, [referralCode, user]);
+
+  const loadAnalyticsSummary = async (code: string) => {
+    if (!user || !code) return;
 
     try {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      const { data: clickData } = await supabase
+      const { count: clickCount } = await supabase
         .from('referral_click_events')
         .select('id', { count: 'exact', head: true })
-        .eq('referral_code', referralCode || '');
+        .eq('referral_code', code);
 
       const { data: affiliateData } = await supabase
         .from('affiliate_referrals')
         .select('id, status')
         .eq('affiliate_id', user.id);
 
-      const clickCount = clickData || 0;
       const conversionCount = affiliateData?.filter((a: any) => a.status === 'paying').length || 0;
 
-      setTotalClicks(typeof clickCount === 'number' ? clickCount : 0);
+      setTotalClicks(clickCount ?? 0);
       setTotalConversions(conversionCount);
     } catch (error) {
       console.error('Error loading analytics summary:', error);

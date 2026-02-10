@@ -142,11 +142,13 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
             rentalContract = contractData;
 
             if (rentalContract) {
+              const today = new Date().toISOString().split('T')[0];
               const { data: payments } = await supabase
                 .from("rent_payments")
                 .select("amount, paid_amount, payment_status")
                 .eq("contract_id", rentalContract.id)
-                .in("payment_status", ["unpaid", "partial"]);
+                .in("payment_status", ["unpaid", "partial"])
+                .lt("due_date", today);
 
               if (payments && payments.length > 0) {
                 outstandingRent = payments.reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
@@ -429,7 +431,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                     Miete
                   </th>
                   <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Offene Miete
+                    Überfällige Miete
                   </th>
                   <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktionen
