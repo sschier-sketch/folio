@@ -38,6 +38,7 @@ interface Unit {
   unit_type: string;
   description: string;
   mea: string;
+  hausgeld: string;
   purchase_price?: string;
   current_value?: string;
   purchase_date?: string;
@@ -167,6 +168,7 @@ export default function PropertyModal({
       unit_type: "apartment",
       description: "",
       mea: "",
+      hausgeld: "",
     };
 
     if (formData.ownership_type === "units_only") {
@@ -294,6 +296,7 @@ export default function PropertyModal({
               status: "vacant",
               description: unit.description || '',
               mea: unit.mea || null,
+              housegeld_monthly_cents: unit.hausgeld ? Math.round(parseNumberInput(unit.hausgeld) * 100) : 0,
             };
 
             if (formData.ownership_type === 'units_only') {
@@ -915,6 +918,21 @@ export default function PropertyModal({
                             className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                             placeholder="z.B. 50/1000"
                           />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Hausgeld (monatlich)
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={unit.hausgeld}
+                              onChange={(e) => handleUnitChange(index, 'hausgeld', e.target.value)}
+                              className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                              placeholder="z.B. 350,00"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">EUR</span>
+                          </div>
                         </div>
                         <div className="col-span-2">
                           <label className="block text-xs font-medium text-gray-500 mb-1">
