@@ -67,6 +67,7 @@ export default function ReferralProgramView() {
   const [totalClicks, setTotalClicks] = useState(0);
   const [totalConversions, setTotalConversions] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [affiliateId, setAffiliateId] = useState<string | null>(null);
 
   const [expertMode, setExpertMode] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
@@ -78,12 +79,12 @@ export default function ReferralProgramView() {
   }, [user]);
 
   useEffect(() => {
-    if (referralCode) {
-      loadAnalyticsSummary(referralCode);
+    if (referralCode && affiliateId) {
+      loadAnalyticsSummary(referralCode, affiliateId);
     }
-  }, [referralCode, user]);
+  }, [referralCode, affiliateId, user]);
 
-  const loadAnalyticsSummary = async (code: string) => {
+  const loadAnalyticsSummary = async (code: string, affId: string) => {
     if (!user || !code) return;
 
     try {
@@ -95,7 +96,7 @@ export default function ReferralProgramView() {
       const { data: affiliateData } = await supabase
         .from('affiliate_referrals')
         .select('id, status')
-        .eq('affiliate_id', user.id);
+        .eq('affiliate_id', affId);
 
       const conversionCount = affiliateData?.filter((a: any) => a.status === 'paying').length || 0;
 
@@ -128,7 +129,7 @@ export default function ReferralProgramView() {
           .order("created_at", { ascending: false }),
         supabase
           .from("affiliates")
-          .select("commission_rate, total_earned, total_paid, total_pending, total_referrals, paying_referrals, is_blocked")
+          .select("id, commission_rate, total_earned, total_paid, total_pending, is_blocked")
           .eq("user_id", user.id)
           .maybeSingle(),
       ]);
@@ -139,12 +140,35 @@ export default function ReferralProgramView() {
 
       if (affiliateRes.data) {
         if (affiliateRes.data.is_blocked) setIsBlocked(true);
+        setAffiliateId(affiliateRes.data.id);
         setCommissionRate(affiliateRes.data.commission_rate || 0.25);
-        setTotalReferrals(affiliateRes.data.total_referrals || 0);
-        setPayingReferrals(affiliateRes.data.paying_referrals || 0);
         setTotalEarned(Number(affiliateRes.data.total_earned) || 0);
         setTotalPaidOut(Number(affiliateRes.data.total_paid) || 0);
         setBalance(Number(affiliateRes.data.total_pending) || 0);
+
+        const [userRefTotal, userRefPaying, affRefTotal, affRefPaying] = await Promise.all([
+          supabase
+            .from('user_referrals')
+            .select('id', { count: 'exact', head: true })
+            .eq('referrer_id', user.id),
+          supabase
+            .from('user_referrals')
+            .select('id', { count: 'exact', head: true })
+            .eq('referrer_id', user.id)
+            .eq('status', 'completed'),
+          supabase
+            .from('affiliate_referrals')
+            .select('id', { count: 'exact', head: true })
+            .eq('affiliate_id', affiliateRes.data.id),
+          supabase
+            .from('affiliate_referrals')
+            .select('id', { count: 'exact', head: true })
+            .eq('affiliate_id', affiliateRes.data.id)
+            .eq('status', 'paying'),
+        ]);
+
+        setTotalReferrals((userRefTotal.count ?? 0) + (affRefTotal.count ?? 0));
+        setPayingReferrals((userRefPaying.count ?? 0) + (affRefPaying.count ?? 0));
       }
 
       const referralsData = (referralsRes.data || []) as Referral[];
