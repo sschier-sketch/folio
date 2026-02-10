@@ -408,9 +408,9 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       color: "text-amber-600",
       bgColor: "bg-amber-50",
       documents: filteredDocuments.filter((d) =>
-        ["property_deed", "rental_agreement", "contract"].includes(d.document_type)
+        ["property_deed", "rental_agreement", "contract", "main_contract", "amendment", "addendum", "termination"].includes(d.document_type)
       ),
-      types: ["property_deed", "rental_agreement", "contract"],
+      types: ["property_deed", "rental_agreement", "contract", "main_contract", "amendment", "addendum", "termination"],
     },
     {
       id: "bills",
@@ -448,9 +448,9 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       documents: filteredDocuments.filter((d) =>
-        ["other", "report"].includes(d.document_type)
+        ["other", "report", "protocol", "correspondence"].includes(d.document_type)
       ),
-      types: ["other", "report"],
+      types: ["other", "report", "protocol", "correspondence"],
     },
   ];
 

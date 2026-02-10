@@ -191,8 +191,8 @@ export default function IndexRentView() {
       } else {
         setResult({
           type: "success",
-          message: `${data.calculations_created} moegliche ${data.calculations_created === 1 ? "Indexerhoehung" : "Indexerhoehungen"} berechnet`,
-          details: `${data.contracts_checked} ${data.contracts_checked === 1 ? "Vertrag wurde" : "Vertraege wurden"} geprueft. Pruefen Sie die Details unten und entscheiden Sie, ob Sie die Erhoehung vornehmen moechten.`,
+          message: `${data.calculations_created} moegliche ${data.calculations_created === 1 ? "Indexerhoehung" : "Indexerhoehungen"} gefunden`,
+          details: `${data.contracts_checked} ${data.contracts_checked === 1 ? "Vertrag wurde" : "Vertraege wurden"} geprueft. Bitte pruefen Sie den aktuellen VPI und entscheiden Sie, ob Sie die Erhoehung vornehmen moechten.`,
         });
       }
 
@@ -300,13 +300,8 @@ export default function IndexRentView() {
         c.status === "notified"
     );
     const totalPending = openCalcs.length;
-    const totalDiffMonthly = openCalcs.reduce((sum, c) => {
-      const oldTotal = c.rental_contract?.monthly_rent || 0;
-      const newTotal = c.gesamtmiete_eur || 0;
-      return sum + (newTotal - oldTotal);
-    }, 0);
 
-    return { totalPending, totalDiffMonthly };
+    return { totalPending };
   }, [calculations]);
 
   if (loading) {
@@ -349,17 +344,8 @@ export default function IndexRentView() {
                 : "Indexmieterhoehungen"}
             </h3>
             <p className="text-sm text-amber-800 mt-0.5">
-              {summaryMetrics.totalDiffMonthly > 0 && (
-                <>
-                  Moegliches Mietplus:{" "}
-                  <span className="font-semibold">
-                    +{formatCurrency(summaryMetrics.totalDiffMonthly)}
-                  </span>{" "}
-                  pro Monat.{" "}
-                </>
-              )}
-              Pruefen Sie die Berechnungen und entscheiden Sie, ob Sie die
-              Erhoehung vornehmen moechten.
+              Pruefen Sie den aktuellen Verbraucherpreisindex (VPI) und
+              entscheiden Sie, ob Sie die Erhoehung vornehmen moechten.
             </p>
           </div>
         </div>
@@ -497,9 +483,10 @@ export default function IndexRentView() {
         <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
         <p className="text-sm text-blue-900">
           Indexmieten werden rechtlich erst nach schriftlicher
-          Mieterhoehungserklaerung wirksam (&sect;557b BGB). Die hier
-          berechneten Werte sind Empfehlungen basierend auf dem
-          Verbraucherpreisindex (VPI) der Deutschen Bundesbank. Sie
+          Mieterhoehungserklaerung wirksam (&sect;557b BGB). Dieses System
+          erinnert Sie, wenn eine Indexmieterhoehung moeglich ist. Bitte
+          pruefen Sie den aktuellen Verbraucherpreisindex (VPI) der Deutschen
+          Bundesbank und berechnen Sie die konkrete Erhoehung selbst. Sie
           entscheiden, ob und wann Sie die Erhoehung gegenueber dem Mieter
           geltend machen.
         </p>
@@ -638,11 +625,7 @@ function CalculationCard({
     calc.rental_contract?.tenants?.name || "Unbekannter Mieter";
   const propertyName =
     calc.rental_contract?.properties?.name || "Unbekannte Immobilie";
-  const oldRent = calc.rental_contract?.monthly_rent || 0;
-  const newRent = calc.gesamtmiete_eur || 0;
-  const diff = newRent - oldRent;
-  const pctIncrease =
-    oldRent > 0 ? ((newRent / oldRent - 1) * 100).toFixed(2) : "0.00";
+  const currentRent = calc.rental_contract?.monthly_rent || 0;
   const isOpen =
     calc.status === "pending" ||
     calc.status === "calculated" ||
@@ -675,60 +658,43 @@ function CalculationCard({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
           <MetricBox
             label="Aktuelle Miete"
-            value={formatCurrency(oldRent)}
+            value={formatCurrency(currentRent)}
             sublabel="pro Monat"
           />
           <MetricBox
-            label="Neue Miete (berechnet)"
-            value={formatCurrency(newRent)}
-            sublabel="pro Monat"
-            highlight
+            label="Basismonat"
+            value={calc.basis_monat || "-"}
+            sublabel="fuer VPI-Vergleich"
           />
           <MetricBox
-            label="Differenz"
-            value={diff > 0 ? `+${formatCurrency(diff)}` : formatCurrency(diff)}
-            sublabel="pro Monat"
-            highlight
+            label="Aktueller Monat"
+            value={calc.aktueller_monat || "-"}
+            sublabel="fuer VPI-Vergleich"
           />
-          <MetricBox
-            label="Erhoehung"
-            value={`+${pctIncrease}%`}
-            sublabel="nach VPI"
-          />
+          {calc.wohnflaeche_qm ? (
+            <MetricBox
+              label="Wohnflaeche"
+              value={`${calc.wohnflaeche_qm} m\u00B2`}
+            />
+          ) : (
+            <MetricBox
+              label="Geprueft am"
+              value={formatDate(calc.calculation_date)}
+            />
+          )}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-          <div>
-            <p className="text-xs text-gray-400">Basis-Monat</p>
-            <p className="text-sm font-medium text-gray-700">
-              {calc.basis_monat}{" "}
-              <span className="text-gray-400">(Index: {calc.basis_index})</span>
+        {isOpen && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5">
+            <p className="text-sm text-blue-800">
+              Bitte pruefen Sie den aktuellen VPI-Wert fuer den Monat{" "}
+              <span className="font-semibold">{calc.aktueller_monat}</span> und
+              vergleichen Sie ihn mit dem Basismonat{" "}
+              <span className="font-semibold">{calc.basis_monat}</span>, um die
+              konkrete Erhoehung zu berechnen.
             </p>
           </div>
-          <div>
-            <p className="text-xs text-gray-400">Aktueller Monat</p>
-            <p className="text-sm font-medium text-gray-700">
-              {calc.aktueller_monat}{" "}
-              <span className="text-gray-400">
-                (Index: {calc.aktueller_index})
-              </span>
-            </p>
-          </div>
-          {calc.wohnflaeche_qm && (
-            <div>
-              <p className="text-xs text-gray-400">Wohnflaeche</p>
-              <p className="text-sm font-medium text-gray-700">
-                {calc.wohnflaeche_qm} m&sup2;
-              </p>
-            </div>
-          )}
-          <div>
-            <p className="text-xs text-gray-400">Berechnet am</p>
-            <p className="text-sm font-medium text-gray-700">
-              {formatDate(calc.calculation_date)}
-            </p>
-          </div>
-        </div>
+        )}
 
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="text-sm text-gray-400">
@@ -738,8 +704,10 @@ function CalculationCard({
             {calc.status === "dismissed" && calc.dismissed_at && (
               <>Ausgeblendet am {formatDate(calc.dismissed_at)}</>
             )}
-            {isOpen && calc.notes && (
-              <span className="text-gray-500">{calc.notes}</span>
+            {calc.wohnflaeche_qm && (
+              <span className="text-gray-500">
+                Geprueft am {formatDate(calc.calculation_date)}
+              </span>
             )}
           </div>
           <div className="flex items-center gap-2">
