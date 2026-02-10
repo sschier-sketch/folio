@@ -11,6 +11,8 @@ import {
   Save,
   X,
   Trash2,
+  Plus,
+  UserPlus,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
@@ -48,6 +50,35 @@ interface Property {
   address: string;
 }
 
+interface ContractPartner {
+  id: string;
+  salutation: string | null;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  street: string | null;
+  house_number: string | null;
+  zip_code: string | null;
+  city: string | null;
+  move_in_date: string | null;
+}
+
+interface EditablePartner {
+  id?: string;
+  salutation: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  street: string;
+  house_number: string;
+  zip_code: string;
+  city: string;
+  move_in_date: string;
+  use_main_move_in: boolean;
+}
+
 export default function TenantOverviewTab({
   tenantId,
 }: TenantOverviewTabProps) {
@@ -60,6 +91,8 @@ export default function TenantOverviewTab({
   const [currentUnit, setCurrentUnit] = useState<{ id: string; unit_number: string } | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Tenant | null>(null);
+  const [contractPartners, setContractPartners] = useState<ContractPartner[]>([]);
+  const [editPartners, setEditPartners] = useState<EditablePartner[]>([]);
 
   useEffect(() => {
     if (user && tenantId) {
@@ -128,6 +161,14 @@ export default function TenantOverviewTab({
       }
 
       if (propertiesRes.data) setProperties(propertiesRes.data);
+
+      const { data: partners } = await supabase
+        .from("tenant_contract_partners")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .order("created_at");
+
+      setContractPartners(partners || []);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -229,6 +270,61 @@ export default function TenantOverviewTab({
         }
       }
 
+      if (editPartners.length > 0) {
+        const { data: existingPartners } = await supabase
+          .from("tenant_contract_partners")
+          .select("id")
+          .eq("tenant_id", tenant.id);
+
+        const existingIds = (existingPartners || []).map((p) => p.id);
+        const keptIds = editPartners.filter((p) => p.id).map((p) => p.id!);
+        const removedIds = existingIds.filter((id) => !keptIds.includes(id));
+
+        if (removedIds.length > 0) {
+          await supabase
+            .from("tenant_contract_partners")
+            .delete()
+            .in("id", removedIds);
+        }
+
+        for (const partner of editPartners) {
+          const moveInDate = partner.use_main_move_in
+            ? formData.move_in_date
+            : partner.move_in_date;
+
+          const partnerRow = {
+            tenant_id: tenant.id,
+            user_id: user.id,
+            salutation: partner.salutation || null,
+            first_name: partner.first_name,
+            last_name: partner.last_name,
+            email: partner.email || null,
+            phone: partner.phone || null,
+            street: partner.street || null,
+            house_number: partner.house_number || null,
+            zip_code: partner.zip_code || null,
+            city: partner.city || null,
+            move_in_date: moveInDate || null,
+          };
+
+          if (partner.id) {
+            await supabase
+              .from("tenant_contract_partners")
+              .update(partnerRow)
+              .eq("id", partner.id);
+          } else {
+            await supabase
+              .from("tenant_contract_partners")
+              .insert([partnerRow]);
+          }
+        }
+      } else {
+        await supabase
+          .from("tenant_contract_partners")
+          .delete()
+          .eq("tenant_id", tenant.id);
+      }
+
       setTenant(formData);
       setIsEditing(false);
       await loadData();
@@ -296,7 +392,25 @@ export default function TenantOverviewTab({
           <div className="flex gap-2">
             {!isEditing ? (
               <>
-                <Button onClick={() => setIsEditing(true)} variant="cancel">
+                <Button onClick={() => {
+                  setIsEditing(true);
+                  setEditPartners(
+                    contractPartners.map((p) => ({
+                      id: p.id,
+                      salutation: p.salutation || "",
+                      first_name: p.first_name,
+                      last_name: p.last_name,
+                      email: p.email || "",
+                      phone: p.phone || "",
+                      street: p.street || "",
+                      house_number: p.house_number || "",
+                      zip_code: p.zip_code || "",
+                      city: p.city || "",
+                      move_in_date: p.move_in_date || "",
+                      use_main_move_in: p.move_in_date === tenant?.move_in_date,
+                    }))
+                  );
+                }} variant="cancel">
                   Bearbeiten
                 </Button>
                 <Button onClick={handleDelete} variant="cancel">
@@ -308,6 +422,7 @@ export default function TenantOverviewTab({
                 <Button onClick={() => {
                     setIsEditing(false);
                     setFormData(tenant);
+                    setEditPartners([]);
                   }} variant="cancel">
                   Abbrechen
                 </Button>
@@ -625,6 +740,293 @@ export default function TenantOverviewTab({
           <div className="mt-6 pt-6 border-t">
             <div className="text-sm text-gray-400 mb-2">Interne Notizen</div>
             <div className="text-gray-700 whitespace-pre-wrap">{tenant.notes}</div>
+          </div>
+        )}
+
+        {!isEditing && contractPartners.length > 0 && (
+          <div className="mt-6 pt-6 border-t">
+            <h4 className="text-sm font-semibold text-dark mb-4 flex items-center gap-2">
+              <UserPlus className="w-4 h-4 text-gray-500" />
+              Weitere Vertragspartner
+            </h4>
+            <div className="space-y-4">
+              {contractPartners.map((partner) => (
+                <div
+                  key={partner.id}
+                  className="border border-gray-100 rounded-lg p-4 bg-gray-50"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-gray-400 mb-0.5">Name</div>
+                      <div className="font-semibold text-dark">
+                        {partner.salutation ? `${partner.salutation} ` : ""}
+                        {partner.first_name} {partner.last_name}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-400 mb-0.5">Einzugsdatum</div>
+                      <div className="text-gray-700 font-semibold">
+                        {partner.move_in_date
+                          ? new Date(partner.move_in_date).toLocaleDateString("de-DE")
+                          : "-"}
+                      </div>
+                    </div>
+                    {(partner.street || partner.house_number || partner.zip_code || partner.city) && (
+                      <div>
+                        <div className="text-sm text-gray-400 mb-0.5">Adresse</div>
+                        <div className="text-gray-700 font-semibold">
+                          {partner.street} {partner.house_number}
+                        </div>
+                        {(partner.zip_code || partner.city) && (
+                          <div className="text-sm text-gray-600">
+                            {partner.zip_code} {partner.city}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      {partner.email && (
+                        <div>
+                          <div className="text-sm text-gray-400 mb-0.5">E-Mail</div>
+                          <div className="text-gray-700 font-semibold">{partner.email}</div>
+                        </div>
+                      )}
+                      {partner.phone && (
+                        <div>
+                          <div className="text-sm text-gray-400 mb-0.5">Telefon</div>
+                          <div className="text-gray-700 font-semibold">{partner.phone}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {isEditing && formData && (
+          <div className="mt-6 pt-6 border-t">
+            <h4 className="text-sm font-semibold text-dark mb-4 flex items-center gap-2">
+              <UserPlus className="w-4 h-4 text-gray-500" />
+              Weitere Vertragspartner
+            </h4>
+            {editPartners.length > 0 && (
+              <div className="space-y-4 mb-4">
+                {editPartners.map((partner, idx) => (
+                  <div
+                    key={idx}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-dark">
+                        {idx + 1}. Vertragspartner
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditPartners(editPartners.filter((_, i) => i !== idx))
+                        }
+                        className="text-red-400 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Anrede</label>
+                        <select
+                          value={partner.salutation}
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = { ...updated[idx], salutation: e.target.value };
+                            setEditPartners(updated);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        >
+                          <option value="">Bitte wählen...</option>
+                          <option value="Herr">Herr</option>
+                          <option value="Frau">Frau</option>
+                          <option value="Divers">Divers</option>
+                        </select>
+                      </div>
+                      <div />
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Vorname *</label>
+                        <input
+                          type="text"
+                          value={partner.first_name}
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = { ...updated[idx], first_name: e.target.value };
+                            setEditPartners(updated);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Nachname *</label>
+                        <input
+                          type="text"
+                          value={partner.last_name}
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = { ...updated[idx], last_name: e.target.value };
+                            setEditPartners(updated);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Einzugsdatum</label>
+                        <input
+                          type="date"
+                          value={
+                            partner.use_main_move_in
+                              ? formData.move_in_date || ""
+                              : partner.move_in_date
+                          }
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = {
+                              ...updated[idx],
+                              move_in_date: e.target.value,
+                              use_main_move_in: false,
+                            };
+                            setEditPartners(updated);
+                          }}
+                          disabled={partner.use_main_move_in}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm disabled:bg-gray-50 disabled:text-gray-400"
+                        />
+                      </div>
+                      <div className="flex items-end pb-2">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={partner.use_main_move_in}
+                            onChange={(e) => {
+                              const updated = [...editPartners];
+                              updated[idx] = {
+                                ...updated[idx],
+                                use_main_move_in: e.target.checked,
+                              };
+                              setEditPartners(updated);
+                            }}
+                            className="w-4 h-4 text-[#3c8af7] rounded focus:ring-[#3c8af7]"
+                          />
+                          <span className="text-xs text-gray-500">
+                            Identisch mit Hauptmieter
+                          </span>
+                        </label>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Straße</label>
+                        <input
+                          type="text"
+                          value={partner.street}
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = { ...updated[idx], street: e.target.value };
+                            setEditPartners(updated);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Hausnummer</label>
+                        <input
+                          type="text"
+                          value={partner.house_number}
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = { ...updated[idx], house_number: e.target.value };
+                            setEditPartners(updated);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">PLZ</label>
+                        <input
+                          type="text"
+                          value={partner.zip_code}
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = { ...updated[idx], zip_code: e.target.value };
+                            setEditPartners(updated);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Ort</label>
+                        <input
+                          type="text"
+                          value={partner.city}
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = { ...updated[idx], city: e.target.value };
+                            setEditPartners(updated);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">E-Mail</label>
+                        <input
+                          type="email"
+                          value={partner.email}
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = { ...updated[idx], email: e.target.value };
+                            setEditPartners(updated);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Telefon</label>
+                        <input
+                          type="tel"
+                          value={partner.phone}
+                          onChange={(e) => {
+                            const updated = [...editPartners];
+                            updated[idx] = { ...updated[idx], phone: e.target.value };
+                            setEditPartners(updated);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() =>
+                setEditPartners([
+                  ...editPartners,
+                  {
+                    salutation: "",
+                    first_name: "",
+                    last_name: "",
+                    email: "",
+                    phone: "",
+                    street: "",
+                    house_number: "",
+                    zip_code: "",
+                    city: "",
+                    move_in_date: "",
+                    use_main_move_in: true,
+                  },
+                ])
+              }
+              className="flex items-center gap-2 text-sm font-medium text-[#3c8af7] hover:text-[#2a6fd6] transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Weiteren Vertragspartner hinzufügen
+            </button>
           </div>
         )}
       </div>

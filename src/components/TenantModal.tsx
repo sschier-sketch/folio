@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Check } from "lucide-react";
+import { X, Check, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { Button } from "./ui/Button";
@@ -39,6 +39,35 @@ interface TenantModalProps {
   preselectedPropertyId?: string;
   preselectedUnitId?: string;
 }
+
+interface ContractPartner {
+  id?: string;
+  salutation: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  street: string;
+  house_number: string;
+  zip_code: string;
+  city: string;
+  move_in_date: string;
+  use_main_move_in: boolean;
+}
+
+const emptyPartner = (): ContractPartner => ({
+  salutation: "",
+  first_name: "",
+  last_name: "",
+  email: "",
+  phone: "",
+  street: "",
+  house_number: "",
+  zip_code: "",
+  city: "",
+  move_in_date: "",
+  use_main_move_in: true,
+});
 
 type RentType = "flat_rate" | "cold_rent_advance" | "cold_rent_utilities_heating";
 type DepositType = "none" | "cash" | "bank_transfer" | "pledged_savings" | "bank_guarantee";
@@ -104,6 +133,8 @@ export default function TenantModal({
     deposit_status: "open" as DepositStatus,
   });
 
+  const [contractPartners, setContractPartners] = useState<ContractPartner[]>([]);
+
   useEffect(() => {
     const loadTenantData = async () => {
       if (tenant) {
@@ -163,6 +194,31 @@ export default function TenantModal({
             deposit_payment_date: contract.deposit_due_date || "",
             deposit_status: contract.deposit_status || "open",
           });
+        }
+
+        const { data: partners } = await supabase
+          .from("tenant_contract_partners")
+          .select("*")
+          .eq("tenant_id", tenant.id)
+          .order("created_at");
+
+        if (partners && partners.length > 0) {
+          setContractPartners(
+            partners.map((p) => ({
+              id: p.id,
+              salutation: p.salutation || "",
+              first_name: p.first_name,
+              last_name: p.last_name,
+              email: p.email || "",
+              phone: p.phone || "",
+              street: p.street || "",
+              house_number: p.house_number || "",
+              zip_code: p.zip_code || "",
+              city: p.city || "",
+              move_in_date: p.move_in_date || "",
+              use_main_move_in: p.move_in_date === tenant.move_in_date,
+            }))
+          );
         }
       }
     };
@@ -329,7 +385,10 @@ export default function TenantModal({
 
     setLoading(true);
     try {
+      let savedTenantId: string | null = null;
+
       if (tenant) {
+        savedTenantId = tenant.id;
         const tenantUpdateData = {
           property_id: tenantData.property_id || null,
           unit_id: tenantData.unit_id || null,
@@ -478,6 +537,7 @@ export default function TenantModal({
           .single();
 
         if (tenantError) throw tenantError;
+        savedTenantId = newTenant.id;
 
         if (tenantData.property_id && tenantData.move_in_date) {
           let monthlyRent = 0;
@@ -549,6 +609,63 @@ export default function TenantModal({
 
           if (updateError) throw updateError;
         }
+      }
+
+      if (savedTenantId && contractPartners.length > 0) {
+        if (tenant) {
+          const { data: existingPartners } = await supabase
+            .from("tenant_contract_partners")
+            .select("id")
+            .eq("tenant_id", savedTenantId);
+
+          const existingIds = (existingPartners || []).map((p) => p.id);
+          const keptIds = contractPartners.filter((p) => p.id).map((p) => p.id!);
+          const removedIds = existingIds.filter((id) => !keptIds.includes(id));
+
+          if (removedIds.length > 0) {
+            await supabase
+              .from("tenant_contract_partners")
+              .delete()
+              .in("id", removedIds);
+          }
+        }
+
+        for (const partner of contractPartners) {
+          const moveInDate = partner.use_main_move_in
+            ? tenantData.move_in_date
+            : partner.move_in_date;
+
+          const partnerRow = {
+            tenant_id: savedTenantId,
+            user_id: user.id,
+            salutation: partner.salutation || null,
+            first_name: partner.first_name,
+            last_name: partner.last_name,
+            email: partner.email || null,
+            phone: partner.phone || null,
+            street: partner.street || null,
+            house_number: partner.house_number || null,
+            zip_code: partner.zip_code || null,
+            city: partner.city || null,
+            move_in_date: moveInDate || null,
+          };
+
+          if (partner.id) {
+            await supabase
+              .from("tenant_contract_partners")
+              .update(partnerRow)
+              .eq("id", partner.id);
+          } else {
+            await supabase
+              .from("tenant_contract_partners")
+              .insert([partnerRow]);
+          }
+        }
+      } else if (savedTenantId && tenant) {
+        await supabase
+          .from("tenant_contract_partners")
+          .delete()
+          .eq("tenant_id", savedTenantId);
       }
 
       onSave();
@@ -893,6 +1010,238 @@ export default function TenantModal({
           </div>
         )}
       </div>
+
+      {contractPartners.length > 0 && (
+        <div className="mt-6 space-y-4">
+          {contractPartners.map((partner, idx) => (
+            <div
+              key={idx}
+              className="border border-gray-200 rounded-lg p-4 relative"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-sm font-semibold text-dark">
+                  {idx + 1}. Vertragspartner
+                </h4>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setContractPartners(contractPartners.filter((_, i) => i !== idx))
+                  }
+                  className="text-red-400 hover:text-red-600 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Anrede
+                  </label>
+                  <select
+                    value={partner.salutation}
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = { ...updated[idx], salutation: e.target.value };
+                      setContractPartners(updated);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm"
+                  >
+                    <option value="">Bitte wählen...</option>
+                    <option value="Herr">Herr</option>
+                    <option value="Frau">Frau</option>
+                    <option value="Divers">Divers</option>
+                  </select>
+                </div>
+                <div />
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Vorname *
+                  </label>
+                  <input
+                    type="text"
+                    value={partner.first_name}
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = { ...updated[idx], first_name: e.target.value };
+                      setContractPartners(updated);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Nachname *
+                  </label>
+                  <input
+                    type="text"
+                    value={partner.last_name}
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = { ...updated[idx], last_name: e.target.value };
+                      setContractPartners(updated);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Einzugsdatum
+                  </label>
+                  <input
+                    type="date"
+                    value={
+                      partner.use_main_move_in
+                        ? tenantData.move_in_date
+                        : partner.move_in_date
+                    }
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = {
+                        ...updated[idx],
+                        move_in_date: e.target.value,
+                        use_main_move_in: false,
+                      };
+                      setContractPartners(updated);
+                    }}
+                    disabled={partner.use_main_move_in}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm disabled:bg-gray-50 disabled:text-gray-400"
+                  />
+                </div>
+
+                <div className="flex items-end pb-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={partner.use_main_move_in}
+                      onChange={(e) => {
+                        const updated = [...contractPartners];
+                        updated[idx] = {
+                          ...updated[idx],
+                          use_main_move_in: e.target.checked,
+                        };
+                        setContractPartners(updated);
+                      }}
+                      className="w-4 h-4 text-[#3c8af7] rounded focus:ring-[#3c8af7]"
+                    />
+                    <span className="text-xs text-gray-500">
+                      Identisch mit Hauptmieter
+                    </span>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Straße
+                  </label>
+                  <input
+                    type="text"
+                    value={partner.street}
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = { ...updated[idx], street: e.target.value };
+                      setContractPartners(updated);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Hausnummer
+                  </label>
+                  <input
+                    type="text"
+                    value={partner.house_number}
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = { ...updated[idx], house_number: e.target.value };
+                      setContractPartners(updated);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    PLZ
+                  </label>
+                  <input
+                    type="text"
+                    value={partner.zip_code}
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = { ...updated[idx], zip_code: e.target.value };
+                      setContractPartners(updated);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Ort
+                  </label>
+                  <input
+                    type="text"
+                    value={partner.city}
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = { ...updated[idx], city: e.target.value };
+                      setContractPartners(updated);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    E-Mail
+                  </label>
+                  <input
+                    type="email"
+                    value={partner.email}
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = { ...updated[idx], email: e.target.value };
+                      setContractPartners(updated);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Telefon
+                  </label>
+                  <input
+                    type="tel"
+                    value={partner.phone}
+                    onChange={(e) => {
+                      const updated = [...contractPartners];
+                      updated[idx] = { ...updated[idx], phone: e.target.value };
+                      setContractPartners(updated);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setContractPartners([...contractPartners, emptyPartner()])}
+        className="mt-4 flex items-center gap-2 text-sm font-medium text-[#3c8af7] hover:text-[#2a6fd6] transition-colors"
+      >
+        <Plus className="w-4 h-4" />
+        Weiteren Vertragspartner hinzufügen
+      </button>
     </div>
   );
 
