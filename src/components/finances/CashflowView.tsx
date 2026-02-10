@@ -9,6 +9,12 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import {
+  getMonthlyHausgeldEur,
+  isExpenseSupersededBySystemHausgeld,
+  type HausgeldUnit,
+  HAUSGELD_UNIT_FIELDS,
+} from "../../lib/hausgeldUtils";
 
 interface MonthlyData {
   month: string;
@@ -25,12 +31,7 @@ interface Property {
   name: string;
 }
 
-interface Unit {
-  id: string;
-  unit_number: string;
-  property_id: string;
-  housegeld_monthly_cents: number;
-}
+type Unit = HausgeldUnit;
 
 export default function CashflowView() {
   const { user } = useAuth();
@@ -55,7 +56,7 @@ export default function CashflowView() {
     try {
       const [propertiesRes, unitsRes] = await Promise.all([
         supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
-        supabase.from("property_units").select("id, unit_number, property_id, housegeld_monthly_cents").eq("user_id", user!.id).order("unit_number"),
+        supabase.from("property_units").select(HAUSGELD_UNIT_FIELDS).eq("user_id", user!.id).order("unit_number"),
       ]);
 
       if (propertiesRes.data) setProperties(propertiesRes.data);
@@ -210,18 +211,16 @@ export default function CashflowView() {
         const monthDbExpenses = expenses
           .filter((e) => {
             const date = new Date(e.expense_date);
-            return date.getFullYear() === year && date.getMonth() === month;
+            if (date.getFullYear() !== year || date.getMonth() !== month) return false;
+            if (isExpenseSupersededBySystemHausgeld(e, units)) return false;
+            return true;
           })
           .reduce((sum, e) => sum + parseFloat(e.amount?.toString() || '0'), 0);
 
-        const monthHausgeld = units
-          .filter((u) => {
-            if (u.housegeld_monthly_cents <= 0) return false;
-            if (selectedProperty && u.property_id !== selectedProperty) return false;
-            if (selectedUnit && u.id !== selectedUnit) return false;
-            return true;
-          })
-          .reduce((sum, u) => sum + u.housegeld_monthly_cents / 100, 0);
+        const monthHausgeld = getMonthlyHausgeldEur(units, {
+          propertyId: selectedProperty || undefined,
+          unitId: selectedUnit || undefined,
+        });
 
         const monthExpenses = monthDbExpenses + monthHausgeld;
 

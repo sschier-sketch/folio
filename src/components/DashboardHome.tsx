@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { getMonthlyHausgeldEur } from "../lib/hausgeldUtils";
 import { useLanguage } from "../contexts/LanguageContext";
 import ProfileCompletionCard from "./profile/ProfileCompletionCard";
 import ProfileWizard from "./profile/ProfileWizard";
@@ -149,7 +150,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             .eq("paid", false),
           supabase
             .from("property_units")
-            .select("property_id, current_value")
+            .select("id, unit_number, property_id, current_value, housegeld_monthly_cents")
             .eq("user_id", user.id),
         ]);
       const propertiesCount = propertiesRes.data?.length || 0;
@@ -210,9 +211,18 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         }
       }
 
-      const totalMonthlyExpenses =
+      const totalMonthlyLoanPayments =
         loansRes.data?.reduce((sum, l) => sum + Number(l.monthly_payment), 0) ||
         0;
+      const totalMonthlyHausgeld = getMonthlyHausgeldEur(
+        (unitsValueRes.data || []).map(u => ({
+          id: u.id,
+          unit_number: u.unit_number || '',
+          property_id: u.property_id,
+          housegeld_monthly_cents: Number(u.housegeld_monthly_cents) || 0,
+        }))
+      );
+      const totalMonthlyExpenses = totalMonthlyLoanPayments + totalMonthlyHausgeld;
       const annualRent = totalMonthlyRent * 12;
       const averageYield =
         totalPropertyValue > 0 ? (annualRent / totalPropertyValue) * 100 : 0;

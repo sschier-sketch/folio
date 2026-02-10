@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Edit, Building2, Calendar, Euro, TrendingUp, Users, Edit2, Trash2, CreditCard, Info, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { getMonthlyHausgeldEur } from "../../lib/hausgeldUtils";
 import { useSubscription } from "../../hooks/useSubscription";
 import LoanModal from "../LoanModal";
 import { Button } from '../ui/Button';
@@ -304,6 +305,16 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     return (annualRent / aggregatedValues.totalCurrentValue) * 100;
   };
 
+  const monthlyHausgeld = getMonthlyHausgeldEur(
+    unitsData.map((u: any) => ({
+      id: u.id,
+      unit_number: u.unit_number || '',
+      property_id: property.id,
+      housegeld_monthly_cents: Number(u.housegeld_monthly_cents) || 0,
+    })),
+    { propertyId: property.id }
+  );
+
   const calculateNetYield = () => {
     const monthlyRent = stats.totalRent;
     const annualRent = monthlyRent * 12;
@@ -311,7 +322,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
       (sum, l) => sum + Number(l.monthly_payment) * 12,
       0
     );
-    const netAnnualIncome = annualRent - totalLoanPayments;
+    const netAnnualIncome = annualRent - totalLoanPayments - (monthlyHausgeld * 12);
     if (aggregatedValues.totalCurrentValue === 0) return 0;
     return (netAnnualIncome / aggregatedValues.totalCurrentValue) * 100;
   };
@@ -321,7 +332,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     (sum, l) => sum + Number(l.monthly_payment),
     0
   );
-  const netMonthlyIncome = monthlyRent - totalLoanPayments;
+  const netMonthlyIncome = monthlyRent - totalLoanPayments - monthlyHausgeld;
 
   const getDaysUntilDate = (dateString: string | null | undefined) => {
     if (!dateString) return null;

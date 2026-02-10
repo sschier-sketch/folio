@@ -4,6 +4,12 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 import { Button } from "../ui/Button";
+import {
+  generateHausgeldRows,
+  isExpenseSupersededBySystemHausgeld,
+  type HausgeldUnit,
+  HAUSGELD_UNIT_FIELDS,
+} from "../../lib/hausgeldUtils";
 
 interface Expense {
   id: string;
@@ -42,12 +48,7 @@ interface Tenant {
   name: string;
 }
 
-interface Unit {
-  id: string;
-  unit_number: string;
-  property_id: string;
-  housegeld_monthly_cents: number;
-}
+type Unit = HausgeldUnit;
 
 interface DisplayRow {
   id: string;
@@ -154,7 +155,7 @@ export default function ExpensesView() {
           supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
           supabase.from("expense_categories").select("*").order("name"),
           supabase.from("tenants").select("id, name").eq("user_id", user!.id).order("name"),
-          supabase.from("property_units").select("id, unit_number, property_id, housegeld_monthly_cents").eq("user_id", user!.id).order("unit_number"),
+          supabase.from("property_units").select(HAUSGELD_UNIT_FIELDS).eq("user_id", user!.id).order("unit_number"),
         ]);
 
       if (expensesRes.data) setExpenses(expensesRes.data);
@@ -344,89 +345,63 @@ export default function ExpensesView() {
     }
   }
 
-  const displayRows = useMemo<DisplayRow[]>(() => {
-    const rows: DisplayRow[] = expenses.map((e) => ({
-      id: e.id,
-      amount: e.amount,
-      expense_date: e.expense_date,
-      description: e.description,
-      notes: e.notes,
-      status: e.status,
-      category_id: e.category_id,
-      category_name: "",
-      property_id: e.property_id,
-      unit_id: e.unit_id,
-      document_id: e.document_id,
-      is_system: false,
-    }));
+  const displayRows = useMemo<(DisplayRow & { is_superseded?: boolean })[]>(() => {
+    const rows: (DisplayRow & { is_superseded?: boolean })[] = expenses.map((e) => {
+      const superseded = isExpenseSupersededBySystemHausgeld(e, units);
+      return {
+        id: e.id,
+        amount: e.amount,
+        expense_date: e.expense_date,
+        description: e.description,
+        notes: e.notes,
+        status: e.status,
+        category_id: e.category_id,
+        category_name: "",
+        property_id: e.property_id,
+        unit_id: e.unit_id,
+        document_id: e.document_id,
+        is_system: false,
+        is_superseded: superseded,
+      };
+    });
 
-    const hausgeldUnits = units.filter((u) => u.housegeld_monthly_cents > 0);
-    if (hausgeldUnits.length > 0) {
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      let rangeStart: Date;
-      let rangeEnd: Date;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    let rangeStart: Date;
+    let rangeEnd: Date;
 
-      if (startDate && endDate) {
-        rangeStart = new Date(startDate);
-        rangeEnd = new Date(endDate);
-      } else if (timePeriod === "current") {
-        rangeStart = new Date(currentYear, 0, 1);
-        rangeEnd = new Date(currentYear, 11, 31);
-      } else if (timePeriod === "last") {
-        rangeStart = new Date(currentYear - 1, 0, 1);
-        rangeEnd = new Date(currentYear - 1, 11, 31);
-      } else {
-        rangeStart = new Date(currentYear, 0, 1);
-        rangeEnd = new Date(currentYear, 11, 31);
-      }
-
-      const filtered = hausgeldUnits.filter((u) => {
-        if (selectedProperty && u.property_id !== selectedProperty) return false;
-        if (selectedUnit && u.id !== selectedUnit) return false;
-        return true;
-      });
-
-      const cur = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
-      const endMonth = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), 1);
-
-      while (cur <= endMonth) {
-        const y = cur.getFullYear();
-        const m = cur.getMonth();
-        const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-01`;
-
-        for (const unit of filtered) {
-          rows.push({
-            id: `hausgeld-${unit.id}-${dateStr}`,
-            amount: unit.housegeld_monthly_cents / 100,
-            expense_date: dateStr,
-            description: `Hausgeld – Einheit ${unit.unit_number}`,
-            notes: "",
-            status: "paid",
-            category_id: "",
-            category_name: "Hausgeld",
-            property_id: unit.property_id,
-            unit_id: unit.id,
-            document_id: null,
-            is_system: true,
-            system_unit_number: unit.unit_number,
-          });
-        }
-
-        cur.setMonth(cur.getMonth() + 1);
-      }
+    if (startDate && endDate) {
+      rangeStart = new Date(startDate);
+      rangeEnd = new Date(endDate);
+    } else if (timePeriod === "current") {
+      rangeStart = new Date(currentYear, 0, 1);
+      rangeEnd = new Date(currentYear, 11, 31);
+    } else if (timePeriod === "last") {
+      rangeStart = new Date(currentYear - 1, 0, 1);
+      rangeEnd = new Date(currentYear - 1, 11, 31);
+    } else {
+      rangeStart = new Date(currentYear, 0, 1);
+      rangeEnd = new Date(currentYear, 11, 31);
     }
+
+    const hausgeldRows = generateHausgeldRows(units, rangeStart, rangeEnd, {
+      propertyId: selectedProperty || undefined,
+      unitId: selectedUnit || undefined,
+    });
+    rows.push(...hausgeldRows);
 
     rows.sort((a, b) => b.expense_date.localeCompare(a.expense_date));
     return rows;
   }, [expenses, units, selectedProperty, selectedUnit, timePeriod, startDate, endDate]);
 
-  const totalExpenses = displayRows.reduce((sum, e) => sum + e.amount, 0);
+  const totalExpenses = displayRows
+    .filter((e) => !e.is_superseded)
+    .reduce((sum, e) => sum + e.amount, 0);
   const paidExpenses = displayRows
-    .filter((e) => e.status === "paid")
+    .filter((e) => e.status === "paid" && !e.is_superseded)
     .reduce((sum, e) => sum + e.amount, 0);
   const openExpenses = displayRows
-    .filter((e) => e.status === "open" && !e.is_system)
+    .filter((e) => e.status === "open" && !e.is_system && !e.is_superseded)
     .reduce((sum, e) => sum + e.amount, 0);
 
   const getCategoryName = (categoryId: string) => {
@@ -715,17 +690,22 @@ export default function ExpensesView() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {displayRows.map((row) => (
-                  <tr key={row.id} className={`hover:bg-gray-50 transition-colors ${row.is_system ? "bg-slate-50/60" : ""}`}>
+                  <tr key={row.id} className={`hover:bg-gray-50 transition-colors ${row.is_system ? "bg-slate-50/60" : ""} ${row.is_superseded ? "opacity-50" : ""}`}>
                     <td className="py-4 px-6 text-sm text-gray-700 whitespace-nowrap">
                       {new Date(row.expense_date).toLocaleDateString("de-DE")}
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-dark">{row.description}</span>
+                        <span className={`text-sm font-medium ${row.is_superseded ? "line-through text-gray-400" : "text-dark"}`}>{row.description}</span>
                         {row.is_system && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-200 text-slate-600 uppercase tracking-wide">
                             <Settings2 className="w-3 h-3" />
                             System
+                          </span>
+                        )}
+                        {row.is_superseded && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 uppercase tracking-wide">
+                            Ersetzt durch Einheit-Hausgeld
                           </span>
                         )}
                       </div>

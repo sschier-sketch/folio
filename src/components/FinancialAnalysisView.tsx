@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { getMonthlyHausgeldEur, HAUSGELD_UNIT_FIELDS } from "../lib/hausgeldUtils";
 import { PremiumFeatureGuard } from "./PremiumFeatureGuard";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 interface FinancialData {
@@ -77,7 +78,7 @@ export default function FinancialAnalysisView() {
   const loadFinancialData = async () => {
     if (!user) return;
     try {
-      const [contractsRes, paymentsRes, loansRes, propertiesRes] =
+      const [contractsRes, paymentsRes, loansRes, propertiesRes, unitsRes] =
         await Promise.all([
           supabase
             .from("rental_contracts")
@@ -98,6 +99,10 @@ export default function FinancialAnalysisView() {
           supabase
             .from("properties")
             .select("id, name, street, city")
+            .eq("user_id", user.id),
+          supabase
+            .from("property_units")
+            .select(HAUSGELD_UNIT_FIELDS)
             .eq("user_id", user.id),
         ]);
       const properties = propertiesRes.data || [];
@@ -152,7 +157,8 @@ export default function FinancialAnalysisView() {
         (sum, l) => sum + l.monthlyPayment,
         0,
       );
-      const monthlyExpenses = loanPayments;
+      const monthlyHausgeld = getMonthlyHausgeldEur(unitsRes.data || []);
+      const monthlyExpenses = loanPayments + monthlyHausgeld;
       const totalExpenses = monthlyExpenses * 12;
       const netIncome = monthlyRent * 12 - totalExpenses;
       setFinancialData({
@@ -161,7 +167,7 @@ export default function FinancialAnalysisView() {
         netIncome,
         monthlyRent,
         loanPayments,
-        otherExpenses: 0,
+        otherExpenses: monthlyHausgeld * 12,
       });
       setPropertyFinancials(propertyFinancialsData);
       setLoanFinancials(loanFinancialsData);
@@ -510,33 +516,39 @@ export default function FinancialAnalysisView() {
                     <span className="text-sm text-gray-400">
                       {" "}
                       {financialData.monthlyRent > 0
-                        ? `${((financialData.loanPayments / financialData.monthlyRent) * 100).toFixed(1)}% Ausgabenquote`
+                        ? `${(((financialData.loanPayments + financialData.otherExpenses / 12) / financialData.monthlyRent) * 100).toFixed(1)}% Ausgabenquote`
                         : "Keine Daten"}{" "}
                     </span>{" "}
                   </div>{" "}
                   <div className="relative h-12 bg-gray-50 rounded-lg overflow-hidden">
                     {" "}
-                    <div
-                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm"
-                      style={{
-                        width: `${financialData.monthlyRent > 0 ? (financialData.monthlyRent / (financialData.monthlyRent + financialData.loanPayments)) * 100 : 0}%`,
-                      }}
-                    >
-                      {" "}
-                      {financialData.monthlyRent > 0 &&
-                        formatCurrency(financialData.monthlyRent)}{" "}
-                    </div>{" "}
-                    <div
-                      className="absolute top-0 h-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center text-white font-semibold text-sm"
-                      style={{
-                        left: `${financialData.monthlyRent > 0 ? (financialData.monthlyRent / (financialData.monthlyRent + financialData.loanPayments)) * 100 : 0}%`,
-                        width: `${financialData.monthlyRent > 0 ? (financialData.loanPayments / (financialData.monthlyRent + financialData.loanPayments)) * 100 : 0}%`,
-                      }}
-                    >
-                      {" "}
-                      {financialData.loanPayments > 0 &&
-                        formatCurrency(financialData.loanPayments)}{" "}
-                    </div>{" "}
+                    {(() => {
+                      const totalMonthlyExp = financialData.loanPayments + financialData.otherExpenses / 12;
+                      const total = financialData.monthlyRent + totalMonthlyExp;
+                      return (
+                        <>
+                          <div
+                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm"
+                            style={{
+                              width: `${total > 0 ? (financialData.monthlyRent / total) * 100 : 0}%`,
+                            }}
+                          >
+                            {financialData.monthlyRent > 0 &&
+                              formatCurrency(financialData.monthlyRent)}
+                          </div>
+                          <div
+                            className="absolute top-0 h-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center text-white font-semibold text-sm"
+                            style={{
+                              left: `${total > 0 ? (financialData.monthlyRent / total) * 100 : 0}%`,
+                              width: `${total > 0 ? (totalMonthlyExp / total) * 100 : 0}%`,
+                            }}
+                          >
+                            {totalMonthlyExp > 0 &&
+                              formatCurrency(totalMonthlyExp)}
+                          </div>
+                        </>
+                      );
+                    })()}{" "}
                   </div>{" "}
                   <div className="flex justify-between mt-2 text-sm">
                     {" "}

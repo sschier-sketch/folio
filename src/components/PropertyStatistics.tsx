@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { getMonthlyHausgeldEur, type HausgeldUnit, HAUSGELD_UNIT_FIELDS } from "../lib/hausgeldUtils";
 interface Property {
   id: string;
   name: string;
@@ -51,13 +52,14 @@ export default function PropertyStatistics({
   const [loans, setLoans] = useState<Loan[]>([]);
   const [rentPayments, setRentPayments] = useState<RentPayment[]>([]);
   const [contracts, setContracts] = useState<RentalContract[]>([]);
+  const [propertyUnits, setPropertyUnits] = useState<HausgeldUnit[]>([]);
   useEffect(() => {
     loadData();
   }, [property.id, user]);
   const loadData = async () => {
     if (!user) return;
     try {
-      const [loansRes, paymentsRes, contractsRes] = await Promise.all([
+      const [loansRes, paymentsRes, contractsRes, unitsRes] = await Promise.all([
         supabase
           .from("loans")
           .select("*")
@@ -75,10 +77,15 @@ export default function PropertyStatistics({
           .eq("property_id", property.id)
           .eq("user_id", user.id)
           .eq("status", "active"),
+        supabase
+          .from("property_units")
+          .select(HAUSGELD_UNIT_FIELDS)
+          .eq("property_id", property.id),
       ]);
       setLoans(loansRes.data || []);
       setRentPayments(paymentsRes.data || []);
       setContracts(contractsRes.data || []);
+      setPropertyUnits(unitsRes.data || []);
     } catch (error) {
       console.error("Error loading statistics data:", error);
     } finally {
@@ -157,7 +164,8 @@ export default function PropertyStatistics({
     const futureInterest =
       (totalLoanMonths - monthsSinceLoanStart) * monthlyInterest;
     const totalInterestOverLoan = totalInterestPaid + futureInterest;
-    const monthlyCashflow = monthlyRent - monthlyLoanPayment;
+    const monthlyHausgeld = getMonthlyHausgeldEur(propertyUnits, { propertyId: property.id });
+    const monthlyCashflow = monthlyRent - monthlyLoanPayment - monthlyHausgeld;
     if (monthlyCashflow > 0) {
       monthsToBreakEven = Math.ceil(totalInvested / monthlyCashflow);
     }

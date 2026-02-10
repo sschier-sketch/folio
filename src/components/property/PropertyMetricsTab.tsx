@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BarChart3, TrendingUp, TrendingDown, Euro, Home, AlertCircle, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { getMonthlyHausgeldEur } from "../../lib/hausgeldUtils";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 import { Button } from '../ui/Button';
@@ -77,7 +78,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
 
       const [propertyRes, unitsRes, contractsRes, expensesRes, loansRes] = await Promise.all([
         supabase.from("properties").select("*").eq("id", propertyId).eq("user_id", user.id).single(),
-        supabase.from("property_units").select("id, status, area_sqm, purchase_price, current_value").eq("property_id", propertyId),
+        supabase.from("property_units").select("id, unit_number, status, area_sqm, purchase_price, current_value, housegeld_monthly_cents").eq("property_id", propertyId),
         supabase.from("rental_contracts").select("base_rent, contract_start, contract_end, property_id, unit_id").eq("user_id", user.id),
         supabase
           .from("expenses")
@@ -133,8 +134,18 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         const monthlyLoanPayments =
           loansRes.data?.reduce((sum, l) => sum + Number(l.monthly_payment || 0), 0) || 0;
 
+        const monthlyHausgeld = getMonthlyHausgeldEur(
+          units.map(u => ({
+            id: u.id,
+            unit_number: u.unit_number || '',
+            property_id: propertyId,
+            housegeld_monthly_cents: Number(u.housegeld_monthly_cents) || 0,
+          })),
+          { propertyId }
+        );
+
         const monthlyExpensesFromData = monthsInPeriod > 0 ? totalExpensesInPeriod / monthsInPeriod : 0;
-        const monthlyExpenses = monthlyExpensesFromData + monthlyLoanPayments;
+        const monthlyExpenses = monthlyExpensesFromData + monthlyLoanPayments + monthlyHausgeld;
 
         const costRatio = monthlyRent > 0 ? (monthlyExpenses / monthlyRent) * 100 : 0;
 
