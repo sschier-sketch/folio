@@ -6,6 +6,10 @@ import {
   Search,
   ChevronRight,
   AlertCircle,
+  CheckCircle,
+  Percent,
+  Save,
+  Pencil,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { BaseTable, StatusBadge } from "./common/BaseTable";
@@ -46,9 +50,82 @@ export default function AdminAffiliatesView() {
   const [blockReason, setBlockReason] = useState("");
   const [blocking, setBlocking] = useState(false);
 
+  const [defaultRate, setDefaultRate] = useState(25);
+  const [savingDefaultRate, setSavingDefaultRate] = useState(false);
+
+  const [editingRateId, setEditingRateId] = useState<string | null>(null);
+  const [editRateValue, setEditRateValue] = useState("");
+  const [savingRate, setSavingRate] = useState(false);
+
   useEffect(() => {
     loadAffiliates();
+    loadDefaultRate();
   }, []);
+
+  const loadDefaultRate = async () => {
+    try {
+      const { data } = await supabase
+        .from("system_settings")
+        .select("default_affiliate_commission_rate")
+        .eq("id", 1)
+        .maybeSingle();
+
+      if (data?.default_affiliate_commission_rate != null) {
+        setDefaultRate(Math.round(Number(data.default_affiliate_commission_rate) * 100));
+      }
+    } catch (error) {
+      console.error("Error loading default rate:", error);
+    }
+  };
+
+  const handleSaveDefaultRate = async () => {
+    if (defaultRate < 0 || defaultRate > 100) return;
+    setSavingDefaultRate(true);
+    try {
+      const { error } = await supabase
+        .from("system_settings")
+        .update({ default_affiliate_commission_rate: defaultRate / 100 })
+        .eq("id", 1);
+
+      if (error) throw error;
+      alert("Standard-Provisionssatz gespeichert");
+    } catch (error) {
+      console.error("Error saving default rate:", error);
+      alert("Fehler beim Speichern");
+    } finally {
+      setSavingDefaultRate(false);
+    }
+  };
+
+  const handleSaveAffiliateRate = async (affiliateId: string) => {
+    const rate = parseFloat(editRateValue);
+    if (isNaN(rate) || rate < 0 || rate > 100) {
+      alert("Bitte einen Wert zwischen 0 und 100 eingeben");
+      return;
+    }
+    setSavingRate(true);
+    try {
+      const { error } = await supabase
+        .from("affiliates")
+        .update({ commission_rate: rate / 100 })
+        .eq("id", affiliateId);
+
+      if (error) throw error;
+      setEditingRateId(null);
+      setEditRateValue("");
+      loadAffiliates();
+      if (selectedAffiliate?.id === affiliateId) {
+        setSelectedAffiliate((prev) =>
+          prev ? { ...prev, commission_rate: rate / 100 } : null
+        );
+      }
+    } catch (error) {
+      console.error("Error saving rate:", error);
+      alert("Fehler beim Speichern der Provision");
+    } finally {
+      setSavingRate(false);
+    }
+  };
 
   const loadAffiliates = async () => {
     try {
@@ -164,15 +241,15 @@ export default function AdminAffiliatesView() {
 
   const filteredAffiliates = affiliates.filter(
     (a) =>
-      a.user_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.user_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.affiliate_code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalStats = {
     totalAffiliates: affiliates.length,
     activeAffiliates: affiliates.filter((a) => !a.is_blocked).length,
-    totalEarned: affiliates.reduce((sum, a) => sum + a.total_earned, 0),
-    totalPending: affiliates.reduce((sum, a) => sum + a.total_pending, 0),
+    totalEarned: affiliates.reduce((sum, a) => sum + Number(a.total_earned), 0),
+    totalPending: affiliates.reduce((sum, a) => sum + Number(a.total_pending), 0),
   };
 
   if (loading) {
@@ -191,7 +268,7 @@ export default function AdminAffiliatesView() {
             onClick={() => setSelectedAffiliate(null)}
             className="text-primary-blue hover:underline flex items-center gap-2 mb-4"
           >
-            ← Zurück zur Übersicht
+            ← Zurueck zur Uebersicht
           </button>
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-start justify-between mb-6">
@@ -222,7 +299,56 @@ export default function AdminAffiliatesView() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600 mb-1">Provision</div>
+                <div className="flex items-center gap-2">
+                  {editingRateId === selectedAffiliate.id ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={editRateValue}
+                        onChange={(e) => setEditRateValue(e.target.value)}
+                        className="w-16 px-2 py-1 border rounded text-sm"
+                        autoFocus
+                      />
+                      <span className="text-sm">%</span>
+                      <button
+                        onClick={() => handleSaveAffiliateRate(selectedAffiliate.id)}
+                        disabled={savingRate}
+                        className="p-1 text-emerald-600 hover:text-emerald-700"
+                      >
+                        <Save className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => { setEditingRateId(null); setEditRateValue(""); }}
+                        className="p-1 text-gray-400 hover:text-gray-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-dark">
+                        {Math.round(selectedAffiliate.commission_rate * 100)}%
+                      </div>
+                      <button
+                        onClick={() => {
+                          setEditingRateId(selectedAffiliate.id);
+                          setEditRateValue(String(Math.round(selectedAffiliate.commission_rate * 100)));
+                        }}
+                        className="p-1 text-gray-400 hover:text-gray-600"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="text-sm text-gray-600 mb-1">Geworbene Nutzer</div>
                 <div className="text-2xl font-bold text-dark">
@@ -236,21 +362,21 @@ export default function AdminAffiliatesView() {
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="text-sm text-gray-600 mb-1">Gesamt verdient</div>
                 <div className="text-2xl font-bold text-dark">
-                  {selectedAffiliate.total_earned.toFixed(2)} EUR
+                  {Number(selectedAffiliate.total_earned).toFixed(2)} EUR
                 </div>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">Verfügbar</div>
+                <div className="text-sm text-gray-600 mb-1">Verfuegbar</div>
                 <div className="text-2xl font-bold text-dark">
-                  {selectedAffiliate.total_pending.toFixed(2)} EUR
+                  {Number(selectedAffiliate.total_pending).toFixed(2)} EUR
                 </div>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="text-sm text-gray-600 mb-1">Ausgezahlt</div>
                 <div className="text-2xl font-bold text-dark">
-                  {selectedAffiliate.total_paid.toFixed(2)} EUR
+                  {Number(selectedAffiliate.total_paid).toFixed(2)} EUR
                 </div>
               </div>
             </div>
@@ -262,7 +388,7 @@ export default function AdminAffiliatesView() {
                   <div>
                     <p className="font-semibold text-red-900 mb-1">Affiliate gesperrt</p>
                     <p className="text-sm text-red-700">
-                      Grund: {selectedAffiliate.blocked_reason || "Kein Grund angegeben"}
+                      Grund: {(selectedAffiliate as any).blocked_reason || "Kein Grund angegeben"}
                     </p>
                   </div>
                 </div>
@@ -292,7 +418,7 @@ export default function AdminAffiliatesView() {
                       return <StatusBadge type="info" label="Registriert" />;
                     }
                     if (referral.status === "churned") {
-                      return <StatusBadge type="neutral" label="Gekündigt" />;
+                      return <StatusBadge type="neutral" label="Gekuendigt" />;
                     }
                     return null;
                   },
@@ -322,7 +448,7 @@ export default function AdminAffiliatesView() {
                   header: "Umsatz",
                   render: (referral: Referral) => (
                     <span className="font-semibold text-dark">
-                      {referral.lifetime_value.toFixed(2)} EUR
+                      {Number(referral.lifetime_value).toFixed(2)} EUR
                     </span>
                   ),
                 },
@@ -340,7 +466,7 @@ export default function AdminAffiliatesView() {
               <h3 className="text-xl font-bold text-dark mb-4">Affiliate sperren</h3>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Grund für Sperrung *
+                  Grund fuer Sperrung *
                 </label>
                 <textarea
                   value={blockReason}
@@ -383,6 +509,41 @@ export default function AdminAffiliatesView() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-dark mb-2">Affiliate-Verwaltung</h1>
         <p className="text-gray-600">Verwalten Sie Partner und deren Provisionen</p>
+      </div>
+
+      <div className="bg-white rounded-lg border border-gray-200 p-5 mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+            <Percent className="w-4 h-4 text-[#1e1e24]" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-dark">Standard-Provisionssatz</h3>
+            <p className="text-xs text-gray-500">Gilt fuer alle neuen Affiliates. Individuelle Saetze koennen pro Nutzer ueberschrieben werden.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              value={defaultRate}
+              onChange={(e) => setDefaultRate(Number(e.target.value))}
+              className="w-20 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+            />
+            <span className="text-sm text-gray-600 font-medium">%</span>
+          </div>
+          <Button
+            onClick={handleSaveDefaultRate}
+            disabled={savingDefaultRate || defaultRate < 0 || defaultRate > 100}
+            variant="primary"
+            className="px-4 py-2 text-sm"
+          >
+            <Save className="w-4 h-4" />
+            {savingDefaultRate ? "Speichert..." : "Speichern"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -475,6 +636,63 @@ export default function AdminAffiliatesView() {
               ),
             },
             {
+              key: "commission_rate",
+              header: "Provision",
+              render: (affiliate: Affiliate) => {
+                if (editingRateId === affiliate.id) {
+                  return (
+                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={editRateValue}
+                        onChange={(e) => setEditRateValue(e.target.value)}
+                        className="w-14 px-1.5 py-0.5 border rounded text-xs"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveAffiliateRate(affiliate.id);
+                          if (e.key === "Escape") { setEditingRateId(null); setEditRateValue(""); }
+                        }}
+                      />
+                      <span className="text-xs">%</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleSaveAffiliateRate(affiliate.id); }}
+                        disabled={savingRate}
+                        className="p-0.5 text-emerald-600 hover:text-emerald-700"
+                      >
+                        <Save className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                }
+                const isCustom = Math.round(affiliate.commission_rate * 100) !== defaultRate;
+                return (
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-sm font-medium ${isCustom ? 'text-blue-700' : 'text-gray-900'}`}>
+                      {Math.round(affiliate.commission_rate * 100)}%
+                    </span>
+                    {isCustom && (
+                      <span className="text-[10px] bg-blue-50 text-blue-600 px-1 py-0.5 rounded font-medium">
+                        Individuell
+                      </span>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingRateId(affiliate.id);
+                        setEditRateValue(String(Math.round(affiliate.commission_rate * 100)));
+                      }}
+                      className="p-0.5 text-gray-300 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              },
+            },
+            {
               key: "status",
               header: "Status",
               render: (affiliate: Affiliate) => {
@@ -501,16 +719,16 @@ export default function AdminAffiliatesView() {
               header: "Verdient",
               render: (affiliate: Affiliate) => (
                 <span className="font-semibold text-dark">
-                  {affiliate.total_earned.toFixed(2)} EUR
+                  {Number(affiliate.total_earned).toFixed(2)} EUR
                 </span>
               ),
             },
             {
               key: "pending",
-              header: "Verfügbar",
+              header: "Verfuegbar",
               render: (affiliate: Affiliate) => (
                 <span className="text-sm text-gray-900">
-                  {affiliate.total_pending.toFixed(2)} EUR
+                  {Number(affiliate.total_pending).toFixed(2)} EUR
                 </span>
               ),
             },

@@ -4,12 +4,11 @@ import {
   Copy,
   Check,
   Users,
-  Award,
+  Percent,
   TrendingUp,
   Mail,
   Send,
   Linkedin,
-  Clock,
   Banknote,
   Link as LinkIcon,
   Code,
@@ -20,22 +19,12 @@ import {
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
-import { BaseTable, StatusBadge } from "./common/BaseTable";
 import ReferralChart from "./referral/ReferralChart";
 import ReferralPayoutSection from "./referral/ReferralPayoutSection";
 import ReferralAnalytics from "./referral/ReferralAnalytics";
 import ConversionFunnel from "./referral/ConversionFunnel";
 import EnhancedReferredUsersTable from "./referral/EnhancedReferredUsersTable";
 import { Button } from './ui/Button';
-
-interface ReferralStats {
-  totalReferrals: number;
-  completedReferrals: number;
-  pendingReferrals: number;
-  totalMonthsEarned: number;
-  activeMonths: number;
-  usedMonths: number;
-}
 
 interface Referral {
   id: string;
@@ -47,16 +36,6 @@ interface Referral {
   created_at: string;
   completed_at: string | null;
   reward_activated_at: string | null;
-}
-
-interface ReferralReward {
-  id: string;
-  reward_type: string;
-  months_granted: number;
-  status: string;
-  activated_at: string | null;
-  expires_at: string | null;
-  created_at: string;
 }
 
 interface PayoutRequest {
@@ -77,16 +56,10 @@ export default function ReferralProgramView() {
   const [loading, setLoading] = useState(true);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const [stats, setStats] = useState<ReferralStats>({
-    totalReferrals: 0,
-    completedReferrals: 0,
-    pendingReferrals: 0,
-    totalMonthsEarned: 0,
-    activeMonths: 0,
-    usedMonths: 0,
-  });
+  const [commissionRate, setCommissionRate] = useState(0.25);
+  const [totalReferrals, setTotalReferrals] = useState(0);
+  const [payingReferrals, setPayingReferrals] = useState(0);
   const [referrals, setReferrals] = useState<Referral[]>([]);
-  const [rewards, setRewards] = useState<ReferralReward[]>([]);
   const [payoutRequests, setPayoutRequests] = useState<PayoutRequest[]>([]);
   const [balance, setBalance] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
@@ -137,7 +110,7 @@ export default function ReferralProgramView() {
     if (!user) return;
 
     try {
-      const [settingsRes, referralsRes, rewardsRes, payoutsRes, affiliateRes] = await Promise.all([
+      const [settingsRes, referralsRes, payoutsRes, affiliateRes] = await Promise.all([
         supabase
           .from("user_settings")
           .select("referral_code")
@@ -149,18 +122,13 @@ export default function ReferralProgramView() {
           .eq("referrer_id", user.id)
           .order("created_at", { ascending: false }),
         supabase
-          .from("referral_rewards")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false }),
-        supabase
           .from("referral_payout_requests")
           .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
         supabase
           .from("affiliates")
-          .select("is_blocked")
+          .select("commission_rate, total_earned, total_paid, total_pending, total_referrals, paying_referrals, is_blocked")
           .eq("user_id", user.id)
           .maybeSingle(),
       ]);
@@ -169,58 +137,21 @@ export default function ReferralProgramView() {
         setReferralCode(settingsRes.data.referral_code);
       }
 
-      if (affiliateRes.data?.is_blocked) {
-        setIsBlocked(true);
+      if (affiliateRes.data) {
+        if (affiliateRes.data.is_blocked) setIsBlocked(true);
+        setCommissionRate(affiliateRes.data.commission_rate || 0.25);
+        setTotalReferrals(affiliateRes.data.total_referrals || 0);
+        setPayingReferrals(affiliateRes.data.paying_referrals || 0);
+        setTotalEarned(Number(affiliateRes.data.total_earned) || 0);
+        setTotalPaidOut(Number(affiliateRes.data.total_paid) || 0);
+        setBalance(Number(affiliateRes.data.total_pending) || 0);
       }
 
       const referralsData = (referralsRes.data || []) as Referral[];
       setReferrals(referralsData);
 
-      const rewardsData = rewardsRes.data || [];
-      setRewards(rewardsData);
-
       const payoutsData = (payoutsRes.data || []) as PayoutRequest[];
       setPayoutRequests(payoutsData);
-
-      const totalReferrals = referralsData.length;
-      const completedReferrals = referralsData.filter(
-        (r) => r.status === "completed"
-      ).length;
-      const pendingReferrals = referralsData.filter(
-        (r) => r.status === "pending"
-      ).length;
-
-      const totalMonthsEarned = rewardsData.reduce(
-        (sum, r) => sum + r.months_granted,
-        0
-      );
-      const activeMonths = rewardsData
-        .filter((r) => r.status === "active")
-        .reduce((sum, r) => sum + r.months_granted, 0);
-      const usedMonths = rewardsData
-        .filter((r) => r.status === "used" || r.status === "expired")
-        .reduce((sum, r) => sum + r.months_granted, 0);
-
-      setStats({
-        totalReferrals,
-        completedReferrals,
-        pendingReferrals,
-        totalMonthsEarned,
-        activeMonths,
-        usedMonths,
-      });
-
-      const earned = referralsData
-        .filter((r) => r.status === "completed")
-        .reduce((sum, r) => sum + (r.cash_reward_eur || 10), 0);
-      setTotalEarned(earned);
-
-      const paidOut = payoutsData
-        .filter((p) => p.status === "paid" || p.status === "approved")
-        .reduce((sum, p) => sum + p.amount, 0);
-      setTotalPaidOut(paidOut);
-
-      setBalance(earned - paidOut);
     } catch (error) {
       console.error("Error loading referral data:", error);
     } finally {
@@ -244,7 +175,7 @@ export default function ReferralProgramView() {
   const handleShareLinkedIn = () => {
     const referralUrl = `${window.location.origin}/?ref=${referralCode}&utm_source=linkedin&utm_medium=referral&utm_campaign=partner_program`;
     const text = encodeURIComponent(
-      "Ich nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Mit meinem Empfehlungscode erhältst du 2 Monate PRO gratis."
+      "Ich nutze rentab.ly fuer meine Immobilienverwaltung und bin begeistert! Teste es jetzt kostenlos:"
     );
     const url = encodeURIComponent(referralUrl);
     window.open(
@@ -257,7 +188,7 @@ export default function ReferralProgramView() {
     const referralUrl = `${window.location.origin}/?ref=${referralCode}&utm_source=email&utm_medium=referral&utm_campaign=partner_program`;
     const subject = encodeURIComponent('Entdecke rentab.ly - Die beste Immobilienverwaltung');
     const body = encodeURIComponent(
-      `Hallo,\n\nIch nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Die Software macht die Verwaltung von Immobilien so viel einfacher.\n\nMit meinem persönlichen Empfehlungslink erhältst du 2 Monate PRO gratis:\n${referralUrl}\n\nViel Erfolg!\n\nViele Grüße`
+      `Hallo,\n\nIch nutze rentab.ly fuer meine Immobilienverwaltung und bin begeistert! Die Software macht die Verwaltung von Immobilien so viel einfacher.\n\nSchau es dir gerne an:\n${referralUrl}\n\nViel Erfolg!\n\nViele Gruesse`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
@@ -340,7 +271,7 @@ export default function ReferralProgramView() {
           Empfehlungsprogramm
         </h1>
         <p className="text-gray-400 mt-1">
-          Empfehlen Sie rentab.ly und erhalten Sie 2 Monate PRO gratis + 10 EUR pro erfolgreiche Empfehlung
+          Empfehlen Sie rentab.ly und verdienen Sie {Math.round(commissionRate * 100)}% wiederkehrende Provision auf die Abogebuehren geworbener Nutzer
         </p>
       </div>
 
@@ -350,11 +281,20 @@ export default function ReferralProgramView() {
             <div className="w-9 h-9 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
               <Users className="w-4 h-4 text-[#1e1e24]" />
             </div>
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+              {Math.round(commissionRate * 100)}% Provision
+            </span>
           </div>
           <div className="text-2xl font-bold text-dark mb-0.5">
-            {stats.totalReferrals}
+            {totalReferrals}
           </div>
           <div className="text-sm text-gray-600">Gesamt Empfehlungen</div>
+          <div className="pt-2 mt-2 border-t border-gray-200 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">Davon zahlend</span>
+              <span className="font-medium text-dark">{payingReferrals}</span>
+            </div>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-5">
@@ -382,26 +322,15 @@ export default function ReferralProgramView() {
         <div className="bg-white rounded-lg border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="w-9 h-9 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
-              <Award className="w-4 h-4 text-[#1e1e24]" />
+              <Percent className="w-4 h-4 text-[#1e1e24]" />
             </div>
           </div>
           <div className="text-2xl font-bold text-dark mb-0.5">
-            {stats.totalMonthsEarned}
+            {Math.round(commissionRate * 100)}%
           </div>
-          <div className="text-sm text-gray-600">Verdiente Monate</div>
-          <div className="pt-2 mt-2 border-t border-gray-200 space-y-1 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-gray-500">
-                <Clock className="w-3 h-3" /> Aktiv
-              </span>
-              <span className="font-medium text-dark">{stats.activeMonths}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-gray-500">
-                <Check className="w-3 h-3" /> Verwendet
-              </span>
-              <span className="font-medium text-dark">{stats.usedMonths}</span>
-            </div>
+          <div className="text-sm text-gray-600">Ihre Provision</div>
+          <div className="pt-2 mt-2 border-t border-gray-200 text-xs text-gray-500">
+            Wiederkehrend auf jede Abo-Zahlung Ihrer geworbenen Nutzer
           </div>
         </div>
       </div>
@@ -518,7 +447,7 @@ export default function ReferralProgramView() {
             <div>
               <ConversionFunnel
                 clicks={totalClicks}
-                signups={stats.totalReferrals}
+                signups={totalReferrals}
                 conversions={totalConversions}
               />
             </div>
@@ -630,10 +559,10 @@ export default function ReferralProgramView() {
               </div>
               <div>
                 <h4 className="font-semibold text-dark mb-1 text-sm">
-                  Teilen Sie Ihren Code
+                  Teilen Sie Ihren Link
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Teilen Sie Ihren persoenlichen Empfehlungscode oder Link mit
+                  Teilen Sie Ihren persoenlichen Empfehlungslink mit
                   Freunden und Kollegen.
                 </p>
               </div>
@@ -645,11 +574,11 @@ export default function ReferralProgramView() {
               </div>
               <div>
                 <h4 className="font-semibold text-dark mb-1 text-sm">
-                  Freunde registrieren sich
+                  Nutzer abonnieren PRO
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Wenn sich Ihre Freunde mit Ihrem Code registrieren, erhalten
-                  beide 2 Monate PRO gratis.
+                  Wenn geworbene Nutzer ein kostenpflichtiges Abo abschliessen,
+                  beginnt Ihre Provision.
                 </p>
               </div>
             </div>
@@ -660,12 +589,12 @@ export default function ReferralProgramView() {
               </div>
               <div>
                 <h4 className="font-semibold text-dark mb-1 text-sm">
-                  Belohnungen & Guthaben
+                  {Math.round(commissionRate * 100)}% wiederkehrende Provision
                 </h4>
                 <p className="text-sm text-gray-600">
-                  <strong>PRO Monate:</strong> 2 Monate werden sofort aktiviert
+                  <strong>Monatlich:</strong> {Math.round(commissionRate * 100)}% jeder monatlichen Abo-Zahlung
                   <br />
-                  <strong>Guthaben:</strong> 10 EUR pro Empfehlung, auszahlbar ab 25 EUR
+                  <strong>Jaehrlich:</strong> {Math.round(commissionRate * 100)}% der Jahressumme bei Zahlung
                 </p>
               </div>
             </div>
@@ -674,89 +603,6 @@ export default function ReferralProgramView() {
       </div>
 
       <EnhancedReferredUsersTable userId={user?.id || ''} />
-
-      {rewards.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b bg-gray-50">
-            <h3 className="text-lg font-semibold text-dark">
-              Belohnungshistorie
-            </h3>
-          </div>
-          <BaseTable
-            columns={[
-              {
-                key: "type",
-                header: "Typ",
-                render: (reward: ReferralReward) => (
-                  <span className="text-sm text-gray-900">
-                    {reward.reward_type === "pro_upgrade"
-                      ? "PRO Upgrade"
-                      : "PRO Verlaengerung"}
-                  </span>
-                ),
-              },
-              {
-                key: "months",
-                header: "Monate",
-                render: (reward: ReferralReward) => (
-                  <span className="text-sm font-semibold text-dark">
-                    {reward.months_granted} Monate
-                  </span>
-                ),
-              },
-              {
-                key: "status",
-                header: "Status",
-                render: (reward: ReferralReward) => {
-                  if (reward.status === "active") {
-                    return (
-                      <StatusBadge
-                        type="success"
-                        label="Aktiv"
-                        icon={<Check className="w-3 h-3" />}
-                      />
-                    );
-                  }
-                  if (reward.status === "used") {
-                    return <StatusBadge type="neutral" label="Verwendet" />;
-                  }
-                  if (reward.status === "expired") {
-                    return <StatusBadge type="error" label="Abgelaufen" />;
-                  }
-                  if (reward.status === "pending") {
-                    return <StatusBadge type="warning" label="Ausstehend" />;
-                  }
-                  return null;
-                },
-              },
-              {
-                key: "activated_at",
-                header: "Aktiviert am",
-                render: (reward: ReferralReward) => (
-                  <span className="text-sm text-gray-600">
-                    {reward.activated_at
-                      ? new Date(reward.activated_at).toLocaleDateString("de-DE")
-                      : "-"}
-                  </span>
-                ),
-              },
-              {
-                key: "expires_at",
-                header: "Laeuft ab am",
-                render: (reward: ReferralReward) => (
-                  <span className="text-sm text-gray-600">
-                    {reward.expires_at
-                      ? new Date(reward.expires_at).toLocaleDateString("de-DE")
-                      : "-"}
-                  </span>
-                ),
-              },
-            ]}
-            data={rewards}
-            loading={false}
-          />
-        </div>
-      )}
     </div>
   );
 }

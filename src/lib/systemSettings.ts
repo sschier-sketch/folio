@@ -5,6 +5,7 @@ export interface SystemSettings {
   gtm_enabled: boolean;
   gtm_container_id: string | null;
   gtm_custom_head_html: string | null;
+  default_affiliate_commission_rate: number;
   updated_at: string;
 }
 
