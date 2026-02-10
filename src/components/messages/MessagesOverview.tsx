@@ -26,7 +26,14 @@ export default function MessagesOverview({
   totalCount,
   onNavigateFolder,
 }: MessagesOverviewProps) {
-  const [showSpamNotice, setShowSpamNotice] = useState(true);
+  const [showSpamNotice, setShowSpamNotice] = useState(
+    () => localStorage.getItem('spam_notice_dismissed') !== '1'
+  );
+
+  function dismissSpamNotice() {
+    localStorage.setItem('spam_notice_dismissed', '1');
+    setShowSpamNotice(false);
+  }
 
   return (
     <div className="space-y-6">
@@ -42,7 +49,7 @@ export default function MessagesOverview({
               </p>
             </div>
             <button
-              onClick={() => setShowSpamNotice(false)}
+              onClick={dismissSpamNotice}
               className="p-1 hover:bg-amber-100 rounded-lg transition-colors flex-shrink-0"
             >
               <X className="w-4 h-4 text-amber-500" />

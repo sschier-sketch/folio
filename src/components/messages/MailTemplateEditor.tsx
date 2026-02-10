@@ -123,7 +123,7 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
   }
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="p-6">
       <button
         onClick={onBack}
         className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors"
@@ -269,7 +269,7 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
         </div>
       )}
 
-      <div className="flex items-center gap-3 mt-8 pt-6 border-t border-gray-200">
+      <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
         <Button variant="secondary" onClick={onBack}>
           Abbrechen
         </Button>
