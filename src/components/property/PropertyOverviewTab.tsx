@@ -94,6 +94,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [showGrossYieldTooltip, setShowGrossYieldTooltip] = useState(false);
   const [showNetYieldTooltip, setShowNetYieldTooltip] = useState(false);
+  const [showCashflowTooltip, setShowCashflowTooltip] = useState(false);
   const [isEditingMasterData, setIsEditingMasterData] = useState(false);
   const [aggregatedValues, setAggregatedValues] = useState({
     totalPurchasePrice: property.purchase_price,
@@ -758,15 +759,39 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           )}
         </div>
 
-        <div className="bg-white rounded-lg p-6">
+        <div className="bg-white rounded-lg p-6 relative">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-500">Netto-Cashflow</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">Netto-Cashflow</span>
+              <button
+                onMouseEnter={() => setShowCashflowTooltip(true)}
+                onMouseLeave={() => setShowCashflowTooltip(false)}
+                className="text-gray-400 hover:text-gray-500 transition-colors"
+              >
+                <Info className="w-4 h-4" />
+              </button>
+            </div>
             <Users className="w-5 h-5" style={{ color: '#3c8af7' }} strokeWidth={1.5} />
           </div>
           <div className="text-3xl font-bold text-dark mb-1">
             {formatCurrency(netMonthlyIncome)}
           </div>
           <div className="text-xs text-gray-400">pro Monat</div>
+
+          {showCashflowTooltip && (
+            <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-lg p-4 z-10 shadow-lg">
+              <div className="font-semibold mb-2">Berechnung Netto-Cashflow:</div>
+              <div className="space-y-1 text-xs">
+                <div>Formel: Kaltmiete − Kreditraten − Hausgeld</div>
+                <div className="border-t border-slate-700 my-2"></div>
+                <div>Monatliche Kaltmiete: {formatCurrency(monthlyRent)}</div>
+                <div>Monatliche Kreditraten: {formatCurrency(totalLoanPayments)}</div>
+                <div>Monatliches Hausgeld: {formatCurrency(monthlyHausgeld)}</div>
+                <div className="border-t border-slate-700 my-2"></div>
+                <div className="font-semibold">= {formatCurrency(netMonthlyIncome)} / Monat</div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
