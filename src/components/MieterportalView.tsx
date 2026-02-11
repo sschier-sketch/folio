@@ -49,7 +49,7 @@ export default function MieterportalView() {
           `
           *,
           property:properties(name),
-          rental_contract:rental_contracts(id, portal_access_enabled)
+          rental_contract:rental_contracts!tenants_contract_id_fkey(id, portal_access_enabled)
         `
         )
         .eq("user_id", user.id)
