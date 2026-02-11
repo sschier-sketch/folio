@@ -13,6 +13,9 @@ interface ReferralInvitationRequest {
   recipientName?: string;
   message?: string;
   language?: string;
+  appUrl?: string;
+  customSubject?: string;
+  customBodyText?: string;
 }
 
 Deno.serve(async (req: Request) => {
@@ -44,8 +47,15 @@ Deno.serve(async (req: Request) => {
       throw new Error("Unauthorized");
     }
 
-    const { recipientEmail, recipientName, message, language = "de" } =
-      (await req.json()) as ReferralInvitationRequest;
+    const {
+      recipientEmail,
+      recipientName,
+      message,
+      language = "de",
+      appUrl,
+      customSubject,
+      customBodyText,
+    } = (await req.json()) as ReferralInvitationRequest;
 
     if (!recipientEmail) {
       throw new Error("recipientEmail is required");
@@ -61,7 +71,7 @@ Deno.serve(async (req: Request) => {
       throw new Error("User settings not found");
     }
 
-    const { data: profile, error: profileError } = await supabaseClient
+    const { data: profile } = await supabaseClient
       .from("account_profiles")
       .select("company_name, first_name, last_name")
       .eq("user_id", user.id)
@@ -72,9 +82,13 @@ Deno.serve(async (req: Request) => {
       if (profile.company_name) {
         inviterName = profile.company_name;
       } else if (profile.first_name || profile.last_name) {
-        inviterName = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+        inviterName =
+          `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
       }
     }
+
+    const baseUrl = appUrl || "https://rentab.ly";
+    const registrationLink = `${baseUrl}/?ref=${settings.referral_code}`;
 
     const { data: template, error: templateError } = await supabaseClient
       .from("email_templates")
@@ -87,42 +101,52 @@ Deno.serve(async (req: Request) => {
       throw new Error("Email template not found");
     }
 
-    const registrationLink = `${Deno.env.get("SUPABASE_URL")?.replace("https://", "https://app.")}/?ref=${settings.referral_code}`;
+    const finalSubject = customSubject || template.subject;
 
-    let emailBody = template.body_html
-      .replace(/{{inviter_name}}/g, inviterName)
-      .replace(/{{registration_link}}/g, registrationLink)
-      .replace(/{{referral_code}}/g, settings.referral_code);
+    let bodyContent: string;
+    if (customBodyText) {
+      bodyContent = customBodyText
+        .split("\n")
+        .map((line: string) => `<p style="margin:0 0 12px 0">${line || "&nbsp;"}</p>`)
+        .join("");
+    } else {
+      const greeting = recipientName ? `Hallo ${recipientName},` : "Hallo,";
+      bodyContent = `<p style="margin:0 0 16px 0">${greeting}</p><p style="margin:0 0 16px 0"><strong>${inviterName}</strong> empfiehlt Ihnen rentab.ly.</p><p style="margin:0">Registrieren Sie sich jetzt und erhalten Sie <strong>1 Monat PRO kostenlos</strong>!</p>`;
 
-    if (message) {
-      const personalMessage = `
-        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
-          <p style="margin: 0; color: #856404;"><strong>Persönliche Nachricht:</strong></p>
-          <p style="margin: 10px 0 0 0; color: #856404;">${message}</p>
-        </div>
-      `;
-      emailBody = emailBody.replace(
-        '<div style="background: #f8fafc;',
-        personalMessage + '<div style="background: #f8fafc;',
-      );
+      if (message) {
+        bodyContent += `<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:15px;margin:20px 0"><p style="margin:0;color:#856404"><strong>Pers\u00f6nliche Nachricht:</strong></p><p style="margin:10px 0 0 0;color:#856404">${message}</p></div>`;
+      }
     }
 
-    const emailResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+    const emailHtml = template.body_html
+      .replace(/\{\{body_content\}\}/g, bodyContent)
+      .replace(/\{\{inviter_name\}\}/g, inviterName)
+      .replace(/\{\{registration_link\}\}/g, registrationLink)
+      .replace(/\{\{referral_code\}\}/g, settings.referral_code)
+      .replace(/\{\{referrerName\}\}/g, inviterName)
+      .replace(/\{\{referralLink\}\}/g, registrationLink);
+
+    const emailText = (customBodyText || template.body_text)
+      .replace(/\{\{inviter_name\}\}/g, inviterName)
+      .replace(/\{\{registration_link\}\}/g, registrationLink)
+      .replace(/\{\{referral_code\}\}/g, settings.referral_code);
+
+    const emailResponse = await fetch(
+      `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        },
+        body: JSON.stringify({
+          to: recipientEmail,
+          subject: finalSubject,
+          html: emailHtml,
+          text: emailText,
+        }),
       },
-      body: JSON.stringify({
-        to: recipientEmail,
-        subject: template.subject,
-        html: emailBody,
-        text: template.body_text
-          .replace(/{{inviter_name}}/g, inviterName)
-          .replace(/{{registration_link}}/g, registrationLink)
-          .replace(/{{referral_code}}/g, settings.referral_code),
-      }),
-    });
+    );
 
     if (!emailResponse.ok) {
       const errorText = await emailResponse.text();

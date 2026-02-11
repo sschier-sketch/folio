@@ -15,6 +15,9 @@ import {
   AlertCircle,
   ChevronDown,
   BarChart3,
+  Eye,
+  ArrowLeft,
+  X,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -73,6 +76,10 @@ export default function ReferralProgramView() {
   const [recipientEmail, setRecipientEmail] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [personalMessage, setPersonalMessage] = useState("");
+  const [inviterDisplayName, setInviterDisplayName] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewSubject, setPreviewSubject] = useState("");
+  const [previewBody, setPreviewBody] = useState("");
 
   useEffect(() => {
     loadReferralData();
@@ -111,6 +118,24 @@ export default function ReferralProgramView() {
     if (!user) return;
 
     try {
+      const { data: profileData } = await supabase
+        .from("account_profiles")
+        .select("company_name, first_name, last_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (profileData) {
+        if (profileData.company_name) {
+          setInviterDisplayName(profileData.company_name);
+        } else if (profileData.first_name || profileData.last_name) {
+          setInviterDisplayName(`${profileData.first_name || ""} ${profileData.last_name || ""}`.trim());
+        } else {
+          setInviterDisplayName(user.email?.split("@")[0] || "");
+        }
+      } else {
+        setInviterDisplayName(user.email?.split("@")[0] || "");
+      }
+
       const [settingsRes, referralsRes, payoutsRes, affiliateRes] = await Promise.all([
         supabase
           .from("user_settings")
@@ -217,11 +242,27 @@ export default function ReferralProgramView() {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
-  const handleSendInvitation = async (e: React.FormEvent) => {
+  const handleShowPreview = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!recipientEmail) return;
 
+    const name = inviterDisplayName || user?.email?.split("@")[0] || "Ein Freund";
+    const greeting = recipientName ? `Hallo ${recipientName},` : "Hallo,";
+    const defaultBody = [
+      greeting,
+      "",
+      `${name} empfiehlt Ihnen rentab.ly - die professionelle Loesung fuer Ihre Immobilienverwaltung.`,
+      "",
+      "Registrieren Sie sich jetzt und erhalten Sie 1 Monat PRO kostenlos!",
+      ...(personalMessage ? ["", `Persoenliche Nachricht: ${personalMessage}`] : []),
+    ].join("\n");
+
+    setPreviewSubject("Entdecke rentab.ly - Deine Immobilienverwaltung");
+    setPreviewBody(defaultBody);
+    setShowPreview(true);
+  };
+
+  const handleSendInvitation = async () => {
     setSendingEmail(true);
     setEmailSent(false);
 
@@ -240,8 +281,10 @@ export default function ReferralProgramView() {
           body: JSON.stringify({
             recipientEmail,
             recipientName: recipientName || undefined,
-            message: personalMessage || undefined,
             language: "de",
+            appUrl: window.location.origin,
+            customSubject: previewSubject,
+            customBodyText: previewBody,
           }),
         }
       );
@@ -251,9 +294,12 @@ export default function ReferralProgramView() {
       }
 
       setEmailSent(true);
+      setShowPreview(false);
       setRecipientEmail("");
       setRecipientName("");
       setPersonalMessage("");
+      setPreviewSubject("");
+      setPreviewBody("");
 
       setTimeout(() => setEmailSent(false), 3000);
     } catch (error) {
@@ -492,78 +538,149 @@ export default function ReferralProgramView() {
             </h3>
           </div>
 
-          <form onSubmit={handleSendInvitation} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                E-Mail-Adresse *
-              </label>
-              <input
-                type="email"
-                value={recipientEmail}
-                onChange={(e) => setRecipientEmail(e.target.value)}
-                required
-                placeholder="freund@beispiel.de"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-              />
+          {!showPreview ? (
+            <>
+              <form onSubmit={handleShowPreview} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    E-Mail-Adresse *
+                  </label>
+                  <input
+                    type="email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    required
+                    placeholder="freund@beispiel.de"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name des Bekannten (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Max Mustermann"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Persoenliche Nachricht (optional)
+                  </label>
+                  <textarea
+                    value={personalMessage}
+                    onChange={(e) => setPersonalMessage(e.target.value)}
+                    placeholder="Fuegen Sie eine persoenliche Nachricht hinzu..."
+                    rows={3}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent resize-none"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={!recipientEmail}
+                  variant="primary"
+                  fullWidth
+                >
+                  {emailSent ? (
+                    <>
+                      <Check className="w-5 h-5" />
+                      Einladung gesendet!
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-5 h-5" />
+                      Vorschau anzeigen
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <p className="text-xs text-gray-600">
+                  Im naechsten Schritt sehen Sie eine Vorschau der E-Mail und
+                  koennen den Text vor dem Versand noch anpassen.
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+                <div className="text-sm text-gray-500">
+                  An: <span className="font-medium text-dark">{recipientEmail}</span>
+                </div>
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Betreff
+                </label>
+                <input
+                  type="text"
+                  value={previewSubject}
+                  onChange={(e) => setPreviewSubject(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nachricht
+                </label>
+                <textarea
+                  value={previewBody}
+                  onChange={(e) => setPreviewBody(e.target.value)}
+                  rows={8}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent text-sm leading-relaxed"
+                />
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-2 font-medium">Referral-Link in der E-Mail:</p>
+                <p className="text-xs font-mono text-gray-700 break-all">{referralUrl}</p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setShowPreview(false)}
+                  variant="outlined"
+                  className="flex-1"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Zurueck
+                </Button>
+                <Button
+                  onClick={handleSendInvitation}
+                  disabled={sendingEmail || !previewSubject || !previewBody}
+                  variant="primary"
+                  className="flex-1"
+                >
+                  {sendingEmail ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Wird gesendet...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Jetzt senden
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name (optional)
-              </label>
-              <input
-                type="text"
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                placeholder="Max Mustermann"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Persoenliche Nachricht (optional)
-              </label>
-              <textarea
-                value={personalMessage}
-                onChange={(e) => setPersonalMessage(e.target.value)}
-                placeholder="Fuegen Sie eine persoenliche Nachricht hinzu..."
-                rows={3}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent resize-none"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={sendingEmail || !recipientEmail}
-              variant="primary"
-              fullWidth
-            >
-              {sendingEmail ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  Wird gesendet...
-                </>
-              ) : emailSent ? (
-                <>
-                  <Check className="w-5 h-5" />
-                  Einladung gesendet!
-                </>
-              ) : (
-                <>
-                  <Send className="w-5 h-5" />
-                  Einladung senden
-                </>
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-            <p className="text-xs text-gray-600">
-              Die E-Mail enthaelt Ihren persoenlichen Empfehlungslink und eine
-              Beschreibung der Vorteile von rentab.ly.
-            </p>
-          </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-6">
