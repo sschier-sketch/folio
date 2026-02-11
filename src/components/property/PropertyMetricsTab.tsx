@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BarChart3, TrendingUp, TrendingDown, Euro, Home, AlertCircle, Info } from "lucide-react";
+import { BarChart3, TrendingUp, TrendingDown, Euro, Home, AlertCircle, Info, ChevronDown, ChevronRight } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { getMonthlyHausgeldEur } from "../../lib/hausgeldUtils";
@@ -33,6 +33,17 @@ interface Metrics {
   roiBase: 'purchase' | 'value' | 'none';
 }
 
+interface RentDetail {
+  unitNumber: string;
+  rent: number;
+}
+
+interface CostDetails {
+  hausgeldByUnit: Array<{ unitNumber: string; hausgeld: number }>;
+  loanPayments: number;
+  avgExpenses: number;
+}
+
 interface Comparison {
   lastMonth: Metrics | null;
   lastYear: Metrics | null;
@@ -56,6 +67,11 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
     effectiveArea: 0,
     roiBase: 'none',
   });
+
+  const [expandedRent, setExpandedRent] = useState(false);
+  const [expandedCosts, setExpandedCosts] = useState(false);
+  const [rentDetails, setRentDetails] = useState<RentDetail[]>([]);
+  const [costDetails, setCostDetails] = useState<CostDetails>({ hausgeldByUnit: [], loanPayments: 0, avgExpenses: 0 });
 
   const currentYear = new Date().getFullYear();
   const [dateFrom, setDateFrom] = useState(`${currentYear}-01-01`);
@@ -183,6 +199,25 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         const roiBase = effectivePurchasePrice > 0 ? 'purchase' as const
           : effectiveCurrentValue > 0 ? 'value' as const
           : 'none' as const;
+
+        const unitMap = new Map(units.map(u => [u.id, u.unit_number || u.id.slice(0, 6)]));
+        const rentByUnit: RentDetail[] = activeStartedContracts.map(c => ({
+          unitNumber: c.unit_id ? (unitMap.get(c.unit_id) || 'Unbekannt') : 'Gesamtobjekt',
+          rent: Number(c.base_rent || 0),
+        }));
+        setRentDetails(rentByUnit);
+
+        const hausgeldByUnit = units
+          .filter(u => Number(u.housegeld_monthly_cents) > 0)
+          .map(u => ({
+            unitNumber: u.unit_number || u.id.slice(0, 6),
+            hausgeld: Number(u.housegeld_monthly_cents) / 100,
+          }));
+        setCostDetails({
+          hausgeldByUnit,
+          loanPayments: monthlyLoanPayments,
+          avgExpenses: monthlyExpensesFromData,
+        });
 
         setMetrics({
           rentPerSqm,
@@ -393,16 +428,67 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
 
       <div className="bg-white rounded-lg p-6">
         <h4 className="text-lg font-semibold text-dark mb-4">Cashflow-Übersicht</h4>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between py-3 border-b border-gray-200">
-            <span className="text-gray-600">Monatliche Mieteinnahmen</span>
+        <div className="space-y-0">
+          <button
+            onClick={() => setExpandedRent(!expandedRent)}
+            className="w-full flex items-center justify-between py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors rounded-t-lg px-2 -mx-2 cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              {expandedRent ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+              <span className="text-gray-600">Monatliche Mieteinnahmen</span>
+            </div>
             <span className="font-semibold text-green-600">{formatCurrency(metrics.monthlyRent)}</span>
-          </div>
-          <div className="flex items-center justify-between py-3 border-b border-gray-200">
-            <span className="text-gray-600">Monatliche Kosten</span>
+          </button>
+          {expandedRent && (
+            <div className="border-b border-gray-200 bg-gray-50/50">
+              {rentDetails.length > 0 ? rentDetails.map((detail, idx) => (
+                <div key={idx} className="flex items-center justify-between py-2.5 px-8 text-sm border-b border-gray-100 last:border-b-0">
+                  <span className="text-gray-500">Einheit {detail.unitNumber}</span>
+                  <span className="text-gray-700">{formatCurrency(detail.rent)}</span>
+                </div>
+              )) : (
+                <div className="py-3 px-8 text-sm text-gray-400">Keine aktiven Mietverträge</div>
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={() => setExpandedCosts(!expandedCosts)}
+            className="w-full flex items-center justify-between py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors px-2 -mx-2 cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              {expandedCosts ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+              <span className="text-gray-600">Monatliche Kosten</span>
+            </div>
             <span className="font-semibold text-red-600">- {formatCurrency(metrics.monthlyExpenses)}</span>
-          </div>
-          <div className="flex items-center justify-between py-3 bg-gray-50 rounded-lg px-4">
+          </button>
+          {expandedCosts && (
+            <div className="border-b border-gray-200 bg-gray-50/50">
+              {costDetails.hausgeldByUnit.length > 0 && costDetails.hausgeldByUnit.map((detail, idx) => (
+                <div key={idx} className="flex items-center justify-between py-2.5 px-8 text-sm border-b border-gray-100">
+                  <span className="text-gray-500">Hausgeld Einheit {detail.unitNumber}</span>
+                  <span className="text-gray-700">{formatCurrency(detail.hausgeld)}</span>
+                </div>
+              ))}
+              {costDetails.loanPayments > 0 && (
+                <div className="flex items-center justify-between py-2.5 px-8 text-sm border-b border-gray-100">
+                  <span className="text-gray-500">Kreditraten</span>
+                  <span className="text-gray-700">{formatCurrency(costDetails.loanPayments)}</span>
+                </div>
+              )}
+              {costDetails.avgExpenses > 0 && (
+                <div className="flex items-center justify-between py-2.5 px-8 text-sm border-b border-gray-100 last:border-b-0">
+                  <span className="text-gray-500">Durchschn. Ausgaben</span>
+                  <span className="text-gray-700">{formatCurrency(costDetails.avgExpenses)}</span>
+                </div>
+              )}
+              {costDetails.hausgeldByUnit.length === 0 && costDetails.loanPayments === 0 && costDetails.avgExpenses === 0 && (
+                <div className="py-3 px-8 text-sm text-gray-400">Keine Kosten erfasst</div>
+              )}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between py-3 bg-gray-50 rounded-lg px-4 mt-4">
             <span className="text-dark font-semibold">Monatlicher Überschuss</span>
             <span className={`font-bold text-lg ${metrics.monthlyRent - metrics.monthlyExpenses >= 0 ? "text-emerald-600" : "text-red-600"}`}>
               {formatCurrency(metrics.monthlyRent - metrics.monthlyExpenses)}
