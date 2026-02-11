@@ -44,6 +44,16 @@ interface CostDetails {
   avgExpenses: number;
 }
 
+interface PeriodYield {
+  grossYield: number;
+  netYield: number;
+  netCashflowMonthly: number;
+  totalRentInPeriod: number;
+  totalCostsInPeriod: number;
+  monthsInPeriod: number;
+  currentValue: number;
+}
+
 interface Comparison {
   lastMonth: Metrics | null;
   lastYear: Metrics | null;
@@ -72,6 +82,10 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
   const [expandedCosts, setExpandedCosts] = useState(false);
   const [rentDetails, setRentDetails] = useState<RentDetail[]>([]);
   const [costDetails, setCostDetails] = useState<CostDetails>({ hausgeldByUnit: [], loanPayments: 0, avgExpenses: 0 });
+  const [periodYield, setPeriodYield] = useState<PeriodYield>({
+    grossYield: 0, netYield: 0, netCashflowMonthly: 0,
+    totalRentInPeriod: 0, totalCostsInPeriod: 0, monthsInPeriod: 0, currentValue: 0,
+  });
 
   const currentYear = new Date().getFullYear();
   const [dateFrom, setDateFrom] = useState(`${currentYear}-01-01`);
@@ -217,6 +231,34 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           hausgeldByUnit,
           loanPayments: monthlyLoanPayments,
           avgExpenses: monthlyExpensesFromData,
+        });
+
+        const totalRentInPeriod = allContracts.reduce((sum, c) => {
+          const cStart = new Date(c.contract_start);
+          const cEnd = c.contract_end ? new Date(c.contract_end) : toDate;
+          const overlapStart = cStart > fromDate ? cStart : fromDate;
+          const overlapEnd = cEnd < toDate ? cEnd : toDate;
+          if (overlapStart > overlapEnd) return sum;
+          const overlapDays = Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24));
+          const overlapMonths = overlapDays / 30;
+          return sum + Number(c.base_rent || 0) * overlapMonths;
+        }, 0);
+
+        const totalCostsInPeriod = totalExpensesInPeriod
+          + (monthlyLoanPayments * monthsInPeriod)
+          + (monthlyHausgeld * monthsInPeriod);
+
+        const annualizedRent = monthsInPeriod > 0 ? (totalRentInPeriod / monthsInPeriod) * 12 : 0;
+        const annualizedCosts = monthsInPeriod > 0 ? (totalCostsInPeriod / monthsInPeriod) * 12 : 0;
+
+        const grossYield = effectiveCurrentValue > 0 ? (annualizedRent / effectiveCurrentValue) * 100 : 0;
+        const netYield = effectiveCurrentValue > 0 ? ((annualizedRent - annualizedCosts) / effectiveCurrentValue) * 100 : 0;
+        const netCashflowMonthly = monthsInPeriod > 0 ? (totalRentInPeriod - totalCostsInPeriod) / monthsInPeriod : 0;
+
+        setPeriodYield({
+          grossYield, netYield, netCashflowMonthly,
+          totalRentInPeriod, totalCostsInPeriod, monthsInPeriod,
+          currentValue: effectiveCurrentValue,
         });
 
         setMetrics({
@@ -422,6 +464,88 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           </div>
           <div className="text-xs text-gray-500">
             {formatCurrency(metrics.monthlyExpenses * 12)} pro Jahr
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg p-6 relative">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">Bruttorendite</span>
+              <InfoTooltip text={`Berechnung: (Tatsächliche Mieteinnahmen im Zeitraum, annualisiert) ÷ Aktueller Wert × 100. Berücksichtigt Leerstandsmonate, da nur die tatsächliche Vertragslaufzeit innerhalb des Zeitraums zählt.`} />
+            </div>
+            <TrendingUp className="w-5 h-5" style={{ color: '#3c8af7' }} strokeWidth={1.5} />
+          </div>
+          <div className={`text-3xl font-bold mb-1 ${periodYield.grossYield >= 0 ? 'text-dark' : 'text-red-600'}`}>
+            {periodYield.grossYield.toFixed(2)}%
+          </div>
+          <div className="text-xs text-gray-400">
+            annualisiert im Zeitraum
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-100 space-y-1 text-xs text-gray-500">
+            <div className="flex justify-between">
+              <span>Mieteinnahmen im Zeitraum</span>
+              <span className="font-medium text-gray-700">{formatCurrency(periodYield.totalRentInPeriod)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Aktueller Wert</span>
+              <span className="font-medium text-gray-700">{formatCurrency(periodYield.currentValue)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-6 relative">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">Nettorendite</span>
+              <InfoTooltip text={`Berechnung: (Mieteinnahmen − Kosten im Zeitraum, annualisiert) ÷ Aktueller Wert × 100. Berücksichtigt Leerstand sowie alle Kosten (Ausgaben, Kreditraten, Hausgeld).`} />
+            </div>
+            <TrendingUp className="w-5 h-5" style={{ color: '#3c8af7' }} strokeWidth={1.5} />
+          </div>
+          <div className={`text-3xl font-bold mb-1 ${periodYield.netYield >= 0 ? 'text-dark' : 'text-red-600'}`}>
+            {periodYield.netYield.toFixed(2)}%
+          </div>
+          <div className="text-xs text-gray-400">
+            nach Kosten, annualisiert
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-100 space-y-1 text-xs text-gray-500">
+            <div className="flex justify-between">
+              <span>Einnahmen im Zeitraum</span>
+              <span className="font-medium text-green-600">{formatCurrency(periodYield.totalRentInPeriod)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Kosten im Zeitraum</span>
+              <span className="font-medium text-red-600">- {formatCurrency(periodYield.totalCostsInPeriod)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-6 relative">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">Netto-Cashflow</span>
+              <InfoTooltip text={`Berechnung: (Tatsächliche Mieteinnahmen − Gesamtkosten) im Zeitraum ÷ Monate. Zeigt den durchschnittlichen monatlichen Überschuss unter Berücksichtigung von Leerstand.`} />
+            </div>
+            <Euro className="w-5 h-5" style={{ color: '#3c8af7' }} strokeWidth={1.5} />
+          </div>
+          <div className={`text-3xl font-bold mb-1 ${periodYield.netCashflowMonthly >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            {formatCurrency(periodYield.netCashflowMonthly)}
+          </div>
+          <div className="text-xs text-gray-400">
+            durchschn. pro Monat im Zeitraum
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-100 space-y-1 text-xs text-gray-500">
+            <div className="flex justify-between">
+              <span>Zeitraum</span>
+              <span className="font-medium text-gray-700">{periodYield.monthsInPeriod.toFixed(1)} Monate</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Gesamt-Cashflow</span>
+              <span className={`font-medium ${periodYield.totalRentInPeriod - periodYield.totalCostsInPeriod >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                {formatCurrency(periodYield.totalRentInPeriod - periodYield.totalCostsInPeriod)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
