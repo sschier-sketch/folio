@@ -146,17 +146,24 @@ export default function CashflowView() {
         loansQuery = loansQuery.eq("property_id", selectedProperty);
       }
 
-      const [contractsRes, manualIncomeRes, expensesRes, loansRes] = await Promise.all([
+      const unitsQuery = supabase
+        .from("property_units")
+        .select(HAUSGELD_UNIT_FIELDS)
+        .eq("user_id", user!.id);
+
+      const [contractsRes, manualIncomeRes, expensesRes, loansRes, unitsRes] = await Promise.all([
         contractsQuery,
         manualIncomeQuery,
         expensesQuery,
         loansQuery,
+        unitsQuery,
       ]);
 
       const contracts = contractsRes.data || [];
       const manualIncomes = manualIncomeRes.data || [];
       const expenses = expensesRes.data || [];
       const loans = loansRes.data || [];
+      const freshUnits: Unit[] = unitsRes.data || [];
 
       const monthNames = [
         "Jan",
@@ -212,12 +219,12 @@ export default function CashflowView() {
           .filter((e) => {
             const date = new Date(e.expense_date);
             if (date.getFullYear() !== year || date.getMonth() !== month) return false;
-            if (isExpenseSupersededBySystemHausgeld(e, units)) return false;
+            if (isExpenseSupersededBySystemHausgeld(e, freshUnits)) return false;
             return true;
           })
           .reduce((sum, e) => sum + parseFloat(e.amount?.toString() || '0'), 0);
 
-        const monthHausgeld = getMonthlyHausgeldEur(units, {
+        const monthHausgeld = getMonthlyHausgeldEur(freshUnits, {
           propertyId: selectedProperty || undefined,
           unitId: selectedUnit || undefined,
         });
