@@ -32,7 +32,7 @@ export const stripeProducts: StripeProduct[] = [
   },
   {
     priceId: "price_1SmAu0DT0DRNFiKmj97bxor8",
-    name: "Rentably Pro - Monatlich",
+    name: "Pro - Monatlich",
     description: "Ideal für professionelle Verwalter",
     mode: "subscription",
     price: 12.90,
@@ -53,7 +53,7 @@ export const stripeProducts: StripeProduct[] = [
   },
   {
     priceId: "price_1SmAszDT0DRNFiKmQ7qG1L8V",
-    name: "Rentably Pro - Jährlich",
+    name: "Pro - Jährlich",
     description: "Ideal für professionelle Verwalter. Spare 30% mit der jährlichen Zahlung.",
     mode: "subscription",
     price: 108.0,

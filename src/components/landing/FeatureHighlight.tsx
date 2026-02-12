@@ -8,6 +8,7 @@ import {
   Receipt,
   MessageSquare,
   Wallet,
+  LayoutGrid,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { RefLink } from "../common/RefLink";
@@ -60,6 +61,13 @@ const FEATURES: {
     description:
       "Betriebskostenabrechnungen erstellen, Umlageschlüssel verwalten und Abrechnungen direkt an Mieter versenden.",
     path: "/funktionen/buchhaltung",
+  },
+  {
+    icon: LayoutGrid,
+    title: "Alle Funktionen",
+    description:
+      "Entdecken Sie den gesamten Funktionsumfang von rentably und finden Sie die passenden Werkzeuge f\u00fcr Ihre Verwaltung.",
+    path: "/funktionen",
   },
 ];
 
@@ -147,7 +155,7 @@ export default function FeatureHighlight() {
               Alles, was Sie brauchen — an einem Ort
             </h2>
             <p className="text-gray-500 leading-relaxed mb-8 max-w-[650px]">
-              Fünf Bereiche, die Ihre Immobilienverwaltung vollständig abdecken
+              Sechs Bereiche, die Ihre Immobilienverwaltung vollständig abdecken
               &ndash; von der Mietverwaltung bis zur Nebenkostenabrechnung.
               Im Basic-Tarif kostenlos, mit dem Pro-Test sogar mit
               allen Premium-Funktionen.

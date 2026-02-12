@@ -150,51 +150,72 @@ const BENEFITS = [
   }
 ];
 
-function ContractMockup() {
+const MOCK_TENANTS = [
+  { name: "Sarah Meyer", unit: "Musterstr. 10 \u00b7 EG", rent: "950,00 \u20ac", status: "Aktiv", statusColor: "#22c55e", statusBg: "#f0fdf4" },
+  { name: "Thomas Klein", unit: "Musterstr. 10 \u00b7 1.OG", rent: "1.120,00 \u20ac", status: "Aktiv", statusColor: "#22c55e", statusBg: "#f0fdf4" },
+  { name: "Lisa Wagner", unit: "Musterstr. 10 \u00b7 2.OG", rent: "890,00 \u20ac", status: "K\u00fcndigt", statusColor: "#f59e0b", statusBg: "#fffbeb" },
+  { name: "Michael Hoffmann", unit: "Musterstr. 10 \u00b7 DG", rent: "780,00 \u20ac", status: "Aktiv", statusColor: "#22c55e", statusBg: "#f0fdf4" },
+];
+
+function TenantTableMockup() {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-900/[0.08] overflow-hidden">
-      <div className="h-9 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 px-4">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]/60" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]/60" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]/60" />
-        <div className="ml-4 h-5 w-48 bg-gray-100 rounded-md" />
+      <div className="px-6 py-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <h3 className="text-base font-bold text-gray-900">Mieter</h3>
+          <span className="text-sm text-gray-400">4 Eintr\u00e4ge</span>
+        </div>
+        <div className="h-9 px-4 rounded-lg bg-gray-900 text-white text-sm font-semibold flex items-center gap-1.5">
+          <span className="text-base leading-none">+</span>
+          Neuer Mieter
+        </div>
       </div>
-      <div className="p-5">
-        <div className="flex items-center gap-3 mb-5">
+
+      <div className="px-6 pb-4 flex items-center gap-3">
+        <div className="flex-1 h-10 rounded-lg border border-gray-200 bg-gray-50 flex items-center px-3 gap-2">
+          <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+          <span className="text-sm text-gray-400">Suchen...</span>
+        </div>
+        <div className="h-10 px-3.5 rounded-lg border border-gray-200 flex items-center gap-2 text-sm text-gray-600">
+          <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" /></svg>
+          Alle
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100">
+        <div className="grid grid-cols-[1.4fr_1.2fr_1fr_0.7fr] px-6 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+          <span>Name</span>
+          <span>Einheit</span>
+          <span>Miete</span>
+          <span className="text-right">Status</span>
+        </div>
+
+        {MOCK_TENANTS.map((t, i) => (
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
+            key={t.name}
+            className={`grid grid-cols-[1.4fr_1.2fr_1fr_0.7fr] px-6 py-4 items-center ${
+              i < MOCK_TENANTS.length - 1 ? "border-b border-gray-100" : ""
+            }`}
           >
-            <Users className="w-5 h-5" style={{ color: "#1E1E24" }} strokeWidth={1.5} />
-          </div>
-          <div className="flex-1">
-            <div className="h-4 w-40 bg-gray-900 rounded mb-1.5 font-semibold text-xs flex items-center px-2">
-              Max Mustermann
+            <span className="text-sm font-semibold text-gray-900">{t.name}</span>
+            <span className="text-sm text-gray-500">{t.unit}</span>
+            <span className="text-sm font-semibold text-gray-900">{t.rent}</span>
+            <div className="flex justify-end">
+              <span
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
+                style={{ color: t.statusColor, backgroundColor: t.statusBg }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: t.statusColor }} />
+                {t.status}
+              </span>
             </div>
-            <div className="h-3 w-28 bg-gray-100 rounded" />
           </div>
-        </div>
-        <div className="space-y-3 mb-5">
-          {[
-            { label: "Mietbeginn", value: "01.01.2024" },
-            { label: "Grundmiete", value: "1.200,00 €" },
-            { label: "Kaution", value: "3.600,00 €" }
-          ].map((item) => (
-            <div key={item.label} className="flex justify-between text-sm">
-              <span className="text-gray-500">{item.label}</span>
-              <span className="font-medium text-gray-900">{item.value}</span>
-            </div>
-          ))}
-        </div>
-        <div className="border-t border-gray-100 pt-4">
-          <div className="text-xs text-gray-400 mb-2">Zahlungsstatus</div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full w-full bg-[#22c55e] rounded-full" />
-            </div>
-            <span className="text-xs font-medium text-[#22c55e]">12/12</span>
-          </div>
-        </div>
+        ))}
+      </div>
+
+      <div className="border-t border-gray-100 bg-gray-50 px-6 py-3.5 flex items-center justify-between">
+        <span className="text-sm text-gray-500 font-medium">Summe Kaltmiete</span>
+        <span className="text-sm font-bold text-gray-900">3.740,00 \u20ac/Monat</span>
       </div>
     </div>
   );
@@ -283,7 +304,7 @@ export default function Mietverwaltung() {
             </RevealOnScroll>
 
             <RevealOnScroll delay={100} className="hidden lg:block">
-              <ContractMockup />
+              <TenantTableMockup />
             </RevealOnScroll>
           </div>
         </div>

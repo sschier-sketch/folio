@@ -43,7 +43,7 @@ export const PLANS: Record<PlanId, Plan> = {
   },
   pro: {
     id: 'pro',
-    name: 'rentably Pro',
+    name: 'Pro',
     description: 'Ideal für professionelle Verwalter',
     stripePriceIdMonthly: 'price_1SmAu0DT0DRNFiKmj97bxor8',
     stripePriceIdYearly: 'price_1SmAszDT0DRNFiKmQ7qG1L8V',
