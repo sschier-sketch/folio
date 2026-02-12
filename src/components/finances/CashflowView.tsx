@@ -522,7 +522,7 @@ export default function CashflowView() {
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span className="text-sm font-medium text-gray-700">{data.month}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm flex-wrap">
+                    <div className="flex items-center gap-3 text-sm flex-wrap flex-1">
                       <span className={`${COLORS.income.text} font-medium`}>
                         +{formatEur(data.income)}
                       </span>
@@ -532,11 +532,11 @@ export default function CashflowView() {
                       <span className={`${COLORS.loans.text} font-medium`}>
                         -{formatEur(data.loanPayments)}
                       </span>
-                      <span className={`inline-flex items-center gap-1 font-semibold ${data.cashflow >= 0 ? COLORS.cashflow.text : "text-red-600"}`}>
-                        <Equal className="w-3.5 h-3.5" />
-                        {data.cashflow >= 0 ? "+" : ""}{formatEur(data.cashflow)}
-                      </span>
                     </div>
+                    <span className={`inline-flex items-center gap-1 text-sm font-semibold shrink-0 ${data.cashflow >= 0 ? COLORS.cashflow.text : "text-red-600"}`}>
+                      <Equal className="w-3.5 h-3.5" />
+                      {data.cashflow >= 0 ? "+" : ""}{formatEur(data.cashflow)}
+                    </span>
                   </div>
 
                   <div className="flex gap-0.5 h-7 ml-6 rounded overflow-hidden bg-gray-100">
