@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../../components/common/RefLink";
@@ -11,8 +12,22 @@ import {
   Shield,
   Clock,
   CheckCircle2,
-  Users
+  Users,
+  ChevronDown,
+  Play,
+  Home,
+  Calendar,
+  Building2,
+  MessagesSquare,
+  FolderOpen,
+  BarChart3
 } from "lucide-react";
+
+const HERO_CHECKS = [
+  "Mietverträge komplett digital verwalten",
+  "Automatische Zahlungsüberwachung",
+  "Indexmieterhöhungen automatisch berechnen"
+];
 
 const FEATURES = [
   {
@@ -47,37 +62,100 @@ const FEATURES = [
   }
 ];
 
-const BENEFITS = [
+const DETAIL_SECTIONS = [
   {
-    number: "01",
-    title: "Verträge im Griff",
-    text: "Alle relevanten Vertragsdaten an einem Ort. Das System erinnert rechtzeitig an Fristen und Kündigungsfristen."
+    title: "Mietverträge anlegen – klar, schnell und fehlerfrei",
+    text: "Mit Rentably legst du neue Mietverträge mühelos an und wählst direkt den passenden Mieter für die Einheit aus. Vertragsbeginn, Sollstellung der Miete und alle relevanten Daten erfasst du strukturiert in einem klaren Workflow. So behältst du jederzeit den Überblick und stellst sicher, dass alle Informationen vollständig und korrekt hinterlegt sind."
   },
   {
-    number: "02",
-    title: "Zahlungen überwachen",
-    text: "Monatlich automatische Prüfung der Mieteingänge. Offene Posten werden sofort sichtbar markiert."
+    title: "Vom Mietpreis bis zur Kaution – alles an einem Ort",
+    text: "In Rentably hinterlegst du alle wichtigen Vertragsdaten übersichtlich an einem Ort. Von Kaltmiete über Betriebskosten und Heizkosten bis hin zur Kaution – alles ist klar strukturiert und jederzeit nachvollziehbar. Auch Sonderfälle wie indexbasierte Mietanpassungen lassen sich problemlos abbilden, sodass deine Verträge immer vollständig und rechtssicher sind."
   },
   {
-    number: "03",
-    title: "Rechtssicher erhöhen",
-    text: "Indexmietverträge automatisch überwacht. Erhöhungen werden berechnet und revisionssicher dokumentiert."
+    title: "Alle Mieten im Blick – übersichtlich und aktuell",
+    text: "Mit der Mietübersicht in Rentably hast du jederzeit den vollen Überblick über alle Zahlungen. Eingänge werden automatisch verbucht und offene Posten klar hervorgehoben, sodass du keine Miete mehr übersiehst. Auch manuelle Buchungen oder kurzfristige Anpassungen lassen sich schnell erledigen – für maximale Flexibilität bei voller Kontrolle."
   }
 ];
 
-const STATS = [
-  { value: "5 → 1h", label: "Zeitaufwand pro Monat" },
-  { value: "100%", label: "Automatische Überwachung" },
-  { value: "0", label: "Vergessene Fristen" }
+const SECURITY_ITEMS = [
+  {
+    title: "Rechenzentrum",
+    subtitle: "in Deutschland"
+  },
+  {
+    title: "Datensicherheit",
+    subtitle: "DSGVO-Konform"
+  },
+  {
+    title: "AES256-GCM",
+    subtitle: "verschlüsselt"
+  },
+  {
+    title: "Regelmäßige",
+    subtitle: "Sicherheitsupdates"
+  }
+];
+
+const OTHER_FEATURES = [
+  {
+    icon: Home,
+    title: "Immobilienmanagement",
+    description: "Verwalte alle deine Immobilien und Einheiten digital & sicher."
+  },
+  {
+    icon: FolderOpen,
+    title: "Dokumentenmanagement",
+    description: "Verwalte deine Dokumente einfach & sicher in der Cloud."
+  },
+  {
+    icon: BarChart3,
+    title: "Finanzmanagement",
+    description: "Finanzen und Mieteinnahmen jederzeit im Blick behalten."
+  },
+  {
+    icon: MessagesSquare,
+    title: "Zentrale Kommunikation",
+    description: "Deine gesamte Kommunikation zentral gebündelt."
+  },
+  {
+    icon: Calendar,
+    title: "Nebenkostenabrechnung",
+    description: "Versandfertige Nebenkostenabrechnung in wenigen Minuten."
+  },
+  {
+    icon: Building2,
+    title: "Übergabeprotokolle",
+    description: "Optimale Dokumentation für deine nächste Wohnungsübergabe."
+  }
+];
+
+const FAQS = [
+  {
+    question: "Wie lege ich einen neuen Mietvertrag an?",
+    answer: "Du wählst die gewünschte Immobilie und Einheit aus, gibst die Mieterdaten ein und erfasst alle Vertragsdaten wie Mietbeginn, Kaltmiete, Nebenkosten und Kaution. Der Vertrag wird automatisch gespeichert und alle Zahlungen werden ab dem Mietbeginn überwacht."
+  },
+  {
+    question: "Werden Mietzahlungen automatisch erfasst?",
+    answer: "Ja, du kannst dein Bankkonto verbinden oder Zahlungen manuell erfassen. Das System ordnet Zahlungen automatisch den jeweiligen Mietverhältnissen zu und zeigt dir offene Posten übersichtlich an."
+  },
+  {
+    question: "Wie funktioniert die automatische Indexmieterhöhung?",
+    answer: "Bei Indexmietverträgen überwacht das System den Verbraucherpreisindex automatisch. Sobald die vereinbarte Schwelle erreicht ist, wird die neue Miethöhe berechnet und du erhältst eine Benachrichtigung. Die Berechnung erfolgt transparent und wird vollständig dokumentiert."
+  },
+  {
+    question: "Kann ich Mahnungen automatisch versenden?",
+    answer: "Ja, bei Zahlungsverzug kannst du mehrstufige Mahnungen erstellen und versenden. Jede Mahnstufe wird automatisch protokolliert und dem Mietverhältnis zugeordnet, sodass du eine lückenlose Dokumentation hast."
+  }
 ];
 
 function ContractMockup() {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-lg shadow-gray-900/[0.06] overflow-hidden">
-      <div className="h-8 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 px-4">
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-900/[0.08] overflow-hidden">
+      <div className="h-9 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 px-4">
         <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]/60" />
         <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]/60" />
         <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]/60" />
+        <div className="ml-4 h-5 w-48 bg-gray-100 rounded-md" />
       </div>
       <div className="p-5">
         <div className="flex items-center gap-3 mb-5">
@@ -87,7 +165,7 @@ function ContractMockup() {
           >
             <Users className="w-5 h-5" style={{ color: "#1E1E24" }} strokeWidth={1.5} />
           </div>
-          <div>
+          <div className="flex-1">
             <div className="h-4 w-40 bg-gray-900 rounded mb-1.5 font-semibold text-xs flex items-center px-2">
               Max Mustermann
             </div>
@@ -120,13 +198,38 @@ function ContractMockup() {
   );
 }
 
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border-b border-gray-200 last:border-b-0">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full py-5 flex items-center justify-between text-left hover:text-[#3c8af7] transition-colors"
+      >
+        <span className="font-semibold text-gray-900 pr-8">{question}</span>
+        <ChevronDown
+          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {isOpen && (
+        <div className="pb-5 text-gray-600 leading-relaxed">
+          {answer}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Mietverwaltung() {
   const navigate = useNavigate();
   const goToSignup = () => navigate(withRef("/signup"));
 
   return (
     <div>
-      <section className="pt-24 pb-20 sm:pt-32 sm:pb-24 px-6">
+      <section className="pt-16 sm:pt-24 pb-[100px] sm:pb-[120px] px-6">
         <div className="max-w-[1200px] mx-auto">
           <RefLink
             to="/funktionen"
@@ -139,23 +242,42 @@ export default function Mietverwaltung() {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <RevealOnScroll>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
                 <span className="text-sm font-medium text-[#3c8af7]">
                   Kerntechnologie
                 </span>
               </div>
-              <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight leading-tight">
-                Mietverwaltung, die mitdenkt
+              <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
+                Stressfreie Mietverwaltung dank{" "}
+                <span className="text-[#3c8af7]">smarter Software</span>
               </h1>
-              <p className="mt-6 text-lg text-gray-500 leading-relaxed">
-                Verträge, Zahlungen und Mietanpassungen in einem System.
-                Automatisiert, übersichtlich und immer aktuell.
+              <p className="mt-6 text-lg sm:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
+                Jede verspätete Miete, jeder Abrechnungsfehler bringt Unsicherheit.
+                Mit Rentably kannst du deine Mietverwaltung digitalisieren: Mietverhältnisse
+                sauber dokumentieren, Zahlungen automatisch erfassen.
               </p>
-              <button
-                onClick={goToSignup}
-                className="mt-8 h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
-              >
-                Jetzt kostenlos starten
-              </button>
+              <ul className="mt-6 space-y-2.5">
+                {HERO_CHECKS.map((item) => (
+                  <li key={item} className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#3c8af7] flex-shrink-0" />
+                    <span className="text-sm text-gray-600">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
+                <button
+                  onClick={goToSignup}
+                  className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
+                >
+                  Jetzt kostenlos starten
+                </button>
+                <RefLink
+                  to="/preise"
+                  className="h-12 inline-flex items-center px-8 rounded-lg text-base font-semibold border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
+                >
+                  Preise ansehen
+                </RefLink>
+              </div>
             </RevealOnScroll>
 
             <RevealOnScroll delay={100} className="hidden lg:block">
@@ -168,16 +290,60 @@ export default function Mietverwaltung() {
       <section className="py-20 px-6 bg-[#f8fafc]">
         <div className="max-w-[1200px] mx-auto">
           <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
-              Alles für die professionelle Mietverwaltung
-            </h2>
-            <p className="text-gray-500 text-center max-w-[600px] mx-auto mb-16">
-              Von der Vertragsverwaltung bis zur automatischen Zahlungsüberwachung —
-              alle Werkzeuge in einer Plattform.
-            </p>
+            <div className="text-center mb-16">
+              <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
+                Video
+              </p>
+              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+                In wenigen Klicks zum Mietverhältnis
+              </h2>
+              <p className="text-gray-500 max-w-[700px] mx-auto">
+                Vergiss komplizierte Formulare und verstreute Dokumente. Mit Rentably
+                werden Kaltmiete, Betriebskosten und Nebenkosten sauber erfasst.
+              </p>
+            </div>
           </RevealOnScroll>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <RevealOnScroll delay={100}>
+            <div className="max-w-[900px] mx-auto">
+              <div className="relative aspect-video bg-gray-900 rounded-2xl overflow-hidden border border-gray-200 shadow-xl">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors cursor-pointer">
+                    <Play className="w-7 h-7 text-[#3c8af7] ml-1" fill="currentColor" />
+                  </div>
+                </div>
+                <img
+                  src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1920"
+                  alt="Mietverwaltung Demo"
+                  className="w-full h-full object-cover opacity-60"
+                />
+              </div>
+              <p className="text-center text-sm text-gray-500 mt-4">
+                Schau dir an, wie schnell du starten kannst – und erlebe Immobilienverwaltung ohne Chaos.
+              </p>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
+      <section className="py-20 px-6">
+        <div className="max-w-[1200px] mx-auto">
+          <RevealOnScroll>
+            <div className="text-center mb-16">
+              <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
+                Weniger Stress, mehr Überblick
+              </p>
+              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+                Deine Mietverwaltung im Griff
+              </h2>
+              <p className="text-gray-500 max-w-[700px] mx-auto">
+                Einfach, übersichtlich, professionell – mit Rentably fühlt sich deine
+                Mietverwaltung mühelos an.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {FEATURES.map((feature, i) => (
               <RevealOnScroll key={feature.title} delay={i * 80}>
                 <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow h-full">
@@ -197,29 +363,16 @@ export default function Mietverwaltung() {
               </RevealOnScroll>
             ))}
           </div>
-        </div>
-      </section>
 
-      <section className="py-20 px-6">
-        <div className="max-w-[1200px] mx-auto">
-          <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-16 text-center">
-              So funktioniert's
-            </h2>
-          </RevealOnScroll>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {BENEFITS.map((benefit, i) => (
-              <RevealOnScroll key={benefit.number} delay={i * 80}>
-                <div className="relative">
-                  <div className="text-5xl font-bold text-[#3c8af7]/10 mb-4">
-                    {benefit.number}
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
-                    {benefit.title}
+          <div className="space-y-20">
+            {DETAIL_SECTIONS.map((section, i) => (
+              <RevealOnScroll key={section.title} delay={i * 100}>
+                <div className="max-w-[800px] mx-auto">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                    {section.title}
                   </h3>
-                  <p className="text-gray-500 leading-relaxed">
-                    {benefit.text}
+                  <p className="text-gray-600 leading-relaxed">
+                    {section.text}
                   </p>
                 </div>
               </RevealOnScroll>
@@ -233,65 +386,99 @@ export default function Mietverwaltung() {
           <RevealOnScroll>
             <div className="text-center mb-12">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
-                Praxisbeispiel
+                Sicherheit
               </p>
               <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-                Von 5 Stunden auf unter 1 Stunde
+                Ein sicheres Zuhause für deine Daten
               </h2>
-              <p className="text-lg text-gray-600 max-w-[700px] mx-auto">
-                Eine Vermieterin mit 14 Wohneinheiten an drei Standorten reduzierte
-                ihren monatlichen Verwaltungsaufwand um 80%.
+              <p className="text-gray-500 max-w-[700px] mx-auto">
+                Alle deine Daten werden sicher in zertifizierten Rechenzentren in Deutschland
+                verwaltet. Es findet kein Datentransfer ins Ausland statt.
               </p>
             </div>
           </RevealOnScroll>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {STATS.map((stat, i) => (
-              <RevealOnScroll key={stat.label} delay={i * 80}>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {SECURITY_ITEMS.map((item, i) => (
+              <RevealOnScroll key={item.title} delay={i * 80}>
                 <div className="bg-white rounded-xl p-6 text-center border border-gray-200">
-                  <div className="text-3xl font-bold text-[#3c8af7] mb-2">
-                    {stat.value}
+                  <div className="w-12 h-12 rounded-full bg-[#22c55e]/10 flex items-center justify-center mx-auto mb-4">
+                    <Shield className="w-6 h-6 text-[#22c55e]" />
                   </div>
-                  <div className="text-sm text-gray-600">
-                    {stat.label}
-                  </div>
+                  <h3 className="font-bold text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {item.subtitle}
+                  </p>
                 </div>
               </RevealOnScroll>
             ))}
           </div>
+        </div>
+      </section>
 
-          <RevealOnScroll delay={240}>
-            <div className="bg-white rounded-2xl p-8 border border-gray-200">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 rounded-full bg-[#22c55e]/10 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="w-6 h-6 text-[#22c55e]" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Vorher: Manuelle Verwaltung
+      <section className="py-20 px-6">
+        <div className="max-w-[1200px] mx-auto">
+          <RevealOnScroll>
+            <div className="text-center mb-16">
+              <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
+                Innovativ
+              </p>
+              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+                Weitere Funktionen für Vermieter
+              </h2>
+              <p className="text-gray-500 max-w-[700px] mx-auto">
+                Rentably bietet dir umfangreiche Funktionen, die deine Immobilienverwaltung
+                auf das nächste Level bringen.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {OTHER_FEATURES.map((feature, i) => (
+              <RevealOnScroll key={feature.title} delay={i * 80}>
+                <div className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer">
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+                    style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
+                  >
+                    <feature.icon className="w-5 h-5" style={{ color: "#1E1E24" }} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {feature.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Zahlungseingänge wurden manuell in Tabellen erfasst. Mahnungen gingen
-                    verspätet raus, weil offene Beträge erst beim Monatsabschluss auffielen.
-                    Indexmieterhöhungen wurden teilweise vergessen.
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    {feature.description}
                   </p>
                 </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#3c8af7]/10 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="w-6 h-6 text-[#3c8af7]" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Nachher: Automatisierte Abläufe
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Monatliche Zahlungsübersichten werden automatisch generiert. Offene Posten
-                    am Tag nach Fälligkeit markiert. Mahnungen mit zwei Klicks versendet.
-                    Indexprüfung läuft im Hintergrund.
-                  </p>
-                </div>
-              </div>
+              </RevealOnScroll>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-6 bg-[#f8fafc]">
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <div className="text-center mb-12">
+              <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
+                FAQ
+              </p>
+              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+                Häufig gestellte Fragen
+              </h2>
+              <p className="text-gray-500">
+                Alles, was du über die Mietverwaltung wissen musst
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          <RevealOnScroll delay={100}>
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              {FAQS.map((faq) => (
+                <FaqItem key={faq.question} question={faq.question} answer={faq.answer} />
+              ))}
             </div>
           </RevealOnScroll>
         </div>
@@ -301,11 +488,11 @@ export default function Mietverwaltung() {
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">
             <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight mb-4">
-              Mietverwaltung ohne Aufwand
+              Bereit für stressfreie Mietverwaltung?
             </h2>
             <p className="text-gray-500 mb-10 max-w-lg mx-auto">
-              Registrieren Sie sich kostenlos und verwalten Sie Ihre
-              Mietverhältnisse ab sofort digital.
+              Registriere dich kostenlos und verwalte deine Mietverhältnisse
+              ab sofort digital – ohne Kreditkarte.
             </p>
             <button
               onClick={goToSignup}
