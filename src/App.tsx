@@ -35,6 +35,12 @@ import AdminMagazinePostEditor from "./components/admin/AdminMagazinePostEditor"
 import { Magazine } from "./pages/Magazine";
 import { MagazinePost } from "./pages/MagazinePost";
 import MarketingLayout from "./components/marketing/MarketingLayout";
+import UeberUns from "./pages/UeberUns";
+import Mietverwaltung from "./pages/funktionen/Mietverwaltung";
+import Immobilienmanagement from "./pages/funktionen/Immobilienmanagement";
+import Kommunikation from "./pages/funktionen/Kommunikation";
+import Buchhaltung from "./pages/funktionen/Buchhaltung";
+import Dokumente from "./pages/funktionen/Dokumente";
 
 function PasswordRecoveryHandler() {
   const navigate = useNavigate();
@@ -85,13 +91,22 @@ function App() {
         <Routes>
         <Route element={<MarketingLayout />}>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/ueber-uns" element={<UeberUns />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/kontakt" element={<Contact />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
           <Route path="/agb" element={<AGB />} />
           <Route path="/avv" element={<AVV />} />
           <Route path="/features" element={<Features />} />
+          <Route path="/funktionen" element={<Features />} />
+          <Route path="/funktionen/mietverwaltung" element={<Mietverwaltung />} />
+          <Route path="/funktionen/immobilienmanagement" element={<Immobilienmanagement />} />
+          <Route path="/funktionen/kommunikation" element={<Kommunikation />} />
+          <Route path="/funktionen/buchhaltung" element={<Buchhaltung />} />
+          <Route path="/funktionen/dokumente" element={<Dokumente />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/preise" element={<Pricing />} />
           <Route path="/support" element={<Support />} />
           <Route path="/magazin" element={<Magazine />} />
           <Route path="/magazin/:slug" element={<MagazinePost />} />
