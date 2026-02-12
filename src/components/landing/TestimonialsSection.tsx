@@ -52,8 +52,11 @@ export default function TestimonialsSection() {
               </div>
               <p className="text-gray-600 leading-relaxed mb-6">{t.text}</p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#3c8af7]/8 flex items-center justify-center">
-                  <span className="text-sm font-semibold text-[#3c8af7]">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
+                >
+                  <span className="text-sm font-semibold" style={{ color: "#1E1E24" }}>
                     {t.name.charAt(0)}
                   </span>
                 </div>

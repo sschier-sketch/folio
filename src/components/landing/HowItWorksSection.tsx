@@ -6,7 +6,7 @@ const STEPS: { num: string; icon: LucideIcon; title: string; text: string }[] = 
     num: "01",
     icon: UserPlus,
     title: "Registrieren",
-    text: "Erstellen Sie kostenlos Ihr Rentably-Konto. Keine Zahlungsdaten erforderlich.",
+    text: "Erstellen Sie kostenlos Ihr Rentably-Konto. Keine Zahlungsdaten erforderlich — 30 Tage alle Pro-Funktionen inklusive.",
   },
   {
     num: "02",
@@ -36,12 +36,15 @@ export default function HowItWorksSection() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 relative">
-          <div className="hidden md:block absolute top-[52px] left-[16.67%] right-[16.67%] h-px bg-gray-200" />
+          <div className="hidden md:block absolute top-[40px] left-[16.67%] right-[16.67%] h-px bg-gray-200" />
 
           {STEPS.map((step) => (
             <div key={step.num} className="text-center relative">
-              <div className="w-[72px] h-[72px] rounded-full border-2 border-gray-200 bg-white flex items-center justify-center mx-auto mb-6 relative z-10">
-                <step.icon className="w-6 h-6 text-[#3c8af7]" />
+              <div
+                className="w-[80px] h-[80px] rounded-full flex items-center justify-center mx-auto mb-6 relative z-10"
+                style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
+              >
+                <step.icon className="w-7 h-7" style={{ color: "#1E1E24" }} strokeWidth={1.5} />
               </div>
               <div className="text-xs font-semibold text-[#3c8af7] tracking-widest uppercase mb-2">
                 Schritt {step.num}

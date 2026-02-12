@@ -1,13 +1,93 @@
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../common/RefLink";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Home, Users, BarChart3, FileText } from "lucide-react";
 
 const HERO_CHECKS = [
   "Komplett kostenlos im Basic-Tarif",
+  "30 Tage alle Pro-Funktionen gratis testen",
   "Keine Kreditkarte erforderlich",
-  "Sofort einsatzbereit",
 ];
+
+function DashboardMockup() {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-900/[0.08] overflow-hidden">
+      <div className="h-9 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 px-4">
+        <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]/60" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]/60" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]/60" />
+        <div className="ml-4 h-5 w-48 bg-gray-100 rounded-md" />
+      </div>
+      <div className="flex">
+        <div className="w-14 bg-gray-50 border-r border-gray-100 py-4 flex flex-col items-center gap-4">
+          {[Home, Users, BarChart3, FileText].map((Icon, i) => (
+            <div
+              key={i}
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{
+                backgroundColor: i === 0 ? "#EEF4FF" : "transparent",
+                border: i === 0 ? "1px solid #DDE7FF" : "none",
+              }}
+            >
+              <Icon
+                className="w-4 h-4"
+                style={{ color: i === 0 ? "#1E1E24" : "#9ca3af" }}
+                strokeWidth={1.5}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="flex-1 p-5">
+          <div className="h-5 w-32 bg-gray-100 rounded mb-4" />
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            {["#3c8af7", "#22c55e", "#f59e0b"].map((color) => (
+              <div
+                key={color}
+                className="h-[72px] rounded-lg border border-gray-100 p-3 flex flex-col justify-between"
+              >
+                <div className="h-3 w-14 bg-gray-100 rounded" />
+                <div
+                  className="h-5 w-20 rounded"
+                  style={{ backgroundColor: color + "18" }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="h-[120px] rounded-lg border border-gray-100 p-3 mb-4">
+            <div className="h-3 w-24 bg-gray-100 rounded mb-3" />
+            <div className="flex items-end gap-2 h-16">
+              {[40, 65, 50, 80, 60, 72, 55, 90, 68, 75, 85, 95].map(
+                (h, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-sm"
+                    style={{
+                      height: `${h}%`,
+                      backgroundColor:
+                        i === 11 ? "#3c8af7" : "#3c8af7" + "30",
+                    }}
+                  />
+                )
+              )}
+            </div>
+          </div>
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-8 rounded border border-gray-100 flex items-center px-3 gap-3"
+              >
+                <div className="w-4 h-4 rounded-full bg-gray-100" />
+                <div className="h-2.5 flex-1 bg-gray-100 rounded" />
+                <div className="h-2.5 w-12 bg-gray-100 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function HeroSection() {
   const navigate = useNavigate();
@@ -57,19 +137,7 @@ export default function HeroSection() {
           </div>
 
           <div className="hidden lg:block">
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-900/[0.08] overflow-hidden">
-              <div className="h-9 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 px-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]/60" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]/60" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]/60" />
-                <div className="ml-4 h-5 w-48 bg-gray-100 rounded-md" />
-              </div>
-              <img
-                src="/Bildschirmfoto_2026-02-12_um_17.31.34.png"
-                alt="Rentably Dashboard"
-                className="w-full h-auto"
-              />
-            </div>
+            <DashboardMockup />
           </div>
         </div>
       </div>

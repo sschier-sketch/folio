@@ -1,20 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
-import { CheckCircle2, Heart, Lightbulb, Handshake } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 const POINTS = [
-  {
-    icon: Heart,
-    text: "45 Tage kostenlos testen — alle Funktionen inklusive",
-  },
-  {
-    icon: Lightbulb,
-    text: "Unverbindlich und ohne Zahlungsdaten starten",
-  },
-  {
-    icon: Handshake,
-    text: "Von Vermietern für Vermieter — wir kennen Ihre Herausforderungen",
-  },
+  "30 Tage alle Pro-Funktionen kostenlos testen",
+  "Unverbindlich und ohne Zahlungsdaten starten",
+  "Von Vermietern für Vermieter — wir kennen Ihre Herausforderungen",
 ];
 
 export default function ByLandlordsSection() {
@@ -41,9 +32,9 @@ export default function ByLandlordsSection() {
             </p>
             <ul className="space-y-4 mb-10">
               {POINTS.map((point) => (
-                <li key={point.text} className="flex items-center gap-3">
+                <li key={point} className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-[#3c8af7] flex-shrink-0" />
-                  <span className="text-gray-700">{point.text}</span>
+                  <span className="text-gray-700">{point}</span>
                 </li>
               ))}
             </ul>
@@ -56,16 +47,11 @@ export default function ByLandlordsSection() {
           </div>
 
           <div className="hidden lg:block">
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-lg shadow-gray-900/[0.06] overflow-hidden">
-              <div className="h-8 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 px-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]/60" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]/60" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]/60" />
-              </div>
+            <div className="rounded-2xl overflow-hidden shadow-lg shadow-gray-900/[0.06]">
               <img
-                src="/Bildschirmfoto_2026-02-12_um_17.31.34.png"
-                alt="Rentably Dashboard Ansicht"
-                className="w-full h-auto"
+                src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800"
+                alt="Team bei der Arbeit an Rentably"
+                className="w-full h-[480px] object-cover"
               />
             </div>
           </div>

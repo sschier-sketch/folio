@@ -37,8 +37,11 @@ export default function TrustSection() {
               key={item.headline}
               className="bg-white border border-[#e5e7eb] rounded-xl p-8"
             >
-              <div className="w-10 h-10 rounded-lg bg-[#3c8af7]/8 flex items-center justify-center mb-5">
-                <item.icon className="w-5 h-5 text-[#3c8af7]" />
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
+                style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
+              >
+                <item.icon className="w-5 h-5" style={{ color: "#1E1E24" }} strokeWidth={1.5} />
               </div>
               <div className="text-2xl font-bold text-gray-900 mb-2">
                 {item.headline}
