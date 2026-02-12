@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Eye, Pencil, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Pencil, AlertCircle, Users, Briefcase, Building2, FileText, ChevronDown, Calendar } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
@@ -18,16 +18,79 @@ interface MailTemplateEditorProps {
   onSaved: () => void;
 }
 
+interface PlaceholderItem {
+  key: string;
+  label: string;
+}
+
+interface PlaceholderGroup {
+  id: string;
+  label: string;
+  icon: typeof Users;
+  items: PlaceholderItem[];
+}
+
 const CATEGORIES = ['Zahlungserinnerung', 'Mietvertrag', 'Nebenkostenabrechnung', 'Reparatur', 'Allgemein', 'Sonstiges'];
 
-const PLACEHOLDERS = [
-  { key: '{{mieter_name}}', label: 'Mietername' },
-  { key: '{{mieter_vorname}}', label: 'Vorname' },
-  { key: '{{mieter_nachname}}', label: 'Nachname' },
-  { key: '{{immobilie}}', label: 'Immobilie' },
-  { key: '{{einheit}}', label: 'Einheit' },
-  { key: '{{datum}}', label: 'Datum' },
-  { key: '{{betrag}}', label: 'Betrag' },
+const PLACEHOLDER_GROUPS: PlaceholderGroup[] = [
+  {
+    id: 'mieter',
+    label: 'Mieter',
+    icon: Users,
+    items: [
+      { key: '{{mieter_anrede}}', label: 'Anrede' },
+      { key: '{{mieter_name}}', label: 'Name' },
+      { key: '{{mieter_vorname}}', label: 'Vorname' },
+      { key: '{{mieter_nachname}}', label: 'Nachname' },
+      { key: '{{mieter_strasse}}', label: 'Straße' },
+      { key: '{{mieter_plz}}', label: 'PLZ' },
+      { key: '{{mieter_ort}}', label: 'Ort' },
+    ],
+  },
+  {
+    id: 'vermieter',
+    label: 'Vermieter',
+    icon: Briefcase,
+    items: [
+      { key: '{{vermieter_name}}', label: 'Name/Firma' },
+      { key: '{{vermieter_strasse}}', label: 'Straße' },
+      { key: '{{vermieter_plz}}', label: 'PLZ' },
+      { key: '{{vermieter_ort}}', label: 'Ort' },
+    ],
+  },
+  {
+    id: 'objekt',
+    label: 'Objekt',
+    icon: Building2,
+    items: [
+      { key: '{{objekt_name}}', label: 'Objektname' },
+      { key: '{{objekt_strasse}}', label: 'Straße' },
+      { key: '{{objekt_plz}}', label: 'PLZ' },
+      { key: '{{objekt_ort}}', label: 'Ort' },
+      { key: '{{einheit_name}}', label: 'Einheit' },
+    ],
+  },
+  {
+    id: 'mietvertrag',
+    label: 'Mietvertrag',
+    icon: FileText,
+    items: [
+      { key: '{{mietbeginn}}', label: 'Mietbeginn' },
+      { key: '{{kaltmiete}}', label: 'Kaltmiete' },
+      { key: '{{nebenkosten}}', label: 'Nebenkosten' },
+      { key: '{{gesamtmiete}}', label: 'Gesamtmiete' },
+      { key: '{{kaution}}', label: 'Kaution' },
+    ],
+  },
+  {
+    id: 'allgemein',
+    label: 'Allgemein',
+    icon: Calendar,
+    items: [
+      { key: '{{datum}}', label: 'Datum' },
+      { key: '{{betrag}}', label: 'Betrag' },
+    ],
+  },
 ];
 
 export default function MailTemplateEditor({ template, onBack, onSaved }: MailTemplateEditorProps) {
@@ -40,6 +103,7 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showPlaceholders, setShowPlaceholders] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (template) {
@@ -59,18 +123,44 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
 
   function insertPlaceholder(placeholder: string) {
     setContent((prev) => prev + placeholder);
-    setShowPlaceholders(false);
+  }
+
+  function toggleGroup(groupId: string) {
+    setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
   }
 
   function getPreviewContent() {
     let text = content;
-    text = text.replace(/\{\{mieter_name\}\}/g, 'Max Mustermann');
-    text = text.replace(/\{\{mieter_vorname\}\}/g, 'Max');
-    text = text.replace(/\{\{mieter_nachname\}\}/g, 'Mustermann');
-    text = text.replace(/\{\{immobilie\}\}/g, 'Musterstraße 12');
-    text = text.replace(/\{\{einheit\}\}/g, 'Wohnung 3A');
-    text = text.replace(/\{\{datum\}\}/g, new Date().toLocaleDateString('de-DE'));
-    text = text.replace(/\{\{betrag\}\}/g, '750,00 EUR');
+    const replacements: Record<string, string> = {
+      '{{mieter_anrede}}': 'Herr',
+      '{{mieter_name}}': 'Max Mustermann',
+      '{{mieter_vorname}}': 'Max',
+      '{{mieter_nachname}}': 'Mustermann',
+      '{{mieter_strasse}}': 'Musterstraße 12',
+      '{{mieter_plz}}': '10115',
+      '{{mieter_ort}}': 'Berlin',
+      '{{vermieter_name}}': 'Hausverwaltung GmbH',
+      '{{vermieter_strasse}}': 'Verwaltungsweg 5',
+      '{{vermieter_plz}}': '10178',
+      '{{vermieter_ort}}': 'Berlin',
+      '{{objekt_name}}': 'Wohnanlage Sonnenhof',
+      '{{objekt_strasse}}': 'Musterstraße 12',
+      '{{objekt_plz}}': '10115',
+      '{{objekt_ort}}': 'Berlin',
+      '{{einheit_name}}': 'Wohnung 3A',
+      '{{mietbeginn}}': '01.01.2026',
+      '{{kaltmiete}}': '750,00 EUR',
+      '{{nebenkosten}}': '200,00 EUR',
+      '{{gesamtmiete}}': '950,00 EUR',
+      '{{kaution}}': '2.250,00 EUR',
+      '{{datum}}': new Date().toLocaleDateString('de-DE'),
+      '{{betrag}}': '750,00 EUR',
+      '{{immobilie}}': 'Musterstraße 12',
+      '{{einheit}}': 'Wohnung 3A',
+    };
+    Object.entries(replacements).forEach(([key, value]) => {
+      text = text.replace(new RegExp(key.replace(/[{}]/g, '\\$&'), 'g'), value);
+    });
     return text;
   }
 
@@ -211,40 +301,66 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
               <label className="block text-sm font-medium text-gray-700">
                 Inhalt <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <button
-                  onClick={() => setShowPlaceholders(!showPlaceholders)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  <span className="text-gray-400">{'{ }'}</span>
-                  Platzhalter
-                </button>
-                {showPlaceholders && (
-                  <div className="absolute right-0 top-8 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
-                    {PLACEHOLDERS.map((p) => (
-                      <button
-                        key={p.key}
-                        onClick={() => insertPlaceholder(p.key)}
-                        className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        <span>{p.label}</span>
-                        <span className="text-xs text-gray-400 font-mono">{p.key}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={() => setShowPlaceholders(!showPlaceholders)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <span className="text-gray-400">{'{ }'}</span>
+                Platzhalter
+              </button>
             </div>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={10}
-              placeholder={"Schreiben Sie hier Ihre Vorlage...\n\nVerwenden Sie Platzhalter wie {{mieter_name}} für dynamische Inhalte."}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-y leading-relaxed"
-            />
-            <p className="mt-1.5 text-xs text-gray-400">
-              Diese Vorlage kann für E-Mails verwendet werden.
-            </p>
+
+            <div className="flex gap-4">
+              <div className="flex-1 min-w-0">
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={14}
+                  placeholder={"Schreiben Sie hier Ihre Vorlage...\n\nVerwenden Sie Platzhalter wie {{mieter_name}} für dynamische Inhalte."}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-y leading-relaxed"
+                />
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Diese Vorlage kann für E-Mails verwendet werden.
+                </p>
+              </div>
+
+              {showPlaceholders && (
+                <div className="w-72 flex-shrink-0 border border-gray-200 rounded-lg bg-white overflow-hidden self-start max-h-[440px] overflow-y-auto">
+                  {PLACEHOLDER_GROUPS.map((group) => {
+                    const Icon = group.icon;
+                    const isExpanded = expandedGroups[group.id] ?? false;
+                    return (
+                      <div key={group.id} className="border-b border-gray-100 last:border-b-0">
+                        <button
+                          onClick={() => toggleGroup(group.id)}
+                          className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <Icon className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm font-medium text-gray-800">{group.label}</span>
+                          </div>
+                          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                        </button>
+                        {isExpanded && (
+                          <div className="px-4 pb-3 space-y-1">
+                            {group.items.map((item) => (
+                              <button
+                                key={item.key}
+                                onClick={() => insertPlaceholder(item.key)}
+                                className="w-full flex items-center justify-between py-2.5 px-2 rounded-md hover:bg-gray-50 transition-colors group"
+                              >
+                                <span className="text-sm text-gray-700">{item.label}</span>
+                                <span className="text-xs text-gray-400 font-mono bg-gray-100 px-2 py-1 rounded group-hover:bg-gray-200 transition-colors">{item.key}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : (
