@@ -8,6 +8,7 @@ import {
   Info,
   ChevronDown,
   ChevronRight,
+  Equal,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
@@ -44,6 +45,10 @@ const COLORS = {
   cashflow: { bg: "bg-sky-500", text: "text-sky-600", hex: "#0ea5e9", light: "bg-sky-50", border: "border-sky-200" },
 };
 
+function formatEur(value: number) {
+  return value.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20ac";
+}
+
 function InfoTooltip({ text }: { text: string }) {
   const [visible, setVisible] = useState(false);
 
@@ -64,6 +69,40 @@ function InfoTooltip({ text }: { text: string }) {
           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
         </div>
       )}
+    </div>
+  );
+}
+
+function SummaryTile({
+  icon,
+  color,
+  value,
+  label,
+  average,
+  tooltip,
+}: {
+  icon: React.ReactNode;
+  color: typeof COLORS.income;
+  value: number;
+  label: string;
+  average: number;
+  tooltip: string;
+}) {
+  return (
+    <div className={`bg-white rounded-lg p-6 border-l-4 ${color.border}`} style={{ borderLeftColor: color.hex }}>
+      <div className="flex items-start justify-between">
+        <div className={`w-12 h-12 ${color.light} rounded-full flex items-center justify-center border ${color.border}`}>
+          <span className={color.text}>{icon}</span>
+        </div>
+        <InfoTooltip text={tooltip} />
+      </div>
+      <div className={`text-2xl font-bold mt-4 mb-1 ${color.text}`}>
+        {formatEur(value)}
+      </div>
+      <div className="text-sm text-gray-400 mb-2">{label}</div>
+      <div className="text-xs text-gray-400">
+        {"\u00d8"} {formatEur(average)} / Monat
+      </div>
     </div>
   );
 }
@@ -148,7 +187,6 @@ export default function CashflowView() {
       if (selectedProperty) {
         contractsQuery = contractsQuery.eq("property_id", selectedProperty);
       }
-
       if (selectedUnit) {
         contractsQuery = contractsQuery.eq("unit_id", selectedUnit);
       }
@@ -164,7 +202,6 @@ export default function CashflowView() {
       if (selectedProperty) {
         manualIncomeQuery = manualIncomeQuery.eq("property_id", selectedProperty);
       }
-
       if (selectedUnit) {
         manualIncomeQuery = manualIncomeQuery.eq("unit_id", selectedUnit);
       }
@@ -180,7 +217,6 @@ export default function CashflowView() {
       if (selectedProperty) {
         expensesQuery = expensesQuery.eq("property_id", selectedProperty);
       }
-
       if (selectedUnit) {
         expensesQuery = expensesQuery.eq("unit_id", selectedUnit);
       }
@@ -219,17 +255,14 @@ export default function CashflowView() {
       ];
 
       const data: MonthlyData[] = [];
-
       const start = new Date(filterStartDate);
       const end = new Date(filterEndDate);
-
       const currentDate = new Date(start.getFullYear(), start.getMonth(), 1);
       const endOfPeriod = new Date(end.getFullYear(), end.getMonth(), 1);
 
       while (currentDate <= endOfPeriod) {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-
         const firstDayOfMonth = new Date(year, month, 1);
         const lastDayOfMonth = new Date(year, month + 1, 0);
 
@@ -240,9 +273,7 @@ export default function CashflowView() {
             const contractEnd = contract.end_date ? new Date(contract.end_date) : new Date(2099, 11, 31);
             return contractStart <= lastDayOfMonth && contractEnd >= firstDayOfMonth;
           })
-          .reduce((sum, contract) => {
-            return sum + parseFloat(contract.total_rent?.toString() || "0");
-          }, 0);
+          .reduce((sum, contract) => sum + parseFloat(contract.total_rent?.toString() || "0"), 0);
 
         const monthManualIncome = manualIncomes
           .filter((i) => {
@@ -319,22 +350,17 @@ export default function CashflowView() {
   const averageLoanPayments = totalLoanPayments / monthCount;
   const averageCashflow = totalCashflow / monthCount;
 
-  const maxValue = Math.max(
-    ...monthlyData.map((m) => Math.max(m.income, m.expenses + m.loanPayments)),
+  const maxBarTotal = Math.max(
+    ...monthlyData.map((m) => m.income + m.expenses + m.loanPayments + Math.abs(m.cashflow)),
     1
   );
 
-  function formatEur(value: number) {
-    return value.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20AC";
-  }
-
   if (loading) {
-    return <div className="text-center py-12 text-gray-400">L\u00e4dt...</div>;
+    return <div className="text-center py-12 text-gray-400">{"L\u00e4dt..."}</div>;
   }
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
       <div className="bg-white rounded-lg p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
@@ -363,7 +389,7 @@ export default function CashflowView() {
               {units
                 .filter((u) => !selectedProperty || u.property_id === selectedProperty)
                 .map((unit) => (
-                  <option key={unit.id} value={unit.id}>Einheit {unit.unit_number}</option>
+                  <option key={unit.id} value={unit.id}>{"Einheit "}{unit.unit_number}</option>
                 ))}
             </select>
           </div>
@@ -403,7 +429,6 @@ export default function CashflowView() {
         </div>
       </div>
 
-      {/* Summary Tiles */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <SummaryTile
           icon={<TrendingUp className="w-6 h-6" />}
@@ -411,7 +436,7 @@ export default function CashflowView() {
           value={totalIncome}
           label="Einnahmen gesamt"
           average={averageIncome}
-          tooltip="Mieteinnahmen + sonstige Einnahmen (z.B. Nebenkosten-Nachzahlungen, Stellplatzmieten)"
+          tooltip={"Mieteinnahmen + sonstige Einnahmen (z.B. Nebenkosten-Nachzahlungen, Stellplatzmieten)"}
         />
         <SummaryTile
           icon={<TrendingDown className="w-6 h-6" />}
@@ -419,7 +444,7 @@ export default function CashflowView() {
           value={totalExpenses}
           label="Ausgaben gesamt"
           average={averageExpenses}
-          tooltip="Alle Hausgelder + sonstige Ausgaben (z.B. Reparaturen, Versicherungen, Verwaltungskosten)"
+          tooltip={"Alle Hausgelder + sonstige Ausgaben (z.B. Reparaturen, Versicherungen, Verwaltungskosten)"}
         />
         <SummaryTile
           icon={<ArrowDown className="w-6 h-6" />}
@@ -427,26 +452,25 @@ export default function CashflowView() {
           value={totalLoanPayments}
           label="Kreditzahlungen gesamt"
           average={averageLoanPayments}
-          tooltip="Monatliche Raten aller aktiven Darlehen (Zins + Tilgung)"
+          tooltip={"Monatliche Raten aller aktiven Darlehen (Zins + Tilgung)"}
         />
         <div className={`bg-white rounded-lg p-6 border-l-4 ${totalCashflow >= 0 ? "border-l-sky-500" : "border-l-red-500"}`}>
           <div className="flex items-start justify-between">
             <div className={`w-12 h-12 ${COLORS.cashflow.light} rounded-full flex items-center justify-center border ${COLORS.cashflow.border}`}>
               <BarChart3 className={`w-6 h-6 ${COLORS.cashflow.text}`} />
             </div>
-            <InfoTooltip text="Einnahmen - Ausgaben - Kreditzahlungen = Netto-Cashflow" />
+            <InfoTooltip text={"Einnahmen \u2212 Ausgaben \u2212 Kreditzahlungen = Netto-Cashflow"} />
           </div>
           <div className={`text-2xl font-bold mt-4 mb-1 ${totalCashflow >= 0 ? "text-sky-600" : "text-red-600"}`}>
             {totalCashflow >= 0 ? "+" : ""}{formatEur(totalCashflow)}
           </div>
           <div className="text-sm text-gray-400 mb-2">Cashflow gesamt</div>
           <div className="text-xs text-gray-400">
-            \u00d8 {formatEur(averageCashflow)} / Monat
+            {"\u00d8"} {formatEur(averageCashflow)} / Monat
           </div>
         </div>
       </div>
 
-      {/* Legend */}
       <div className="bg-white rounded-lg px-6 py-4">
         <div className="flex flex-wrap gap-6">
           <div className="flex items-center gap-2">
@@ -461,21 +485,25 @@ export default function CashflowView() {
             <div className="w-3 h-3 rounded-sm bg-amber-500" />
             <span className="text-sm text-gray-600">Kreditzahlungen</span>
           </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm bg-sky-500" />
+            <span className="text-sm text-gray-600">Cashflow</span>
+          </div>
         </div>
       </div>
 
-      {/* Bar Chart */}
       <div className="bg-white rounded-lg p-6">
         <h3 className="text-lg font-semibold text-dark mb-6">
-          Cashflow-\u00dcbersicht
+          {"Cashflow-\u00dcbersicht"}
         </h3>
 
         <div className="space-y-1">
           {monthlyData.map((data, index) => {
             const isExpanded = expandedMonths.has(index);
-            const incomeWidth = maxValue > 0 ? (data.income / maxValue) * 100 : 0;
-            const expenseWidth = maxValue > 0 ? (data.expenses / maxValue) * 100 : 0;
-            const loanWidth = maxValue > 0 ? (data.loanPayments / maxValue) * 100 : 0;
+            const incomeWidth = maxBarTotal > 0 ? (data.income / maxBarTotal) * 100 : 0;
+            const expenseWidth = maxBarTotal > 0 ? (data.expenses / maxBarTotal) * 100 : 0;
+            const loanWidth = maxBarTotal > 0 ? (data.loanPayments / maxBarTotal) * 100 : 0;
+            const cashflowWidth = maxBarTotal > 0 ? (Math.abs(data.cashflow) / maxBarTotal) * 100 : 0;
 
             return (
               <div key={index}>
@@ -484,8 +512,8 @@ export default function CashflowView() {
                   onClick={() => toggleMonth(index)}
                   className="w-full text-left hover:bg-gray-50 rounded-lg p-3 transition-colors"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-2 shrink-0 w-20">
                       {isExpanded ? (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
                       ) : (
@@ -494,7 +522,7 @@ export default function CashflowView() {
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span className="text-sm font-medium text-gray-700">{data.month}</span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-3 text-sm flex-wrap">
                       <span className={`${COLORS.income.text} font-medium`}>
                         +{formatEur(data.income)}
                       </span>
@@ -504,39 +532,43 @@ export default function CashflowView() {
                       <span className={`${COLORS.loans.text} font-medium`}>
                         -{formatEur(data.loanPayments)}
                       </span>
-                      <span className={`font-semibold min-w-[110px] text-right ${data.cashflow >= 0 ? COLORS.cashflow.text : "text-red-600"}`}>
+                      <span className={`inline-flex items-center gap-1 font-semibold ${data.cashflow >= 0 ? COLORS.cashflow.text : "text-red-600"}`}>
+                        <Equal className="w-3.5 h-3.5" />
                         {data.cashflow >= 0 ? "+" : ""}{formatEur(data.cashflow)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex gap-1 h-7 ml-6">
+                  <div className="flex gap-0.5 h-7 ml-6 rounded overflow-hidden bg-gray-100">
                     {data.income > 0 && (
                       <div
-                        className="bg-emerald-500 rounded-sm h-full transition-all duration-300 min-w-[2px]"
-                        style={{ width: `${incomeWidth}%` }}
+                        className="bg-emerald-500 h-full transition-all duration-300 first:rounded-l last:rounded-r"
+                        style={{ width: `${incomeWidth}%`, minWidth: 2 }}
                       />
                     )}
                     {data.expenses > 0 && (
                       <div
-                        className="bg-red-500 rounded-sm h-full transition-all duration-300 min-w-[2px]"
-                        style={{ width: `${expenseWidth}%` }}
+                        className="bg-red-500 h-full transition-all duration-300 first:rounded-l last:rounded-r"
+                        style={{ width: `${expenseWidth}%`, minWidth: 2 }}
                       />
                     )}
                     {data.loanPayments > 0 && (
                       <div
-                        className="bg-amber-500 rounded-sm h-full transition-all duration-300 min-w-[2px]"
-                        style={{ width: `${loanWidth}%` }}
+                        className="bg-amber-500 h-full transition-all duration-300 first:rounded-l last:rounded-r"
+                        style={{ width: `${loanWidth}%`, minWidth: 2 }}
                       />
                     )}
-                    {data.income === 0 && data.expenses === 0 && data.loanPayments === 0 && (
-                      <div className="bg-gray-100 rounded-sm h-full w-full" />
+                    {data.cashflow !== 0 && (
+                      <div
+                        className={`h-full transition-all duration-300 first:rounded-l last:rounded-r ${data.cashflow >= 0 ? "bg-sky-500" : "bg-sky-300"}`}
+                        style={{ width: `${cashflowWidth}%`, minWidth: 2 }}
+                      />
                     )}
                   </div>
                 </button>
 
                 {isExpanded && (
-                  <div className="ml-12 mr-3 mb-3 border border-gray-100 rounded-lg overflow-hidden animate-in slide-in-from-top-1">
+                  <div className="ml-12 mr-3 mb-3 border border-gray-100 rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
                       <tbody>
                         <tr className="bg-emerald-50/50">
@@ -579,8 +611,11 @@ export default function CashflowView() {
                           <td className="px-4 py-2 text-right font-medium text-amber-600">{formatEur(data.loanPayments)}</td>
                         </tr>
 
-                        <tr className="border-t-2 border-gray-200 bg-gray-50">
-                          <td className="px-4 py-3 font-semibold text-gray-800">Cashflow</td>
+                        <tr className="border-t-2 border-gray-200 bg-sky-50/50">
+                          <td className="px-4 py-3 font-semibold text-gray-800 flex items-center gap-2">
+                            <Equal className="w-4 h-4 text-sky-600" />
+                            Cashflow
+                          </td>
                           <td className={`px-4 py-3 text-right font-bold ${data.cashflow >= 0 ? "text-sky-600" : "text-red-600"}`}>
                             {data.cashflow >= 0 ? "+" : ""}{formatEur(data.cashflow)}
                           </td>
@@ -595,54 +630,16 @@ export default function CashflowView() {
         </div>
       </div>
 
-      {/* Analysis Footer */}
       <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <p className="text-sm font-medium text-blue-900 mb-1">Cashflow-Analyse:</p>
         <p className="text-sm text-blue-900">
-          Im ausgew\u00e4hlten Zeitraum haben Sie einen{" "}
-          {totalCashflow >= 0 ? "positiven" : "negativen"} Cashflow von{" "}
-          <span className="font-semibold">{formatEur(totalCashflow)}</span>.
-          Das entspricht durchschnittlich{" "}
-          <span className="font-semibold">{formatEur(averageCashflow)}</span> pro Monat.
+          {"Im ausgew\u00e4hlten Zeitraum haben Sie einen "}
+          {totalCashflow >= 0 ? "positiven" : "negativen"}{" Cashflow von "}
+          <span className="font-semibold">{formatEur(totalCashflow)}</span>
+          {". Das entspricht durchschnittlich "}
+          <span className="font-semibold">{formatEur(averageCashflow)}</span>
+          {" pro Monat."}
         </p>
-      </div>
-    </div>
-  );
-}
-
-function SummaryTile({
-  icon,
-  color,
-  value,
-  label,
-  average,
-  tooltip,
-}: {
-  icon: React.ReactNode;
-  color: typeof COLORS.income;
-  value: number;
-  label: string;
-  average: number;
-  tooltip: string;
-}) {
-  function formatEur(v: number) {
-    return v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20AC";
-  }
-
-  return (
-    <div className={`bg-white rounded-lg p-6 border-l-4 ${color.border}`} style={{ borderLeftColor: color.hex }}>
-      <div className="flex items-start justify-between">
-        <div className={`w-12 h-12 ${color.light} rounded-full flex items-center justify-center border ${color.border}`}>
-          <span className={color.text}>{icon}</span>
-        </div>
-        <InfoTooltip text={tooltip} />
-      </div>
-      <div className={`text-2xl font-bold mt-4 mb-1 ${color.text}`}>
-        {formatEur(value)}
-      </div>
-      <div className="text-sm text-gray-400 mb-2">{label}</div>
-      <div className="text-xs text-gray-400">
-        \u00d8 {formatEur(average)} / Monat
       </div>
     </div>
   );
