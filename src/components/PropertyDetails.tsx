@@ -12,6 +12,7 @@ import {
   Building2,
   Camera,
   Trash2,
+  ArrowLeft,
 } from "lucide-react";
 import PropertyOverviewTab from "./property/PropertyOverviewTab";
 import PropertyUnitsTab from "./property/PropertyUnitsTab";
@@ -25,7 +26,6 @@ import PropertyMetricsTab from "./property/PropertyMetricsTab";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
 import { supabase } from "../lib/supabase";
-import { Button } from "./ui/Button";
 
 interface Property {
   id: string;
@@ -196,12 +196,18 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
 
   return (
     <div>
-      <Button
-        onClick={onBack}
-        variant="cancel"
-      >
-        Zurück zur Übersicht
-      </Button>
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={onBack}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-600" />
+        </button>
+        <div>
+          <h1 className="text-3xl font-bold text-dark">{property.name}</h1>
+          <p className="text-gray-400 mt-1">Immobilien-Details</p>
+        </div>
+      </div>
 
       <div className="bg-white rounded-lg p-6 mb-6">
         <div className="flex items-center gap-6">
