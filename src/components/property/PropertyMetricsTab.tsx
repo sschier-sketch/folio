@@ -251,14 +251,15 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         const annualizedRent = monthsInPeriod > 0 ? (totalRentInPeriod / monthsInPeriod) * 12 : 0;
         const annualizedCosts = monthsInPeriod > 0 ? (totalCostsInPeriod / monthsInPeriod) * 12 : 0;
 
-        const grossYield = effectiveCurrentValue > 0 ? (annualizedRent / effectiveCurrentValue) * 100 : 0;
-        const netYield = effectiveCurrentValue > 0 ? ((annualizedRent - annualizedCosts) / effectiveCurrentValue) * 100 : 0;
+        const yieldBase = effectivePurchasePrice > 0 ? effectivePurchasePrice : effectiveCurrentValue;
+        const grossYield = yieldBase > 0 ? (annualizedRent / yieldBase) * 100 : 0;
+        const netYield = yieldBase > 0 ? ((annualizedRent - annualizedCosts) / yieldBase) * 100 : 0;
         const netCashflowMonthly = monthsInPeriod > 0 ? (totalRentInPeriod - totalCostsInPeriod) / monthsInPeriod : 0;
 
         setPeriodYield({
           grossYield, netYield, netCashflowMonthly,
           totalRentInPeriod, totalCostsInPeriod, monthsInPeriod,
-          currentValue: effectiveCurrentValue,
+          currentValue: yieldBase,
         });
 
         setMetrics({
@@ -473,7 +474,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">Bruttorendite</span>
-              <InfoTooltip text={`Berechnung: (Tatsächliche Mieteinnahmen im Zeitraum, annualisiert) ÷ Aktueller Wert × 100. Berücksichtigt Leerstandsmonate, da nur die tatsächliche Vertragslaufzeit innerhalb des Zeitraums zählt.`} />
+              <InfoTooltip text={`Brutto-Mietrendite: (Tatsächliche Mieteinnahmen im Zeitraum, annualisiert) ÷ Kaufpreis × 100. Berücksichtigt Leerstandsmonate, da nur die tatsächliche Vertragslaufzeit innerhalb des Zeitraums zählt. Zeigt die reine Mietrendite - eine eventuelle Wertsteigerung der Immobilie ist hierin nicht enthalten.`} />
             </div>
             <TrendingUp className="w-5 h-5" style={{ color: '#3c8af7' }} strokeWidth={1.5} />
           </div>
@@ -489,7 +490,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
               <span className="font-medium text-gray-700">{formatCurrency(periodYield.totalRentInPeriod)}</span>
             </div>
             <div className="flex justify-between">
-              <span>Aktueller Wert</span>
+              <span>Kaufpreis</span>
               <span className="font-medium text-gray-700">{formatCurrency(periodYield.currentValue)}</span>
             </div>
           </div>
@@ -499,7 +500,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">Nettorendite</span>
-              <InfoTooltip text={`Berechnung: (Mieteinnahmen − Kosten im Zeitraum, annualisiert) ÷ Aktueller Wert × 100. Berücksichtigt Leerstand sowie alle Kosten (Ausgaben, Kreditraten, Hausgeld).`} />
+              <InfoTooltip text={`Netto-Mietrendite: (Mieteinnahmen − Kosten im Zeitraum, annualisiert) ÷ Kaufpreis × 100. Berücksichtigt Leerstand sowie alle Kosten (Ausgaben, Kreditraten, Hausgeld). Zeigt die reine Mietrendite - eine eventuelle Wertsteigerung der Immobilie ist hierin nicht enthalten.`} />
             </div>
             <TrendingUp className="w-5 h-5" style={{ color: '#3c8af7' }} strokeWidth={1.5} />
           </div>

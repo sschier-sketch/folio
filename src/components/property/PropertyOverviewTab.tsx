@@ -302,8 +302,8 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
   const calculateGrossYield = () => {
     const monthlyRent = stats.totalRent;
     const annualRent = monthlyRent * 12;
-    if (aggregatedValues.totalCurrentValue === 0) return 0;
-    return (annualRent / aggregatedValues.totalCurrentValue) * 100;
+    if (aggregatedValues.totalPurchasePrice === 0) return 0;
+    return (annualRent / aggregatedValues.totalPurchasePrice) * 100;
   };
 
   const monthlyHausgeld = getMonthlyHausgeldEur(
@@ -324,8 +324,8 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
       0
     );
     const netAnnualIncome = annualRent - totalLoanPayments - (monthlyHausgeld * 12);
-    if (aggregatedValues.totalCurrentValue === 0) return 0;
-    return (netAnnualIncome / aggregatedValues.totalCurrentValue) * 100;
+    if (aggregatedValues.totalPurchasePrice === 0) return 0;
+    return (netAnnualIncome / aggregatedValues.totalPurchasePrice) * 100;
   };
 
   const monthlyRent = stats.totalRent;
@@ -704,15 +704,17 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
 
           {showGrossYieldTooltip && (
             <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-lg p-4 z-10 shadow-lg">
-              <div className="font-semibold mb-2">Berechnung Bruttorendite:</div>
+              <div className="font-semibold mb-2">Berechnung Brutto-Mietrendite:</div>
               <div className="space-y-1 text-xs">
-                <div>Formel: (Jahresmiete ÷ Aktueller Wert) × 100</div>
+                <div>Formel: (Jahresmiete ÷ Kaufpreis) × 100</div>
                 <div className="border-t border-slate-700 my-2"></div>
                 <div>Monatliche Kaltmiete: {formatCurrency(monthlyRent)}</div>
                 <div>Jahresmiete: {formatCurrency(monthlyRent * 12)}</div>
-                <div>Aktueller Wert: {formatCurrency(aggregatedValues.totalCurrentValue)}</div>
+                <div>Kaufpreis: {formatCurrency(aggregatedValues.totalPurchasePrice)}</div>
                 <div className="border-t border-slate-700 my-2"></div>
                 <div className="font-semibold">= {calculateGrossYield().toFixed(2)}%</div>
+                <div className="border-t border-slate-700 my-2"></div>
+                <div className="text-gray-400">Zeigt die reine Mietrendite bezogen auf den Kaufpreis. Eine eventuelle Wertsteigerung der Immobilie ist hierin nicht enthalten.</div>
               </div>
             </div>
           )}
@@ -739,21 +741,26 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
 
           {showNetYieldTooltip && (
             <div className="absolute top-full left-0 mt-2 w-80 bg-dark text-white text-sm rounded-lg p-4 z-10 shadow-lg">
-              <div className="font-semibold mb-2">Berechnung Nettorendite:</div>
+              <div className="font-semibold mb-2">Berechnung Netto-Mietrendite:</div>
               <div className="space-y-1 text-xs">
-                <div>Formel: (Netto-Jahreseinkommen ÷ Aktueller Wert) × 100</div>
+                <div>Formel: (Netto-Jahreseinkommen ÷ Kaufpreis) × 100</div>
                 <div className="border-t border-slate-700 my-2"></div>
                 <div>Jahresmiete: {formatCurrency(monthlyRent * 12)}</div>
                 <div>
                   Jährliche Kreditkosten: {formatCurrency(totalLoanPayments * 12)}
                 </div>
                 <div>
-                  Netto-Jahreseinkommen:{" "}
-                  {formatCurrency(monthlyRent * 12 - totalLoanPayments * 12)}
+                  Jährliches Hausgeld: {formatCurrency(monthlyHausgeld * 12)}
                 </div>
-                <div>Aktueller Wert: {formatCurrency(aggregatedValues.totalCurrentValue)}</div>
+                <div>
+                  Netto-Jahreseinkommen:{" "}
+                  {formatCurrency(monthlyRent * 12 - totalLoanPayments * 12 - monthlyHausgeld * 12)}
+                </div>
+                <div>Kaufpreis: {formatCurrency(aggregatedValues.totalPurchasePrice)}</div>
                 <div className="border-t border-slate-700 my-2"></div>
                 <div className="font-semibold">= {calculateNetYield().toFixed(2)}%</div>
+                <div className="border-t border-slate-700 my-2"></div>
+                <div className="text-gray-400">Zeigt die Netto-Mietrendite bezogen auf den Kaufpreis. Eine eventuelle Wertsteigerung der Immobilie ist hierin nicht enthalten.</div>
               </div>
             </div>
           )}
