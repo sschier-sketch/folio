@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { RevealOnScroll } from "../common/RevealOnScroll";
 
 const FAQ_ITEMS = [
   {
@@ -80,24 +81,28 @@ export default function FaqSection() {
   return (
     <section className="py-[100px] px-6">
       <div className="max-w-[800px] mx-auto">
-        <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
-          Häufig gestellte Fragen
-        </h2>
-        <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
-          Alles Wichtige auf einen Blick — von Kosten über Datenschutz
-          bis zu den Funktionen von Rentably.
-        </p>
-        <div className="bg-white border border-gray-200 rounded-2xl px-8">
-          {FAQ_ITEMS.map((item, i) => (
-            <FaqItem
-              key={item.question}
-              question={item.question}
-              answer={item.answer}
-              isOpen={openIndex === i}
-              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-            />
-          ))}
-        </div>
+        <RevealOnScroll>
+          <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
+            Häufig gestellte Fragen
+          </h2>
+          <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
+            Alles Wichtige auf einen Blick — von Kosten über Datenschutz
+            bis zu den Funktionen von Rentably.
+          </p>
+        </RevealOnScroll>
+        <RevealOnScroll delay={80}>
+          <div className="bg-white border border-gray-200 rounded-2xl px-8">
+            {FAQ_ITEMS.map((item, i) => (
+              <FaqItem
+                key={item.question}
+                question={item.question}
+                answer={item.answer}
+                isOpen={openIndex === i}
+                onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+              />
+            ))}
+          </div>
+        </RevealOnScroll>
       </div>
     </section>
   );

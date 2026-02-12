@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { RefLink } from "../common/RefLink";
+import { RevealOnScroll } from "../common/RevealOnScroll";
 
 const HIGHLIGHTS: { icon: LucideIcon; text: string }[] = [
   { icon: FileText, text: "Mietverträge und Zahlungseingänge verwalten" },
@@ -133,7 +134,7 @@ export default function FeatureHighlight() {
     <section className="py-[100px] px-6">
       <div className="max-w-[1200px] mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-20">
-          <div>
+          <RevealOnScroll>
             <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 max-w-[700px]">
               Alles, was Sie brauchen — an einem Ort
             </h2>
@@ -163,37 +164,36 @@ export default function FeatureHighlight() {
               Alle Funktionen ansehen
               <span className="text-lg">→</span>
             </RefLink>
-          </div>
-          <div className="hidden lg:block">
+          </RevealOnScroll>
+          <RevealOnScroll delay={100} className="hidden lg:block">
             <PropertyMockup />
-          </div>
+          </RevealOnScroll>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="bg-[#f8fafc] border border-[#e5e7eb] rounded-xl p-8 hover:shadow-md transition-shadow"
-            >
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
-                style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
-              >
-                <f.icon className="w-5 h-5" style={{ color: "#1E1E24" }} strokeWidth={1.5} />
+          {FEATURES.map((f, i) => (
+            <RevealOnScroll key={f.title} delay={i * 80}>
+              <div className="bg-[#f8fafc] border border-[#e5e7eb] rounded-xl p-8 hover:shadow-md transition-shadow">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
+                  style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
+                >
+                  <f.icon className="w-5 h-5" style={{ color: "#1E1E24" }} strokeWidth={1.5} />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {f.title}
+                </h3>
+                <p className="text-gray-500 leading-relaxed mb-4">
+                  {f.description}
+                </p>
+                <RefLink
+                  to={f.path}
+                  className="text-sm font-medium text-[#3c8af7] hover:text-[#3579de] transition-colors"
+                >
+                  Mehr erfahren
+                </RefLink>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {f.title}
-              </h3>
-              <p className="text-gray-500 leading-relaxed mb-4">
-                {f.description}
-              </p>
-              <RefLink
-                to={f.path}
-                className="text-sm font-medium text-[#3c8af7] hover:text-[#3579de] transition-colors"
-              >
-                Mehr erfahren
-              </RefLink>
-            </div>
+            </RevealOnScroll>
           ))}
         </div>
       </div>

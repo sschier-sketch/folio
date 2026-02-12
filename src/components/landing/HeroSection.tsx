@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../common/RefLink";
 import { CheckCircle2, Home, Users, BarChart3, FileText } from "lucide-react";
+import { RevealOnScroll } from "../common/RevealOnScroll";
 
 const HERO_CHECKS = [
   "Komplett kostenlos im Basic-Tarif",
@@ -96,7 +97,7 @@ export default function HeroSection() {
     <section className="pt-16 sm:pt-24 pb-[100px] sm:pb-[120px] px-6">
       <div className="max-w-[1200px] mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div>
+          <RevealOnScroll>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
               <span className="text-sm font-medium text-[#3c8af7]">
@@ -134,11 +135,11 @@ export default function HeroSection() {
                 Preise ansehen
               </RefLink>
             </div>
-          </div>
+          </RevealOnScroll>
 
-          <div className="hidden lg:block">
+          <RevealOnScroll delay={100} className="hidden lg:block">
             <DashboardMockup />
-          </div>
+          </RevealOnScroll>
         </div>
       </div>
     </section>

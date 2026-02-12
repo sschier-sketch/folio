@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { CheckCircle2 } from "lucide-react";
+import { RevealOnScroll } from "../common/RevealOnScroll";
 
 const POINTS = [
   "30 Tage alle Pro-Funktionen kostenlos testen",
@@ -15,7 +16,7 @@ export default function ByLandlordsSection() {
     <section className="py-[100px] px-6 bg-[#f0f5ff]">
       <div className="max-w-[1200px] mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <div>
+          <RevealOnScroll>
             <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-6 max-w-[700px]">
               Entwickelt von Vermietern für Vermieter
             </h2>
@@ -44,9 +45,9 @@ export default function ByLandlordsSection() {
             >
               Kostenlos starten
             </button>
-          </div>
+          </RevealOnScroll>
 
-          <div className="hidden lg:block">
+          <RevealOnScroll delay={100} className="hidden lg:block">
             <div className="rounded-2xl overflow-hidden shadow-lg shadow-gray-900/[0.06]">
               <img
                 src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800"
@@ -54,7 +55,7 @@ export default function ByLandlordsSection() {
                 className="w-full h-[480px] object-cover"
               />
             </div>
-          </div>
+          </RevealOnScroll>
         </div>
       </div>
     </section>

@@ -1,11 +1,14 @@
+import { RevealOnScroll } from "../common/RevealOnScroll";
+
 export default function SeoTextSection() {
   return (
     <section className="py-[80px] px-6 bg-[#f8fafc]">
       <div className="max-w-[800px] mx-auto">
-        <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
-          Immobilienverwaltung einfach gemacht — die Software für private Vermieter
-        </h2>
-        <div className="space-y-4 text-gray-600 leading-relaxed">
+        <RevealOnScroll>
+          <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+            Immobilienverwaltung einfach gemacht — die Software für private Vermieter
+          </h2>
+          <div className="space-y-4 text-gray-600 leading-relaxed">
           <p>
             Die Verwaltung von Mietimmobilien stellt private Vermieter und
             Eigentümer vor zahlreiche Herausforderungen: Mietverträge müssen
@@ -46,7 +49,8 @@ export default function SeoTextSection() {
             vollständige Software unverbindlich und ohne Zahlungsdaten zu
             testen.
           </p>
-        </div>
+          </div>
+        </RevealOnScroll>
       </div>
     </section>
   );
