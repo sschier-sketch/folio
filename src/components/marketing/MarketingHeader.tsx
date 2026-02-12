@@ -70,7 +70,7 @@ export default function MarketingHeader() {
               to="/signup"
               className="h-[38px] px-5 rounded-lg text-sm font-semibold inline-flex items-center justify-center bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
             >
-              Registrierung
+              Kostenlos testen
             </RefLink>
           </div>
 
@@ -116,7 +116,7 @@ export default function MarketingHeader() {
                 to="/signup"
                 className="mx-3 mt-1 h-[38px] px-5 rounded-lg text-sm font-semibold inline-flex items-center justify-center bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
               >
-                Registrierung
+                Kostenlos testen
               </RefLink>
             </div>
           </div>

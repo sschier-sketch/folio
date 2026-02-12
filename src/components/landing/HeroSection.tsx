@@ -101,7 +101,7 @@ export default function HeroSection() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
               <span className="text-sm font-medium text-[#3c8af7]">
-                Kostenlos starten — keine Kreditkarte nötig
+                Die All-in-One Software
               </span>
             </div>
             <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">

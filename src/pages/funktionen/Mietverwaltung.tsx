@@ -9,7 +9,6 @@ import {
   CreditCard,
   TrendingUp,
   AlertCircle,
-  Shield,
   Clock,
   CheckCircle2,
   Users,
@@ -58,25 +57,6 @@ const FEATURES = [
     icon: Clock,
     title: "Teilzahlungen erfassen",
     description: "Teilbeträge werden erfasst und offene Salden nachverfolgt. Übersicht über alle Zahlungsvorgänge."
-  }
-];
-
-const SECURITY_ITEMS = [
-  {
-    title: "Rechenzentrum",
-    subtitle: "in Deutschland"
-  },
-  {
-    title: "Datensicherheit",
-    subtitle: "DSGVO-Konform"
-  },
-  {
-    title: "AES256-GCM",
-    subtitle: "verschlüsselt"
-  },
-  {
-    title: "Regelmäßige",
-    subtitle: "Sicherheitsupdates"
   }
 ];
 
@@ -413,40 +393,33 @@ export default function Mietverwaltung() {
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-[#f0f5ff]">
+      <section className="py-[80px] px-6">
         <div className="max-w-[1200px] mx-auto">
           <RevealOnScroll>
             <div className="text-center mb-12">
-              <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
-                Sicherheit
-              </p>
               <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-                Ein sicheres Zuhause für Ihre Daten
+                Ihre Daten in sicheren Händen
               </h2>
-              <p className="text-gray-500 max-w-[700px] mx-auto">
-                Alle Ihre Daten werden sicher in zertifizierten Rechenzentren in Deutschland
-                verwaltet. Es findet kein Datentransfer ins Ausland statt.
+              <p className="text-gray-500 leading-relaxed max-w-[600px] mx-auto">
+                Rentably wird in Deutschland betrieben und erfüllt die Anforderungen der DSGVO.
+                Ihre Daten gehören Ihnen &ndash; heute und in Zukunft.
               </p>
             </div>
           </RevealOnScroll>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SECURITY_ITEMS.map((item, i) => (
-              <RevealOnScroll key={item.title} delay={i * 80}>
-                <div className="bg-white rounded-xl p-6 text-center border border-gray-200">
-                  <div className="w-12 h-12 rounded-full bg-[#22c55e]/10 flex items-center justify-center mx-auto mb-4">
-                    <Shield className="w-6 h-6 text-[#22c55e]" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 mb-1">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {item.subtitle}
-                  </p>
-                </div>
-              </RevealOnScroll>
-            ))}
-          </div>
+          <RevealOnScroll delay={80}>
+            <div className="flex items-center justify-center gap-12 flex-wrap">
+              <img
+                src="/dsgvo.png"
+                alt="DSGVO-konform"
+                className="h-32 w-auto object-contain"
+              />
+              <img
+                src="/madeingermany.png"
+                alt="Entwickelt in Deutschland"
+                className="h-32 w-auto object-contain"
+              />
+            </div>
+          </RevealOnScroll>
         </div>
       </section>
 
