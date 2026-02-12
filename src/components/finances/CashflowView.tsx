@@ -4,8 +4,10 @@ import {
   TrendingUp,
   TrendingDown,
   Calendar,
-  ArrowUp,
   ArrowDown,
+  Info,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
@@ -24,6 +26,8 @@ interface MonthlyData {
   expenses: number;
   loanPayments: number;
   cashflow: number;
+  hausgeld: number;
+  dbExpenses: number;
 }
 
 interface Property {
@@ -32,6 +36,37 @@ interface Property {
 }
 
 type Unit = HausgeldUnit;
+
+const COLORS = {
+  income: { bg: "bg-emerald-500", text: "text-emerald-600", hex: "#10b981", light: "bg-emerald-50", border: "border-emerald-200" },
+  expenses: { bg: "bg-red-500", text: "text-red-600", hex: "#ef4444", light: "bg-red-50", border: "border-red-200" },
+  loans: { bg: "bg-amber-500", text: "text-amber-600", hex: "#f59e0b", light: "bg-amber-50", border: "border-amber-200" },
+  cashflow: { bg: "bg-sky-500", text: "text-sky-600", hex: "#0ea5e9", light: "bg-sky-50", border: "border-sky-200" },
+};
+
+function InfoTooltip({ text }: { text: string }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative inline-flex">
+      <button
+        type="button"
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        onClick={() => setVisible((v) => !v)}
+        className="text-gray-300 hover:text-gray-500 transition-colors"
+      >
+        <Info className="w-4 h-4" />
+      </button>
+      {visible && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-50 shadow-lg">
+          {text}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function CashflowView() {
   const { user } = useAuth();
@@ -44,6 +79,7 @@ export default function CashflowView() {
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [expandedMonths, setExpandedMonths] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (user) {
@@ -51,6 +87,18 @@ export default function CashflowView() {
       loadCashflowData();
     }
   }, [user, timePeriod, selectedProperty, selectedUnit, startDate, endDate]);
+
+  function toggleMonth(index: number) {
+    setExpandedMonths((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }
 
   async function loadProperties() {
     try {
@@ -166,18 +214,8 @@ export default function CashflowView() {
       const freshUnits: Unit[] = unitsRes.data || [];
 
       const monthNames = [
-        "Jan",
-        "Feb",
-        "Mär",
-        "Apr",
-        "Mai",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Okt",
-        "Nov",
-        "Dez",
+        "Jan", "Feb", "M\u00e4r", "Apr", "Mai", "Jun",
+        "Jul", "Aug", "Sep", "Okt", "Nov", "Dez",
       ];
 
       const data: MonthlyData[] = [];
@@ -203,7 +241,7 @@ export default function CashflowView() {
             return contractStart <= lastDayOfMonth && contractEnd >= firstDayOfMonth;
           })
           .reduce((sum, contract) => {
-            return sum + parseFloat(contract.total_rent?.toString() || '0');
+            return sum + parseFloat(contract.total_rent?.toString() || "0");
           }, 0);
 
         const monthManualIncome = manualIncomes
@@ -211,7 +249,7 @@ export default function CashflowView() {
             const date = new Date(i.entry_date);
             return date.getFullYear() === year && date.getMonth() === month;
           })
-          .reduce((sum, i) => sum + parseFloat(i.amount?.toString() || '0'), 0);
+          .reduce((sum, i) => sum + parseFloat(i.amount?.toString() || "0"), 0);
 
         const monthIncome = monthRentIncome + monthManualIncome;
 
@@ -222,7 +260,7 @@ export default function CashflowView() {
             if (isExpenseSupersededBySystemHausgeld(e, freshUnits)) return false;
             return true;
           })
-          .reduce((sum, e) => sum + parseFloat(e.amount?.toString() || '0'), 0);
+          .reduce((sum, e) => sum + parseFloat(e.amount?.toString() || "0"), 0);
 
         const monthHausgeld = getMonthlyHausgeldEur(freshUnits, {
           propertyId: selectedProperty || undefined,
@@ -233,7 +271,7 @@ export default function CashflowView() {
 
         const monthLoanPayments = loans
           .filter((l) => {
-            if (l.loan_status && l.loan_status !== 'active') return false;
+            if (l.loan_status && l.loan_status !== "active") return false;
             const currentMonthDate = new Date(year, month, 1);
             if (l.start_date) {
               const loanStart = new Date(l.start_date);
@@ -245,7 +283,7 @@ export default function CashflowView() {
             }
             return true;
           })
-          .reduce((sum, l) => sum + parseFloat(l.monthly_payment?.toString() || '0'), 0);
+          .reduce((sum, l) => sum + parseFloat(l.monthly_payment?.toString() || "0"), 0);
 
         data.push({
           month: monthNames[month],
@@ -255,6 +293,8 @@ export default function CashflowView() {
           expenses: monthExpenses,
           loanPayments: monthLoanPayments,
           cashflow: monthIncome - monthExpenses - monthLoanPayments,
+          hausgeld: monthHausgeld,
+          dbExpenses: monthDbExpenses,
         });
 
         currentDate.setMonth(currentDate.getMonth() + 1);
@@ -280,42 +320,39 @@ export default function CashflowView() {
   const averageCashflow = totalCashflow / monthCount;
 
   const maxValue = Math.max(
-    ...monthlyData.map((m) => Math.max(m.income, m.expenses + m.loanPayments))
+    ...monthlyData.map((m) => Math.max(m.income, m.expenses + m.loanPayments)),
+    1
   );
 
+  function formatEur(value: number) {
+    return value.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20AC";
+  }
+
   if (loading) {
-    return <div className="text-center py-12 text-gray-400">Lädt...</div>;
+    return <div className="text-center py-12 text-gray-400">L\u00e4dt...</div>;
   }
 
   return (
     <div className="space-y-6">
+      {/* Filters */}
       <div className="bg-white rounded-lg p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Objekt
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Objekt</label>
             <select
               value={selectedProperty}
-              onChange={(e) => {
-                setSelectedProperty(e.target.value);
-                setSelectedUnit("");
-              }}
+              onChange={(e) => { setSelectedProperty(e.target.value); setSelectedUnit(""); }}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             >
               <option value="">Alle Objekte</option>
               {properties.map((prop) => (
-                <option key={prop.id} value={prop.id}>
-                  {prop.name}
-                </option>
+                <option key={prop.id} value={prop.id}>{prop.name}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Einheit
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Einheit</label>
             <select
               value={selectedUnit}
               onChange={(e) => setSelectedUnit(e.target.value)}
@@ -326,24 +363,16 @@ export default function CashflowView() {
               {units
                 .filter((u) => !selectedProperty || u.property_id === selectedProperty)
                 .map((unit) => (
-                  <option key={unit.id} value={unit.id}>
-                    Einheit {unit.unit_number}
-                  </option>
+                  <option key={unit.id} value={unit.id}>Einheit {unit.unit_number}</option>
                 ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Zeitraum
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Zeitraum</label>
             <select
               value={timePeriod}
-              onChange={(e) => {
-                setTimePeriod(e.target.value as "current" | "last" | "last3");
-                setStartDate("");
-                setEndDate("");
-              }}
+              onChange={(e) => { setTimePeriod(e.target.value as "current" | "last" | "last3"); setStartDate(""); setEndDate(""); }}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             >
               <option value="current">Aktuelles Jahr</option>
@@ -353,197 +382,267 @@ export default function CashflowView() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Von
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Von</label>
             <input
               type="date"
               value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                if (e.target.value) setTimePeriod("current");
-              }}
+              onChange={(e) => { setStartDate(e.target.value); if (e.target.value) setTimePeriod("current"); }}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bis
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Bis</label>
             <input
               type="date"
               value={endDate}
-              onChange={(e) => {
-                setEndDate(e.target.value);
-                if (e.target.value) setTimePeriod("current");
-              }}
+              onChange={(e) => { setEndDate(e.target.value); if (e.target.value) setTimePeriod("current"); }}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             />
           </div>
         </div>
       </div>
 
+      {/* Summary Tiles */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
-            <TrendingUp className="w-6 h-6 text-[#1e1e24]" />
+        <SummaryTile
+          icon={<TrendingUp className="w-6 h-6" />}
+          color={COLORS.income}
+          value={totalIncome}
+          label="Einnahmen gesamt"
+          average={averageIncome}
+          tooltip="Mieteinnahmen + sonstige Einnahmen (z.B. Nebenkosten-Nachzahlungen, Stellplatzmieten)"
+        />
+        <SummaryTile
+          icon={<TrendingDown className="w-6 h-6" />}
+          color={COLORS.expenses}
+          value={totalExpenses}
+          label="Ausgaben gesamt"
+          average={averageExpenses}
+          tooltip="Alle Hausgelder + sonstige Ausgaben (z.B. Reparaturen, Versicherungen, Verwaltungskosten)"
+        />
+        <SummaryTile
+          icon={<ArrowDown className="w-6 h-6" />}
+          color={COLORS.loans}
+          value={totalLoanPayments}
+          label="Kreditzahlungen gesamt"
+          average={averageLoanPayments}
+          tooltip="Monatliche Raten aller aktiven Darlehen (Zins + Tilgung)"
+        />
+        <div className={`bg-white rounded-lg p-6 border-l-4 ${totalCashflow >= 0 ? "border-l-sky-500" : "border-l-red-500"}`}>
+          <div className="flex items-start justify-between">
+            <div className={`w-12 h-12 ${COLORS.cashflow.light} rounded-full flex items-center justify-center border ${COLORS.cashflow.border}`}>
+              <BarChart3 className={`w-6 h-6 ${COLORS.cashflow.text}`} />
+            </div>
+            <InfoTooltip text="Einnahmen - Ausgaben - Kreditzahlungen = Netto-Cashflow" />
           </div>
-          <div className="text-2xl font-bold text-dark mb-1">
-            {totalIncome.toFixed(2)} €
-          </div>
-          <div className="text-sm text-gray-400 mb-2">Einnahmen gesamt</div>
-          <div className="text-xs text-gray-400">
-            Ø {averageIncome.toFixed(2)} € / Monat
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
-            <TrendingDown className="w-6 h-6 text-[#1e1e24]" />
-          </div>
-          <div className="text-2xl font-bold text-dark mb-1">
-            {totalExpenses.toFixed(2)} €
-          </div>
-          <div className="text-sm text-gray-400 mb-2">Ausgaben gesamt</div>
-          <div className="text-xs text-gray-400">
-            Ø {averageExpenses.toFixed(2)} € / Monat
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
-            <ArrowDown className="w-6 h-6 text-[#1e1e24]" />
-          </div>
-          <div className="text-2xl font-bold text-dark mb-1">
-            {totalLoanPayments.toFixed(2)} €
-          </div>
-          <div className="text-sm text-gray-400 mb-2">Kreditzahlungen gesamt</div>
-          <div className="text-xs text-gray-400">
-            Ø {averageLoanPayments.toFixed(2)} € / Monat
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
-            <BarChart3 className="w-6 h-6 text-[#1e1e24]" />
-          </div>
-          <div
-            className={`text-2xl font-bold mb-1 ${
-              totalCashflow >= 0 ? "text-dark" : "text-red-600"
-            }`}
-          >
-            {totalCashflow >= 0 ? "+" : ""}
-            {totalCashflow.toFixed(2)} €
+          <div className={`text-2xl font-bold mt-4 mb-1 ${totalCashflow >= 0 ? "text-sky-600" : "text-red-600"}`}>
+            {totalCashflow >= 0 ? "+" : ""}{formatEur(totalCashflow)}
           </div>
           <div className="text-sm text-gray-400 mb-2">Cashflow gesamt</div>
           <div className="text-xs text-gray-400">
-            Ø {averageCashflow.toFixed(2)} € / Monat
+            \u00d8 {formatEur(averageCashflow)} / Monat
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-dark mb-6">
-          Cashflow-Übersicht {new Date().getFullYear()}
-        </h3>
-
-        <div className="space-y-4">
-          {monthlyData.map((data, index) => (
-            <div key={index} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-700">
-                    {data.month}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="text-emerald-600 font-medium">
-                    +{data.income.toFixed(2)} €
-                  </span>
-                  <span className="text-red-600 font-medium">
-                    -{data.expenses.toFixed(2)} €
-                  </span>
-                  <span className="text-orange-600 font-medium">
-                    -{data.loanPayments.toFixed(2)} €
-                  </span>
-                  <span
-                    className={`font-semibold min-w-[100px] text-right ${
-                      data.cashflow >= 0 ? "text-primary-blue" : "text-red-600"
-                    }`}
-                  >
-                    {data.cashflow >= 0 ? "+" : ""}
-                    {data.cashflow.toFixed(2)} €
-                  </span>
-                </div>
-              </div>
-
-              <div className="relative h-8 bg-gray-100 rounded overflow-hidden">
-                <div
-                  className="absolute top-0 left-0 h-full bg-emerald-600 opacity-50 hover:opacity-70 transition-opacity group"
-                  style={{
-                    width: `${(data.rentIncome / maxValue) * 100}%`,
-                  }}
-                  title={`Mieteinnahmen: ${data.rentIncome.toFixed(2)} €`}
-                >
-                  <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                    Mieteinnahmen: {data.rentIncome.toFixed(2)} €
-                  </div>
-                </div>
-                <div
-                  className="absolute top-0 left-0 h-full bg-emerald-400 opacity-50 hover:opacity-70 transition-opacity group"
-                  style={{
-                    width: `${(data.income / maxValue) * 100}%`,
-                  }}
-                  title={`Sonstige Einnahmen: ${data.manualIncome.toFixed(2)} €`}
-                >
-                  <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                    Sonstige Einnahmen: {data.manualIncome.toFixed(2)} €
-                  </div>
-                </div>
-                <div
-                  className="absolute top-0 left-0 h-full bg-red-500 opacity-50 hover:opacity-70 transition-opacity group"
-                  style={{
-                    width: `${(data.expenses / maxValue) * 100}%`,
-                  }}
-                  title={`Ausgaben: ${data.expenses.toFixed(2)} €`}
-                >
-                  <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                    Ausgaben: {data.expenses.toFixed(2)} €
-                  </div>
-                </div>
-                <div
-                  className="absolute top-0 left-0 h-full bg-orange-500 opacity-50 hover:opacity-70 transition-opacity group"
-                  style={{
-                    width: `${((data.expenses + data.loanPayments) / maxValue) * 100}%`,
-                  }}
-                  title={`Kreditzahlungen: ${data.loanPayments.toFixed(2)} €`}
-                >
-                  <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                    Kreditzahlungen: {data.loanPayments.toFixed(2)} €
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+      {/* Legend */}
+      <div className="bg-white rounded-lg px-6 py-4">
+        <div className="flex flex-wrap gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm bg-emerald-500" />
+            <span className="text-sm text-gray-600">Einnahmen</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm bg-red-500" />
+            <span className="text-sm text-gray-600">Ausgaben</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm bg-amber-500" />
+            <span className="text-sm text-gray-600">Kreditzahlungen</span>
+          </div>
         </div>
       </div>
 
+      {/* Bar Chart */}
+      <div className="bg-white rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-dark mb-6">
+          Cashflow-\u00dcbersicht
+        </h3>
+
+        <div className="space-y-1">
+          {monthlyData.map((data, index) => {
+            const isExpanded = expandedMonths.has(index);
+            const incomeWidth = maxValue > 0 ? (data.income / maxValue) * 100 : 0;
+            const expenseWidth = maxValue > 0 ? (data.expenses / maxValue) * 100 : 0;
+            const loanWidth = maxValue > 0 ? (data.loanPayments / maxValue) * 100 : 0;
+
+            return (
+              <div key={index}>
+                <button
+                  type="button"
+                  onClick={() => toggleMonth(index)}
+                  className="w-full text-left hover:bg-gray-50 rounded-lg p-3 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {isExpanded ? (
+                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      )}
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm font-medium text-gray-700">{data.month}</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className={`${COLORS.income.text} font-medium`}>
+                        +{formatEur(data.income)}
+                      </span>
+                      <span className={`${COLORS.expenses.text} font-medium`}>
+                        -{formatEur(data.expenses)}
+                      </span>
+                      <span className={`${COLORS.loans.text} font-medium`}>
+                        -{formatEur(data.loanPayments)}
+                      </span>
+                      <span className={`font-semibold min-w-[110px] text-right ${data.cashflow >= 0 ? COLORS.cashflow.text : "text-red-600"}`}>
+                        {data.cashflow >= 0 ? "+" : ""}{formatEur(data.cashflow)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-1 h-7 ml-6">
+                    {data.income > 0 && (
+                      <div
+                        className="bg-emerald-500 rounded-sm h-full transition-all duration-300 min-w-[2px]"
+                        style={{ width: `${incomeWidth}%` }}
+                      />
+                    )}
+                    {data.expenses > 0 && (
+                      <div
+                        className="bg-red-500 rounded-sm h-full transition-all duration-300 min-w-[2px]"
+                        style={{ width: `${expenseWidth}%` }}
+                      />
+                    )}
+                    {data.loanPayments > 0 && (
+                      <div
+                        className="bg-amber-500 rounded-sm h-full transition-all duration-300 min-w-[2px]"
+                        style={{ width: `${loanWidth}%` }}
+                      />
+                    )}
+                    {data.income === 0 && data.expenses === 0 && data.loanPayments === 0 && (
+                      <div className="bg-gray-100 rounded-sm h-full w-full" />
+                    )}
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="ml-12 mr-3 mb-3 border border-gray-100 rounded-lg overflow-hidden animate-in slide-in-from-top-1">
+                    <table className="w-full text-sm">
+                      <tbody>
+                        <tr className="bg-emerald-50/50">
+                          <td className="px-4 py-2.5 font-medium text-emerald-700" colSpan={2}>Einnahmen</td>
+                        </tr>
+                        <tr className="border-t border-gray-100">
+                          <td className="px-4 py-2 pl-8 text-gray-600">Mieteinnahmen</td>
+                          <td className="px-4 py-2 text-right font-medium text-emerald-600">{formatEur(data.rentIncome)}</td>
+                        </tr>
+                        <tr className="border-t border-gray-100">
+                          <td className="px-4 py-2 pl-8 text-gray-600">Sonstige Einnahmen</td>
+                          <td className="px-4 py-2 text-right font-medium text-emerald-600">{formatEur(data.manualIncome)}</td>
+                        </tr>
+                        <tr className="border-t border-gray-100 bg-emerald-50/30">
+                          <td className="px-4 py-2 pl-8 font-medium text-emerald-700">Summe Einnahmen</td>
+                          <td className="px-4 py-2 text-right font-semibold text-emerald-700">{formatEur(data.income)}</td>
+                        </tr>
+
+                        <tr className="bg-red-50/50 border-t-2 border-gray-200">
+                          <td className="px-4 py-2.5 font-medium text-red-700" colSpan={2}>Ausgaben</td>
+                        </tr>
+                        <tr className="border-t border-gray-100">
+                          <td className="px-4 py-2 pl-8 text-gray-600">Hausgeld</td>
+                          <td className="px-4 py-2 text-right font-medium text-red-600">{formatEur(data.hausgeld)}</td>
+                        </tr>
+                        <tr className="border-t border-gray-100">
+                          <td className="px-4 py-2 pl-8 text-gray-600">Sonstige Ausgaben</td>
+                          <td className="px-4 py-2 text-right font-medium text-red-600">{formatEur(data.dbExpenses)}</td>
+                        </tr>
+                        <tr className="border-t border-gray-100 bg-red-50/30">
+                          <td className="px-4 py-2 pl-8 font-medium text-red-700">Summe Ausgaben</td>
+                          <td className="px-4 py-2 text-right font-semibold text-red-700">{formatEur(data.expenses)}</td>
+                        </tr>
+
+                        <tr className="bg-amber-50/50 border-t-2 border-gray-200">
+                          <td className="px-4 py-2.5 font-medium text-amber-700" colSpan={2}>Kreditzahlungen</td>
+                        </tr>
+                        <tr className="border-t border-gray-100">
+                          <td className="px-4 py-2 pl-8 text-gray-600">Monatliche Kreditraten</td>
+                          <td className="px-4 py-2 text-right font-medium text-amber-600">{formatEur(data.loanPayments)}</td>
+                        </tr>
+
+                        <tr className="border-t-2 border-gray-200 bg-gray-50">
+                          <td className="px-4 py-3 font-semibold text-gray-800">Cashflow</td>
+                          <td className={`px-4 py-3 text-right font-bold ${data.cashflow >= 0 ? "text-sky-600" : "text-red-600"}`}>
+                            {data.cashflow >= 0 ? "+" : ""}{formatEur(data.cashflow)}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Analysis Footer */}
       <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <p className="text-sm font-medium text-blue-900 mb-1">Cashflow-Analyse:</p>
         <p className="text-sm text-blue-900">
-          Im ausgewählten Zeitraum haben Sie einen{" "}
+          Im ausgew\u00e4hlten Zeitraum haben Sie einen{" "}
           {totalCashflow >= 0 ? "positiven" : "negativen"} Cashflow von{" "}
-          <span className="font-semibold">
-            {totalCashflow.toFixed(2)} €
-          </span>
-          . Das entspricht durchschnittlich{" "}
-          <span className="font-semibold">
-            {averageCashflow.toFixed(2)} €
-          </span>{" "}
-          pro Monat.
+          <span className="font-semibold">{formatEur(totalCashflow)}</span>.
+          Das entspricht durchschnittlich{" "}
+          <span className="font-semibold">{formatEur(averageCashflow)}</span> pro Monat.
         </p>
+      </div>
+    </div>
+  );
+}
+
+function SummaryTile({
+  icon,
+  color,
+  value,
+  label,
+  average,
+  tooltip,
+}: {
+  icon: React.ReactNode;
+  color: typeof COLORS.income;
+  value: number;
+  label: string;
+  average: number;
+  tooltip: string;
+}) {
+  function formatEur(v: number) {
+    return v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20AC";
+  }
+
+  return (
+    <div className={`bg-white rounded-lg p-6 border-l-4 ${color.border}`} style={{ borderLeftColor: color.hex }}>
+      <div className="flex items-start justify-between">
+        <div className={`w-12 h-12 ${color.light} rounded-full flex items-center justify-center border ${color.border}`}>
+          <span className={color.text}>{icon}</span>
+        </div>
+        <InfoTooltip text={tooltip} />
+      </div>
+      <div className={`text-2xl font-bold mt-4 mb-1 ${color.text}`}>
+        {formatEur(value)}
+      </div>
+      <div className="text-sm text-gray-400 mb-2">{label}</div>
+      <div className="text-xs text-gray-400">
+        \u00d8 {formatEur(average)} / Monat
       </div>
     </div>
   );
