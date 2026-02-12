@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   Users,
   ChevronDown,
-  Play,
   Home,
   Calendar,
   Building2,
@@ -62,21 +61,6 @@ const FEATURES = [
   }
 ];
 
-const DETAIL_SECTIONS = [
-  {
-    title: "Mietverträge anlegen – klar, schnell und fehlerfrei",
-    text: "Mit Rentably legst du neue Mietverträge mühelos an und wählst direkt den passenden Mieter für die Einheit aus. Vertragsbeginn, Sollstellung der Miete und alle relevanten Daten erfasst du strukturiert in einem klaren Workflow. So behältst du jederzeit den Überblick und stellst sicher, dass alle Informationen vollständig und korrekt hinterlegt sind."
-  },
-  {
-    title: "Vom Mietpreis bis zur Kaution – alles an einem Ort",
-    text: "In Rentably hinterlegst du alle wichtigen Vertragsdaten übersichtlich an einem Ort. Von Kaltmiete über Betriebskosten und Heizkosten bis hin zur Kaution – alles ist klar strukturiert und jederzeit nachvollziehbar. Auch Sonderfälle wie indexbasierte Mietanpassungen lassen sich problemlos abbilden, sodass deine Verträge immer vollständig und rechtssicher sind."
-  },
-  {
-    title: "Alle Mieten im Blick – übersichtlich und aktuell",
-    text: "Mit der Mietübersicht in Rentably hast du jederzeit den vollen Überblick über alle Zahlungen. Eingänge werden automatisch verbucht und offene Posten klar hervorgehoben, sodass du keine Miete mehr übersiehst. Auch manuelle Buchungen oder kurzfristige Anpassungen lassen sich schnell erledigen – für maximale Flexibilität bei voller Kontrolle."
-  }
-];
-
 const SECURITY_ITEMS = [
   {
     title: "Rechenzentrum",
@@ -100,12 +84,12 @@ const OTHER_FEATURES = [
   {
     icon: Home,
     title: "Immobilienmanagement",
-    description: "Verwalte alle deine Immobilien und Einheiten digital & sicher."
+    description: "Verwalten Sie alle Ihre Immobilien und Einheiten digital & sicher."
   },
   {
     icon: FolderOpen,
     title: "Dokumentenmanagement",
-    description: "Verwalte deine Dokumente einfach & sicher in der Cloud."
+    description: "Verwalten Sie Ihre Dokumente einfach & sicher in der Cloud."
   },
   {
     icon: BarChart3,
@@ -115,7 +99,7 @@ const OTHER_FEATURES = [
   {
     icon: MessagesSquare,
     title: "Zentrale Kommunikation",
-    description: "Deine gesamte Kommunikation zentral gebündelt."
+    description: "Ihre gesamte Kommunikation zentral gebündelt."
   },
   {
     icon: Calendar,
@@ -125,26 +109,26 @@ const OTHER_FEATURES = [
   {
     icon: Building2,
     title: "Übergabeprotokolle",
-    description: "Optimale Dokumentation für deine nächste Wohnungsübergabe."
+    description: "Optimale Dokumentation für Ihre nächste Wohnungsübergabe."
   }
 ];
 
 const FAQS = [
   {
     question: "Wie lege ich einen neuen Mietvertrag an?",
-    answer: "Du wählst die gewünschte Immobilie und Einheit aus, gibst die Mieterdaten ein und erfasst alle Vertragsdaten wie Mietbeginn, Kaltmiete, Nebenkosten und Kaution. Der Vertrag wird automatisch gespeichert und alle Zahlungen werden ab dem Mietbeginn überwacht."
+    answer: "Sie wählen die gewünschte Immobilie und Einheit aus, geben die Mieterdaten ein und erfassen alle Vertragsdaten wie Mietbeginn, Kaltmiete, Nebenkosten und Kaution. Der Vertrag wird automatisch gespeichert und alle Zahlungen werden ab dem Mietbeginn überwacht."
   },
   {
     question: "Werden Mietzahlungen automatisch erfasst?",
-    answer: "Ja, du kannst dein Bankkonto verbinden oder Zahlungen manuell erfassen. Das System ordnet Zahlungen automatisch den jeweiligen Mietverhältnissen zu und zeigt dir offene Posten übersichtlich an."
+    answer: "Ja, Sie können Ihr Bankkonto verbinden oder Zahlungen manuell erfassen. Das System ordnet Zahlungen automatisch den jeweiligen Mietverhältnissen zu und zeigt Ihnen offene Posten übersichtlich an."
   },
   {
     question: "Wie funktioniert die automatische Indexmieterhöhung?",
-    answer: "Bei Indexmietverträgen überwacht das System den Verbraucherpreisindex automatisch. Sobald die vereinbarte Schwelle erreicht ist, wird die neue Miethöhe berechnet und du erhältst eine Benachrichtigung. Die Berechnung erfolgt transparent und wird vollständig dokumentiert."
+    answer: "Bei Indexmietverträgen überwacht das System den Verbraucherpreisindex automatisch. Sobald die vereinbarte Schwelle erreicht ist, wird die neue Miethöhe berechnet und Sie erhalten eine Benachrichtigung. Die Berechnung erfolgt transparent und wird vollständig dokumentiert."
   },
   {
     question: "Kann ich Mahnungen automatisch versenden?",
-    answer: "Ja, bei Zahlungsverzug kannst du mehrstufige Mahnungen erstellen und versenden. Jede Mahnstufe wird automatisch protokolliert und dem Mietverhältnis zugeordnet, sodass du eine lückenlose Dokumentation hast."
+    answer: "Ja, bei Zahlungsverzug können Sie mehrstufige Mahnungen erstellen und versenden. Jede Mahnstufe wird automatisch protokolliert und dem Mietverhältnis zugeordnet, sodass Sie eine lückenlose Dokumentation haben."
   }
 ];
 
@@ -253,7 +237,7 @@ export default function Mietverwaltung() {
               </h1>
               <p className="mt-6 text-lg sm:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
                 Jede verspätete Miete, jeder Abrechnungsfehler bringt Unsicherheit.
-                Mit Rentably kannst du deine Mietverwaltung digitalisieren: Mietverhältnisse
+                Mit Rentably können Sie Ihre Mietverwaltung digitalisieren: Mietverhältnisse
                 sauber dokumentieren, Zahlungen automatisch erfassen.
               </p>
               <ul className="mt-6 space-y-2.5">
@@ -287,45 +271,6 @@ export default function Mietverwaltung() {
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-[#f8fafc]">
-        <div className="max-w-[1200px] mx-auto">
-          <RevealOnScroll>
-            <div className="text-center mb-16">
-              <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
-                Video
-              </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-                In wenigen Klicks zum Mietverhältnis
-              </h2>
-              <p className="text-gray-500 max-w-[700px] mx-auto">
-                Vergiss komplizierte Formulare und verstreute Dokumente. Mit Rentably
-                werden Kaltmiete, Betriebskosten und Nebenkosten sauber erfasst.
-              </p>
-            </div>
-          </RevealOnScroll>
-
-          <RevealOnScroll delay={100}>
-            <div className="max-w-[900px] mx-auto">
-              <div className="relative aspect-video bg-gray-900 rounded-2xl overflow-hidden border border-gray-200 shadow-xl">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors cursor-pointer">
-                    <Play className="w-7 h-7 text-[#3c8af7] ml-1" fill="currentColor" />
-                  </div>
-                </div>
-                <img
-                  src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1920"
-                  alt="Mietverwaltung Demo"
-                  className="w-full h-full object-cover opacity-60"
-                />
-              </div>
-              <p className="text-center text-sm text-gray-500 mt-4">
-                Schau dir an, wie schnell du starten kannst – und erlebe Immobilienverwaltung ohne Chaos.
-              </p>
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
-
       <section className="py-20 px-6">
         <div className="max-w-[1200px] mx-auto">
           <RevealOnScroll>
@@ -334,10 +279,10 @@ export default function Mietverwaltung() {
                 Weniger Stress, mehr Überblick
               </p>
               <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-                Deine Mietverwaltung im Griff
+                Ihre Mietverwaltung im Griff
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
-                Einfach, übersichtlich, professionell – mit Rentably fühlt sich deine
+                Einfach, übersichtlich, professionell – mit Rentably fühlt sich Ihre
                 Mietverwaltung mühelos an.
               </p>
             </div>
@@ -363,21 +308,108 @@ export default function Mietverwaltung() {
               </RevealOnScroll>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="space-y-20">
-            {DETAIL_SECTIONS.map((section, i) => (
-              <RevealOnScroll key={section.title} delay={i * 100}>
-                <div className="max-w-[800px] mx-auto">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                    {section.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {section.text}
+      <section className="py-20 px-6 bg-gray-50">
+        <div className="max-w-[1200px] mx-auto">
+          <RevealOnScroll>
+            <div className="text-center mb-16">
+              <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
+                Praxisbeispiel
+              </p>
+              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+                So einfach verwalten Sie Ihre Mietverträge
+              </h2>
+            </div>
+          </RevealOnScroll>
+
+          <RevealOnScroll delay={100}>
+            <div className="max-w-[900px] mx-auto bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
+              <div className="bg-gradient-to-r from-[#3c8af7] to-[#3579de] p-8 text-white">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Familie Müller</h3>
+                    <p className="text-white/80 text-sm">Musterstraße 123, 10115 Berlin</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8">
+                <div className="grid md:grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+                      Vertragsdaten
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Mietbeginn</span>
+                        <span className="font-semibold text-gray-900">01.03.2024</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Grundmiete</span>
+                        <span className="font-semibold text-gray-900">1.200,00 €</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Nebenkosten</span>
+                        <span className="font-semibold text-gray-900">250,00 €</span>
+                      </div>
+                      <div className="flex justify-between py-2">
+                        <span className="text-gray-600 font-semibold">Gesamtmiete</span>
+                        <span className="font-bold text-gray-900">1.450,00 €</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+                      Kaution & Status
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Kaution</span>
+                        <span className="font-semibold text-gray-900">3.600,00 €</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Kautionsstatus</span>
+                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600">
+                          <span className="w-2 h-2 rounded-full bg-green-600" />
+                          Vollständig
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Zahlungsstatus</span>
+                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Pünktlich
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-[#f8fafc] rounded-xl p-6 border border-gray-100">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+                    Zahlungshistorie (letzte 12 Monate)
+                  </h4>
+                  <div className="flex items-end gap-2 h-24">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                        <div className="w-full bg-green-500 rounded-t" style={{ height: `${85 + Math.random() * 15}%` }} />
+                        <span className="text-xs text-gray-400">{i + 1}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 text-center mt-4">
+                    Alle Zahlungen wurden pünktlich und vollständig geleistet
                   </p>
                 </div>
-              </RevealOnScroll>
-            ))}
-          </div>
+              </div>
+            </div>
+          </RevealOnScroll>
         </div>
       </section>
 
@@ -389,10 +421,10 @@ export default function Mietverwaltung() {
                 Sicherheit
               </p>
               <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-                Ein sicheres Zuhause für deine Daten
+                Ein sicheres Zuhause für Ihre Daten
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
-                Alle deine Daten werden sicher in zertifizierten Rechenzentren in Deutschland
+                Alle Ihre Daten werden sicher in zertifizierten Rechenzentren in Deutschland
                 verwaltet. Es findet kein Datentransfer ins Ausland statt.
               </p>
             </div>
@@ -429,7 +461,7 @@ export default function Mietverwaltung() {
                 Weitere Funktionen für Vermieter
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
-                Rentably bietet dir umfangreiche Funktionen, die deine Immobilienverwaltung
+                Rentably bietet Ihnen umfangreiche Funktionen, die Ihre Immobilienverwaltung
                 auf das nächste Level bringen.
               </p>
             </div>
@@ -491,7 +523,7 @@ export default function Mietverwaltung() {
               Bereit für stressfreie Mietverwaltung?
             </h2>
             <p className="text-gray-500 mb-10 max-w-lg mx-auto">
-              Registriere dich kostenlos und verwalte deine Mietverhältnisse
+              Registrieren Sie sich kostenlos und verwalten Sie Ihre Mietverhältnisse
               ab sofort digital – ohne Kreditkarte.
             </p>
             <button
