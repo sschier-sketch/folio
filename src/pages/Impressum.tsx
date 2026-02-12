@@ -1,14 +1,10 @@
 import { Building2, Mail, Scale } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
-import Footer from "../components/Footer";
-import { Header } from "../components/Header";
 export default function Impressum() {
   const { language } = useLanguage();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
-      {" "}
-      <Header />{" "}
-      <div className="flex-1 py-16 px-4 sm:px-6 lg:px-8 mt-16">
+    <div>
+      <div className="py-16 px-4 sm:px-6 lg:px-8">
         {" "}
         <div className="max-w-4xl mx-auto">
           {" "}
@@ -201,8 +197,7 @@ export default function Impressum() {
             </div>{" "}
           </div>{" "}
         </div>{" "}
-      </div>{" "}
-      <Footer />{" "}
+      </div>
     </div>
   );
 }

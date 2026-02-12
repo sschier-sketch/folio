@@ -1,15 +1,12 @@
 import { Link } from "react-router-dom";
 import { Shield } from "lucide-react";
 import SeoHead from "../components/SeoHead";
-import { Header } from "../components/Header";
-import Footer from "../components/Footer";
 
 export function AVV() {
   return (
     <>
       <SeoHead />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50">
-        <Header />
+      <div>
         <div className="max-w-4xl mx-auto px-4 py-12">
           <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
             <div className="flex items-center gap-4 mb-8">
@@ -272,7 +269,6 @@ export function AVV() {
             </div>
           </div>
         </div>
-        <Footer />
       </div>
     </>
   );

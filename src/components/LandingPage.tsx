@@ -9,8 +9,6 @@ import {
   Check,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Footer from "./Footer";
-import { Header } from "./Header";
 import { withRef } from "../lib/referralTracking";
 import { Button } from "./ui/Button";
 
@@ -19,9 +17,7 @@ export default function LandingPage() {
   const goToSignup = () => navigate(withRef('/signup'));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {" "}
-      <Header />{" "}
+    <div>
       <main>
         {" "}
         <section className="py-20 px-4 sm:px-6 lg:px-8">
@@ -316,8 +312,7 @@ export default function LandingPage() {
             </div>{" "}
           </div>{" "}
         </section>{" "}
-      </main>{" "}
-      <Footer />{" "}
+      </main>
     </div>
   );
 }

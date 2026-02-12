@@ -1,7 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { Check, Info } from "lucide-react";
-import { Header } from "../components/Header";
-import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Button } from "../components/ui/Button";
 
@@ -58,9 +56,8 @@ export default function Pricing() {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Header />
-      <div className="flex-1 pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+    <div>
+      <div className="pt-8 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold text-dark mb-4">
@@ -132,7 +129,6 @@ export default function Pricing() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

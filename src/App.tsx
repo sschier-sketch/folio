@@ -34,6 +34,7 @@ import OperatingCostWizardStep3 from "./components/billing/OperatingCostWizardSt
 import AdminMagazinePostEditor from "./components/admin/AdminMagazinePostEditor";
 import { Magazine } from "./pages/Magazine";
 import { MagazinePost } from "./pages/MagazinePost";
+import MarketingLayout from "./components/marketing/MarketingLayout";
 
 function PasswordRecoveryHandler() {
   const navigate = useNavigate();
@@ -82,26 +83,28 @@ function App() {
         <SeoHead />
         <PasswordRecoveryHandler />
         <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route element={<MarketingLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/impressum" element={<Impressum />} />
+          <Route path="/datenschutz" element={<Datenschutz />} />
+          <Route path="/agb" element={<AGB />} />
+          <Route path="/avv" element={<AVV />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/magazin" element={<Magazine />} />
+          <Route path="/magazin/:slug" element={<MagazinePost />} />
+          <Route path="/magazine" element={<Magazine />} />
+          <Route path="/magazine/:slug" element={<MagazinePost />} />
+        </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/reset-password/confirm" element={<ResetPassword />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/impressum" element={<Impressum />} />
-        <Route path="/datenschutz" element={<Datenschutz />} />
-        <Route path="/agb" element={<AGB />} />
-        <Route path="/avv" element={<AVV />} />
-        <Route path="/features" element={<Features />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/support" element={<Support />} />
         <Route path="/tenant-portal" element={<TenantPortalPage />} />
         <Route path="/tenant-portal/:userId" element={<TenantPortalPage />} />
         <Route path="/account-banned" element={<AccountBanned />} />
-        <Route path="/magazin" element={<Magazine />} />
-        <Route path="/magazin/:slug" element={<MagazinePost />} />
-        <Route path="/magazine" element={<Magazine />} />
-        <Route path="/magazine/:slug" element={<MagazinePost />} />
         <Route
           path="/dashboard"
           element={

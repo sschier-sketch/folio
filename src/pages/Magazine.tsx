@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Header } from "../components/Header";
-import Footer from "../components/Footer";
 import { supabase } from "../lib/supabase";
 import { Search, Calendar, Tag as TagIcon, FolderOpen, ChevronLeft, ChevronRight, X, Filter } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -207,9 +205,8 @@ export function Magazine() {
   const hasFilters = searchTerm || topicSlug || selectedTags.length > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex flex-col">
-      <Header />
-      <div className="flex-1 pt-24 pb-16 px-4">
+    <div>
+      <div className="pt-8 pb-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-dark mb-4">
@@ -497,7 +494,6 @@ export function Magazine() {
           )}
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

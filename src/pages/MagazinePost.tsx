@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Header } from "../components/Header";
-import Footer from "../components/Footer";
 import { supabase } from "../lib/supabase";
 import { Calendar, Tag as TagIcon, FolderOpen, ArrowLeft, User, Share2, Facebook, Twitter, Linkedin, Mail } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -268,7 +266,7 @@ export function MagazinePost() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -276,9 +274,8 @@ export function MagazinePost() {
 
   if (notFound || !post) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center px-4">
+      <div>
+        <div className="flex items-center justify-center px-4">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-dark mb-4">
               {language === "de" ? "Artikel nicht gefunden" : "Article not found"}
@@ -297,15 +294,13 @@ export function MagazinePost() {
             </RefLink>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex flex-col">
-      <Header />
-      <div className="flex-1 pt-24 pb-16 px-4">
+    <div>
+      <div className="pt-8 pb-16 px-4">
         <div className="max-w-4xl mx-auto">
           <RefLink
             to={magazineBasePath}
@@ -477,7 +472,6 @@ export function MagazinePost() {
           )}
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

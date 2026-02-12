@@ -24,8 +24,6 @@ import {
   Headphones,
   Bell,
 } from "lucide-react";
-import { Header } from "../components/Header";
-import Footer from "../components/Footer";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Button } from "../components/ui/Button";
 export default function Support() {
@@ -200,10 +198,8 @@ export default function Support() {
     setTicketsResolved(ticketsResolved + 1);
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-blue-50 flex flex-col">
-      {" "}
-      <Header />{" "}
-      <div className="flex-1 pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+    <div>
+      <div className="pt-8 pb-16 px-4 sm:px-6 lg:px-8">
         {" "}
         <div className="max-w-7xl mx-auto">
           {" "}
@@ -591,8 +587,7 @@ export default function Support() {
             </div>{" "}
           </div>{" "}
         </div>{" "}
-      </div>{" "}
-      <Footer />{" "}
+      </div>
     </div>
   );
 }
