@@ -26,7 +26,7 @@ export const PLANS: Record<PlanId, Plan> = {
   basic: {
     id: 'basic',
     name: 'Basic',
-    description: 'Perfekt für Einsteiger mit 1-3 Immobilien',
+    description: 'Perfekt für Einsteiger mit 1–3 Immobilien',
     stripePriceId: 'free',
     priceMonthly: 0,
     currency: 'eur',
@@ -35,10 +35,11 @@ export const PLANS: Record<PlanId, Plan> = {
     features: [
       { text: 'Bis zu 3 Immobilien', included: true },
       { text: 'Unbegrenzt Mieter', included: true },
-      { text: 'Basic Finanzübersicht', included: true },
-      { text: 'Ticketsystem', included: true },
-      { text: 'Mieterportal', included: true },
-      { text: 'E-Mail Support', included: true },
+      { text: 'Einnahmen & Ausgaben', included: true },
+      { text: 'Zähler & Ablesungen', included: true },
+      { text: 'Dokumenten-Upload (200 MB, 1 Datei)', included: true },
+      { text: 'Standard-Vorlagen', included: true },
+      { text: 'E-Mail-Support', included: true },
     ],
   },
   pro: {
@@ -56,16 +57,100 @@ export const PLANS: Record<PlanId, Plan> = {
     features: [
       { text: 'Bis zu 20 Immobilien', included: true },
       { text: 'Unbegrenzt Mieter', included: true },
-      { text: 'Erweiterte Finanzanalysen', included: true },
-      { text: 'Prioritäts-Ticketsystem', included: true },
-      { text: 'Premium Mieterportal', included: true },
+      { text: 'Alles aus Basic, plus:', included: true },
+      { text: 'Ticketsystem & Nachrichten', included: true },
+      { text: 'Mieterportal', included: true },
+      { text: 'Betriebskostenabrechnung', included: true },
+      { text: 'Mahnwesen & Indexmiete', included: true },
+      { text: 'Cashflow & Finanzanalyse', included: true },
+      { text: 'Dokumenten-Upload (2 GB, 10 Dateien)', included: true },
+      { text: 'Alle Vorlagen inkl. Premium', included: true },
       { text: 'Prioritäts-Support (24h)', included: true },
-      { text: 'Detaillierte Reports & Statistiken', included: true },
-      { text: 'Automatische Erinnerungen', included: true },
-      { text: 'Export-Funktionen', included: true },
     ],
   },
 };
+
+export interface ComparisonCategory {
+  name: string;
+  rows: { feature: string; basic: string | boolean; pro: string | boolean }[];
+}
+
+export const COMPARISON_TABLE: ComparisonCategory[] = [
+  {
+    name: 'Immobilien',
+    rows: [
+      { feature: 'Anzahl Immobilien', basic: 'Bis zu 3', pro: 'Bis zu 20' },
+      { feature: 'Stammdaten & Übersicht', basic: true, pro: true },
+      { feature: 'Einheiten verwalten', basic: 'Basis', pro: 'Erweitert (Etage, Zimmer, Leerstandswarnung)' },
+      { feature: 'Kontaktverwaltung', basic: false, pro: true },
+      { feature: 'Dokumente (Objekt-Ebene)', basic: false, pro: true },
+      { feature: 'Instandhaltung', basic: false, pro: true },
+      { feature: 'Kennzahlen & Analysen', basic: false, pro: true },
+      { feature: 'Änderungshistorie', basic: false, pro: true },
+    ],
+  },
+  {
+    name: 'Mieter',
+    rows: [
+      { feature: 'Anzahl Mieter', basic: 'Unbegrenzt', pro: 'Unbegrenzt' },
+      { feature: 'Mieterübersicht & Stammdaten', basic: true, pro: true },
+      { feature: 'Mieteingänge verfolgen', basic: true, pro: true },
+      { feature: 'Vertrag & Dokumente (Details)', basic: false, pro: true },
+      { feature: 'Kautionsverwaltung', basic: false, pro: true },
+      { feature: 'Übergabeprotokolle', basic: false, pro: true },
+      { feature: 'Kommunikationshistorie', basic: false, pro: true },
+      { feature: 'Mietentwicklungs-Timeline', basic: false, pro: true },
+    ],
+  },
+  {
+    name: 'Finanzen',
+    rows: [
+      { feature: 'Einnahmen & Ausgaben', basic: true, pro: true },
+      { feature: 'Cashflow-Übersicht', basic: false, pro: true },
+      { feature: 'Indexmiete', basic: false, pro: true },
+      { feature: 'Finanzanalyse & Prognosen', basic: false, pro: true },
+      { feature: 'Mahnwesen (Erinnerungen, Vorlagen, Historie)', basic: false, pro: true },
+    ],
+  },
+  {
+    name: 'Abrechnung',
+    rows: [
+      { feature: 'Zähler & Ablesungen', basic: true, pro: true },
+      { feature: 'Betriebskostenabrechnung', basic: false, pro: true },
+      { feature: 'PDF-Export & Dokumenten-Export', basic: false, pro: true },
+      { feature: 'Abrechnungshistorie & Plausibilitätschecks', basic: false, pro: true },
+    ],
+  },
+  {
+    name: 'Dokumente',
+    rows: [
+      { feature: 'Speicherplatz', basic: '200 MB', pro: '2 GB' },
+      { feature: 'Dateien pro Upload', basic: '1', pro: 'Bis zu 10' },
+      { feature: 'Suche', basic: 'Dateiname', pro: 'Dateiname, Kategorie, Typ' },
+      { feature: 'Erweiterte Filter (Objekt, Zeitraum)', basic: false, pro: true },
+      { feature: 'Datum & Zuordnung beim Upload', basic: false, pro: true },
+      { feature: 'Dokumenten-Archiv', basic: false, pro: true },
+      { feature: 'Versionshistorie', basic: false, pro: true },
+      { feature: 'Teilen über Mieterportal', basic: false, pro: true },
+    ],
+  },
+  {
+    name: 'Kommunikation',
+    rows: [
+      { feature: 'Ticketsystem', basic: false, pro: true },
+      { feature: 'Nachrichten & E-Mail (@rentab.ly)', basic: false, pro: true },
+      { feature: 'Mieterportal', basic: false, pro: true },
+    ],
+  },
+  {
+    name: 'Vorlagen & Support',
+    rows: [
+      { feature: 'Standard-Vorlagen', basic: true, pro: true },
+      { feature: 'Premium-Vorlagen', basic: false, pro: true },
+      { feature: 'Support', basic: 'E-Mail', pro: 'Priorität (24h)' },
+    ],
+  },
+];
 
 export function getPlanById(id: PlanId): Plan {
   return PLANS[id];

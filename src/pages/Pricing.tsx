@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Check, X, Info } from "lucide-react";
-import { PLANS, calculateYearlySavings } from "../config/plans";
+import { Check, Minus, Info } from "lucide-react";
+import { PLANS, COMPARISON_TABLE, calculateYearlySavings } from "../config/plans";
 import { withRef } from "../lib/referralTracking";
 import { useState } from "react";
 
@@ -10,13 +10,22 @@ function formatPrice(cents: number): string {
   return cents.toFixed(2).replace(".", ",");
 }
 
-const PRO_EXTRAS = [
-  "Erweiterte Finanzanalysen",
-  "Detaillierte Reports & Statistiken",
-  "Automatische Erinnerungen",
-  "Export-Funktionen",
-  "Prioritäts-Support (24h)",
-];
+function CellValue({ value }: { value: string | boolean }) {
+  if (value === true) {
+    return (
+      <div
+        className="w-6 h-6 rounded-full flex items-center justify-center mx-auto"
+        style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
+      >
+        <Check className="w-3.5 h-3.5 text-[#3c8af7]" strokeWidth={2} />
+      </div>
+    );
+  }
+  if (value === false) {
+    return <Minus className="w-4 h-4 text-gray-300 mx-auto" />;
+  }
+  return <span className="text-sm text-gray-700">{value}</span>;
+}
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -37,7 +46,7 @@ export default function Pricing() {
           </h1>
           <p className="mt-5 text-lg text-gray-500 max-w-xl mx-auto leading-relaxed">
             Starten Sie kostenlos und upgraden Sie, wenn Ihr Portfolio wächst.
-            Keine versteckten Kosten.
+            Keine versteckten Kosten. 30 Tage alle Pro-Funktionen gratis testen.
           </p>
         </div>
       </section>
@@ -81,7 +90,6 @@ export default function Pricing() {
                 {PLANS.basic.description}
               </p>
             </div>
-
             <div className="mb-8">
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-bold text-gray-900">
@@ -91,7 +99,6 @@ export default function Pricing() {
               </div>
               <p className="text-xs text-gray-400 mt-1">Für immer kostenlos</p>
             </div>
-
             <ul className="space-y-3 mb-10 flex-1">
               {PLANS.basic.features.map((f) => (
                 <li key={f.text} className="flex items-start gap-3">
@@ -99,14 +106,7 @@ export default function Pricing() {
                   <span className="text-sm text-gray-600">{f.text}</span>
                 </li>
               ))}
-              {PRO_EXTRAS.map((text) => (
-                <li key={text} className="flex items-start gap-3">
-                  <X className="w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-400">{text}</span>
-                </li>
-              ))}
             </ul>
-
             <button
               onClick={() => navigate(withRef("/signup"))}
               className="h-[46px] w-full rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
@@ -119,7 +119,6 @@ export default function Pricing() {
             <span className="absolute -top-3 left-8 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full">
               Empfohlen
             </span>
-
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900">
                 {PLANS.pro.name}
@@ -128,7 +127,6 @@ export default function Pricing() {
                 {PLANS.pro.description}
               </p>
             </div>
-
             <div className="mb-8">
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-bold text-gray-900">
@@ -142,7 +140,6 @@ export default function Pricing() {
                   : "zzgl. MwSt., monatlich kündbar"}
               </p>
             </div>
-
             <ul className="space-y-3 mb-10 flex-1">
               {PLANS.pro.features.map((f) => (
                 <li key={f.text} className="flex items-start gap-3">
@@ -151,13 +148,69 @@ export default function Pricing() {
                 </li>
               ))}
             </ul>
-
             <button
               onClick={() => navigate(withRef("/signup"))}
               className="h-[46px] w-full rounded-xl text-sm font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
             >
-              14 Tage kostenlos testen
+              30 Tage kostenlos testen
             </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-6">
+        <div className="max-w-[880px] mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight text-center mb-4">
+            Detaillierter Funktionsvergleich
+          </h2>
+          <p className="text-gray-500 text-center mb-12 max-w-lg mx-auto">
+            Alle Funktionen im Überblick — damit Sie genau wissen,
+            was in Ihrem Tarif enthalten ist.
+          </p>
+
+          <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
+            <div className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_140px_140px] border-b border-gray-200 bg-gray-50">
+              <div className="px-5 py-4 text-sm font-semibold text-gray-500">
+                Funktion
+              </div>
+              <div className="px-3 py-4 text-sm font-semibold text-gray-500 text-center">
+                Basic
+              </div>
+              <div className="px-3 py-4 text-sm font-semibold text-gray-900 text-center">
+                Pro
+              </div>
+            </div>
+
+            {COMPARISON_TABLE.map((category, catIdx) => (
+              <div key={category.name}>
+                <div className="px-5 py-3 bg-gray-50/60 border-b border-gray-100">
+                  <span className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
+                    {category.name}
+                  </span>
+                </div>
+                {category.rows.map((row, rowIdx) => (
+                  <div
+                    key={row.feature}
+                    className={`grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_140px_140px] ${
+                      rowIdx < category.rows.length - 1 ||
+                      catIdx < COMPARISON_TABLE.length - 1
+                        ? "border-b border-gray-100"
+                        : ""
+                    }`}
+                  >
+                    <div className="px-5 py-3.5 text-sm text-gray-700">
+                      {row.feature}
+                    </div>
+                    <div className="px-3 py-3.5 text-center">
+                      <CellValue value={row.basic} />
+                    </div>
+                    <div className="px-3 py-3.5 text-center">
+                      <CellValue value={row.pro} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </section>
