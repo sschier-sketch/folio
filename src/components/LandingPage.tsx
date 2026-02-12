@@ -7,6 +7,7 @@ import MobileSection from "./landing/MobileSection";
 import TestimonialsSection from "./landing/TestimonialsSection";
 import TrustSection from "./landing/TrustSection";
 import ByLandlordsSection from "./landing/ByLandlordsSection";
+import PricingSection from "./landing/PricingSection";
 import CtaSection from "./landing/CtaSection";
 
 export default function LandingPage() {
@@ -21,6 +22,7 @@ export default function LandingPage() {
       <TestimonialsSection />
       <TrustSection />
       <ByLandlordsSection />
+      <PricingSection />
       <CtaSection />
     </div>
   );

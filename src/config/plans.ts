@@ -79,7 +79,7 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
     rows: [
       { feature: 'Unbegrenzt Immobilien & Einheiten', basic: true, pro: true },
       { feature: 'Stammdaten & Übersicht', basic: true, pro: true },
-      { feature: 'Einheiten verwalten', basic: 'Basis', pro: 'Erweitert (Etage, Zimmer, Leerstandswarnung)' },
+      { feature: 'Einheiten verwalten', basic: 'Basis', pro: 'Erweitert' },
       { feature: 'Kontaktverwaltung', basic: false, pro: true },
       { feature: 'Dokumente (Objekt-Ebene)', basic: false, pro: true },
       { feature: 'Instandhaltung', basic: false, pro: true },
@@ -124,7 +124,7 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
     rows: [
       { feature: 'Speicherplatz', basic: '200 MB', pro: '2 GB' },
       { feature: 'Dateien pro Upload', basic: '1', pro: 'Bis zu 10' },
-      { feature: 'Suche', basic: 'Dateiname', pro: 'Dateiname, Kategorie, Typ' },
+      { feature: 'Suche', basic: 'Dateiname', pro: 'Erweitert' },
       { feature: 'Erweiterte Filter (Objekt, Zeitraum)', basic: false, pro: true },
       { feature: 'Datum & Zuordnung beim Upload', basic: false, pro: true },
       { feature: 'Dokumenten-Archiv', basic: false, pro: true },

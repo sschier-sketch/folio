@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Check, Minus, Info } from "lucide-react";
+import { Check, Minus, Info, Sparkles } from "lucide-react";
 import { PLANS, COMPARISON_TABLE, calculateYearlySavings } from "../config/plans";
 import { withRef } from "../lib/referralTracking";
 import { useState } from "react";
@@ -154,6 +154,24 @@ export default function Pricing() {
             >
               30 Tage kostenlos testen
             </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="pt-4 pb-10 px-6">
+        <div className="max-w-[880px] mx-auto">
+          <div className="bg-[#EEF4FF] border border-[#DDE7FF] rounded-xl p-5 flex items-start gap-3.5">
+            <Sparkles className="w-5 h-5 text-[#3c8af7] flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-gray-900 mb-0.5">
+                30 Tage alle Pro-Funktionen kostenlos
+              </p>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Nach der Registrierung werden automatisch alle Pro-Funktionen
+                für 30 Tage freigeschaltet. Kein Risiko, keine Kreditkarte
+                erforderlich.
+              </p>
+            </div>
           </div>
         </div>
       </section>
