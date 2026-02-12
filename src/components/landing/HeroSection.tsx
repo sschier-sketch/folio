@@ -1,6 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../common/RefLink";
+import { CheckCircle2 } from "lucide-react";
+
+const HERO_CHECKS = [
+  "Komplett kostenlos im Basic-Tarif",
+  "Keine Kreditkarte erforderlich",
+  "Sofort einsatzbereit",
+];
 
 export default function HeroSection() {
   const navigate = useNavigate();
@@ -10,6 +17,12 @@ export default function HeroSection() {
       <div className="max-w-[1200px] mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
+              <span className="text-sm font-medium text-[#3c8af7]">
+                Kostenlos starten — keine Kreditkarte nötig
+              </span>
+            </div>
             <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
               Immobilienverwaltung,{" "}
               <span className="text-[#3c8af7]">die mitdenkt.</span>
@@ -19,7 +32,15 @@ export default function HeroSection() {
               Die Software für private Vermieter, die Ordnung schaffen
               und Zeit sparen wollen.
             </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-start gap-4">
+            <ul className="mt-6 space-y-2.5">
+              {HERO_CHECKS.map((item) => (
+                <li key={item} className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#3c8af7] flex-shrink-0" />
+                  <span className="text-sm text-gray-600">{item}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
               <button
                 onClick={() => navigate(withRef("/signup"))}
                 className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
@@ -38,53 +59,16 @@ export default function HeroSection() {
           <div className="hidden lg:block">
             <div className="rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-900/[0.08] overflow-hidden">
               <div className="h-9 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 px-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-gray-200" />
-                <span className="w-2.5 h-2.5 rounded-full bg-gray-200" />
-                <span className="w-2.5 h-2.5 rounded-full bg-gray-200" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]/60" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]/60" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]/60" />
                 <div className="ml-4 h-5 w-48 bg-gray-100 rounded-md" />
               </div>
-              <div className="flex">
-                <div className="w-40 border-r border-gray-100 p-4 space-y-3 hidden xl:block">
-                  <div className="h-5 w-16 bg-[#3c8af7]/10 rounded" />
-                  <div className="space-y-2.5 pt-2">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div
-                        key={i}
-                        className={`h-3.5 rounded ${i === 1 ? "w-24 bg-[#3c8af7]/15" : "w-20 bg-gray-100"}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="flex-1 p-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="h-4 w-32 bg-gray-200 rounded" />
-                    <div className="h-7 w-20 bg-[#3c8af7]/10 rounded-md" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="bg-gray-50 rounded-lg p-3.5 space-y-1.5">
-                        <div className="h-2 w-14 bg-gray-200 rounded" />
-                        <div className="h-5 w-10 bg-gray-100 rounded" />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="space-y-1">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0"
-                      >
-                        <div className="w-7 h-7 rounded bg-gray-100 flex-shrink-0" />
-                        <div className="flex-1 space-y-1">
-                          <div className="h-2.5 bg-gray-100 rounded w-3/5" />
-                          <div className="h-2 bg-gray-50 rounded w-2/5" />
-                        </div>
-                        <div className="h-4 w-12 bg-gray-50 rounded" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <img
+                src="/Bildschirmfoto_2026-02-12_um_17.31.34.png"
+                alt="Rentably Dashboard"
+                className="w-full h-auto"
+              />
             </div>
           </div>
         </div>

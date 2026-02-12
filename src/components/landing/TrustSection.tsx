@@ -1,13 +1,19 @@
-const TRUST_ITEMS = [
+import { Calendar, MapPin, ShieldCheck } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+const TRUST_ITEMS: { icon: LucideIcon; headline: string; text: string }[] = [
   {
+    icon: Calendar,
     headline: "Seit 2017",
     text: "Erfahrung in der Entwicklung von Software für Immobilienverwaltung.",
   },
   {
+    icon: MapPin,
     headline: "Entwickelt in Deutschland",
     text: "Hosting auf europäischen Servern. Ihre Daten bleiben in Deutschland.",
   },
   {
+    icon: ShieldCheck,
     headline: "DSGVO-konform",
     text: "Vollständig konforme Datenverarbeitung. Keine Weitergabe an Dritte.",
   },
@@ -31,6 +37,9 @@ export default function TrustSection() {
               key={item.headline}
               className="bg-white border border-[#e5e7eb] rounded-xl p-8"
             >
+              <div className="w-10 h-10 rounded-lg bg-[#3c8af7]/8 flex items-center justify-center mb-5">
+                <item.icon className="w-5 h-5 text-[#3c8af7]" />
+              </div>
               <div className="text-2xl font-bold text-gray-900 mb-2">
                 {item.headline}
               </div>
