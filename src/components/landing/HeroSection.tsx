@@ -129,10 +129,10 @@ export default function HeroSection() {
                 Kostenlos starten
               </button>
               <RefLink
-                to="/preise"
+                to="/funktionen"
                 className="h-12 inline-flex items-center px-8 rounded-lg text-base font-semibold border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
               >
-                Preise ansehen
+                Funktionen ansehen
               </RefLink>
             </div>
           </RevealOnScroll>

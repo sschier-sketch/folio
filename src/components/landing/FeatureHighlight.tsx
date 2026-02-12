@@ -8,7 +8,8 @@ import {
   Receipt,
   MessageSquare,
   Wallet,
-  LayoutGrid,
+  ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { RefLink } from "../common/RefLink";
@@ -31,14 +32,14 @@ const FEATURES: {
     icon: Users,
     title: "Mietverwaltung",
     description:
-      "Verträge, Mieterhöhungen und Zahlungseingänge an einem Ort. Behalten Sie jederzeit den Überblick über Ihre Mietverhältnisse.",
+      "Vertr\u00e4ge, Mieterh\u00f6hungen und Zahlungseing\u00e4nge an einem Ort. Behalten Sie jederzeit den \u00dcberblick \u00fcber Ihre Mietverh\u00e4ltnisse.",
     path: "/funktionen/mietverwaltung",
   },
   {
     icon: Building2,
     title: "Immobilienmanagement",
     description:
-      "Stammdaten, Einheiten, Zähler und Kontakte zentral verwalten. Jede Immobilie vollständig dokumentiert.",
+      "Stammdaten, Einheiten, Z\u00e4hler und Kontakte zentral verwalten. Jede Immobilie vollst\u00e4ndig dokumentiert.",
     path: "/funktionen/immobilienmanagement",
   },
   {
@@ -52,22 +53,15 @@ const FEATURES: {
     icon: MessageSquare,
     title: "Kommunikation",
     description:
-      "Mieterportal und Ticketsystem für transparente, nachvollziehbare Kommunikation mit Ihren Mietern.",
+      "Mieterportal und Ticketsystem f\u00fcr transparente, nachvollziehbare Kommunikation mit Ihren Mietern.",
     path: "/funktionen/kommunikation",
   },
   {
     icon: Wallet,
     title: "Nebenkosten",
     description:
-      "Betriebskostenabrechnungen erstellen, Umlageschlüssel verwalten und Abrechnungen direkt an Mieter versenden.",
+      "Betriebskostenabrechnungen erstellen, Umlageschl\u00fcssel verwalten und Abrechnungen direkt an Mieter versenden.",
     path: "/funktionen/buchhaltung",
-  },
-  {
-    icon: LayoutGrid,
-    title: "Alle Funktionen",
-    description:
-      "Entdecken Sie den gesamten Funktionsumfang von rentably und finden Sie die passenden Werkzeuge f\u00fcr Ihre Verwaltung.",
-    path: "/funktionen",
   },
 ];
 
@@ -155,7 +149,7 @@ export default function FeatureHighlight() {
               Alles, was Sie brauchen — an einem Ort
             </h2>
             <p className="text-gray-500 leading-relaxed mb-8 max-w-[650px]">
-              Sechs Bereiche, die Ihre Immobilienverwaltung vollständig abdecken
+              F&uuml;nf Bereiche, die Ihre Immobilienverwaltung vollst&auml;ndig abdecken
               &ndash; von der Mietverwaltung bis zur Nebenkostenabrechnung.
               Im Basic-Tarif kostenlos, mit dem Pro-Test sogar mit
               allen Premium-Funktionen.
@@ -188,7 +182,7 @@ export default function FeatureHighlight() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f, i) => (
-            <RevealOnScroll key={f.title} delay={i * 80} className={`h-full ${i === FEATURES.length - 1 && FEATURES.length % 3 !== 0 ? 'md:col-span-1' : ''}`}>
+            <RevealOnScroll key={f.title} delay={i * 80} className="h-full">
               <div className="bg-[#f8fafc] border border-[#e5e7eb] rounded-xl p-8 hover:shadow-md transition-shadow h-full">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
@@ -211,6 +205,27 @@ export default function FeatureHighlight() {
               </div>
             </RevealOnScroll>
           ))}
+
+          <RevealOnScroll delay={FEATURES.length * 80} className="h-full">
+            <RefLink
+              to="/funktionen"
+              className="group rounded-xl border-2 border-dashed border-gray-300 hover:border-[#3c8af7] p-8 h-full flex flex-col items-center justify-center text-center transition-all hover:bg-[#3c8af7]/[0.03]"
+            >
+              <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-[#3c8af7]/10 flex items-center justify-center mb-4 transition-colors">
+                <RefreshCw className="w-5 h-5 text-gray-400 group-hover:text-[#3c8af7] transition-colors" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Stetig weiterentwickelt
+              </h3>
+              <p className="text-gray-500 leading-relaxed text-sm mb-4">
+                rentably wird permanent nach Nutzerbed&uuml;rfnissen weiterentwickelt &ndash; immer auf dem neuesten Stand der Technik.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#3c8af7] group-hover:gap-2.5 transition-all">
+                Alle Funktionen entdecken
+                <ArrowRight className="w-4 h-4" />
+              </span>
+            </RefLink>
+          </RevealOnScroll>
         </div>
       </div>
     </section>
