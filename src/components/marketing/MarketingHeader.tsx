@@ -66,19 +66,19 @@ const HIGHLIGHT_CARDS = [
     visual: 'portal',
   },
   {
-    title: 'Indexmiete',
-    subtitle: 'Automatische Anpassung',
+    title: 'Mietverwaltung',
+    subtitle: 'Mieter & Verträge verwalten',
     path: '/funktionen/mietverwaltung',
-    visual: 'index',
+    visual: 'tenants',
   },
 ];
 
 function HighlightCardVisual({ type }: { type: string }) {
   if (type === 'billing') {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium text-gray-700">Abrechnung 2025</span>
+          <div className="h-1.5 bg-gray-200 rounded-full w-16" />
           <div className="w-2 h-2 rounded-full bg-emerald-400" />
         </div>
         <div className="space-y-1.5">
@@ -86,49 +86,49 @@ function HighlightCardVisual({ type }: { type: string }) {
           <div className="h-1.5 bg-gray-200 rounded-full w-3/4" />
           <div className="h-1.5 bg-gray-200 rounded-full w-5/6" />
         </div>
-        <div className="flex items-center justify-between mt-1">
-          <span className="text-[10px] font-medium text-emerald-600">Guthaben</span>
-          <span className="text-[10px] font-semibold text-emerald-600">94 &euro;</span>
+        <div className="flex items-center justify-between mt-0.5">
+          <div className="h-1.5 bg-emerald-200 rounded-full w-10" />
+          <div className="h-1.5 bg-emerald-200 rounded-full w-6" />
         </div>
       </div>
     );
   }
   if (type === 'portal') {
     return (
-      <div className="flex flex-col gap-2">
-        <span className="text-[11px] font-medium text-gray-700">Mieterportal</span>
+      <div className="flex flex-col gap-2.5">
+        <div className="h-1.5 bg-gray-200 rounded-full w-14" />
         <div className="space-y-1.5">
           <div className="h-1.5 bg-gray-200 rounded-full w-full" />
           <div className="h-1.5 bg-gray-200 rounded-full w-4/5" />
         </div>
-        <div className="flex gap-2 mt-1">
-          <div className="h-4 rounded bg-[#3c8af7]/20 flex-1" />
-          <div className="h-4 rounded bg-amber-200 flex-1" />
+        <div className="flex gap-2 mt-0.5">
+          <div className="h-4 rounded-md bg-[#3c8af7]/15 flex-1" />
+          <div className="h-4 rounded-md bg-amber-100 flex-1" />
         </div>
       </div>
     );
   }
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium text-gray-700">Indexmiete</span>
-        <span className="text-[10px] text-gray-400">auto</span>
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 rounded-full bg-[#3c8af7]/10 flex-shrink-0" />
+        <div className="flex-1 space-y-1">
+          <div className="h-1.5 bg-gray-200 rounded-full w-full" />
+          <div className="h-1.5 bg-gray-100 rounded-full w-3/5" />
+        </div>
       </div>
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-          <div className="h-1.5 bg-gray-200 rounded-full flex-1" />
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 rounded-full bg-emerald-50 flex-shrink-0" />
+        <div className="flex-1 space-y-1">
+          <div className="h-1.5 bg-gray-200 rounded-full w-4/5" />
+          <div className="h-1.5 bg-gray-100 rounded-full w-2/5" />
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-          <div className="h-1.5 bg-gray-200 rounded-full flex-1" />
-          <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-          <div className="h-1.5 bg-gray-200 rounded-full flex-1" />
-          <div className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 rounded-full bg-amber-50 flex-shrink-0" />
+        <div className="flex-1 space-y-1">
+          <div className="h-1.5 bg-gray-200 rounded-full w-full" />
+          <div className="h-1.5 bg-gray-100 rounded-full w-1/2" />
         </div>
       </div>
     </div>
@@ -264,7 +264,7 @@ export default function MarketingHeader() {
                             to={item.path}
                             className="flex items-center gap-3 rounded-lg px-2.5 py-2.5 -mx-2.5 hover:bg-gray-50 transition-colors group"
                           >
-                            <div className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-white group-hover:shadow-sm flex items-center justify-center flex-shrink-0 transition-all border border-transparent group-hover:border-gray-200">
+                            <div className="w-9 h-9 rounded-full bg-gray-100 group-hover:bg-white group-hover:shadow-sm flex items-center justify-center flex-shrink-0 transition-all border border-transparent group-hover:border-gray-200">
                               <item.icon className="w-[18px] h-[18px] text-gray-500" strokeWidth={1.5} />
                             </div>
                             <div className="min-w-0">
