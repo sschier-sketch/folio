@@ -143,7 +143,7 @@ export function MagazinePost() {
       if (translation.seo_title) {
         document.title = translation.seo_title;
       } else {
-        document.title = `${translation.title} - Rentably`;
+        document.title = `${translation.title} - rentably`;
       }
     } catch (err) {
       console.error("Error loading post:", err);

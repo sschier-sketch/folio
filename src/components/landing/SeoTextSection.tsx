@@ -21,7 +21,7 @@ export default function SeoTextSection() {
             schnell an seine Grenzen stösst.
           </p>
           <p>
-            Rentably ist eine Hausverwaltungssoftware, die speziell für private
+            rentably ist eine Hausverwaltungssoftware, die speziell für private
             Vermieter und Eigentümer entwickelt wurde. Die Software deckt alle
             wesentlichen Bereiche der Immobilienverwaltung ab:
             Mietverwaltung mit Verträgen und automatischer Zahlungsüberwachung,
@@ -32,7 +32,7 @@ export default function SeoTextSection() {
           </p>
           <p>
             Anders als viele Hausverwaltungsprogramme auf dem Markt berechnet
-            Rentably keinen Preis pro Einheit, pro Immobilie oder pro Mieter.
+            rentably keinen Preis pro Einheit, pro Immobilie oder pro Mieter.
             Stattdessen gibt es einen kostenlosen Basic-Tarif, der dauerhaft
             nutzbar ist und keine Begrenzung bei der Anzahl verwalteter Objekte
             kennt. Der Pro-Tarif bietet zusätzliche Funktionen wie

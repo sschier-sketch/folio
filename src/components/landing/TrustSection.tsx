@@ -10,7 +10,7 @@ export default function TrustSection() {
               Ihre Daten in sicheren Händen
             </h2>
             <p className="text-gray-500 leading-relaxed max-w-[600px] mx-auto">
-              Rentably wird in Deutschland betrieben und erfüllt die Anforderungen der DSGVO.
+              rentably wird in Deutschland betrieben und erfüllt die Anforderungen der DSGVO.
               Ihre Daten gehören Ihnen &ndash; heute und in Zukunft.
             </p>
           </div>

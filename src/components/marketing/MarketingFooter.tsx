@@ -31,7 +31,7 @@ export default function MarketingFooter() {
               Moderne Immobilienverwaltung
             </p>
             <p className="text-xs text-gray-300 mt-1">
-              &copy; {currentYear} Rentably. Alle Rechte vorbehalten.
+              &copy; {currentYear} rentably. Alle Rechte vorbehalten.
             </p>
           </div>
         </div>

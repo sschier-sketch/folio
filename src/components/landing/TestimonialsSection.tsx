@@ -5,14 +5,14 @@ const TESTIMONIALS = [
   {
     name: "Thomas M.",
     role: "Vermieter, 4 Wohnungen",
-    text: "Seit ich Rentably nutze, habe ich endlich den Überblick über alle Mietverhältnisse. Die Betriebskostenabrechnung dauert keine Stunden mehr, sondern Minuten.",
+    text: "Seit ich rentably nutze, habe ich endlich den Überblick über alle Mietverhältnisse. Die Betriebskostenabrechnung dauert keine Stunden mehr, sondern Minuten.",
     stars: 5,
     image: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200",
   },
   {
     name: "Sandra K.",
     role: "Eigentümerin, 2 Objekte",
-    text: "Ich habe lange nach einer einfachen Lösung gesucht. Rentably ist genau das — übersichtlich, schnell und vor allem kostenlos für meine Bedürfnisse.",
+    text: "Ich habe lange nach einer einfachen Lösung gesucht. rentably ist genau das — übersichtlich, schnell und vor allem kostenlos für meine Bedürfnisse.",
     stars: 5,
     image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200",
   },
@@ -35,7 +35,7 @@ export default function TestimonialsSection() {
               Das sagen unsere Nutzer
             </h2>
             <p className="text-gray-500 max-w-[600px] mx-auto">
-              Tausende Vermieter verwalten ihre Immobilien bereits mit Rentably
+              Tausende Vermieter verwalten ihre Immobilien bereits mit rentably
               — kostenlos und ohne Kompromisse.
             </p>
           </div>

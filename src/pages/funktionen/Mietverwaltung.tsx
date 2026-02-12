@@ -255,7 +255,7 @@ export default function Mietverwaltung() {
               </h1>
               <p className="mt-6 text-lg sm:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
                 Jede verspätete Miete, jeder Abrechnungsfehler bringt Unsicherheit.
-                Mit Rentably können Sie Ihre Mietverwaltung digitalisieren: Mietverhältnisse
+                Mit rentably können Sie Ihre Mietverwaltung digitalisieren: Mietverhältnisse
                 sauber dokumentieren, Zahlungen automatisch erfassen.
               </p>
               <ul className="mt-6 space-y-2.5">
@@ -300,7 +300,7 @@ export default function Mietverwaltung() {
                 Ihre Mietverwaltung im Griff
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
-                Einfach, übersichtlich, professionell – mit Rentably fühlt sich Ihre
+                Einfach, übersichtlich, professionell – mit rentably fühlt sich Ihre
                 Mietverwaltung mühelos an.
               </p>
             </div>
@@ -439,7 +439,7 @@ export default function Mietverwaltung() {
                 Ihre Daten in sicheren Händen
               </h2>
               <p className="text-gray-500 leading-relaxed max-w-[600px] mx-auto">
-                Rentably wird in Deutschland betrieben und erfüllt die Anforderungen der DSGVO.
+                rentably wird in Deutschland betrieben und erfüllt die Anforderungen der DSGVO.
                 Ihre Daten gehören Ihnen &ndash; heute und in Zukunft.
               </p>
             </div>
@@ -526,7 +526,7 @@ export default function Mietverwaltung() {
                 Weitere Funktionen für Vermieter
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
-                Rentably bietet Ihnen umfangreiche Funktionen, die Ihre Immobilienverwaltung
+                rentably bietet Ihnen umfangreiche Funktionen, die Ihre Immobilienverwaltung
                 auf das nächste Level bringen.
               </p>
             </div>

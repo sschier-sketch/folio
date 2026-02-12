@@ -24,7 +24,7 @@ export default function ByLandlordsSection() {
               <span className="font-semibold text-gray-800">
                 Was uns besonders macht:
               </span>{" "}
-              Rentably wird von Vermietern für Vermieter entwickelt. Unser Team
+              rentably wird von Vermietern für Vermieter entwickelt. Unser Team
               vereint junge Talente der Immobilienbranche mit erfahrenen
               Eigentümern, die genau wissen, worauf es in der Praxis ankommt. So
               konnten wir bereits tausende Kunden begeistern — mit echter
@@ -51,7 +51,7 @@ export default function ByLandlordsSection() {
             <div className="rounded-2xl overflow-hidden shadow-lg shadow-gray-900/[0.06]">
               <img
                 src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800"
-                alt="Team bei der Arbeit an Rentably"
+                alt="Team bei der Arbeit an rentably"
                 className="w-full h-[480px] object-cover"
               />
             </div>

@@ -61,8 +61,8 @@ export async function loadGlobalSettings(): Promise<SeoGlobalSettings> {
 
   if (error || !data) {
     globalSettingsCache = {
-      title_template: '%s – Rentably',
-      default_title: 'Rentably – Immobilienverwaltung leicht gemacht',
+      title_template: '%s – rentably',
+      default_title: 'rentably – Immobilienverwaltung leicht gemacht',
       default_description: 'Die moderne Plattform für Vermieter. Verwalten Sie Ihre Immobilien, Mieter und Finanzen an einem Ort.',
       default_robots_index: true
     };
@@ -111,13 +111,13 @@ export async function resolveSeoMetadata(currentPath: string): Promise<SeoMetada
     const [, pathLocale] = magazinIndexMatch;
     const locale = pathLocale === "magazin" ? "de" : "en";
     return {
-      title: locale === "de" ? "Magazin – Rentably" : "Magazine – Rentably",
+      title: locale === "de" ? "Magazin – rentably" : "Magazine – rentably",
       description: locale === "de"
         ? "Tipps, Tricks und Wissenswertes rund um die Immobilienverwaltung"
         : "Tips, tricks and knowledge about property management",
       robots: "index, follow",
       canonical: `${BASE_URL}/${pathLocale}`,
-      ogTitle: locale === "de" ? "Magazin – Rentably" : "Magazine – Rentably",
+      ogTitle: locale === "de" ? "Magazin – rentably" : "Magazine – rentably",
       ogDescription: locale === "de"
         ? "Tipps, Tricks und Wissenswertes rund um die Immobilienverwaltung"
         : "Tips, tricks and knowledge about property management",
@@ -132,11 +132,11 @@ export async function resolveSeoMetadata(currentPath: string): Promise<SeoMetada
 
   if (isApp) {
     return {
-      title: 'Rentably',
+      title: 'rentably',
       description: '',
       robots: 'noindex, nofollow',
       canonical: '',
-      ogTitle: 'Rentably',
+      ogTitle: 'rentably',
       ogDescription: ''
     };
   }
@@ -155,11 +155,11 @@ export async function resolveSeoMetadata(currentPath: string): Promise<SeoMetada
   if (pageSettings) {
     if (pageSettings.page_type === 'app' || !pageSettings.is_public) {
       return {
-        title: 'Rentably',
+        title: 'rentably',
         description: '',
         robots: 'noindex, nofollow',
         canonical: '',
-        ogTitle: 'Rentably',
+        ogTitle: 'rentably',
         ogDescription: ''
       };
     }
@@ -229,7 +229,7 @@ async function resolveMagazineSeoMetadata(slug: string, locale: "de" | "en"): Pr
 
     if (error || !data) {
       return {
-        title: "Artikel nicht gefunden – Rentably",
+        title: "Artikel nicht gefunden – rentably",
         description: "",
         robots: "noindex, nofollow",
         canonical: "",
@@ -239,7 +239,7 @@ async function resolveMagazineSeoMetadata(slug: string, locale: "de" | "en"): Pr
     }
 
     const trans = data.current_trans[0];
-    const title = trans.seo_title || `${trans.title} – Rentably`;
+    const title = trans.seo_title || `${trans.title} – rentably`;
     const description = trans.seo_description || trans.excerpt || "";
     const ogImage = trans.og_image_url || data.hero_image_url;
 
@@ -267,7 +267,7 @@ async function resolveMagazineSeoMetadata(slug: string, locale: "de" | "en"): Pr
       },
       "publisher": {
         "@type": "Organization",
-        "name": "Rentably",
+        "name": "rentably",
         "logo": {
           "@type": "ImageObject",
           "url": `${BASE_URL}/logo_1.svg`
@@ -295,11 +295,11 @@ async function resolveMagazineSeoMetadata(slug: string, locale: "de" | "en"): Pr
   } catch (err) {
     console.error("Error resolving magazine SEO:", err);
     return {
-      title: "Rentably",
+      title: "rentably",
       description: "",
       robots: "noindex, nofollow",
       canonical: "",
-      ogTitle: "Rentably",
+      ogTitle: "rentably",
       ogDescription: ""
     };
   }

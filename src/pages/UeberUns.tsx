@@ -34,7 +34,7 @@ const VALUES = [
 const TIMELINE = [
   { year: '2024', label: 'Idee & erste Prototypen' },
   { year: '2025', label: 'Closed Beta mit ersten Vermietern' },
-  { year: '2026', label: 'Oeffentlicher Launch von Rentably' },
+  { year: '2026', label: 'Oeffentlicher Launch von rentably' },
 ];
 
 export default function UeberUns() {
@@ -49,7 +49,7 @@ export default function UeberUns() {
             <span className="text-[#3c8af7]">neu gedacht</span>
           </h1>
           <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            Rentably entstand aus der Ueberzeugung, dass private Vermieter
+            rentably entstand aus der Ueberzeugung, dass private Vermieter
             bessere Werkzeuge verdienen -- ohne die Komplexitaet und Kosten
             professioneller Hausverwaltungssoftware.
           </p>
@@ -64,7 +64,7 @@ export default function UeberUns() {
           <div className="mt-8 bg-white border border-gray-200 rounded-2xl p-8 sm:p-10">
             <p className="text-gray-600 leading-relaxed text-center text-lg">
               Wir machen Immobilienverwaltung zugaenglich. Egal ob Sie eine
-              Eigentumswohnung oder ein kleines Portfolio verwalten -- Rentably
+              Eigentumswohnung oder ein kleines Portfolio verwalten -- rentably
               gibt Ihnen die Werkzeuge, die bisher nur grossen
               Hausverwaltungen vorbehalten waren. Digital, uebersichtlich und
               fair bepreist.
@@ -76,7 +76,7 @@ export default function UeberUns() {
       <section className="py-20 px-6">
         <div className="max-w-[960px] mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 text-center">
-            Warum Rentably
+            Warum rentably
           </h2>
           <p className="mt-3 text-gray-500 text-center max-w-xl mx-auto">
             Vier Prinzipien, die unsere Entwicklung leiten.

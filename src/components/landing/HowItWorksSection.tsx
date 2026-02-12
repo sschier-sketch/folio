@@ -7,7 +7,7 @@ const STEPS: { num: string; icon: LucideIcon; title: string; text: string }[] = 
     num: "01",
     icon: UserPlus,
     title: "Registrieren",
-    text: "Erstellen Sie kostenlos Ihr Rentably-Konto. Keine Zahlungsdaten erforderlich — 30 Tage alle Pro-Funktionen inklusive.",
+    text: "Erstellen Sie kostenlos Ihr rentably-Konto. Keine Zahlungsdaten erforderlich.",
   },
   {
     num: "02",

@@ -69,7 +69,7 @@ export function Signup() {
               Erstellen Sie Ihr{" "}
               <span className="bg-gradient-to-r from-primary-blue to-emerald-600 bg-clip-text text-transparent">
                 {" "}
-                Rentably-Konto{" "}
+                rentably-Konto{" "}
               </span>{" "}
             </h1>{" "}
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">

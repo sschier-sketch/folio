@@ -4,7 +4,7 @@ import { RevealOnScroll } from "../common/RevealOnScroll";
 
 const FAQ_ITEMS = [
   {
-    question: "Ist Rentably wirklich kostenlos?",
+    question: "Ist rentably wirklich kostenlos?",
     answer:
       "Ja. Der Basic-Tarif ist dauerhaft kostenlos — ohne zeitliche Begrenzung und ohne versteckte Kosten. Sie können unbegrenzt viele Immobilien, Einheiten und Mieter verwalten. Für erweiterte Funktionen wie Betriebskostenabrechnungen, Mahnwesen oder das Mieterportal steht der Pro-Tarif zur Verfügung.",
   },
@@ -26,12 +26,12 @@ const FAQ_ITEMS = [
   {
     question: "Wo werden meine Daten gespeichert?",
     answer:
-      "Alle Daten werden auf europäischen Servern in Deutschland gehostet. Rentably ist vollständig DSGVO-konform. Ihre Daten werden nicht an Dritte weitergegeben.",
+      "Alle Daten werden auf europäischen Servern in Deutschland gehostet. rentably ist vollständig DSGVO-konform. Ihre Daten werden nicht an Dritte weitergegeben.",
   },
   {
-    question: "Kann ich Rentably auch für WEG-Verwaltung nutzen?",
+    question: "Kann ich rentably auch für WEG-Verwaltung nutzen?",
     answer:
-      "Rentably ist primär für private Vermieter und Eigentümer konzipiert. Sie können sowohl Miet- als auch Eigentumsobjekte verwalten und Hausgeld-Zahlungen für WEG-Einheiten erfassen.",
+      "rentably ist primär für private Vermieter und Eigentümer konzipiert. Sie können sowohl Miet- als auch Eigentumsobjekte verwalten und Hausgeld-Zahlungen für WEG-Einheiten erfassen.",
   },
   {
     question: "Kann ich jederzeit kündigen?",
@@ -87,7 +87,7 @@ export default function FaqSection() {
           </h2>
           <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
             Alles Wichtige auf einen Blick — von Kosten über Datenschutz
-            bis zu den Funktionen von Rentably.
+            bis zu den Funktionen von rentably.
           </p>
         </RevealOnScroll>
         <RevealOnScroll delay={80}>

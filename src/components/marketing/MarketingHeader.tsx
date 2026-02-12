@@ -38,7 +38,7 @@ export default function MarketingHeader() {
           <RefLink to="/" className="flex-shrink-0">
             <img
               src="/rentably-logo.svg"
-              alt="Rentably"
+              alt="rentably"
               className="h-8 w-auto"
             />
           </RefLink>

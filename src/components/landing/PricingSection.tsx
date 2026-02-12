@@ -23,7 +23,7 @@ export default function PricingSection() {
             </h2>
             <p className="text-gray-500 leading-relaxed max-w-[620px] mx-auto">
               Andere Anbieter berechnen pro Einheit, pro Mieter oder pro Objekt.
-              Bei Rentably zahlen Sie einen festen Preis — egal wie gross
+              Bei rentably zahlen Sie einen festen Preis — egal wie gross
               Ihr Portfolio ist.
             </p>
           </div>

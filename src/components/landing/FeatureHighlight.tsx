@@ -7,6 +7,7 @@ import {
   Building2,
   Receipt,
   MessageSquare,
+  Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { RefLink } from "../common/RefLink";
@@ -52,6 +53,13 @@ const FEATURES: {
     description:
       "Mieterportal und Ticketsystem für transparente, nachvollziehbare Kommunikation mit Ihren Mietern.",
     path: "/funktionen/kommunikation",
+  },
+  {
+    icon: Wallet,
+    title: "Nebenkosten",
+    description:
+      "Betriebskostenabrechnungen erstellen, Umlageschlüssel verwalten und Abrechnungen direkt an Mieter versenden.",
+    path: "/funktionen/buchhaltung",
   },
 ];
 
@@ -139,9 +147,9 @@ export default function FeatureHighlight() {
               Alles, was Sie brauchen — an einem Ort
             </h2>
             <p className="text-gray-500 leading-relaxed mb-8 max-w-[650px]">
-              Vier Bereiche, die Ihre Immobilienverwaltung vollständig abdecken
-              &ndash; von der Mietverwaltung bis zur Dokumentenablage.
-              Im Basic-Tarif kostenlos, mit dem 30-Tage-Pro-Test sogar mit
+              Fünf Bereiche, die Ihre Immobilienverwaltung vollständig abdecken
+              &ndash; von der Mietverwaltung bis zur Nebenkostenabrechnung.
+              Im Basic-Tarif kostenlos, mit dem Pro-Test sogar mit
               allen Premium-Funktionen.
             </p>
             <ul className="space-y-4 mb-6">
@@ -170,10 +178,10 @@ export default function FeatureHighlight() {
           </RevealOnScroll>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f, i) => (
-            <RevealOnScroll key={f.title} delay={i * 80}>
-              <div className="bg-[#f8fafc] border border-[#e5e7eb] rounded-xl p-8 hover:shadow-md transition-shadow">
+            <RevealOnScroll key={f.title} delay={i * 80} className={`h-full ${i === FEATURES.length - 1 && FEATURES.length % 3 !== 0 ? 'md:col-span-1' : ''}`}>
+              <div className="bg-[#f8fafc] border border-[#e5e7eb] rounded-xl p-8 hover:shadow-md transition-shadow h-full">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
                   style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
