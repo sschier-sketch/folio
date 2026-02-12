@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 import { initReferralTracking } from "./lib/referralTracking";
 import { trackReferralClick, getReferralCodeFromURL } from "./lib/referralClickTracking";
@@ -41,6 +42,16 @@ import Immobilienmanagement from "./pages/funktionen/Immobilienmanagement";
 import Kommunikation from "./pages/funktionen/Kommunikation";
 import Buchhaltung from "./pages/funktionen/Buchhaltung";
 import Dokumente from "./pages/funktionen/Dokumente";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function PasswordRecoveryHandler() {
   const navigate = useNavigate();
@@ -86,6 +97,7 @@ function App() {
   return (
     <GTMProvider>
       <Router>
+        <ScrollToTop />
         <SeoHead />
         <PasswordRecoveryHandler />
         <Routes>

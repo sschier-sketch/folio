@@ -19,7 +19,11 @@ import {
   Building2,
   MessagesSquare,
   FolderOpen,
-  BarChart3
+  BarChart3,
+  LayoutDashboard,
+  Sparkles,
+  Zap,
+  Laptop
 } from "lucide-react";
 
 const HERO_CHECKS = [
@@ -110,6 +114,39 @@ const FAQS = [
   {
     question: "Kann ich Mahnungen automatisch versenden?",
     answer: "Ja, bei Zahlungsverzug können Sie mehrstufige Mahnungen erstellen und versenden. Jede Mahnstufe wird automatisch protokolliert und dem Mietverhältnis zugeordnet, sodass Sie eine lückenlose Dokumentation haben."
+  }
+];
+
+const BENEFITS = [
+  {
+    icon: LayoutDashboard,
+    title: "Alles auf einen Blick",
+    description: "Behalte jederzeit den Überblick über alle deine Mietverhältnisse, Zahlungen und Verträge."
+  },
+  {
+    icon: FolderOpen,
+    title: "Besser organisiert",
+    description: "Verwalte deine Verträge, Dokumente und Mieter effizient an einem zentralen Ort."
+  },
+  {
+    icon: Shield,
+    title: "Sicher verwalten",
+    description: "Vertraue auf maximale Datensicherheit, DSGVO-Konformität und volle Kontrolle."
+  },
+  {
+    icon: Sparkles,
+    title: "Einfach bedienbar",
+    description: "Intuitive Oberfläche, die Mietverwaltung einfacher und angenehmer macht."
+  },
+  {
+    icon: Zap,
+    title: "Weniger Aufwand",
+    description: "Automatisiere wiederkehrende Aufgaben und gewinne Zeit für das Wesentliche."
+  },
+  {
+    icon: Laptop,
+    title: "Flexibel arbeiten",
+    description: "Greife jederzeit und von überall auf deine Mietverwaltung zu."
   }
 ];
 
@@ -424,6 +461,68 @@ export default function Mietverwaltung() {
         </div>
       </section>
 
+      <section className="py-20 px-6 bg-[#EEF4FF]">
+        <div className="max-w-[1200px] mx-auto">
+          <RevealOnScroll>
+            <div className="text-center mb-14">
+              <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
+                Vorteile
+              </p>
+              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+                Darum setzen Vermieter auf Rentably
+              </h2>
+              <p className="text-gray-500 max-w-[700px] mx-auto leading-relaxed">
+                Wir haben Vermieter und Hausverwalter gefragt, wie Rentably ihre Arbeit
+                veraendert. Die Top-Antworten zeigen klar, welchen Mehrwert unsere Software bietet.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
+            {BENEFITS.map((benefit, i) => (
+              <RevealOnScroll key={benefit.title} delay={i * 80} className="h-full">
+                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm h-full text-center">
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
+                    style={{ backgroundColor: "#E0EDFF", border: "1px solid #C7DCFF" }}
+                  >
+                    <benefit.icon className="w-6 h-6 text-[#3c8af7]" strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    {benefit.description}
+                  </p>
+                </div>
+              </RevealOnScroll>
+            ))}
+          </div>
+
+          <RevealOnScroll>
+            <div className="text-center">
+              <p className="text-gray-600 mb-6">
+                Teste Rentably jetzt kostenlos und unverbindlich.
+              </p>
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <button
+                  onClick={goToSignup}
+                  className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
+                >
+                  Jetzt kostenlos testen
+                </button>
+                <RefLink
+                  to="/preise"
+                  className="h-12 inline-flex items-center px-8 rounded-lg text-base font-semibold border border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
+                >
+                  Tarif finden
+                </RefLink>
+              </div>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
       <section className="py-20 px-6">
         <div className="max-w-[1200px] mx-auto">
           <RevealOnScroll>
@@ -443,8 +542,8 @@ export default function Mietverwaltung() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {OTHER_FEATURES.map((feature, i) => (
-              <RevealOnScroll key={feature.title} delay={i * 80}>
-                <div className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer">
+              <RevealOnScroll key={feature.title} delay={i * 80} className="h-full">
+                <div className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer h-full">
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
                     style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
