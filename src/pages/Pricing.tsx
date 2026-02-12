@@ -1,134 +1,180 @@
 import { useNavigate } from "react-router-dom";
-import { Check, Info } from "lucide-react";
-import { useLanguage } from "../contexts/LanguageContext";
-import { Button } from "../components/ui/Button";
+import { Check, X, Info } from "lucide-react";
+import { PLANS, calculateYearlySavings } from "../config/plans";
+import { withRef } from "../lib/referralTracking";
+import { useState } from "react";
+
+type Interval = "month" | "year";
+
+function formatPrice(cents: number): string {
+  return cents.toFixed(2).replace(".", ",");
+}
+
+const PRO_EXTRAS = [
+  "Erweiterte Finanzanalysen",
+  "Detaillierte Reports & Statistiken",
+  "Automatische Erinnerungen",
+  "Export-Funktionen",
+  "Prioritäts-Support (24h)",
+];
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const [interval, setInterval] = useState<Interval>("month");
+  const yearlySavings = calculateYearlySavings();
 
-  const plans = [
-    {
-      id: "starter",
-      name: language === "de" ? "Starter" : "Starter",
-      subtitle: language === "de" ? "Für kleine Portfolios" : "For small portfolios",
-      monthlyPrice: "14,90 €",
-      period: language === "de" ? "/ Monat" : "/ month",
-      tax: language === "de" ? "zzgl. MwSt." : "excl. VAT",
-      features: [
-        language === "de" ? "Bis zu 5 Einheiten" : "Up to 5 units",
-        language === "de" ? "Alle Funktionen" : "All features",
-        language === "de" ? "E-Mail Support" : "Email support",
-      ],
-      popular: false,
-      cta: language === "de" ? "Upgraden" : "Upgrade",
-    },
-    {
-      id: "professional",
-      name: "Professional",
-      subtitle: language === "de" ? "Für wachsende Portfolios" : "For growing portfolios",
-      monthlyPrice: "39,90 €",
-      period: language === "de" ? "/ Monat" : "/ month",
-      tax: language === "de" ? "zzgl. MwSt." : "excl. VAT",
-      features: [
-        language === "de" ? "Bis zu 75 Einheiten" : "Up to 75 units",
-        language === "de" ? "Alle Funktionen" : "All features",
-        language === "de" ? "Prioritäts-Support" : "Priority support",
-      ],
-      popular: true,
-      cta: language === "de" ? "Upgraden" : "Upgrade",
-    },
-    {
-      id: "enterprise",
-      name: "Enterprise",
-      subtitle: language === "de" ? "Für große Portfolios" : "For large portfolios",
-      monthlyPrice: "89,90 €",
-      period: language === "de" ? "/ Monat" : "/ month",
-      tax: language === "de" ? "zzgl. MwSt." : "excl. VAT",
-      features: [
-        language === "de" ? "Bis zu 500 Einheiten" : "Up to 500 units",
-        language === "de" ? "Alle Funktionen" : "All features",
-        language === "de" ? "Persönlicher Ansprechpartner" : "Personal account manager",
-      ],
-      popular: false,
-      cta: language === "de" ? "Upgraden" : "Upgrade",
-    },
-  ];
+  const proPrice =
+    interval === "year"
+      ? formatPrice((PLANS.pro.priceYearly || 0) / 12)
+      : formatPrice(PLANS.pro.priceMonthly);
 
   return (
     <div>
-      <div className="pt-8 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold text-dark mb-4">
-              {language === "de" ? "Preisübersicht" : "Pricing Overview"}
-            </h1>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-              {language === "de"
-                ? "Wählen Sie den Plan, der am besten zu Ihrem Portfolio passt"
-                : "Choose the plan that best fits your portfolio"}
-            </p>
-          </div>
+      <section className="pt-24 pb-10 sm:pt-32 sm:pb-14 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">
+            Einfache, transparente Preise
+          </h1>
+          <p className="mt-5 text-lg text-gray-500 max-w-xl mx-auto leading-relaxed">
+            Starten Sie kostenlos und upgraden Sie, wenn Ihr Portfolio wächst.
+            Keine versteckten Kosten.
+          </p>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={`relative bg-white rounded-lg border-2 ${
-                  plan.popular ? "border-primary-blue" : "border-gray-200"
-                } p-8 hover:shadow-lg transition-all`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="inline-block px-4 py-1 bg-primary-blue text-white text-sm font-semibold rounded-full">
-                      {language === "de" ? "Beliebt" : "Popular"}
-                    </span>
-                  </div>
-                )}
+      <section className="pb-6 px-6">
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={() => setInterval("month")}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              interval === "month"
+                ? "bg-gray-900 text-white"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Monatlich
+          </button>
+          <button
+            onClick={() => setInterval("year")}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              interval === "year"
+                ? "bg-gray-900 text-white"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Jährlich
+            <span className="ml-1.5 text-xs font-semibold text-emerald-600">
+              -{yearlySavings}%
+            </span>
+          </button>
+        </div>
+      </section>
 
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-dark mb-2">{plan.name}</h3>
-                  <p className="text-gray-500 text-sm">{plan.subtitle}</p>
-                </div>
+      <section className="py-10 px-6">
+        <div className="max-w-[880px] mx-auto grid md:grid-cols-2 gap-6">
+          <div className="border border-gray-200 rounded-2xl p-8 bg-white flex flex-col">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {PLANS.basic.name}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {PLANS.basic.description}
+              </p>
+            </div>
 
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-4xl font-bold text-dark">{plan.monthlyPrice}</span>
-                    <span className="text-gray-500">{plan.period}</span>
-                  </div>
-                  <p className="text-sm text-gray-400">{plan.tax}</p>
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-primary-blue flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button
-                  onClick={() => navigate("/dashboard?view=settings-billing")}
-                  variant={plan.popular ? "dark" : "secondary"}
-                  fullWidth
-                >
-                  {plan.cta}
-                </Button>
+            <div className="mb-8">
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-gray-900">
+                  0,00 {PLANS.basic.currencySymbol}
+                </span>
+                <span className="text-gray-400 text-sm">/ Monat</span>
               </div>
-            ))}
+              <p className="text-xs text-gray-400 mt-1">Für immer kostenlos</p>
+            </div>
+
+            <ul className="space-y-3 mb-10 flex-1">
+              {PLANS.basic.features.map((f) => (
+                <li key={f.text} className="flex items-start gap-3">
+                  <Check className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-600">{f.text}</span>
+                </li>
+              ))}
+              {PRO_EXTRAS.map((text) => (
+                <li key={text} className="flex items-start gap-3">
+                  <X className="w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-400">{text}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => navigate(withRef("/signup"))}
+              className="h-[46px] w-full rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+            >
+              Kostenlos registrieren
+            </button>
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-6 flex items-start gap-3 max-w-5xl mx-auto">
-            <Info className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-gray-600">
-              {language === "de"
-                ? "Alle Preise verstehen sich zzgl. 19% MwSt. Die Kosten für eine Immobilienverwaltungssoftware können in der Regel als Werbungskosten bei Einkünften aus Vermietung und Verpachtung steuerlich geltend gemacht werden."
-                : "All prices are exclusive of 19% VAT. The costs for property management software can generally be claimed as advertising expenses for income from renting and leasing for tax purposes."}
+          <div className="border-2 border-gray-900 rounded-2xl p-8 bg-white flex flex-col relative">
+            <span className="absolute -top-3 left-8 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full">
+              Empfohlen
+            </span>
+
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {PLANS.pro.name}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {PLANS.pro.description}
+              </p>
+            </div>
+
+            <div className="mb-8">
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-gray-900">
+                  {proPrice} {PLANS.pro.currencySymbol}
+                </span>
+                <span className="text-gray-400 text-sm">/ Monat</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                {interval === "year"
+                  ? `${formatPrice(PLANS.pro.priceYearly || 0)} ${PLANS.pro.currencySymbol} / Jahr, jährlich abgerechnet`
+                  : "zzgl. MwSt., monatlich kündbar"}
+              </p>
+            </div>
+
+            <ul className="space-y-3 mb-10 flex-1">
+              {PLANS.pro.features.map((f) => (
+                <li key={f.text} className="flex items-start gap-3">
+                  <Check className="w-4 h-4 text-[#3c8af7] flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-700">{f.text}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => navigate(withRef("/signup"))}
+              className="h-[46px] w-full rounded-xl text-sm font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
+            >
+              14 Tage kostenlos testen
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="pb-20 px-6">
+        <div className="max-w-[880px] mx-auto">
+          <div className="bg-gray-50 rounded-xl p-5 flex items-start gap-3">
+            <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-500 leading-relaxed">
+              Alle Preise verstehen sich zzgl. 19% MwSt. Die Kosten für eine
+              Immobilienverwaltungssoftware können in der Regel als
+              Werbungskosten bei Einkünften aus Vermietung und Verpachtung
+              steuerlich geltend gemacht werden.
             </p>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
