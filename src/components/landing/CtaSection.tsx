@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
-import { Sparkles } from "lucide-react";
 import { RevealOnScroll } from "../common/RevealOnScroll";
 
 export default function CtaSection() {
@@ -10,12 +9,6 @@ export default function CtaSection() {
     <section className="py-[120px] px-6 bg-gray-950">
       <RevealOnScroll>
         <div className="max-w-[1200px] mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 mb-6">
-            <Sparkles className="w-3.5 h-3.5 text-[#3c8af7]" />
-            <span className="text-sm font-medium text-gray-300">
-              30 Tage Pro-Funktionen gratis
-            </span>
-          </div>
           <h2 className="text-3xl sm:text-[36px] font-bold text-white tracking-tight leading-tight mb-4">
             Bereit, Ihre Verwaltung zu vereinfachen?
           </h2>
