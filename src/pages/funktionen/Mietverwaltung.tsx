@@ -9,6 +9,7 @@ import {
   CreditCard,
   TrendingUp,
   AlertCircle,
+  Shield,
   Clock,
   CheckCircle2,
   Users,
