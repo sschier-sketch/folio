@@ -29,7 +29,7 @@ function CellValue({ value }: { value: string | boolean }) {
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const [interval, setInterval] = useState<Interval>("month");
+  const [interval, setInterval] = useState<Interval>("year");
   const yearlySavings = calculateYearlySavings();
 
   const proPrice =
@@ -137,7 +137,7 @@ export default function Pricing() {
               <p className="text-xs text-gray-400 mt-1">
                 {interval === "year"
                   ? `${formatPrice(PLANS.pro.priceYearly || 0)} ${PLANS.pro.currencySymbol} / Jahr, jährlich abgerechnet`
-                  : "zzgl. MwSt., monatlich kündbar"}
+                  : "monatlich kündbar"}
               </p>
             </div>
             <ul className="space-y-3 mb-10 flex-1">
@@ -220,7 +220,7 @@ export default function Pricing() {
           <div className="bg-gray-50 rounded-xl p-5 flex items-start gap-3">
             <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-gray-500 leading-relaxed">
-              Alle Preise verstehen sich zzgl. 19% MwSt. Die Kosten für eine
+              Alle Preise verstehen sich inkl. MwSt. Die Kosten für eine
               Immobilienverwaltungssoftware können in der Regel als
               Werbungskosten bei Einkünften aus Vermietung und Verpachtung
               steuerlich geltend gemacht werden.

@@ -26,18 +26,17 @@ export const PLANS: Record<PlanId, Plan> = {
   basic: {
     id: 'basic',
     name: 'Basic',
-    description: 'Perfekt für Einsteiger mit 1–3 Immobilien',
+    description: 'Perfekt für Einsteiger',
     stripePriceId: 'free',
     priceMonthly: 0,
     currency: 'eur',
     currencySymbol: '€',
     maxProperties: 3,
     features: [
-      { text: 'Bis zu 3 Immobilien', included: true },
-      { text: 'Unbegrenzt Mieter', included: true },
+      { text: 'Unbegrenzt Immobilien, Mieter & Einheiten', included: true },
       { text: 'Einnahmen & Ausgaben', included: true },
       { text: 'Zähler & Ablesungen', included: true },
-      { text: 'Dokumenten-Upload (200 MB, 1 Datei)', included: true },
+      { text: 'Dokumenten-Upload', included: true },
       { text: 'Standard-Vorlagen', included: true },
       { text: 'E-Mail-Support', included: true },
     ],
@@ -55,15 +54,14 @@ export const PLANS: Record<PlanId, Plan> = {
     maxProperties: 20,
     popular: true,
     features: [
-      { text: 'Bis zu 20 Immobilien', included: true },
-      { text: 'Unbegrenzt Mieter', included: true },
+      { text: 'Unbegrenzt Immobilien, Mieter & Einheiten', included: true },
       { text: 'Alles aus Basic, plus:', included: true },
       { text: 'Ticketsystem & Nachrichten', included: true },
       { text: 'Mieterportal', included: true },
       { text: 'Betriebskostenabrechnung', included: true },
       { text: 'Mahnwesen & Indexmiete', included: true },
       { text: 'Cashflow & Finanzanalyse', included: true },
-      { text: 'Dokumenten-Upload (2 GB, 10 Dateien)', included: true },
+      { text: 'Dokumenten-Upload (erweitert)', included: true },
       { text: 'Alle Vorlagen inkl. Premium', included: true },
       { text: 'Prioritäts-Support (24h)', included: true },
     ],
@@ -79,7 +77,7 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
   {
     name: 'Immobilien',
     rows: [
-      { feature: 'Anzahl Immobilien', basic: 'Bis zu 3', pro: 'Bis zu 20' },
+      { feature: 'Unbegrenzt Immobilien & Einheiten', basic: true, pro: true },
       { feature: 'Stammdaten & Übersicht', basic: true, pro: true },
       { feature: 'Einheiten verwalten', basic: 'Basis', pro: 'Erweitert (Etage, Zimmer, Leerstandswarnung)' },
       { feature: 'Kontaktverwaltung', basic: false, pro: true },
@@ -92,7 +90,7 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
   {
     name: 'Mieter',
     rows: [
-      { feature: 'Anzahl Mieter', basic: 'Unbegrenzt', pro: 'Unbegrenzt' },
+      { feature: 'Unbegrenzt Mieter', basic: true, pro: true },
       { feature: 'Mieterübersicht & Stammdaten', basic: true, pro: true },
       { feature: 'Mieteingänge verfolgen', basic: true, pro: true },
       { feature: 'Vertrag & Dokumente (Details)', basic: false, pro: true },
