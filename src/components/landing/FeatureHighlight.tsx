@@ -143,7 +143,7 @@ export default function FeatureHighlight() {
               Im Basic-Tarif kostenlos, mit dem 30-Tage-Pro-Test sogar mit
               allen Premium-Funktionen.
             </p>
-            <ul className="space-y-4">
+            <ul className="space-y-4 mb-6">
               {HIGHLIGHTS.map((item) => (
                 <li key={item.text} className="flex items-start gap-3">
                   <div
@@ -156,6 +156,13 @@ export default function FeatureHighlight() {
                 </li>
               ))}
             </ul>
+            <RefLink
+              to="/funktionen"
+              className="inline-flex items-center gap-2 text-[#3c8af7] hover:text-[#3579de] font-medium transition-colors"
+            >
+              Alle Funktionen ansehen
+              <span className="text-lg">→</span>
+            </RefLink>
           </div>
           <div className="hidden lg:block">
             <PropertyMockup />

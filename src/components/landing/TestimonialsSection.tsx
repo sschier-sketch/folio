@@ -6,18 +6,21 @@ const TESTIMONIALS = [
     role: "Vermieter, 4 Wohnungen",
     text: "Seit ich Rentably nutze, habe ich endlich den Überblick über alle Mietverhältnisse. Die Betriebskostenabrechnung dauert keine Stunden mehr, sondern Minuten.",
     stars: 5,
+    image: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200",
   },
   {
     name: "Sandra K.",
     role: "Eigentümerin, 2 Objekte",
     text: "Ich habe lange nach einer einfachen Lösung gesucht. Rentably ist genau das — übersichtlich, schnell und vor allem kostenlos für meine Bedürfnisse.",
     stars: 5,
+    image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200",
   },
   {
     name: "Michael R.",
     role: "Privatvermieter, 7 Einheiten",
     text: "Das Mieterportal hat die Kommunikation mit meinen Mietern komplett verändert. Alles ist dokumentiert und nachvollziehbar. Kann ich nur empfehlen.",
     stars: 5,
+    image: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=200",
   },
 ];
 
@@ -52,14 +55,11 @@ export default function TestimonialsSection() {
               </div>
               <p className="text-gray-600 leading-relaxed mb-6">{t.text}</p>
               <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
-                >
-                  <span className="text-sm font-semibold" style={{ color: "#1E1E24" }}>
-                    {t.name.charAt(0)}
-                  </span>
-                </div>
+                <img
+                  src={t.image}
+                  alt={t.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
                 <div>
                   <div className="text-sm font-semibold text-gray-900">
                     {t.name}

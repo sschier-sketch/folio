@@ -15,15 +15,15 @@ export default function LandingPage() {
     <div>
       <HeroSection />
       <ProblemSection />
-      <HowItWorksSection />
       <FeatureHighlight />
+      <HowItWorksSection />
       <TestimonialsSection />
       <ByLandlordsSection />
       <PricingSection />
       <TrustSection />
       <FaqSection />
-      <SeoTextSection />
       <CtaSection />
+      <SeoTextSection />
     </div>
   );
 }

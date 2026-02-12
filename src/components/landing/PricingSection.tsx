@@ -60,7 +60,7 @@ export default function PricingSection() {
               30 Tage gratis testen
             </div>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-semibold text-gray-900">Rentably Pro</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Pro</h3>
               <span className="text-xs font-medium text-[#3c8af7] bg-[#EEF4FF] border border-[#DDE7FF] px-2.5 py-1 rounded-full">
                 -{yearlySavings}% jährlich
               </span>
