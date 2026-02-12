@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Building2, Pencil, Trash2, TrendingUp, AlertCircle, CheckCircle, X, Tag, Download, FileDown, FileSpreadsheet, FileText, Grid3x3, List, Eye } from "lucide-react";
+import { Plus, Building2, Pencil, Trash2, TrendingUp, AlertCircle, CheckCircle, X, Tag, Grid3x3, List, Eye } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -421,33 +421,30 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
           {properties.length > 0 && (
             <>
               <div className="relative">
-                <button
+                <Button
                   onClick={() => setShowExportMenu(!showExportMenu)}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-full font-medium hover:bg-gray-50 transition-colors"
+                  variant="outlined"
                 >
-                  <Download className="w-5 h-5" /> Exportieren
-                </button>
+                  Exportieren
+                </Button>
               {showExportMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
                   <button
                     onClick={() => handleExport('pdf')}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    <FileText className="w-4 h-4" />
                     PDF exportieren
                   </button>
                   <button
                     onClick={() => handleExport('csv')}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    <FileDown className="w-4 h-4" />
                     CSV exportieren
                   </button>
                   <button
                     onClick={() => handleExport('excel')}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    <FileSpreadsheet className="w-4 h-4" />
                     Excel exportieren
                   </button>
                 </div>
