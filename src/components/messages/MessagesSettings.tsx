@@ -175,21 +175,23 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
         <div className="space-y-4">
           <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">E-Mail-Adresse</h3>
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <div className="flex items-center gap-2 mb-2">
               <AtSign className="w-4 h-4 text-gray-400" />
-              Ihre Rentably E-Mail
+              <span className="text-sm font-medium text-gray-700">Ihre Rentably E-Mail</span>
               <div className="relative group">
-                <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 px-4 py-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50">
+                <button type="button" className="w-5 h-5 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                  <Info className="w-3.5 h-3.5 text-gray-500" />
+                </button>
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 px-4 py-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <p className="font-semibold mb-1.5">Ihre persönliche Rentably E-Mail-Adresse</p>
-                  <ul className="space-y-1 text-gray-300">
+                  <ul className="space-y-1 text-gray-300 leading-relaxed">
                     <li>Wird als Absender für Ihre E-Mails verwendet</li>
                     <li>Antworten werden automatisch hier im Posteingang angezeigt</li>
                   </ul>
                   <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900" />
                 </div>
               </div>
-            </label>
+            </div>
             <div className="flex items-center gap-0">
               <input
                 type="text"
