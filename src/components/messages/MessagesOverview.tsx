@@ -87,9 +87,9 @@ export default function MessagesOverview({
               <Info className="w-3.5 h-3.5 text-gray-500" />
             </button>
             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 px-4 py-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <p className="font-semibold mb-1.5">Ihre persoenliche Rentably E-Mail</p>
+              <p className="font-semibold mb-1.5">Ihre persönliche Rentably E-Mail</p>
               <ul className="space-y-1 text-gray-300 leading-relaxed">
-                <li>Wird als Absender fuer Ihre E-Mails verwendet</li>
+                <li>Wird als Absender für Ihre E-Mails verwendet</li>
                 <li>Antworten werden automatisch im Posteingang angezeigt</li>
               </ul>
               <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900" />

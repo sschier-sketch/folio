@@ -246,9 +246,6 @@ export default function MessagesView() {
               <p className="text-sm text-gray-500 max-w-sm">
                 Wählen Sie eine Konversation aus der Liste oder starten Sie eine neue Nachricht.
               </p>
-              <Button variant="primary" onClick={handleStartCompose}>
-                Neue Nachricht
-              </Button>
             </div>
           )}
         </div>
