@@ -1,25 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { PLANS, calculateYearlySavings } from "../../config/plans";
-import {
-  Check,
-  Infinity,
-  ArrowRight,
-  Sparkles,
-  Building2,
-  Users,
-  LayoutGrid,
-} from "lucide-react";
+import { Check, ArrowRight, Sparkles } from "lucide-react";
 
 function formatPrice(cents: number): string {
   return cents.toFixed(2).replace(".", ",");
 }
-
-const UNLIMITED_POINTS = [
-  { icon: Building2, label: "Immobilien" },
-  { icon: Users, label: "Mieter" },
-  { icon: LayoutGrid, label: "Einheiten" },
-];
 
 export default function PricingSection() {
   const navigate = useNavigate();
@@ -40,29 +26,7 @@ export default function PricingSection() {
           </p>
         </div>
 
-        <div className="bg-gray-950 rounded-2xl p-6 sm:p-8 mb-8">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-10">
-            {UNLIMITED_POINTS.map((point) => (
-              <div key={point.label} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                  <point.icon className="w-5 h-5 text-[#3c8af7]" strokeWidth={1.5} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <Infinity className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm font-semibold text-white">Unbegrenzt</span>
-                  </div>
-                  <span className="text-xs text-gray-400">{point.label}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-gray-500 text-xs mt-5">
-            In beiden Tarifen — Basic und Pro. Keine Limits, keine Zusatzkosten.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6 max-w-[880px] mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 max-w-[880px] mx-auto mt-12">
           <div className="border border-gray-200 rounded-2xl p-7 bg-white flex flex-col">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-gray-900">Basic</h3>
