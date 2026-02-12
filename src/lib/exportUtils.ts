@@ -7,13 +7,19 @@ async function loadImageAsDataURL(url: string): Promise<string> {
     const img = new Image();
     img.crossOrigin = 'Anonymous';
     img.onload = () => {
+      const maxWidth = 200;
+      const scale = Math.min(1, maxWidth / img.width);
+      const w = img.width * scale;
+      const h = img.height * scale;
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = w;
+      canvas.height = h;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
       } else {
         reject(new Error('Could not get canvas context'));
       }
@@ -212,7 +218,7 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
     if (logoData) {
       const logoHeight = 8;
       const logoWidth = 40;
-      doc.addImage(logoData, 'PNG', PAGE_W - M_RIGHT - logoWidth, M_TOP, logoWidth, logoHeight);
+      doc.addImage(logoData, 'JPEG', PAGE_W - M_RIGHT - logoWidth, M_TOP, logoWidth, logoHeight);
     }
 
     doc.setFontSize(10);
@@ -548,7 +554,7 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
     if (logoData) {
       const logoHeight = 8;
       const logoWidth = 40;
-      doc.addImage(logoData, 'PNG', PAGE_W - M_RIGHT - logoWidth, M_TOP, logoWidth, logoHeight);
+      doc.addImage(logoData, 'JPEG', PAGE_W - M_RIGHT - logoWidth, M_TOP, logoWidth, logoHeight);
     }
 
     doc.setFontSize(10);
