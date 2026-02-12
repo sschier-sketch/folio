@@ -469,10 +469,10 @@ export default function Mietverwaltung() {
                 Vorteile
               </p>
               <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-                Darum setzen Vermieter auf Rentably
+                Darum setzen Vermieter auf rentably
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto leading-relaxed">
-                Wir haben Vermieter und Hausverwalter gefragt, wie Rentably ihre Arbeit
+                Wir haben Vermieter und Hausverwalter gefragt, wie rentably ihre Arbeit
                 veraendert. Die Top-Antworten zeigen klar, welchen Mehrwert unsere Software bietet.
               </p>
             </div>
@@ -502,22 +502,14 @@ export default function Mietverwaltung() {
           <RevealOnScroll>
             <div className="text-center">
               <p className="text-gray-600 mb-6">
-                Teste Rentably jetzt kostenlos und unverbindlich.
+                Teste rentably jetzt kostenlos und unverbindlich.
               </p>
-              <div className="flex items-center justify-center gap-4 flex-wrap">
-                <button
-                  onClick={goToSignup}
-                  className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
-                >
-                  Jetzt kostenlos testen
-                </button>
-                <RefLink
-                  to="/preise"
-                  className="h-12 inline-flex items-center px-8 rounded-lg text-base font-semibold border border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
-                >
-                  Tarif finden
-                </RefLink>
-              </div>
+              <button
+                onClick={goToSignup}
+                className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
+              >
+                Jetzt kostenlos testen
+              </button>
             </div>
           </RevealOnScroll>
         </div>
