@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Check, AlertCircle, User, FileSignature, AtSign, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Save, Check, AlertCircle, User, FileSignature, AtSign, ToggleLeft, ToggleRight, Info } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
@@ -145,7 +145,7 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-xl">
+    <div className="p-6 md:p-8">
       <p className="text-sm text-gray-500 mb-8">
         Konfigurieren Sie Ihre E-Mail-Adresse, Absendernamen und Signatur.
       </p>
@@ -178,6 +178,17 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
               <AtSign className="w-4 h-4 text-gray-400" />
               Ihre Rentably E-Mail
+              <div className="relative group">
+                <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 px-4 py-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50">
+                  <p className="font-semibold mb-1.5">Ihre persönliche Rentably E-Mail-Adresse</p>
+                  <ul className="space-y-1 text-gray-300">
+                    <li>Wird als Absender für Ihre E-Mails verwendet</li>
+                    <li>Antworten werden automatisch hier im Posteingang angezeigt</li>
+                  </ul>
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900" />
+                </div>
+              </div>
             </label>
             <div className="flex items-center gap-0">
               <input
