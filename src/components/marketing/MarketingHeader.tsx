@@ -4,10 +4,10 @@ import { Menu, X } from 'lucide-react';
 import { RefLink } from '../common/RefLink';
 
 const NAV_ITEMS = [
-  { label: 'Über uns', path: '/impressum' },
-  { label: 'Funktionen', path: '/features' },
-  { label: 'Preise', path: '/pricing' },
-  { label: 'Kontakt', path: '/contact' },
+  { label: 'Über uns', path: '/ueber-uns' },
+  { label: 'Funktionen', path: '/funktionen' },
+  { label: 'Preise', path: '/preise' },
+  { label: 'Kontakt', path: '/kontakt' },
 ];
 
 export default function MarketingHeader() {

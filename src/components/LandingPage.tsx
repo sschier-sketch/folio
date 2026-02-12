@@ -1,318 +1,206 @@
-import {
-  Building2,
-  TrendingUp,
-  Users,
-  MessageSquare,
-  FileText,
-  Shield,
-  Sparkles,
-  Check,
-} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../lib/referralTracking";
-import { Button } from "./ui/Button";
+import { RefLink } from "./common/RefLink";
+
+const FEATURES = [
+  {
+    title: "Mietverwaltung",
+    description:
+      "Verträge, Mieterhöhungen und Zahlungseingänge an einem Ort. Behalten Sie jederzeit den Überblick über Ihre Mietverhältnisse.",
+    path: "/funktionen/mietverwaltung",
+  },
+  {
+    title: "Immobilienmanagement",
+    description:
+      "Stammdaten, Einheiten, Zähler und Kontakte zentral verwalten. Jede Immobilie vollständig dokumentiert.",
+    path: "/funktionen/immobilienmanagement",
+  },
+  {
+    title: "Kommunikation",
+    description:
+      "Mieterportal und Ticketsystem für transparente, nachvollziehbare Kommunikation mit Ihren Mietern.",
+    path: "/funktionen/kommunikation",
+  },
+  {
+    title: "Buchhaltung",
+    description:
+      "Einnahmen, Ausgaben, Betriebskostenabrechnungen und Mahnwesen. Ihre Finanzen strukturiert und nachvollziehbar.",
+    path: "/funktionen/buchhaltung",
+  },
+  {
+    title: "Dokumente",
+    description:
+      "Mietverträge, Übergabeprotokolle und Belege digital archivieren und jederzeit abrufen.",
+    path: "/funktionen/dokumente",
+  },
+];
+
+const PAIN_POINTS = [
+  {
+    title: "Verstreute Daten",
+    text: "Mietverträge in Ordnern, Zahlungen in Excel, Kommunikation per E-Mail. Informationen sind überall verteilt und schwer auffindbar.",
+  },
+  {
+    title: "Manuelle Prozesse",
+    text: "Betriebskostenabrechnungen per Hand, Zahlungseingänge manuell prüfen, Mieterhöhungen im Kalender notieren. Das kostet Zeit und ist fehleranfällig.",
+  },
+  {
+    title: "Fehlende Übersicht",
+    text: "Wie steht meine Rendite? Welche Mieter zahlen verspätet? Welche Verträge laufen aus? Ohne System bleiben wichtige Fragen unbeantwortet.",
+  },
+];
+
+const TRUST_POINTS = [
+  "Gehostet in Deutschland auf europäischen Servern",
+  "Verschlüsselte Datenübertragung und sichere Speicherung",
+  "Regelmäßige Backups Ihrer Daten",
+  "DSGVO-konforme Verarbeitung",
+  "Keine Weitergabe Ihrer Daten an Dritte",
+];
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const goToSignup = () => navigate(withRef('/signup'));
+  const goToSignup = () => navigate(withRef("/signup"));
 
   return (
     <div>
-      <main>
-        {" "}
-        <section className="py-20 px-4 sm:px-6 lg:px-8">
-          {" "}
-          <div className="max-w-7xl mx-auto">
-            {" "}
-            <div className="text-center mb-16 pt-8">
-              {" "}
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-full px-4 py-2 mb-6">
-                {" "}
-                <Sparkles className="w-4 h-4 text-emerald-600" />{" "}
-                <span className="text-sm font-semibold text-emerald-800">
-                  Objekte & Mieter anlegen komplett gratis
-                </span>{" "}
-              </div>{" "}
-              <h1 className="text-5xl sm:text-6xl font-bold text-dark mb-6 leading-tight">
-                {" "}
-                Immobilienverwaltung
-                <br />{" "}
-                <span className="text-primary-blue">neu gedacht</span>{" "}
-              </h1>{" "}
-              <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
-                {" "}
-                Die moderne Software-Lösung für kleine Vermieter. Verwalten Sie
-                Ihre Immobilien, Mieter und Finanzen an einem Ort – einfach,
-                übersichtlich und professionell.{" "}
-              </p>{" "}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                {" "}
-                <Button
+      <section className="pt-24 pb-24 sm:pt-32 sm:pb-28 px-6">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
+                Immobilienverwaltung,
+                <br />
+                <span className="text-[#3c8af7]">die mitdenkt.</span>
+              </h1>
+              <p className="mt-6 text-lg text-gray-500 leading-relaxed max-w-lg">
+                Objekte, Mieter, Finanzen und Dokumente an einem Ort.
+                Die Software für private Vermieter, die Ordnung schaffen
+                und Zeit sparen wollen.
+              </p>
+              <div className="mt-10 flex flex-col sm:flex-row items-start gap-4">
+                <button
                   onClick={goToSignup}
-                  variant="primary"
+                  className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
                 >
-                  Kostenlos registrieren
-                </Button>{" "}
-                <p className="text-sm text-gray-300">
-                  {" "}
-                  Keine Kreditkarte erforderlich{" "}
-                </p>{" "}
-              </div>{" "}
-            </div>{" "}
-            <div className="bg-primary-blue rounded-xl p-8 mb-20 text-white">
-              {" "}
-              <div className="text-center mb-8">
-                {" "}
-                <h2 className="text-3xl font-bold mb-3">
-                  Transparente Preise
-                </h2>{" "}
-                <p className="text-white/70">
-                  Starten Sie kostenlos und upgraden Sie bei Bedarf
-                </p>{" "}
-              </div>{" "}
-              <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                {" "}
-                <div className="bg-white/10 backdrop-blur rounded-lg p-6 border-2 border-white/20">
-                  {" "}
-                  <div className="flex items-center gap-2 mb-4">
-                    {" "}
-                    <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
-                      {" "}
-                      <Check className="w-6 h-6 text-white" />{" "}
-                    </div>{" "}
-                    <h3 className="text-2xl font-bold">Kostenlos</h3>{" "}
-                  </div>{" "}
-                  <p className="text-3xl font-bold mb-6">
-                    0 <span className="text-lg font-normal">EUR / Monat</span>
-                  </p>{" "}
-                  <ul className="space-y-3">
-                    {" "}
-                    <li className="flex items-start gap-2">
-                      {" "}
-                      <Check className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5" />{" "}
-                      <span>Unbegrenzt Objekte anlegen</span>{" "}
-                    </li>{" "}
-                    <li className="flex items-start gap-2">
-                      {" "}
-                      <Check className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5" />{" "}
-                      <span>Unbegrenzt Mieter anlegen</span>{" "}
-                    </li>{" "}
-                    <li className="flex items-start gap-2">
-                      {" "}
-                      <Check className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5" />{" "}
-                      <span>Basis-Objektverwaltung</span>{" "}
-                    </li>{" "}
-                    <li className="flex items-start gap-2">
-                      {" "}
-                      <Check className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5" />{" "}
-                      <span>Mieterdaten speichern</span>{" "}
-                    </li>{" "}
-                  </ul>{" "}
-                </div>{" "}
-                <div className="bg-white rounded-lg p-6 text-dark border-4 border-amber-400 relative overflow-hidden">
-                  {" "}
-                  <div className="absolute top-0 right-0 bg-amber-400 text-dark px-4 py-1 text-xs font-bold rounded-bl-lg">
-                    {" "}
-                    BELIEBT{" "}
-                  </div>{" "}
-                  <div className="flex items-center gap-2 mb-4">
-                    {" "}
-                    <div className="w-10 h-10 bg-primary-blue rounded-lg flex items-center justify-center">
-                      {" "}
-                      <Sparkles className="w-6 h-6 text-white" />{" "}
-                    </div>{" "}
-                    <h3 className="text-2xl font-bold">Premium</h3>{" "}
-                  </div>{" "}
-                  <p className="text-3xl font-bold mb-6">
-                    9 <span className="text-lg font-normal">EUR / Monat</span>
-                  </p>{" "}
-                  <ul className="space-y-3">
-                    {" "}
-                    <li className="flex items-start gap-2">
-                      {" "}
-                      <Check className="w-5 h-5 text-primary-blue flex-shrink-0 mt-0.5" />{" "}
-                      <span className="font-medium">
-                        Alles aus Kostenlos, plus:
-                      </span>{" "}
-                    </li>{" "}
-                    <li className="flex items-start gap-2">
-                      {" "}
-                      <Check className="w-5 h-5 text-primary-blue flex-shrink-0 mt-0.5" />{" "}
-                      <span>Ticketsystem für Mieter</span>{" "}
-                    </li>{" "}
-                    <li className="flex items-start gap-2">
-                      {" "}
-                      <Check className="w-5 h-5 text-primary-blue flex-shrink-0 mt-0.5" />{" "}
-                      <span>Mieterhöhungs-Erinnerungen</span>{" "}
-                    </li>{" "}
-                    <li className="flex items-start gap-2">
-                      {" "}
-                      <Check className="w-5 h-5 text-primary-blue flex-shrink-0 mt-0.5" />{" "}
-                      <span>Renditeberechnung</span>{" "}
-                    </li>{" "}
-                    <li className="flex items-start gap-2">
-                      {" "}
-                      <Check className="w-5 h-5 text-primary-blue flex-shrink-0 mt-0.5" />{" "}
-                      <span>Finanzanalysen</span>{" "}
-                    </li>{" "}
-                  </ul>{" "}
-                </div>{" "}
-              </div>{" "}
-            </div>{" "}
-            <div className="grid md:grid-cols-3 gap-8 mb-20">
-              {" "}
-              <div className="bg-white rounded-lg p-8">
-                {" "}
-                <div className="w-14 h-14 bg-primary-blue/10 rounded-lg flex items-center justify-center mb-4">
-                  {" "}
-                  <Building2 className="w-7 h-7 text-primary-blue" />{" "}
-                </div>{" "}
-                <h3 className="text-xl font-semibold text-dark mb-3">
-                  Objektverwaltung
-                </h3>{" "}
-                <p className="text-gray-400">
-                  {" "}
-                  Verwalten Sie alle Ihre Immobilien zentral mit detaillierten
-                  Informationen zu Wert, Krediten und Rendite.{" "}
-                </p>{" "}
-              </div>{" "}
-              <div className="bg-white rounded-lg p-8">
-                {" "}
-                <div className="w-14 h-14 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
-                  {" "}
-                  <Users className="w-7 h-7 text-emerald-600" />{" "}
-                </div>{" "}
-                <h3 className="text-xl font-semibold text-dark mb-3">
-                  Mieterverwaltung
-                </h3>{" "}
-                <p className="text-gray-400">
-                  {" "}
-                  Speichern Sie Mieterdaten, Verträge und Zahlungsinformationen
-                  übersichtlich an einem Ort.{" "}
-                </p>{" "}
-              </div>{" "}
-              <div className="bg-white rounded-lg p-8">
-                {" "}
-                <div className="w-14 h-14 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
-                  {" "}
-                  <MessageSquare className="w-7 h-7 text-amber-600" />{" "}
-                </div>{" "}
-                <h3 className="text-xl font-semibold text-dark mb-3">
-                  Ticketsystem
-                </h3>{" "}
-                <p className="text-gray-400">
-                  {" "}
-                  Mieter können direkt über das integrierte Ticketsystem mit
-                  Ihnen kommunizieren und Anliegen melden.{" "}
-                </p>{" "}
-              </div>{" "}
-            </div>{" "}
-            <div className="bg-gray-50 rounded-lg p-12 mb-20">
-              {" "}
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                {" "}
-                <div>
-                  {" "}
-                  <h2 className="text-3xl font-bold text-dark mb-6">
-                    {" "}
-                    Alle Funktionen auf einen Blick{" "}
-                  </h2>{" "}
-                  <div className="space-y-4">
-                    {" "}
-                    <div className="flex items-start gap-3">
-                      {" "}
-                      <div className="w-6 h-6 bg-primary-blue/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                        {" "}
-                        <TrendingUp className="w-4 h-4 text-primary-blue" />{" "}
-                      </div>{" "}
-                      <div>
-                        {" "}
-                        <h4 className="font-semibold text-dark">
-                          Renditeberechnung
-                        </h4>{" "}
-                        <p className="text-gray-400">
-                          Automatische Berechnung der Objektrendite basierend
-                          auf Mieteinnahmen und Kosten
-                        </p>{" "}
-                      </div>{" "}
-                    </div>{" "}
-                    <div className="flex items-start gap-3">
-                      {" "}
-                      <div className="w-6 h-6 bg-primary-blue/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                        {" "}
-                        <FileText className="w-4 h-4 text-primary-blue" />{" "}
-                      </div>{" "}
-                      <div>
-                        {" "}
-                        <h4 className="font-semibold text-dark">
-                          Automatische Mieterhöhungs-Erinnerungen
-                        </h4>{" "}
-                        <p className="text-gray-400">
-                          Werden Sie 3 Monate vor Index- und
-                          Staffelmiete-Erhöhungen automatisch per Ticket
-                          erinnert
-                        </p>{" "}
-                      </div>{" "}
-                    </div>{" "}
-                    <div className="flex items-start gap-3">
-                      {" "}
-                      <div className="w-6 h-6 bg-primary-blue/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                        {" "}
-                        <MessageSquare className="w-4 h-4 text-primary-blue" />{" "}
-                      </div>{" "}
-                      <div>
-                        {" "}
-                        <h4 className="font-semibold text-dark">
-                          Mieter-Kommunikation
-                        </h4>{" "}
-                        <p className="text-gray-400">
-                          Integriertes Ticketsystem für professionelle
-                          Kommunikation mit Ihren Mietern
-                        </p>{" "}
-                      </div>{" "}
-                    </div>{" "}
-                    <div className="flex items-start gap-3">
-                      {" "}
-                      <div className="w-6 h-6 bg-primary-blue/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                        {" "}
-                        <Shield className="w-4 h-4 text-primary-blue" />{" "}
-                      </div>{" "}
-                      <div>
-                        {" "}
-                        <h4 className="font-semibold text-dark">
-                          Kreditverwaltung
-                        </h4>{" "}
-                        <p className="text-gray-400">
-                          Behalten Sie den Überblick über Ihre Finanzierungen
-                          und Kreditkosten
-                        </p>{" "}
-                      </div>{" "}
-                    </div>{" "}
-                  </div>{" "}
-                </div>{" "}
-                <div className="bg-primary-blue rounded-xl p-8 text-white">
-                  {" "}
-                  <div className="text-6xl font-bold mb-2">€</div>{" "}
-                  <h3 className="text-2xl font-bold mb-4">Kostenlos starten</h3>{" "}
-                  <p className="text-white/70 mb-6">
-                    {" "}
-                    Testen Sie Rentably unverbindlich und überzeugen Sie sich
-                    selbst von den Vorteilen einer modernen
-                    Immobilienverwaltung.{" "}
-                  </p>{" "}
-                  <Button
-                    onClick={goToSignup}
-                    variant="outlined"
-                    fullWidth
-                  >
-                    Jetzt Account erstellen
-                  </Button>{" "}
-                </div>{" "}
-              </div>{" "}
-            </div>{" "}
-          </div>{" "}
-        </section>{" "}
-      </main>
+                  Kostenlos starten
+                </button>
+                <RefLink
+                  to="/preise"
+                  className="h-12 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  Preise ansehen
+                </RefLink>
+              </div>
+            </div>
+
+            <div className="hidden lg:block">
+              <div className="bg-gray-50 rounded-2xl border border-gray-100 aspect-[4/3] flex items-center justify-center">
+                <div className="text-center px-12">
+                  <div className="text-6xl font-bold text-[#3c8af7] mb-3">
+                    9&thinsp;EUR
+                  </div>
+                  <p className="text-sm text-gray-400">
+                    pro Monat &middot; alle Funktionen
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 px-6 bg-gray-50">
+        <div className="max-w-[1200px] mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-16">
+            Warum viele Vermieter an Grenzen stoßen
+          </h2>
+          <div className="grid md:grid-cols-3 gap-12">
+            {PAIN_POINTS.map((point) => (
+              <div key={point.title}>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  {point.title}
+                </h3>
+                <p className="text-gray-500 leading-relaxed">{point.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 px-6">
+        <div className="max-w-[1200px] mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-4">
+            Alles, was Sie brauchen
+          </h2>
+          <p className="text-gray-500 mb-16 max-w-2xl">
+            Fünf Bereiche, die Ihre Immobilienverwaltung vollständig abdecken
+            &ndash; von der Mietverwaltung bis zur Dokumentenablage.
+          </p>
+          <div className="grid md:grid-cols-3 gap-x-10 gap-y-12">
+            {FEATURES.map((feature) => (
+              <div key={feature.title}>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-500 leading-relaxed mb-3">
+                  {feature.description}
+                </p>
+                <RefLink
+                  to={feature.path}
+                  className="text-sm font-medium text-[#3c8af7] hover:text-[#3579de] transition-colors"
+                >
+                  Mehr erfahren
+                </RefLink>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 px-6 bg-gray-50">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
+              Ihre Daten in sicheren Händen
+            </h2>
+            <p className="text-gray-500 leading-relaxed mb-8">
+              Rentably wird in Deutschland betrieben und erfüllt die
+              Anforderungen der DSGVO. Ihre Immobiliendaten gehören Ihnen
+              &ndash; heute und in Zukunft.
+            </p>
+            <ul className="space-y-3">
+              {TRUST_POINTS.map((point) => (
+                <li
+                  key={point}
+                  className="flex items-baseline gap-3 text-gray-600"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7] flex-shrink-0 translate-y-[1px]" />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 px-6">
+        <div className="max-w-[1200px] mx-auto text-center">
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-4">
+            Bereit, Ihre Verwaltung zu vereinfachen?
+          </h2>
+          <p className="text-gray-500 mb-10 max-w-lg mx-auto">
+            Erstellen Sie Ihren Account in unter einer Minute.
+            Keine Kreditkarte erforderlich.
+          </p>
+          <button
+            onClick={goToSignup}
+            className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
+          >
+            Jetzt kostenlos starten
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
