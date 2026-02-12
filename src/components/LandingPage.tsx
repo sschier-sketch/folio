@@ -50,12 +50,23 @@ const PAIN_POINTS = [
   },
 ];
 
-const TRUST_POINTS = [
-  "Gehostet in Deutschland auf europäischen Servern",
-  "Verschlüsselte Datenübertragung und sichere Speicherung",
-  "Regelmäßige Backups Ihrer Daten",
-  "DSGVO-konforme Verarbeitung",
-  "Keine Weitergabe Ihrer Daten an Dritte",
+const TRUST_BLOCKS = [
+  {
+    headline: "100 %",
+    text: "DSGVO-konforme Verarbeitung aller Daten",
+  },
+  {
+    headline: "Deutschland",
+    text: "Hosting auf europäischen Servern mit Standort in Deutschland",
+  },
+  {
+    headline: "Verschlüsselt",
+    text: "Sichere Datenübertragung und regelmäßige Backups",
+  },
+  {
+    headline: "Kein Verkauf",
+    text: "Keine Weitergabe Ihrer Daten an Dritte — niemals",
+  },
 ];
 
 export default function LandingPage() {
@@ -64,7 +75,7 @@ export default function LandingPage() {
 
   return (
     <div>
-      <section className="pt-24 pb-24 sm:pt-32 sm:pb-28 px-6">
+      <section className="pt-24 pb-32 sm:pt-32 sm:pb-40 px-6">
         <div className="max-w-[1200px] mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -94,15 +105,41 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="hidden lg:block">
-              <div className="bg-gray-50 rounded-2xl border border-gray-100 aspect-[4/3] flex items-center justify-center">
-                <div className="text-center px-12">
-                  <div className="text-6xl font-bold text-[#3c8af7] mb-3">
-                    9&thinsp;EUR
+            <div className="hidden lg:block relative">
+              <div className="translate-y-6 rounded-2xl border border-gray-200 bg-white shadow-lg shadow-gray-200/60 overflow-hidden">
+                <div className="h-8 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5 px-4">
+                  <span className="w-2.5 h-2.5 rounded-full bg-gray-200" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-gray-200" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-gray-200" />
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="h-3 w-28 bg-gray-100 rounded" />
+                    <div className="h-7 w-24 bg-[#3c8af7]/10 rounded-md" />
                   </div>
-                  <p className="text-sm text-gray-400">
-                    pro Monat &middot; alle Funktionen
-                  </p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-gray-50 rounded-lg p-4 space-y-2">
+                        <div className="h-2 w-12 bg-gray-200 rounded" />
+                        <div className="h-5 w-16 bg-gray-100 rounded" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="h-2.5 bg-gray-100 rounded w-2/3" />
+                          <div className="h-2 bg-gray-50 rounded w-1/3" />
+                        </div>
+                        <div className="h-5 w-14 bg-gray-50 rounded" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -110,7 +147,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 px-6 bg-gray-50">
+      <section className="py-[100px] px-6 bg-[#f9fafb]">
         <div className="max-w-[1200px] mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-16">
             Warum viele Vermieter an Grenzen stoßen
@@ -128,7 +165,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 px-6">
+      <section className="py-[110px] px-6">
         <div className="max-w-[1200px] mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-4">
             Alles, was Sie brauchen
@@ -137,13 +174,17 @@ export default function LandingPage() {
             Fünf Bereiche, die Ihre Immobilienverwaltung vollständig abdecken
             &ndash; von der Mietverwaltung bis zur Dokumentenablage.
           </p>
-          <div className="grid md:grid-cols-3 gap-x-10 gap-y-12">
+          <div className="grid md:grid-cols-3 gap-6">
             {FEATURES.map((feature) => (
-              <div key={feature.title}>
+              <div
+                key={feature.title}
+                className="border border-gray-200 rounded-xl p-7 pt-0 overflow-hidden hover:bg-[#fafbfc] transition-colors group"
+              >
+                <div className="h-[3px] bg-[#3c8af7] -mx-7 mb-7 rounded-b-none" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-500 leading-relaxed mb-3">
+                <p className="text-gray-500 leading-relaxed mb-4 text-[15px]">
                   {feature.description}
                 </p>
                 <RefLink
@@ -158,38 +199,40 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 px-6 bg-gray-50">
+      <section className="py-[100px] px-6 bg-[#f9fafb]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="max-w-2xl">
-            <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
-              Ihre Daten in sicheren Händen
-            </h2>
-            <p className="text-gray-500 leading-relaxed mb-8">
-              Rentably wird in Deutschland betrieben und erfüllt die
-              Anforderungen der DSGVO. Ihre Immobiliendaten gehören Ihnen
-              &ndash; heute und in Zukunft.
-            </p>
-            <ul className="space-y-3">
-              {TRUST_POINTS.map((point) => (
-                <li
-                  key={point}
-                  className="flex items-baseline gap-3 text-gray-600"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7] flex-shrink-0 translate-y-[1px]" />
-                  {point}
-                </li>
-              ))}
-            </ul>
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-4">
+            Ihre Daten in sicheren Händen
+          </h2>
+          <p className="text-gray-500 leading-relaxed mb-14 max-w-2xl">
+            Rentably wird in Deutschland betrieben und erfüllt die
+            Anforderungen der DSGVO. Ihre Immobiliendaten gehören Ihnen
+            &ndash; heute und in Zukunft.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {TRUST_BLOCKS.map((block) => (
+              <div
+                key={block.headline}
+                className="bg-white border border-gray-200 rounded-xl p-6"
+              >
+                <div className="text-2xl font-bold text-gray-900 mb-2">
+                  {block.headline}
+                </div>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {block.text}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="py-24 px-6">
+      <section className="py-[120px] px-6 bg-gray-950">
         <div className="max-w-[1200px] mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-4">
+          <h2 className="text-3xl font-bold text-white tracking-tight mb-4">
             Bereit, Ihre Verwaltung zu vereinfachen?
           </h2>
-          <p className="text-gray-500 mb-10 max-w-lg mx-auto">
+          <p className="text-gray-400 mb-10 max-w-lg mx-auto">
             Erstellen Sie Ihren Account in unter einer Minute.
             Keine Kreditkarte erforderlich.
           </p>
