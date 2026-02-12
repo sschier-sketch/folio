@@ -583,6 +583,15 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
               </div>
             )}
           </div>
+
+          {isEditingMasterData && property.ownership_type === 'units_only' && (
+            <div className="md:col-span-2 flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+              <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-blue-700">
+                Kaufpreis und Aktueller Wert werden aus den einzelnen Einheiten berechnet. Sie können diese Werte im Reiter "Einheiten" pro Einheit anpassen.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="mt-6 pt-6 border-t border-gray-100">
