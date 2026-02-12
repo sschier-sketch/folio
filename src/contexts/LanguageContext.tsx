@@ -115,7 +115,9 @@ const translations = {
     "footer.rights": "Seit 2017 für Vermieter • Entwickelt in Deutschland • Sicher & DSGVO-konform",
     // Dashboard Home
     "dashboard.overview": "Übersicht",
-    "dashboard.welcome": "Willkommen in Ihrem Rentably Dashboard",
+    "dashboard.welcome.morning": "Guten Morgen – Willkommen auf Ihrer Übersicht",
+    "dashboard.welcome.afternoon": "Guten Tag – Willkommen auf Ihrer Übersicht",
+    "dashboard.welcome.evening": "Guten Abend – Willkommen auf Ihrer Übersicht",
     "dashboard.properties": "Immobilien",
     "dashboard.tenants.active": "Aktive Mieter",
     "dashboard.rent.monthly": "Monatliche Mieteinnahmen",
@@ -526,7 +528,9 @@ const translations = {
     "footer.rights": "Since 2017 for landlords • Made in Germany • Secure & GDPR compliant",
     // Dashboard Home
     "dashboard.overview": "Overview",
-    "dashboard.welcome": "Welcome to your Rentably Dashboard",
+    "dashboard.welcome.morning": "Good Morning – Welcome to your Overview",
+    "dashboard.welcome.afternoon": "Good Afternoon – Welcome to your Overview",
+    "dashboard.welcome.evening": "Good Evening – Welcome to your Overview",
     "dashboard.properties": "Properties",
     "dashboard.tenants.active": "Active Tenants",
     "dashboard.rent.monthly": "Monthly Rental Income",

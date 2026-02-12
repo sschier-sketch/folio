@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Building2,
@@ -477,7 +477,12 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         <h1 className="text-3xl font-bold text-dark mb-2">
           {t("dashboard.overview")}
         </h1>
-        <p className="text-gray-400">{t("dashboard.welcome")}</p>
+        <p className="text-gray-400">{(() => {
+          const hour = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Berlin" })).getHours();
+          if (hour < 12) return t("dashboard.welcome.morning");
+          if (hour < 18) return t("dashboard.welcome.afternoon");
+          return t("dashboard.welcome.evening");
+        })()}</p>
       </div>
 
       <TrialBanner
