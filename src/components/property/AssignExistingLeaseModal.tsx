@@ -47,31 +47,51 @@ export default function AssignExistingLeaseModal({
   async function loadLeases() {
     try {
       setLoading(true);
+
       const { data: contracts, error } = await supabase
         .from("rental_contracts")
-        .select("id, tenant_id, property_id, base_rent, total_rent, contract_start, contract_end, status, tenants!rental_contracts_tenant_id_fkey(id, first_name, last_name), properties(id, name)")
+        .select("id, tenant_id, property_id, base_rent, total_rent, contract_start, contract_end, status")
         .eq("user_id", user!.id)
         .eq("status", "active")
         .order("contract_start", { ascending: false });
 
       if (error) throw error;
+      if (!contracts || contracts.length === 0) {
+        setLeases([]);
+        return;
+      }
 
-      const leasesWithUnits: ExistingLease[] = [];
+      const tenantIds = [...new Set(contracts.map((c) => c.tenant_id).filter(Boolean))] as string[];
+      const propertyIds = [...new Set(contracts.map((c) => c.property_id))] as string[];
+      const contractIds = contracts.map((c) => c.id);
 
-      for (const contract of contracts || []) {
-        const tenant = contract.tenants as any;
-        const property = contract.properties as any;
-
-        const { data: rcuData } = await supabase
+      const [tenantsRes, propertiesRes, rcuRes] = await Promise.all([
+        tenantIds.length > 0
+          ? supabase.from("tenants").select("id, first_name, last_name").in("id", tenantIds)
+          : { data: [], error: null },
+        supabase.from("properties").select("id, name").in("id", propertyIds),
+        supabase
           .from("rental_contract_units")
-          .select("unit_id, property_units(unit_number)")
-          .eq("contract_id", contract.id);
+          .select("contract_id, unit_id, property_units(unit_number)")
+          .in("contract_id", contractIds),
+      ]);
 
-        const unitNames = (rcuData || [])
-          .map((rcu: any) => rcu.property_units?.unit_number)
-          .filter(Boolean);
+      const tenantMap = new Map((tenantsRes.data || []).map((t: any) => [t.id, t]));
+      const propertyMap = new Map((propertiesRes.data || []).map((p: any) => [p.id, p]));
 
-        leasesWithUnits.push({
+      const unitsByContract = new Map<string, string[]>();
+      for (const rcu of rcuRes.data || []) {
+        const name = (rcu as any).property_units?.unit_number;
+        if (!name) continue;
+        const list = unitsByContract.get(rcu.contract_id) || [];
+        list.push(name);
+        unitsByContract.set(rcu.contract_id, list);
+      }
+
+      const result: ExistingLease[] = contracts.map((contract) => {
+        const tenant = tenantMap.get(contract.tenant_id) as any;
+        const property = propertyMap.get(contract.property_id) as any;
+        return {
           id: contract.id,
           tenant_id: contract.tenant_id,
           property_id: contract.property_id,
@@ -82,11 +102,11 @@ export default function AssignExistingLeaseModal({
           status: contract.status,
           tenant_name: tenant ? `${tenant.first_name} ${tenant.last_name}` : "Unbekannt",
           property_name: property?.name || "Unbekannt",
-          unit_names: unitNames,
-        });
-      }
+          unit_names: unitsByContract.get(contract.id) || [],
+        };
+      });
 
-      setLeases(leasesWithUnits);
+      setLeases(result);
     } catch (error) {
       console.error("Error loading leases:", error);
     } finally {
