@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { TrendingUp, Lock, Calendar, Edit, Save, X, Info, Percent } from "lucide-react";
+import { TrendingUp, Lock, Calendar, Edit, Save, X, Info, Percent, ParkingSquare } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -67,6 +67,27 @@ interface Contract {
   start_date: string;
 }
 
+interface ContractUnit {
+  id: string;
+  unit_id: string;
+  unit_number: string;
+  unit_type: string;
+  rent_included: boolean;
+  separate_rent: number;
+  separate_additional_costs: number;
+  label: string | null;
+}
+
+interface EditableContractUnit {
+  id: string;
+  unit_id: string;
+  unit_number: string;
+  unit_type: string;
+  rent_included: boolean;
+  separate_rent: string;
+  separate_additional_costs: string;
+}
+
 export default function TenantRentHistoryTab({
   tenantId,
 }: TenantRentHistoryTabProps) {
@@ -75,6 +96,8 @@ export default function TenantRentHistoryTab({
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState<Contract | null>(null);
   const [history, setHistory] = useState<RentHistory[]>([]);
+  const [contractUnits, setContractUnits] = useState<ContractUnit[]>([]);
+  const [editableUnits, setEditableUnits] = useState<EditableContractUnit[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     rent_type: "flat_rate",
@@ -241,13 +264,56 @@ export default function TenantRentHistoryTab({
           rent_due_day: contractData.rent_due_day || 1,
         });
 
-        const { data: historyData } = await supabase
-          .from("rent_history")
-          .select("*")
-          .eq("contract_id", contractData.id)
-          .order("effective_date", { ascending: false });
+        const [historyRes, rcuRes] = await Promise.all([
+          supabase
+            .from("rent_history")
+            .select("*")
+            .eq("contract_id", contractData.id)
+            .order("effective_date", { ascending: false }),
+          supabase
+            .from("rental_contract_units")
+            .select("id, unit_id, rent_included, separate_rent, separate_additional_costs, label")
+            .eq("contract_id", contractData.id),
+        ]);
 
-        if (historyData) setHistory(historyData);
+        if (historyRes.data) setHistory(historyRes.data);
+
+        const rcuRows = rcuRes.data || [];
+        if (rcuRows.length > 0) {
+          const unitIds = rcuRows.map((r: any) => r.unit_id);
+          const { data: unitsData } = await supabase
+            .from("property_units")
+            .select("id, unit_number, unit_type")
+            .in("id", unitIds);
+
+          const unitMap = new Map((unitsData || []).map((u: any) => [u.id, u]));
+          const merged: ContractUnit[] = rcuRows.map((r: any) => {
+            const unit = unitMap.get(r.unit_id);
+            return {
+              id: r.id,
+              unit_id: r.unit_id,
+              unit_number: unit?.unit_number || "?",
+              unit_type: unit?.unit_type || "apartment",
+              rent_included: r.rent_included ?? true,
+              separate_rent: r.separate_rent || 0,
+              separate_additional_costs: r.separate_additional_costs || 0,
+              label: r.label || null,
+            };
+          });
+          setContractUnits(merged);
+          setEditableUnits(merged.map((cu) => ({
+            id: cu.id,
+            unit_id: cu.unit_id,
+            unit_number: cu.unit_number,
+            unit_type: cu.unit_type,
+            rent_included: cu.rent_included,
+            separate_rent: cu.separate_rent.toString(),
+            separate_additional_costs: cu.separate_additional_costs.toString(),
+          })));
+        } else {
+          setContractUnits([]);
+          setEditableUnits([]);
+        }
       }
     } catch (error) {
       console.error("Error loading rent history:", error);
@@ -318,6 +384,17 @@ export default function TenantRentHistoryTab({
             notes: "Manuell angepasst",
           },
         ]);
+      }
+
+      for (const eu of editableUnits) {
+        await supabase
+          .from("rental_contract_units")
+          .update({
+            rent_included: eu.rent_included,
+            separate_rent: eu.rent_included ? 0 : parseFloat(eu.separate_rent) || 0,
+            separate_additional_costs: eu.rent_included ? 0 : parseFloat(eu.separate_additional_costs) || 0,
+          })
+          .eq("id", eu.id);
       }
 
       setIsEditing(false);
@@ -670,6 +747,85 @@ export default function TenantRentHistoryTab({
                 </div>
               </div>
             </div>
+
+            {editableUnits.length > 1 && (
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-700 mb-4">Miete pro Einheit</h4>
+                <p className="text-xs text-gray-500 mb-4">
+                  Legen Sie fest, ob die Miete jeder Einheit in der Hauptmiete enthalten ist oder separat berechnet wird.
+                </p>
+                <div className="space-y-4">
+                  {editableUnits.map((eu, idx) => (
+                    <div key={eu.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <ParkingSquare className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm font-semibold text-dark">{eu.unit_number}</span>
+                        <span className="text-xs text-gray-400">
+                          ({eu.unit_type === "parking" ? "Stellplatz" : eu.unit_type === "storage" ? "Lager" : "Wohneinheit"})
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Mietberechnung
+                          </label>
+                          <select
+                            value={eu.rent_included ? "included" : "separate"}
+                            onChange={(e) => {
+                              const updated = [...editableUnits];
+                              updated[idx] = { ...updated[idx], rent_included: e.target.value === "included" };
+                              setEditableUnits(updated);
+                            }}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                          >
+                            <option value="included">In Hauptmiete enthalten</option>
+                            <option value="separate">Eigene Miete</option>
+                          </select>
+                        </div>
+                        {!eu.rent_included && (
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Kaltmiete (EUR)
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={eu.separate_rent}
+                                onChange={(e) => {
+                                  const updated = [...editableUnits];
+                                  updated[idx] = { ...updated[idx], separate_rent: e.target.value };
+                                  setEditableUnits(updated);
+                                }}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                                placeholder="0.00"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Nebenkosten (EUR)
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={eu.separate_additional_costs}
+                                onChange={(e) => {
+                                  const updated = [...editableUnits];
+                                  updated[idx] = { ...updated[idx], separate_additional_costs: e.target.value };
+                                  setEditableUnits(updated);
+                                }}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                                placeholder="0.00"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -742,6 +898,47 @@ export default function TenantRentHistoryTab({
                   {new Date(history[0].effective_date).toLocaleDateString("de-DE")}
                   {" - "}
                   {getReasonLabel(history[0].reason)}
+                </div>
+              </div>
+            )}
+
+            {contractUnits.length > 1 && (
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <h4 className="text-sm font-semibold text-dark mb-4">Zugeordnete Einheiten</h4>
+                <div className="space-y-3">
+                  {contractUnits.map((cu) => (
+                    <div key={cu.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-[#EEF4FF] rounded-full flex items-center justify-center border border-[#DDE7FF]">
+                          <ParkingSquare className="w-4 h-4 text-[#1e1e24]" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-dark">{cu.unit_number}</div>
+                          <div className="text-xs text-gray-400">
+                            {cu.unit_type === "parking" ? "Stellplatz" : cu.unit_type === "storage" ? "Lager" : "Wohneinheit"}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {cu.rent_included ? (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            In Hauptmiete enthalten
+                          </span>
+                        ) : (
+                          <div>
+                            <div className="text-sm font-semibold text-dark">
+                              {cu.separate_rent.toFixed(2)} EUR
+                            </div>
+                            {cu.separate_additional_costs > 0 && (
+                              <div className="text-xs text-gray-400">
+                                + {cu.separate_additional_costs.toFixed(2)} EUR NK
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

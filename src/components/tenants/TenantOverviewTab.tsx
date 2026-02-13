@@ -89,7 +89,7 @@ export default function TenantOverviewTab({
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<{ id: string; unit_number: string }[]>([]);
   const [currentUnit, setCurrentUnit] = useState<{ id: string; unit_number: string } | null>(null);
-  const [contractUnits, setContractUnits] = useState<{ id: string; unit_number: string }[]>([]);
+  const [contractUnits, setContractUnits] = useState<{ id: string; unit_number: string; rent_included: boolean; separate_rent: number }[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Tenant | null>(null);
   const [contractPartners, setContractPartners] = useState<ContractPartner[]>([]);
@@ -169,17 +169,26 @@ export default function TenantOverviewTab({
           if (activeContract) {
             const { data: rcuData } = await supabase
               .from("rental_contract_units")
-              .select("unit_id")
+              .select("id, unit_id, rent_included, separate_rent")
               .eq("contract_id", activeContract.id);
 
-            const rcuUnitIds = (rcuData || []).map((r: any) => r.unit_id);
+            const rcuRows = rcuData || [];
+            const rcuUnitIds = rcuRows.map((r: any) => r.unit_id);
             if (rcuUnitIds.length > 0) {
               const { data: rcuUnits } = await supabase
                 .from("property_units")
                 .select("id, unit_number")
                 .in("id", rcuUnitIds)
                 .order("unit_number");
-              setContractUnits(rcuUnits || []);
+
+              const unitMap = new Map((rcuUnits || []).map((u: any) => [u.id, u]));
+              const merged = rcuRows.map((r: any) => ({
+                id: r.id,
+                unit_number: unitMap.get(r.unit_id)?.unit_number || "?",
+                rent_included: r.rent_included ?? true,
+                separate_rent: r.separate_rent || 0,
+              }));
+              setContractUnits(merged);
             } else {
               setContractUnits([]);
             }
@@ -489,7 +498,7 @@ export default function TenantOverviewTab({
                     </select>
                     {units.length > 0 && (
                       <div>
-                        <div className="text-xs text-gray-400 mb-1">Mieteinheit (Optional)</div>
+                        <div className="text-xs text-gray-400 mb-1">Haupteinheit (Optional)</div>
                         <select
                           value={formData.unit_id || ""}
                           onChange={(e) =>
@@ -504,6 +513,27 @@ export default function TenantOverviewTab({
                             </option>
                           ))}
                         </select>
+                      </div>
+                    )}
+                    {contractUnits.length > 0 && (
+                      <div className="mt-2">
+                        <div className="text-xs text-gray-400 mb-1">Zugeordnete Einheiten (Mietvertrag)</div>
+                        <div className="space-y-1">
+                          {contractUnits.map((cu) => (
+                            <div key={cu.id} className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 rounded px-3 py-1.5 border border-gray-100">
+                              <span className="font-medium">{cu.unit_number}</span>
+                              <span className="text-xs text-gray-400">
+                                {cu.rent_included
+                                  ? "(in Hauptmiete enthalten)"
+                                  : `(eigene Miete: ${cu.separate_rent.toFixed(2)} EUR)`
+                                }
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Einheiten und Mietaufteilung unter "Miete" bearbeiten
+                        </p>
                       </div>
                     )}
                   </div>
