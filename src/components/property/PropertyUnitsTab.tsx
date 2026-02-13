@@ -119,38 +119,73 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
 
       if (error) throw error;
 
+      const unitIds = (data || []).map((u) => u.id);
+
+      const { data: allRcuData } = await supabase
+        .from("rental_contract_units")
+        .select("contract_id, unit_id")
+        .in("unit_id", unitIds);
+
+      const contractIds = [...new Set((allRcuData || []).map((r) => r.contract_id))];
+
+      const { data: contractsData } = contractIds.length > 0
+        ? await supabase
+            .from("rental_contracts")
+            .select("id, base_rent, tenant_id, status")
+            .in("id", contractIds)
+        : { data: [] as any[] };
+
+      const tenantIds = [...new Set((contractsData || []).map((c) => c.tenant_id).filter(Boolean))] as string[];
+
+      const { data: tenantsData } = tenantIds.length > 0
+        ? await supabase
+            .from("tenants")
+            .select("id, first_name, last_name")
+            .in("id", tenantIds)
+        : { data: [] as any[] };
+
+      const tenantMap = new Map((tenantsData || []).map((t: any) => [t.id, t]));
+      const contractMap = new Map((contractsData || []).map((c: any) => [c.id, c]));
+
+      const rcuByUnit = new Map<string, any[]>();
+      for (const rcu of allRcuData || []) {
+        const list = rcuByUnit.get(rcu.unit_id) || [];
+        list.push(rcu);
+        rcuByUnit.set(rcu.unit_id, list);
+      }
+
       const unitsWithDetails = await Promise.all(
         (data || []).map(async (unit) => {
           let tenant = null;
           let rentalContract = null;
           let outstandingRent = 0;
 
-          const { data: rcuData } = await supabase
-            .from("rental_contract_units")
-            .select("contract_id, rental_contracts(id, base_rent, tenant_id, status, tenants(id, first_name, last_name))")
-            .eq("unit_id", unit.id);
+          const unitRcus = rcuByUnit.get(unit.id) || [];
+          const activeLink = unitRcus.find((rcu) => {
+            const contract = contractMap.get(rcu.contract_id);
+            return contract?.status === "active";
+          });
 
-          const activeLink = (rcuData || []).find(
-            (rcu: any) => rcu.rental_contracts?.status === "active"
-          );
+          if (activeLink) {
+            const rc = contractMap.get(activeLink.contract_id);
+            if (rc) {
+              rentalContract = { id: rc.id, base_rent: rc.base_rent };
+              const t = tenantMap.get(rc.tenant_id);
+              if (t) {
+                tenant = { id: t.id, first_name: t.first_name, last_name: t.last_name };
+              }
 
-          if (activeLink?.rental_contracts) {
-            const rc = activeLink.rental_contracts as any;
-            rentalContract = { id: rc.id, base_rent: rc.base_rent };
-            if (rc.tenants) {
-              tenant = { id: rc.tenants.id, first_name: rc.tenants.first_name, last_name: rc.tenants.last_name };
-            }
+              const today = new Date().toISOString().split("T")[0];
+              const { data: payments } = await supabase
+                .from("rent_payments")
+                .select("amount, paid_amount, payment_status")
+                .eq("contract_id", rc.id)
+                .in("payment_status", ["unpaid", "partial"])
+                .lt("due_date", today);
 
-            const today = new Date().toISOString().split('T')[0];
-            const { data: payments } = await supabase
-              .from("rent_payments")
-              .select("amount, paid_amount, payment_status")
-              .eq("contract_id", rc.id)
-              .in("payment_status", ["unpaid", "partial"])
-              .lt("due_date", today);
-
-            if (payments && payments.length > 0) {
-              outstandingRent = payments.reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
+              if (payments && payments.length > 0) {
+                outstandingRent = payments.reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
+              }
             }
           }
 
