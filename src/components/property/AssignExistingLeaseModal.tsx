@@ -49,7 +49,7 @@ export default function AssignExistingLeaseModal({
       setLoading(true);
       const { data: contracts, error } = await supabase
         .from("rental_contracts")
-        .select("id, tenant_id, property_id, base_rent, total_rent, contract_start, contract_end, status, tenants(id, first_name, last_name), properties(id, name)")
+        .select("id, tenant_id, property_id, base_rent, total_rent, contract_start, contract_end, status, tenants!rental_contracts_tenant_id_fkey(id, first_name, last_name), properties(id, name)")
         .eq("user_id", user!.id)
         .eq("status", "active")
         .order("contract_start", { ascending: false });
