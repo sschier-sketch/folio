@@ -123,7 +123,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
 
       const { data: allRcuData } = await supabase
         .from("rental_contract_units")
-        .select("contract_id, unit_id")
+        .select("contract_id, unit_id, rent_included, separate_rent")
         .in("unit_id", unitIds);
 
       const contractIds = [...new Set((allRcuData || []).map((r) => r.contract_id))];
@@ -169,7 +169,20 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
           if (activeLink) {
             const rc = contractMap.get(activeLink.contract_id);
             if (rc) {
-              rentalContract = { id: rc.id, base_rent: rc.base_rent };
+              const rcuCount = (allRcuData || []).filter((r) => r.contract_id === rc.id).length;
+              const isMultiUnit = rcuCount > 1;
+              const rentIncluded = activeLink.rent_included ?? true;
+              const separateRent = activeLink.separate_rent || 0;
+
+              let displayRent: number | null = null;
+              if (isMultiUnit && rentIncluded) {
+                displayRent = null;
+              } else if (isMultiUnit && !rentIncluded) {
+                displayRent = separateRent;
+              } else {
+                displayRent = rc.base_rent;
+              }
+              rentalContract = { id: rc.id, base_rent: displayRent, rent_included: isMultiUnit ? rentIncluded : undefined };
               const t = tenantMap.get(rc.tenant_id);
               if (t) {
                 tenant = { id: t.id, first_name: t.first_name, last_name: t.last_name };
@@ -500,9 +513,13 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                       </span>
                     </td>
                     <td className="py-4 px-6 text-sm font-medium text-dark">
-                      {unit.rental_contract?.base_rent
-                        ? `${unit.rental_contract.base_rent.toFixed(2)} €`
-                        : <span className="text-gray-400">-</span>}
+                      {unit.rental_contract?.rent_included === true ? (
+                        <span className="text-xs text-gray-400">enthalten</span>
+                      ) : unit.rental_contract?.base_rent != null ? (
+                        `${Number(unit.rental_contract.base_rent).toFixed(2)} €`
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-sm">
                       {unit.outstanding_rent && unit.outstanding_rent > 0 ? (
