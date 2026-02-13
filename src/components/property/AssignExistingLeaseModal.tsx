@@ -109,13 +109,6 @@ export default function AssignExistingLeaseModal({
 
       if (error) throw error;
 
-      await supabase.from("property_history").insert({
-        property_id: propertyId,
-        user_id: user.id,
-        event_type: "lease_assigned",
-        event_description: `Einheit ${unitNumber} wurde einem bestehenden Mietverhältnis zugeordnet`,
-      });
-
       onSave();
     } catch (error: any) {
       console.error("Error assigning lease:", error);

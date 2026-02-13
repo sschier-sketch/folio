@@ -103,50 +103,6 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
     }
   }
 
-  function getChanges() {
-    if (!originalData) return [];
-
-    const changes: string[] = [];
-    const fieldLabels: Record<string, string> = {
-      heating_type: "Heizungstyp",
-      energy_source: "Energieart",
-      construction_type: "Bauweise",
-      roof_type: "Dachtyp",
-      parking_spots: "Anzahl Stellplätze",
-      parking_type: "Art des Stellplatzes",
-      elevator: "Aufzug",
-      balcony_terrace: "Balkon/Terrasse",
-      garden: "Garten",
-      basement: "Keller",
-      fitted_kitchen: "Einbauküche",
-      wg_suitable: "WG geeignet",
-      barrier_free: "Barrierefrei",
-      furnished: "Möbliert",
-      condition: "Zustand",
-      flooring: "Bodenbelag",
-      equipment_notes: "Ausstattungsnotizen",
-      special_features: "Besonderheiten",
-    };
-
-    Object.keys(formData).forEach((key) => {
-      const oldValue = originalData[key];
-      const newValue = formData[key as keyof typeof formData];
-
-      if (oldValue !== newValue) {
-        const label = fieldLabels[key] || key;
-        if (typeof newValue === 'boolean') {
-          changes.push(`${label}: ${newValue ? 'Ja' : 'Nein'}`);
-        } else if (newValue === '' || newValue === '0') {
-          changes.push(`${label}: Gelöscht`);
-        } else {
-          changes.push(`${label}: ${newValue}`);
-        }
-      }
-    });
-
-    return changes;
-  }
-
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
@@ -181,18 +137,6 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         .upsert(equipmentData, { onConflict: "property_id" });
 
       if (error) throw error;
-
-      const changes = getChanges();
-      if (changes.length > 0) {
-        await supabase.from("property_history").insert([
-          {
-            property_id: propertyId,
-            user_id: user.id,
-            event_type: "equipment_updated",
-            event_description: `Ausstattung & Daten aktualisiert: ${changes.join(', ')}`,
-          },
-        ]);
-      }
 
       const newOriginalData = {
         heating_type: formData.heating_type,

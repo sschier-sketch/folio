@@ -59,7 +59,6 @@ export default function PropertyModal({
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'property' | 'units'>(property ? 'property' : 'property');
-  const [originalData, setOriginalData] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
     street: "",
@@ -119,45 +118,12 @@ export default function PropertyModal({
       };
 
       setFormData(propData);
-      setOriginalData(propData);
 
       if (propertyWithCosts.additional_purchase_costs) {
         setAdditionalCosts(propertyWithCosts.additional_purchase_costs);
       }
     }
   }, [property]);
-
-  function getPropertyChanges() {
-    if (!originalData || !property) return [];
-
-    const changes: string[] = [];
-    const fieldLabels: Record<string, string> = {
-      name: "Name",
-      street: "Straße",
-      zip_code: "PLZ",
-      city: "Stadt",
-      country: "Land",
-      property_type: "Immobilientyp",
-      property_management_type: "Verwaltungsart",
-      purchase_price: "Kaufpreis",
-      current_value: "Aktueller Wert",
-      purchase_date: "Kaufdatum",
-      parking_spot_number: "Stellplatznummer",
-      description: "Beschreibung",
-    };
-
-    Object.keys(fieldLabels).forEach((key) => {
-      const oldValue = originalData[key];
-      const newValue = formData[key];
-
-      if (oldValue !== newValue) {
-        const label = fieldLabels[key];
-        changes.push(`${label}: ${newValue || 'Gelöscht'}`);
-      }
-    });
-
-    return changes;
-  }
 
   const handleAddUnit = () => {
     const newUnit: Unit = {
@@ -256,18 +222,6 @@ export default function PropertyModal({
         console.log("Property updated successfully");
 
         propertyId = property.id;
-
-        const changes = getPropertyChanges();
-        if (changes.length > 0) {
-          await supabase.from("property_history").insert([
-            {
-              property_id: property.id,
-              user_id: user.id,
-              event_type: "property_updated",
-              event_description: `Immobiliendaten aktualisiert: ${changes.join(', ')}`,
-            },
-          ]);
-        }
       } else {
         console.log("Inserting new property...", data);
         const { data: newProperty, error } = await supabase

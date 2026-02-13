@@ -233,28 +233,10 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
           .eq("id", editingUnit.id);
 
         if (error) throw error;
-
-        await supabase.from("property_history").insert([
-          {
-            property_id: propertyId,
-            user_id: user.id,
-            event_type: "unit_updated",
-            event_description: `Einheiten: Einheit ${formData.unit_number} wurde aktualisiert`,
-          },
-        ]);
       } else {
         const { error } = await supabase.from("property_units").insert([unitData]);
 
         if (error) throw error;
-
-        await supabase.from("property_history").insert([
-          {
-            property_id: propertyId,
-            user_id: user.id,
-            event_type: "unit_created",
-            event_description: `Einheiten: Einheit ${formData.unit_number} wurde angelegt`,
-          },
-        ]);
       }
 
       setShowModal(false);
@@ -275,17 +257,6 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       const { error } = await supabase.from("property_units").delete().eq("id", unit.id);
 
       if (error) throw error;
-
-      if (user) {
-        await supabase.from("property_history").insert([
-          {
-            property_id: propertyId,
-            user_id: user.id,
-            event_type: "unit_deleted",
-            event_description: `Einheiten: Einheit ${unit.unit_number} wurde gelöscht`,
-          },
-        ]);
-      }
 
       loadUnits();
     } catch (error) {

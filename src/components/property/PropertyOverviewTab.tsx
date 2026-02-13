@@ -220,18 +220,6 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     if (!user) return;
 
     try {
-      const changes: string[] = [];
-
-      if (editData.name !== property.name) changes.push("Name");
-      if (editData.address !== property.address) changes.push("Adresse");
-      if (editData.property_type !== property.property_type) changes.push("Immobilientyp");
-      if (editData.property_management_type !== (property.property_management_type || "self_management"))
-        changes.push("Verwaltungsart");
-      if (editData.purchase_date !== (property.purchase_date || "")) changes.push("Kaufdatum");
-      if (Number(editData.purchase_price) !== Number(property.purchase_price)) changes.push("Kaufpreis");
-      if (Number(editData.current_value) !== Number(property.current_value)) changes.push("Aktueller Wert");
-      if (editData.description !== property.description) changes.push("Beschreibung");
-
       const { error } = await supabase
         .from("properties")
         .update({
@@ -247,17 +235,6 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
         .eq("id", property.id);
 
       if (error) throw error;
-
-      if (changes.length > 0) {
-        await supabase.from("property_history").insert([
-          {
-            property_id: property.id,
-            user_id: user.id,
-            event_type: "property_updated",
-            event_description: `Überblick aktualisiert: ${changes.join(', ')}`,
-          },
-        ]);
-      }
 
       setIsEditingMasterData(false);
       if (onUpdate) onUpdate();
