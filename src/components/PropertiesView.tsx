@@ -116,27 +116,14 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
         (data || []).map(async (property) => {
           const { data: units } = await supabase
             .from("property_units")
-            .select("id, current_value, purchase_price")
+            .select("id, status, current_value, purchase_price")
             .eq("property_id", property.id);
 
-          const total = units?.length || 0;
-          let rented = 0;
-
-          if (units && units.length > 0) {
-            for (const unit of units) {
-              const { data: tenantData } = await supabase
-                .from("tenants")
-                .select("id")
-                .eq("unit_id", unit.id)
-                .eq("is_active", true)
-                .maybeSingle();
-
-              if (tenantData) {
-                rented++;
-              }
-            }
-          }
-
+          const rentableUnits = (units || []).filter(
+            (u: any) => u.status !== "self_occupied" && u.status !== "owner_occupied"
+          );
+          const total = rentableUnits.length;
+          const rented = rentableUnits.filter((u: any) => u.status === "rented").length;
           const vacant = total - rented;
 
           let displayCurrentValue = Number(property.current_value) || 0;

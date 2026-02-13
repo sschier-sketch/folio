@@ -483,6 +483,23 @@ export default function TenantModal({
               .eq("tenant_id", tenant.id);
 
             if (contractError) throw contractError;
+
+            if (tenantData.unit_id) {
+              const { data: existingRcu } = await supabase
+                .from("rental_contract_units")
+                .select("id")
+                .eq("contract_id", existingContract.id)
+                .eq("unit_id", tenantData.unit_id)
+                .maybeSingle();
+
+              if (!existingRcu) {
+                await supabase.from("rental_contract_units").insert({
+                  contract_id: existingContract.id,
+                  unit_id: tenantData.unit_id,
+                  user_id: user.id,
+                });
+              }
+            }
           } else {
             const { data: newContract, error: contractError } = await supabase
               .from("rental_contracts")
@@ -504,6 +521,14 @@ export default function TenantModal({
               .eq("id", tenant.id);
 
             if (updateError) throw updateError;
+
+            if (tenantData.unit_id) {
+              await supabase.from("rental_contract_units").insert({
+                contract_id: newContract.id,
+                unit_id: tenantData.unit_id,
+                user_id: user.id,
+              });
+            }
           }
         }
       } else {
@@ -608,6 +633,14 @@ export default function TenantModal({
             .eq("id", newTenant.id);
 
           if (updateError) throw updateError;
+
+          if (tenantData.unit_id) {
+            await supabase.from("rental_contract_units").insert({
+              contract_id: newContract.id,
+              unit_id: tenantData.unit_id,
+              user_id: user.id,
+            });
+          }
         }
       }
 

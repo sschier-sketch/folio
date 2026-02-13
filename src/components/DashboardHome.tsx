@@ -256,21 +256,16 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         }
       });
 
-      const { data: unitsData } = await supabase
+      const { data: allUnitsData } = await supabase
         .from("property_units")
-        .select("id")
+        .select("id, status")
         .eq("user_id", user.id);
 
-      const totalUnits = unitsData?.length || 0;
-
-      const { data: activeTenantsWithUnits } = await supabase
-        .from("tenants")
-        .select("unit_id")
-        .eq("user_id", user.id)
-        .eq("is_active", true)
-        .not("unit_id", "is", null);
-
-      const rentedUnits = activeTenantsWithUnits?.length || 0;
+      const rentableUnits = (allUnitsData || []).filter(
+        (u) => u.status !== "self_occupied" && u.status !== "owner_occupied"
+      );
+      const totalUnits = rentableUnits.length;
+      const rentedUnits = rentableUnits.filter((u) => u.status === "rented").length;
       const occupancyRate = totalUnits > 0 ? Math.round((rentedUnits / totalUnits) * 100) : 100;
 
       const ninetyDaysFromNow = new Date();

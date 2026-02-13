@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Edit, Trash2, Home, X, FileText } from "lucide-react";
+import { Edit, Trash2, Home, X, FileText, Link2 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
 import { parseNumberInput } from "../../lib/utils";
 import TenantModal from "../TenantModal";
+import AssignExistingLeaseModal from "./AssignExistingLeaseModal";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 import { Button } from '../ui/Button';
 
@@ -56,6 +57,8 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
   const [editingUnit, setEditingUnit] = useState<PropertyUnit | null>(null);
   const [showTenantModal, setShowTenantModal] = useState(false);
   const [selectedUnitForTenant, setSelectedUnitForTenant] = useState<PropertyUnit | null>(null);
+  const [showAssignLeaseModal, setShowAssignLeaseModal] = useState(false);
+  const [selectedUnitForLease, setSelectedUnitForLease] = useState<PropertyUnit | null>(null);
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
   const [ownershipType, setOwnershipType] = useState<string>("full_property");
   const [formData, setFormData] = useState({
@@ -121,40 +124,54 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
           let tenant = null;
           let rentalContract = null;
           let outstandingRent = 0;
-          let unitStatus = unit.status;
 
-          const { data: tenantData } = await supabase
-            .from("tenants")
-            .select("id, first_name, last_name")
-            .eq("unit_id", unit.id)
-            .eq("is_active", true)
-            .maybeSingle();
+          const { data: rcuData } = await supabase
+            .from("rental_contract_units")
+            .select("contract_id, rental_contracts(id, base_rent, tenant_id, status, tenants(id, first_name, last_name))")
+            .eq("unit_id", unit.id);
 
-          if (tenantData) {
-            tenant = tenantData;
-            unitStatus = "rented";
+          const activeLink = (rcuData || []).find(
+            (rcu: any) => rcu.rental_contracts?.status === "active"
+          );
 
-            const { data: contractData } = await supabase
-              .from("rental_contracts")
-              .select("id, base_rent")
-              .eq("tenant_id", tenantData.id)
-              .eq("property_id", propertyId)
+          if (activeLink?.rental_contracts) {
+            const rc = activeLink.rental_contracts as any;
+            rentalContract = { id: rc.id, base_rent: rc.base_rent };
+            if (rc.tenants) {
+              tenant = { id: rc.tenants.id, first_name: rc.tenants.first_name, last_name: rc.tenants.last_name };
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const { data: payments } = await supabase
+              .from("rent_payments")
+              .select("amount, paid_amount, payment_status")
+              .eq("contract_id", rc.id)
+              .in("payment_status", ["unpaid", "partial"])
+              .lt("due_date", today);
+
+            if (payments && payments.length > 0) {
+              outstandingRent = payments.reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
+            }
+          }
+
+          if (!tenant) {
+            const { data: tenantData } = await supabase
+              .from("tenants")
+              .select("id, first_name, last_name")
+              .eq("unit_id", unit.id)
+              .eq("is_active", true)
               .maybeSingle();
 
-            rentalContract = contractData;
-
-            if (rentalContract) {
-              const today = new Date().toISOString().split('T')[0];
-              const { data: payments } = await supabase
-                .from("rent_payments")
-                .select("amount, paid_amount, payment_status")
-                .eq("contract_id", rentalContract.id)
-                .in("payment_status", ["unpaid", "partial"])
-                .lt("due_date", today);
-
-              if (payments && payments.length > 0) {
-                outstandingRent = payments.reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
-              }
+            if (tenantData) {
+              tenant = tenantData;
+              const { data: contractData } = await supabase
+                .from("rental_contracts")
+                .select("id, base_rent")
+                .eq("tenant_id", tenantData.id)
+                .eq("property_id", propertyId)
+                .eq("status", "active")
+                .maybeSingle();
+              if (contractData) rentalContract = contractData;
             }
           }
 
@@ -163,7 +180,6 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
             tenant,
             rental_contract: rentalContract,
             outstanding_rent: outstandingRent,
-            status: unitStatus
           };
         })
       );
@@ -495,11 +511,18 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                       <div className="flex items-center justify-center">
                         <TableActionsDropdown
                           actions={[
-                            ...(unit.status !== "rented" ? [{
-                              label: 'Mietverhältnis anlegen',
+                            ...(unit.status !== "rented" && unit.status !== "self_occupied" ? [{
+                              label: 'Neues Mietverhältnis anlegen',
                               onClick: () => {
                                 setSelectedUnitForTenant(unit);
                                 setShowTenantModal(true);
+                              }
+                            }] : []),
+                            ...(unit.status !== "rented" && unit.status !== "self_occupied" ? [{
+                              label: 'Bestehendes Mietverhältnis zuordnen',
+                              onClick: () => {
+                                setSelectedUnitForLease(unit);
+                                setShowAssignLeaseModal(true);
                               }
                             }] : []),
                             {
@@ -538,6 +561,23 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
           }}
           preselectedPropertyId={propertyId}
           preselectedUnitId={selectedUnitForTenant?.id}
+        />
+      )}
+
+      {showAssignLeaseModal && selectedUnitForLease && (
+        <AssignExistingLeaseModal
+          propertyId={propertyId}
+          unitId={selectedUnitForLease.id}
+          unitNumber={selectedUnitForLease.unit_number}
+          onClose={() => {
+            setShowAssignLeaseModal(false);
+            setSelectedUnitForLease(null);
+          }}
+          onSave={() => {
+            setShowAssignLeaseModal(false);
+            setSelectedUnitForLease(null);
+            loadUnits();
+          }}
         />
       )}
 
@@ -650,12 +690,20 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                       setFormData({ ...formData, status: e.target.value })
                     }
                     className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    disabled={formData.status === "rented"}
                   >
+                    {formData.status === "rented" && (
+                      <option value="rented">Vermietet</option>
+                    )}
                     <option value="vacant">Leer</option>
-                    <option value="rented">Vermietet</option>
                     <option value="maintenance">Wartung</option>
                     <option value="self_occupied">Selbstnutzung</option>
                   </select>
+                  {formData.status === "rented" && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      Status &quot;Vermietet&quot; wird automatisch durch ein aktives Mietverh&auml;ltnis gesetzt und kann nicht manuell ge&auml;ndert werden.
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -851,7 +899,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                 <div className="col-span-2">
                   <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-3">
                     <p className="text-sm text-blue-900">
-                      <strong>Hinweis:</strong> Mieter werden einer Einheit über die Mieterdetails zugeordnet. Öffnen Sie die Mieterdetails und wählen Sie dort die gewünschte Einheit aus.
+                      <strong>Hinweis:</strong> Um ein Mietverh&auml;ltnis zu dieser Einheit anzulegen, nutzen Sie die Aktion &quot;Neues Mietverh&auml;ltnis anlegen&quot; oder &quot;Bestehendes Mietverh&auml;ltnis zuordnen&quot; in der Einheiten-&Uuml;bersicht. Der Status &quot;Vermietet&quot; wird automatisch gesetzt.
                     </p>
                   </div>
                 </div>
