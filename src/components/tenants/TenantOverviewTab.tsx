@@ -89,6 +89,7 @@ export default function TenantOverviewTab({
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<{ id: string; unit_number: string }[]>([]);
   const [currentUnit, setCurrentUnit] = useState<{ id: string; unit_number: string } | null>(null);
+  const [contractUnits, setContractUnits] = useState<{ id: string; unit_number: string }[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Tenant | null>(null);
   const [contractPartners, setContractPartners] = useState<ContractPartner[]>([]);
@@ -156,6 +157,34 @@ export default function TenantOverviewTab({
               .maybeSingle();
 
             if (unitData) setCurrentUnit(unitData);
+          }
+
+          const { data: activeContract } = await supabase
+            .from("rental_contracts")
+            .select("id")
+            .eq("tenant_id", tenantId)
+            .eq("status", "active")
+            .maybeSingle();
+
+          if (activeContract) {
+            const { data: rcuData } = await supabase
+              .from("rental_contract_units")
+              .select("unit_id")
+              .eq("contract_id", activeContract.id);
+
+            const rcuUnitIds = (rcuData || []).map((r: any) => r.unit_id);
+            if (rcuUnitIds.length > 0) {
+              const { data: rcuUnits } = await supabase
+                .from("property_units")
+                .select("id, unit_number")
+                .in("id", rcuUnitIds)
+                .order("unit_number");
+              setContractUnits(rcuUnits || []);
+            } else {
+              setContractUnits([]);
+            }
+          } else {
+            setContractUnits([]);
           }
         }
       }
@@ -483,11 +512,15 @@ export default function TenantOverviewTab({
                     <div className="font-semibold text-dark">
                       {property?.name || "Keine Immobilie zugeordnet"}
                     </div>
-                    {currentUnit && (
+                    {contractUnits.length > 0 ? (
+                      <div className="text-sm text-gray-600">
+                        {contractUnits.length === 1 ? "Einheit" : "Einheiten"}: {contractUnits.map((u) => u.unit_number).join(", ")}
+                      </div>
+                    ) : currentUnit ? (
                       <div className="text-sm text-gray-600">
                         Einheit: {currentUnit.unit_number}
                       </div>
-                    )}
+                    ) : null}
                     {property?.address && (
                       <div className="text-sm text-gray-600">{property.address}</div>
                     )}

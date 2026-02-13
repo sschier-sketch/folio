@@ -36,6 +36,7 @@ interface Contract {
     id: string;
     unit_number: string;
   };
+  all_units?: { id: string; unit_number: string }[];
 }
 
 interface TenantWithDetails extends Tenant {
@@ -94,18 +95,47 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
           tenantsRes.data.map(async (tenant) => {
             const { data: contracts } = await supabase
               .from("rental_contracts")
-              .select(`
-                *,
-                property_units(id, unit_number)
-              `)
+              .select("*")
               .eq("tenant_id", tenant.id)
               .eq("status", "active")
               .order("start_date", { ascending: false })
               .limit(1);
 
+            const enriched = await Promise.all(
+              (contracts || []).map(async (c) => {
+                const { data: rcuData } = await supabase
+                  .from("rental_contract_units")
+                  .select("unit_id")
+                  .eq("contract_id", c.id);
+
+                const unitIds = (rcuData || []).map((r: any) => r.unit_id);
+                let allUnits: { id: string; unit_number: string }[] = [];
+
+                if (unitIds.length > 0) {
+                  const { data: unitsData } = await supabase
+                    .from("property_units")
+                    .select("id, unit_number")
+                    .in("id", unitIds)
+                    .order("unit_number");
+                  allUnits = unitsData || [];
+                }
+
+                if (allUnits.length === 0 && c.unit_id) {
+                  const { data: fallbackUnit } = await supabase
+                    .from("property_units")
+                    .select("id, unit_number")
+                    .eq("id", c.unit_id)
+                    .maybeSingle();
+                  if (fallbackUnit) allUnits = [fallbackUnit];
+                }
+
+                return { ...c, all_units: allUnits, property_units: allUnits[0] || null };
+              })
+            );
+
             return {
               ...tenant,
-              contracts: contracts || [],
+              contracts: enriched,
             };
           })
         );
@@ -444,9 +474,9 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                           <div className="text-sm text-gray-700">
                             {tenant.properties?.name || "Unbekannt"}
                           </div>
-                          {currentContract?.property_units && (
+                          {currentContract?.all_units && currentContract.all_units.length > 0 && (
                             <div className="text-xs text-gray-500">
-                              {currentContract.property_units.unit_number}
+                              {currentContract.all_units.map((u) => u.unit_number).join(", ")}
                             </div>
                           )}
                         </td>
