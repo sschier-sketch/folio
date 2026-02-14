@@ -3,6 +3,8 @@ import { Check, Minus, Info, Sparkles } from "lucide-react";
 import { PLANS, COMPARISON_TABLE, calculateYearlySavings } from "../config/plans";
 import { withRef } from "../lib/referralTracking";
 import { useState } from "react";
+import TestimonialsSection from "../components/landing/TestimonialsSection";
+import FaqSection from "../components/landing/FaqSection";
 
 type Interval = "month" | "year";
 
@@ -176,6 +178,8 @@ export default function Pricing() {
         </div>
       </section>
 
+      <TestimonialsSection />
+
       <section className="py-16 px-6">
         <div className="max-w-[1200px] mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight text-center mb-4">
@@ -232,6 +236,8 @@ export default function Pricing() {
           </div>
         </div>
       </section>
+
+      <FaqSection pageSlug="pricing" />
 
       <section className="pb-20 px-6">
         <div className="max-w-[1200px] mx-auto">
