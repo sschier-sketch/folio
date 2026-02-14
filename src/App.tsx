@@ -23,7 +23,6 @@ import LandingPage from "./components/LandingPage";
 import { Admin } from "./pages/Admin";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
-import Support from "./pages/Support";
 import TenantPortalPage from "./pages/TenantPortalPage";
 import { AccountBanned } from "./pages/AccountBanned";
 import { supabase } from "./lib/supabase";
@@ -119,13 +118,13 @@ function App() {
           <Route path="/funktionen/dokumente" element={<Dokumente />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/preise" element={<Pricing />} />
-          <Route path="/support" element={<Support />} />
+          <Route path="/support" element={<Navigate to="/kontakt" replace />} />
           <Route path="/magazin" element={<Magazine />} />
           <Route path="/magazin/:slug" element={<MagazinePost />} />
           <Route path="/magazine" element={<Magazine />} />
           <Route path="/magazine/:slug" element={<MagazinePost />} />
+          <Route path="/login" element={<Login />} />
         </Route>
-        <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/reset-password/confirm" element={<ResetPassword />} />

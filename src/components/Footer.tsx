@@ -59,11 +59,11 @@ export default function Footer() {
               <li>
                 {" "}
                 <RefLink
-                  to="/support"
+                  to="/kontakt"
                   className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
                 >
                   {" "}
-                  {t("footer.support")}{" "}
+                  {language === "de" ? "Hilfe" : "Help"}{" "}
                 </RefLink>{" "}
               </li>{" "}
             </ul>{" "}

@@ -15,7 +15,7 @@ const UNTERNEHMEN_LINKS = [
   { label: 'Über uns', path: '/ueber-uns' },
   { label: 'Blog', path: '/magazin' },
   { label: 'Kontakt', path: '/kontakt' },
-  { label: 'Support', path: '/support' },
+  { label: 'Hilfe', path: '/kontakt' },
 ];
 
 const LEGAL_LINKS = [
@@ -60,7 +60,7 @@ export default function MarketingFooter() {
 
           <div className="col-span-1 md:col-span-2">
             <h4 className="text-xs font-semibold tracking-wider uppercase text-gray-400 mb-4">
-              Produkt
+              Ressourcen
             </h4>
             <ul className="space-y-2.5">
               {[
