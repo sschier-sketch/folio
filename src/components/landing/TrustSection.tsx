@@ -1,4 +1,3 @@
-import { ShieldCheck } from "lucide-react";
 import { RevealOnScroll } from "../common/RevealOnScroll";
 
 export default function TrustSection() {
@@ -28,14 +27,6 @@ export default function TrustSection() {
               alt="Entwickelt in Deutschland"
               className="h-32 w-auto object-contain"
             />
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-20 h-20 rounded-full bg-[#0a7c42]/10 flex items-center justify-center">
-                <ShieldCheck className="w-10 h-10 text-[#0a7c42]" strokeWidth={1.5} />
-              </div>
-              <span className="text-sm font-semibold text-gray-700 text-center leading-tight">
-                TLS-Verschl&uuml;sselung
-              </span>
-            </div>
           </div>
         </RevealOnScroll>
       </div>
