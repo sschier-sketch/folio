@@ -10,7 +10,6 @@ import {
   FolderOpen,
   ChevronDown,
   ChevronRight,
-  Calculator,
 } from 'lucide-react';
 import { RefLink } from '../common/RefLink';
 
@@ -34,12 +33,6 @@ const FEATURE_LINKS = [
     path: '/funktionen/kommunikation',
   },
   {
-    icon: Calculator,
-    title: 'Nebenkostenabrechnung',
-    subtitle: 'Abrechnungen in Minuten',
-    path: '/funktionen/nebenkostenabrechnung',
-  },
-  {
     icon: Receipt,
     title: 'Buchhaltung',
     subtitle: 'Finanzen & Steuern',
@@ -55,7 +48,7 @@ const FEATURE_LINKS = [
     icon: ClipboardCheck,
     title: 'Übergabeprotokoll',
     subtitle: 'Wohnungsübergaben dokumentieren',
-    path: '/funktionen/mietverwaltung',
+    path: '/funktionen/uebergabeprotokoll',
   },
 ];
 

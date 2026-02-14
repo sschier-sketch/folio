@@ -100,7 +100,7 @@ const OTHER_FEATURES = [
     icon: Building2,
     title: "Übergabeprotokolle",
     description: "Optimale Dokumentation für Ihre nächste Wohnungsübergabe.",
-    path: null,
+    path: "/funktionen/uebergabeprotokoll",
   },
 ];
 

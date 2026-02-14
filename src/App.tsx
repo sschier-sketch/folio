@@ -43,6 +43,7 @@ import Buchhaltung from "./pages/funktionen/Buchhaltung";
 import Dokumente from "./pages/funktionen/Dokumente";
 import Nebenkostenabrechnung from "./pages/funktionen/Nebenkostenabrechnung";
 import Mieterportal from "./pages/funktionen/Mieterportal";
+import Uebergabeprotokoll from "./pages/funktionen/Uebergabeprotokoll";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -120,6 +121,7 @@ function App() {
           <Route path="/funktionen/dokumente" element={<Dokumente />} />
           <Route path="/funktionen/nebenkostenabrechnung" element={<Nebenkostenabrechnung />} />
           <Route path="/funktionen/mieterportal" element={<Mieterportal />} />
+          <Route path="/funktionen/uebergabeprotokoll" element={<Uebergabeprotokoll />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/preise" element={<Pricing />} />
           <Route path="/support" element={<Navigate to="/kontakt" replace />} />

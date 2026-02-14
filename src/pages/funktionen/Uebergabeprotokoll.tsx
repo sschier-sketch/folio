@@ -5,145 +5,149 @@ import { RefLink } from "../../components/common/RefLink";
 import { RevealOnScroll } from "../../components/common/RevealOnScroll";
 import {
   ArrowLeft,
-  Building2,
-  Layers,
-  MapPin,
+  ClipboardList,
+  Gauge,
+  Key,
   Camera,
-  Wrench,
-  Users as UsersIcon,
+  FileDown,
+  AlertTriangle,
   CheckCircle2,
   ChevronDown,
+  Home,
   FolderOpen,
-  MessagesSquare,
   CreditCard,
   Calendar,
-  ClipboardCheck,
+  MessagesSquare,
+  BarChart3,
   LayoutDashboard,
   Shield,
   Sparkles,
   Zap,
   Laptop,
-  BarChart3,
-  Home,
-  TrendingUp,
-  Gauge,
+  Check,
 } from "lucide-react";
 
 const HERO_CHECKS = [
-  "Unbegrenzt Immobilien & Einheiten verwalten",
-  "Alle Objektdaten zentral an einem Ort",
-  "Wertentwicklung & Kennzahlen im Blick",
+  "Raum-für-Raum Dokumentation",
+  "Zählerstände & Schlüssel erfassen",
+  "PDF-Protokoll mit digitaler Unterschrift",
 ];
 
 const FEATURES = [
   {
-    icon: Building2,
-    title: "Multi-Objekt-Verwaltung",
+    icon: ClipboardList,
+    title: "Raum-für-Raum",
     description:
-      "Verwalten Sie beliebig viele Immobilien in einem Portfolio. Einzelwohnungen, Mehrfamilienhäuser oder gemischte Bestände.",
-  },
-  {
-    icon: Layers,
-    title: "Einheiten & Stellplätze",
-    description:
-      "Jede Immobilie mit individuellen Einheiten, Stellplätzen und Sondernutzungsrechten. Flächen und Ausstattung detailliert erfasst.",
+      "Dokumentieren Sie jeden Raum einzeln. Zustand von Boden, Wänden, Decke und Ausstattung systematisch erfasst.",
   },
   {
     icon: Gauge,
-    title: "Kennzahlen & Rendite",
+    title: "Zählerstände",
     description:
-      "Mieteinnahmen, Leerstand, Rendite und Cashflow je Objekt. Alle wichtigen Kennzahlen auf einen Blick.",
+      "Erfassen Sie Strom-, Gas-, Wasser- und Heizungszählerstände direkt im Protokoll. Keine Ablesung geht verloren.",
+  },
+  {
+    icon: Key,
+    title: "Schlüsselübergabe",
+    description:
+      "Dokumentieren Sie Art und Anzahl aller übergebenen Schlüssel. Vollständige Schlüsselhistorie je Einheit.",
   },
   {
     icon: Camera,
     title: "Fotodokumentation",
     description:
-      "Laden Sie Fotos zu jeder Immobilie und Einheit hoch. Dokumentieren Sie Zustand und Ausstattung visuell.",
+      "Hinterlegen Sie Fotos zu jedem Raum und jedem Mangel. Visuelle Beweissicherung für den Ernstfall.",
   },
   {
-    icon: Wrench,
-    title: "Ausstattungsmerkmale",
+    icon: FileDown,
+    title: "PDF-Export",
     description:
-      "Erfassen Sie Baujahr, Heizungsart, Energieausweis, Bodenbeläge und weitere Details systematisch.",
+      "Erstellen Sie per Klick ein professionelles PDF-Protokoll. Druckfertig und rechtsicher dokumentiert.",
   },
   {
-    icon: UsersIcon,
-    title: "Kontakte & Dienstleister",
+    icon: AlertTriangle,
+    title: "Mängeldokumentation",
     description:
-      "Verknüpfen Sie Hausverwaltungen, Handwerker und andere Ansprechpartner direkt mit Ihren Immobilien.",
+      "Erfassen Sie Mängel mit Beschreibung, Foto und Bewertung. Klar dokumentiert für spätere Kautionsabrechnung.",
   },
 ];
 
 const OTHER_FEATURES = [
+  { icon: Home, title: "Immobilienmanagement", description: "Alle Immobilien und Einheiten zentral verwalten.", path: "/funktionen/immobilienmanagement" },
   { icon: CreditCard, title: "Mietverwaltung", description: "Mietverträge, Zahlungen und Erhöhungen effizient verwalten.", path: "/funktionen/mietverwaltung" },
   { icon: FolderOpen, title: "Dokumentenmanagement", description: "Verwalten Sie Ihre Dokumente einfach & sicher in der Cloud.", path: "/funktionen/dokumente" },
   { icon: BarChart3, title: "Finanzmanagement", description: "Finanzen und Mieteinnahmen jederzeit im Blick behalten.", path: "/funktionen/buchhaltung" },
   { icon: MessagesSquare, title: "Mieterkommunikation", description: "Ihre gesamte Kommunikation zentral gebündelt.", path: "/funktionen/kommunikation" },
   { icon: Calendar, title: "Nebenkostenabrechnung", description: "Versandfertige Nebenkostenabrechnung in wenigen Minuten.", path: "/funktionen/nebenkostenabrechnung" },
-  { icon: ClipboardCheck, title: "Übergabeprotokolle", description: "Optimale Dokumentation für Ihre nächste Wohnungsübergabe.", path: "/funktionen/uebergabeprotokoll" },
 ];
 
 const FAQS = [
-  { question: "Wie viele Immobilien kann ich verwalten?", answer: "Unbegrenzt viele. Es gibt keine Beschränkung bei der Anzahl der Immobilien, Einheiten oder Stellplätze — weder im Basic- noch im Pro-Tarif." },
-  { question: "Kann ich verschiedene Immobilientypen verwalten?", answer: "Ja. Sie können Mietobjekte, Eigentumswohnungen (WEG) und gemischt genutzte Immobilien verwalten. Für jede Einheit legen Sie individuell fest, ob es sich um eine Miet- oder Eigentumseinheit handelt." },
-  { question: "Werden Wertentwicklungen automatisch erfasst?", answer: "Sie können Marktwerte manuell hinterlegen und über die Zeit dokumentieren. Die Werthistorie wird automatisch aufgezeichnet und lässt sich als Diagramm anzeigen." },
-  { question: "Kann ich Fotos zu meinen Immobilien hochladen?", answer: "Ja. Zu jeder Immobilie und Einheit können Sie beliebig viele Fotos hochladen. So dokumentieren Sie den Zustand Ihrer Objekte visuell und übersichtlich." },
+  { question: "Kann ich das Protokoll als PDF exportieren?", answer: "Ja. Per Klick erstellen Sie ein professionelles, druckfertiges PDF-Protokoll. Dieses enthält alle Räume, Mängel, Zählerstände und Schlüsselinformationen." },
+  { question: "Kann ich Fotos zum Protokoll hinzufügen?", answer: "Ja. Zu jedem Raum und jedem Mangel können Sie Fotos hinterlegen. Diese werden automatisch ins PDF-Protokoll übernommen." },
+  { question: "Werden Zählerstände gespeichert?", answer: "Ja. Alle erfassten Zählerstände werden dauerhaft gespeichert und sind jederzeit abrufbar. Sie können die Stände auch für die Nebenkostenabrechnung verwenden." },
+  { question: "Kann ich zwischen Einzug und Auszug unterscheiden?", answer: "Ja. Sie können für jede Übergabe festlegen, ob es sich um einen Einzug oder Auszug handelt. Beide Protokolle werden separat gespeichert und können verglichen werden." },
 ];
 
 const BENEFITS = [
-  { icon: LayoutDashboard, title: "Alles auf einen Blick", description: "Behalten Sie Ihr gesamtes Portfolio mit allen Einheiten, Mietern und Kennzahlen im Überblick." },
-  { icon: TrendingUp, title: "Wertentwicklung verfolgen", description: "Dokumentieren Sie Marktwerte und verfolgen Sie die Entwicklung Ihres Portfolios über die Zeit." },
-  { icon: Shield, title: "Sicher verwalten", description: "Vertrauen Sie auf maximale Datensicherheit, DSGVO-Konformität und volle Kontrolle." },
-  { icon: Sparkles, title: "Einfach bedienbar", description: "Intuitive Oberfläche, die Immobilienverwaltung einfacher und angenehmer macht." },
-  { icon: Zap, title: "Weniger Aufwand", description: "Alle Objektdaten zentral gepflegt. Keine doppelte Dateneingabe mehr." },
-  { icon: Laptop, title: "Flexibel arbeiten", description: "Greifen Sie jederzeit und von überall auf Ihre Immobiliendaten zu." },
+  { icon: LayoutDashboard, title: "Alles auf einen Blick", description: "Alle Übergaben mit Räumen, Mängeln und Zählerständen übersichtlich dokumentiert." },
+  { icon: Shield, title: "Rechtssicher dokumentiert", description: "Lückenlose Protokolle schützen Sie bei Streitigkeiten um Kaution und Schäden." },
+  { icon: Camera, title: "Visuelle Beweissicherung", description: "Fotos zu jedem Mangel dokumentieren den Zustand Ihrer Immobilie eindeutig." },
+  { icon: Sparkles, title: "Einfach bedienbar", description: "Geführte Dokumentation Raum für Raum — keine Vorkenntnisse nötig." },
+  { icon: Zap, title: "In Minuten erstellt", description: "Strukturierte Eingabemasken beschleunigen die Dokumentation erheblich." },
+  { icon: Laptop, title: "Flexibel arbeiten", description: "Erstellen Sie Protokolle direkt vor Ort auf Ihrem Tablet oder Smartphone." },
 ];
 
-const MOCK_PROPERTIES = [
-  { name: "Musterstraße 10", city: "10115 Berlin", units: 4, occupancy: "100%", income: "3.740,00 €", type: "Mehrfamilienhaus", occColor: "#22c55e", occBg: "#f0fdf4" },
-  { name: "Hauptstraße 25", city: "80331 München", units: 6, occupancy: "83%", income: "5.890,00 €", type: "Mehrfamilienhaus", occColor: "#f59e0b", occBg: "#fffbeb" },
-  { name: "Lindenallee 3", city: "20095 Hamburg", units: 1, occupancy: "100%", income: "1.350,00 €", type: "Eigentumswohnung", occColor: "#22c55e", occBg: "#f0fdf4" },
+const MOCK_ROOMS = [
+  { name: "Wohnzimmer", status: "Keine Mängel", color: "#22c55e", bg: "#f0fdf4" },
+  { name: "Küche", status: "1 Mangel", color: "#f59e0b", bg: "#fffbeb" },
+  { name: "Bad", status: "Keine Mängel", color: "#22c55e", bg: "#f0fdf4" },
+  { name: "Schlafzimmer", status: "Keine Mängel", color: "#22c55e", bg: "#f0fdf4" },
 ];
 
-function PropertyTableMockup() {
+function ProtocolMockup() {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-900/[0.08] overflow-hidden">
       <div className="px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="text-base font-bold text-gray-900">Immobilien</h3>
-          <span className="text-sm text-gray-400">3 Objekte</span>
+          <h3 className="text-base font-bold text-gray-900">Übergabeprotokoll</h3>
+          <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full" style={{ color: "#3c8af7", backgroundColor: "#EEF4FF" }}>Einzug</span>
         </div>
-        <div className="h-9 px-4 rounded-lg bg-gray-900 text-white text-sm font-semibold flex items-center gap-1.5">
-          <span className="text-base leading-none">+</span>
-          Neue Immobilie
+      </div>
+      <div className="border-t border-gray-100 px-6 py-4">
+        <div className="flex items-center gap-6 text-sm">
+          <div>
+            <span className="text-gray-400 text-xs block">Objekt</span>
+            <span className="font-semibold text-gray-900">Musterstr. 10, EG links</span>
+          </div>
+          <div>
+            <span className="text-gray-400 text-xs block">Mieter</span>
+            <span className="font-semibold text-gray-900">Sarah Meyer</span>
+          </div>
+          <div>
+            <span className="text-gray-400 text-xs block">Datum</span>
+            <span className="font-semibold text-gray-900">01.03.2025</span>
+          </div>
         </div>
       </div>
       <div className="border-t border-gray-100">
-        <div className="grid grid-cols-[1.5fr_0.6fr_0.7fr_1fr_0.8fr] px-6 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-          <span>Objekt</span>
-          <span className="text-center">Einheiten</span>
-          <span className="text-center">Auslastung</span>
-          <span className="text-right">Mieteinnahmen</span>
-          <span className="text-right">Typ</span>
-        </div>
-        {MOCK_PROPERTIES.map((p, i) => (
-          <div key={p.name} className={`grid grid-cols-[1.5fr_0.6fr_0.7fr_1fr_0.8fr] px-6 py-4 items-center ${i < MOCK_PROPERTIES.length - 1 ? "border-b border-gray-100" : ""}`}>
-            <div>
-              <span className="text-sm font-semibold text-gray-900 block">{p.name}</span>
-              <span className="text-xs text-gray-400">{p.city}</span>
+        <div className="px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Räume</div>
+        {MOCK_ROOMS.map((room, i) => (
+          <div key={room.name} className={`flex items-center justify-between px-6 py-3.5 ${i < MOCK_ROOMS.length - 1 ? "border-b border-gray-100" : ""}`}>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#EEF4FF] border border-[#DDE7FF] flex items-center justify-center">
+                <Check className="w-3.5 h-3.5 text-gray-600" strokeWidth={1.5} />
+              </div>
+              <span className="text-sm font-semibold text-gray-900">{room.name}</span>
             </div>
-            <span className="text-sm text-gray-600 text-center">{p.units}</span>
-            <div className="flex justify-center">
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full" style={{ color: p.occColor, backgroundColor: p.occBg }}>{p.occupancy}</span>
-            </div>
-            <span className="text-sm font-semibold text-gray-900 text-right">{p.income}</span>
-            <span className="text-xs text-gray-400 text-right">{p.type}</span>
+            <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full" style={{ color: room.color, backgroundColor: room.bg }}>{room.status}</span>
           </div>
         ))}
       </div>
       <div className="border-t border-gray-100 bg-gray-50 px-6 py-3.5 flex items-center justify-between">
-        <span className="text-sm text-gray-500 font-medium">Gesamt-Mieteinnahmen</span>
-        <span className="text-sm font-bold text-gray-900">10.980,00 €/Monat</span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-500 font-medium">Zählerstände: <span className="font-bold text-gray-900">3</span></span>
+          <span className="text-sm text-gray-500 font-medium">Schlüssel: <span className="font-bold text-gray-900">2</span></span>
+        </div>
       </div>
     </div>
   );
@@ -164,7 +168,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-export default function Immobilienmanagement() {
+export default function Uebergabeprotokoll() {
   const navigate = useNavigate();
   const goToSignup = () => navigate(withRef("/signup"));
 
@@ -183,12 +187,11 @@ export default function Immobilienmanagement() {
                 <span className="text-sm font-medium text-[#3c8af7]">Kerntechnologie</span>
               </div>
               <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
-                Ihr gesamtes Portfolio{" "}
-                <span className="text-[#3c8af7]">digital verwaltet</span>
+                Wohnungsübergabe{" "}
+                <span className="text-[#3c8af7]">professionell dokumentiert</span>
               </h1>
               <p className="mt-6 text-lg sm:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
-                Behalten Sie den Überblick über alle Ihre Immobilien, Einheiten und Stellplätze.
-                Kennzahlen, Ausstattung und Kontakte &ndash; alles zentral an einem Ort.
+                Kratzer an der Wand, fehlende Schlüssel, strittige Zählerstände &mdash; ohne lückenloses Protokoll wird jede Übergabe zum Risiko. Mit rentably dokumentieren Sie alles strukturiert und rechtssicher.
               </p>
               <ul className="mt-6 space-y-2.5">
                 {HERO_CHECKS.map((item) => (
@@ -208,7 +211,7 @@ export default function Immobilienmanagement() {
               </div>
             </RevealOnScroll>
             <RevealOnScroll delay={100} className="hidden lg:block">
-              <PropertyTableMockup />
+              <ProtocolMockup />
             </RevealOnScroll>
           </div>
         </div>
@@ -220,10 +223,10 @@ export default function Immobilienmanagement() {
             <div className="text-center mb-16">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">Leistungsumfang</p>
               <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-                Professionelle Immobilienverwaltung
+                Lückenlose Übergabeprotokolle
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
-                Vom Einzelobjekt bis zum großen Portfolio &ndash; rentably passt sich Ihren Anforderungen an.
+                Vom Raumzustand bis zum letzten Schlüssel &ndash; rentably dokumentiert jede Übergabe vollständig und rechtssicher.
               </p>
             </div>
           </RevealOnScroll>
@@ -249,7 +252,7 @@ export default function Immobilienmanagement() {
             <div className="text-center mb-16">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">Praxisbeispiel</p>
               <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-                So verwalten Sie Ihre Immobilien mit rentably
+                So dokumentieren Sie eine Wohnungsübergabe
               </h2>
             </div>
           </RevealOnScroll>
@@ -258,81 +261,70 @@ export default function Immobilienmanagement() {
               <div className="bg-gradient-to-r from-[#3c8af7] to-[#3579de] p-8 text-white">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <Home className="w-6 h-6" />
+                    <ClipboardList className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">Musterstraße 10</h3>
-                    <p className="text-white/80 text-sm">10115 Berlin &middot; Mehrfamilienhaus</p>
+                    <h3 className="text-xl font-bold">Übergabeprotokoll &mdash; Einzug</h3>
+                    <p className="text-white/80 text-sm">Musterstraße 10, EG links</p>
                   </div>
                 </div>
               </div>
               <div className="p-8">
-                <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div className="grid md:grid-cols-2 gap-8">
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Objektdaten</h4>
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Küche</h4>
                     <div className="space-y-3">
                       {[
-                        ["Baujahr", "1998"],
-                        ["Gesamtfläche", "320 m\u00B2"],
-                        ["Einheiten", "4 Wohnungen + 2 Stellplätze"],
-                        ["Heizungsart", "Gaszentralheizung"],
-                      ].map(([label, value], idx) => (
-                        <div key={label} className={`flex justify-between py-2 ${idx < 3 ? "border-b border-gray-100" : ""}`}>
-                          <span className="text-gray-600">{label}</span>
-                          <span className="font-semibold text-gray-900">{value}</span>
+                        { item: "Boden", status: "Gut", isMangel: false },
+                        { item: "Wände", status: "Mangel", isMangel: true, detail: "Kratzer an der Wand neben Fenster" },
+                        { item: "Decke", status: "Gut", isMangel: false },
+                        { item: "Fenster", status: "Gut", isMangel: false },
+                      ].map((entry, idx) => (
+                        <div key={entry.item} className={`py-2 ${idx < 3 ? "border-b border-gray-100" : ""}`}>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">{entry.item}</span>
+                            <span className={`inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full ${entry.isMangel ? "text-amber-600 bg-amber-50" : "text-green-600 bg-green-50"}`}>
+                              {entry.status}
+                            </span>
+                          </div>
+                          {entry.detail && (
+                            <p className="text-xs text-amber-600 mt-1">{entry.detail}</p>
+                          )}
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Kennzahlen</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Mieteinnahmen</span>
-                        <span className="font-semibold text-gray-900">3.740 € / Monat</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Auslastung</span>
-                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600">
-                          <span className="w-2 h-2 rounded-full bg-green-600" />100%
-                        </span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Kaufpreis</span>
-                        <span className="font-semibold text-gray-900">520.000 €</span>
-                      </div>
-                      <div className="flex justify-between py-2">
-                        <span className="text-gray-600">Bruttorendite</span>
-                        <span className="font-semibold text-emerald-600">8,63 %</span>
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Zählerstände</h4>
+                      <div className="space-y-3">
+                        {[
+                          ["Strom", "45.892 kWh"],
+                          ["Gas", "12.340 m\u00B3"],
+                          ["Wasser", "156,8 m\u00B3"],
+                        ].map(([label, value], idx) => (
+                          <div key={label} className={`flex justify-between py-2 ${idx < 2 ? "border-b border-gray-100" : ""}`}>
+                            <span className="text-gray-600">{label}</span>
+                            <span className="font-semibold text-gray-900">{value}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div className="bg-[#f8fafc] rounded-xl p-6 border border-gray-100">
-                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-5">Einheiten im Überblick</h4>
-                  <div className="space-y-3">
-                    {[
-                      { unit: "EG links", tenant: "Sarah Meyer", size: "68 m\u00B2", rent: "950 €" },
-                      { unit: "EG rechts", tenant: "Thomas Klein", size: "72 m\u00B2", rent: "1.020 €" },
-                      { unit: "1. OG links", tenant: "Lisa Wagner", size: "65 m\u00B2", rent: "890 €" },
-                      { unit: "1. OG rechts", tenant: "Michael Hoffmann", size: "62 m\u00B2", rent: "880 €" },
-                    ].map((u) => (
-                      <div key={u.unit} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-[#EEF4FF] border border-[#DDE7FF] flex items-center justify-center">
-                            <MapPin className="w-3.5 h-3.5 text-gray-600" strokeWidth={1.5} />
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Schlüssel</h4>
+                      <div className="space-y-3">
+                        {[
+                          ["Haustür", "2 Stk"],
+                          ["Wohnungstür", "2 Stk"],
+                          ["Briefkasten", "1 Stk"],
+                        ].map(([label, value], idx) => (
+                          <div key={label} className={`flex justify-between py-2 ${idx < 2 ? "border-b border-gray-100" : ""}`}>
+                            <span className="text-gray-600">{label}</span>
+                            <span className="font-semibold text-gray-900">{value}</span>
                           </div>
-                          <div>
-                            <span className="text-sm font-semibold text-gray-900">{u.unit}</span>
-                            <span className="text-xs text-gray-400 ml-2">{u.size}</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-sm text-gray-600">{u.tenant}</span>
-                          <span className="text-sm font-semibold text-gray-900 ml-4">{u.rent}</span>
-                        </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -363,8 +355,8 @@ export default function Immobilienmanagement() {
           <RevealOnScroll>
             <div className="text-center mb-14">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">Vorteile</p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">Darum verwalten Eigentümer mit rentably</h2>
-              <p className="text-gray-500 max-w-[700px] mx-auto leading-relaxed">Ob ein Objekt oder hundert Einheiten &ndash; rentably gibt Ihnen den Überblick und die Werkzeuge für professionelle Immobilienverwaltung.</p>
+              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">Darum dokumentieren Vermieter mit rentably</h2>
+              <p className="text-gray-500 max-w-[700px] mx-auto leading-relaxed">Ob Einzug oder Auszug &ndash; rentably sorgt für lückenlose, rechtssichere Übergabeprotokolle in wenigen Minuten.</p>
             </div>
           </RevealOnScroll>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
@@ -420,7 +412,7 @@ export default function Immobilienmanagement() {
         <div className="max-w-[800px] mx-auto">
           <RevealOnScroll>
             <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">Häufig gestellte Fragen</h2>
-            <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">Alles Wichtige über das Immobilienmanagement mit rentably auf einen Blick.</p>
+            <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">Alles Wichtige über Übergabeprotokolle mit rentably auf einen Blick.</p>
           </RevealOnScroll>
           <RevealOnScroll delay={100}>
             <div className="bg-white border border-gray-200 rounded-2xl px-8">
@@ -433,8 +425,8 @@ export default function Immobilienmanagement() {
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight mb-4">Bereit, Ihre Immobilien digital zu verwalten?</h2>
-            <p className="text-gray-500 mb-10 max-w-lg mx-auto">Registrieren Sie sich kostenlos und verwalten Sie Ihr gesamtes Portfolio ab sofort digital &ndash; ohne Kreditkarte.</p>
+            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight mb-4">Bereit für professionelle Wohnungsübergaben?</h2>
+            <p className="text-gray-500 mb-10 max-w-lg mx-auto">Registrieren Sie sich kostenlos und dokumentieren Sie Ihre nächste Übergabe digital und rechtssicher &mdash; ohne Kreditkarte.</p>
             <button onClick={goToSignup} className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors">Jetzt kostenlos starten</button>
           </div>
         </RevealOnScroll>

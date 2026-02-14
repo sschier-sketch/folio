@@ -138,7 +138,7 @@ const OTHER_FEATURES = [
     title: "Übergabeprotokolle",
     description:
       "Optimale Dokumentation für Ihre nächste Wohnungsübergabe.",
-    path: null,
+    path: "/funktionen/uebergabeprotokoll",
   },
 ];
 
