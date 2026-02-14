@@ -69,7 +69,7 @@ const HIGHLIGHT_CARDS = [
   {
     title: 'Mieterportal',
     subtitle: 'Self-Service für Mieter',
-    path: '/funktionen/kommunikation',
+    path: '/funktionen/mieterportal',
     visual: 'portal',
   },
   {
