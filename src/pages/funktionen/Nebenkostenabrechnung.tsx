@@ -459,8 +459,9 @@ export default function Nebenkostenabrechnung() {
                   Kerntechnologie
                 </span>
               </div>
-              <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
-                Nebenkostenabrechnung{" "}
+              <h1 className="text-[32px] sm:text-[40px] lg:text-[48px] font-bold text-gray-900 leading-[1.1] tracking-tight">
+                Nebenkosten&shy;abrechnung{" "}
+                <br className="hidden sm:block" />
                 <span className="text-[#3c8af7]">in Minuten erstellt</span>
               </h1>
               <p className="mt-6 text-lg sm:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">

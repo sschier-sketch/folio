@@ -10,6 +10,7 @@ import {
   FolderOpen,
   ChevronDown,
   ChevronRight,
+  Calculator,
 } from 'lucide-react';
 import { RefLink } from '../common/RefLink';
 
@@ -31,6 +32,12 @@ const FEATURE_LINKS = [
     title: 'Mieterkommunikation',
     subtitle: 'E-Mails & Vorlagen',
     path: '/funktionen/kommunikation',
+  },
+  {
+    icon: Calculator,
+    title: 'Nebenkostenabrechnung',
+    subtitle: 'Abrechnungen in Minuten',
+    path: '/funktionen/nebenkostenabrechnung',
   },
   {
     icon: Receipt,
@@ -56,7 +63,7 @@ const HIGHLIGHT_CARDS = [
   {
     title: 'Nebenkosten',
     subtitle: 'Rechtssichere Abrechnungen',
-    path: '/funktionen/buchhaltung',
+    path: '/funktionen/nebenkostenabrechnung',
     visual: 'billing',
   },
   {
