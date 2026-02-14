@@ -32,9 +32,9 @@ import {
 } from "lucide-react";
 
 const HERO_CHECKS = [
-  "Eigenes Mieterportal mit Login fur jeden Mieter",
-  "Dokumente, Kommunikation & Zahlerstande zentral",
-  "Weniger Ruckfragen, mehr Transparenz",
+  "Eigenes Mieterportal mit Login für jeden Mieter",
+  "Dokumente, Kommunikation & Zählerstände zentral",
+  "Weniger Rückfragen, mehr Transparenz",
 ];
 
 const FEATURES = [
@@ -48,31 +48,31 @@ const FEATURES = [
     icon: FileText,
     title: "Dokumente einsehen",
     description:
-      "Mietvertrage, Nebenkostenabrechnungen und weitere Dokumente stellen Sie digital bereit. Ihre Mieter greifen jederzeit darauf zu.",
+      "Mietverträge, Nebenkostenabrechnungen und weitere Dokumente stellen Sie digital bereit. Ihre Mieter greifen jederzeit darauf zu.",
   },
   {
     icon: MessageSquare,
     title: "Ticket-System",
     description:
-      "Mieter melden Anliegen uber ein strukturiertes Ticket-System. Sie behalten den Uberblick und antworten direkt aus rentably.",
+      "Mieter melden Anliegen über ein strukturiertes Ticket-System. Sie behalten den Überblick und antworten direkt aus rentably.",
   },
   {
     icon: Gauge,
-    title: "Zahlerstande melden",
+    title: "Zählerstände melden",
     description:
-      "Mieter erfassen Zahlerstande selbststandig im Portal. Die Werte fliessen direkt in Ihre Nebenkostenabrechnung ein.",
+      "Mieter erfassen Zählerstände selbstständig im Portal. Die Werte fließen direkt in Ihre Nebenkostenabrechnung ein.",
   },
   {
     icon: Bell,
     title: "Automatische Benachrichtigungen",
     description:
-      "Bei neuen Dokumenten, Nachrichten oder Terminanderungen werden Ihre Mieter automatisch per E-Mail informiert.",
+      "Bei neuen Dokumenten, Nachrichten oder Terminänderungen werden Ihre Mieter automatisch per E-Mail informiert.",
   },
   {
     icon: KeyRound,
     title: "Sicherer Zugang",
     description:
-      "Jeder Mieter erhalt einen individuellen, passwortgeschutzten Zugang. Sie bestimmen, welche Informationen sichtbar sind.",
+      "Jeder Mieter erhält einen individuellen, passwortgeschützten Zugang. Sie bestimmen, welche Informationen sichtbar sind.",
   },
 ];
 
@@ -81,19 +81,19 @@ const STEPS = [
     step: "01",
     title: "Portal aktivieren",
     description:
-      "Aktivieren Sie das Mieterportal fur einen Mieter mit einem Klick. Eine Einladungs-E-Mail mit Zugangsdaten wird automatisch versendet.",
+      "Aktivieren Sie das Mieterportal für einen Mieter mit einem Klick. Eine Einladungs-E-Mail mit Zugangsdaten wird automatisch versendet.",
   },
   {
     step: "02",
     title: "Dokumente & Daten freigeben",
     description:
-      "Wahlen Sie, welche Dokumente und Informationen Ihr Mieter im Portal sehen soll. Mietvertrage, Abrechnungen und mehr.",
+      "Wählen Sie, welche Dokumente und Informationen Ihr Mieter im Portal sehen soll. Mietverträge, Abrechnungen und mehr.",
   },
   {
     step: "03",
     title: "Mieter nutzt Self-Service",
     description:
-      "Ihr Mieter meldet sich an, sieht seine Dokumente, reicht Tickets ein und meldet Zahlerstande. Alles digital, alles nachvollziehbar.",
+      "Ihr Mieter meldet sich an, sieht seine Dokumente, reicht Tickets ein und meldet Zählerstände. Alles digital, alles nachvollziehbar.",
   },
 ];
 
@@ -109,7 +109,7 @@ const OTHER_FEATURES = [
     icon: Users,
     title: "Mietverwaltung",
     description:
-      "Mietvertrage, Zahlungen und Erhohungen effizient verwalten.",
+      "Mietverträge, Zahlungen und Erhöhungen effizient verwalten.",
     path: "/funktionen/mietverwaltung",
   },
   {
@@ -137,62 +137,62 @@ const OTHER_FEATURES = [
     icon: Receipt,
     title: "Buchhaltung",
     description:
-      "Einnahmen, Ausgaben und Steuern ubersichtlich verwalten.",
+      "Einnahmen, Ausgaben und Steuern übersichtlich verwalten.",
     path: "/funktionen/buchhaltung",
   },
 ];
 
 const FAQS = [
   {
-    question: "Wie aktiviere ich das Mieterportal fur einen Mieter?",
+    question: "Wie aktiviere ich das Mieterportal für einen Mieter?",
     answer:
-      "Offnen Sie den gewunschten Mieter in der Mietverwaltung und klicken Sie auf 'Portal aktivieren'. rentably versendet automatisch eine Einladungs-E-Mail mit den Zugangsdaten an Ihren Mieter.",
+      "Öffnen Sie den gewünschten Mieter in der Mietverwaltung und klicken Sie auf 'Portal aktivieren'. rentably versendet automatisch eine Einladungs-E-Mail mit den Zugangsdaten an Ihren Mieter.",
   },
   {
     question: "Welche Informationen sieht mein Mieter im Portal?",
     answer:
-      "Ihr Mieter sieht sein persoenliches Dashboard mit Vertragsinformationen, freigegebene Dokumente wie Mietvertrag und Nebenkostenabrechnung, seine Kommunikation mit Ihnen uber das Ticket-System sowie die Moeglichkeit, Zahlerstande zu melden.",
+      "Ihr Mieter sieht sein persönliches Dashboard mit Vertragsinformationen, freigegebene Dokumente wie Mietvertrag und Nebenkostenabrechnung, seine Kommunikation mit Ihnen über das Ticket-System sowie die Möglichkeit, Zählerstände zu melden.",
   },
   {
     question: "Ist das Portal sicher?",
     answer:
-      "Ja. Jeder Mieter erhalt einen individuellen, passwortgeschutzten Zugang. Die Datenubertragung ist verschlusselt und die Datenhaltung erfolgt DSGVO-konform auf deutschen Servern.",
+      "Ja. Jeder Mieter erhält einen individuellen, passwortgeschützten Zugang. Die Datenübertragung ist verschlüsselt und die Datenhaltung erfolgt DSGVO-konform auf deutschen Servern.",
   },
   {
-    question: "Konnen Mieter auch Reparaturen melden?",
+    question: "Können Mieter auch Reparaturen melden?",
     answer:
-      "Ja. Uber das integrierte Ticket-System konnen Mieter Schadensmeldungen, Reparaturanfragen und andere Anliegen einreichen. Sie erhalten eine Benachrichtigung und konnen direkt aus rentably antworten.",
+      "Ja. Über das integrierte Ticket-System können Mieter Schadensmeldungen, Reparaturanfragen und andere Anliegen einreichen. Sie erhalten eine Benachrichtigung und können direkt aus rentably antworten.",
   },
   {
-    question: "Wie melden Mieter ihre Zahlerstande?",
+    question: "Wie melden Mieter ihre Zählerstände?",
     answer:
-      "Im Bereich 'Zahlerstande' des Portals konnen Mieter ihre aktuellen Zahlerstande fur Strom, Wasser, Gas und weitere Zahler eintragen. Die Werte werden automatisch Ihrer Immobilie zugeordnet und fliessen in die Nebenkostenabrechnung ein.",
+      "Im Bereich 'Zählerstände' des Portals können Mieter ihre aktuellen Zählerstände für Strom, Wasser, Gas und weitere Zähler eintragen. Die Werte werden automatisch Ihrer Immobilie zugeordnet und fließen in die Nebenkostenabrechnung ein.",
   },
   {
     question: "Kostet das Mieterportal extra?",
     answer:
-      "Das Mieterportal ist in allen rentably Pro-Planen enthalten. Es fallen keine zusatzlichen Kosten pro Mieter oder pro Zugang an.",
+      "Das Mieterportal ist in allen rentably Pro-Plänen enthalten. Es fallen keine zusätzlichen Kosten pro Mieter oder pro Zugang an.",
   },
 ];
 
 const BENEFITS = [
   {
     icon: Clock,
-    title: "Weniger Ruckfragen",
+    title: "Weniger Rückfragen",
     description:
-      "Mieter finden Vertragsdaten, Dokumente und Abrechnungen selbst. Sie sparen Zeit fur Telefonate und E-Mails.",
+      "Mieter finden Vertragsdaten, Dokumente und Abrechnungen selbst. Sie sparen Zeit für Telefonate und E-Mails.",
   },
   {
     icon: Eye,
     title: "Maximale Transparenz",
     description:
-      "Alle Informationen sind fur Ihre Mieter jederzeit einsehbar. Das schafft Vertrauen und reduziert Konflikte.",
+      "Alle Informationen sind für Ihre Mieter jederzeit einsehbar. Das schafft Vertrauen und reduziert Konflikte.",
   },
   {
     icon: Shield,
     title: "DSGVO-konform",
     description:
-      "Sicherer Zugang, verschlusselte Datenubertragung und Hosting auf deutschen Servern. Datenschutz inklusive.",
+      "Sicherer Zugang, verschlüsselte Datenübertragung und Hosting auf deutschen Servern. Datenschutz inklusive.",
   },
   {
     icon: Sparkles,
@@ -204,13 +204,13 @@ const BENEFITS = [
     icon: Zap,
     title: "Automatisierte Prozesse",
     description:
-      "Zahlerstande, Dokumente und Benachrichtigungen laufen automatisch. Weniger manueller Aufwand fur Sie.",
+      "Zählerstände, Dokumente und Benachrichtigungen laufen automatisch. Weniger manueller Aufwand für Sie.",
   },
   {
     icon: Laptop,
-    title: "Von uberall erreichbar",
+    title: "Von überall erreichbar",
     description:
-      "Ihre Mieter greifen von jedem Gerat auf das Portal zu. Ob Smartphone, Tablet oder Desktop.",
+      "Ihre Mieter greifen von jedem Gerät auf das Portal zu. Ob Smartphone, Tablet oder Desktop.",
   },
 ];
 
@@ -248,7 +248,7 @@ function PortalMockup() {
               { icon: Home, label: "Dashboard", active: true },
               { icon: FileText, label: "Dokumente", active: false },
               { icon: MessageSquare, label: "Nachrichten", active: false },
-              { icon: Gauge, label: "Zahlerstande", active: false },
+              { icon: Gauge, label: "Zählerstände", active: false },
             ].map((item) => (
               <div
                 key={item.label}
@@ -278,11 +278,11 @@ function PortalMockup() {
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="bg-[#EEF4FF] rounded-xl p-3.5 border border-[#DDE7FF]">
               <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                Nachste Zahlung
+                Nächste Zahlung
               </p>
               <p className="text-lg font-bold text-gray-900">850,00 &euro;</p>
               <p className="text-[10px] text-gray-500 mt-0.5">
-                Fallig am 01.03.2026
+                Fällig am 01.03.2026
               </p>
             </div>
             <div className="bg-white rounded-xl p-3.5 border border-gray-200">
@@ -423,7 +423,7 @@ function FeatureShowcase() {
       icon: FileText,
       title: "Dokumente digital bereitstellen",
       description:
-        "Laden Sie Mietvertrage, Abrechnungen und Hausordnungen hoch und teilen Sie diese mit einem Klick. Ihre Mieter greifen jederzeit darauf zu.",
+        "Laden Sie Mietverträge, Abrechnungen und Hausordnungen hoch und teilen Sie diese mit einem Klick. Ihre Mieter greifen jederzeit darauf zu.",
       visual: (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
@@ -436,7 +436,7 @@ function FeatureShowcase() {
             { name: "Mietvertrag_2023.pdf", size: "245 KB", shared: true },
             { name: "NK-Abrechnung_2024.pdf", size: "1.2 MB", shared: true },
             { name: "Hausordnung.pdf", size: "89 KB", shared: true },
-            { name: "Wohnungsuebergabe.pdf", size: "3.1 MB", shared: false },
+            { name: "Wohnungsübergabe.pdf", size: "3.1 MB", shared: false },
           ].map((doc, i) => (
             <div
               key={doc.name}
@@ -474,7 +474,7 @@ function FeatureShowcase() {
       icon: MessageSquare,
       title: "Strukturierte Kommunikation",
       description:
-        "Schluss mit E-Mail-Chaos. Das Ticket-System bundelt alle Anfragen. Mieter melden Anliegen, Sie antworten direkt aus rentably.",
+        "Schluss mit E-Mail-Chaos. Das Ticket-System bündelt alle Anfragen. Mieter melden Anliegen, Sie antworten direkt aus rentably.",
       visual: (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
@@ -500,7 +500,7 @@ function FeatureShowcase() {
                   </p>
                   <p className="text-sm text-gray-600">
                     Die Heizung im Bad funktioniert seit gestern nicht mehr.
-                    Konnen Sie bitte einen Handwerker schicken?
+                    Können Sie bitte einen Handwerker schicken?
                   </p>
                 </div>
                 <p className="text-[10px] text-gray-400 mt-1.5 ml-1">
@@ -516,7 +516,7 @@ function FeatureShowcase() {
                       Sie
                     </p>
                     <p className="text-sm text-white">
-                      Danke fur die Meldung. Ich habe den Handwerker
+                      Danke für die Meldung. Ich habe den Handwerker
                       kontaktiert. Er kommt morgen zwischen 10 und 12 Uhr.
                     </p>
                   </div>
@@ -535,15 +535,15 @@ function FeatureShowcase() {
     },
     {
       icon: Gauge,
-      title: "Zahlerstande digital erfassen",
+      title: "Zählerstände digital erfassen",
       description:
-        "Mieter tragen ihre Zahlerstande direkt im Portal ein. Die Werte werden automatisch Ihrer Immobilie zugeordnet und stehen fur die Nebenkostenabrechnung bereit.",
+        "Mieter tragen ihre Zählerstände direkt im Portal ein. Die Werte werden automatisch Ihrer Immobilie zugeordnet und stehen für die Nebenkostenabrechnung bereit.",
       visual: (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
             <Gauge className="w-4 h-4 text-gray-400" />
             <span className="text-sm font-semibold text-gray-900">
-              Zahlerstande melden
+              Zählerstände melden
             </span>
           </div>
           <div className="p-5 space-y-4">
@@ -605,7 +605,7 @@ function FeatureShowcase() {
             ))}
             <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#3c8af7] text-white text-sm font-semibold">
               <Send className="w-3.5 h-3.5" />
-              Zahlerstande absenden
+              Zählerstände absenden
             </button>
           </div>
         </div>
@@ -846,13 +846,13 @@ export default function Mieterportal() {
                     {[
                       {
                         icon: Home,
-                        label: "Persoenliches Dashboard",
+                        label: "Persönliches Dashboard",
                         desc: "Alle Infos auf einen Blick",
                       },
                       {
                         icon: FileText,
                         label: "Dokumenten-Zugriff",
-                        desc: "Vertrage, Abrechnungen & mehr",
+                        desc: "Verträge, Abrechnungen & mehr",
                       },
                       {
                         icon: MessageSquare,
@@ -861,7 +861,7 @@ export default function Mieterportal() {
                       },
                       {
                         icon: Gauge,
-                        label: "Zahlerstande erfassen",
+                        label: "Zählerstände erfassen",
                         desc: "Digital & automatisch zugeordnet",
                       },
                       {
@@ -872,7 +872,7 @@ export default function Mieterportal() {
                       {
                         icon: Shield,
                         label: "Sicherer Zugang",
-                        desc: "Passwortgeschutzt & verschlusselt",
+                        desc: "Passwortgeschützt & verschlüsselt",
                       },
                     ].map((item) => (
                       <div
