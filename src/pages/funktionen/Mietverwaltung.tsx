@@ -94,7 +94,7 @@ const OTHER_FEATURES = [
     icon: Calendar,
     title: "Nebenkostenabrechnung",
     description: "Versandfertige Nebenkostenabrechnung in wenigen Minuten.",
-    path: "/funktionen/buchhaltung",
+    path: "/funktionen/nebenkostenabrechnung",
   },
   {
     icon: Building2,

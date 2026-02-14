@@ -41,6 +41,7 @@ import Immobilienmanagement from "./pages/funktionen/Immobilienmanagement";
 import Kommunikation from "./pages/funktionen/Kommunikation";
 import Buchhaltung from "./pages/funktionen/Buchhaltung";
 import Dokumente from "./pages/funktionen/Dokumente";
+import Nebenkostenabrechnung from "./pages/funktionen/Nebenkostenabrechnung";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -116,6 +117,7 @@ function App() {
           <Route path="/funktionen/kommunikation" element={<Kommunikation />} />
           <Route path="/funktionen/buchhaltung" element={<Buchhaltung />} />
           <Route path="/funktionen/dokumente" element={<Dokumente />} />
+          <Route path="/funktionen/nebenkostenabrechnung" element={<Nebenkostenabrechnung />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/preise" element={<Pricing />} />
           <Route path="/support" element={<Navigate to="/kontakt" replace />} />
