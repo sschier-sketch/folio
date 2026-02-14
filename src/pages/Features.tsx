@@ -530,35 +530,21 @@ export default function Features() {
 
       <section className="py-24 px-6">
         <RevealOnScroll>
-          <div className="max-w-[800px] mx-auto">
-            <div className="relative bg-gradient-to-br from-[#3c8af7] to-[#2b6fd4] rounded-3xl p-10 sm:p-14 text-center overflow-hidden">
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/4" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/3 -translate-x-1/4" />
-              </div>
-              <div className="relative">
-                <h2 className="text-3xl sm:text-[36px] font-bold text-white tracking-tight mb-4">
-                  Bereit, Ihre Verwaltung zu vereinfachen?
-                </h2>
-                <p className="text-white/80 mb-8 max-w-md mx-auto leading-relaxed">
-                  Starten Sie kostenlos und nutzen Sie alle Funktionen von Anfang an &ndash; ohne Kreditkarte, ohne Verpflichtung.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button
-                    onClick={goToSignup}
-                    className="h-12 px-8 rounded-lg text-base font-semibold bg-white text-[#3c8af7] hover:bg-gray-50 transition-colors"
-                  >
-                    Jetzt kostenlos starten
-                  </button>
-                  <RefLink
-                    to="/preise"
-                    className="h-12 inline-flex items-center px-8 rounded-lg text-base font-semibold border border-white/30 text-white hover:bg-white/10 transition-colors"
-                  >
-                    Preise ansehen
-                  </RefLink>
-                </div>
-              </div>
-            </div>
+          <div className="max-w-[1200px] mx-auto text-center">
+            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight mb-4">
+              Bereit, Ihre Verwaltung zu vereinfachen?
+            </h2>
+            <p className="text-gray-500 mb-10 max-w-lg mx-auto">
+              Erstellen Sie Ihren Account in unter einer Minute.
+              Komplett kostenlos im Basic-Tarif &ndash; und 30 Tage
+              alle Pro-Funktionen inklusive.
+            </p>
+            <button
+              onClick={goToSignup}
+              className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
+            >
+              Jetzt kostenlos starten
+            </button>
           </div>
         </RevealOnScroll>
       </section>
