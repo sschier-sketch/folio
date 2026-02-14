@@ -69,33 +69,39 @@ const OTHER_FEATURES = [
   {
     icon: Home,
     title: "Immobilienmanagement",
-    description: "Verwalten Sie alle Ihre Immobilien und Einheiten digital & sicher."
+    description: "Verwalten Sie alle Ihre Immobilien und Einheiten digital & sicher.",
+    path: "/funktionen/immobilienmanagement",
   },
   {
     icon: FolderOpen,
     title: "Dokumentenmanagement",
-    description: "Verwalten Sie Ihre Dokumente einfach & sicher in der Cloud."
+    description: "Verwalten Sie Ihre Dokumente einfach & sicher in der Cloud.",
+    path: "/funktionen/dokumente",
   },
   {
     icon: BarChart3,
     title: "Finanzmanagement",
-    description: "Finanzen und Mieteinnahmen jederzeit im Blick behalten."
+    description: "Finanzen und Mieteinnahmen jederzeit im Blick behalten.",
+    path: "/funktionen/buchhaltung",
   },
   {
     icon: MessagesSquare,
-    title: "Zentrale Kommunikation",
-    description: "Ihre gesamte Kommunikation zentral gebündelt."
+    title: "Mieterkommunikation",
+    description: "Ihre gesamte Kommunikation zentral gebündelt.",
+    path: "/funktionen/kommunikation",
   },
   {
     icon: Calendar,
     title: "Nebenkostenabrechnung",
-    description: "Versandfertige Nebenkostenabrechnung in wenigen Minuten."
+    description: "Versandfertige Nebenkostenabrechnung in wenigen Minuten.",
+    path: "/funktionen/buchhaltung",
   },
   {
     icon: Building2,
     title: "Übergabeprotokolle",
-    description: "Optimale Dokumentation für Ihre nächste Wohnungsübergabe."
-  }
+    description: "Optimale Dokumentation für Ihre nächste Wohnungsübergabe.",
+    path: null,
+  },
 ];
 
 const FAQS = [
@@ -228,20 +234,22 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
     <div className="border-b border-gray-200 last:border-b-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-5 flex items-center justify-between text-left hover:text-[#3c8af7] transition-colors"
+        className="w-full flex items-center justify-between py-5 text-left gap-4"
       >
-        <span className="font-semibold text-gray-900 pr-8">{question}</span>
+        <span className="text-base font-medium text-gray-900">{question}</span>
         <ChevronDown
-          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
+          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
       </button>
-      {isOpen && (
-        <div className="pb-5 text-gray-600 leading-relaxed">
-          {answer}
-        </div>
-      )}
+      <div
+        className={`overflow-hidden transition-all duration-200 ${
+          isOpen ? "max-h-[400px] pb-5" : "max-h-0"
+        }`}
+      >
+        <p className="text-gray-500 leading-relaxed pr-8">{answer}</p>
+      </div>
     </div>
   );
 }
@@ -494,7 +502,7 @@ export default function Mietverwaltung() {
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto leading-relaxed">
                 Wir haben Vermieter und Hausverwalter gefragt, wie rentably ihre Arbeit
-                veraendert. Die Top-Antworten zeigen klar, welchen Mehrwert unsere Software bietet.
+                verändert. Die Top-Antworten zeigen klar, welchen Mehrwert unsere Software bietet.
               </p>
             </div>
           </RevealOnScroll>
@@ -554,8 +562,8 @@ export default function Mietverwaltung() {
           </RevealOnScroll>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {OTHER_FEATURES.map((feature, i) => (
-              <RevealOnScroll key={feature.title} delay={i * 80} className="h-full">
+            {OTHER_FEATURES.map((feature, i) => {
+              const content = (
                 <div className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer h-full">
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
@@ -570,30 +578,35 @@ export default function Mietverwaltung() {
                     {feature.description}
                   </p>
                 </div>
-              </RevealOnScroll>
-            ))}
+              );
+              return (
+                <RevealOnScroll key={feature.title} delay={i * 80} className="h-full">
+                  {feature.path ? (
+                    <RefLink to={feature.path} className="block h-full">
+                      {content}
+                    </RefLink>
+                  ) : (
+                    content
+                  )}
+                </RevealOnScroll>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-[#f8fafc]">
+      <section className="py-[100px] px-6">
         <div className="max-w-[800px] mx-auto">
           <RevealOnScroll>
-            <div className="text-center mb-12">
-              <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
-                FAQ
-              </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-                Häufig gestellte Fragen
-              </h2>
-              <p className="text-gray-500">
-                Alles, was du über die Mietverwaltung wissen musst
-              </p>
-            </div>
+            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
+              Häufig gestellte Fragen
+            </h2>
+            <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
+              Alles Wichtige über die Mietverwaltung mit rentably auf einen Blick.
+            </p>
           </RevealOnScroll>
-
           <RevealOnScroll delay={100}>
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <div className="bg-white border border-gray-200 rounded-2xl px-8">
               {FAQS.map((faq) => (
                 <FaqItem key={faq.question} question={faq.question} answer={faq.answer} />
               ))}

@@ -15,49 +15,49 @@ const FALLBACK_FAQS: FaqItem[] = [
     id: "1",
     question: "Ist rentably wirklich kostenlos?",
     answer:
-      "Ja. Der Basic-Tarif ist dauerhaft kostenlos — ohne zeitliche Begrenzung und ohne versteckte Kosten. Sie koennen unbegrenzt viele Immobilien, Einheiten und Mieter verwalten. Fuer erweiterte Funktionen wie Betriebskostenabrechnungen, Mahnwesen oder das Mieterportal steht der Pro-Tarif zur Verfuegung.",
+      "Ja. Der Basic-Tarif ist dauerhaft kostenlos — ohne zeitliche Begrenzung und ohne versteckte Kosten. Sie können unbegrenzt viele Immobilien, Einheiten und Mieter verwalten. Für erweiterte Funktionen wie Betriebskostenabrechnungen, Mahnwesen oder das Mieterportal steht der Pro-Tarif zur Verfügung.",
     sort_order: 1,
   },
   {
     id: "2",
     question: "Was passiert nach den 30 Tagen Pro-Testphase?",
     answer:
-      "Nach Ablauf der 30 Tage wird Ihr Account automatisch auf den kostenlosen Basic-Tarif umgestellt. Sie verlieren keine Daten. Alle Basic-Funktionen bleiben weiterhin verfuegbar. Wenn Sie Pro-Funktionen weiter nutzen moechten, koennen Sie jederzeit ein Upgrade durchfuehren.",
+      "Nach Ablauf der 30 Tage wird Ihr Account automatisch auf den kostenlosen Basic-Tarif umgestellt. Sie verlieren keine Daten. Alle Basic-Funktionen bleiben weiterhin verfügbar. Wenn Sie Pro-Funktionen weiter nutzen möchten, können Sie jederzeit ein Upgrade durchführen.",
     sort_order: 2,
   },
   {
     id: "3",
     question: "Gibt es Limits bei der Anzahl an Immobilien oder Mietern?",
     answer:
-      "Nein. Sowohl im Basic- als auch im Pro-Tarif koennen Sie unbegrenzt viele Immobilien, Einheiten und Mieter anlegen. Wir berechnen keine Gebuehren pro Objekt oder pro Mieter — anders als viele andere Anbieter.",
+      "Nein. Sowohl im Basic- als auch im Pro-Tarif können Sie unbegrenzt viele Immobilien, Einheiten und Mieter anlegen. Wir berechnen keine Gebühren pro Objekt oder pro Mieter — anders als viele andere Anbieter.",
     sort_order: 3,
   },
   {
     id: "4",
-    question: "Brauche ich eine Kreditkarte fuer die Registrierung?",
+    question: "Brauche ich eine Kreditkarte für die Registrierung?",
     answer:
-      "Nein. Fuer die Registrierung und die 30-taegige Pro-Testphase benoetigen Sie keine Zahlungsdaten. Erst wenn Sie sich nach der Testphase fuer den Pro-Tarif entscheiden, werden Zahlungsinformationen benoetigt.",
+      "Nein. Für die Registrierung und die 30-tägige Pro-Testphase benötigen Sie keine Zahlungsdaten. Erst wenn Sie sich nach der Testphase für den Pro-Tarif entscheiden, werden Zahlungsinformationen benötigt.",
     sort_order: 4,
   },
   {
     id: "5",
     question: "Wo werden meine Daten gespeichert?",
     answer:
-      "Alle Daten werden auf europaeischen Servern in Deutschland gehostet. rentably ist vollstaendig DSGVO-konform. Ihre Daten werden nicht an Dritte weitergegeben.",
+      "Alle Daten werden auf europäischen Servern in Deutschland gehostet. rentably ist vollständig DSGVO-konform. Ihre Daten werden nicht an Dritte weitergegeben.",
     sort_order: 5,
   },
   {
     id: "6",
-    question: "Kann ich rentably auch fuer WEG-Verwaltung nutzen?",
+    question: "Kann ich rentably auch für WEG-Verwaltung nutzen?",
     answer:
-      "rentably ist primaer fuer private Vermieter und Eigentuemer konzipiert. Sie koennen sowohl Miet- als auch Eigentumsobjekte verwalten und Hausgeld-Zahlungen fuer WEG-Einheiten erfassen.",
+      "rentably ist primär für private Vermieter und Eigentümer konzipiert. Sie können sowohl Miet- als auch Eigentumsobjekte verwalten und Hausgeld-Zahlungen für WEG-Einheiten erfassen.",
     sort_order: 6,
   },
   {
     id: "7",
-    question: "Kann ich jederzeit kuendigen?",
+    question: "Kann ich jederzeit kündigen?",
     answer:
-      "Ja. Der Pro-Tarif ist monatlich oder jaehrlich kuendbar. Es gibt keine Mindestlaufzeit. Nach der Kuendigung behalten Sie Zugriff auf alle Basic-Funktionen und Ihre gespeicherten Daten.",
+      "Ja. Der Pro-Tarif ist monatlich oder jährlich kündbar. Es gibt keine Mindestlaufzeit. Nach der Kündigung behalten Sie Zugriff auf alle Basic-Funktionen und Ihre gespeicherten Daten.",
     sort_order: 7,
   },
 ];
@@ -130,10 +130,10 @@ export default function FaqSection({ pageSlug = "landing" }: FaqSectionProps) {
       <div className="max-w-[800px] mx-auto">
         <RevealOnScroll>
           <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
-            Haeufig gestellte Fragen
+            Häufig gestellte Fragen
           </h2>
           <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
-            Alles Wichtige auf einen Blick — von Kosten ueber Datenschutz bis
+            Alles Wichtige auf einen Blick — von Kosten über Datenschutz bis
             zu den Funktionen von rentably.
           </p>
         </RevealOnScroll>

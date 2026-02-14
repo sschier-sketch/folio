@@ -23,7 +23,7 @@ const TESTIMONIALS: Testimonial[] = [
   {
     name: "Thomas M.",
     role: "Vermieter, 4 Wohnungen",
-    text: "Seit ich rentably nutze, habe ich endlich den Ueberblick ueber alle Mietverhaeltnisse. Die Betriebskostenabrechnung dauert keine Stunden mehr, sondern Minuten.",
+    text: "Seit ich rentably nutze, habe ich endlich den Überblick über alle Mietverhältnisse. Die Betriebskostenabrechnung dauert keine Stunden mehr, sondern Minuten.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200",
@@ -31,8 +31,8 @@ const TESTIMONIALS: Testimonial[] = [
   },
   {
     name: "Sandra K.",
-    role: "Eigentuemerin, 2 Objekte",
-    text: "Ich habe lange nach einer einfachen Loesung gesucht. rentably ist genau das — uebersichtlich, schnell und vor allem kostenlos fuer meine Beduerfnisse.",
+    role: "Eigentümerin, 2 Objekte",
+    text: "Ich habe lange nach einer einfachen Lösung gesucht. rentably ist genau das — übersichtlich, schnell und vor allem kostenlos für meine Bedürfnisse.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200",
@@ -41,7 +41,7 @@ const TESTIMONIALS: Testimonial[] = [
   {
     name: "Michael R.",
     role: "Privatvermieter, 7 Einheiten",
-    text: "Das Mieterportal hat die Kommunikation mit meinen Mietern komplett veraendert. Alles ist dokumentiert und nachvollziehbar. Kann ich nur empfehlen.",
+    text: "Das Mieterportal hat die Kommunikation mit meinen Mietern komplett verändert. Alles ist dokumentiert und nachvollziehbar. Kann ich nur empfehlen.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=200",
@@ -50,7 +50,7 @@ const TESTIMONIALS: Testimonial[] = [
   {
     name: "Petra W.",
     role: "Hausverwaltung, 85 Einheiten",
-    text: "Wir verwalten mehrere Liegenschaften und rentably hat unsere internen Prozesse enorm beschleunigt. Die Dokumentenverwaltung und das Ticketsystem sparen uns taeglich Zeit.",
+    text: "Wir verwalten mehrere Liegenschaften und rentably hat unsere internen Prozesse enorm beschleunigt. Die Dokumentenverwaltung und das Ticketsystem sparen uns täglich Zeit.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=200",
@@ -58,8 +58,8 @@ const TESTIMONIALS: Testimonial[] = [
   },
   {
     name: "Markus F.",
-    role: "Geschaeftsfuehrer, WEG-Verwaltung",
-    text: "Die Struktur mit Einheiten, Mietern und Vertraegen bildet unseren Arbeitsalltag perfekt ab. Endlich ein Tool, das fuer professionelle Verwalter gemacht ist.",
+    role: "Geschäftsführer, WEG-Verwaltung",
+    text: "Die Struktur mit Einheiten, Mietern und Verträgen bildet unseren Arbeitsalltag perfekt ab. Endlich ein Tool, das für professionelle Verwalter gemacht ist.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200",
@@ -68,7 +68,7 @@ const TESTIMONIALS: Testimonial[] = [
   {
     name: "Julia H.",
     role: "Immobilienverwalterin, 120 Einheiten",
-    text: "Seit der Umstellung auf rentably haben wir deutlich weniger Rueckfragen von Mietern. Das Mieterportal schafft Transparenz und entlastet unser Team.",
+    text: "Seit der Umstellung auf rentably haben wir deutlich weniger Rückfragen von Mietern. Das Mieterportal schafft Transparenz und entlastet unser Team.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=200",
@@ -77,7 +77,7 @@ const TESTIMONIALS: Testimonial[] = [
   {
     name: "Andreas B.",
     role: "Investor, 12 Objekte",
-    text: "Die Finanzuebersicht mit Renditeberechnung und Cashflow-Analyse ist fuer mich als Investor unverzichtbar. Ich sehe sofort, welche Objekte performen.",
+    text: "Die Finanzübersicht mit Renditeberechnung und Cashflow-Analyse ist für mich als Investor unverzichtbar. Ich sehe sofort, welche Objekte performen.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=200",
@@ -85,8 +85,8 @@ const TESTIMONIALS: Testimonial[] = [
   },
   {
     name: "Claudia S.",
-    role: "Investorin, 6 Mehrfamilienhaeuser",
-    text: "rentably gibt mir den kompletten Ueberblick ueber mein Portfolio. Von Mieteinnahmen bis Darlehen — alles an einem Ort. Genau das habe ich gesucht.",
+    role: "Investorin, 6 Mehrfamilienhäuser",
+    text: "rentably gibt mir den kompletten Überblick über mein Portfolio. Von Mieteinnahmen bis Darlehen — alles an einem Ort. Genau das habe ich gesucht.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200",
@@ -95,7 +95,7 @@ const TESTIMONIALS: Testimonial[] = [
   {
     name: "Stefan D.",
     role: "Immobilieninvestor, 20+ Einheiten",
-    text: "Als ich angefangen habe zu skalieren, brauchte ich ein System, das mitwaechst. rentably deckt alles ab — Vertraege, Zahlungen, Dokumente. Absolut empfehlenswert.",
+    text: "Als ich angefangen habe zu skalieren, brauchte ich ein System, das mitwächst. rentably deckt alles ab — Verträge, Zahlungen, Dokumente. Absolut empfehlenswert.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=200",

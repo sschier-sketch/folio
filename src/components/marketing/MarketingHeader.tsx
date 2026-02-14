@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import {
   Menu,
   X,
-  Users,
+  ClipboardCheck,
   Building2,
   MessageSquare,
   Receipt,
@@ -21,12 +21,6 @@ const PLAIN_NAV = [
 
 const FEATURE_LINKS = [
   {
-    icon: Users,
-    title: 'Mietverwaltung',
-    subtitle: 'Mieter & Verträge verwalten',
-    path: '/funktionen/mietverwaltung',
-  },
-  {
     icon: Building2,
     title: 'Immobilienmanagement',
     subtitle: 'Portfolio im Überblick',
@@ -34,7 +28,7 @@ const FEATURE_LINKS = [
   },
   {
     icon: MessageSquare,
-    title: 'Kommunikation',
+    title: 'Mieterkommunikation',
     subtitle: 'E-Mails & Vorlagen',
     path: '/funktionen/kommunikation',
   },
@@ -49,6 +43,12 @@ const FEATURE_LINKS = [
     title: 'Dokumente',
     subtitle: 'Digitales Archiv',
     path: '/funktionen/dokumente',
+  },
+  {
+    icon: ClipboardCheck,
+    title: 'Übergabeprotokoll',
+    subtitle: 'Wohnungsübergaben dokumentieren',
+    path: '/funktionen/mietverwaltung',
   },
 ];
 
@@ -239,7 +239,7 @@ export default function MarketingHeader() {
                             to={card.path}
                             className="group block rounded-xl border border-gray-150 bg-gray-50/60 p-3.5 hover:border-gray-300 hover:shadow-sm transition-all"
                           >
-                            <div className="bg-white rounded-lg border border-gray-100 p-3 mb-3">
+                            <div className="bg-white rounded-lg border border-gray-100 p-3 mb-3 h-[88px] flex flex-col justify-center">
                               <HighlightCardVisual type={card.visual} />
                             </div>
                             <p className="text-[13px] font-semibold text-gray-900 mb-0.5">
