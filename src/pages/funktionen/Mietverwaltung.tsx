@@ -157,10 +157,10 @@ const BENEFITS = [
 ];
 
 const MOCK_TENANTS = [
-  { name: "Sarah Meyer", unit: "Musterstr. 10 \u00b7 EG", rent: "950,00 \u20ac", status: "Aktiv", statusColor: "#22c55e", statusBg: "#f0fdf4" },
-  { name: "Thomas Klein", unit: "Musterstr. 10 \u00b7 1.OG", rent: "1.120,00 \u20ac", status: "Aktiv", statusColor: "#22c55e", statusBg: "#f0fdf4" },
-  { name: "Lisa Wagner", unit: "Musterstr. 10 \u00b7 2.OG", rent: "890,00 \u20ac", status: "K\u00fcndigt", statusColor: "#f59e0b", statusBg: "#fffbeb" },
-  { name: "Michael Hoffmann", unit: "Musterstr. 10 \u00b7 DG", rent: "780,00 \u20ac", status: "Aktiv", statusColor: "#22c55e", statusBg: "#f0fdf4" },
+  { name: "Sarah Meyer", unit: "Musterstr. 10 · EG", rent: "950,00 €", status: "Aktiv", statusColor: "#22c55e", statusBg: "#f0fdf4" },
+  { name: "Thomas Klein", unit: "Musterstr. 10 · 1.OG", rent: "1.120,00 €", status: "Aktiv", statusColor: "#22c55e", statusBg: "#f0fdf4" },
+  { name: "Lisa Wagner", unit: "Musterstr. 10 · 2.OG", rent: "890,00 €", status: "Kündigt", statusColor: "#f59e0b", statusBg: "#fffbeb" },
+  { name: "Michael Hoffmann", unit: "Musterstr. 10 · DG", rent: "780,00 €", status: "Aktiv", statusColor: "#22c55e", statusBg: "#f0fdf4" },
 ];
 
 function TenantTableMockup() {
@@ -169,7 +169,7 @@ function TenantTableMockup() {
       <div className="px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h3 className="text-base font-bold text-gray-900">Mieter</h3>
-          <span className="text-sm text-gray-400">4 Eintr\u00e4ge</span>
+          <span className="text-sm text-gray-400">4 Einträge</span>
         </div>
         <div className="h-9 px-4 rounded-lg bg-gray-900 text-white text-sm font-semibold flex items-center gap-1.5">
           <span className="text-base leading-none">+</span>
@@ -221,7 +221,7 @@ function TenantTableMockup() {
 
       <div className="border-t border-gray-100 bg-gray-50 px-6 py-3.5 flex items-center justify-between">
         <span className="text-sm text-gray-500 font-medium">Summe Kaltmiete</span>
-        <span className="text-sm font-bold text-gray-900">3.740,00 \u20ac/Monat</span>
+        <span className="text-sm font-bold text-gray-900">3.740,00 €/Monat</span>
       </div>
     </div>
   );
@@ -438,21 +438,91 @@ export default function Mietverwaltung() {
                   </div>
                 </div>
 
-                <div className="bg-[#f8fafc] rounded-xl p-6 border border-gray-100">
-                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-                    Zahlungshistorie (letzte 12 Monate)
-                  </h4>
-                  <div className="flex items-end gap-2 h-24">
-                    {Array.from({ length: 12 }).map((_, i) => (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                        <div className="w-full bg-green-500 rounded-t" style={{ height: `${85 + Math.random() * 15}%` }} />
-                        <span className="text-xs text-gray-400">{i + 1}</span>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-[#f8fafc] rounded-xl p-6 border border-gray-100">
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-5">
+                      Zahlungshistorie (12 Monate)
+                    </h4>
+                    <div className="flex items-end gap-1.5 h-32">
+                      {[
+                        { m: "Mär", v: 1450, paid: true },
+                        { m: "Apr", v: 1450, paid: true },
+                        { m: "Mai", v: 1450, paid: true },
+                        { m: "Jun", v: 1450, paid: true },
+                        { m: "Jul", v: 1450, paid: true },
+                        { m: "Aug", v: 1200, paid: false },
+                        { m: "Sep", v: 1450, paid: true },
+                        { m: "Okt", v: 1450, paid: true },
+                        { m: "Nov", v: 1450, paid: true },
+                        { m: "Dez", v: 1450, paid: true },
+                        { m: "Jan", v: 1450, paid: true },
+                        { m: "Feb", v: 1450, paid: true },
+                      ].map((bar) => (
+                        <div key={bar.m} className="flex-1 flex flex-col items-center gap-1.5">
+                          <span className="text-[10px] font-semibold text-gray-500">
+                            {(bar.v / 1000).toFixed(1).replace(".", ",")}k
+                          </span>
+                          <div
+                            className={`w-full rounded-md transition-all ${
+                              bar.paid ? "bg-emerald-400" : "bg-amber-400"
+                            }`}
+                            style={{ height: `${(bar.v / 1450) * 100}%` }}
+                          />
+                          <span className="text-[10px] text-gray-400 font-medium">{bar.m}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-center gap-5 mt-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400" />
+                        <span className="text-xs text-gray-500">Vollständig</span>
                       </div>
-                    ))}
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-sm bg-amber-400" />
+                        <span className="text-xs text-gray-500">Teilzahlung</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 text-center mt-4">
-                    Alle Zahlungen wurden pünktlich und vollständig geleistet
-                  </p>
+
+                  <div className="bg-[#f8fafc] rounded-xl p-6 border border-gray-100">
+                    <div className="flex items-center justify-between mb-5">
+                      <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                        Indexmieterhöhung
+                      </h4>
+                      <span className="text-xs font-medium text-[#3c8af7] bg-[#3c8af7]/10 px-2 py-0.5 rounded-full">
+                        Automatisch
+                      </span>
+                    </div>
+                    <div className="space-y-3 mb-5">
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600 text-sm">Vertragsart</span>
+                        <span className="font-semibold text-gray-900 text-sm">Indexmiete</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600 text-sm">Basisindex</span>
+                        <span className="font-semibold text-gray-900 text-sm">118,4 (Mär 2024)</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600 text-sm">Aktueller Index</span>
+                        <span className="font-semibold text-gray-900 text-sm">122,1 (Feb 2025)</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600 text-sm">Veränderung</span>
+                        <span className="font-semibold text-emerald-600 text-sm">+3,13 %</span>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg border border-gray-200 p-3.5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="w-4 h-4 text-[#3c8af7]" />
+                        <span className="text-xs font-semibold text-gray-900">Nächste Erhöhung möglich</span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-sm text-gray-500">Neue Kaltmiete</span>
+                        <span className="text-lg font-bold text-gray-900">1.237,56 €</span>
+                      </div>
+                      <span className="text-xs text-gray-400">+37,56 € / Monat</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
