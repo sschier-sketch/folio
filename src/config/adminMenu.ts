@@ -12,6 +12,7 @@ import {
   BookOpen,
   AtSign,
   Timer,
+  HelpCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,7 +31,8 @@ export type AdminTabKey =
   | "pro_features"
   | "magazine"
   | "email_settings"
-  | "cron_jobs";
+  | "cron_jobs"
+  | "faqs";
 
 export interface AdminMenuItem {
   key: AdminTabKey;
@@ -81,6 +83,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
     defaultOpen: true,
     items: [
       { key: "magazine", label: "Magazin", icon: BookOpen },
+      { key: "faqs", label: "FAQ-Verwaltung", icon: HelpCircle },
       { key: "seo", label: "SEO", icon: Globe },
       { key: "affiliates", label: "Affiliates", icon: TrendingUp },
       { key: "pro_features", label: "Pro-Features", icon: Sparkles },
