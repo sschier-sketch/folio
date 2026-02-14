@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { LoginForm } from "../components/auth/LoginForm";
 import { useAuth } from "../hooks/useAuth";
-import { CheckCircle2 } from "lucide-react";
+import { Shield, CheckCircle2 } from "lucide-react";
 import { RefLink } from "../components/common/RefLink";
 
 const TRUST_POINTS = [
@@ -31,7 +31,7 @@ export function Login() {
       <div className="max-w-[440px] mx-auto">
         <div className="text-center mb-10">
           <div className="w-14 h-14 rounded-full bg-[#EEF4FF] border border-[#DDE7FF] flex items-center justify-center mx-auto mb-6">
-            <img src="/rentably-logo.svg" alt="rentably" className="h-7 w-auto" />
+            <Shield className="w-7 h-7 text-gray-900" strokeWidth={1.5} />
           </div>
           <h1 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-3">
             Willkommen zur&uuml;ck
