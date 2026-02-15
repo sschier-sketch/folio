@@ -78,11 +78,7 @@ export default function OperatingCostWizardStep3() {
 
       setProperty(propertyData);
 
-      if (existingResults && existingResults.length > 0) {
-        await loadResultsWithDetails(existingResults);
-      } else {
-        await computeAndLoadResults();
-      }
+      await computeAndLoadResults();
     } catch (err: any) {
       console.error('Error loading data:', err);
       setError(err.message || 'Fehler beim Laden der Daten');
