@@ -87,8 +87,8 @@ export default function OperatingCostWizardStep1() {
     (_, i) => new Date().getFullYear() - 1 - i
   );
 
-  const requiresUnitSelection = units.length > 1;
-  const canProceed = selectedPropertyId && selectedYear && (!requiresUnitSelection || selectedUnitId);
+  const hasUnits = units.length > 0;
+  const canProceed = selectedPropertyId && selectedYear && (!hasUnits || selectedUnitId);
 
   const deadlineYear = selectedYear + 1;
 
@@ -104,7 +104,7 @@ export default function OperatingCostWizardStep1() {
         {
           property_id: selectedPropertyId,
           year: selectedYear,
-          unit_id: requiresUnitSelection ? selectedUnitId : null,
+          unit_id: selectedUnitId || null,
         }
       );
 
@@ -222,36 +222,39 @@ export default function OperatingCostWizardStep1() {
                 )}
               </div>
 
-              {selectedPropertyId && units.length > 1 && (
+              {selectedPropertyId && loadingUnits && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Einheit
+                  </label>
+                  <div className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg bg-gray-50">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-primary-blue rounded-full animate-spin"></div>
+                    <span className="text-sm text-gray-500">Lade Einheiten...</span>
+                  </div>
+                </div>
+              )}
+
+              {selectedPropertyId && !loadingUnits && hasUnits && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Einheit <span className="text-red-500">*</span>
                   </label>
-                  {loadingUnits ? (
-                    <div className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg bg-gray-50">
-                      <div className="w-4 h-4 border-2 border-gray-300 border-t-primary-blue rounded-full animate-spin"></div>
-                      <span className="text-sm text-gray-500">Lade Einheiten...</span>
-                    </div>
-                  ) : (
-                    <>
-                      <select
-                        value={selectedUnitId}
-                        onChange={(e) => setSelectedUnitId(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                      >
-                        <option value="">Einheit auswählen...</option>
-                        {units.map((unit) => (
-                          <option key={unit.id} value={unit.id}>
-                            Einheit {unit.unit_number}
-                            {unit.floor && ` (${unit.floor}. OG)`}
-                          </option>
-                        ))}
-                      </select>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Diese Immobilie hat mehrere Einheiten. Bitte wählen Sie die Einheit aus, für die Sie die Betriebskostenabrechnung erstellen möchten.
-                      </p>
-                    </>
-                  )}
+                  <select
+                    value={selectedUnitId}
+                    onChange={(e) => setSelectedUnitId(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  >
+                    <option value="">Einheit auswählen...</option>
+                    {units.map((unit) => (
+                      <option key={unit.id} value={unit.id}>
+                        Einheit {unit.unit_number}
+                        {unit.floor && ` (${unit.floor}. OG)`}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Bitte wählen Sie die Einheit aus, für die Sie die Betriebskostenabrechnung erstellen möchten. Mieterdaten und Wohnfläche werden aus der gewählten Einheit übernommen.
+                  </p>
                 </div>
               )}
 
