@@ -22,7 +22,13 @@ export interface UspListBlock {
   items: string[];
 }
 
-export type ContentBlock = HeadingBlock | TextBlock | ImageBlock | UspListBlock;
+export interface InfoBoxBlock {
+  type: 'info_box';
+  title?: string;
+  items: string[];
+}
+
+export type ContentBlock = HeadingBlock | TextBlock | ImageBlock | UspListBlock | InfoBoxBlock;
 
 export interface HeadingEntry {
   id: string;
@@ -98,7 +104,7 @@ export function calculateReadingTimeFromBlocks(blocks: ContentBlock[]): number {
   for (const block of blocks) {
     if (block.type === 'text') text += ' ' + block.content;
     if (block.type === 'heading') text += ' ' + block.text;
-    if (block.type === 'usp_list') {
+    if (block.type === 'usp_list' || block.type === 'info_box') {
       if (block.title) text += ' ' + block.title;
       text += ' ' + block.items.join(' ');
     }
@@ -204,6 +210,16 @@ export function renderBlocksToHtml(blocks: ContentBlock[]): string {
       }
       case 'usp_list': {
         let html = '<div class="usp-list-block">';
+        if (block.title) {
+          html += `<h3>${formatInline(block.title)}</h3>`;
+        }
+        html += '<ul>';
+        html += block.items.filter(i => i.trim()).map(item => `<li>${formatInline(item)}</li>`).join('');
+        html += '</ul></div>';
+        return html;
+      }
+      case 'info_box': {
+        let html = '<div class="info-box-block">';
         if (block.title) {
           html += `<h3>${formatInline(block.title)}</h3>`;
         }

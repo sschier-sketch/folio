@@ -157,3 +157,40 @@
   background-color: #3c8af7;
   border-radius: 50%;
 }
+
+.magazine-article-content .info-box-block {
+  background-color: #f0eded;
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  margin: 2rem 0;
+}
+
+.magazine-article-content .info-box-block h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.magazine-article-content .info-box-block ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.magazine-article-content .info-box-block li {
+  position: relative;
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.magazine-article-content .info-box-block li::before {
+  content: '\2022';
+  position: absolute;
+  left: 0;
+  color: #6b7280;
+}

@@ -305,70 +305,68 @@ export function MagazinePost() {
       </div>
 
       <article className="max-w-[1200px] mx-auto px-4 pb-16">
-        <div className="max-w-[760px]">
-          <div className="flex items-center gap-3 mb-5">
-            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-[#3c8af7]/10 text-[#3c8af7]">
-              {CATEGORY_LABELS[post.category] || post.category}
-            </span>
-            <span className="text-sm text-gray-400">
-              {post.reading_time_minutes} Min. Lesezeit
-            </span>
-          </div>
-
-          <h1 className="text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-gray-900 leading-tight mb-6">
-            {post.title}
-          </h1>
-
-          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-            <div className="flex items-center gap-4 text-sm text-gray-400">
-              <span>{post.author_name}</span>
-              <span className="text-gray-200">|</span>
-              <span>{formattedDate}</span>
-            </div>
-            <ArticleShareButtons
-              url={window.location.href}
-              title={post.title}
-            />
-          </div>
-        </div>
-
-        {post.excerpt && (
-          <div className="max-w-[760px] mb-8 text-lg text-gray-600 leading-relaxed font-medium">
-            {post.excerpt}
-          </div>
-        )}
-
-        {summaryPoints.length > 0 && (
-          <div className="max-w-[760px] mb-12 bg-gradient-to-br from-blue-50 to-sky-50/50 rounded-2xl p-6 md:p-8 border border-blue-100/60">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#3c8af7] mb-4">
-              Das Wichtigste in Kürze
-            </h3>
-            <ul className="space-y-3">
-              {summaryPoints.map((point, i) => (
-                <li key={i} className="flex gap-3 items-start">
-                  <CheckCircle2 className="w-5 h-5 text-[#3c8af7] flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700 leading-relaxed text-[15px]">{point}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         <div className="flex gap-16">
-          <div
-            className="max-w-[760px] flex-1 magazine-article-content"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
-          />
+          <div className="max-w-[760px] flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="px-3 py-1 text-xs font-semibold rounded-full bg-[#3c8af7]/10 text-[#3c8af7]">
+                {CATEGORY_LABELS[post.category] || post.category}
+              </span>
+              <span className="text-sm text-gray-400">
+                {post.reading_time_minutes} Min. Lesezeit
+              </span>
+            </div>
+
+            <h1 className="text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-gray-900 leading-tight mb-6">
+              {post.title}
+            </h1>
+
+            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+              <div className="flex items-center gap-4 text-sm text-gray-400">
+                <span>{post.author_name}</span>
+                <span className="text-gray-200">|</span>
+                <span>{formattedDate}</span>
+              </div>
+              <ArticleShareButtons
+                url={window.location.href}
+                title={post.title}
+              />
+            </div>
+
+            {post.excerpt && (
+              <div className="mb-8 text-lg text-gray-600 leading-relaxed font-medium">
+                {post.excerpt}
+              </div>
+            )}
+
+            {summaryPoints.length > 0 && (
+              <div className="mb-12 bg-gradient-to-br from-blue-50 to-sky-50/50 rounded-2xl p-6 md:p-8 border border-blue-100/60">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-[#3c8af7] mb-4">
+                  Das Wichtigste in Kürze
+                </h3>
+                <ul className="space-y-3">
+                  {summaryPoints.map((point, i) => (
+                    <li key={i} className="flex gap-3 items-start">
+                      <CheckCircle2 className="w-5 h-5 text-[#3c8af7] flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 leading-relaxed text-[15px]">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div
+              className="magazine-article-content"
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
+
+            <ArticleFaq faqs={faqs} />
+          </div>
 
           {headings.length > 0 && (
             <aside className="hidden lg:block w-64 flex-shrink-0">
               <ArticleTableOfContents headings={headings} />
             </aside>
           )}
-        </div>
-
-        <div className="max-w-[760px]">
-          <ArticleFaq faqs={faqs} />
         </div>
       </article>
 

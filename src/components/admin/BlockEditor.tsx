@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import {
   Plus, ChevronUp, ChevronDown, Trash2, Type, AlignLeft,
   Image as ImageIcon, ListChecks, Upload, Bold, Italic,
-  Link as LinkIcon, List, ListOrdered, Quote
+  Link as LinkIcon, List, ListOrdered, Quote, TextQuote
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { ContentBlock } from '../../lib/contentBlocks';
@@ -17,6 +17,7 @@ const BLOCK_TYPES = [
   { type: 'text' as const, label: 'Text', icon: AlignLeft },
   { type: 'image' as const, label: 'Bild', icon: ImageIcon },
   { type: 'usp_list' as const, label: 'Aufzählung', icon: ListChecks },
+  { type: 'info_box' as const, label: 'Info-Box', icon: TextQuote },
 ];
 
 const BLOCK_LABELS: Record<string, string> = {
@@ -24,6 +25,7 @@ const BLOCK_LABELS: Record<string, string> = {
   text: 'Text',
   image: 'Bild',
   usp_list: 'Aufzählung',
+  info_box: 'Info-Box',
 };
 
 export default function BlockEditor({ blocks, onChange }: Props) {
@@ -43,6 +45,9 @@ export default function BlockEditor({ blocks, onChange }: Props) {
         break;
       case 'usp_list':
         newBlock = { type: 'usp_list', title: '', items: [''] };
+        break;
+      case 'info_box':
+        newBlock = { type: 'info_box', title: '', items: [''] };
         break;
       default:
         return;
@@ -238,6 +243,55 @@ export default function BlockEditor({ blocks, onChange }: Props) {
             </button>
           </div>
         );
+
+      case 'info_box':
+        return (
+          <div className="space-y-3">
+            <input
+              type="text"
+              value={block.title || ''}
+              onChange={(e) => updateBlock(index, { ...block, title: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm font-medium"
+              placeholder="Titel der Info-Box (optional)"
+            />
+            <div className="space-y-2">
+              {block.items.map((item, itemIndex) => (
+                <div key={itemIndex} className="flex gap-2 items-center">
+                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full flex-shrink-0" />
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => {
+                      const newItems = [...block.items];
+                      newItems[itemIndex] = e.target.value;
+                      updateBlock(index, { ...block, items: newItems });
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="Punkt eingeben..."
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newItems = block.items.filter((_, i) => i !== itemIndex);
+                      updateBlock(index, { ...block, items: newItems.length > 0 ? newItems : [''] });
+                    }}
+                    className="p-1.5 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => updateBlock(index, { ...block, items: [...block.items, ''] })}
+              className="flex items-center gap-1.5 text-sm font-medium text-[#3c8af7] hover:text-[#2b7ae6] transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Punkt hinzufügen
+            </button>
+          </div>
+        );
     }
   }
 
@@ -271,6 +325,7 @@ export default function BlockEditor({ blocks, onChange }: Props) {
               block.type === 'heading' ? 'bg-amber-50 text-amber-600' :
               block.type === 'text' ? 'bg-blue-50 text-blue-600' :
               block.type === 'image' ? 'bg-emerald-50 text-emerald-600' :
+              block.type === 'info_box' ? 'bg-stone-100 text-stone-600' :
               'bg-violet-50 text-violet-600'
             }`}>
               {block.type === 'heading' ? `H${(block as any).level}` : BLOCK_LABELS[block.type]}
