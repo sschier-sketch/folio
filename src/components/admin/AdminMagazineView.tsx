@@ -23,15 +23,6 @@ interface Post {
   tags: string[];
 }
 
-interface Topic {
-  id: string;
-  de_name: string;
-  de_slug: string;
-  en_name?: string;
-  en_slug?: string;
-  created_at: string;
-}
-
 interface Tag {
   id: string;
   de_name: string;
@@ -42,18 +33,15 @@ interface Tag {
 }
 
 export default function AdminMagazineView() {
-  const [activeTab, setActiveTab] = useState<"posts" | "topics" | "tags">("posts");
+  const [activeTab, setActiveTab] = useState<"posts" | "tags">("posts");
   const [posts, setPosts] = useState<Post[]>([]);
-  const [topics, setTopics] = useState<Topic[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [topicFilter, setTopicFilter] = useState<string>("all");
 
-  const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
-  const [showTopicModal, setShowTopicModal] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
 
   const publishedCount = posts.filter(p => p.status === "PUBLISHED").length;
@@ -64,8 +52,6 @@ export default function AdminMagazineView() {
   useEffect(() => {
     if (activeTab === "posts") {
       loadPosts();
-    } else if (activeTab === "topics") {
-      loadTopics();
     } else if (activeTab === "tags") {
       loadTags();
     }
@@ -119,40 +105,6 @@ export default function AdminMagazineView() {
       setPosts(formatted);
     } catch (err) {
       console.error("Error loading posts:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadTopics() {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("mag_topics")
-        .select(`
-          id,
-          created_at,
-          de:mag_topic_translations!inner(name, slug),
-          en:mag_topic_translations(name, slug)
-        `)
-        .eq("de.locale", "de")
-        .eq("en.locale", "en")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      const formatted = (data || []).map((topic: any) => ({
-        id: topic.id,
-        de_name: topic.de?.[0]?.name || "",
-        de_slug: topic.de?.[0]?.slug || "",
-        en_name: topic.en?.[0]?.name,
-        en_slug: topic.en?.[0]?.slug,
-        created_at: topic.created_at
-      }));
-
-      setTopics(formatted);
-    } catch (err) {
-      console.error("Error loading topics:", err);
     } finally {
       setLoading(false);
     }
@@ -243,23 +195,6 @@ export default function AdminMagazineView() {
     }
   }
 
-  async function handleDeleteTopic(id: string) {
-    if (!confirm("Möchten Sie dieses Thema wirklich löschen?")) return;
-
-    try {
-      const { error } = await supabase
-        .from("mag_topics")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-      setTopics(topics.filter(t => t.id !== id));
-    } catch (err) {
-      console.error("Error deleting topic:", err);
-      alert("Fehler beim Löschen des Themas");
-    }
-  }
-
   async function handleDeleteTag(id: string) {
     if (!confirm("Möchten Sie diesen Tag wirklich löschen?")) return;
 
@@ -274,76 +209,6 @@ export default function AdminMagazineView() {
     } catch (err) {
       console.error("Error deleting tag:", err);
       alert("Fehler beim Löschen des Tags");
-    }
-  }
-
-  async function handleSaveTopic() {
-    if (!editingTopic) return;
-
-    try {
-      if (editingTopic.id.startsWith("new-")) {
-        const { data: topic, error: topicError } = await supabase
-          .from("mag_topics")
-          .insert({})
-          .select()
-          .single();
-
-        if (topicError) throw topicError;
-
-        const deSlug = editingTopic.de_slug || generateSlug(editingTopic.de_name);
-        const enSlug = editingTopic.en_slug || (editingTopic.en_name ? generateSlug(editingTopic.en_name) : deSlug);
-
-        const { error: transError } = await supabase
-          .from("mag_topic_translations")
-          .insert([
-            {
-              topic_id: topic.id,
-              locale: "de",
-              name: editingTopic.de_name,
-              slug: deSlug
-            },
-            {
-              topic_id: topic.id,
-              locale: "en",
-              name: editingTopic.en_name || editingTopic.de_name,
-              slug: enSlug
-            }
-          ]);
-
-        if (transError) throw transError;
-      } else {
-        const deSlug = editingTopic.de_slug || generateSlug(editingTopic.de_name);
-        const enSlug = editingTopic.en_slug || (editingTopic.en_name ? generateSlug(editingTopic.en_name) : deSlug);
-
-        const { error: deError } = await supabase
-          .from("mag_topic_translations")
-          .update({
-            name: editingTopic.de_name,
-            slug: deSlug
-          })
-          .eq("topic_id", editingTopic.id)
-          .eq("locale", "de");
-
-        if (deError) throw deError;
-
-        const { error: enError } = await supabase
-          .from("mag_topic_translations")
-          .upsert({
-            topic_id: editingTopic.id,
-            locale: "en",
-            name: editingTopic.en_name || editingTopic.de_name,
-            slug: enSlug
-          }, { onConflict: "topic_id,locale" });
-
-        if (enError) throw enError;
-      }
-
-      setShowTopicModal(false);
-      setEditingTopic(null);
-      loadTopics();
-    } catch (err) {
-      console.error("Error saving topic:", err);
-      alert("Fehler beim Speichern des Themas");
     }
   }
 
@@ -450,7 +315,7 @@ export default function AdminMagazineView() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-dark">Magazin-Verwaltung</h2>
-                <p className="text-sm text-gray-400">Artikel, Kategorien, Themen und Tags verwalten</p>
+                <p className="text-sm text-gray-400">Artikel und Tags verwalten</p>
               </div>
             </div>
             {activeTab === "posts" && (
@@ -459,24 +324,6 @@ export default function AdminMagazineView() {
                 variant="primary"
               >
                 Neuer Artikel
-              </Button>
-            )}
-            {activeTab === "topics" && (
-              <Button
-                onClick={() => {
-                  setEditingTopic({
-                    id: `new-${Date.now()}`,
-                    de_name: "",
-                    de_slug: "",
-                    en_name: "",
-                    en_slug: "",
-                    created_at: new Date().toISOString()
-                  });
-                  setShowTopicModal(true);
-                }}
-                variant="primary"
-              >
-                Neues Thema
               </Button>
             )}
             {activeTab === "tags" && (
@@ -550,16 +397,6 @@ export default function AdminMagazineView() {
               }`}
             >
               Artikel
-            </button>
-            <button
-              onClick={() => setActiveTab("topics")}
-              className={`px-4 py-2 font-medium transition-colors border-b-2 ${
-                activeTab === "topics"
-                  ? "border-primary-blue text-primary-blue"
-                  : "border-transparent text-gray-400 hover:text-dark"
-              }`}
-            >
-              Themen
             </button>
             <button
               onClick={() => setActiveTab("tags")}
@@ -759,77 +596,6 @@ export default function AdminMagazineView() {
           </div>
         )}
 
-      {activeTab === "topics" && (
-        <div>
-          <BaseTable
-            columns={[
-              {
-                key: "de_name",
-                header: "Name (DE)",
-                sortable: true,
-                render: (topic: Topic) => (
-                  <div>
-                    <div className="font-medium text-dark">{topic.de_name}</div>
-                    <div className="text-xs text-gray-400">{topic.de_slug}</div>
-                  </div>
-                )
-              },
-              {
-                key: "en_name",
-                header: "Name (EN)",
-                sortable: true,
-                render: (topic: Topic) => (
-                  <div>
-                    <div className="font-medium text-dark">{topic.en_name || "-"}</div>
-                    <div className="text-xs text-gray-400">{topic.en_slug}</div>
-                  </div>
-                )
-              },
-              {
-                key: "created_at",
-                header: "Erstellt",
-                sortable: true,
-                render: (topic: Topic) => (
-                  <span className="text-sm text-gray-400">
-                    {new Date(topic.created_at).toLocaleDateString("de-DE")}
-                  </span>
-                )
-              },
-              {
-                key: "actions",
-                header: "Aktionen",
-                align: "center" as const,
-                render: (topic: Topic) => (
-                  <ActionsCell>
-                    <ActionButton
-                      icon={<Edit className="w-4 h-4" />}
-                      onClick={() => {
-                        setEditingTopic(topic);
-                        setShowTopicModal(true);
-                      }}
-                      title="Bearbeiten"
-                    />
-                    <ActionButton
-                      icon={<ExternalLink className="w-4 h-4" />}
-                      onClick={() => window.open(`/magazin?topic=${topic.de_slug}`, '_blank')}
-                      title="Vorschau"
-                    />
-                    <ActionButton
-                      icon={<Trash2 className="w-4 h-4" />}
-                      onClick={() => handleDeleteTopic(topic.id)}
-                      title="Löschen"
-                    />
-                  </ActionsCell>
-                )
-              }
-            ]}
-            data={topics}
-            loading={loading}
-            emptyMessage="Noch keine Themen vorhanden"
-          />
-        </div>
-      )}
-
       {activeTab === "tags" && (
         <div>
           <BaseTable
@@ -902,102 +668,6 @@ export default function AdminMagazineView() {
       )}
 
       </div>
-
-      {showTopicModal && editingTopic && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b">
-              <h3 className="text-xl font-bold text-dark">
-                {editingTopic.id.startsWith("new-") ? "Neues Thema" : "Thema bearbeiten"}
-              </h3>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Name (DE) *
-                </label>
-                <input
-                  type="text"
-                  value={editingTopic.de_name}
-                  onChange={(e) => setEditingTopic({ ...editingTopic, de_name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="z.B. Immobilienverwaltung"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Slug (DE)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={editingTopic.de_slug}
-                    onChange={(e) => setEditingTopic({ ...editingTopic, de_slug: e.target.value })}
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="immobilienverwaltung"
-                  />
-                  <Button
-                    onClick={() => setEditingTopic({ ...editingTopic, de_slug: generateSlug(editingTopic.de_name) })}
-                    variant="secondary"
-                  >
-                    Generieren
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Name (EN)
-                </label>
-                <input
-                  type="text"
-                  value={editingTopic.en_name || ""}
-                  onChange={(e) => setEditingTopic({ ...editingTopic, en_name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="e.g. Property Management"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Slug (EN)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={editingTopic.en_slug || ""}
-                    onChange={(e) => setEditingTopic({ ...editingTopic, en_slug: e.target.value })}
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="property-management"
-                  />
-                  <Button
-                    onClick={() => setEditingTopic({ ...editingTopic, en_slug: generateSlug(editingTopic.en_name || editingTopic.de_name) })}
-                    variant="secondary"
-                  >
-                    Generieren
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="p-6 border-t flex justify-end gap-3">
-              <Button
-                onClick={() => {
-                  setShowTopicModal(false);
-                  setEditingTopic(null);
-                }}
-                variant="secondary"
-              >
-                Abbrechen
-              </Button>
-              <Button
-                onClick={handleSaveTopic}
-                disabled={!editingTopic.de_name}
-                variant="primary"
-              >
-                Speichern
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showTagModal && editingTag && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

@@ -4,13 +4,7 @@ import { ArrowLeft, Globe, Image as ImageIcon, Tag, FolderOpen, Upload, X, Plus,
 import { supabase } from "../../lib/supabase";
 import { Button } from '../ui/Button';
 import { calculateReadingTime } from "../../lib/markdownRenderer";
-import { CATEGORY_LABELS } from "../magazine/magazineConstants";
-
-interface Topic {
-  id: string;
-  name_de: string;
-  name_en: string;
-}
+import { CATEGORIES, CATEGORY_LABELS } from "../magazine/magazineConstants";
 
 interface TagItem {
   id: string;
@@ -25,15 +19,9 @@ interface FaqItem {
   sort_order: number;
 }
 
-const CATEGORY_OPTIONS = [
-  { value: "allgemein", label: "Allgemein" },
-  { value: "finanzen", label: "Finanzen" },
-  { value: "immobilien", label: "Immobilien" },
-  { value: "mietrecht", label: "Mietrecht" },
-  { value: "nebenkosten", label: "Nebenkosten" },
-  { value: "steuern", label: "Steuern" },
-  { value: "news", label: "News" },
-];
+const CATEGORY_OPTIONS = CATEGORIES
+  .filter((c) => c !== "alle")
+  .map((c) => ({ value: c, label: CATEGORY_LABELS[c] }));
 
 export default function AdminMagazinePostEditor() {
   const { postId } = useParams();
@@ -47,7 +35,6 @@ export default function AdminMagazinePostEditor() {
   const [status, setStatus] = useState<"DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED">("DRAFT");
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [authorName, setAuthorName] = useState("Rentably Team");
-  const [primaryTopicId, setPrimaryTopicId] = useState("");
   const [category, setCategory] = useState("allgemein");
   const [isFeatured, setIsFeatured] = useState(false);
 
@@ -68,31 +55,20 @@ export default function AdminMagazinePostEditor() {
   const [enOgImageUrl, setEnOgImageUrl] = useState("");
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [topics, setTopics] = useState<Topic[]>([]);
   const [tags, setTags] = useState<TagItem[]>([]);
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
 
   const [activeLocale, setActiveLocale] = useState<"de" | "en">("de");
 
   useEffect(() => {
-    loadTopicsAndTags();
+    loadTags();
     if (isEdit) {
       loadPost();
     }
   }, [postId]);
 
-  async function loadTopicsAndTags() {
+  async function loadTags() {
     try {
-      const { data: topicsData } = await supabase
-        .from("mag_topics")
-        .select(`
-          id,
-          de:mag_topic_translations!inner(name),
-          en:mag_topic_translations(name)
-        `)
-        .eq("de.locale", "de")
-        .eq("en.locale", "en");
-
       const { data: tagsData } = await supabase
         .from("mag_tags")
         .select(`
@@ -103,14 +79,6 @@ export default function AdminMagazinePostEditor() {
         .eq("de.locale", "de")
         .eq("en.locale", "en");
 
-      if (topicsData) {
-        setTopics(topicsData.map((t: any) => ({
-          id: t.id,
-          name_de: t.de?.[0]?.name || "",
-          name_en: t.en?.[0]?.name || ""
-        })));
-      }
-
       if (tagsData) {
         setTags(tagsData.map((t: any) => ({
           id: t.id,
@@ -119,7 +87,7 @@ export default function AdminMagazinePostEditor() {
         })));
       }
     } catch (err) {
-      console.error("Error loading topics/tags:", err);
+      console.error("Error loading tags:", err);
     }
   }
 
@@ -144,7 +112,6 @@ export default function AdminMagazinePostEditor() {
       setStatus(post.status);
       setHeroImageUrl(post.hero_image_url || "");
       setAuthorName(post.author_name);
-      setPrimaryTopicId(post.primary_topic_id || "");
       setCategory(post.category || "allgemein");
       setIsFeatured(post.is_featured || false);
 
@@ -271,7 +238,6 @@ export default function AdminMagazinePostEditor() {
         status: publish ? "PUBLISHED" : status,
         hero_image_url: heroImageUrl || null,
         author_name: authorName,
-        primary_topic_id: primaryTopicId || null,
         category,
         is_featured: isFeatured,
       };
@@ -536,23 +502,6 @@ export default function AdminMagazinePostEditor() {
                 >
                   {CATEGORY_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Hauptthema
-                </label>
-                <select
-                  value={primaryTopicId}
-                  onChange={(e) => setPrimaryTopicId(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                >
-                  <option value="">Kein Thema</option>
-                  {topics.map(topic => (
-                    <option key={topic.id} value={topic.id}>
-                      {topic.name_de} / {topic.name_en}
-                    </option>
                   ))}
                 </select>
               </div>
