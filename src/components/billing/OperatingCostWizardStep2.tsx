@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AlertCircle, Plus, X, Info, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
-import { operatingCostService } from "../../lib/operatingCostService";
+import { AlertCircle, Plus, ChevronDown, ChevronUp, Trash2, RefreshCw } from "lucide-react";
+import { operatingCostService, AllocationParams } from "../../lib/operatingCostService";
 import { Button } from "../ui/Button";
 import CostGroupTable from "./CostGroupTable";
 
@@ -66,9 +65,58 @@ function buildDefaultCostItems(groupLabel: string | null): CostItem[] {
   }));
 }
 
+export function calcShare(
+  allocationKey: string,
+  amount: number,
+  alloc: AllocationParams
+): number {
+  const amt = Number(amount || 0);
+  if (amt === 0) return 0;
+
+  switch (allocationKey) {
+    case "area": {
+      const unit = Number(alloc.alloc_unit_area || 0);
+      const total = Number(alloc.alloc_total_area || 0);
+      return total > 0 ? (unit / total) * amt : 0;
+    }
+    case "persons": {
+      const unit = Number(alloc.alloc_unit_persons || 0);
+      const total = Number(alloc.alloc_total_persons || 0);
+      return total > 0 ? (unit / total) * amt : 0;
+    }
+    case "units": {
+      const total = Number(alloc.alloc_total_units || 0);
+      return total > 0 ? amt / total : 0;
+    }
+    case "mea": {
+      const unit = Number(alloc.alloc_unit_mea || 0);
+      const total = Number(alloc.alloc_total_mea || 0);
+      return total > 0 ? (unit / total) * amt : 0;
+    }
+    case "consumption": {
+      const total = Number(alloc.alloc_total_units || 0);
+      return total > 0 ? amt / total : 0;
+    }
+    case "direct":
+    case "consumption_billing":
+      return amt;
+    default:
+      return 0;
+  }
+}
+
+const DEFAULT_ALLOC: AllocationParams = {
+  alloc_unit_area: null,
+  alloc_total_area: null,
+  alloc_unit_persons: null,
+  alloc_total_persons: null,
+  alloc_total_units: null,
+  alloc_unit_mea: null,
+  alloc_total_mea: null,
+};
+
 export default function OperatingCostWizardStep2() {
   const { id: statementId } = useParams<{ id: string }>();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -80,6 +128,8 @@ export default function OperatingCostWizardStep2() {
   const [groups, setGroups] = useState<CostGroup[]>([]);
   const [showAddGroup, setShowAddGroup] = useState(false);
   const [newGroupLabel, setNewGroupLabel] = useState("");
+  const [allocParams, setAllocParams] = useState<AllocationParams>(DEFAULT_ALLOC);
+  const [loadingDefaults, setLoadingDefaults] = useState(false);
 
   useEffect(() => {
     if (statementId) {
@@ -91,21 +141,35 @@ export default function OperatingCostWizardStep2() {
     if (!statementId) return;
 
     setLoading(true);
-    const { statement, lineItems, error } =
+    const { statement: stmt, lineItems, error } =
       await operatingCostService.getStatementDetail(statementId);
 
-    if (error) {
+    if (error || !stmt) {
       setError("Fehler beim Laden der Abrechnung");
       setLoading(false);
       return;
     }
 
-    setStatement(statement);
+    setStatement(stmt);
+
+    const hasStoredAlloc = stmt.alloc_total_area != null || stmt.alloc_total_units != null;
+
+    if (hasStoredAlloc) {
+      setAllocParams({
+        alloc_unit_area: stmt.alloc_unit_area ?? null,
+        alloc_total_area: stmt.alloc_total_area ?? null,
+        alloc_unit_persons: stmt.alloc_unit_persons ?? null,
+        alloc_total_persons: stmt.alloc_total_persons ?? null,
+        alloc_total_units: stmt.alloc_total_units ?? null,
+        alloc_unit_mea: stmt.alloc_unit_mea ?? null,
+        alloc_total_mea: stmt.alloc_total_mea ?? null,
+      });
+    } else {
+      await loadDefaultsFromDb(stmt.property_id, stmt.unit_id || null, stmt.year);
+    }
 
     const groupMap = new Map<string, { standard: CostItem[]; custom: CostItem[] }>();
-
-    const mainKey = "";
-    groupMap.set(mainKey, { standard: [], custom: [] });
+    groupMap.set("", { standard: [], custom: [] });
 
     if (lineItems && lineItems.length > 0) {
       for (const item of lineItems) {
@@ -123,10 +187,8 @@ export default function OperatingCostWizardStep2() {
     }
 
     const loadedGroups: CostGroup[] = [];
-
     for (const [key, items] of groupMap.entries()) {
       const groupLabel = key || null;
-
       const costItems = COST_TYPES.map((costType) => {
         const existing = items.standard.find((i) => i.cost_type === costType);
         return existing || {
@@ -136,7 +198,6 @@ export default function OperatingCostWizardStep2() {
           group_label: groupLabel,
         };
       });
-
       loadedGroups.push({
         label: key || "Hauptabrechnung",
         costItems,
@@ -147,6 +208,19 @@ export default function OperatingCostWizardStep2() {
 
     setGroups(loadedGroups);
     setLoading(false);
+  }
+
+  async function loadDefaultsFromDb(propertyId: string, unitId: string | null, year: number) {
+    setLoadingDefaults(true);
+    const { data } = await operatingCostService.loadAllocationDefaults(propertyId, unitId, year);
+    if (data) {
+      setAllocParams(data);
+    }
+    setLoadingDefaults(false);
+  }
+
+  function updateAllocParam(key: keyof AllocationParams, value: number | null) {
+    setAllocParams((prev) => ({ ...prev, [key]: value }));
   }
 
   function updateGroup(groupIndex: number, updated: CostGroup) {
@@ -203,6 +277,11 @@ export default function OperatingCostWizardStep2() {
     0
   );
 
+  const totalShare = allItemsFlat.reduce(
+    (sum, item) => sum + calcShare(item.allocation_key, item.amount, allocParams),
+    0
+  );
+
   async function handleSave() {
     if (!statementId) return;
 
@@ -212,18 +291,21 @@ export default function OperatingCostWizardStep2() {
     try {
       const itemsToSave = allItemsFlat.filter((item) => Number(item.amount) !== 0);
 
-      const { error } = await operatingCostService.upsertLineItems({
-        statement_id: statementId,
-        items: itemsToSave,
-      });
+      const [lineResult, allocResult] = await Promise.all([
+        operatingCostService.upsertLineItems({
+          statement_id: statementId,
+          items: itemsToSave,
+        }),
+        operatingCostService.saveAllocationParams(statementId, allocParams),
+      ]);
 
-      if (error) throw error;
+      if (lineResult.error) throw lineResult.error;
+      if (allocResult.error) throw allocResult.error;
 
       const { error: statusError } = await operatingCostService.updateStatementStatus(
         statementId,
         'draft'
       );
-
       if (statusError) throw statusError;
 
       setSaveSuccess(true);
@@ -240,9 +322,7 @@ export default function OperatingCostWizardStep2() {
 
   async function handleNext() {
     if (!statementId) return;
-
     await handleSave();
-
     if (!error) {
       navigate(`/abrechnungen/betriebskosten/${statementId}/versand`);
     }
@@ -285,9 +365,7 @@ export default function OperatingCostWizardStep2() {
                 Objekt & Jahr
               </span>
             </div>
-
             <div className="flex-1 h-0.5 bg-primary-blue -mt-6" />
-
             <div className="flex flex-col items-center flex-1">
               <div className="w-10 h-10 rounded-full bg-primary-blue text-white flex items-center justify-center font-semibold mb-2">
                 2
@@ -296,9 +374,7 @@ export default function OperatingCostWizardStep2() {
                 Kosten erfassen
               </span>
             </div>
-
             <div className="flex-1 h-0.5 bg-gray-200 -mt-6" />
-
             <div className="flex flex-col items-center flex-1">
               <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center font-semibold mb-2">
                 3
@@ -313,11 +389,7 @@ export default function OperatingCostWizardStep2() {
             Schritt 2: Betriebskosten erfassen
           </h2>
           <div className="flex items-center gap-3">
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              variant="secondary"
-            >
+            <Button onClick={handleSave} disabled={saving} variant="secondary">
               {saving ? 'Speichert...' : saveSuccess ? 'Gespeichert' : 'Speichern'}
             </Button>
           </div>
@@ -332,6 +404,152 @@ export default function OperatingCostWizardStep2() {
             </div>
           </div>
         )}
+
+        <div className="bg-white rounded-lg shadow-sm mb-6 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-dark">
+              Verteilungsgrundlagen
+            </h3>
+            {statement && (
+              <button
+                onClick={() => loadDefaultsFromDb(statement.property_id, statement.unit_id || null, statement.year)}
+                disabled={loadingDefaults}
+                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-blue transition-colors"
+                title="Werte aus den Stammdaten neu laden"
+              >
+                <RefreshCw className={`w-4 h-4 ${loadingDefaults ? 'animate-spin' : ''}`} />
+                Aus Stammdaten laden
+              </button>
+            )}
+          </div>
+          <p className="text-sm text-gray-500 mb-5">
+            Diese Werte bestimmen, wie die Kosten auf den Mieter umgelegt werden. Sie wurden aus Ihren Stammdaten vorausgefüllt und können angepasst werden.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-5">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                Wohnfläche (m²)
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Einheit</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={allocParams.alloc_unit_area ?? ""}
+                    onChange={(e) => updateAllocParam("alloc_unit_area", e.target.value ? parseFloat(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                    placeholder="0.00"
+                  />
+                </div>
+                <span className="text-gray-300 mt-5">/</span>
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Gesamt</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={allocParams.alloc_total_area ?? ""}
+                    onChange={(e) => updateAllocParam("alloc_total_area", e.target.value ? parseFloat(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                Personenzahl
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Einheit</label>
+                  <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    value={allocParams.alloc_unit_persons ?? ""}
+                    onChange={(e) => updateAllocParam("alloc_unit_persons", e.target.value ? parseInt(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                    placeholder="0"
+                  />
+                </div>
+                <span className="text-gray-300 mt-5">/</span>
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Gesamt</label>
+                  <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    value={allocParams.alloc_total_persons ?? ""}
+                    onChange={(e) => updateAllocParam("alloc_total_persons", e.target.value ? parseInt(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                Wohneinheiten
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Einheit</label>
+                  <div className="w-full px-3 py-2 border border-gray-100 rounded-lg bg-gray-50 text-sm text-gray-500">
+                    1
+                  </div>
+                </div>
+                <span className="text-gray-300 mt-5">/</span>
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Gesamt</label>
+                  <input
+                    type="number"
+                    step="1"
+                    min="1"
+                    value={allocParams.alloc_total_units ?? ""}
+                    onChange={(e) => updateAllocParam("alloc_total_units", e.target.value ? parseInt(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                MEA (Miteigentumsanteile)
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Einheit</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={allocParams.alloc_unit_mea ?? ""}
+                    onChange={(e) => updateAllocParam("alloc_unit_mea", e.target.value ? parseFloat(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                    placeholder="0"
+                  />
+                </div>
+                <span className="text-gray-300 mt-5">/</span>
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Gesamt</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={allocParams.alloc_total_mea ?? ""}
+                    onChange={(e) => updateAllocParam("alloc_total_mea", e.target.value ? parseFloat(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {groups.map((group, groupIndex) => (
           <div key={groupIndex} className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
@@ -386,6 +604,7 @@ export default function OperatingCostWizardStep2() {
               <CostGroupTable
                 group={group}
                 groupIndex={groupIndex}
+                allocParams={allocParams}
                 onUpdateGroup={(updated) => updateGroup(groupIndex, updated)}
               />
             )}
@@ -416,18 +635,11 @@ export default function OperatingCostWizardStep2() {
                   className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   autoFocus
                 />
-                <Button
-                  onClick={addGroup}
-                  disabled={!newGroupLabel.trim()}
-                  variant="primary"
-                >
+                <Button onClick={addGroup} disabled={!newGroupLabel.trim()} variant="primary">
                   Hinzufügen
                 </Button>
                 <Button
-                  onClick={() => {
-                    setShowAddGroup(false);
-                    setNewGroupLabel("");
-                  }}
+                  onClick={() => { setShowAddGroup(false); setNewGroupLabel(""); }}
                   variant="secondary"
                 >
                   Abbrechen
@@ -449,27 +661,39 @@ export default function OperatingCostWizardStep2() {
                 </p>
               </div>
               <p className="text-2xl font-bold text-blue-900">
-                {totalCosts.toLocaleString("de-DE", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{" "}
-                EUR
+                {totalCosts.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}EUR
               </p>
             </div>
           </div>
         )}
 
+        <div className="bg-green-50 border border-green-200 rounded-lg p-5 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-green-900">
+                Geschätzter Mieteranteil (gesamt)
+              </p>
+              <p className="text-xs text-green-700 mt-0.5">
+                Basierend auf den Verteilungsgrundlagen, ohne zeitanteilige Berechnung
+              </p>
+            </div>
+            <p className="text-2xl font-bold text-green-900">
+              {totalShare.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}EUR
+            </p>
+          </div>
+        </div>
+
         <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4 mb-6">
           <p className="text-sm font-medium text-blue-900 mb-2">Hinweise zur Erfassung:</p>
           <ul className="list-disc list-inside space-y-1 text-sm text-blue-900">
             <li>
+              Die <strong>Verteilungsgrundlagen</strong> oben bestimmen den Mieteranteil. Passen Sie die Werte an, wenn sie von den Stammdaten abweichen.
+            </li>
+            <li>
               Der <strong>Umlageschlüssel</strong> bestimmt, wie die Kosten auf die Mieter verteilt werden.
             </li>
             <li>
-              Markieren Sie Kosten als <strong>§35a EStG-relevant</strong>, wenn diese steuerlich absetzbar sind (z.B. Hauswart, Gartenpflege, Schornsteinreinigung).
-            </li>
-            <li>
-              Wählen Sie die passende <strong>Kategorie</strong>: Haushaltsnahe Dienstleistungen (max. 4.000 EUR/Jahr) oder Handwerkerleistungen (max. 1.200 EUR/Jahr).
+              Markieren Sie Kosten als <strong>§35a EStG-relevant</strong>, wenn diese steuerlich absetzbar sind.
             </li>
             {groups.length > 1 && (
               <li>
@@ -480,14 +704,9 @@ export default function OperatingCostWizardStep2() {
         </div>
 
         <div className="flex items-center justify-between">
-          <Button
-            onClick={handleBack}
-            variant="secondary"
-            disabled={saving}
-          >
+          <Button onClick={handleBack} variant="secondary" disabled={saving}>
             Zurück
           </Button>
-
           <Button
             onClick={handleNext}
             disabled={saving || allItemsFlat.every((item) => Number(item.amount) === 0)}

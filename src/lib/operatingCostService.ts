@@ -1,5 +1,15 @@
 import { supabase } from './supabase';
 
+export interface AllocationParams {
+  alloc_unit_area: number | null;
+  alloc_total_area: number | null;
+  alloc_unit_persons: number | null;
+  alloc_total_persons: number | null;
+  alloc_total_units: number | null;
+  alloc_unit_mea: number | null;
+  alloc_total_mea: number | null;
+}
+
 export interface OperatingCostStatement {
   id: string;
   user_id: string;
@@ -8,6 +18,13 @@ export interface OperatingCostStatement {
   year: number;
   status: 'draft' | 'ready' | 'sent';
   total_costs: number;
+  alloc_unit_area?: number | null;
+  alloc_total_area?: number | null;
+  alloc_unit_persons?: number | null;
+  alloc_total_persons?: number | null;
+  alloc_total_units?: number | null;
+  alloc_unit_mea?: number | null;
+  alloc_total_mea?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -290,73 +307,86 @@ export const operatingCostService = {
           (effectiveEnd.getTime() - effectiveStart.getTime()) / (1000 * 60 * 60 * 24)
         ) + 1;
 
-        const unitArea = unit?.area_sqm || 0;
+        const unitArea = statement.alloc_unit_area != null
+          ? Number(statement.alloc_unit_area)
+          : Number(unit?.area_sqm || 0);
+
+        const hasStoredAlloc = statement.alloc_total_area != null || statement.alloc_total_units != null;
 
         let costShare = 0;
 
         if (lineItems && lineItems.length > 0) {
           for (const lineItem of lineItems) {
             let share = 0;
+            const amt = Number(lineItem.amount);
 
-            if (lineItem.allocation_key === 'area') {
-              const { data: allUnits } = await supabase
-                .from('property_units')
-                .select('area_sqm')
-                .eq('property_id', statement.property_id);
-
-              const totalArea = allUnits?.reduce(
-                (sum, u) => sum + Number(u.area_sqm || 0),
-                0
-              ) || 1;
-
-              share = (Number(unitArea) / totalArea) * Number(lineItem.amount);
-            } else if (lineItem.allocation_key === 'units') {
-              const { count } = await supabase
-                .from('property_units')
-                .select('*', { count: 'exact', head: true })
-                .eq('property_id', statement.property_id);
-
-              share = Number(lineItem.amount) / (count || 1);
-            } else if (lineItem.allocation_key === 'persons') {
-              const { count } = await supabase
-                .from('property_units')
-                .select('*', { count: 'exact', head: true })
-                .eq('property_id', statement.property_id);
-
-              share = Number(lineItem.amount) / (count || 1);
-            } else if (lineItem.allocation_key === 'consumption') {
-              const { count } = await supabase
-                .from('property_units')
-                .select('*', { count: 'exact', head: true })
-                .eq('property_id', statement.property_id);
-
-              share = Number(lineItem.amount) / (count || 1);
-            } else if (lineItem.allocation_key === 'mea') {
-              const { data: allUnitsWithMea } = await supabase
-                .from('property_units')
-                .select('id, mea')
-                .eq('property_id', statement.property_id);
-
-              const parseMea = (mea: string | null): { numerator: number; denominator: number } => {
-                if (!mea) return { numerator: 0, denominator: 10000 };
-                const parts = mea.split('/').map(s => Number(s.trim()));
-                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] > 0) {
-                  return { numerator: parts[0], denominator: parts[1] };
-                }
-                return { numerator: 0, denominator: 10000 };
-              };
-
-              const unitMea = parseMea(unit?.mea);
-              const totalMeaNumerator = allUnitsWithMea?.reduce((sum, u) => {
-                return sum + parseMea(u.mea).numerator;
-              }, 0) || 1;
-              const denominator = unitMea.denominator || 10000;
-
-              if (totalMeaNumerator > 0) {
-                share = (unitMea.numerator / totalMeaNumerator) * Number(lineItem.amount);
+            if (hasStoredAlloc) {
+              if (lineItem.allocation_key === 'area') {
+                const uArea = Number(statement.alloc_unit_area || 0);
+                const tArea = Number(statement.alloc_total_area || 0);
+                share = tArea > 0 ? (uArea / tArea) * amt : 0;
+              } else if (lineItem.allocation_key === 'units') {
+                const tUnits = Number(statement.alloc_total_units || 0);
+                share = tUnits > 0 ? amt / tUnits : 0;
+              } else if (lineItem.allocation_key === 'persons') {
+                const uPers = Number(statement.alloc_unit_persons || 0);
+                const tPers = Number(statement.alloc_total_persons || 0);
+                share = tPers > 0 ? (uPers / tPers) * amt : 0;
+              } else if (lineItem.allocation_key === 'consumption') {
+                const tUnits = Number(statement.alloc_total_units || 0);
+                share = tUnits > 0 ? amt / tUnits : 0;
+              } else if (lineItem.allocation_key === 'mea') {
+                const uMea = Number(statement.alloc_unit_mea || 0);
+                const tMea = Number(statement.alloc_total_mea || 0);
+                share = tMea > 0 ? (uMea / tMea) * amt : 0;
+              } else if (lineItem.allocation_key === 'direct' || lineItem.allocation_key === 'consumption_billing') {
+                share = amt;
               }
-            } else if (lineItem.allocation_key === 'direct' || lineItem.allocation_key === 'consumption_billing') {
-              share = Number(lineItem.amount);
+            } else {
+              if (lineItem.allocation_key === 'area') {
+                const { data: allUnits } = await supabase
+                  .from('property_units')
+                  .select('area_sqm')
+                  .eq('property_id', statement.property_id);
+                const totalArea = allUnits?.reduce((sum, u) => sum + Number(u.area_sqm || 0), 0) || 1;
+                share = (Number(unit?.area_sqm || 0) / totalArea) * amt;
+              } else if (lineItem.allocation_key === 'units') {
+                const { count } = await supabase
+                  .from('property_units')
+                  .select('*', { count: 'exact', head: true })
+                  .eq('property_id', statement.property_id);
+                share = amt / (count || 1);
+              } else if (lineItem.allocation_key === 'persons') {
+                const { count } = await supabase
+                  .from('property_units')
+                  .select('*', { count: 'exact', head: true })
+                  .eq('property_id', statement.property_id);
+                share = amt / (count || 1);
+              } else if (lineItem.allocation_key === 'consumption') {
+                const { count } = await supabase
+                  .from('property_units')
+                  .select('*', { count: 'exact', head: true })
+                  .eq('property_id', statement.property_id);
+                share = amt / (count || 1);
+              } else if (lineItem.allocation_key === 'mea') {
+                const { data: allUnitsWithMea } = await supabase
+                  .from('property_units')
+                  .select('id, mea')
+                  .eq('property_id', statement.property_id);
+                const parseMea = (mea: string | null): number => {
+                  if (!mea) return 0;
+                  const parts = mea.split('/').map(s => Number(s.trim()));
+                  if (parts.length === 2 && !isNaN(parts[0]) && parts[1] > 0) return parts[0];
+                  return 0;
+                };
+                const unitMeaVal = parseMea(unit?.mea);
+                const totalMeaNumerator = allUnitsWithMea?.reduce((sum, u) => sum + parseMea(u.mea), 0) || 1;
+                if (totalMeaNumerator > 0) {
+                  share = (unitMeaVal / totalMeaNumerator) * amt;
+                }
+              } else if (lineItem.allocation_key === 'direct' || lineItem.allocation_key === 'consumption_billing') {
+                share = amt;
+              }
             }
 
             const proRatedShare = (share * daysInPeriod) / totalDaysInYear;
@@ -642,6 +672,114 @@ export const operatingCostService = {
     } catch (error) {
       console.error('Error getting pdfs:', error);
       return { data: null, error };
+    }
+  },
+
+  async loadAllocationDefaults(
+    propertyId: string,
+    unitId: string | null,
+    year: number
+  ): Promise<{ data: AllocationParams | null; error: any }> {
+    try {
+      const { data: allUnits } = await supabase
+        .from('property_units')
+        .select('id, area_sqm, mea')
+        .eq('property_id', propertyId);
+
+      let unitArea = 0;
+      let totalArea = 0;
+      let totalUnits = allUnits?.length || 0;
+      let unitMea = 0;
+      let totalMea = 0;
+
+      const parseMea = (mea: string | null): number => {
+        if (!mea) return 0;
+        const parts = mea.split('/').map(s => Number(s.trim()));
+        if (parts.length === 2 && !isNaN(parts[0]) && parts[1] > 0) {
+          return parts[0];
+        }
+        return 0;
+      };
+
+      if (allUnits) {
+        totalArea = allUnits.reduce((sum, u) => sum + Number(u.area_sqm || 0), 0);
+        totalMea = allUnits.reduce((sum, u) => sum + parseMea(u.mea), 0);
+
+        if (unitId) {
+          const unit = allUnits.find(u => u.id === unitId);
+          if (unit) {
+            unitArea = Number(unit.area_sqm || 0);
+            unitMea = parseMea(unit.mea);
+          }
+        }
+      }
+
+      const periodStart = `${year}-01-01`;
+      const periodEnd = `${year}-12-31`;
+
+      let contractsQuery = supabase
+        .from('rental_contracts')
+        .select('tenant_id, unit_id')
+        .eq('property_id', propertyId)
+        .or(`contract_end.is.null,contract_end.gte.${periodStart}`)
+        .lte('contract_start', periodEnd);
+
+      const { data: contracts } = await contractsQuery;
+
+      let unitPersons = 0;
+      let totalPersons = 0;
+
+      if (contracts && contracts.length > 0) {
+        const tenantIds = [...new Set(contracts.map(c => c.tenant_id))];
+        const { data: tenants } = await supabase
+          .from('tenants')
+          .select('id, household_size')
+          .in('id', tenantIds);
+
+        if (tenants) {
+          totalPersons = tenants.reduce((sum, t) => sum + Number(t.household_size || 1), 0);
+
+          if (unitId) {
+            const unitContracts = contracts.filter(c => c.unit_id === unitId);
+            const unitTenantIds = unitContracts.map(c => c.tenant_id);
+            const unitTenants = tenants.filter(t => unitTenantIds.includes(t.id));
+            unitPersons = unitTenants.reduce((sum, t) => sum + Number(t.household_size || 1), 0);
+          }
+        }
+      }
+
+      return {
+        data: {
+          alloc_unit_area: unitArea || null,
+          alloc_total_area: totalArea || null,
+          alloc_unit_persons: unitPersons || null,
+          alloc_total_persons: totalPersons || null,
+          alloc_total_units: totalUnits || null,
+          alloc_unit_mea: unitMea || null,
+          alloc_total_mea: totalMea || null,
+        },
+        error: null,
+      };
+    } catch (error) {
+      console.error('Error loading allocation defaults:', error);
+      return { data: null, error };
+    }
+  },
+
+  async saveAllocationParams(
+    statementId: string,
+    params: AllocationParams
+  ): Promise<{ error: any }> {
+    try {
+      const { error } = await supabase
+        .from('operating_cost_statements')
+        .update(params)
+        .eq('id', statementId);
+
+      return { error };
+    } catch (error) {
+      console.error('Error saving allocation params:', error);
+      return { error };
     }
   },
 };
