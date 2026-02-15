@@ -1,20 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AlertCircle, Plus, X, Info } from "lucide-react";
+import { AlertCircle, Plus, X, Info, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService } from "../../lib/operatingCostService";
 import { Button } from "../ui/Button";
+import CostGroupTable from "./CostGroupTable";
 
-interface CostItem {
+export interface CostItem {
   id?: string;
   cost_type: string;
   allocation_key: "area" | "persons" | "units" | "consumption" | "mea" | "direct" | "consumption_billing";
   amount: number;
   is_section_35a?: boolean;
   section_35a_category?: "haushaltsnahe_dienstleistungen" | "handwerkerleistungen" | null;
+  group_label?: string | null;
 }
 
-const COST_TYPES = [
+export const COST_TYPES = [
   "Grundsteuer",
   "Wasserversorgung (kalt)",
   "Entwässerung/Abwasser",
@@ -38,7 +40,7 @@ const COST_TYPES = [
   "Sonstige Betriebskosten",
 ];
 
-const ALLOCATION_OPTIONS = [
+export const ALLOCATION_OPTIONS = [
   { value: "area", label: "Wohnfläche (m²)" },
   { value: "persons", label: "Personenzahl" },
   { value: "units", label: "Wohneinheiten" },
@@ -47,6 +49,22 @@ const ALLOCATION_OPTIONS = [
   { value: "direct", label: "Direktumlage" },
   { value: "consumption_billing", label: "lt. Verbrauchsabrechnung" },
 ];
+
+interface CostGroup {
+  label: string;
+  costItems: CostItem[];
+  customCostItems: CostItem[];
+  collapsed: boolean;
+}
+
+function buildDefaultCostItems(groupLabel: string | null): CostItem[] {
+  return COST_TYPES.map((costType) => ({
+    cost_type: costType,
+    allocation_key: "area" as const,
+    amount: 0,
+    group_label: groupLabel,
+  }));
+}
 
 export default function OperatingCostWizardStep2() {
   const { id: statementId } = useParams<{ id: string }>();
@@ -59,9 +77,9 @@ export default function OperatingCostWizardStep2() {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const [statement, setStatement] = useState<any>(null);
-  const [costItems, setCostItems] = useState<CostItem[]>([]);
-  const [customCostItems, setCustomCostItems] = useState<CostItem[]>([]);
-  const [newCostType, setNewCostType] = useState("");
+  const [groups, setGroups] = useState<CostGroup[]>([]);
+  const [showAddGroup, setShowAddGroup] = useState(false);
+  const [newGroupLabel, setNewGroupLabel] = useState("");
 
   useEffect(() => {
     if (statementId) {
@@ -84,84 +102,103 @@ export default function OperatingCostWizardStep2() {
 
     setStatement(statement);
 
-    const initialItems: CostItem[] = COST_TYPES.map((costType) => {
-      const existingItem = lineItems?.find(
-        (item) => item.cost_type === costType
-      );
+    const groupMap = new Map<string, { standard: CostItem[]; custom: CostItem[] }>();
 
-      return existingItem || {
-        cost_type: costType,
-        allocation_key: "area",
-        amount: 0,
-      };
-    });
+    const mainKey = "";
+    groupMap.set(mainKey, { standard: [], custom: [] });
 
-    const customItems = lineItems?.filter(
-      (item) => !COST_TYPES.includes(item.cost_type)
-    ) || [];
+    if (lineItems && lineItems.length > 0) {
+      for (const item of lineItems) {
+        const key = item.group_label || "";
+        if (!groupMap.has(key)) {
+          groupMap.set(key, { standard: [], custom: [] });
+        }
+        const group = groupMap.get(key)!;
+        if (COST_TYPES.includes(item.cost_type)) {
+          group.standard.push(item);
+        } else {
+          group.custom.push(item);
+        }
+      }
+    }
 
-    setCostItems(initialItems);
-    setCustomCostItems(customItems);
+    const loadedGroups: CostGroup[] = [];
 
+    for (const [key, items] of groupMap.entries()) {
+      const groupLabel = key || null;
+
+      const costItems = COST_TYPES.map((costType) => {
+        const existing = items.standard.find((i) => i.cost_type === costType);
+        return existing || {
+          cost_type: costType,
+          allocation_key: "area" as const,
+          amount: 0,
+          group_label: groupLabel,
+        };
+      });
+
+      loadedGroups.push({
+        label: key || "Hauptabrechnung",
+        costItems,
+        customCostItems: items.custom,
+        collapsed: false,
+      });
+    }
+
+    setGroups(loadedGroups);
     setLoading(false);
   }
 
-  function updateCostItem(
-    index: number,
-    field: "allocation_key" | "amount" | "is_section_35a" | "section_35a_category",
-    value: any
-  ) {
-    const updated = [...costItems];
-    updated[index] = {
-      ...updated[index],
-      [field]: value,
-    };
+  function updateGroup(groupIndex: number, updated: CostGroup) {
+    setGroups((prev) => prev.map((g, i) => (i === groupIndex ? updated : g)));
+  }
 
-    if (field === "is_section_35a" && value === false) {
-      updated[index].section_35a_category = null;
+  function removeGroup(groupIndex: number) {
+    if (groupIndex === 0) return;
+    setGroups((prev) => prev.filter((_, i) => i !== groupIndex));
+  }
+
+  function toggleGroupCollapsed(groupIndex: number) {
+    setGroups((prev) =>
+      prev.map((g, i) =>
+        i === groupIndex ? { ...g, collapsed: !g.collapsed } : g
+      )
+    );
+  }
+
+  function addGroup() {
+    const label = newGroupLabel.trim();
+    if (!label) return;
+
+    const existingLabels = groups.map((g) => g.label.toLowerCase());
+    if (existingLabels.includes(label.toLowerCase())) {
+      setError("Eine Abrechnung mit diesem Namen existiert bereits.");
+      return;
     }
 
-    setCostItems(updated);
+    setGroups((prev) => [
+      ...prev,
+      {
+        label,
+        costItems: buildDefaultCostItems(label),
+        customCostItems: [],
+        collapsed: false,
+      },
+    ]);
+    setNewGroupLabel("");
+    setShowAddGroup(false);
+    setError(null);
   }
 
-  function updateCustomCostItem(
-    index: number,
-    field: "allocation_key" | "amount" | "is_section_35a" | "section_35a_category",
-    value: any
-  ) {
-    const updated = [...customCostItems];
-    updated[index] = {
-      ...updated[index],
-      [field]: value,
-    };
+  const allItemsFlat = groups.flatMap((g) => {
+    const groupLabel = g.label === "Hauptabrechnung" ? null : g.label;
+    return [...g.costItems, ...g.customCostItems].map((item) => ({
+      ...item,
+      group_label: groupLabel,
+    }));
+  });
 
-    if (field === "is_section_35a" && value === false) {
-      updated[index].section_35a_category = null;
-    }
-
-    setCustomCostItems(updated);
-  }
-
-  function addCustomCostType() {
-    if (!newCostType.trim()) return;
-
-    const newItem: CostItem = {
-      cost_type: newCostType.trim(),
-      allocation_key: "area",
-      amount: 0,
-    };
-
-    setCustomCostItems([...customCostItems, newItem]);
-    setNewCostType("");
-  }
-
-  function removeCustomCostItem(index: number) {
-    const updated = customCostItems.filter((_, i) => i !== index);
-    setCustomCostItems(updated);
-  }
-
-  const allCostItems = [...costItems, ...customCostItems];
-  const totalCosts = allCostItems.reduce(
+  const totalCosts = allItemsFlat.reduce(
     (sum, item) => sum + Number(item.amount || 0),
     0
   );
@@ -173,7 +210,7 @@ export default function OperatingCostWizardStep2() {
     setError(null);
 
     try {
-      const itemsToSave = allCostItems.filter((item) => Number(item.amount) !== 0);
+      const itemsToSave = allItemsFlat.filter((item) => Number(item.amount) !== 0);
 
       const { error } = await operatingCostService.upsertLineItems({
         statement_id: statementId,
@@ -271,335 +308,178 @@ export default function OperatingCostWizardStep2() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-8 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-dark">
-              Schritt 2: Betriebskosten erfassen
-            </h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-dark">
+            Schritt 2: Betriebskosten erfassen
+          </h2>
+          <div className="flex items-center gap-3">
             <Button
               onClick={handleSave}
               disabled={saving}
               variant="secondary"
             >
-              {saving ? (
-                <>
-                  Speichert...
-                </>
-              ) : saveSuccess ? (
-                <>
-                  Gespeichert
-                </>
-              ) : (
-                'Speichern'
-              )}
+              {saving ? 'Speichert...' : saveSuccess ? 'Gespeichert' : 'Speichern'}
             </Button>
-          </div>
-
-          {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-red-900 mb-1">Fehler</h4>
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          )}
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Kostenart
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Umlageschlüssel
-                  </th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-700">
-                    Betrag (EUR)
-                  </th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <span>§35a EStG</span>
-                      <div className="group relative inline-block">
-                        <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 fixed z-[99999] w-80 p-4 bg-gray-900 text-white text-sm font-normal rounded-lg shadow-2xl pointer-events-none" style={{marginTop: '-100px', marginLeft: '-150px'}}>
-                          <div className="text-left leading-relaxed">
-                            Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                    Kategorie (§35a)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {costItems.map((item, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-gray-100 hover:bg-gray-50"
-                  >
-                    <td className="py-3 px-4">
-                      <span className="text-gray-900">{item.cost_type}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <select
-                        value={item.allocation_key}
-                        onChange={(e) =>
-                          updateCostItem(
-                            index,
-                            "allocation_key",
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
-                      >
-                        {ALLOCATION_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="py-3 px-4">
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={item.amount || ""}
-                        onChange={(e) =>
-                          updateCostItem(
-                            index,
-                            "amount",
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-right"
-                        placeholder="0,00"
-                      />
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <input
-                        type="checkbox"
-                        checked={item.is_section_35a || false}
-                        onChange={(e) =>
-                          updateCostItem(
-                            index,
-                            "is_section_35a",
-                            e.target.checked
-                          )
-                        }
-                        className="w-5 h-5 text-primary-blue focus:ring-2 focus:ring-primary-blue rounded"
-                      />
-                    </td>
-                    <td className="py-3 px-4">
-                      <select
-                        value={item.section_35a_category || ""}
-                        onChange={(e) =>
-                          updateCostItem(
-                            index,
-                            "section_35a_category",
-                            e.target.value || null
-                          )
-                        }
-                        disabled={!item.is_section_35a}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm disabled:bg-gray-50 disabled:text-gray-400"
-                      >
-                        <option value="">Bitte wählen</option>
-                        <option value="haushaltsnahe_dienstleistungen">Haushaltsnahe Dienstleistungen</option>
-                        <option value="handwerkerleistungen">Handwerkerleistungen</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-gray-300">
-                  <td colSpan={2} className="py-4 px-4 text-right font-bold">
-                    Gesamtkosten:
-                  </td>
-                  <td className="py-4 px-4 text-right font-bold text-lg text-primary-blue">
-                    {totalCosts.toLocaleString("de-DE", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{" "}
-                    €
-                  </td>
-                  <td colSpan={2}></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4 mt-6">
-            <p className="text-sm font-medium text-blue-900 mb-2">Hinweise zur Erfassung:</p>
-            <ul className="list-disc list-inside space-y-1 text-sm text-blue-900">
-              <li>
-                Der <strong>Umlageschlüssel</strong> bestimmt, wie die Kosten auf die Mieter verteilt werden.
-              </li>
-              <li>
-                Markieren Sie Kosten als <strong>§35a EStG-relevant</strong>, wenn diese steuerlich absetzbar sind (z.B. Hauswart, Gartenpflege, Schornsteinreinigung).
-              </li>
-              <li>
-                Wählen Sie die passende <strong>Kategorie</strong>: Haushaltsnahe Dienstleistungen (max. 4.000€/Jahr) oder Handwerkerleistungen (max. 1.200€/Jahr).
-              </li>
-            </ul>
           </div>
         </div>
 
-        {customCostItems.length > 0 && (
-          <div className="bg-white rounded-lg p-8 shadow-sm mt-6">
-            <h3 className="text-lg font-semibold text-dark mb-4">Eigene Kostenarten</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                      Kostenart
-                    </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                      Umlageschlüssel
-                    </th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">
-                      Betrag (EUR)
-                    </th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <span>§35a EStG</span>
-                        <div className="group relative inline-block">
-                          <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 fixed z-[99999] w-80 p-4 bg-gray-900 text-white text-sm font-normal rounded-lg shadow-2xl pointer-events-none" style={{marginTop: '-100px', marginLeft: '-150px'}}>
-                            <div className="text-left leading-relaxed">
-                              Hinweis: Die steuerliche Einordnung erfolgt auf Basis Ihrer Auswahl. Rentably übernimmt keine steuerliche Beratung.
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                      Kategorie (§35a)
-                    </th>
-                    <th className="w-16"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customCostItems.map((item, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-gray-100 hover:bg-gray-50"
-                    >
-                      <td className="py-3 px-4">
-                        <span className="text-gray-900">{item.cost_type}</span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <select
-                          value={item.allocation_key}
-                          onChange={(e) =>
-                            updateCustomCostItem(
-                              index,
-                              "allocation_key",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
-                        >
-                          {ALLOCATION_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="py-3 px-4">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={item.amount || ""}
-                          onChange={(e) =>
-                            updateCustomCostItem(
-                              index,
-                              "amount",
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-right"
-                          placeholder="0,00"
-                        />
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <input
-                          type="checkbox"
-                          checked={item.is_section_35a || false}
-                          onChange={(e) =>
-                            updateCustomCostItem(
-                              index,
-                              "is_section_35a",
-                              e.target.checked
-                            )
-                          }
-                          className="w-5 h-5 text-primary-blue focus:ring-2 focus:ring-primary-blue rounded"
-                        />
-                      </td>
-                      <td className="py-3 px-4">
-                        <select
-                          value={item.section_35a_category || ""}
-                          onChange={(e) =>
-                            updateCustomCostItem(
-                              index,
-                              "section_35a_category",
-                              e.target.value || null
-                            )
-                          }
-                          disabled={!item.is_section_35a}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm disabled:bg-gray-50 disabled:text-gray-400"
-                        >
-                          <option value="">Bitte wählen</option>
-                          <option value="haushaltsnahe_dienstleistungen">Haushaltsnahe Dienstleistungen</option>
-                          <option value="handwerkerleistungen">Handwerkerleistungen</option>
-                        </select>
-                      </td>
-                      <td className="py-3 px-4">
-                        <button
-                          onClick={() => removeCustomCostItem(index)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Entfernen"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-medium text-red-900 mb-1">Fehler</h4>
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           </div>
         )}
 
-        <div className="bg-white rounded-lg p-8 shadow-sm mt-6">
-          <h3 className="text-lg font-semibold text-dark mb-4">Eigene Kostenart hinzufügen</h3>
-          <div className="flex gap-4">
-            <input
-              type="text"
-              value={newCostType}
-              onChange={(e) => setNewCostType(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addCustomCostType()}
-              placeholder="z.B. Hausmeisterdienst"
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            />
-            <Button
-              onClick={addCustomCostType}
-              disabled={!newCostType.trim()}
-              variant="primary"
+        {groups.map((group, groupIndex) => (
+          <div key={groupIndex} className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
+            <div
+              className="flex items-center justify-between px-6 py-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => toggleGroupCollapsed(groupIndex)}
             >
-              Hinzufügen
-            </Button>
+              <div className="flex items-center gap-3">
+                {group.collapsed ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                )}
+                <h3 className="text-lg font-semibold text-dark">
+                  {group.label}
+                </h3>
+                <span className="text-sm text-gray-400">
+                  ({group.costItems
+                    .concat(group.customCostItems)
+                    .filter((i) => Number(i.amount) > 0).length} Positionen)
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-lg font-semibold text-primary-blue">
+                  {group.costItems
+                    .concat(group.customCostItems)
+                    .reduce((sum, item) => sum + Number(item.amount || 0), 0)
+                    .toLocaleString("de-DE", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                  EUR
+                </span>
+                {groupIndex > 0 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`"${group.label}" wirklich entfernen?`)) {
+                        removeGroup(groupIndex);
+                      }
+                    }}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Abrechnung entfernen"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {!group.collapsed && (
+              <CostGroupTable
+                group={group}
+                groupIndex={groupIndex}
+                onUpdateGroup={(updated) => updateGroup(groupIndex, updated)}
+              />
+            )}
           </div>
+        ))}
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          {!showAddGroup ? (
+            <button
+              onClick={() => setShowAddGroup(true)}
+              className="flex items-center gap-2 text-primary-blue hover:text-blue-700 font-medium transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Weitere Abrechnung hinzufügen (z.B. Stellplatz, Garage)
+            </button>
+          ) : (
+            <div>
+              <p className="text-sm text-gray-600 mb-3">
+                Fügen Sie eine weitere Abrechnung hinzu, z.B. wenn Sie eine separate Betriebskostenabrechnung für einen Stellplatz oder eine Garage von der Hausverwaltung erhalten.
+              </p>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={newGroupLabel}
+                  onChange={(e) => setNewGroupLabel(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addGroup()}
+                  placeholder="z.B. Stellplatz, Garage, Tiefgarage..."
+                  className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  autoFocus
+                />
+                <Button
+                  onClick={addGroup}
+                  disabled={!newGroupLabel.trim()}
+                  variant="primary"
+                >
+                  Hinzufügen
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAddGroup(false);
+                    setNewGroupLabel("");
+                  }}
+                  variant="secondary"
+                >
+                  Abbrechen
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center justify-between mt-6">
+        {groups.length > 1 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-900">
+                  Gesamtkosten aller Abrechnungen
+                </p>
+                <p className="text-xs text-blue-700 mt-0.5">
+                  {groups.length} Abrechnungen werden in Schritt 3 kumuliert dargestellt
+                </p>
+              </div>
+              <p className="text-2xl font-bold text-blue-900">
+                {totalCosts.toLocaleString("de-DE", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                EUR
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4 mb-6">
+          <p className="text-sm font-medium text-blue-900 mb-2">Hinweise zur Erfassung:</p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-blue-900">
+            <li>
+              Der <strong>Umlageschlüssel</strong> bestimmt, wie die Kosten auf die Mieter verteilt werden.
+            </li>
+            <li>
+              Markieren Sie Kosten als <strong>§35a EStG-relevant</strong>, wenn diese steuerlich absetzbar sind (z.B. Hauswart, Gartenpflege, Schornsteinreinigung).
+            </li>
+            <li>
+              Wählen Sie die passende <strong>Kategorie</strong>: Haushaltsnahe Dienstleistungen (max. 4.000 EUR/Jahr) oder Handwerkerleistungen (max. 1.200 EUR/Jahr).
+            </li>
+            {groups.length > 1 && (
+              <li>
+                <strong>Mehrere Abrechnungen:</strong> Alle erfassten Kosten werden in der Gesamtabrechnung für den Mieter kumuliert dargestellt.
+              </li>
+            )}
+          </ul>
+        </div>
+
+        <div className="flex items-center justify-between">
           <Button
             onClick={handleBack}
             variant="secondary"
@@ -610,16 +490,10 @@ export default function OperatingCostWizardStep2() {
 
           <Button
             onClick={handleNext}
-            disabled={saving || allCostItems.every((item) => Number(item.amount) === 0)}
+            disabled={saving || allItemsFlat.every((item) => Number(item.amount) === 0)}
             variant="primary"
           >
-            {saving ? (
-              <>
-                Speichert...
-              </>
-            ) : (
-              'Weiter'
-            )}
+            {saving ? 'Speichert...' : 'Weiter'}
           </Button>
         </div>
       </div>

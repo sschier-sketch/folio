@@ -23,6 +23,7 @@ interface PdfData {
     shareAmount: number;
     is_section_35a?: boolean;
     section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
+    group_label?: string | null;
   }>;
   costShare: number;
   prepayments: number;
@@ -187,6 +188,7 @@ export async function generateOperatingCostPdf(
         shareAmount,
         is_section_35a: item.is_section_35a || false,
         section_35a_category: item.section_35a_category || null,
+        group_label: item.group_label || null,
       };
     });
 
@@ -379,16 +381,52 @@ function createPdf(data: PdfData): Blob {
   doc.line(M_LEFT, currentY, PAGE_W - M_RIGHT, currentY);
   currentY += 8;
 
-  const tableData = data.lineItems.map((item) => [
-    item.cost_type,
-    getAllocationKeyLabel(item.allocation_key),
-    `${item.amount.toFixed(2)} €`,
-    item.share,
-    `${item.shareAmount.toFixed(2)} €`,
-  ]);
+  const groupLabels = [...new Set(data.lineItems.map((item) => item.group_label || null))];
+  const hasMultipleGroups = groupLabels.length > 1 || (groupLabels.length === 1 && groupLabels[0] !== null);
+  const tableData: any[] = [];
+
+  if (hasMultipleGroups) {
+    for (const label of groupLabels) {
+      const groupItems = data.lineItems.filter((item) => (item.group_label || null) === label);
+      const groupName = label || 'Hauptabrechnung';
+
+      tableData.push([
+        { content: groupName, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [240, 240, 240], fontSize: 8 } },
+      ]);
+
+      for (const item of groupItems) {
+        tableData.push([
+          item.cost_type,
+          getAllocationKeyLabel(item.allocation_key),
+          `${item.amount.toFixed(2)} €`,
+          item.share,
+          `${item.shareAmount.toFixed(2)} €`,
+        ]);
+      }
+
+      const groupTotal = groupItems.reduce((sum, item) => sum + item.amount, 0);
+      const groupShareTotal = groupItems.reduce((sum, item) => sum + item.shareAmount, 0);
+      tableData.push([
+        { content: `Zwischensumme ${groupName}`, colSpan: 2, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } },
+        { content: `${groupTotal.toFixed(2)} €`, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } },
+        '',
+        { content: `${groupShareTotal.toFixed(2)} €`, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } },
+      ]);
+    }
+  } else {
+    for (const item of data.lineItems) {
+      tableData.push([
+        item.cost_type,
+        getAllocationKeyLabel(item.allocation_key),
+        `${item.amount.toFixed(2)} €`,
+        item.share,
+        `${item.shareAmount.toFixed(2)} €`,
+      ]);
+    }
+  }
 
   tableData.push([
-    { content: 'Summe Betriebskosten', colSpan: 2, styles: { fontStyle: 'bold' } },
+    { content: hasMultipleGroups ? 'Gesamtsumme Betriebskosten' : 'Summe Betriebskosten', colSpan: 2, styles: { fontStyle: 'bold' } },
     `${data.lineItems.reduce((sum, item) => sum + item.amount, 0).toFixed(2)} €`,
     '',
     { content: `${data.costShare.toFixed(2)} €`, styles: { fontStyle: 'bold' } },
