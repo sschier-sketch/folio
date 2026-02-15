@@ -83,6 +83,11 @@ const KNOWN_JOBS: Record<string, JobMeta> = {
       "Fuehrt automatische Indexmieten-Berechnungen durch und aktualisiert Mietpreise basierend auf dem VPI.",
     type: "edge_function",
   },
+  "daily-sitemap-generation": {
+    description:
+      "Generiert die sitemap.xml mit allen oeffentlichen Seiten, Magazin-Beitraegen und CMS-Seiten fuer Google und andere Suchmaschinen.",
+    type: "edge_function",
+  },
 };
 
 const EXPECTED_EDGE_JOBS = [
@@ -92,6 +97,7 @@ const EXPECTED_EDGE_JOBS = [
   "process-loan-reminders",
   "create-rent-increase-reminders",
   "run-index-rent-calculations",
+  "daily-sitemap-generation",
 ];
 
 function parseCronSchedule(schedule: string): string {

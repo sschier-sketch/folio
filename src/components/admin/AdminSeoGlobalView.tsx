@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lock } from "lucide-react";
+import { Lock, RefreshCw, CheckCircle2, Map } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { clearSeoCache } from "../../lib/seoResolver";
 import { Button } from '../ui/Button';
@@ -10,11 +10,16 @@ interface GlobalSettings {
   default_title: string;
   default_description: string;
   default_robots_index: boolean;
+  sitemap_enabled: boolean;
+  sitemap_generated_at: string | null;
 }
 
 export default function AdminSeoGlobalView() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const [regenerating, setRegenerating] = useState(false);
+  const [regenerateSuccess, setRegenerateSuccess] = useState(false);
   const [settings, setSettings] = useState<GlobalSettings>({
     id: "",
     title_template: "%s – Rentably",
@@ -22,6 +27,8 @@ export default function AdminSeoGlobalView() {
     default_description:
       "Die moderne Plattform für Vermieter. Verwalten Sie Ihre Immobilien, Mieter und Finanzen an einem Ort.",
     default_robots_index: true,
+    sitemap_enabled: true,
+    sitemap_generated_at: null,
   });
 
   useEffect(() => {
@@ -61,6 +68,7 @@ export default function AdminSeoGlobalView() {
           default_title: settings.default_title,
           default_description: settings.default_description,
           default_robots_index: settings.default_robots_index,
+          sitemap_enabled: settings.sitemap_enabled,
         })
         .eq("id", settings.id);
 
@@ -180,6 +188,99 @@ export default function AdminSeoGlobalView() {
                 Dieser Wert wird für neue öffentliche Seiten als Standard verwendet. Bestehende
                 Seiten werden nicht beeinflusst.
               </p>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-dark mb-4 flex items-center gap-2">
+              <Map className="w-5 h-5 text-gray-500" />
+              Sitemap
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={settings.sitemap_enabled}
+                    onClick={() => setSettings({ ...settings, sitemap_enabled: !settings.sitemap_enabled })}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      settings.sitemap_enabled ? "bg-blue-600" : "bg-gray-200"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        settings.sitemap_enabled ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <label className="text-sm font-medium text-dark">
+                    Sitemap generieren
+                  </label>
+                </div>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  disabled={regenerating || !settings.sitemap_enabled}
+                  onClick={async () => {
+                    setRegenerating(true);
+                    setRegenerateSuccess(false);
+                    try {
+                      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sitemap?refresh=true`;
+                      const res = await fetch(url, {
+                        headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+                      });
+                      if (!res.ok) throw new Error("Fehler beim Generieren");
+                      setRegenerateSuccess(true);
+                      await loadSettings();
+                      setTimeout(() => setRegenerateSuccess(false), 3000);
+                    } catch {
+                      alert("Fehler beim Generieren der Sitemap");
+                    } finally {
+                      setRegenerating(false);
+                    }
+                  }}
+                >
+                  {regenerating ? (
+                    <RefreshCw className="w-4 h-4 mr-1.5 animate-spin" />
+                  ) : regenerateSuccess ? (
+                    <CheckCircle2 className="w-4 h-4 mr-1.5 text-emerald-600" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4 mr-1.5" />
+                  )}
+                  {regenerateSuccess ? "Generiert" : "Jetzt generieren"}
+                </Button>
+              </div>
+
+              <p className="text-xs text-gray-500">
+                Die Sitemap wird automatisch taeglich um 04:00 Uhr UTC aktualisiert und enthaelt
+                alle oeffentlichen, indexierbaren Seiten, Magazin-Beitraege und CMS-Seiten.
+              </p>
+
+              {settings.sitemap_generated_at && (
+                <div className="bg-gray-50 rounded-lg px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500">Letzte Generierung</p>
+                    <p className="text-sm font-medium text-gray-700">
+                      {new Date(settings.sitemap_generated_at).toLocaleString("de-DE", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <a
+                    href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sitemap`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    Sitemap ansehen
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
