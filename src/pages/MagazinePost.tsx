@@ -1,10 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { RefLink } from "../components/common/RefLink";
 import { renderMarkdown, extractHeadings } from "../lib/markdownRenderer";
+import {
+  isBlockContent,
+  parseContentBlocks,
+  renderBlocksToHtml,
+  extractHeadingsFromBlocks,
+} from "../lib/contentBlocks";
 import { CATEGORY_LABELS } from "../components/magazine/magazineConstants";
 import ArticleTableOfContents from "../components/magazine/ArticleTableOfContents";
 import ArticleFaq from "../components/magazine/ArticleFaq";
@@ -16,6 +22,7 @@ interface Post {
   title: string;
   excerpt?: string;
   content: string;
+  summary_points?: string[];
   hero_image_url?: string;
   author_name: string;
   published_at: string;
@@ -90,7 +97,7 @@ export function MagazinePost() {
           published_at,
           category,
           translations:mag_post_translations!inner(
-            title, slug, excerpt, content, reading_time_minutes,
+            title, slug, excerpt, content, summary_points, reading_time_minutes,
             seo_title, seo_description, og_image_url
           )
         `)
@@ -112,6 +119,7 @@ export function MagazinePost() {
         title: t.title,
         excerpt: t.excerpt,
         content: t.content,
+        summary_points: Array.isArray(t.summary_points) ? t.summary_points : [],
         hero_image_url: data.hero_image_url,
         author_name: data.author_name,
         published_at: data.published_at,
@@ -189,14 +197,30 @@ export function MagazinePost() {
     }
   }
 
-  const headings = useMemo(
-    () => (post?.content ? extractHeadings(post.content) : []),
+  const isBlocks = useMemo(
+    () => post?.content ? isBlockContent(post.content) : false,
     [post?.content]
   );
 
-  const htmlContent = useMemo(
-    () => (post?.content ? renderMarkdown(post.content) : ""),
-    [post?.content]
+  const headings = useMemo(() => {
+    if (!post?.content) return [];
+    if (isBlocks) {
+      return extractHeadingsFromBlocks(parseContentBlocks(post.content));
+    }
+    return extractHeadings(post.content);
+  }, [post?.content, isBlocks]);
+
+  const htmlContent = useMemo(() => {
+    if (!post?.content) return "";
+    if (isBlocks) {
+      return renderBlocksToHtml(parseContentBlocks(post.content));
+    }
+    return renderMarkdown(post.content);
+  }, [post?.content, isBlocks]);
+
+  const summaryPoints = useMemo(
+    () => (post?.summary_points || []).filter(p => p.trim()),
+    [post?.summary_points]
   );
 
   const faqSchema = useMemo(() => {
@@ -301,7 +325,23 @@ export function MagazinePost() {
           </div>
         </div>
 
-        {post.excerpt && (
+        {summaryPoints.length > 0 && (
+          <div className="max-w-[760px] mb-12 bg-gradient-to-br from-blue-50 to-sky-50/50 rounded-2xl p-6 md:p-8 border border-blue-100/60">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#3c8af7] mb-4">
+              Das Wichtigste in Kürze
+            </h3>
+            <ul className="space-y-3">
+              {summaryPoints.map((point, i) => (
+                <li key={i} className="flex gap-3 items-start">
+                  <CheckCircle2 className="w-5 h-5 text-[#3c8af7] flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700 leading-relaxed text-[15px]">{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {summaryPoints.length === 0 && post.excerpt && (
           <div className="max-w-[760px] mb-12 pl-5 border-l-4 border-[#3c8af7] bg-blue-50/50 rounded-r-xl py-5 pr-6">
             <p className="text-gray-700 leading-relaxed text-[15px]">
               {post.excerpt}

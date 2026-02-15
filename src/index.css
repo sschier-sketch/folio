@@ -97,3 +97,63 @@
 .magazine-article-content blockquote p {
   color: #374151;
 }
+
+.magazine-article-content .article-image {
+  margin: 2rem 0;
+}
+
+.magazine-article-content .article-image img {
+  width: 100%;
+  border-radius: 0.75rem;
+  object-fit: cover;
+}
+
+.magazine-article-content .article-image figcaption {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+.magazine-article-content .usp-list-block {
+  background: linear-gradient(135deg, #eff6ff, #f0f9ff80);
+  border: 1px solid #dbeafe99;
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  margin: 2rem 0;
+}
+
+.magazine-article-content .usp-list-block h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.magazine-article-content .usp-list-block ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.magazine-article-content .usp-list-block li {
+  position: relative;
+  padding-left: 1.75rem;
+  margin-bottom: 0.625rem;
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.magazine-article-content .usp-list-block li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #3c8af7;
+  border-radius: 50%;
+}
