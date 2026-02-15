@@ -29,14 +29,16 @@ export function extractHeadings(markdown: string): HeadingEntry[] {
   const lines = markdown.split("\n");
 
   for (const line of lines) {
-    const match = line.match(/^##\s+(.+)$/);
-    if (match) {
-      const text = match[1].replace(/\*\*/g, "").replace(/\*/g, "").trim();
-      headings.push({
-        id: slugify(text),
-        text,
-        level: 2,
-      });
+    const h2 = line.match(/^##\s+(.+)$/);
+    if (h2) {
+      const text = h2[1].replace(/\*\*/g, "").replace(/\*/g, "").trim();
+      headings.push({ id: slugify(text), text, level: 2 });
+      continue;
+    }
+    const h3 = line.match(/^###\s+(.+)$/);
+    if (h3) {
+      const text = h3[1].replace(/\*\*/g, "").replace(/\*/g, "").trim();
+      headings.push({ id: slugify(text), text, level: 3 });
     }
   }
 
@@ -103,7 +105,9 @@ export function renderMarkdown(markdown: string): string {
     if (h3Match) {
       flushParagraph();
       closeList();
-      result.push(`<h3>${formatInline(h3Match[1])}</h3>`);
+      const h3Text = h3Match[1].replace(/\*\*/g, "").replace(/\*/g, "").trim();
+      const h3Id = slugify(h3Text);
+      result.push(`<h3 id="${h3Id}">${formatInline(h3Match[1])}</h3>`);
       continue;
     }
 

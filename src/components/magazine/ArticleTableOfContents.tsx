@@ -33,7 +33,7 @@ export default function ArticleTableOfContents({ headings }: Props) {
     return () => observer.disconnect();
   }, [headings]);
 
-  if (headings.length < 2) return null;
+  if (headings.length === 0) return null;
 
   function scrollTo(id: string) {
     const el = document.getElementById(id);
@@ -54,7 +54,9 @@ export default function ArticleTableOfContents({ headings }: Props) {
           <li key={h.id}>
             <button
               onClick={() => scrollTo(h.id)}
-              className={`block w-full text-left text-sm py-1.5 pl-3 border-l-2 transition-colors ${
+              className={`block w-full text-left text-sm py-1.5 border-l-2 transition-colors ${
+                h.level === 3 ? "pl-6 text-[13px]" : "pl-3 text-sm"
+              } ${
                 activeId === h.id
                   ? "border-[#3c8af7] text-[#3c8af7] font-medium"
                   : "border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300"

@@ -498,17 +498,6 @@ export default function AdminMagazineView() {
                 )
               },
               {
-                key: "en_title",
-                header: "Titel (EN)",
-                sortable: true,
-                render: (post: Post) => (
-                  <div>
-                    <div className="font-medium text-dark">{post.en_title || "-"}</div>
-                    <div className="text-xs text-gray-400">{post.en_slug}</div>
-                  </div>
-                )
-              },
-              {
                 key: "category",
                 header: "Kategorie",
                 render: (post: Post) => (
@@ -559,12 +548,7 @@ export default function AdminMagazineView() {
                         <ActionButton
                           icon={<ExternalLink className="w-4 h-4" />}
                           onClick={() => window.open(`/magazin/${post.de_slug}`, '_blank')}
-                          title="Vorschau DE"
-                        />
-                        <ActionButton
-                          icon={<ExternalLink className="w-4 h-4" />}
-                          onClick={() => window.open(`/magazine/${post.en_slug}`, '_blank')}
-                          title="Vorschau EN"
+                          title="Vorschau"
                         />
                         <ActionButton
                           icon={<X className="w-4 h-4" />}
@@ -608,17 +592,6 @@ export default function AdminMagazineView() {
                   <div>
                     <div className="font-medium text-dark">{tag.de_name}</div>
                     <div className="text-xs text-gray-400">{tag.de_slug}</div>
-                  </div>
-                )
-              },
-              {
-                key: "en_name",
-                header: "Name (EN)",
-                sortable: true,
-                render: (tag: Tag) => (
-                  <div>
-                    <div className="font-medium text-dark">{tag.en_name || "-"}</div>
-                    <div className="text-xs text-gray-400">{tag.en_slug}</div>
                   </div>
                 )
               },
@@ -710,38 +683,7 @@ export default function AdminMagazineView() {
                   </Button>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Name (EN)
-                </label>
-                <input
-                  type="text"
-                  value={editingTag.en_name || ""}
-                  onChange={(e) => setEditingTag({ ...editingTag, en_name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="e.g. Rental Law"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Slug (EN)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={editingTag.en_slug || ""}
-                    onChange={(e) => setEditingTag({ ...editingTag, en_slug: e.target.value })}
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="rental-law"
-                  />
-                  <Button
-                    onClick={() => setEditingTag({ ...editingTag, en_slug: generateSlug(editingTag.en_name || editingTag.de_name) })}
-                    variant="secondary"
-                  >
-                    Generieren
-                  </Button>
-                </div>
-              </div>
+              {/* EN fields hidden for now */}
             </div>
             <div className="p-6 border-t flex justify-end gap-3">
               <Button

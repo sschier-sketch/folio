@@ -25,7 +25,8 @@ interface Post {
 const POSTS_PER_PAGE = 9;
 
 export function Magazine() {
-  const { language } = useLanguage();
+  const { language: _language } = useLanguage();
+  const locale = "de";
   const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [featuredPost, setFeaturedPost] = useState<Post | null>(null);
@@ -34,15 +35,15 @@ export function Magazine() {
 
   const activeCategory = searchParams.get("kategorie") || "alle";
   const page = parseInt(searchParams.get("page") || "1");
-  const magazineBasePath = language === "de" ? "/magazin" : "/magazine";
+  const magazineBasePath = "/magazin";
 
   useEffect(() => {
     loadFeatured();
-  }, [language]);
+  }, [locale]);
 
   useEffect(() => {
     loadPosts();
-  }, [language, activeCategory, page]);
+  }, [locale, activeCategory, page]);
 
   async function loadFeatured() {
     try {
@@ -58,7 +59,7 @@ export function Magazine() {
           translations:mag_post_translations!inner(title, slug, excerpt, reading_time_minutes)
         `)
         .eq("status", "PUBLISHED")
-        .eq("translations.locale", language)
+        .eq("translations.locale", locale)
         .not("published_at", "is", null)
         .eq("is_featured", true)
         .order("published_at", { ascending: false })
@@ -91,7 +92,7 @@ export function Magazine() {
             translations:mag_post_translations!inner(title, slug, excerpt, reading_time_minutes)
           `)
           .eq("status", "PUBLISHED")
-          .eq("translations.locale", language)
+          .eq("translations.locale", locale)
           .not("published_at", "is", null)
           .order("published_at", { ascending: false })
           .limit(1);
@@ -132,7 +133,7 @@ export function Magazine() {
           translations:mag_post_translations!inner(title, slug, excerpt, reading_time_minutes)
         `, { count: "exact" })
         .eq("status", "PUBLISHED")
-        .eq("translations.locale", language)
+        .eq("translations.locale", locale)
         .not("published_at", "is", null);
 
       if (activeCategory !== "alle") {

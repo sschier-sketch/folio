@@ -55,18 +55,19 @@ interface RelatedPost {
 export function MagazinePost() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language: _language } = useLanguage();
+  const locale = "de";
   const [post, setPost] = useState<Post | null>(null);
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  const magazineBasePath = language === "de" ? "/magazin" : "/magazine";
+  const magazineBasePath = "/magazin";
 
   useEffect(() => {
     loadPost();
-  }, [slug, language]);
+  }, [slug, locale]);
 
   async function loadPost() {
     if (!slug) return;
@@ -78,7 +79,7 @@ export function MagazinePost() {
         .from("mag_slug_history")
         .select("new_slug")
         .eq("entity_type", "post")
-        .eq("locale", language)
+        .eq("locale", locale)
         .eq("old_slug", slug)
         .order("changed_at", { ascending: false })
         .limit(1)
@@ -103,7 +104,7 @@ export function MagazinePost() {
           )
         `)
         .eq("status", "PUBLISHED")
-        .eq("translations.locale", language)
+        .eq("translations.locale", locale)
         .eq("translations.slug", slug)
         .maybeSingle();
 
@@ -171,7 +172,7 @@ export function MagazinePost() {
           translations:mag_post_translations!inner(title, slug, excerpt, reading_time_minutes)
         `)
         .eq("status", "PUBLISHED")
-        .eq("translations.locale", language)
+        .eq("translations.locale", locale)
         .neq("id", postId)
         .not("published_at", "is", null)
         .order("published_at", { ascending: false })
@@ -359,7 +360,7 @@ export function MagazinePost() {
             dangerouslySetInnerHTML={{ __html: htmlContent }}
           />
 
-          {headings.length >= 2 && (
+          {headings.length > 0 && (
             <aside className="hidden lg:block w-64 flex-shrink-0">
               <ArticleTableOfContents headings={headings} />
             </aside>

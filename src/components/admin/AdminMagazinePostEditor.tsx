@@ -383,28 +383,10 @@ export default function AdminMagazinePostEditor() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex gap-2">
-              <button
-                onClick={() => setActiveLocale("de")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeLocale === "de"
-                    ? "bg-primary-blue text-white"
-                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                }`}
-              >
+              <span className="px-4 py-2 rounded-lg font-medium bg-primary-blue text-white">
                 <Globe className="w-4 h-4 inline mr-2" />
                 Deutsch
-              </button>
-              <button
-                onClick={() => setActiveLocale("en")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeLocale === "en"
-                    ? "bg-primary-blue text-white"
-                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                }`}
-              >
-                <Globe className="w-4 h-4 inline mr-2" />
-                English
-              </button>
+              </span>
             </div>
             <div className="flex gap-2">
               <Button onClick={() => handleSave(false)} disabled={saving} variant="outlined">
@@ -418,45 +400,24 @@ export default function AdminMagazinePostEditor() {
             </div>
           </div>
 
-          {activeLocale === "de" ? (
-            <LocaleFields
-              locale="de"
-              title={deTitle}
-              onTitleChange={(v) => handleTitleChange(v, "de")}
-              slug={deSlug}
-              onSlugChange={setDeSlug}
-              excerpt={deExcerpt}
-              onExcerptChange={setDeExcerpt}
-              blocks={deBlocks}
-              onBlocksChange={setDeBlocks}
-              summaryPoints={deSummaryPoints}
-              onSummaryPointsChange={setDeSummaryPoints}
-              seoTitle={deSeoTitle}
-              onSeoTitleChange={setDeSeoTitle}
-              seoDescription={deSeoDescription}
-              onSeoDescriptionChange={setDeSeoDescription}
-              readingTime={deReadingTime}
-            />
-          ) : (
-            <LocaleFields
-              locale="en"
-              title={enTitle}
-              onTitleChange={(v) => handleTitleChange(v, "en")}
-              slug={enSlug}
-              onSlugChange={setEnSlug}
-              excerpt={enExcerpt}
-              onExcerptChange={setEnExcerpt}
-              blocks={enBlocks}
-              onBlocksChange={setEnBlocks}
-              summaryPoints={enSummaryPoints}
-              onSummaryPointsChange={setEnSummaryPoints}
-              seoTitle={enSeoTitle}
-              onSeoTitleChange={setEnSeoTitle}
-              seoDescription={enSeoDescription}
-              onSeoDescriptionChange={setEnSeoDescription}
-              readingTime={enReadingTime}
-            />
-          )}
+          <LocaleFields
+            locale="de"
+            title={deTitle}
+            onTitleChange={(v) => handleTitleChange(v, "de")}
+            slug={deSlug}
+            onSlugChange={setDeSlug}
+            excerpt={deExcerpt}
+            onExcerptChange={setDeExcerpt}
+            blocks={deBlocks}
+            onBlocksChange={setDeBlocks}
+            summaryPoints={deSummaryPoints}
+            onSummaryPointsChange={setDeSummaryPoints}
+            seoTitle={deSeoTitle}
+            onSeoTitleChange={setDeSeoTitle}
+            seoDescription={deSeoDescription}
+            onSeoDescriptionChange={setDeSeoDescription}
+            readingTime={deReadingTime}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-6">

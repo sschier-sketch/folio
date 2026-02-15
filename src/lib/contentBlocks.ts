@@ -85,11 +85,11 @@ export function serializeBlocks(blocks: ContentBlock[]): string {
 
 export function extractHeadingsFromBlocks(blocks: ContentBlock[]): HeadingEntry[] {
   return blocks
-    .filter((b): b is HeadingBlock => b.type === 'heading' && b.level === 2)
+    .filter((b): b is HeadingBlock => b.type === 'heading')
     .map(b => ({
       id: slugify(b.text),
       text: b.text,
-      level: 2,
+      level: b.level,
     }));
 }
 
