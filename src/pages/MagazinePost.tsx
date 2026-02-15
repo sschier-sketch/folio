@@ -14,6 +14,7 @@ import {
 import { CATEGORY_LABELS } from "../components/magazine/magazineConstants";
 import ArticleTableOfContents from "../components/magazine/ArticleTableOfContents";
 import ArticleFaq from "../components/magazine/ArticleFaq";
+import ArticleShareButtons from "../components/magazine/ArticleShareButtons";
 import MagazineCta from "../components/magazine/MagazineCta";
 
 interface Post {
@@ -157,7 +158,7 @@ export function MagazinePost() {
     }
   }
 
-  async function loadRelated(postId: string, category: string) {
+  async function loadRelated(postId: string, _category: string) {
     try {
       const { data } = await supabase
         .from("mag_posts")
@@ -171,7 +172,6 @@ export function MagazinePost() {
         `)
         .eq("status", "PUBLISHED")
         .eq("translations.locale", language)
-        .eq("category", category)
         .neq("id", postId)
         .not("published_at", "is", null)
         .order("published_at", { ascending: false })
@@ -318,12 +318,24 @@ export function MagazinePost() {
             {post.title}
           </h1>
 
-          <div className="flex items-center gap-4 text-sm text-gray-400 mb-8">
-            <span>{post.author_name}</span>
-            <span className="text-gray-200">|</span>
-            <span>{formattedDate}</span>
+          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+            <div className="flex items-center gap-4 text-sm text-gray-400">
+              <span>{post.author_name}</span>
+              <span className="text-gray-200">|</span>
+              <span>{formattedDate}</span>
+            </div>
+            <ArticleShareButtons
+              url={window.location.href}
+              title={post.title}
+            />
           </div>
         </div>
+
+        {post.excerpt && (
+          <div className="max-w-[760px] mb-8 text-lg text-gray-600 leading-relaxed font-medium">
+            {post.excerpt}
+          </div>
+        )}
 
         {summaryPoints.length > 0 && (
           <div className="max-w-[760px] mb-12 bg-gradient-to-br from-blue-50 to-sky-50/50 rounded-2xl p-6 md:p-8 border border-blue-100/60">
@@ -338,14 +350,6 @@ export function MagazinePost() {
                 </li>
               ))}
             </ul>
-          </div>
-        )}
-
-        {summaryPoints.length === 0 && post.excerpt && (
-          <div className="max-w-[760px] mb-12 pl-5 border-l-4 border-[#3c8af7] bg-blue-50/50 rounded-r-xl py-5 pr-6">
-            <p className="text-gray-700 leading-relaxed text-[15px]">
-              {post.excerpt}
-            </p>
           </div>
         )}
 
@@ -371,7 +375,7 @@ export function MagazinePost() {
         <section className="bg-gray-50 py-20">
           <div className="max-w-[1200px] mx-auto px-4">
             <h2 className="text-2xl font-bold text-gray-900 mb-8">
-              Ähnliche Artikel
+              Neueste Artikel
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedPosts.map((rp) => (

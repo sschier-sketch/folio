@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import {
   Plus, ChevronUp, ChevronDown, Trash2, Type, AlignLeft,
-  Image as ImageIcon, ListChecks, Upload
+  Image as ImageIcon, ListChecks, Upload, Bold, Italic,
+  Link as LinkIcon, List, ListOrdered, Quote
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { ContentBlock } from '../../lib/contentBlocks';
@@ -123,18 +124,10 @@ export default function BlockEditor({ blocks, onChange }: Props) {
 
       case 'text':
         return (
-          <div>
-            <textarea
-              value={block.content}
-              onChange={(e) => updateBlock(index, { ...block, content: e.target.value })}
-              rows={6}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm leading-relaxed"
-              placeholder="Text eingeben... (**fett**, *kursiv*, [Link](url), Listen mit - oder 1.)"
-            />
-            <p className="text-xs text-gray-400 mt-1.5">
-              **fett** | *kursiv* | [Linktext](url) | - Aufzählung | 1. Nummerierung | &gt; Zitat
-            </p>
-          </div>
+          <RichTextArea
+            value={block.content}
+            onChange={(val) => updateBlock(index, { ...block, content: val })}
+          />
         );
 
       case 'image':
@@ -330,6 +323,167 @@ export default function BlockEditor({ blocks, onChange }: Props) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+interface RichTextAreaProps {
+  value: string;
+  onChange: (val: string) => void;
+}
+
+function RichTextArea({ value, onChange }: RichTextAreaProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const applyFormat = useCallback((prefix: string, suffix: string, placeholder: string) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const text = ta.value;
+    const selected = text.substring(start, end);
+
+    const before = text.substring(0, start);
+    const after = text.substring(end);
+
+    if (selected) {
+      const newText = before + prefix + selected + suffix + after;
+      onChange(newText);
+      requestAnimationFrame(() => {
+        ta.focus();
+        ta.selectionStart = start + prefix.length;
+        ta.selectionEnd = end + prefix.length;
+      });
+    } else {
+      const newText = before + prefix + placeholder + suffix + after;
+      onChange(newText);
+      requestAnimationFrame(() => {
+        ta.focus();
+        ta.selectionStart = start + prefix.length;
+        ta.selectionEnd = start + prefix.length + placeholder.length;
+      });
+    }
+  }, [onChange]);
+
+  const handleBold = useCallback(() => applyFormat('**', '**', 'fetter Text'), [applyFormat]);
+  const handleItalic = useCallback(() => applyFormat('*', '*', 'kursiver Text'), [applyFormat]);
+
+  const handleLink = useCallback(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const text = ta.value;
+    const selected = text.substring(start, end);
+
+    const before = text.substring(0, start);
+    const after = text.substring(end);
+
+    const linkText = selected || 'Linktext';
+    const newText = before + `[${linkText}](https://)` + after;
+    onChange(newText);
+
+    requestAnimationFrame(() => {
+      ta.focus();
+      const urlStart = start + linkText.length + 3;
+      ta.selectionStart = urlStart;
+      ta.selectionEnd = urlStart + 8;
+    });
+  }, [onChange]);
+
+  const handleLinePrefix = useCallback((prefix: string) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const text = ta.value;
+
+    const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+    const lineEnd = text.indexOf('\n', end);
+    const actualEnd = lineEnd === -1 ? text.length : lineEnd;
+
+    const selectedLines = text.substring(lineStart, actualEnd);
+    const lines = selectedLines.split('\n');
+
+    const transformed = lines.map((line) => {
+      const trimmed = line.trimStart();
+      if (trimmed.startsWith(prefix)) {
+        return line;
+      }
+      return prefix + trimmed;
+    }).join('\n');
+
+    const newText = text.substring(0, lineStart) + transformed + text.substring(actualEnd);
+    onChange(newText);
+
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.selectionStart = lineStart;
+      ta.selectionEnd = lineStart + transformed.length;
+    });
+  }, [onChange]);
+
+  const handleBulletList = useCallback(() => handleLinePrefix('- '), [handleLinePrefix]);
+  const handleNumberedList = useCallback(() => handleLinePrefix('1. '), [handleLinePrefix]);
+  const handleBlockquote = useCallback(() => handleLinePrefix('> '), [handleLinePrefix]);
+
+  const TOOLBAR_BUTTONS = [
+    { action: handleBold, icon: Bold, label: 'Fett', shortcut: 'Strg+B' },
+    { action: handleItalic, icon: Italic, label: 'Kursiv', shortcut: 'Strg+I' },
+    { action: handleLink, icon: LinkIcon, label: 'Link', shortcut: 'Strg+K' },
+    { divider: true },
+    { action: handleBulletList, icon: List, label: 'Aufzählung' },
+    { action: handleNumberedList, icon: ListOrdered, label: 'Nummerierung' },
+    { action: handleBlockquote, icon: Quote, label: 'Zitat' },
+  ] as const;
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'b') {
+        e.preventDefault();
+        handleBold();
+      } else if (e.key === 'i') {
+        e.preventDefault();
+        handleItalic();
+      } else if (e.key === 'k') {
+        e.preventDefault();
+        handleLink();
+      }
+    }
+  }, [handleBold, handleItalic, handleLink]);
+
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary-blue focus-within:border-transparent">
+      <div className="flex items-center gap-0.5 px-2 py-1.5 bg-gray-50 border-b border-gray-200">
+        {TOOLBAR_BUTTONS.map((btn, i) => {
+          if ('divider' in btn) {
+            return <div key={i} className="w-px h-5 bg-gray-200 mx-1" />;
+          }
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={btn.action}
+              title={`${btn.label}${'shortcut' in btn ? ` (${btn.shortcut})` : ''}`}
+              className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-white rounded transition-colors"
+            >
+              <btn.icon className="w-4 h-4" />
+            </button>
+          );
+        })}
+      </div>
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        rows={8}
+        className="w-full px-4 py-3 focus:outline-none text-sm leading-relaxed resize-y"
+        placeholder="Text eingeben..."
+      />
     </div>
   );
 }
