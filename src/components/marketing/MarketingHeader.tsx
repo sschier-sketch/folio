@@ -16,6 +16,7 @@ import { RefLink } from '../common/RefLink';
 const PLAIN_NAV = [
   { label: 'Über uns', path: '/ueber-uns' },
   { label: 'Preise', path: '/preise' },
+  { label: 'Magazin', path: '/magazin' },
   { label: 'Kontakt', path: '/kontakt' },
 ];
 
@@ -399,6 +400,16 @@ export default function MarketingHeader() {
                 }`}
               >
                 Preise
+              </RefLink>
+              <RefLink
+                to="/magazin"
+                className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive('/magazin') || location.pathname.startsWith('/magazin')
+                    ? 'text-[#3c8af7] bg-blue-50/60'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Magazin
               </RefLink>
               <RefLink
                 to="/kontakt"

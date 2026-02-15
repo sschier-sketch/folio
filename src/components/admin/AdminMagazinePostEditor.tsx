@@ -37,6 +37,7 @@ export default function AdminMagazinePostEditor() {
   const [authorName, setAuthorName] = useState("Rentably Team");
   const [category, setCategory] = useState("allgemein");
   const [isFeatured, setIsFeatured] = useState(false);
+  const [publishedAt, setPublishedAt] = useState(new Date().toISOString().split("T")[0]);
 
   const [deTitle, setDeTitle] = useState("");
   const [deSlug, setDeSlug] = useState("");
@@ -86,6 +87,9 @@ export default function AdminMagazinePostEditor() {
       setAuthorName(post.author_name);
       setCategory(post.category || "allgemein");
       setIsFeatured(post.is_featured || false);
+      if (post.published_at) {
+        setPublishedAt(post.published_at.split("T")[0]);
+      }
 
       const deTrans = post.de?.[0];
       if (deTrans) {
@@ -210,11 +214,8 @@ export default function AdminMagazinePostEditor() {
         author_name: authorName,
         category,
         is_featured: isFeatured,
+        published_at: new Date(publishedAt + "T12:00:00").toISOString(),
       };
-
-      if (publish || status === "PUBLISHED") {
-        postData.published_at = new Date().toISOString();
-      }
 
       let finalPostId = postId;
 
@@ -448,6 +449,15 @@ export default function AdminMagazinePostEditor() {
                   <option value="PUBLISHED">Veröffentlicht</option>
                   <option value="ARCHIVED">Archiviert</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Veröffentlichungsdatum</label>
+                <input
+                  type="date"
+                  value={publishedAt}
+                  onChange={(e) => setPublishedAt(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
               </div>
               <div className="flex items-center gap-3 pt-1">
                 <button

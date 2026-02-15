@@ -218,31 +218,39 @@ export function Magazine() {
       <section className="pb-24">
         <div className="max-w-[1200px] mx-auto px-4">
           <form onSubmit={handleSearch} className="max-w-xl mx-auto mb-8">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Artikel durchsuchen..."
-                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3c8af7] focus:border-transparent transition-colors"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchInput("");
-                    const params = new URLSearchParams();
-                    if (activeCategory !== "alle") {
-                      params.set("kategorie", activeCategory);
-                    }
-                    setSearchParams(params);
-                  }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm transition-colors"
-                >
-                  Zurücksetzen
-                </button>
-              )}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Artikel durchsuchen..."
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3c8af7] focus:border-transparent transition-colors"
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchInput("");
+                      const params = new URLSearchParams();
+                      if (activeCategory !== "alle") {
+                        params.set("kategorie", activeCategory);
+                      }
+                      setSearchParams(params);
+                    }}
+                    className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs transition-colors"
+                  >
+                    Zurücksetzen
+                  </button>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="px-5 py-3 bg-[#3c8af7] text-white text-sm font-semibold rounded-xl hover:bg-[#2b7ae6] transition-colors flex-shrink-0"
+              >
+                Suchen
+              </button>
             </div>
           </form>
 
