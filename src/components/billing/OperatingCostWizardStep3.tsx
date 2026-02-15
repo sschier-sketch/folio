@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ArrowLeft, AlertCircle, Building2 } from "lucide-react";
+import { ArrowLeft, AlertCircle, Building2, Save } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService, OperatingCostStatement, OperatingCostResult } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
@@ -20,6 +20,7 @@ export default function OperatingCostWizardStep3() {
   const [loading, setLoading] = useState(true);
   const [computing, setComputing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [statement, setStatement] = useState<OperatingCostStatement | null>(null);
@@ -162,12 +163,28 @@ export default function OperatingCostWizardStep3() {
 
       if (error) throw error;
 
-      navigate('/dashboard?view=billing&tab=operating-costs');
+      navigate(`/dashboard?view=billing&tab=operating-costs&year=${statement?.year || ''}`);
     } catch (err: any) {
       console.error('Error saving statement:', err);
       setError(err.message || 'Fehler beim Speichern');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSaveDraft() {
+    if (!statementId) return;
+
+    setSavingDraft(true);
+    setError(null);
+
+    try {
+      navigate(`/dashboard?view=billing&tab=operating-costs&year=${statement?.year || ''}`);
+    } catch (err: any) {
+      console.error('Error saving draft:', err);
+      setError(err.message || 'Fehler beim Speichern');
+    } finally {
+      setSavingDraft(false);
     }
   }
 
@@ -238,7 +255,7 @@ export default function OperatingCostWizardStep3() {
                 3
               </div>
               <span className="text-sm font-medium text-primary-blue">
-                Versand
+                Probeabrechnung & Versand
               </span>
             </div>
           </div>
@@ -354,7 +371,7 @@ export default function OperatingCostWizardStep3() {
 
         <div className="bg-white rounded-lg p-8 shadow-sm">
           <h2 className="text-xl font-semibold text-dark mb-6">
-            Schritt 3: Ergebnisse & Versand
+            Schritt 3: Probeabrechnung & Versand
           </h2>
 
           {results.length === 0 ? (
@@ -471,24 +488,29 @@ export default function OperatingCostWizardStep3() {
           <Button
             onClick={handleBack}
             variant="secondary"
-            disabled={saving}
+            disabled={saving || savingDraft}
           >
             Zurück
           </Button>
 
-          <Button
-            onClick={handleSaveStatement}
-            disabled={saving || results.length === 0}
-            variant="primary"
-          >
-            {saving ? (
-              <>
-                Wird fertiggestellt...
-              </>
-            ) : (
-              'Abrechnung fertigstellen'
-            )}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleSaveDraft}
+              variant="secondary"
+              disabled={saving || savingDraft}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {savingDraft ? 'Wird gespeichert...' : 'Als Entwurf speichern'}
+            </Button>
+
+            <Button
+              onClick={handleSaveStatement}
+              disabled={saving || savingDraft || results.length === 0}
+              variant="primary"
+            >
+              {saving ? 'Wird fertiggestellt...' : 'Abrechnung fertigstellen'}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

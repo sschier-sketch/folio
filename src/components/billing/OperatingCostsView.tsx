@@ -44,7 +44,10 @@ export default function OperatingCostsView() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
+  const yearFromUrl = searchParams.get('year');
+  const [selectedYear, setSelectedYear] = useState<number>(
+    yearFromUrl ? Number(yearFromUrl) : new Date().getFullYear() - 1
+  );
 
   const sendStatementId = searchParams.get('sendStatement');
 

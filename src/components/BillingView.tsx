@@ -31,8 +31,13 @@ export default function BillingView() {
     if (tab && ['operating-costs', 'meters', 'taxes', 'export'].includes(tab)) {
       setActiveTab(tab as Tab);
       setViewKey(prev => prev + 1);
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
+      const preserved = new URLSearchParams();
+      const view = params.get('view');
+      const year = params.get('year');
+      if (view) preserved.set('view', view);
+      if (year) preserved.set('year', year);
+      const qs = preserved.toString();
+      window.history.replaceState({}, '', window.location.pathname + (qs ? `?${qs}` : ''));
     }
   }, [location.search]);
 

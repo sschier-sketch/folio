@@ -161,7 +161,7 @@ export default function OperatingCostWizardStep1() {
               <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center font-semibold mb-2">
                 3
               </div>
-              <span className="text-sm text-gray-400">Versand</span>
+              <span className="text-sm text-gray-400">Probeabrechnung & Versand</span>
             </div>
           </div>
         </div>

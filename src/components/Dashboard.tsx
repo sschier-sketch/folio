@@ -100,7 +100,12 @@ export default function Dashboard() {
     const view = searchParams.get('view');
     if (view && ['home', 'properties', 'tenants', 'mieterportal', 'messages', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'referral'].includes(view)) {
       setCurrentView(view as View);
-      setSearchParams({}, { replace: true });
+      const preserved: Record<string, string> = {};
+      const tab = searchParams.get('tab');
+      const year = searchParams.get('year');
+      if (tab) preserved.tab = tab;
+      if (year) preserved.year = year;
+      setSearchParams(preserved, { replace: true });
     }
   }, [searchParams, setSearchParams]);
 
