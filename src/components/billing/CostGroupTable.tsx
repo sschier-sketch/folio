@@ -121,14 +121,26 @@ export default function CostGroupTable({
   function renderRow(item: CostItem, index: number, isCustom: boolean) {
     const share = calcShare(item.allocation_key, item.amount, allocParams);
     const hint = Number(item.amount || 0) > 0 ? getAllocHint(item.allocation_key, allocParams) : "";
+    const isUsed = Number(item.amount || 0) > 0;
 
     return (
       <tr
         key={isCustom ? `custom-${index}` : index}
-        className={`border-b border-gray-100 hover:bg-gray-50 ${isCustom ? "bg-blue-50/30" : ""}`}
+        className={`border-b border-gray-100 transition-colors ${
+          isUsed
+            ? "bg-blue-50/60 hover:bg-blue-50"
+            : isCustom
+              ? "bg-blue-50/30 hover:bg-gray-50"
+              : "hover:bg-gray-50"
+        }`}
       >
         <td className="py-3 px-4">
-          <span className="text-gray-900 text-sm">{item.cost_type}</span>
+          <div className="flex items-center gap-2">
+            {isUsed && (
+              <span className="w-1.5 h-1.5 rounded-full bg-primary-blue flex-shrink-0" />
+            )}
+            <span className={`text-sm ${isUsed ? "text-gray-900 font-medium" : "text-gray-600"}`}>{item.cost_type}</span>
+          </div>
         </td>
         <td className="py-3 px-4">
           <select

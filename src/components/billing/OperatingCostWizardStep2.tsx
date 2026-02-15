@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AlertCircle, Plus, ChevronDown, ChevronUp, Trash2, RefreshCw } from "lucide-react";
+import { AlertCircle, Plus, ChevronDown, ChevronUp, Trash2, RefreshCw, Save, Info, Check } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService, AllocationParams } from "../../lib/operatingCostService";
 import { Button } from "../ui/Button";
 import CostGroupTable from "./CostGroupTable";
@@ -117,6 +118,7 @@ const DEFAULT_ALLOC: AllocationParams = {
 
 export default function OperatingCostWizardStep2() {
   const { id: statementId } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -130,6 +132,8 @@ export default function OperatingCostWizardStep2() {
   const [newGroupLabel, setNewGroupLabel] = useState("");
   const [allocParams, setAllocParams] = useState<AllocationParams>(DEFAULT_ALLOC);
   const [loadingDefaults, setLoadingDefaults] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateSaved, setTemplateSaved] = useState(false);
 
   useEffect(() => {
     if (statementId) {
@@ -328,6 +332,41 @@ export default function OperatingCostWizardStep2() {
     }
   }
 
+  async function handleSaveTemplate() {
+    if (!user || !statement) return;
+
+    setSavingTemplate(true);
+    setTemplateSaved(false);
+
+    const usedItems = allItemsFlat
+      .filter((item) => Number(item.amount) !== 0 || item.is_section_35a || item.allocation_key !== "area")
+      .map((item) => ({
+        cost_type: item.cost_type,
+        allocation_key: item.allocation_key,
+        is_section_35a: item.is_section_35a,
+        section_35a_category: item.section_35a_category || null,
+        group_label: item.group_label || null,
+      }));
+
+    const { error: tplError } = await operatingCostService.saveTemplate(
+      user.id,
+      statement.property_id,
+      statement.unit_id || null,
+      allocParams,
+      usedItems
+    );
+
+    if (tplError) {
+      console.error("Error saving template:", tplError);
+      setError("Fehler beim Speichern der Vorlage.");
+    } else {
+      setTemplateSaved(true);
+      setTimeout(() => setTemplateSaved(false), 3000);
+    }
+
+    setSavingTemplate(false);
+  }
+
   function handleBack() {
     navigate("/dashboard?view=billing&tab=operating-costs");
   }
@@ -389,6 +428,30 @@ export default function OperatingCostWizardStep2() {
             Schritt 2: Betriebskosten erfassen
           </h2>
           <div className="flex items-center gap-3">
+            <div className="group relative">
+              <button
+                onClick={handleSaveTemplate}
+                disabled={savingTemplate}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all border ${
+                  templateSaved
+                    ? "border-green-300 bg-green-50 text-green-700"
+                    : "border-gray-200 text-gray-600 hover:border-primary-blue hover:text-primary-blue"
+                }`}
+              >
+                {templateSaved ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {savingTemplate ? "Speichert..." : templateSaved ? "Vorlage gespeichert" : "Als Vorlage speichern"}
+              </button>
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute z-50 right-0 top-full mt-2 w-80 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl pointer-events-none">
+                <div className="flex items-start gap-2">
+                  <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                  <span>Hierdurch werden die vorgenommenen Einstellungen als Voreinstellung für diese Immobilie oder Einheit gespeichert und bei der Erstellung der nächsten Abrechnung auf Wunsch automatisch angewendet.</span>
+                </div>
+              </div>
+            </div>
             <Button onClick={handleSave} disabled={saving} variant="secondary">
               {saving ? 'Speichert...' : saveSuccess ? 'Gespeichert' : 'Speichern'}
             </Button>

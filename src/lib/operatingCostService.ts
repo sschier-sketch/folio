@@ -73,6 +73,32 @@ export interface OperatingCostSendLog {
   error_message: string | null;
 }
 
+export interface TemplateItem {
+  cost_type: string;
+  allocation_key: string;
+  is_section_35a?: boolean;
+  section_35a_category?: string | null;
+  group_label?: string | null;
+}
+
+export interface OperatingCostTemplate {
+  id: string;
+  user_id: string;
+  property_id: string;
+  unit_id: string | null;
+  name: string;
+  alloc_unit_area: number | null;
+  alloc_total_area: number | null;
+  alloc_unit_persons: number | null;
+  alloc_total_persons: number | null;
+  alloc_total_units: number | null;
+  alloc_unit_mea: number | null;
+  alloc_total_mea: number | null;
+  operating_cost_template_items: TemplateItem[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CreateStatementParams {
   property_id: string;
   year: number;
@@ -779,6 +805,111 @@ export const operatingCostService = {
       return { error };
     } catch (error) {
       console.error('Error saving allocation params:', error);
+      return { error };
+    }
+  },
+
+  async getTemplate(
+    userId: string,
+    propertyId: string,
+    unitId: string | null
+  ): Promise<{ data: OperatingCostTemplate | null; error: any }> {
+    try {
+      let query = supabase
+        .from('operating_cost_templates')
+        .select('*, operating_cost_template_items(*)')
+        .eq('user_id', userId)
+        .eq('property_id', propertyId);
+
+      if (unitId) {
+        query = query.eq('unit_id', unitId);
+      } else {
+        query = query.is('unit_id', null);
+      }
+
+      const { data, error } = await query.maybeSingle();
+      return { data, error };
+    } catch (error) {
+      console.error('Error loading template:', error);
+      return { data: null, error };
+    }
+  },
+
+  async saveTemplate(
+    userId: string,
+    propertyId: string,
+    unitId: string | null,
+    allocParams: AllocationParams,
+    items: TemplateItem[]
+  ): Promise<{ error: any }> {
+    try {
+      let existingQuery = supabase
+        .from('operating_cost_templates')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('property_id', propertyId);
+
+      if (unitId) {
+        existingQuery = existingQuery.eq('unit_id', unitId);
+      } else {
+        existingQuery = existingQuery.is('unit_id', null);
+      }
+
+      const { data: existing } = await existingQuery.maybeSingle();
+
+      let templateId: string;
+
+      if (existing) {
+        templateId = (existing as any).id;
+        await supabase
+          .from('operating_cost_templates')
+          .update({
+            ...allocParams,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', templateId);
+      } else {
+        const { data: created, error: createError } = await supabase
+          .from('operating_cost_templates')
+          .insert({
+            user_id: userId,
+            property_id: propertyId,
+            unit_id: unitId || null,
+            name: 'Vorlage',
+            ...allocParams,
+          })
+          .select('id')
+          .single();
+
+        if (createError || !created) throw createError || new Error('Failed to create template');
+        templateId = created.id;
+      }
+
+      await supabase
+        .from('operating_cost_template_items')
+        .delete()
+        .eq('template_id', templateId);
+
+      if (items.length > 0) {
+        const rows = items.map(item => ({
+          template_id: templateId,
+          cost_type: item.cost_type,
+          allocation_key: item.allocation_key,
+          is_section_35a: item.is_section_35a || false,
+          section_35a_category: item.section_35a_category || null,
+          group_label: item.group_label || null,
+        }));
+
+        const { error: insertError } = await supabase
+          .from('operating_cost_template_items')
+          .insert(rows);
+
+        if (insertError) throw insertError;
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error('Error saving template:', error);
       return { error };
     }
   },

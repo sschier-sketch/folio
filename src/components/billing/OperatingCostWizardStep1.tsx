@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
+import { AlertCircle, FileText, Info } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
-import { operatingCostService } from "../../lib/operatingCostService";
+import { operatingCostService, OperatingCostTemplate } from "../../lib/operatingCostService";
 import { Button } from "../ui/Button";
 
 interface Property {
@@ -34,6 +34,10 @@ export default function OperatingCostWizardStep1() {
     new Date().getFullYear() - 1
   );
 
+  const [template, setTemplate] = useState<OperatingCostTemplate | null>(null);
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
+  const [useTemplate, setUseTemplate] = useState<boolean | null>(null);
+
   useEffect(() => {
     if (user) {
       loadProperties();
@@ -46,8 +50,16 @@ export default function OperatingCostWizardStep1() {
     } else {
       setUnits([]);
       setSelectedUnitId("");
+      setTemplate(null);
+      setUseTemplate(null);
     }
   }, [selectedPropertyId]);
+
+  useEffect(() => {
+    if (user && selectedPropertyId) {
+      checkTemplate();
+    }
+  }, [selectedPropertyId, selectedUnitId]);
 
   async function loadProperties() {
     setLoading(true);
@@ -82,6 +94,26 @@ export default function OperatingCostWizardStep1() {
     setLoadingUnits(false);
   }
 
+  async function checkTemplate() {
+    if (!user || !selectedPropertyId) return;
+
+    const unitIdToCheck = selectedUnitId || null;
+    setLoadingTemplate(true);
+    setTemplate(null);
+    setUseTemplate(null);
+
+    const { data } = await operatingCostService.getTemplate(
+      user.id,
+      selectedPropertyId,
+      unitIdToCheck
+    );
+
+    if (data && data.operating_cost_template_items && data.operating_cost_template_items.length > 0) {
+      setTemplate(data);
+    }
+    setLoadingTemplate(false);
+  }
+
   const availableYears = Array.from(
     { length: 10 },
     (_, i) => new Date().getFullYear() - 1 - i
@@ -89,11 +121,13 @@ export default function OperatingCostWizardStep1() {
 
   const hasUnits = units.length > 0;
   const canProceed = selectedPropertyId && selectedYear && (!hasUnits || selectedUnitId);
+  const needsTemplateChoice = template && useTemplate === null;
 
   const deadlineYear = selectedYear + 1;
 
   async function handleNext() {
     if (!user || !canProceed) return;
+    if (needsTemplateChoice) return;
 
     setCreating(true);
     setError(null);
@@ -111,6 +145,9 @@ export default function OperatingCostWizardStep1() {
       if (error) throw error;
 
       if (data) {
+        if (useTemplate && template) {
+          await applyTemplateToStatement(data.id, template);
+        }
         navigate(`/abrechnungen/betriebskosten/${data.id}/kosten`);
       }
     } catch (err: any) {
@@ -122,6 +159,39 @@ export default function OperatingCostWizardStep1() {
       setCreating(false);
     }
   }
+
+  async function applyTemplateToStatement(statementId: string, tpl: OperatingCostTemplate) {
+    await operatingCostService.saveAllocationParams(statementId, {
+      alloc_unit_area: tpl.alloc_unit_area,
+      alloc_total_area: tpl.alloc_total_area,
+      alloc_unit_persons: tpl.alloc_unit_persons,
+      alloc_total_persons: tpl.alloc_total_persons,
+      alloc_total_units: tpl.alloc_total_units,
+      alloc_unit_mea: tpl.alloc_unit_mea,
+      alloc_total_mea: tpl.alloc_total_mea,
+    });
+
+    const items = tpl.operating_cost_template_items.map(item => ({
+      cost_type: item.cost_type,
+      allocation_key: item.allocation_key as any,
+      amount: 0,
+      is_section_35a: item.is_section_35a || false,
+      section_35a_category: (item.section_35a_category as any) || null,
+      group_label: item.group_label || null,
+    }));
+
+    if (items.length > 0) {
+      await operatingCostService.upsertLineItems({
+        statement_id: statementId,
+        items,
+      });
+    }
+  }
+
+  const templateItemCount = template?.operating_cost_template_items?.length || 0;
+  const templateDate = template?.updated_at
+    ? new Date(template.updated_at).toLocaleDateString("de-DE")
+    : "";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -145,18 +215,14 @@ export default function OperatingCostWizardStep1() {
                 Objekt & Jahr
               </span>
             </div>
-
             <div className="flex-1 h-0.5 bg-gray-200 -mt-6" />
-
             <div className="flex flex-col items-center flex-1">
               <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center font-semibold mb-2">
                 2
               </div>
               <span className="text-sm text-gray-400">Kosten erfassen</span>
             </div>
-
             <div className="flex-1 h-0.5 bg-gray-200 -mt-6" />
-
             <div className="flex flex-col items-center flex-1">
               <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center font-semibold mb-2">
                 3
@@ -285,6 +351,60 @@ export default function OperatingCostWizardStep1() {
                   </p>
                 </div>
               )}
+
+              {canProceed && !loadingTemplate && template && (
+                <div className="border border-blue-200 rounded-lg overflow-hidden">
+                  <div className="bg-blue-50 px-5 py-4 flex items-start gap-3">
+                    <FileText className="w-5 h-5 text-primary-blue flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold text-blue-900">
+                          Vorlage vorhanden
+                        </h4>
+                        <div className="group relative">
+                          <Info className="w-4 h-4 text-blue-400 cursor-help" />
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl pointer-events-none">
+                            Hierdurch werden die vorgenommenen Einstellungen im nächsten Schritt als Voreinstellung für diese Immobilie oder Einheit gespeichert und bei der Erstellung der nächsten Abrechnung auf Wunsch automatisch angewendet.
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-blue-800">
+                        Für diese Immobilie/Einheit existiert eine gespeicherte Vorlage mit {templateItemCount} Kostenarten
+                        {templateDate && <> (zuletzt aktualisiert am {templateDate})</>}. Möchten Sie diese Vorlage verwenden?
+                      </p>
+                      <div className="flex items-center gap-3 mt-4">
+                        <button
+                          onClick={() => setUseTemplate(true)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            useTemplate === true
+                              ? "bg-primary-blue text-white shadow-sm"
+                              : "bg-white text-gray-700 border border-gray-200 hover:border-primary-blue hover:text-primary-blue"
+                          }`}
+                        >
+                          Vorlage verwenden
+                        </button>
+                        <button
+                          onClick={() => setUseTemplate(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            useTemplate === false
+                              ? "bg-gray-700 text-white shadow-sm"
+                              : "bg-white text-gray-700 border border-gray-200 hover:border-gray-400"
+                          }`}
+                        >
+                          Ohne Vorlage starten
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {canProceed && loadingTemplate && (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-primary-blue rounded-full animate-spin"></div>
+                  Prüfe auf vorhandene Vorlagen...
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -300,16 +420,10 @@ export default function OperatingCostWizardStep1() {
 
           <Button
             onClick={handleNext}
-            disabled={!canProceed || creating || properties.length === 0}
+            disabled={!canProceed || creating || properties.length === 0 || (!!template && useTemplate === null)}
             variant="primary"
           >
-            {creating ? (
-              <>
-                Erstelle...
-              </>
-            ) : (
-              'Weiter'
-            )}
+            {creating ? 'Erstelle...' : 'Weiter'}
           </Button>
         </div>
       </div>
