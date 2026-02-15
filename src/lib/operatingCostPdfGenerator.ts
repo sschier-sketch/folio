@@ -651,16 +651,6 @@ function createPdf(data: PdfData): Blob {
   currentY += 10;
 
   doc.setFontSize(8.5);
-  checkPageBreak(15);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Belegeinsicht (§ 259 BGB)', M_LEFT, currentY);
-  currentY += 5;
-
-  doc.setFont('helvetica', 'normal');
-  const belege = 'Sie haben das Recht, die dieser Abrechnung zugrunde liegenden Belege und Unterlagen einzusehen. Bitte vereinbaren Sie hierzu einen Termin.';
-  const belegeLines = doc.splitTextToSize(belege, contentWidth - 5);
-  doc.text(belegeLines, M_LEFT, currentY);
-  currentY += belegeLines.length * 4.5 + 6;
 
   checkPageBreak(20);
   doc.setFont('helvetica', 'bold');
