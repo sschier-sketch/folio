@@ -45,8 +45,8 @@ export default function OperatingCostsView() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const yearFromUrl = searchParams.get('year');
-  const [selectedYear, setSelectedYear] = useState<number>(
-    yearFromUrl ? Number(yearFromUrl) : new Date().getFullYear() - 1
+  const [selectedYear, setSelectedYear] = useState<number | null>(
+    yearFromUrl ? Number(yearFromUrl) : null
   );
 
   const sendStatementId = searchParams.get('sendStatement');
@@ -65,9 +65,9 @@ export default function OperatingCostsView() {
     if (!user) return;
 
     setLoading(true);
-    const { data } = await operatingCostService.listStatements(user.id, {
+    const { data } = await operatingCostService.listStatements(user.id, selectedYear ? {
       year: selectedYear,
-    });
+    } : undefined);
 
     if (data) {
       const statementsWithProperties = await Promise.all(
@@ -437,10 +437,11 @@ export default function OperatingCostsView() {
           </div>
 
           <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            value={selectedYear ?? ""}
+            onChange={(e) => setSelectedYear(e.target.value ? Number(e.target.value) : null)}
             className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
           >
+            <option value="">Alle Jahre</option>
             {availableYears.map((year) => (
               <option key={year} value={year}>
                 {year}
