@@ -26,6 +26,7 @@ const COST_TYPES = [
   "Gartenpflege",
   "Beleuchtung (Allgemeinstrom)",
   "Schornsteinreinigung",
+  "Gebäudeversicherung",
   "Sach-/Haftpflichtversicherung",
   "Hauswart",
   "Kabelanschluss/Antenne",
