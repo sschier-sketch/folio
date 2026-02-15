@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft, AlertCircle, Building2, Save } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { operatingCostService, OperatingCostStatement, OperatingCostResult } from "../../lib/operatingCostService";
+import { operatingCostService, OperatingCostStatement, OperatingCostResult, AllocationParams } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
 import LineItemsGroupedView from "./LineItemsGroupedView";
@@ -29,6 +29,7 @@ export default function OperatingCostWizardStep3() {
   const [property, setProperty] = useState<any>(null);
   const [hasBankDetails, setHasBankDetails] = useState(false);
   const [lineItems, setLineItems] = useState<any[]>([]);
+  const [allocParams, setAllocParams] = useState<AllocationParams | null>(null);
 
   useEffect(() => {
     if (statementId && user) {
@@ -66,6 +67,16 @@ export default function OperatingCostWizardStep3() {
       }
 
       setStatement(statement);
+
+      setAllocParams({
+        alloc_unit_area: statement.alloc_unit_area ?? null,
+        alloc_total_area: statement.alloc_total_area ?? null,
+        alloc_unit_persons: statement.alloc_unit_persons ?? null,
+        alloc_total_persons: statement.alloc_total_persons ?? null,
+        alloc_total_units: statement.alloc_total_units ?? null,
+        alloc_unit_mea: statement.alloc_unit_mea ?? null,
+        alloc_total_mea: statement.alloc_total_mea ?? null,
+      });
 
       if (lineItems && lineItems.length > 0) {
         setLineItems(lineItems);
@@ -315,7 +326,7 @@ export default function OperatingCostWizardStep3() {
         </div>
 
         {lineItems.length > 0 && (
-          <LineItemsGroupedView lineItems={lineItems} />
+          <LineItemsGroupedView lineItems={lineItems} allocParams={allocParams} />
         )}
 
         <div className="bg-white rounded-lg p-8 shadow-sm">

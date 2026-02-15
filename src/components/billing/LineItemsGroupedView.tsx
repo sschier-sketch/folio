@@ -1,3 +1,6 @@
+import type { AllocationParams } from "../../lib/operatingCostService";
+import { calcShare } from "./OperatingCostWizardStep2";
+
 const ALLOCATION_LABELS: Record<string, string> = {
   area: "Wohnfläche",
   units: "Wohneinheiten",
@@ -13,13 +16,15 @@ interface LineItem {
   allocation_key: string;
   amount: number;
   group_label?: string | null;
+  custom_unit_mea?: number | null;
 }
 
 interface LineItemsGroupedViewProps {
   lineItems: LineItem[];
+  allocParams?: AllocationParams | null;
 }
 
-export default function LineItemsGroupedView({ lineItems }: LineItemsGroupedViewProps) {
+export default function LineItemsGroupedView({ lineItems, allocParams }: LineItemsGroupedViewProps) {
   const groups = new Map<string, LineItem[]>();
 
   for (const item of lineItems) {
@@ -33,6 +38,11 @@ export default function LineItemsGroupedView({ lineItems }: LineItemsGroupedView
   const groupEntries = Array.from(groups.entries());
   const hasMultipleGroups = groupEntries.length > 1;
   const grandTotal = lineItems.reduce((sum, item) => sum + Number(item.amount), 0);
+  const showShare = !!allocParams;
+  const grandShareTotal = showShare
+    ? lineItems.reduce((sum, item) => sum + calcShare(item.allocation_key, item.amount, allocParams!, item.custom_unit_mea), 0)
+    : 0;
+  const colSpanBase = showShare ? 3 : 2;
 
   return (
     <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
@@ -47,6 +57,9 @@ export default function LineItemsGroupedView({ lineItems }: LineItemsGroupedView
 
       {groupEntries.map(([groupLabel, items], groupIdx) => {
         const groupSum = items.reduce((sum, item) => sum + Number(item.amount), 0);
+        const groupShareSum = showShare
+          ? items.reduce((sum, item) => sum + calcShare(item.allocation_key, item.amount, allocParams!, item.custom_unit_mea), 0)
+          : 0;
 
         return (
           <div key={groupLabel} className={groupIdx > 0 ? "mt-6" : ""}>
@@ -72,25 +85,40 @@ export default function LineItemsGroupedView({ lineItems }: LineItemsGroupedView
                         Umlageschlüssel
                       </th>
                       <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">
-                        Betrag
+                        Gesamtkosten
                       </th>
+                      {showShare && (
+                        <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">
+                          Mieteranteil
+                        </th>
+                      )}
                     </tr>
                   </thead>
                 )}
                 <tbody className="divide-y divide-gray-100">
-                  {items.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-dark">
-                        {item.cost_type}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {ALLOCATION_LABELS[item.allocation_key] || item.allocation_key}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-right font-medium text-dark">
-                        {Number(item.amount).toFixed(2)} EUR
-                      </td>
-                    </tr>
-                  ))}
+                  {items.map((item, index) => {
+                    const share = showShare
+                      ? calcShare(item.allocation_key, item.amount, allocParams!, item.custom_unit_mea)
+                      : 0;
+                    return (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm text-dark">
+                          {item.cost_type}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {ALLOCATION_LABELS[item.allocation_key] || item.allocation_key}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right font-medium text-dark">
+                          {Number(item.amount).toFixed(2)} EUR
+                        </td>
+                        {showShare && (
+                          <td className="px-4 py-3 text-sm text-right font-medium text-green-700">
+                            {share.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
                   {hasMultipleGroups && (
                     <tr className="bg-gray-50">
                       <td colSpan={2} className="px-4 py-2 text-sm text-gray-600 font-medium">
@@ -99,6 +127,11 @@ export default function LineItemsGroupedView({ lineItems }: LineItemsGroupedView
                       <td className="px-4 py-2 text-sm text-right font-medium text-gray-700">
                         {groupSum.toFixed(2)} EUR
                       </td>
+                      {showShare && (
+                        <td className="px-4 py-2 text-sm text-right font-medium text-green-700">
+                          {groupShareSum.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
+                        </td>
+                      )}
                     </tr>
                   )}
                 </tbody>
@@ -112,12 +145,17 @@ export default function LineItemsGroupedView({ lineItems }: LineItemsGroupedView
         <table className="w-full">
           <tbody>
             <tr className="font-semibold">
-              <td colSpan={2} className="px-4 py-3 text-sm text-dark">
+              <td colSpan={colSpanBase} className="px-4 py-3 text-sm text-dark">
                 {hasMultipleGroups ? "Gesamtsumme (kumuliert)" : "Summe"}
               </td>
               <td className="px-4 py-3 text-sm text-right text-dark">
                 {grandTotal.toFixed(2)} EUR
               </td>
+              {showShare && (
+                <td className="px-4 py-3 text-sm text-right font-semibold text-green-700">
+                  {grandShareTotal.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
+                </td>
+              )}
             </tr>
           </tbody>
         </table>
