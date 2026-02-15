@@ -8,7 +8,7 @@ import { Button } from "../ui/Button";
 interface CostItem {
   id?: string;
   cost_type: string;
-  allocation_key: "area" | "persons" | "units" | "consumption";
+  allocation_key: "area" | "persons" | "units" | "consumption" | "mea";
   amount: number;
   is_section_35a?: boolean;
   section_35a_category?: "haushaltsnahe_dienstleistungen" | "handwerkerleistungen" | null;
@@ -41,6 +41,7 @@ const ALLOCATION_OPTIONS = [
   { value: "persons", label: "Personenzahl" },
   { value: "units", label: "Wohneinheiten" },
   { value: "consumption", label: "Verbrauch (Zähler)" },
+  { value: "mea", label: "Miteigentumsanteil (MEA)" },
 ];
 
 export default function OperatingCostWizardStep2() {

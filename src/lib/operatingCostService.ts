@@ -16,7 +16,7 @@ export interface OperatingCostLineItem {
   id: string;
   statement_id: string;
   cost_type: string;
-  allocation_key: 'area' | 'persons' | 'units' | 'consumption';
+  allocation_key: 'area' | 'persons' | 'units' | 'consumption' | 'mea';
   amount: number;
   is_section_35a?: boolean;
   section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
@@ -72,7 +72,7 @@ export interface UpsertLineItemParams {
   items: Array<{
     id?: string;
     cost_type: string;
-    allocation_key: 'area' | 'persons' | 'units' | 'consumption';
+    allocation_key: 'area' | 'persons' | 'units' | 'consumption' | 'mea';
     amount: number;
     is_section_35a?: boolean;
     section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
@@ -321,6 +321,30 @@ export const operatingCostService = {
                 .eq('property_id', statement.property_id);
 
               share = Number(lineItem.amount) / (count || 1);
+            } else if (lineItem.allocation_key === 'mea') {
+              const { data: allUnitsWithMea } = await supabase
+                .from('property_units')
+                .select('id, mea')
+                .eq('property_id', statement.property_id);
+
+              const parseMea = (mea: string | null): { numerator: number; denominator: number } => {
+                if (!mea) return { numerator: 0, denominator: 10000 };
+                const parts = mea.split('/').map(s => Number(s.trim()));
+                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] > 0) {
+                  return { numerator: parts[0], denominator: parts[1] };
+                }
+                return { numerator: 0, denominator: 10000 };
+              };
+
+              const unitMea = parseMea(unit?.mea);
+              const totalMeaNumerator = allUnitsWithMea?.reduce((sum, u) => {
+                return sum + parseMea(u.mea).numerator;
+              }, 0) || 1;
+              const denominator = unitMea.denominator || 10000;
+
+              if (totalMeaNumerator > 0) {
+                share = (unitMea.numerator / totalMeaNumerator) * Number(lineItem.amount);
+              }
             }
 
             const proRatedShare = (share * daysInPeriod) / totalDaysInYear;

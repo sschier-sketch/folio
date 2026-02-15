@@ -117,7 +117,7 @@ export async function generateOperatingCostPdf(
 
     const { data: allUnits } = await supabase
       .from('property_units')
-      .select('area_sqm')
+      .select('area_sqm, mea')
       .eq('property_id', statement.property_id);
 
     const { data: allContracts } = await supabase
@@ -156,6 +156,21 @@ export async function generateOperatingCostPdf(
         const tenantPersons = Number(tenant?.household_size || 1);
         share = `${tenantPersons} / ${totalPersons} Personen`;
         shareAmount = (Number(item.amount) * tenantPersons / totalPersons) * (result.days_in_period / totalDaysInYear);
+      } else if (item.allocation_key === 'mea' && allUnits) {
+        const parseMea = (mea: string | null): { numerator: number; denominator: number } => {
+          if (!mea) return { numerator: 0, denominator: 10000 };
+          const parts = mea.split('/').map(s => Number(s.trim()));
+          if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] > 0) {
+            return { numerator: parts[0], denominator: parts[1] };
+          }
+          return { numerator: 0, denominator: 10000 };
+        };
+        const unitMea = parseMea(unit?.mea);
+        const totalMeaNumerator = allUnits.reduce((sum, u) => sum + parseMea(u.mea).numerator, 0) || 1;
+        share = `${unitMea.numerator} / ${totalMeaNumerator} MEA`;
+        if (totalMeaNumerator > 0) {
+          shareAmount = (Number(item.amount) * unitMea.numerator / totalMeaNumerator) * (result.days_in_period / totalDaysInYear);
+        }
       }
 
       return {
@@ -742,6 +757,8 @@ function getAllocationKeyLabel(key: string): string {
       return 'Personenzahl';
     case 'consumption':
       return 'Verbrauch';
+    case 'mea':
+      return 'MEA';
     default:
       return key;
   }
