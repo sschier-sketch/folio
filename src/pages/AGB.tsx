@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { FileText } from "lucide-react";
 import SeoHead from "../components/SeoHead";
+import CmsPageWrapper from "../components/CmsPageWrapper";
 
 export function AGB() {
   return (
@@ -20,26 +21,7 @@ export function AGB() {
               </div>
             </div>
 
-            <div className="prose prose-blue max-w-none space-y-6 text-gray-700">
-              <AGBSection1 />
-              <AGBSection2 />
-              <AGBSection3 />
-              <AGBSection4 />
-              <AGBSection5 />
-              <AGBSection6 />
-              <AGBSection7 />
-              <AGBSection8 />
-              <AGBSection9 />
-              <AGBSection10 />
-              <AGBSection11 />
-              <AGBSection12 />
-              <AGBSection13 />
-              <AGBSection14 />
-              <AGBSection15 />
-              <AGBSection16 />
-              <AGBSection17 />
-              <AGBSection18 />
-            </div>
+            <CmsPageWrapper slug="agb" fallback={<AGBFallbackContent />} />
 
             <div className="mt-12 pt-8 border-t border-gray-200">
               <Link
@@ -53,6 +35,31 @@ export function AGB() {
         </div>
       </div>
     </>
+  );
+}
+
+function AGBFallbackContent() {
+  return (
+    <div className="prose prose-blue max-w-none space-y-6 text-gray-700">
+      <AGBSection1 />
+      <AGBSection2 />
+      <AGBSection3 />
+      <AGBSection4 />
+      <AGBSection5 />
+      <AGBSection6 />
+      <AGBSection7 />
+      <AGBSection8 />
+      <AGBSection9 />
+      <AGBSection10 />
+      <AGBSection11 />
+      <AGBSection12 />
+      <AGBSection13 />
+      <AGBSection14 />
+      <AGBSection15 />
+      <AGBSection16 />
+      <AGBSection17 />
+      <AGBSection18 />
+    </div>
   );
 }
 

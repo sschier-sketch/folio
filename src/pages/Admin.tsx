@@ -28,6 +28,7 @@ import AdminMagazineView from "../components/admin/AdminMagazineView";
 import AdminEmailSettingsView from "../components/admin/AdminEmailSettingsView";
 import AdminCronJobsView from "../components/admin/AdminCronJobsView";
 import AdminFaqsView from "../components/admin/AdminFaqsView";
+import AdminCmsView from "../components/admin/AdminCmsView";
 import DeleteUserModal from "../components/admin/DeleteUserModal";
 import RefundWizard from "../components/admin/RefundWizard";
 import AdminLayout from "../components/admin/AdminLayout";
@@ -576,6 +577,7 @@ export function Admin() {
         {activeTab === "email_settings" && <AdminEmailSettingsView />}
         {activeTab === "cron_jobs" && <AdminCronJobsView />}
         {activeTab === "faqs" && <AdminFaqsView />}
+        {activeTab === "cms" && <AdminCmsView />}
       </AdminLayout>
 
       {refundTarget && (

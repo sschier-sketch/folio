@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Shield } from "lucide-react";
 import SeoHead from "../components/SeoHead";
+import CmsPageWrapper from "../components/CmsPageWrapper";
 
 export function Datenschutz() {
   return (
@@ -19,7 +20,26 @@ export function Datenschutz() {
               </div>
             </div>
 
-            <div className="prose prose-blue max-w-none space-y-6 text-gray-700">
+            <CmsPageWrapper slug="datenschutz" fallback={<DatenschutzFallbackContent />} />
+
+            <div className="mt-12 pt-8 border-t border-gray-200">
+              <Link
+                to="/"
+                className="inline-flex items-center text-primary-blue hover:text-blue-700 transition-colors"
+              >
+                ← Zurück zur Startseite
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function DatenschutzFallbackContent() {
+  return (
+    <div className="prose prose-blue max-w-none space-y-6 text-gray-700">
               <section>
                 <h2 className="text-2xl font-semibold text-dark mb-4">1. Datenschutz auf einen Blick</h2>
 
@@ -228,18 +248,5 @@ export function Datenschutz() {
                 </p>
               </section>
             </div>
-
-            <div className="mt-12 pt-8 border-t border-gray-200">
-              <Link
-                to="/"
-                className="inline-flex items-center text-primary-blue hover:text-blue-700 transition-colors"
-              >
-                ← Zurück zur Startseite
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
   );
 }

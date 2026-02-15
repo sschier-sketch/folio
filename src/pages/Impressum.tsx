@@ -1,28 +1,35 @@
 import { Building2, Mail, Scale } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import CmsPageWrapper from "../components/CmsPageWrapper";
+
 export default function Impressum() {
   const { language } = useLanguage();
   return (
     <div>
       <div className="py-16 px-4 sm:px-6 lg:px-8">
-        {" "}
         <div className="max-w-4xl mx-auto">
-          {" "}
           <div className="text-center mb-12">
-            {" "}
             <h1 className="text-4xl font-bold text-dark mb-4">
-              {" "}
-              {language === "de" ? "Impressum" : "Legal Notice"}{" "}
-            </h1>{" "}
+              {language === "de" ? "Impressum" : "Legal Notice"}
+            </h1>
             <p className="text-lg text-gray-400">
-              {" "}
               {language === "de"
                 ? "Angaben gemäß § 5 TMG"
-                : "Information according to § 5 TMG"}{" "}
-            </p>{" "}
-          </div>{" "}
+                : "Information according to § 5 TMG"}
+            </p>
+          </div>
           <div className="bg-white rounded shadow-sm p-8 space-y-8">
-            {" "}
+            <CmsPageWrapper slug="impressum" fallback={<ImpressumFallbackContent language={language} />} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ImpressumFallbackContent({ language }: { language: string }) {
+  return (
+    <div className="space-y-8">
             <div>
               {" "}
               <div className="flex items-center gap-3 mb-4">
@@ -194,10 +201,7 @@ export default function Impressum() {
                   </p>{" "}
                 </div>{" "}
               </div>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
-      </div>
+            </div>
     </div>
   );
 }

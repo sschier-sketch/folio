@@ -13,6 +13,7 @@ import {
   AtSign,
   Timer,
   HelpCircle,
+  PenLine,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,7 +33,8 @@ export type AdminTabKey =
   | "magazine"
   | "email_settings"
   | "cron_jobs"
-  | "faqs";
+  | "faqs"
+  | "cms";
 
 export interface AdminMenuItem {
   key: AdminTabKey;
@@ -82,6 +84,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
     label: "Content & Growth",
     defaultOpen: true,
     items: [
+      { key: "cms", label: "CMS", icon: PenLine },
       { key: "magazine", label: "Magazin", icon: BookOpen },
       { key: "faqs", label: "FAQ-Verwaltung", icon: HelpCircle },
       { key: "seo", label: "SEO", icon: Globe },
