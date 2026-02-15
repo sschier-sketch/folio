@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Globe, Image as ImageIcon, Tag, FolderOpen } from "lucide-react";
+import { ArrowLeft, Globe, Image as ImageIcon, Tag, FolderOpen, Upload, X, Plus, GripVertical } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from '../ui/Button';
+import { calculateReadingTime } from "../../lib/markdownRenderer";
+import { CATEGORY_LABELS } from "../magazine/magazineConstants";
 
 interface Topic {
   id: string;
@@ -10,11 +12,28 @@ interface Topic {
   name_en: string;
 }
 
-interface Tag {
+interface TagItem {
   id: string;
   name_de: string;
   name_en: string;
 }
+
+interface FaqItem {
+  id?: string;
+  question: string;
+  answer: string;
+  sort_order: number;
+}
+
+const CATEGORY_OPTIONS = [
+  { value: "allgemein", label: "Allgemein" },
+  { value: "finanzen", label: "Finanzen" },
+  { value: "immobilien", label: "Immobilien" },
+  { value: "mietrecht", label: "Mietrecht" },
+  { value: "nebenkosten", label: "Nebenkosten" },
+  { value: "steuern", label: "Steuern" },
+  { value: "news", label: "News" },
+];
 
 export default function AdminMagazinePostEditor() {
   const { postId } = useParams();
@@ -23,11 +42,14 @@ export default function AdminMagazinePostEditor() {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [status, setStatus] = useState<"DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED">("DRAFT");
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [authorName, setAuthorName] = useState("Rentably Team");
   const [primaryTopicId, setPrimaryTopicId] = useState("");
+  const [category, setCategory] = useState("allgemein");
+  const [isFeatured, setIsFeatured] = useState(false);
 
   const [deTitle, setDeTitle] = useState("");
   const [deSlug, setDeSlug] = useState("");
@@ -47,7 +69,8 @@ export default function AdminMagazinePostEditor() {
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<TagItem[]>([]);
+  const [faqs, setFaqs] = useState<FaqItem[]>([]);
 
   const [activeLocale, setActiveLocale] = useState<"de" | "en">("de");
 
@@ -107,8 +130,8 @@ export default function AdminMagazinePostEditor() {
         .from("mag_posts")
         .select(`
           *,
-          de:mag_post_translations(title, slug, excerpt, content, seo_title, seo_description, og_image_url),
-          en:mag_post_translations(title, slug, excerpt, content, seo_title, seo_description, og_image_url),
+          de:mag_post_translations(title, slug, excerpt, content, seo_title, seo_description, og_image_url, reading_time_minutes),
+          en:mag_post_translations(title, slug, excerpt, content, seo_title, seo_description, og_image_url, reading_time_minutes),
           tags:mag_post_tags(tag_id)
         `)
         .eq("id", postId)
@@ -122,6 +145,8 @@ export default function AdminMagazinePostEditor() {
       setHeroImageUrl(post.hero_image_url || "");
       setAuthorName(post.author_name);
       setPrimaryTopicId(post.primary_topic_id || "");
+      setCategory(post.category || "allgemein");
+      setIsFeatured(post.is_featured || false);
 
       const deTrans = post.de?.[0];
       if (deTrans) {
@@ -146,6 +171,16 @@ export default function AdminMagazinePostEditor() {
       }
 
       setSelectedTags((post.tags || []).map((t: any) => t.tag_id));
+
+      const { data: faqsData } = await supabase
+        .from("mag_post_faqs")
+        .select("id, question, answer, sort_order")
+        .eq("post_id", postId)
+        .order("sort_order", { ascending: true });
+
+      if (faqsData) {
+        setFaqs(faqsData);
+      }
     } catch (err) {
       console.error("Error loading post:", err);
       alert("Fehler beim Laden des Artikels");
@@ -179,6 +214,46 @@ export default function AdminMagazinePostEditor() {
     }
   }
 
+  async function handleImageUpload(file: File) {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
+      const filePath = `hero/${fileName}`;
+
+      const { error } = await supabase.storage
+        .from("magazine-images")
+        .upload(filePath, file, { upsert: true });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("magazine-images")
+        .getPublicUrl(filePath);
+
+      setHeroImageUrl(publicUrl);
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      alert("Fehler beim Hochladen des Bildes");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function addFaq() {
+    setFaqs([...faqs, { question: "", answer: "", sort_order: faqs.length }]);
+  }
+
+  function updateFaq(index: number, field: "question" | "answer", value: string) {
+    const updated = [...faqs];
+    updated[index] = { ...updated[index], [field]: value };
+    setFaqs(updated);
+  }
+
+  function removeFaq(index: number) {
+    setFaqs(faqs.filter((_, i) => i !== index));
+  }
+
   async function handleSave(publish: boolean = false) {
     if (!deTitle || !deSlug || !deContent) {
       alert("Bitte füllen Sie mindestens Titel, Slug und Inhalt für DE aus");
@@ -192,13 +267,18 @@ export default function AdminMagazinePostEditor() {
 
     setSaving(true);
     try {
-      const postData = {
+      const postData: any = {
         status: publish ? "PUBLISHED" : status,
         hero_image_url: heroImageUrl || null,
         author_name: authorName,
         primary_topic_id: primaryTopicId || null,
-        published_at: publish ? new Date().toISOString() : undefined
+        category,
+        is_featured: isFeatured,
       };
+
+      if (publish) {
+        postData.published_at = new Date().toISOString();
+      }
 
       let finalPostId = postId;
 
@@ -207,7 +287,6 @@ export default function AdminMagazinePostEditor() {
           .from("mag_posts")
           .update(postData)
           .eq("id", postId);
-
         if (error) throw error;
       } else {
         const { data, error } = await supabase
@@ -215,10 +294,12 @@ export default function AdminMagazinePostEditor() {
           .insert([postData])
           .select()
           .single();
-
         if (error) throw error;
         finalPostId = data.id;
       }
+
+      const deReadingTime = calculateReadingTime(deContent);
+      const enReadingTime = calculateReadingTime(enContent);
 
       const { error: deError } = await supabase
         .from("mag_post_translations")
@@ -231,10 +312,9 @@ export default function AdminMagazinePostEditor() {
           content: deContent,
           seo_title: deSeoTitle || null,
           seo_description: deSeoDescription || null,
-          og_image_url: deOgImageUrl || null
-        }, {
-          onConflict: "post_id,locale"
-        });
+          og_image_url: deOgImageUrl || null,
+          reading_time_minutes: deReadingTime,
+        }, { onConflict: "post_id,locale" });
 
       if (deError) throw deError;
 
@@ -249,10 +329,9 @@ export default function AdminMagazinePostEditor() {
           content: enContent,
           seo_title: enSeoTitle || null,
           seo_description: enSeoDescription || null,
-          og_image_url: enOgImageUrl || null
-        }, {
-          onConflict: "post_id,locale"
-        });
+          og_image_url: enOgImageUrl || null,
+          reading_time_minutes: enReadingTime,
+        }, { onConflict: "post_id,locale" });
 
       if (enError) throw enError;
 
@@ -270,6 +349,23 @@ export default function AdminMagazinePostEditor() {
           })));
       }
 
+      await supabase
+        .from("mag_post_faqs")
+        .delete()
+        .eq("post_id", finalPostId);
+
+      const validFaqs = faqs.filter(f => f.question.trim() && f.answer.trim());
+      if (validFaqs.length > 0) {
+        await supabase
+          .from("mag_post_faqs")
+          .insert(validFaqs.map((f, i) => ({
+            post_id: finalPostId,
+            question: f.question,
+            answer: f.answer,
+            sort_order: i,
+          })));
+      }
+
       alert(publish ? "Artikel veröffentlicht!" : "Artikel gespeichert!");
       navigate("/admin");
     } catch (err) {
@@ -279,6 +375,9 @@ export default function AdminMagazinePostEditor() {
       setSaving(false);
     }
   }
+
+  const deReadingTime = calculateReadingTime(deContent);
+  const enReadingTime = calculateReadingTime(enContent);
 
   if (loading) {
     return (
@@ -331,19 +430,11 @@ export default function AdminMagazinePostEditor() {
               </button>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={() => handleSave(false)}
-                disabled={saving}
-                variant="outlined"
-              >
+              <Button onClick={() => handleSave(false)} disabled={saving} variant="outlined">
                 Speichern
               </Button>
               {status !== "PUBLISHED" && (
-                <Button
-                  onClick={() => handleSave(true)}
-                  disabled={saving}
-                  variant="primary"
-                >
+                <Button onClick={() => handleSave(true)} disabled={saving} variant="primary">
                   Veröffentlichen
                 </Button>
               )}
@@ -351,199 +442,43 @@ export default function AdminMagazinePostEditor() {
           </div>
 
           {activeLocale === "de" ? (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Titel (DE) *
-                </label>
-                <input
-                  type="text"
-                  value={deTitle}
-                  onChange={(e) => handleTitleChange(e.target.value, "de")}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="z.B. Die 10 besten Tipps für Vermieter"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Slug (DE) *
-                </label>
-                <input
-                  type="text"
-                  value={deSlug}
-                  onChange={(e) => setDeSlug(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="die-10-besten-tipps-fuer-vermieter"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  URL: /magazin/{deSlug || "slug"}
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Excerpt (DE)
-                </label>
-                <textarea
-                  value={deExcerpt}
-                  onChange={(e) => setDeExcerpt(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="Kurze Zusammenfassung..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Inhalt (DE) * (Markdown)
-                </label>
-                <textarea
-                  value={deContent}
-                  onChange={(e) => setDeContent(e.target.value)}
-                  rows={15}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue font-mono text-sm"
-                  placeholder="# Überschrift&#10;&#10;Ihr Artikel-Text hier..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    SEO Title (DE)
-                  </label>
-                  <input
-                    type="text"
-                    value={deSeoTitle}
-                    onChange={(e) => setDeSeoTitle(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="Optional, sonst wird Titel verwendet"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    OG Image URL (DE)
-                  </label>
-                  <input
-                    type="text"
-                    value={deOgImageUrl}
-                    onChange={(e) => setDeOgImageUrl(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="https://..."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  SEO Description (DE)
-                </label>
-                <textarea
-                  value={deSeoDescription}
-                  onChange={(e) => setDeSeoDescription(e.target.value)}
-                  rows={2}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="Optional, sonst wird Excerpt verwendet"
-                />
-              </div>
-            </div>
+            <LocaleFields
+              locale="de"
+              title={deTitle}
+              onTitleChange={(v) => handleTitleChange(v, "de")}
+              slug={deSlug}
+              onSlugChange={setDeSlug}
+              excerpt={deExcerpt}
+              onExcerptChange={setDeExcerpt}
+              content={deContent}
+              onContentChange={setDeContent}
+              seoTitle={deSeoTitle}
+              onSeoTitleChange={setDeSeoTitle}
+              seoDescription={deSeoDescription}
+              onSeoDescriptionChange={setDeSeoDescription}
+              ogImageUrl={deOgImageUrl}
+              onOgImageUrlChange={setDeOgImageUrl}
+              readingTime={deReadingTime}
+            />
           ) : (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Title (EN) *
-                </label>
-                <input
-                  type="text"
-                  value={enTitle}
-                  onChange={(e) => handleTitleChange(e.target.value, "en")}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="e.g. The 10 Best Tips for Landlords"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Slug (EN) *
-                </label>
-                <input
-                  type="text"
-                  value={enSlug}
-                  onChange={(e) => setEnSlug(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="the-10-best-tips-for-landlords"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  URL: /magazine/{enSlug || "slug"}
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Excerpt (EN)
-                </label>
-                <textarea
-                  value={enExcerpt}
-                  onChange={(e) => setEnExcerpt(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="Short summary..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Content (EN) * (Markdown)
-                </label>
-                <textarea
-                  value={enContent}
-                  onChange={(e) => setEnContent(e.target.value)}
-                  rows={15}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue font-mono text-sm"
-                  placeholder="# Heading&#10;&#10;Your article text here..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    SEO Title (EN)
-                  </label>
-                  <input
-                    type="text"
-                    value={enSeoTitle}
-                    onChange={(e) => setEnSeoTitle(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="Optional, uses title if empty"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    OG Image URL (EN)
-                  </label>
-                  <input
-                    type="text"
-                    value={enOgImageUrl}
-                    onChange={(e) => setEnOgImageUrl(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                    placeholder="https://..."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  SEO Description (EN)
-                </label>
-                <textarea
-                  value={enSeoDescription}
-                  onChange={(e) => setEnSeoDescription(e.target.value)}
-                  rows={2}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="Optional, uses excerpt if empty"
-                />
-              </div>
-            </div>
+            <LocaleFields
+              locale="en"
+              title={enTitle}
+              onTitleChange={(v) => handleTitleChange(v, "en")}
+              slug={enSlug}
+              onSlugChange={setEnSlug}
+              excerpt={enExcerpt}
+              onExcerptChange={setEnExcerpt}
+              content={enContent}
+              onContentChange={setEnContent}
+              seoTitle={enSeoTitle}
+              onSeoTitleChange={setEnSeoTitle}
+              seoDescription={enSeoDescription}
+              onSeoDescriptionChange={setEnSeoDescription}
+              ogImageUrl={enOgImageUrl}
+              onOgImageUrlChange={setEnOgImageUrl}
+              readingTime={enReadingTime}
+            />
           )}
         </div>
 
@@ -553,31 +488,57 @@ export default function AdminMagazinePostEditor() {
               <ImageIcon className="w-5 h-5 text-primary-blue" />
               Hero Image
             </h3>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Image URL
+            <div className="space-y-3">
+              <label className="block">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file);
+                  }}
+                />
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg cursor-pointer transition-colors">
+                  <Upload className="w-4 h-4" />
+                  {uploading ? "Wird hochgeladen..." : "Bild hochladen"}
+                </span>
               </label>
-              <input
-                type="text"
-                value={heroImageUrl}
-                onChange={(e) => setHeroImageUrl(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                placeholder="https://..."
-              />
+              {heroImageUrl && (
+                <div className="relative">
+                  <img src={heroImageUrl} alt="Hero" className="w-full h-48 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    onClick={() => setHeroImageUrl("")}
+                    className="absolute top-2 right-2 p-1 bg-white/80 hover:bg-white rounded-full transition-colors"
+                  >
+                    <X className="w-4 h-4 text-gray-600" />
+                  </button>
+                </div>
+              )}
             </div>
-            {heroImageUrl && (
-              <div className="mt-4">
-                <img src={heroImageUrl} alt="Hero" className="w-full h-48 object-cover rounded-lg" />
-              </div>
-            )}
           </div>
 
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="font-semibold text-dark mb-4 flex items-center gap-2">
               <FolderOpen className="w-5 h-5 text-primary-blue" />
-              Thema & Autor
+              Einstellungen
             </h3>
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Kategorie
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  {CATEGORY_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">
                   Hauptthema
@@ -596,9 +557,7 @@ export default function AdminMagazinePostEditor() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Autor
-                </label>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Autor</label>
                 <input
                   type="text"
                   value={authorName}
@@ -607,9 +566,7 @@ export default function AdminMagazinePostEditor() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Status
-                </label>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Status</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as any)}
@@ -620,6 +577,22 @@ export default function AdminMagazinePostEditor() {
                   <option value="PUBLISHED">Veröffentlicht</option>
                   <option value="ARCHIVED">Archiviert</option>
                 </select>
+              </div>
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isFeatured}
+                  onClick={() => setIsFeatured(!isFeatured)}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${
+                    isFeatured ? "bg-primary-blue" : "bg-gray-200"
+                  }`}
+                >
+                  <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ${
+                    isFeatured ? "translate-x-5" : "translate-x-0"
+                  }`} />
+                </button>
+                <span className="text-sm font-medium text-gray-700">Featured-Artikel</span>
               </div>
             </div>
           </div>
@@ -652,6 +625,199 @@ export default function AdminMagazinePostEditor() {
             ))}
           </div>
         </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-dark">FAQ</h3>
+            <button
+              type="button"
+              onClick={addFaq}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-blue hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Frage hinzufügen
+            </button>
+          </div>
+          {faqs.length === 0 ? (
+            <p className="text-sm text-gray-400">
+              Keine FAQ-Einträge. Klicken Sie auf "Frage hinzufügen", um einen zu erstellen.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {faqs.map((faq, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <GripVertical className="w-5 h-5 text-gray-300 mt-2 flex-shrink-0" />
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                          Frage
+                        </label>
+                        <input
+                          type="text"
+                          value={faq.question}
+                          onChange={(e) => updateFaq(index, "question", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                          placeholder="z.B. Was ist die Mietpreisbremse?"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                          Antwort
+                        </label>
+                        <textarea
+                          value={faq.answer}
+                          onChange={(e) => updateFaq(index, "answer", e.target.value)}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                          placeholder="Die Antwort auf die Frage..."
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFaq(index)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LocaleFields({
+  locale,
+  title, onTitleChange,
+  slug, onSlugChange,
+  excerpt, onExcerptChange,
+  content, onContentChange,
+  seoTitle, onSeoTitleChange,
+  seoDescription, onSeoDescriptionChange,
+  ogImageUrl, onOgImageUrlChange,
+  readingTime,
+}: {
+  locale: "de" | "en";
+  title: string; onTitleChange: (v: string) => void;
+  slug: string; onSlugChange: (v: string) => void;
+  excerpt: string; onExcerptChange: (v: string) => void;
+  content: string; onContentChange: (v: string) => void;
+  seoTitle: string; onSeoTitleChange: (v: string) => void;
+  seoDescription: string; onSeoDescriptionChange: (v: string) => void;
+  ogImageUrl: string; onOgImageUrlChange: (v: string) => void;
+  readingTime: number;
+}) {
+  const isDe = locale === "de";
+  const urlPrefix = isDe ? "/magazin/" : "/magazine/";
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">
+          {isDe ? "Titel (DE) *" : "Title (EN) *"}
+        </label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => onTitleChange(e.target.value)}
+          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+          placeholder={isDe ? "z.B. Die 10 besten Tipps für Vermieter" : "e.g. The 10 Best Tips for Landlords"}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">
+          {isDe ? "Slug (DE) *" : "Slug (EN) *"}
+        </label>
+        <input
+          type="text"
+          value={slug}
+          onChange={(e) => onSlugChange(e.target.value)}
+          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+        />
+        <p className="text-xs text-gray-400 mt-1">URL: {urlPrefix}{slug || "slug"}</p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">
+          {isDe ? "Excerpt / Zusammenfassung (DE)" : "Excerpt (EN)"}
+        </label>
+        <textarea
+          value={excerpt}
+          onChange={(e) => onExcerptChange(e.target.value)}
+          rows={3}
+          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+          placeholder={isDe ? "Kurze Zusammenfassung des Artikels..." : "Short summary..."}
+        />
+        <p className="text-xs text-gray-400 mt-1">
+          {isDe
+            ? "Wird als Zusammenfassungsfeld auf der Artikelseite und als Kurzbeschreibung im Magazin angezeigt."
+            : "Displayed as the summary box on the article page and as a short description in the magazine."}
+        </p>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-400">
+            {isDe ? "Inhalt (DE) * (Markdown)" : "Content (EN) * (Markdown)"}
+          </label>
+          <span className="text-xs text-gray-400">
+            ~{readingTime} Min. Lesezeit
+          </span>
+        </div>
+        <textarea
+          value={content}
+          onChange={(e) => onContentChange(e.target.value)}
+          rows={15}
+          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue font-mono text-sm"
+          placeholder={isDe ? "## Überschrift\n\nIhr Artikel-Text hier..." : "## Heading\n\nYour article text here..."}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-400 mb-2">
+            SEO Title ({locale.toUpperCase()})
+          </label>
+          <input
+            type="text"
+            value={seoTitle}
+            onChange={(e) => onSeoTitleChange(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            placeholder={isDe ? "Optional, sonst wird Titel verwendet" : "Optional, uses title if empty"}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-400 mb-2">
+            OG Image URL ({locale.toUpperCase()})
+          </label>
+          <input
+            type="text"
+            value={ogImageUrl}
+            onChange={(e) => onOgImageUrlChange(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            placeholder="https://..."
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">
+          SEO Description ({locale.toUpperCase()})
+        </label>
+        <textarea
+          value={seoDescription}
+          onChange={(e) => onSeoDescriptionChange(e.target.value)}
+          rows={2}
+          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+          placeholder={isDe ? "Optional, sonst wird Excerpt verwendet" : "Optional, uses excerpt if empty"}
+        />
       </div>
     </div>
   );

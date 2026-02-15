@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { BookOpen, Search, Edit, Trash2, Check, X, ExternalLink } from "lucide-react";
+import { BookOpen, Search, Edit, Trash2, Check, X, ExternalLink, Star } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell } from "../common/BaseTable";
 import { Button } from '../ui/Button';
+import { CATEGORY_LABELS } from "../magazine/magazineConstants";
 
 interface Post {
   id: string;
@@ -17,6 +18,8 @@ interface Post {
   en_title?: string;
   en_slug?: string;
   topic_name?: string;
+  category?: string;
+  is_featured?: boolean;
   tags: string[];
 }
 
@@ -101,6 +104,8 @@ export default function AdminMagazineView() {
         en_title: post.en?.[0]?.title,
         en_slug: post.en?.[0]?.slug,
         topic_name: post.topic?.de_trans?.[0]?.name,
+        category: post.category,
+        is_featured: post.is_featured,
         tags: (post.post_tags || []).map((pt: any) =>
           pt.tag?.translations?.[0]?.name
         ).filter(Boolean)
@@ -424,7 +429,7 @@ export default function AdminMagazineView() {
       post.en_title?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === "all" || post.status === statusFilter;
-    const matchesTopic = topicFilter === "all" || post.topic_name === topicFilter;
+    const matchesTopic = topicFilter === "all" || post.category === topicFilter;
 
     return matchesSearch && matchesStatus && matchesTopic;
   });
@@ -551,10 +556,13 @@ export default function AdminMagazineView() {
               onChange={(e) => setTopicFilter(e.target.value)}
               className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             >
-              <option value="all">Alle Themen</option>
-              {topics.map(topic => (
-                <option key={topic.id} value={topic.de_name}>{topic.de_name}</option>
-              ))}
+              <option value="all">Alle Kategorien</option>
+              {Object.entries(CATEGORY_LABELS)
+                .filter(([key]) => key !== "alle")
+                .map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))
+              }
             </select>
           </div>
 
@@ -580,7 +588,10 @@ export default function AdminMagazineView() {
                 sortable: true,
                 render: (post: Post) => (
                   <div>
-                    <div className="font-medium text-dark">{post.de_title || "-"}</div>
+                    <div className="font-medium text-dark flex items-center gap-1.5">
+                      {post.is_featured && <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 flex-shrink-0" />}
+                      {post.de_title || "-"}
+                    </div>
                     <div className="text-xs text-gray-400">{post.de_slug}</div>
                   </div>
                 )
@@ -597,10 +608,12 @@ export default function AdminMagazineView() {
                 )
               },
               {
-                key: "topic_name",
-                header: "Thema",
+                key: "category",
+                header: "Kategorie",
                 render: (post: Post) => (
-                  <span className="text-sm text-gray-400">{post.topic_name || "-"}</span>
+                  <span className="px-2.5 py-1 bg-gray-100 text-xs font-medium text-gray-600 rounded-full">
+                    {CATEGORY_LABELS[post.category || "allgemein"] || post.category}
+                  </span>
                 )
               },
               {
