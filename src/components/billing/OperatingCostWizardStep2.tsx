@@ -32,7 +32,8 @@ const COST_TYPES = [
   "Kabelanschluss/Antenne",
   "Waschraum/Gemeinschaftswaschmaschine",
   "Rauchwarnmelderwartung",
-  "Wartung Elektro/Türanlagen",
+  "Wartung Rauchwarnmelder (Wohnungen)",
+  "Wartung technische Anlagen",
   "Winterdienst",
   "Sonstige Betriebskosten",
 ];
