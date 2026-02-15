@@ -201,10 +201,7 @@ export default function AdminMagazinePostEditor() {
       return;
     }
 
-    if (!enTitle || !enSlug || enBlocks.length === 0) {
-      alert("Bitte füllen Sie mindestens Titel, Slug und Inhalt für EN aus");
-      return;
-    }
+    const hasEnContent = enTitle && enSlug && enBlocks.length > 0;
 
     setSaving(true);
     try {
@@ -259,23 +256,25 @@ export default function AdminMagazinePostEditor() {
 
       if (deError) throw deError;
 
-      const { error: enError } = await supabase
-        .from("mag_post_translations")
-        .upsert({
-          post_id: finalPostId,
-          locale: "en",
-          title: enTitle,
-          slug: enSlug,
-          excerpt: enExcerpt || null,
-          content: enContent,
-          summary_points: enSummaryPoints.filter(p => p.trim()),
-          seo_title: enSeoTitle || null,
-          seo_description: enSeoDescription || null,
-          og_image_url: null,
-          reading_time_minutes: enReadingTime,
-        }, { onConflict: "post_id,locale" });
+      if (hasEnContent) {
+        const { error: enError } = await supabase
+          .from("mag_post_translations")
+          .upsert({
+            post_id: finalPostId,
+            locale: "en",
+            title: enTitle,
+            slug: enSlug,
+            excerpt: enExcerpt || null,
+            content: enContent,
+            summary_points: enSummaryPoints.filter(p => p.trim()),
+            seo_title: enSeoTitle || null,
+            seo_description: enSeoDescription || null,
+            og_image_url: null,
+            reading_time_minutes: enReadingTime,
+          }, { onConflict: "post_id,locale" });
 
-      if (enError) throw enError;
+        if (enError) throw enError;
+      }
 
       await supabase
         .from("mag_post_faqs")
