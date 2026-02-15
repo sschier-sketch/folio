@@ -171,7 +171,7 @@ export default function OperatingCostWizardStep2() {
     setError(null);
 
     try {
-      const itemsToSave = allCostItems.filter((item) => Number(item.amount) > 0);
+      const itemsToSave = allCostItems.filter((item) => Number(item.amount) !== 0);
 
       const { error } = await operatingCostService.upsertLineItems({
         statement_id: statementId,
@@ -365,7 +365,6 @@ export default function OperatingCostWizardStep2() {
                     <td className="py-3 px-4">
                       <input
                         type="number"
-                        min="0"
                         step="0.01"
                         value={item.amount || ""}
                         onChange={(e) =>
@@ -609,7 +608,7 @@ export default function OperatingCostWizardStep2() {
 
           <Button
             onClick={handleNext}
-            disabled={saving || totalCosts === 0}
+            disabled={saving || allCostItems.every((item) => Number(item.amount) === 0)}
             variant="primary"
           >
             {saving ? (
