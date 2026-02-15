@@ -276,7 +276,7 @@ export default function AdminMagazinePostEditor() {
         is_featured: isFeatured,
       };
 
-      if (publish) {
+      if (publish || status === "PUBLISHED") {
         postData.published_at = new Date().toISOString();
       }
 
