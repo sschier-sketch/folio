@@ -732,7 +732,7 @@ function createPdf(data: PdfData): Blob {
 
     doc.setFontSize(8);
     doc.setTextColor(130);
-    const footer = `Betriebskostenabrechnung ${data.year} · Erstellt am ${data.createdDate}`;
+    const footer = `Betriebskostenabrechnung ${data.year} · Erstellt mit rentab.ly - Immobilienverwaltung`;
     doc.text(footer, M_LEFT, footerY);
     doc.text(`Seite ${i} von ${totalPages}`, PAGE_W - M_RIGHT, footerY, { align: 'right' });
   }
