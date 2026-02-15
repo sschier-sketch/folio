@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BookOpen, Search, Edit, Trash2, Check, X, ExternalLink, Star } from "lucide-react";
+import { BookOpen, Search, Edit, Trash2, Check, X, ExternalLink, Star, FileText, Eye, PenLine, Archive } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell } from "../common/BaseTable";
 import { Button } from '../ui/Button';
@@ -55,6 +55,11 @@ export default function AdminMagazineView() {
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [showTopicModal, setShowTopicModal] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
+
+  const publishedCount = posts.filter(p => p.status === "PUBLISHED").length;
+  const draftCount = posts.filter(p => p.status === "DRAFT" || p.status === "REVIEW").length;
+  const archivedCount = posts.filter(p => p.status === "ARCHIVED").length;
+  const featuredCount = posts.filter(p => p.is_featured).length;
 
   useEffect(() => {
     if (activeTab === "posts") {
@@ -435,139 +440,198 @@ export default function AdminMagazineView() {
   });
 
   return (
-    <div className="bg-white rounded overflow-hidden">
-      <div className="p-6 border-b">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-primary-blue" />
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl overflow-hidden border border-gray-100">
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-xl flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-primary-blue" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-dark">Magazin-Verwaltung</h2>
+                <p className="text-sm text-gray-400">Artikel, Kategorien, Themen und Tags verwalten</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-dark">Magazin-Verwaltung</h2>
-              <p className="text-sm text-gray-400">Blog-Artikel, Themen und Tags verwalten</p>
-            </div>
+            {activeTab === "posts" && (
+              <Button
+                onClick={() => window.location.href = '/admin/magazine/posts/new'}
+                variant="primary"
+              >
+                Neuer Artikel
+              </Button>
+            )}
+            {activeTab === "topics" && (
+              <Button
+                onClick={() => {
+                  setEditingTopic({
+                    id: `new-${Date.now()}`,
+                    de_name: "",
+                    de_slug: "",
+                    en_name: "",
+                    en_slug: "",
+                    created_at: new Date().toISOString()
+                  });
+                  setShowTopicModal(true);
+                }}
+                variant="primary"
+              >
+                Neues Thema
+              </Button>
+            )}
+            {activeTab === "tags" && (
+              <Button
+                onClick={() => {
+                  setEditingTag({
+                    id: `new-${Date.now()}`,
+                    de_name: "",
+                    de_slug: "",
+                    en_name: "",
+                    en_slug: "",
+                    created_at: new Date().toISOString()
+                  });
+                  setShowTagModal(true);
+                }}
+                variant="primary"
+              >
+                Neuer Tag
+              </Button>
+            )}
           </div>
+
           {activeTab === "posts" && (
-            <Button
-              onClick={() => window.location.href = '/admin/magazine/posts/new'}
-              variant="primary"
-            >
-              Neuer Artikel
-            </Button>
-          )}
-          {activeTab === "topics" && (
-            <Button
-              onClick={() => {
-                setEditingTopic({
-                  id: `new-${Date.now()}`,
-                  de_name: "",
-                  de_slug: "",
-                  en_name: "",
-                  en_slug: "",
-                  created_at: new Date().toISOString()
-                });
-                setShowTopicModal(true);
-              }}
-              variant="primary"
-            >
-              Neues Thema
-            </Button>
-          )}
-          {activeTab === "tags" && (
-            <Button
-              onClick={() => {
-                setEditingTag({
-                  id: `new-${Date.now()}`,
-                  de_name: "",
-                  de_slug: "",
-                  en_name: "",
-                  en_slug: "",
-                  created_at: new Date().toISOString()
-                });
-                setShowTagModal(true);
-              }}
-              variant="primary"
-            >
-              Neuer Tag
-            </Button>
-          )}
-        </div>
-
-        <div className="flex gap-2 border-b -mb-6">
-          <button
-            onClick={() => setActiveTab("posts")}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
-              activeTab === "posts"
-                ? "border-primary-blue text-primary-blue"
-                : "border-transparent text-gray-400 hover:text-dark"
-            }`}
-          >
-            Artikel
-          </button>
-          <button
-            onClick={() => setActiveTab("topics")}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
-              activeTab === "topics"
-                ? "border-primary-blue text-primary-blue"
-                : "border-transparent text-gray-400 hover:text-dark"
-            }`}
-          >
-            Themen
-          </button>
-          <button
-            onClick={() => setActiveTab("tags")}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
-              activeTab === "tags"
-                ? "border-primary-blue text-primary-blue"
-                : "border-transparent text-gray-400 hover:text-dark"
-            }`}
-          >
-            Tags
-          </button>
-        </div>
-      </div>
-
-      {activeTab === "posts" && (
-        <div>
-          <div className="p-6 border-b flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Artikel durchsuchen..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                  <FileText className="w-4 h-4 text-gray-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-dark">{posts.length}</p>
+                  <p className="text-xs text-gray-400">Gesamt</p>
+                </div>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                  <Eye className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-emerald-700">{publishedCount}</p>
+                  <p className="text-xs text-emerald-600/70">Veröffentlicht</p>
+                </div>
+              </div>
+              <div className="bg-amber-50 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                  <PenLine className="w-4 h-4 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-amber-700">{draftCount}</p>
+                  <p className="text-xs text-amber-600/70">Entwürfe</p>
+                </div>
+              </div>
+              <div className="bg-blue-50 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                  <Star className="w-4 h-4 text-primary-blue" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-primary-blue">{featuredCount}</p>
+                  <p className="text-xs text-primary-blue/70">Featured</p>
+                </div>
+              </div>
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            >
-              <option value="all">Alle Status</option>
-              <option value="DRAFT">Entwurf</option>
-              <option value="REVIEW">Review</option>
-              <option value="PUBLISHED">Veröffentlicht</option>
-              <option value="ARCHIVED">Archiviert</option>
-            </select>
-            <select
-              value={topicFilter}
-              onChange={(e) => setTopicFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            >
-              <option value="all">Alle Kategorien</option>
-              {Object.entries(CATEGORY_LABELS)
-                .filter(([key]) => key !== "alle")
-                .map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))
-              }
-            </select>
-          </div>
+          )}
 
-          <BaseTable
-            columns={[
+          <div className="flex gap-2 border-b -mb-6">
+            <button
+              onClick={() => setActiveTab("posts")}
+              className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+                activeTab === "posts"
+                  ? "border-primary-blue text-primary-blue"
+                  : "border-transparent text-gray-400 hover:text-dark"
+              }`}
+            >
+              Artikel
+            </button>
+            <button
+              onClick={() => setActiveTab("topics")}
+              className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+                activeTab === "topics"
+                  ? "border-primary-blue text-primary-blue"
+                  : "border-transparent text-gray-400 hover:text-dark"
+              }`}
+            >
+              Themen
+            </button>
+            <button
+              onClick={() => setActiveTab("tags")}
+              className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+                activeTab === "tags"
+                  ? "border-primary-blue text-primary-blue"
+                  : "border-transparent text-gray-400 hover:text-dark"
+              }`}
+            >
+              Tags
+            </button>
+          </div>
+        </div>
+
+        {activeTab === "posts" && (
+          <div>
+            <div className="p-6 border-b border-gray-100 flex gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Artikel durchsuchen..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="all">Alle Status</option>
+                <option value="DRAFT">Entwurf</option>
+                <option value="REVIEW">Review</option>
+                <option value="PUBLISHED">Veröffentlicht</option>
+                <option value="ARCHIVED">Archiviert</option>
+              </select>
+              <select
+                value={topicFilter}
+                onChange={(e) => setTopicFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="all">Alle Kategorien</option>
+                {Object.entries(CATEGORY_LABELS)
+                  .filter(([key]) => key !== "alle")
+                  .map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))
+                }
+              </select>
+            </div>
+
+            {!loading && posts.length === 0 ? (
+              <div className="p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-8 h-8 text-gray-300" />
+                </div>
+                <h3 className="text-lg font-semibold text-dark mb-2">Noch keine Artikel vorhanden</h3>
+                <p className="text-sm text-gray-400 mb-6 max-w-md mx-auto">
+                  Erstellen Sie Ihren ersten Magazin-Artikel. Sie können Kategorien zuweisen, Hero-Bilder hochladen, FAQs hinzufügen und vieles mehr.
+                </p>
+                <Button
+                  onClick={() => window.location.href = '/admin/magazine/posts/new'}
+                  variant="primary"
+                >
+                  Ersten Artikel erstellen
+                </Button>
+              </div>
+            ) : (
+              <BaseTable
+                columns={[
               {
                 key: "status",
                 header: "Status",
@@ -691,8 +755,9 @@ export default function AdminMagazineView() {
             loading={loading}
             emptyMessage="Noch keine Artikel vorhanden"
           />
-        </div>
-      )}
+            )}
+          </div>
+        )}
 
       {activeTab === "topics" && (
         <div>
@@ -835,6 +900,8 @@ export default function AdminMagazineView() {
           />
         </div>
       )}
+
+      </div>
 
       {showTopicModal && editingTopic && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
