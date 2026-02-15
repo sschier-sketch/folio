@@ -35,6 +35,8 @@ export function Magazine() {
 
   const activeCategory = searchParams.get("kategorie") || "alle";
   const page = parseInt(searchParams.get("page") || "1");
+  const searchQuery = searchParams.get("suche") || "";
+  const [searchInput, setSearchInput] = useState(searchQuery);
   const magazineBasePath = "/magazin";
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export function Magazine() {
 
   useEffect(() => {
     loadPosts();
-  }, [locale, activeCategory, page]);
+  }, [locale, activeCategory, page, searchQuery]);
 
   async function loadFeatured() {
     try {
@@ -140,6 +142,13 @@ export function Magazine() {
         query = query.eq("category", activeCategory);
       }
 
+      if (searchQuery.trim()) {
+        query = query.or(
+          `title.ilike.%${searchQuery.trim()}%,excerpt.ilike.%${searchQuery.trim()}%`,
+          { referencedTable: "translations" }
+        );
+      }
+
       query = query.order("published_at", { ascending: false });
 
       const from = (page - 1) * POSTS_PER_PAGE;
@@ -178,6 +187,21 @@ export function Magazine() {
     if (cat !== "alle") {
       params.set("kategorie", cat);
     }
+    if (searchQuery.trim()) {
+      params.set("suche", searchQuery.trim());
+    }
+    setSearchParams(params);
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (activeCategory !== "alle") {
+      params.set("kategorie", activeCategory);
+    }
+    if (searchInput.trim()) {
+      params.set("suche", searchInput.trim());
+    }
     setSearchParams(params);
   }
 
@@ -193,7 +217,36 @@ export function Magazine() {
 
       <section className="pb-24">
         <div className="max-w-[1200px] mx-auto px-4">
-          <div className="mb-10">
+          <form onSubmit={handleSearch} className="max-w-xl mx-auto mb-8">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Artikel durchsuchen..."
+                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3c8af7] focus:border-transparent transition-colors"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchInput("");
+                    const params = new URLSearchParams();
+                    if (activeCategory !== "alle") {
+                      params.set("kategorie", activeCategory);
+                    }
+                    setSearchParams(params);
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm transition-colors"
+                >
+                  Zurücksetzen
+                </button>
+              )}
+            </div>
+          </form>
+
+          <div className="flex justify-center mb-10">
             <CategoryFilter active={activeCategory} onChange={handleCategoryChange} />
           </div>
 
@@ -210,10 +263,15 @@ export function Magazine() {
                 Keine Artikel gefunden
               </h3>
               <p className="text-gray-500 mb-6">
-                In dieser Kategorie gibt es noch keine Beiträge.
+                {searchQuery
+                  ? `Keine Ergebnisse für "${searchQuery}".`
+                  : "In dieser Kategorie gibt es noch keine Beiträge."}
               </p>
               <button
-                onClick={() => handleCategoryChange("alle")}
+                onClick={() => {
+                  setSearchInput("");
+                  setSearchParams(new URLSearchParams());
+                }}
                 className="px-6 py-3 bg-[#3c8af7] text-white text-sm font-semibold rounded-lg hover:bg-[#2b7ae6] transition-colors"
               >
                 Alle Beiträge anzeigen

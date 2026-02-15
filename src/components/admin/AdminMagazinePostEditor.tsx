@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Globe, Image as ImageIcon, Tag, FolderOpen, Upload, X, Plus, GripVertical, ListChecks } from "lucide-react";
+import { ArrowLeft, Globe, Image as ImageIcon, FolderOpen, Upload, X, Plus, GripVertical, ListChecks } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from '../ui/Button';
 import { CATEGORIES, CATEGORY_LABELS } from "../magazine/magazineConstants";
@@ -11,12 +11,6 @@ import {
   serializeBlocks,
   calculateReadingTimeFromBlocks,
 } from "../../lib/contentBlocks";
-
-interface TagItem {
-  id: string;
-  name_de: string;
-  name_en: string;
-}
 
 interface FaqItem {
   id?: string;
@@ -60,42 +54,15 @@ export default function AdminMagazinePostEditor() {
   const [enSeoTitle, setEnSeoTitle] = useState("");
   const [enSeoDescription, setEnSeoDescription] = useState("");
 
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [tags, setTags] = useState<TagItem[]>([]);
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
 
   const [activeLocale, setActiveLocale] = useState<"de" | "en">("de");
 
   useEffect(() => {
-    loadTags();
     if (isEdit) {
       loadPost();
     }
   }, [postId]);
-
-  async function loadTags() {
-    try {
-      const { data: tagsData } = await supabase
-        .from("mag_tags")
-        .select(`
-          id,
-          de:mag_tag_translations!inner(name),
-          en:mag_tag_translations(name)
-        `)
-        .eq("de.locale", "de")
-        .eq("en.locale", "en");
-
-      if (tagsData) {
-        setTags(tagsData.map((t: any) => ({
-          id: t.id,
-          name_de: t.de?.[0]?.name || "",
-          name_en: t.en?.[0]?.name || ""
-        })));
-      }
-    } catch (err) {
-      console.error("Error loading tags:", err);
-    }
-  }
 
   async function loadPost() {
     setLoading(true);
@@ -105,8 +72,7 @@ export default function AdminMagazinePostEditor() {
         .select(`
           *,
           de:mag_post_translations(title, slug, excerpt, content, summary_points, seo_title, seo_description, og_image_url, reading_time_minutes),
-          en:mag_post_translations(title, slug, excerpt, content, summary_points, seo_title, seo_description, og_image_url, reading_time_minutes),
-          tags:mag_post_tags(tag_id)
+          en:mag_post_translations(title, slug, excerpt, content, summary_points, seo_title, seo_description, og_image_url, reading_time_minutes)
         `)
         .eq("id", postId)
         .eq("de.locale", "de")
@@ -142,8 +108,6 @@ export default function AdminMagazinePostEditor() {
         setEnSeoTitle(enTrans.seo_title || "");
         setEnSeoDescription(enTrans.seo_description || "");
       }
-
-      setSelectedTags((post.tags || []).map((t: any) => t.tag_id));
 
       const { data: faqsData } = await supabase
         .from("mag_post_faqs")
@@ -311,20 +275,6 @@ export default function AdminMagazinePostEditor() {
         }, { onConflict: "post_id,locale" });
 
       if (enError) throw enError;
-
-      await supabase
-        .from("mag_post_tags")
-        .delete()
-        .eq("post_id", finalPostId);
-
-      if (selectedTags.length > 0) {
-        await supabase
-          .from("mag_post_tags")
-          .insert(selectedTags.map(tagId => ({
-            post_id: finalPostId,
-            tag_id: tagId
-          })));
-      }
 
       await supabase
         .from("mag_post_faqs")
@@ -516,34 +466,6 @@ export default function AdminMagazinePostEditor() {
                 <span className="text-sm font-medium text-gray-700">Featured-Artikel</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
-          <h3 className="font-semibold text-dark mb-4 flex items-center gap-2">
-            <Tag className="w-5 h-5 text-primary-blue" />
-            Tags
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {tags.map(tag => (
-              <button
-                key={tag.id}
-                onClick={() => {
-                  if (selectedTags.includes(tag.id)) {
-                    setSelectedTags(selectedTags.filter(id => id !== tag.id));
-                  } else {
-                    setSelectedTags([...selectedTags, tag.id]);
-                  }
-                }}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  selectedTags.includes(tag.id)
-                    ? "bg-primary-blue text-white"
-                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                }`}
-              >
-                {tag.name_de} / {tag.name_en}
-              </button>
-            ))}
           </div>
         </div>
 
