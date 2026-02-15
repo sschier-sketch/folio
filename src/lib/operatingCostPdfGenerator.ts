@@ -156,6 +156,9 @@ export async function generateOperatingCostPdf(
         const tenantPersons = Number(tenant?.household_size || 1);
         share = `${tenantPersons} / ${totalPersons} Personen`;
         shareAmount = (Number(item.amount) * tenantPersons / totalPersons) * (result.days_in_period / totalDaysInYear);
+      } else if (item.allocation_key === 'consumption' && unitCount > 0) {
+        share = `1 / ${unitCount} Einheiten`;
+        shareAmount = (Number(item.amount) / unitCount) * (result.days_in_period / totalDaysInYear);
       } else if (item.allocation_key === 'mea' && allUnits) {
         const parseMea = (mea: string | null): { numerator: number; denominator: number } => {
           if (!mea) return { numerator: 0, denominator: 10000 };

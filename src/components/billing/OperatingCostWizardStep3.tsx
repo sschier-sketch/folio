@@ -343,6 +343,7 @@ export default function OperatingCostWizardStep3() {
                         {item.allocation_key === 'area' ? 'Wohnfläche' :
                          item.allocation_key === 'units' ? 'Wohneinheiten' :
                          item.allocation_key === 'persons' ? 'Personenzahl' :
+                         item.allocation_key === 'consumption' ? 'Verbrauch (Zähler)' :
                          item.allocation_key === 'mea' ? 'MEA' :
                          item.allocation_key}
                       </td>

@@ -321,6 +321,13 @@ export const operatingCostService = {
                 .eq('property_id', statement.property_id);
 
               share = Number(lineItem.amount) / (count || 1);
+            } else if (lineItem.allocation_key === 'consumption') {
+              const { count } = await supabase
+                .from('property_units')
+                .select('*', { count: 'exact', head: true })
+                .eq('property_id', statement.property_id);
+
+              share = Number(lineItem.amount) / (count || 1);
             } else if (lineItem.allocation_key === 'mea') {
               const { data: allUnitsWithMea } = await supabase
                 .from('property_units')
