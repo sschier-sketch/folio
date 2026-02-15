@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AlertCircle, Plus, X, Info } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService } from "../../lib/operatingCostService";
+import { Button } from "../ui/Button";
 
 interface CostItem {
   id?: string;

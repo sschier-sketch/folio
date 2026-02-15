@@ -4,6 +4,7 @@ import { ArrowLeft, AlertCircle, Building2 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { operatingCostService, OperatingCostStatement, OperatingCostResult } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
+import { Button } from "../ui/Button";
 
 interface ResultWithDetails extends OperatingCostResult {
   tenant_name?: string;
