@@ -340,7 +340,7 @@ export const operatingCostService = {
           ? Number(statement.alloc_unit_area)
           : Number(unit?.area_sqm || 0);
 
-        const hasStoredAlloc = statement.alloc_total_area != null || statement.alloc_total_units != null;
+        const hasStoredAlloc = statement.alloc_total_area != null || statement.alloc_total_units != null || statement.alloc_total_mea != null;
 
         let costShare = 0;
 
@@ -408,7 +408,7 @@ export const operatingCostService = {
                   if (parts.length === 2 && !isNaN(parts[0]) && parts[1] > 0) return parts[0];
                   return 0;
                 };
-                const unitMeaVal = parseMea(unit?.mea);
+                const unitMeaVal = lineItem.custom_unit_mea != null ? Number(lineItem.custom_unit_mea) : parseMea(unit?.mea);
                 const totalMeaNumerator = allUnitsWithMea?.reduce((sum, u) => sum + parseMea(u.mea), 0) || 1;
                 if (totalMeaNumerator > 0) {
                   share = (unitMeaVal / totalMeaNumerator) * amt;
