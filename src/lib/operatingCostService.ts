@@ -38,6 +38,7 @@ export interface OperatingCostLineItem {
   is_section_35a?: boolean;
   section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
   group_label?: string | null;
+  custom_unit_mea?: number | null;
   created_at: string;
 }
 
@@ -121,6 +122,7 @@ export interface UpsertLineItemParams {
     is_section_35a?: boolean;
     section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
     group_label?: string | null;
+    custom_unit_mea?: number | null;
   }>;
 }
 
@@ -186,6 +188,7 @@ export const operatingCostService = {
         is_section_35a: item.is_section_35a || false,
         section_35a_category: item.section_35a_category || null,
         group_label: item.group_label || null,
+        custom_unit_mea: item.custom_unit_mea ?? null,
       }));
 
       const { data, error } = await supabase
@@ -362,7 +365,7 @@ export const operatingCostService = {
                 const tUnits = Number(statement.alloc_total_units || 0);
                 share = tUnits > 0 ? amt / tUnits : 0;
               } else if (lineItem.allocation_key === 'mea') {
-                const uMea = Number(statement.alloc_unit_mea || 0);
+                const uMea = lineItem.custom_unit_mea != null ? Number(lineItem.custom_unit_mea) : Number(statement.alloc_unit_mea || 0);
                 const tMea = Number(statement.alloc_total_mea || 0);
                 share = tMea > 0 ? (uMea / tMea) * amt : 0;
               } else if (lineItem.allocation_key === 'direct' || lineItem.allocation_key === 'consumption_billing') {

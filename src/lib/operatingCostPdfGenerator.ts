@@ -160,20 +160,27 @@ export async function generateOperatingCostPdf(
       } else if (item.allocation_key === 'consumption' && unitCount > 0) {
         share = `1 / ${unitCount} Einheiten`;
         shareAmount = (Number(item.amount) / unitCount) * (result.days_in_period / totalDaysInYear);
-      } else if (item.allocation_key === 'mea' && allUnits) {
-        const parseMea = (mea: string | null): { numerator: number; denominator: number } => {
-          if (!mea) return { numerator: 0, denominator: 10000 };
-          const parts = mea.split('/').map(s => Number(s.trim()));
-          if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] > 0) {
-            return { numerator: parts[0], denominator: parts[1] };
-          }
-          return { numerator: 0, denominator: 10000 };
-        };
-        const unitMea = parseMea(unit?.mea);
-        const totalMeaNumerator = allUnits.reduce((sum, u) => sum + parseMea(u.mea).numerator, 0) || 1;
-        share = `${unitMea.numerator} / ${totalMeaNumerator} MEA`;
-        if (totalMeaNumerator > 0) {
-          shareAmount = (Number(item.amount) * unitMea.numerator / totalMeaNumerator) * (result.days_in_period / totalDaysInYear);
+      } else if (item.allocation_key === 'mea') {
+        let uMea = 0;
+        let tMea = 0;
+
+        if (statement.alloc_total_mea != null) {
+          uMea = item.custom_unit_mea != null ? Number(item.custom_unit_mea) : Number(statement.alloc_unit_mea || 0);
+          tMea = Number(statement.alloc_total_mea || 0);
+        } else if (allUnits) {
+          const parseMea = (mea: string | null): number => {
+            if (!mea) return 0;
+            const parts = mea.split('/').map(s => Number(s.trim()));
+            if (parts.length === 2 && !isNaN(parts[0]) && parts[1] > 0) return parts[0];
+            return 0;
+          };
+          uMea = item.custom_unit_mea != null ? Number(item.custom_unit_mea) : parseMea(unit?.mea);
+          tMea = allUnits.reduce((sum, u) => sum + parseMea(u.mea), 0) || 1;
+        }
+
+        share = `${uMea} / ${tMea} MEA`;
+        if (tMea > 0) {
+          shareAmount = (Number(item.amount) * uMea / tMea) * (result.days_in_period / totalDaysInYear);
         }
       } else if (item.allocation_key === 'direct' || item.allocation_key === 'consumption_billing') {
         share = 'Direktumlage';

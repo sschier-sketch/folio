@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, X, Info } from "lucide-react";
 import { Button } from "../ui/Button";
 import { CostItem, COST_TYPES, ALLOCATION_OPTIONS, calcShare } from "./OperatingCostWizardStep2";
-import { AllocationParams } from "../../lib/operatingCostService";
+import type { AllocationParams } from "../../lib/operatingCostService";
 
 interface CostGroup {
   label: string;
@@ -62,7 +62,7 @@ export default function CostGroupTable({
 
   function updateCostItem(
     index: number,
-    field: "allocation_key" | "amount" | "is_section_35a" | "section_35a_category",
+    field: "allocation_key" | "amount" | "is_section_35a" | "section_35a_category" | "custom_unit_mea",
     value: any
   ) {
     const updated = [...group.costItems];
@@ -70,18 +70,24 @@ export default function CostGroupTable({
     if (field === "is_section_35a" && value === false) {
       updated[index].section_35a_category = null;
     }
+    if (field === "allocation_key" && value !== "mea") {
+      updated[index].custom_unit_mea = null;
+    }
     onUpdateGroup({ ...group, costItems: updated });
   }
 
   function updateCustomCostItem(
     index: number,
-    field: "allocation_key" | "amount" | "is_section_35a" | "section_35a_category",
+    field: "allocation_key" | "amount" | "is_section_35a" | "section_35a_category" | "custom_unit_mea",
     value: any
   ) {
     const updated = [...group.customCostItems];
     updated[index] = { ...updated[index], [field]: value };
     if (field === "is_section_35a" && value === false) {
       updated[index].section_35a_category = null;
+    }
+    if (field === "allocation_key" && value !== "mea") {
+      updated[index].custom_unit_mea = null;
     }
     onUpdateGroup({ ...group, customCostItems: updated });
   }
@@ -114,14 +120,20 @@ export default function CostGroupTable({
     0
   );
   const groupShareTotal = allItems.reduce(
-    (sum, item) => sum + calcShare(item.allocation_key, item.amount, allocParams),
+    (sum, item) => sum + calcShare(item.allocation_key, item.amount, allocParams, item.custom_unit_mea),
     0
   );
 
   function renderRow(item: CostItem, index: number, isCustom: boolean) {
-    const share = calcShare(item.allocation_key, item.amount, allocParams);
-    const hint = Number(item.amount || 0) > 0 ? getAllocHint(item.allocation_key, allocParams) : "";
-    const isUsed = Number(item.amount || 0) > 0;
+    const share = calcShare(item.allocation_key, item.amount, allocParams, item.custom_unit_mea);
+    const hint = Number(item.amount || 0) !== 0 ? getAllocHint(item.allocation_key, allocParams) : "";
+    const isUsed = Number(item.amount || 0) !== 0;
+    const isMea = item.allocation_key === "mea";
+    const totalMea = Number(allocParams.alloc_total_mea || 0);
+    const costPerMea = isMea && totalMea > 0 && Number(item.amount || 0) !== 0
+      ? Number(item.amount) / totalMea
+      : 0;
+    const effectiveUnitMea = item.custom_unit_mea != null ? item.custom_unit_mea : (allocParams.alloc_unit_mea ?? 0);
 
     return (
       <tr
@@ -158,10 +170,39 @@ export default function CostGroupTable({
               </option>
             ))}
           </select>
-          {hint && (
+          {hint && !isMea && (
             <span className="block text-xs text-gray-400 mt-0.5 pl-1">
               {hint}
             </span>
+          )}
+          {isMea && isUsed && (
+            <div className="mt-1.5 pl-1 space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-gray-400 whitespace-nowrap">Einheit-MEA:</span>
+                <input
+                  type="number"
+                  step="0.001"
+                  value={item.custom_unit_mea != null ? item.custom_unit_mea : (allocParams.alloc_unit_mea ?? "")}
+                  onChange={(e) => {
+                    const val = e.target.value ? parseFloat(e.target.value) : null;
+                    isCustom
+                      ? updateCustomCostItem(index, "custom_unit_mea", val)
+                      : updateCostItem(index, "custom_unit_mea", val);
+                  }}
+                  className={`w-20 px-1.5 py-0.5 border rounded text-[11px] text-right focus:outline-none focus:ring-1 focus:ring-primary-blue ${
+                    item.custom_unit_mea != null && item.custom_unit_mea !== allocParams.alloc_unit_mea
+                      ? "border-amber-300 bg-amber-50 font-medium"
+                      : "border-gray-200"
+                  }`}
+                />
+                <span className="text-[11px] text-gray-400">/ {totalMea || "?"}</span>
+              </div>
+              {costPerMea !== 0 && (
+                <span className="block text-[11px] text-gray-400">
+                  {costPerMea.toLocaleString("de-DE", { minimumFractionDigits: 4, maximumFractionDigits: 4 })} EUR/Anteil
+                </span>
+              )}
+            </div>
           )}
         </td>
         <td className="py-3 px-4">
@@ -179,8 +220,8 @@ export default function CostGroupTable({
           />
         </td>
         <td className="py-3 px-4 text-right">
-          {Number(item.amount || 0) > 0 ? (
-            <span className="text-sm font-medium text-green-700">
+          {Number(item.amount || 0) !== 0 ? (
+            <span className={`text-sm font-medium ${share < 0 ? "text-red-600" : "text-green-700"}`}>
               {share.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           ) : (

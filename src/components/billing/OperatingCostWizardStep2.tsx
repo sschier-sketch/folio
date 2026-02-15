@@ -14,6 +14,7 @@ export interface CostItem {
   is_section_35a?: boolean;
   section_35a_category?: "haushaltsnahe_dienstleistungen" | "handwerkerleistungen" | null;
   group_label?: string | null;
+  custom_unit_mea?: number | null;
 }
 
 export const COST_TYPES = [
@@ -69,7 +70,8 @@ function buildDefaultCostItems(groupLabel: string | null): CostItem[] {
 export function calcShare(
   allocationKey: string,
   amount: number,
-  alloc: AllocationParams
+  alloc: AllocationParams,
+  customUnitMea?: number | null
 ): number {
   const amt = Number(amount || 0);
   if (amt === 0) return 0;
@@ -90,8 +92,9 @@ export function calcShare(
       return total > 0 ? amt / total : 0;
     }
     case "mea": {
+      const unitMea = customUnitMea != null ? Number(customUnitMea) : Number(alloc.alloc_unit_mea || 0);
       const total = Number(alloc.alloc_total_mea || 0);
-      return total > 0 ? amt / total : 0;
+      return total > 0 ? (unitMea / total) * amt : 0;
     }
     case "consumption": {
       const total = Number(alloc.alloc_total_units || 0);
@@ -281,7 +284,7 @@ export default function OperatingCostWizardStep2() {
   );
 
   const totalShare = allItemsFlat.reduce(
-    (sum, item) => sum + calcShare(item.allocation_key, item.amount, allocParams),
+    (sum, item) => sum + calcShare(item.allocation_key, item.amount, allocParams, item.custom_unit_mea),
     0
   );
 
@@ -292,7 +295,12 @@ export default function OperatingCostWizardStep2() {
     setError(null);
 
     try {
-      const itemsToSave = allItemsFlat.filter((item) => Number(item.amount) !== 0);
+      const itemsToSave = allItemsFlat
+        .filter((item) => Number(item.amount) !== 0)
+        .map((item) => ({
+          ...item,
+          custom_unit_mea: item.allocation_key === "mea" ? (item.custom_unit_mea ?? null) : null,
+        }));
 
       const [lineResult, allocResult] = await Promise.all([
         operatingCostService.upsertLineItems({
@@ -584,16 +592,30 @@ export default function OperatingCostWizardStep2() {
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
                 MEA (Miteigentumsanteile)
               </label>
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Gesamtanzahl</label>
-                <input
-                  type="number"
-                  step="0.001"
-                  value={allocParams.alloc_total_mea ?? ""}
-                  onChange={(e) => updateAllocParam("alloc_total_mea", e.target.value ? parseFloat(e.target.value) : null)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
-                  placeholder="0"
-                />
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Einheit</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={allocParams.alloc_unit_mea ?? ""}
+                    onChange={(e) => updateAllocParam("alloc_unit_mea", e.target.value ? parseFloat(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                    placeholder="0"
+                  />
+                </div>
+                <span className="text-gray-300 mt-5">/</span>
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Gesamt</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={allocParams.alloc_total_mea ?? ""}
+                    onChange={(e) => updateAllocParam("alloc_total_mea", e.target.value ? parseFloat(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                    placeholder="0"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -617,7 +639,7 @@ export default function OperatingCostWizardStep2() {
                 <span className="text-sm text-gray-400">
                   ({group.costItems
                     .concat(group.customCostItems)
-                    .filter((i) => Number(i.amount) > 0).length} Positionen)
+                    .filter((i) => Number(i.amount) !== 0).length} Positionen)
                 </span>
               </div>
               <div className="flex items-center gap-4">
