@@ -16,7 +16,7 @@ export interface OperatingCostLineItem {
   id: string;
   statement_id: string;
   cost_type: string;
-  allocation_key: 'area' | 'persons' | 'units' | 'consumption' | 'mea';
+  allocation_key: 'area' | 'persons' | 'units' | 'consumption' | 'mea' | 'direct' | 'consumption_billing';
   amount: number;
   is_section_35a?: boolean;
   section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
@@ -72,7 +72,7 @@ export interface UpsertLineItemParams {
   items: Array<{
     id?: string;
     cost_type: string;
-    allocation_key: 'area' | 'persons' | 'units' | 'consumption' | 'mea';
+    allocation_key: 'area' | 'persons' | 'units' | 'consumption' | 'mea' | 'direct' | 'consumption_billing';
     amount: number;
     is_section_35a?: boolean;
     section_35a_category?: 'haushaltsnahe_dienstleistungen' | 'handwerkerleistungen' | null;
@@ -352,6 +352,8 @@ export const operatingCostService = {
               if (totalMeaNumerator > 0) {
                 share = (unitMea.numerator / totalMeaNumerator) * Number(lineItem.amount);
               }
+            } else if (lineItem.allocation_key === 'direct' || lineItem.allocation_key === 'consumption_billing') {
+              share = Number(lineItem.amount);
             }
 
             const proRatedShare = (share * daysInPeriod) / totalDaysInYear;

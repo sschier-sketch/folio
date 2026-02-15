@@ -268,7 +268,7 @@ export default function OperatingCostWizardStep3() {
                 Für Nachzahlungen wird Ihre Bankverbindung nicht auf der Betriebskostenabrechnung erscheinen.
               </p>
               <Link
-                to="/dashboard?view=settings&tab=profile"
+                to="/dashboard?view=settings-profile"
                 className="text-sm text-yellow-900 font-medium hover:underline"
               >
                 In Profil hinterlegen →
@@ -345,6 +345,8 @@ export default function OperatingCostWizardStep3() {
                          item.allocation_key === 'persons' ? 'Personenzahl' :
                          item.allocation_key === 'consumption' ? 'Verbrauch (Zähler)' :
                          item.allocation_key === 'mea' ? 'MEA' :
+                         item.allocation_key === 'direct' ? 'Direktumlage' :
+                         item.allocation_key === 'consumption_billing' ? 'lt. Verbrauchsabrechnung' :
                          item.allocation_key}
                       </td>
                       <td className="px-4 py-3 text-sm text-right font-medium text-dark">

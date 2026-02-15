@@ -174,6 +174,9 @@ export async function generateOperatingCostPdf(
         if (totalMeaNumerator > 0) {
           shareAmount = (Number(item.amount) * unitMea.numerator / totalMeaNumerator) * (result.days_in_period / totalDaysInYear);
         }
+      } else if (item.allocation_key === 'direct' || item.allocation_key === 'consumption_billing') {
+        share = 'Direktumlage';
+        shareAmount = Number(item.amount) * (result.days_in_period / totalDaysInYear);
       }
 
       return {
@@ -762,6 +765,10 @@ function getAllocationKeyLabel(key: string): string {
       return 'Verbrauch';
     case 'mea':
       return 'MEA';
+    case 'direct':
+      return 'Direktumlage';
+    case 'consumption_billing':
+      return 'lt. Verbrauchsabr.';
     default:
       return key;
   }
