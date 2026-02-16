@@ -1,22 +1,47 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { SignupForm } from "../components/auth/SignupForm";
 import { useAuth } from "../hooks/useAuth";
 import {
+  CheckCircle2,
   Building2,
-  Sparkles,
-  Check,
-  Zap,
   Users,
-  TrendingUp,
+  BarChart3,
+  FileText,
   Shield,
   Gift,
-  Trophy,
 } from "lucide-react";
-import { Header } from "../components/Header";
-import Footer from "../components/Footer";
 import { RefLink } from "../components/common/RefLink";
 import { getReferralCode } from "../lib/referralTracking";
+
+const BENEFITS = [
+  {
+    icon: Building2,
+    title: "Unbegrenzt Objekte",
+    text: "Verwalten Sie beliebig viele Immobilien an einem Ort.",
+  },
+  {
+    icon: Users,
+    title: "Mieterverwaltung",
+    text: "Mieter, Vertr\u00e4ge und Kommunikation zentral organisiert.",
+  },
+  {
+    icon: BarChart3,
+    title: "Finanzen im Blick",
+    text: "Mieteing\u00e4nge, Ausgaben und Rendite \u00fcbersichtlich tracken.",
+  },
+  {
+    icon: FileText,
+    title: "Dokumente & Vorlagen",
+    text: "Alle Unterlagen digital und sicher archiviert.",
+  },
+];
+
+const TRUST_POINTS = [
+  "DSGVO-konform & SSL-verschl\u00fcsselt",
+  "Keine Kreditkarte erforderlich",
+  "30 Tage alle Pro-Funktionen gratis",
+];
 
 export function Signup() {
   const { user, loading } = useAuth();
@@ -26,232 +51,146 @@ export function Signup() {
     const refCode = getReferralCode();
     setHasReferralCode(!!refCode);
   }, []);
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        {" "}
-        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />{" "}
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#3c8af7] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
+
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-emerald-50">
-      {" "}
-      <Header />{" "}
-      <div className="py-12 px-4 sm:px-6 lg:px-8 mt-16">
-        {" "}
-        <div className="max-w-6xl mx-auto">
-          {" "}
-          <div className="text-center mb-8">
-            {" "}
-            {hasReferralCode ? (
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-300 rounded-full px-6 py-3 mb-4 shadow-sm">
-                {" "}
-                <Gift className="w-5 h-5 text-emerald-600" />{" "}
-                <span className="text-sm font-bold text-emerald-900">
-                  🎉 Sie erhalten 2 Monate PRO gratis!
-                </span>{" "}
+    <div className="py-16 sm:py-24 px-6">
+      <div className="max-w-[1100px] mx-auto">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
+          <div className="hidden lg:block">
+            <div className="sticky top-28">
+              {hasReferralCode && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 mb-6">
+                  <Gift className="w-4 h-4 text-emerald-600" />
+                  <span className="text-sm font-semibold text-emerald-800">
+                    Sie erhalten 2 Monate PRO gratis!
+                  </span>
+                </div>
+              )}
+
+              <h1 className="text-[36px] lg:text-[44px] font-bold text-gray-900 tracking-tight leading-[1.1] mb-4">
+                Starten Sie jetzt mit{" "}
+                <span className="text-[#3c8af7]">rentably</span>
+              </h1>
+              <p className="text-lg text-gray-500 leading-relaxed max-w-[460px] mb-10">
+                Erstellen Sie Ihr Konto in weniger als 60 Sekunden und verwalten
+                Sie Ihre Immobilien professionell &ndash; kostenlos.
+              </p>
+
+              <div className="space-y-5 mb-10">
+                {BENEFITS.map((b) => (
+                  <div key={b.title} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-[#3c8af7]/[0.07] border border-[#3c8af7]/[0.12] flex items-center justify-center flex-shrink-0">
+                      <b.icon className="w-5 h-5 text-[#3c8af7]" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <h3 className="text-[15px] font-semibold text-gray-900 mb-0.5">
+                        {b.title}
+                      </h3>
+                      <p className="text-sm text-gray-500 leading-relaxed">
+                        {b.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-full px-4 py-2 mb-4">
-                {" "}
-                <Trophy className="w-4 h-4 text-amber-600" />{" "}
-                <span className="text-sm font-semibold text-amber-800">
-                  Kostenlos starten & sofort loslegen
-                </span>{" "}
+
+              <div className="flex items-center gap-8">
+                <img
+                  src="/dsvgo.png"
+                  alt="DSGVO-konform"
+                  className="h-16 w-auto object-contain"
+                />
+                <img
+                  src="/entwickelt-in-deutschland.png"
+                  alt="Entwickelt in Deutschland"
+                  className="h-16 w-auto object-contain"
+                />
               </div>
-            )}{" "}
-            <h1 className="text-4xl sm:text-5xl font-bold text-dark mb-4">
-              {" "}
-              Erstellen Sie Ihr{" "}
-              <span className="bg-gradient-to-r from-primary-blue to-emerald-600 bg-clip-text text-transparent">
-                {" "}
-                rentably-Konto{" "}
-              </span>{" "}
-            </h1>{" "}
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              {" "}
-              In weniger als 60 Sekunden zum professionellen
-              Immobilien-Management{" "}
-            </p>{" "}
-          </div>{" "}
-          <div className="grid lg:grid-cols-2 gap-8 items-start">
-            {" "}
-            <div className="order-2 lg:order-1 space-y-6">
-              {" "}
-              <div className="bg-gradient-to-br from-primary-blue to-primary-blue rounded-full p-8 text-white">
-                {" "}
-                <div className="flex items-center gap-3 mb-6">
-                  {" "}
-                  <div className="w-12 h-12 bg-white/20 rounded flex items-center justify-center">
-                    {" "}
-                    <Sparkles className="w-6 h-6" />{" "}
-                  </div>{" "}
-                  <h3 className="text-2xl font-bold">Was Sie erwartet</h3>{" "}
-                </div>{" "}
-                <div className="space-y-4">
-                  {" "}
-                  <div className="flex items-start gap-3 bg-white/10 rounded-lg p-4 backdrop-blur">
-                    {" "}
-                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      {" "}
-                      <Check className="w-5 h-5 text-white" />{" "}
-                    </div>{" "}
-                    <div>
-                      {" "}
-                      <h4 className="font-semibold mb-1">
-                        Unbegrenzt Objekte & Mieter
-                      </h4>{" "}
-                      <p className="text-sm text-primary-blue/20">
-                        Verwalten Sie beliebig viele Immobilien und Mieter -
-                        komplett kostenlos
-                      </p>{" "}
-                    </div>{" "}
-                  </div>{" "}
-                  <div className="flex items-start gap-3 bg-white/10 rounded-lg p-4 backdrop-blur">
-                    {" "}
-                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      {" "}
-                      <Check className="w-5 h-5 text-white" />{" "}
-                    </div>{" "}
-                    <div>
-                      {" "}
-                      <h4 className="font-semibold mb-1">
-                        Sofort einsatzbereit
-                      </h4>{" "}
-                      <p className="text-sm text-primary-blue/20">
-                        Keine Wartezeit - direkt nach der Registrierung loslegen
-                      </p>{" "}
-                    </div>{" "}
-                  </div>{" "}
-                  <div className="flex items-start gap-3 bg-white/10 rounded-lg p-4 backdrop-blur">
-                    {" "}
-                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      {" "}
-                      <Check className="w-5 h-5 text-white" />{" "}
-                    </div>{" "}
-                    <div>
-                      {" "}
-                      <h4 className="font-semibold mb-1">
-                        Keine Kreditkarte nötig
-                      </h4>{" "}
-                      <p className="text-sm text-primary-blue/20">
-                        Starten Sie risikofrei ohne Zahlungsinformationen
-                      </p>{" "}
-                    </div>{" "}
-                  </div>{" "}
-                </div>{" "}
-              </div>{" "}
-              <div className="grid grid-cols-2 gap-4">
-                {" "}
-                <div className="bg-white rounded p-6 hover:transition-shadow">
-                  {" "}
-                  <div className="w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center mb-3">
-                    {" "}
-                    <Building2 className="w-5 h-5 text-primary-blue" />{" "}
-                  </div>{" "}
-                  <h4 className="font-semibold text-dark mb-1">
-                    Objektverwaltung
-                  </h4>{" "}
-                  <p className="text-sm text-gray-400">
-                    Alle Immobilien im Blick
-                  </p>{" "}
-                </div>{" "}
-                <div className="bg-white rounded p-6 hover:transition-shadow">
-                  {" "}
-                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mb-3">
-                    {" "}
-                    <Users className="w-5 h-5 text-emerald-600" />{" "}
-                  </div>{" "}
-                  <h4 className="font-semibold text-dark mb-1">
-                    Mieterverwaltung
-                  </h4>{" "}
-                  <p className="text-sm text-gray-400">
-                    Zentrale Datenverwaltung
-                  </p>{" "}
-                </div>{" "}
-                <div className="bg-white rounded p-6 hover:transition-shadow">
-                  {" "}
-                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-3">
-                    {" "}
-                    <TrendingUp className="w-5 h-5 text-amber-600" />{" "}
-                  </div>{" "}
-                  <h4 className="font-semibold text-dark mb-1">
-                    Renditeanalyse
-                  </h4>{" "}
-                  <p className="text-sm text-gray-400">
-                    Profitabilität tracken
-                  </p>{" "}
-                </div>{" "}
-                <div className="bg-white rounded p-6 hover:transition-shadow">
-                  {" "}
-                  <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center mb-3">
-                    {" "}
-                    <Shield className="w-5 h-5 text-violet-600" />{" "}
-                  </div>{" "}
-                  <h4 className="font-semibold text-dark mb-1">100% Sicher</h4>{" "}
-                  <p className="text-sm text-gray-400">DSGVO-konform</p>{" "}
-                </div>{" "}
-              </div>{" "}
-              <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-full p-6">
-                {" "}
-                <div className="flex items-start gap-3">
-                  {" "}
-                  <Gift className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />{" "}
-                  <div>
-                    {" "}
-                    <h4 className="font-semibold text-dark mb-1">
-                      Pro-Features für nur 9 EUR/Monat
-                    </h4>{" "}
-                    <p className="text-sm text-gray-400">
-                      {" "}
-                      Upgraden Sie später für Ticketsystem, automatische
-                      Mieterhöhungs-Erinnerungen und erweiterte Analysen{" "}
-                    </p>{" "}
-                  </div>{" "}
-                </div>{" "}
-              </div>{" "}
-            </div>{" "}
-            <div className="order-1 lg:order-2">
-              {" "}
-              <div className="bg-white rounded-md p-8 sticky top-24">
-                {" "}
-                <div className="flex items-center justify-center gap-2 mb-6">
-                  {" "}
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-blue to-primary-blue rounded-full flex items-center justify-center">
-                    {" "}
-                    <Zap className="w-6 h-6 text-white" />{" "}
-                  </div>{" "}
-                  <h2 className="text-2xl font-bold text-dark">
-                    Schnellstart
-                  </h2>{" "}
-                </div>{" "}
-                <SignupForm
-                  onSuccess={() => (window.location.href = "/dashboard")}
-                />{" "}
-                <div className="mt-6 pt-6 border-t text-center">
-                  {" "}
-                  <p className="text-sm text-gray-400">
-                    {" "}
-                    Bereits registriert?{" "}
-                    <RefLink
-                      to="/login"
-                      className="font-semibold text-primary-blue hover:text-primary-blue"
-                    >
-                      {" "}
-                      Jetzt anmelden{" "}
-                    </RefLink>{" "}
-                  </p>{" "}
-                </div>{" "}
-              </div>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
-      </div>{" "}
-      <Footer />
+            </div>
+          </div>
+
+          <div>
+            <div className="lg:hidden text-center mb-8">
+              {hasReferralCode && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 mb-4">
+                  <Gift className="w-4 h-4 text-emerald-600" />
+                  <span className="text-sm font-semibold text-emerald-800">
+                    Sie erhalten 2 Monate PRO gratis!
+                  </span>
+                </div>
+              )}
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight leading-tight mb-3">
+                Konto erstellen
+              </h1>
+              <p className="text-gray-500">
+                Kostenlos starten &ndash; keine Kreditkarte n&ouml;tig.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+              <div className="hidden lg:flex items-center gap-3 mb-8">
+                <div className="w-11 h-11 rounded-full bg-[#EEF4FF] border border-[#DDE7FF] flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Konto erstellen</h2>
+                  <p className="text-sm text-gray-500">Kostenlos & unverbindlich</p>
+                </div>
+              </div>
+
+              <SignupForm
+                onSuccess={() => (window.location.href = "/dashboard")}
+              />
+
+              <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+                <p className="text-sm text-gray-500">
+                  Bereits registriert?{" "}
+                  <RefLink
+                    to="/login"
+                    className="font-semibold text-[#3c8af7] hover:text-[#3579de] transition-colors"
+                  >
+                    Jetzt anmelden
+                  </RefLink>
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 space-y-2.5">
+              {TRUST_POINTS.map((point) => (
+                <div key={point} className="flex items-center gap-2.5 justify-center lg:justify-start">
+                  <CheckCircle2 className="w-4 h-4 text-[#3c8af7] flex-shrink-0" />
+                  <span className="text-sm text-gray-500">{point}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex items-center gap-6 justify-center lg:hidden">
+              <img
+                src="/dsvgo.png"
+                alt="DSGVO-konform"
+                className="h-12 w-auto object-contain"
+              />
+              <img
+                src="/entwickelt-in-deutschland.png"
+                alt="Entwickelt in Deutschland"
+                className="h-12 w-auto object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
-import { Eye, EyeOff, UserPlus, Gift } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Gift, AlertCircle, CheckCircle2 } from "lucide-react";
 import { getReferralCode, getReferralMetadata, initReferralTracking, clearReferralCode } from "../../lib/referralTracking";
 import { getRefSid } from "../../lib/referralSession";
-import { Button } from '../ui/Button';
 
 interface SignupFormProps {
   onSuccess?: () => void;
@@ -38,13 +37,13 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
     setMessage(null);
 
     if (!acceptTerms) {
-      setMessage({ type: "error", text: "Sie müssen die Nutzungsbedingungen akzeptieren" });
+      setMessage({ type: "error", text: "Sie m\u00fcssen die Nutzungsbedingungen akzeptieren" });
       setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      setMessage({ type: "error", text: "Die Passwörter stimmen nicht überein" });
+      setMessage({ type: "error", text: "Die Passw\u00f6rter stimmen nicht \u00fcberein" });
       setLoading(false);
       return;
     }
@@ -125,7 +124,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
               clearReferralCode();
               setMessage({
                 type: "success",
-                text: "Konto erfolgreich erstellt! Sie wurden über einen Partner-Link registriert.",
+                text: "Konto erfolgreich erstellt! Sie wurden \u00fcber einen Partner-Link registriert.",
               });
             } else {
               setMessage({
@@ -153,21 +152,30 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {" "}
+    <form onSubmit={handleSubmit} className="space-y-5">
       {message && (
         <div
-          className={`p-4 rounded-lg ${message.type === "error" ? "bg-red-50 text-red-700 border border-red-200" : "bg-green-50 text-green-700 border border-green-200"}`}
+          className={`flex items-start gap-3 p-4 rounded-xl text-sm ${
+            message.type === "error"
+              ? "bg-red-50 text-red-700 border border-red-100"
+              : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+          }`}
         >
-          {" "}
-          {message.text}{" "}
+          {message.type === "error" ? (
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          )}
+          <span>{message.text}</span>
         </div>
-      )}{" "}
+      )}
+
       <input type="hidden" name="ref" value={affiliateCode} />
+
       <div>
         <label
           htmlFor="email"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="block text-sm font-medium text-gray-700 mb-1.5"
         >
           E-Mail-Adresse
         </label>
@@ -177,14 +185,15 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+          className="w-full h-11 px-3.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3c8af7]/30 focus:border-[#3c8af7] transition-colors"
           placeholder="ihre@email.de"
         />
-      </div>{" "}
+      </div>
+
       <div>
         <label
           htmlFor="password"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="block text-sm font-medium text-gray-700 mb-1.5"
         >
           Passwort
         </label>
@@ -195,28 +204,29 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            className="w-full h-11 px-3.5 pr-11 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3c8af7]/30 focus:border-[#3c8af7] transition-colors"
             placeholder="Mindestens 10 Zeichen"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4 text-gray-400" />
+              <EyeOff className="h-4 w-4" />
             ) : (
-              <Eye className="h-4 w-4 text-gray-400" />
+              <Eye className="h-4 w-4" />
             )}
           </button>
         </div>
-      </div>{" "}
+      </div>
+
       <div>
         <label
           htmlFor="confirmPassword"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="block text-sm font-medium text-gray-700 mb-1.5"
         >
-          Passwort bestätigen
+          Passwort best&auml;tigen
         </label>
         <div className="relative">
           <input
@@ -225,91 +235,92 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            className="w-full h-11 px-3.5 pr-11 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3c8af7]/30 focus:border-[#3c8af7] transition-colors"
             placeholder="Passwort wiederholen"
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
           >
             {showConfirmPassword ? (
-              <EyeOff className="h-4 w-4 text-gray-400" />
+              <EyeOff className="h-4 w-4" />
             ) : (
-              <Eye className="h-4 w-4 text-gray-400" />
+              <Eye className="h-4 w-4" />
             )}
           </button>
         </div>
-      </div>{" "}
+      </div>
+
       {affiliateCode && (
-        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-emerald-800">
-            <Gift className="h-5 w-5" />
-            <p className="text-sm font-semibold">
-              Sie registrieren sich über einen Partner-Link!
+        <div className="flex items-center gap-3 rounded-xl bg-emerald-50 border border-emerald-100 p-3.5">
+          <Gift className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-emerald-800">
+              Partner-Link erkannt
+            </p>
+            <p className="text-xs text-emerald-600 mt-0.5">
+              Code: <span className="font-mono font-bold">{affiliateCode}</span>
             </p>
           </div>
-          <p className="text-xs text-emerald-700 mt-1">
-            Partner Code: <span className="font-mono font-bold">{affiliateCode}</span>
-          </p>
         </div>
       )}
 
-      <div className="space-y-4">
-        <div className="flex items-start">
+      <div className="space-y-3 pt-1">
+        <label htmlFor="acceptTerms" className="flex items-start gap-3 cursor-pointer group">
           <input
             id="acceptTerms"
             type="checkbox"
             checked={acceptTerms}
             onChange={(e) => setAcceptTerms(e.target.checked)}
-            className="mt-1 h-4 w-4 text-primary-blue border-gray-300 rounded focus:ring-primary-blue"
+            className="mt-0.5 h-4 w-4 text-[#3c8af7] border-gray-300 rounded focus:ring-[#3c8af7] cursor-pointer"
             required
           />
-          <label htmlFor="acceptTerms" className="ml-2 text-sm text-gray-600">
+          <span className="text-sm text-gray-600 leading-relaxed">
             Ich akzeptiere die{' '}
-            <a href="/agb" target="_blank" className="text-primary-blue hover:underline">
-              allgemeinen Geschäftsbedingungen
+            <a href="/agb" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:text-[#3579de] font-medium transition-colors">
+              AGB
             </a>
             ,{' '}
-            <a href="/datenschutz" target="_blank" className="text-primary-blue hover:underline">
+            <a href="/datenschutz" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:text-[#3579de] font-medium transition-colors">
               Datenschutzbestimmungen
             </a>
             {' '}und{' '}
-            <a href="/avv" target="_blank" className="text-primary-blue hover:underline">
+            <a href="/avv" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:text-[#3579de] font-medium transition-colors">
               AVV
             </a>
             {' '}<span className="text-red-500">*</span>
-          </label>
-        </div>
+          </span>
+        </label>
 
-        <div className="flex items-start">
+        <label htmlFor="newsletterOptIn" className="flex items-start gap-3 cursor-pointer group">
           <input
             id="newsletterOptIn"
             type="checkbox"
             checked={newsletterOptIn}
             onChange={(e) => setNewsletterOptIn(e.target.checked)}
-            className="mt-1 h-4 w-4 text-primary-blue border-gray-300 rounded focus:ring-primary-blue"
+            className="mt-0.5 h-4 w-4 text-[#3c8af7] border-gray-300 rounded focus:ring-[#3c8af7] cursor-pointer"
           />
-          <label htmlFor="newsletterOptIn" className="ml-2 text-sm text-gray-600">
-            Ja, ich möchte über Neuigkeiten informiert werden
-          </label>
-        </div>
+          <span className="text-sm text-gray-600 leading-relaxed">
+            Ja, ich m&ouml;chte &uuml;ber Neuigkeiten, Produktupdates und hilfreiche Tipps informiert werden
+          </span>
+        </label>
       </div>
 
-      <Button
+      <button
         type="submit"
         disabled={loading}
-        variant="primary"
-        fullWidth
+        className="w-full h-12 rounded-xl text-[15px] font-semibold inline-flex items-center justify-center bg-[#3c8af7] text-white hover:bg-[#3579de] active:bg-[#2d6bc8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#3c8af7]/50 focus:ring-offset-2"
       >
         {loading ? (
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
           <>
-            <UserPlus className="w-4 h-4 mr-2" /> Konto erstellen
+            Konto erstellen
+            <ArrowRight className="w-4 h-4 ml-2" />
           </>
         )}
-      </Button>{" "}
+      </button>
     </form>
   );
 }
