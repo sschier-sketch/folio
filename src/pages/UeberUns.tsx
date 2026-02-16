@@ -265,9 +265,8 @@ function HeroSection() {
             </p>
             <div className="mt-8 flex flex-wrap gap-6">
               {[
-                { value: "1.000+", label: "Aktive Vermieter" },
+                { value: "2.000+", label: "Aktive Vermieter" },
                 { value: "5.000+", label: "Verwaltete Einheiten" },
-                { value: "4,9/5", label: "Kundenbewertung" },
               ].map((stat) => (
                 <div key={stat.label}>
                   <div className="text-2xl font-bold text-gray-900">
@@ -301,7 +300,6 @@ function MissionSection() {
         <RevealOnScroll>
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
-              <Target className="w-3.5 h-3.5 text-[#3c8af7]" />
               <span className="text-sm font-medium text-[#3c8af7]">
                 Unsere Mission
               </span>
