@@ -6,6 +6,7 @@ import {
   generateSalt,
   verifyPassword,
 } from "../lib/passwordUtils";
+
 import { Button } from "./ui/Button";
 interface TenantLoginProps {
   landlordId?: string;
@@ -223,48 +224,18 @@ export default function TenantLogin({
     setError("");
     setSuccessMessage("");
     setLoading(true);
-    if (password.length < 6) {
-      setError("Das Passwort muss mindestens 6 Zeichen lang sein.");
-      setLoading(false);
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Die Passwörter stimmen nicht überein.");
-      setLoading(false);
-      return;
-    }
     try {
-      let resetQuery = supabase
-        .from("tenants")
-        .select("*")
-        .eq("email", email.toLowerCase().trim());
-      if (landlordId) {
-        resetQuery = resetQuery.eq("user_id", landlordId);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://mypuvkzsgwanilduniup.supabase.co";
+      const response = await fetch(`${supabaseUrl}/functions/v1/request-tenant-password-reset`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.toLowerCase().trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Fehler beim Anfordern des Links");
       }
-      const { data: resetResults, error: fetchError } = await resetQuery;
-      if (fetchError) throw fetchError;
-      const tenant = resetResults?.[0] || null;
-      if (!tenant) {
-        setError("Kein Mieter mit dieser E-Mail-Adresse gefunden.");
-        setLoading(false);
-        return;
-      }
-      const salt = generateSalt();
-      const hash = await hashPassword(password, salt);
-      const { error: updateError } = await supabase
-        .from("tenants")
-        .update({ password_hash: hash, password_salt: salt })
-        .eq("id", tenant.id);
-      if (updateError) throw updateError;
-      setSuccessMessage(
-        "Passwort erfolgreich zurückgesetzt! Sie können sich jetzt anmelden.",
-      );
-      setPassword("");
-      setConfirmPassword("");
-      setTimeout(() => {
-        setMode("login");
-        setSuccessMessage("");
-      }, 2000);
+      setSuccessMessage(data.message);
     } catch (err) {
       console.error("Reset password error:", err);
       setError("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.");
@@ -483,20 +454,15 @@ export default function TenantLogin({
         )}{" "}
         {mode === "reset" && (
           <form onSubmit={handleResetPassword} className="space-y-4">
-            {" "}
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm mb-4">
-              {" "}
-              Geben Sie Ihre E-Mail-Adresse und ein neues Passwort ein.{" "}
-            </div>{" "}
+              Geben Sie Ihre E-Mail-Adresse ein. Sie erhalten einen Link per E-Mail, um Ihr Passwort zurückzusetzen.
+            </div>
             <div>
-              {" "}
               <label className="block text-sm font-medium text-gray-400 mb-2">
-                {" "}
-                E-Mail-Adresse{" "}
-              </label>{" "}
+                E-Mail-Adresse
+              </label>
               <div className="relative">
-                {" "}
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />{" "}
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
                 <input
                   type="email"
                   value={email}
@@ -504,74 +470,30 @@ export default function TenantLogin({
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   placeholder="ihre.email@beispiel.de"
                   required
-                />{" "}
-              </div>{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                {" "}
-                Neues Passwort{" "}
-              </label>{" "}
-              <div className="relative">
-                {" "}
-                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />{" "}
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="Mindestens 6 Zeichen"
-                  required
-                  minLength={6}
-                />{" "}
-              </div>{" "}
-            </div>{" "}
-            <div>
-              {" "}
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                {" "}
-                Passwort bestätigen{" "}
-              </label>{" "}
-              <div className="relative">
-                {" "}
-                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />{" "}
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="Passwort wiederholen"
-                  required
-                  minLength={6}
-                />{" "}
-              </div>{" "}
-            </div>{" "}
+                />
+              </div>
+            </div>
             <Button
               type="submit"
               disabled={loading}
               variant="primary"
               fullWidth
             >
-              {" "}
-              {loading ? "Zurücksetzen..." : "Passwort zurücksetzen"}{" "}
-            </Button>{" "}
+              {loading ? "Wird gesendet..." : "Link zum Zurücksetzen anfordern"}
+            </Button>
             <div className="text-center">
-              {" "}
               <Button
                 type="button"
                 onClick={() => {
                   setMode("login");
                   setError("");
-                  setPassword("");
-                  setConfirmPassword("");
+                  setSuccessMessage("");
                 }}
                 variant="text-danger"
               >
-                {" "}
-                Zurück zur Anmeldung{" "}
-              </Button>{" "}
-            </div>{" "}
+                Zurück zur Anmeldung
+              </Button>
+            </div>
           </form>
         )}{" "}
       </div>{" "}

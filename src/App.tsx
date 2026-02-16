@@ -25,6 +25,7 @@ import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
 import TenantPortalPage from "./pages/TenantPortalPage";
 import TenantPortalSetup from "./pages/TenantPortalSetup";
+import TenantResetPassword from "./pages/TenantResetPassword";
 import { AccountBanned } from "./pages/AccountBanned";
 import { supabase } from "./lib/supabase";
 import { GTMProvider } from "./components/GTMProvider";
@@ -136,6 +137,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/reset-password/confirm" element={<ResetPassword />} />
         <Route path="/mieterportal-aktivierung" element={<TenantPortalSetup />} />
+        <Route path="/tenant-portal/reset-password" element={<TenantResetPassword />} />
         <Route path="/tenant-portal" element={<TenantPortalPage />} />
         <Route path="/tenant-portal/:userId" element={<TenantPortalPage />} />
         <Route path="/account-banned" element={<AccountBanned />} />
