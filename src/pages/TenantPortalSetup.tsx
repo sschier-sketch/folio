@@ -27,7 +27,7 @@ export default function TenantPortalSetup() {
     try {
       const { data: tenants, error: fetchError } = await supabase
         .from("tenants")
-        .select("id, first_name, last_name, password_hash, password_salt, portal_enabled")
+        .select("id, first_name, last_name, password_hash, password_salt")
         .eq("email", email.toLowerCase().trim());
 
       if (fetchError) throw fetchError;
