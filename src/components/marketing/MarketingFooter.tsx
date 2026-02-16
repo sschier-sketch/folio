@@ -8,14 +8,13 @@ const FUNKTIONEN_LINKS = [
   { label: 'Mieterkommunikation', path: '/funktionen/kommunikation' },
   { label: 'Buchhaltung', path: '/funktionen/buchhaltung' },
   { label: 'Dokumente', path: '/funktionen/dokumente' },
-  { label: 'Übergabeprotokoll', path: '/funktionen/mietverwaltung' },
+  { label: 'Übergabeprotokoll', path: '/funktionen/uebergabeprotokoll' },
 ];
 
 const UNTERNEHMEN_LINKS = [
   { label: 'Über uns', path: '/ueber-uns' },
   { label: 'Blog', path: '/magazin' },
   { label: 'Kontakt', path: '/kontakt' },
-  { label: 'Hilfe', path: '/kontakt' },
 ];
 
 const LEGAL_LINKS = [

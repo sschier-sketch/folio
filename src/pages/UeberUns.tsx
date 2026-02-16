@@ -267,6 +267,7 @@ function HeroSection() {
               {[
                 { value: "2.000+", label: "Aktive Vermieter" },
                 { value: "15.000+", label: "Verwaltete Einheiten" },
+                { value: "22+", label: "Jahre Erfahrung" },
               ].map((stat) => (
                 <div key={stat.label}>
                   <div className="text-2xl font-bold text-gray-900">
