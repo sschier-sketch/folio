@@ -44,7 +44,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: tenant, error: tenantError } = await supabase
       .from("tenants")
-      .select("first_name, last_name, email")
+      .select("first_name, last_name, email, property:properties(name, street, zip_code, city)")
       .eq("id", tenantId)
       .maybeSingle();
 
@@ -117,6 +117,12 @@ Deno.serve(async (req: Request) => {
       ? `${profile.first_name} ${profile.last_name}`
       : landlordEmail;
 
+    const prop = tenant.property as any;
+    const propertyAddress = prop
+      ? [prop.street, [prop.zip_code, prop.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
+      : '';
+    const propertyName = prop?.name || propertyAddress || '';
+
     const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`;
     const emailResponse = await fetch(sendEmailUrl, {
       method: "POST",
@@ -133,6 +139,8 @@ Deno.serve(async (req: Request) => {
           portal_link: portalLink,
           landlord_name: landlordName,
           landlord_email: landlordEmail,
+          property_name: propertyName,
+          property_address: propertyAddress,
         },
       }),
     });

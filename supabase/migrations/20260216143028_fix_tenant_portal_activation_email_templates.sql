@@ -1,0 +1,90 @@
+/*
+  # Fix tenant portal activation email templates
+
+  1. Modified Tables
+    - `email_templates` - Updated both DE and EN versions of `tenant_portal_activation`
+
+  2. Changes
+    - Fix variable placeholders from camelCase ({{tenantName}}, {{propertyAddress}}, {{portalLink}}) 
+      to snake_case ({{tenant_name}}, {{property_address}}, {{portal_link}}) to match edge function
+    - Add property_name and property_address variables
+    - Rewrite email content with clear instructions for tenants:
+      - Explain that they can log in with their email address
+      - Explain they need to set a password on first login
+      - List available portal features
+      - Include landlord contact info
+    - Fix button link to use correct {{portal_link}} variable
+    - Update variables array to include new variables
+*/
+
+UPDATE email_templates
+SET
+  subject = 'Ihr Zugang zum Mieterportal - rentab.ly',
+  body_html = '<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#fff}table{border-collapse:collapse}</style></head><body><table width="100%" style="background:#fff"><tr><td align="center" style="padding:20px 0"><table width="600" style="background:#faf8f8;border-radius:8px"><tr><td style="padding:30px"><table width="100%"><tr><td align="center" style="padding-bottom:30px"><a href="https://rentab.ly"><img src="https://6f36f82794.imgdist.com/pub/bfra/2bnm3c1v/dzm/8g5/nzj/rentably-logo.svg" alt="rentab.ly" width="200"></a></td></tr></table><table width="100%"><tr><td style="border-top:1px solid #ddd;padding:20px 0"></td></tr></table><h1 style="margin:0 0 20px 0;color:#3c8af7;font-size:24px">Ihr Zugang zum Mieterportal</h1><div style="color:#141719;font-size:14px;line-height:1.6"><p style="margin:0 0 16px 0">Hallo <strong>{{tenant_name}}</strong>,</p><p style="margin:0 0 16px 0">Ihr Vermieter <strong>{{landlord_name}}</strong> hat f&uuml;r Sie einen Zugang zum Mieterportal eingerichtet.</p><p style="margin:0 0 16px 0"><strong>Immobilie:</strong> {{property_address}}</p><table width="100%" style="background:#f0f7ff;border-radius:8px;margin:0 0 16px 0" cellpadding="16"><tr><td><p style="margin:0 0 8px 0;font-weight:bold;color:#1a5dc8">So funktioniert Ihr erster Login:</p><ol style="margin:0;padding-left:20px;color:#141719"><li style="margin-bottom:6px">Klicken Sie auf den Button &quot;Zum Mieterportal&quot; weiter unten</li><li style="margin-bottom:6px">Geben Sie Ihre E-Mail-Adresse ein: <strong>{{tenant_email}}</strong></li><li style="margin-bottom:6px">Beim ersten Login werden Sie aufgefordert, ein pers&ouml;nliches Passwort zu vergeben</li><li style="margin-bottom:0">Nach der Passwortvergabe k&ouml;nnen Sie sich jederzeit mit Ihrer E-Mail und Ihrem Passwort anmelden</li></ol></td></tr></table><p style="margin:0 0 12px 0"><strong>Im Mieterportal k&ouml;nnen Sie:</strong></p><ul style="margin:0 0 16px 0;padding-left:20px;color:#141719"><li style="margin-bottom:4px">Ihre Vertragsdaten und Mietinformationen einsehen</li><li style="margin-bottom:4px">Dokumente herunterladen</li><li style="margin-bottom:4px">Z&auml;hlerst&auml;nde erfassen und melden</li><li style="margin-bottom:4px">Anfragen und Tickets an Ihren Vermieter senden</li><li style="margin-bottom:0">Ihre Kontaktdaten verwalten</li></ul></div><table width="100%" cellpadding="20"><tr><td align="center"><a href="{{portal_link}}" style="background:#3c8af7;border-radius:50px;color:#fff;display:inline-block;padding:14px 40px;text-decoration:none;font-weight:bold;font-size:16px">Zum Mieterportal</a></td></tr></table><div style="color:#141719;font-size:14px;line-height:1.6"><p style="margin:0 0 8px 0;color:#666">Bei Fragen wenden Sie sich bitte direkt an Ihren Vermieter:</p><p style="margin:0 0 16px 0;color:#666">{{landlord_name}} &ndash; <a href="mailto:{{landlord_email}}" style="color:#3c8af7">{{landlord_email}}</a></p></div><table width="100%"><tr><td style="border-top:1px solid #ddd;padding:20px 0"></td></tr></table><p style="color:#666;font-size:12px;text-align:center;margin:0">&copy; 2026 <a href="https://rentab.ly" style="color:#3c8af7">rentab.ly</a></p></td></tr></table></td></tr></table></body></html>',
+  body_text = 'Ihr Zugang zum Mieterportal
+
+Hallo {{tenant_name}},
+
+Ihr Vermieter {{landlord_name}} hat für Sie einen Zugang zum Mieterportal eingerichtet.
+
+Immobilie: {{property_address}}
+
+So funktioniert Ihr erster Login:
+1. Öffnen Sie den folgenden Link: {{portal_link}}
+2. Geben Sie Ihre E-Mail-Adresse ein: {{tenant_email}}
+3. Beim ersten Login werden Sie aufgefordert, ein persönliches Passwort zu vergeben
+4. Nach der Passwortvergabe können Sie sich jederzeit mit Ihrer E-Mail und Ihrem Passwort anmelden
+
+Im Mieterportal können Sie:
+- Ihre Vertragsdaten und Mietinformationen einsehen
+- Dokumente herunterladen
+- Zählerstände erfassen und melden
+- Anfragen und Tickets an Ihren Vermieter senden
+- Ihre Kontaktdaten verwalten
+
+Link zum Mieterportal: {{portal_link}}
+
+Bei Fragen wenden Sie sich bitte direkt an Ihren Vermieter:
+{{landlord_name}} - {{landlord_email}}
+
+---
+© 2026 rentab.ly',
+  variables = '["tenant_name", "tenant_email", "portal_link", "landlord_name", "landlord_email", "property_name", "property_address"]'::jsonb,
+  updated_at = now()
+WHERE template_key = 'tenant_portal_activation' AND language = 'de';
+
+UPDATE email_templates
+SET
+  subject = 'Your Access to the Tenant Portal - rentab.ly',
+  body_html = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#fff}table{border-collapse:collapse}</style></head><body><table width="100%" style="background:#fff"><tr><td align="center" style="padding:20px 0"><table width="600" style="background:#faf8f8;border-radius:8px"><tr><td style="padding:30px"><table width="100%"><tr><td align="center" style="padding-bottom:30px"><a href="https://rentab.ly"><img src="https://6f36f82794.imgdist.com/pub/bfra/2bnm3c1v/dzm/8g5/nzj/rentably-logo.svg" alt="rentab.ly" width="200"></a></td></tr></table><table width="100%"><tr><td style="border-top:1px solid #ddd;padding:20px 0"></td></tr></table><h1 style="margin:0 0 20px 0;color:#3c8af7;font-size:24px">Your Access to the Tenant Portal</h1><div style="color:#141719;font-size:14px;line-height:1.6"><p style="margin:0 0 16px 0">Hello <strong>{{tenant_name}}</strong>,</p><p style="margin:0 0 16px 0">Your landlord <strong>{{landlord_name}}</strong> has set up tenant portal access for you.</p><p style="margin:0 0 16px 0"><strong>Property:</strong> {{property_address}}</p><table width="100%" style="background:#f0f7ff;border-radius:8px;margin:0 0 16px 0" cellpadding="16"><tr><td><p style="margin:0 0 8px 0;font-weight:bold;color:#1a5dc8">How to log in for the first time:</p><ol style="margin:0;padding-left:20px;color:#141719"><li style="margin-bottom:6px">Click the &quot;Go to Tenant Portal&quot; button below</li><li style="margin-bottom:6px">Enter your email address: <strong>{{tenant_email}}</strong></li><li style="margin-bottom:6px">On your first login, you will be asked to set a personal password</li><li style="margin-bottom:0">After setting your password, you can log in anytime with your email and password</li></ol></td></tr></table><p style="margin:0 0 12px 0"><strong>In the tenant portal you can:</strong></p><ul style="margin:0 0 16px 0;padding-left:20px;color:#141719"><li style="margin-bottom:4px">View your contract details and rent information</li><li style="margin-bottom:4px">Download documents</li><li style="margin-bottom:4px">Submit meter readings</li><li style="margin-bottom:4px">Create tickets and send messages to your landlord</li><li style="margin-bottom:0">Manage your contact information</li></ul></div><table width="100%" cellpadding="20"><tr><td align="center"><a href="{{portal_link}}" style="background:#3c8af7;border-radius:50px;color:#fff;display:inline-block;padding:14px 40px;text-decoration:none;font-weight:bold;font-size:16px">Go to Tenant Portal</a></td></tr></table><div style="color:#141719;font-size:14px;line-height:1.6"><p style="margin:0 0 8px 0;color:#666">If you have any questions, please contact your landlord directly:</p><p style="margin:0 0 16px 0;color:#666">{{landlord_name}} &ndash; <a href="mailto:{{landlord_email}}" style="color:#3c8af7">{{landlord_email}}</a></p></div><table width="100%"><tr><td style="border-top:1px solid #ddd;padding:20px 0"></td></tr></table><p style="color:#666;font-size:12px;text-align:center;margin:0">&copy; 2026 <a href="https://rentab.ly" style="color:#3c8af7">rentab.ly</a></p></td></tr></table></td></tr></table></body></html>',
+  body_text = 'Your Access to the Tenant Portal
+
+Hello {{tenant_name}},
+
+Your landlord {{landlord_name}} has set up tenant portal access for you.
+
+Property: {{property_address}}
+
+How to log in for the first time:
+1. Open the following link: {{portal_link}}
+2. Enter your email address: {{tenant_email}}
+3. On your first login, you will be asked to set a personal password
+4. After setting your password, you can log in anytime with your email and password
+
+In the tenant portal you can:
+- View your contract details and rent information
+- Download documents
+- Submit meter readings
+- Create tickets and send messages to your landlord
+- Manage your contact information
+
+Link to tenant portal: {{portal_link}}
+
+If you have any questions, please contact your landlord directly:
+{{landlord_name}} - {{landlord_email}}
+
+---
+© 2026 rentab.ly',
+  variables = '["tenant_name", "tenant_email", "portal_link", "landlord_name", "landlord_email", "property_name", "property_address"]'::jsonb,
+  updated_at = now()
+WHERE template_key = 'tenant_portal_activation' AND language = 'en';
