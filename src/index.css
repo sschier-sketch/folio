@@ -180,17 +180,8 @@
 }
 
 .magazine-article-content .info-box-block li {
-  position: relative;
-  padding-left: 1.25rem;
   margin-bottom: 0.5rem;
   color: #374151;
   font-size: 1rem;
   line-height: 1.65;
-}
-
-.magazine-article-content .info-box-block li::before {
-  content: '\2022';
-  position: absolute;
-  left: 0;
-  color: #6b7280;
 }
