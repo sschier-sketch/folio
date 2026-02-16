@@ -1,172 +1,62 @@
 import { Globe } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { RefLink } from "./common/RefLink";
-import { Button } from "./ui/Button";
+
+const LEGAL_LINKS = [
+  { labelDe: 'Impressum', labelEn: 'Imprint', path: '/impressum' },
+  { labelDe: 'AGB', labelEn: 'Terms & Conditions', path: '/agb' },
+  { labelDe: 'Datenschutz', labelEn: 'Privacy Policy', path: '/datenschutz' },
+  { labelDe: 'AVV', labelEn: 'DPA', path: '/avv' },
+];
+
 export default function Footer() {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const currentYear = new Date().getFullYear();
+
   return (
     <footer className="bg-white border-t mt-auto">
-      {" "}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {" "}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {" "}
-          <div>
-            {" "}
-            <div className="flex items-center mb-4">
-              {" "}
-              <img
-                src="/rentably-logo.svg"
-                alt="Rentably"
-                className="h-6 w-auto"
-              />{" "}
-            </div>{" "}
-            <p className="text-sm text-gray-400">
-              {" "}
-              {language === "de"
-                ? "Moderne Immobilienverwaltung für Vermieter"
-                : "Modern property management for landlords"}{" "}
-            </p>{" "}
-          </div>{" "}
-          <div>
-            {" "}
-            <h3 className="font-semibold text-dark mb-3">
-              {t("footer.product")}
-            </h3>{" "}
-            <ul className="space-y-2">
-              {" "}
-              <li>
-                {" "}
-                <RefLink
-                  to="/features"
-                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
-                >
-                  {" "}
-                  {t("footer.features")}{" "}
-                </RefLink>{" "}
-              </li>{" "}
-              <li>
-                {" "}
-                <RefLink
-                  to="/pricing"
-                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
-                >
-                  {" "}
-                  {t("footer.pricing")}{" "}
-                </RefLink>{" "}
-              </li>{" "}
-              <li>
-                {" "}
-                <RefLink
-                  to="/kontakt"
-                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
-                >
-                  {" "}
-                  {language === "de" ? "Hilfe" : "Help"}{" "}
-                </RefLink>{" "}
-              </li>{" "}
-            </ul>{" "}
-          </div>{" "}
-          <div>
-            <h3 className="font-semibold text-dark mb-3">
-              {t("footer.company")}
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <RefLink
-                  to="/impressum"
-                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
-                >
-                  {t("footer.about")}
-                </RefLink>
-              </li>
-              <li>
-                <RefLink
-                  to="/contact"
-                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
-                >
-                  {t("footer.contact")}
-                </RefLink>
-              </li>
-              <li>
-                <RefLink
-                  to="/datenschutz"
-                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
-                >
-                  {language === "de" ? "Datenschutz" : "Privacy Policy"}
-                </RefLink>
-              </li>
-              <li>
-                <RefLink
-                  to="/agb"
-                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
-                >
-                  {language === "de" ? "AGB" : "Terms & Conditions"}
-                </RefLink>
-              </li>
-              <li>
-                <RefLink
-                  to="/avv"
-                  className="text-sm text-gray-400 hover:text-primary-blue transition-colors"
-                >
-                  {language === "de" ? "AVV" : "DPA"}
-                </RefLink>
-              </li>
-            </ul>
-          </div>{" "}
-          <div>
-            {" "}
-            <h3 className="font-semibold text-dark mb-3">
-              {t("footer.other_products")}
-            </h3>{" "}
-            <ul className="space-y-2">
-              {" "}
-              <li>
-                {" "}
-                <div className="text-sm text-gray-400 block">
-                  {" "}
-                  <div className="font-medium">
-                    {t("footer.kmu_suite")}
-                  </div>{" "}
-                  <div className="text-xs text-gray-300">
-                    Coming soon
-                  </div>{" "}
-                </div>{" "}
-              </li>{" "}
-            </ul>{" "}
-          </div>{" "}
-        </div>{" "}
-        <div className="border-t pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          {" "}
-          <div className="text-sm text-gray-400">
-            {" "}
-            {t("footer.rights")}{" "}
-          </div>{" "}
-          <div className="flex items-center gap-3">
-            {" "}
-            <span className="text-sm font-medium text-gray-400 flex items-center gap-2">
-              {" "}
-              <Globe className="w-4 h-4" /> {t("footer.language")}:{" "}
-            </span>{" "}
-            <div className="flex gap-2">
-              {" "}
-              <Button
-                onClick={() => setLanguage("de")}
-                variant={language === "de" ? "primary" : "secondary"}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {LEGAL_LINKS.map((link) => (
+              <RefLink
+                key={link.path}
+                to={link.path}
+                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
               >
-                Deutsch
-              </Button>{" "}
-              <Button
-                onClick={() => setLanguage("en")}
-                variant={language === "en" ? "primary" : "secondary"}
-              >
-                English
-              </Button>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
-      </div>{" "}
+                {language === 'de' ? link.labelDe : link.labelEn}
+              </RefLink>
+            ))}
+            <span className="text-xs text-gray-300">
+              &copy; {currentYear} rentably
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Globe className="w-3.5 h-3.5 text-gray-400" />
+            <button
+              onClick={() => setLanguage("de")}
+              className={`text-xs px-2 py-1 rounded transition-colors ${
+                language === "de"
+                  ? "text-gray-900 font-medium bg-gray-100"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              DE
+            </button>
+            <button
+              onClick={() => setLanguage("en")}
+              className={`text-xs px-2 py-1 rounded transition-colors ${
+                language === "en"
+                  ? "text-gray-900 font-medium bg-gray-100"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              EN
+            </button>
+          </div>
+        </div>
+      </div>
     </footer>
   );
 }
