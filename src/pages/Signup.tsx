@@ -91,8 +91,8 @@ export function Signup() {
               <div className="space-y-5 mb-10">
                 {BENEFITS.map((b) => (
                   <div key={b.title} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#3c8af7]/[0.07] border border-[#3c8af7]/[0.12] flex items-center justify-center flex-shrink-0">
-                      <b.icon className="w-5 h-5 text-[#3c8af7]" strokeWidth={1.5} />
+                    <div className="w-12 h-12 rounded-full bg-[#EEF4FF] border border-[#DDE7FF] flex items-center justify-center flex-shrink-0">
+                      <b.icon className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
                     </div>
                     <div>
                       <h3 className="text-[15px] font-semibold text-gray-900 mb-0.5">
