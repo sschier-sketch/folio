@@ -12,9 +12,6 @@ import {
   Target,
   Building2,
   Users,
-  BarChart3,
-  FileCheck,
-  Clock,
   Headphones,
   ArrowRight,
   Linkedin,
@@ -85,42 +82,17 @@ const PILLARS = [
 const FOUNDERS = [
   {
     name: "Simon Schier",
-    role: "Co-Founder & CEO",
-    bio: "Simon bringt seine Erfahrung als Vermieter und Unternehmer ein, um rentably zur führenden Plattform für private Immobilienverwaltung zu machen. Seine Vision: Verwaltung so einfach wie möglich.",
-    image:
-      "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=400",
-    linkedin: "https://linkedin.com/in/simonschier",
+    role: "Co-Founder",
+    bio: "Simon verantwortet die technische Entwicklung von rentably. Mit seinem Hintergrund in Softwareentwicklung und Produktdesign sorgt er dafür, dass Vermieter eine sichere, stabile und innovative Lösung nutzen können.",
+    image: "/simon-schier.png",
+    linkedin: "https://www.linkedin.com/in/simonschier/",
   },
   {
     name: "Philipp Roth",
-    role: "Co-Founder & CTO",
-    bio: "Philipp verantwortet die technische Entwicklung von rentably. Mit seinem Hintergrund in Softwareentwicklung sorgt er dafür, dass Vermieter eine sichere, stabile und innovative Lösung nutzen können.",
-    image:
-      "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=400",
-    linkedin: "https://linkedin.com/in/philipproth",
-  },
-];
-
-const WHY_REASONS = [
-  {
-    icon: Clock,
-    title: "Zeitersparnis",
-    text: "Automatisierte Betriebskostenabrechnungen, Zahlungsüberwachung und Dokumentenverwaltung sparen Ihnen Stunden pro Monat.",
-  },
-  {
-    icon: Users,
-    title: "Von Vermietern für Vermieter",
-    text: "Entwickelt von einem Team, das die echten Herausforderungen aus erster Hand kennt.",
-  },
-  {
-    icon: BarChart3,
-    title: "Volle Kontrolle",
-    text: "Alle Finanzen, Verträge und Dokumente an einem Ort — übersichtlich und jederzeit abrufbar.",
-  },
-  {
-    icon: FileCheck,
-    title: "Rechtssicher",
-    text: "DSGVO-konform, in Europa gehostet. Mietverträge, Nebenkostenabrechnungen und Mahnungen nach deutschen Standards.",
+    role: "Co-Founder",
+    bio: "Philipp bringt seine Erfahrung in Marketing und Unternehmensentwicklung ein, um rentably zur führenden Plattform für private Immobilienverwaltung zu machen. Seine Vision: Verwaltung so einfach wie möglich.",
+    image: "/philipp-roth.png",
+    linkedin: "https://www.linkedin.com/in/mr-philipproth/",
   },
 ];
 
@@ -195,11 +167,10 @@ export default function UeberUns() {
       <ValuesSection />
       <PillarsSection />
       <FoundersSection />
-      <WhySection />
       <TimelineSection />
       <TestimonialsSection />
 
-      <section className="py-[100px] px-6">
+      <section className="py-[100px] px-6 bg-gray-50">
         <div className="max-w-[800px] mx-auto">
           <RevealOnScroll>
             <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
@@ -520,63 +491,9 @@ function FoundersSection() {
   );
 }
 
-function WhySection() {
-  return (
-    <section className="py-[100px] px-6 bg-[#f0f5ff]">
-      <div className="max-w-[1200px] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-              Warum Vermieter auf rentably setzen
-            </h2>
-            <p className="text-gray-600 leading-relaxed mb-10 max-w-[540px]">
-              Tausende private Vermieter und Hausverwaltungen vertrauen bereits
-              auf rentably. Das sind die Gründe.
-            </p>
-
-            <div className="space-y-6">
-              {WHY_REASONS.map((reason, i) => (
-                <div key={reason.title} className="flex gap-4">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{
-                      backgroundColor: "#EEF4FF",
-                      border: "1px solid #DDE7FF",
-                    }}
-                  >
-                    <reason.icon className="w-5 h-5 text-[#3c8af7]" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-semibold text-gray-900 mb-1">
-                      {reason.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                      {reason.text}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </RevealOnScroll>
-
-          <RevealOnScroll delay={100} className="hidden lg:block">
-            <div className="rounded-2xl overflow-hidden shadow-lg shadow-gray-900/[0.06]">
-              <img
-                src="https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=800"
-                alt="Zufriedene Nutzer von rentably"
-                className="w-full h-[480px] object-cover"
-              />
-            </div>
-          </RevealOnScroll>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function TimelineSection() {
   return (
-    <section className="py-[100px] px-6">
+    <section className="py-[100px] px-6 bg-gray-50">
       <div className="max-w-[800px] mx-auto">
         <RevealOnScroll>
           <div className="text-center mb-16">
