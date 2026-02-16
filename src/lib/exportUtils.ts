@@ -78,6 +78,21 @@ interface ExportTenant {
   phone: string | null;
 }
 
+interface ExportLoan {
+  lender_name: string;
+  loan_amount: number;
+  remaining_balance: number;
+  interest_rate: number;
+  monthly_payment: number;
+  monthly_principal: number;
+  start_date: string | null;
+  end_date: string | null;
+  loan_type: string;
+  loan_status?: string;
+  fixed_interest_end_date?: string | null;
+  notes?: string;
+}
+
 interface PropertyWithUnitsAndTenants {
   property: ExportProperty;
   units: Array<{
@@ -85,6 +100,7 @@ interface PropertyWithUnitsAndTenants {
     tenant?: ExportTenant;
   }>;
   equipment?: ExportEquipment;
+  loans?: ExportLoan[];
 }
 
 interface ExportContract {
@@ -126,9 +142,10 @@ const getPropertyTypeLabel = (type: string): string => {
 const getManagementTypeLabel = (type?: string): string => {
   if (!type) return "Nicht angegeben";
   const labels: Record<string, string> = {
-    rental_management: "Miet Verwaltung",
-    weg_management: "WEG Verwaltung",
-    rental_and_weg_management: "Miet und WEG Verwaltung",
+    self_management: "Eigenverwaltung",
+    rental_management: "Mietverwaltung",
+    weg_management: "WEG-Verwaltung",
+    rental_and_weg_management: "Miet- und WEG-Verwaltung",
   };
   return labels[type] || type;
 };
@@ -182,6 +199,29 @@ const getConstructionTypeLabel = (type?: string): string => {
     other: "Sonstiges",
   };
   return labels[type] || type;
+};
+
+const getLoanTypeLabel = (type: string): string => {
+  const labels: Record<string, string> = {
+    annuity: "Annuitätendarlehen",
+    fixed_rate: "Festzinsdarlehen",
+    variable: "Variables Darlehen",
+    kfw: "KfW-Darlehen",
+    building_savings: "Bausparvertrag",
+    other: "Sonstiges",
+  };
+  return labels[type] || type;
+};
+
+const getLoanStatusLabel = (status?: string): string => {
+  if (!status) return "-";
+  const labels: Record<string, string> = {
+    active: "Aktiv",
+    paid_off: "Abbezahlt",
+    refinanced: "Umfinanziert",
+    terminated: "Gekündigt",
+  };
+  return labels[status] || status;
 };
 
 export async function exportToPDF(data: PropertyWithUnitsAndTenants[] | TenantWithDetails[], type: 'properties' | 'tenants' = 'properties') {
@@ -515,6 +555,39 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
       currentY = (doc as any).lastAutoTable.finalY + 6;
     }
 
+    if (item.loans && item.loans.length > 0) {
+      ensureSpace(40);
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text("Kredite & Finanzierung", M_LEFT, currentY);
+      currentY += 4;
+
+      item.loans.forEach((loan, loanIdx) => {
+        ensureSpace(30);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text(`${loan.lender_name || `Kredit ${loanIdx + 1}`}`, M_LEFT + 2, currentY);
+        currentY += 3;
+
+        const loanData: string[][] = [
+          ['Kreditart', getLoanTypeLabel(loan.loan_type)],
+          ['Status', getLoanStatusLabel(loan.loan_status)],
+          ['Darlehenssumme', formatCurrency(loan.loan_amount)],
+          ['Restschuld', formatCurrency(loan.remaining_balance)],
+          ['Zinssatz', `${loan.interest_rate.toFixed(2)} %`],
+          ['Monatl. Rate', formatCurrency(loan.monthly_payment)],
+          ['Monatl. Tilgung', formatCurrency(loan.monthly_principal)],
+          ['Laufzeit', `${formatDate(loan.start_date)} – ${formatDate(loan.end_date)}`],
+        ];
+
+        if (loan.fixed_interest_end_date) {
+          loanData.push(['Zinsbindung bis', formatDate(loan.fixed_interest_end_date)]);
+        }
+
+        currentY = renderKeyValueTable(loanData, currentY);
+      });
+    }
+
     currentY += 10;
   });
 
@@ -748,69 +821,92 @@ export function exportToCSV(data: PropertyWithUnitsAndTenants[] | TenantWithDeta
 }
 
 function exportPropertiesToCSV(data: PropertyWithUnitsAndTenants[]) {
-  const rows: string[][] = [
-    [
-      'Immobilie',
-      'Adresse',
-      'Typ',
-      'Verwaltung',
-      'Kaufpreis',
-      'Aktueller Wert',
-      'Kaufdatum',
-      'Fläche (m²)',
-      'Einheit',
-      'Einheit Status',
-      'Einheit Fläche (m²)',
-      'Monatsmiete',
-      'Mieter',
-      'Mieter E-Mail',
-      'Mieter Telefon',
-      'Beschreibung',
-    ],
+  const hasLoans = data.some(d => d.loans && d.loans.length > 0);
+  const header = [
+    'Immobilie',
+    'Adresse',
+    'Typ',
+    'Verwaltung',
+    'Kaufpreis',
+    'Aktueller Wert',
+    'Kaufdatum',
+    'Fläche (m²)',
+    'Einheit',
+    'Einheit Status',
+    'Einheit Fläche (m²)',
+    'Monatsmiete',
+    'Mieter',
+    'Mieter E-Mail',
+    'Mieter Telefon',
+    'Beschreibung',
   ];
 
+  if (hasLoans) {
+    header.push('Kreditgeber', 'Kreditart', 'Darlehenssumme', 'Restschuld', 'Zinssatz (%)', 'Monatl. Rate', 'Monatl. Tilgung');
+  }
+
+  const rows: string[][] = [header];
+  const emptyLoan = hasLoans ? ['-', '-', '-', '-', '-', '-', '-'] : [];
+
   data.forEach(item => {
+    const baseRow = (unitCols: string[]) => [
+      item.property.name,
+      item.property.address,
+      getPropertyTypeLabel(item.property.property_type),
+      getManagementTypeLabel(item.property.property_management_type),
+      item.property.purchase_price.toString(),
+      item.property.current_value.toString(),
+      formatDate(item.property.purchase_date),
+      item.property.size_sqm?.toString() || '-',
+      ...unitCols,
+      item.property.description || '-',
+    ];
+
+    const unitRows: string[][] = [];
     if (item.units.length === 0) {
-      rows.push([
-        item.property.name,
-        item.property.address,
-        getPropertyTypeLabel(item.property.property_type),
-        getManagementTypeLabel(item.property.property_management_type),
-        item.property.purchase_price.toString(),
-        item.property.current_value.toString(),
-        formatDate(item.property.purchase_date),
-        item.property.size_sqm?.toString() || '-',
-        '-',
-        '-',
-        '-',
-        '-',
-        '-',
-        '-',
-        '-',
-        item.property.description || '-',
-      ]);
+      unitRows.push(baseRow(['-', '-', '-', '-', '-', '-', '-']));
     } else {
       item.units.forEach(u => {
-        rows.push([
-          item.property.name,
-          item.property.address,
-          getPropertyTypeLabel(item.property.property_type),
-          getManagementTypeLabel(item.property.property_management_type),
-          item.property.purchase_price.toString(),
-          item.property.current_value.toString(),
-          formatDate(item.property.purchase_date),
-          item.property.size_sqm?.toString() || '-',
+        const statusLabel = u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status === 'self_occupied' ? 'Selbst genutzt' : u.unit.status;
+        unitRows.push(baseRow([
           u.unit.unit_number,
-          u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status,
+          statusLabel,
           u.unit.size_sqm?.toString() || '-',
           u.unit.monthly_rent?.toString() || '-',
           u.tenant?.name || '-',
           u.tenant?.email || '-',
           u.tenant?.phone || '-',
-          item.property.description || '-',
-        ]);
+        ]));
       });
     }
+
+    if (hasLoans && item.loans && item.loans.length > 0) {
+      item.loans.forEach((loan, li) => {
+        const loanCols = [
+          loan.lender_name,
+          getLoanTypeLabel(loan.loan_type),
+          loan.loan_amount.toString(),
+          loan.remaining_balance.toString(),
+          loan.interest_rate.toFixed(2),
+          loan.monthly_payment.toString(),
+          loan.monthly_principal.toString(),
+        ];
+        if (li < unitRows.length) {
+          unitRows[li].push(...loanCols);
+        } else {
+          const emptyBase = Array(16).fill('-');
+          rows.push([...emptyBase, ...loanCols]);
+          return;
+        }
+      });
+      for (let i = item.loans.length; i < unitRows.length; i++) {
+        unitRows[i].push(...emptyLoan);
+      }
+    } else if (hasLoans) {
+      unitRows.forEach(r => r.push(...emptyLoan));
+    }
+
+    rows.push(...unitRows);
   });
 
   const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(';')).join('\n');
@@ -897,69 +993,92 @@ export function exportToExcel(data: PropertyWithUnitsAndTenants[] | TenantWithDe
 }
 
 function exportPropertiesToExcel(data: PropertyWithUnitsAndTenants[]) {
-  const rows: any[][] = [
-    [
-      'Immobilie',
-      'Adresse',
-      'Typ',
-      'Verwaltung',
-      'Kaufpreis',
-      'Aktueller Wert',
-      'Kaufdatum',
-      'Fläche (m²)',
-      'Einheit',
-      'Einheit Status',
-      'Einheit Fläche (m²)',
-      'Monatsmiete',
-      'Mieter',
-      'Mieter E-Mail',
-      'Mieter Telefon',
-      'Beschreibung',
-    ],
+  const hasLoans = data.some(d => d.loans && d.loans.length > 0);
+  const header: any[] = [
+    'Immobilie',
+    'Adresse',
+    'Typ',
+    'Verwaltung',
+    'Kaufpreis',
+    'Aktueller Wert',
+    'Kaufdatum',
+    'Fläche (m²)',
+    'Einheit',
+    'Einheit Status',
+    'Einheit Fläche (m²)',
+    'Monatsmiete',
+    'Mieter',
+    'Mieter E-Mail',
+    'Mieter Telefon',
+    'Beschreibung',
   ];
 
+  if (hasLoans) {
+    header.push('Kreditgeber', 'Kreditart', 'Darlehenssumme', 'Restschuld', 'Zinssatz (%)', 'Monatl. Rate', 'Monatl. Tilgung');
+  }
+
+  const rows: any[][] = [header];
+  const emptyLoan = hasLoans ? ['-', '-', '-', '-', '-', '-', '-'] : [];
+
   data.forEach(item => {
+    const buildRow = (unitCols: any[]) => [
+      item.property.name,
+      item.property.address,
+      getPropertyTypeLabel(item.property.property_type),
+      getManagementTypeLabel(item.property.property_management_type),
+      item.property.purchase_price,
+      item.property.current_value,
+      formatDate(item.property.purchase_date),
+      item.property.size_sqm || '-',
+      ...unitCols,
+      item.property.description || '-',
+    ];
+
+    const unitRows: any[][] = [];
     if (item.units.length === 0) {
-      rows.push([
-        item.property.name,
-        item.property.address,
-        getPropertyTypeLabel(item.property.property_type),
-        getManagementTypeLabel(item.property.property_management_type),
-        item.property.purchase_price,
-        item.property.current_value,
-        formatDate(item.property.purchase_date),
-        item.property.size_sqm || '-',
-        '-',
-        '-',
-        '-',
-        '-',
-        '-',
-        '-',
-        '-',
-        item.property.description || '-',
-      ]);
+      unitRows.push(buildRow(['-', '-', '-', '-', '-', '-', '-']));
     } else {
       item.units.forEach(u => {
-        rows.push([
-          item.property.name,
-          item.property.address,
-          getPropertyTypeLabel(item.property.property_type),
-          getManagementTypeLabel(item.property.property_management_type),
-          item.property.purchase_price,
-          item.property.current_value,
-          formatDate(item.property.purchase_date),
-          item.property.size_sqm || '-',
+        const statusLabel = u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status === 'self_occupied' ? 'Selbst genutzt' : u.unit.status;
+        unitRows.push(buildRow([
           u.unit.unit_number,
-          u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status,
+          statusLabel,
           u.unit.size_sqm || '-',
           u.unit.monthly_rent || '-',
           u.tenant?.name || '-',
           u.tenant?.email || '-',
           u.tenant?.phone || '-',
-          item.property.description || '-',
-        ]);
+        ]));
       });
     }
+
+    if (hasLoans && item.loans && item.loans.length > 0) {
+      item.loans.forEach((loan, li) => {
+        const loanCols = [
+          loan.lender_name,
+          getLoanTypeLabel(loan.loan_type),
+          loan.loan_amount,
+          loan.remaining_balance,
+          loan.interest_rate,
+          loan.monthly_payment,
+          loan.monthly_principal,
+        ];
+        if (li < unitRows.length) {
+          unitRows[li].push(...loanCols);
+        } else {
+          const emptyBase: any[] = Array(16).fill('-');
+          rows.push([...emptyBase, ...loanCols]);
+          return;
+        }
+      });
+      for (let i = item.loans.length; i < unitRows.length; i++) {
+        unitRows[i].push(...emptyLoan);
+      }
+    } else if (hasLoans) {
+      unitRows.forEach(r => r.push(...emptyLoan));
+    }
+
+    rows.push(...unitRows);
   });
 
   const ws = XLSX.utils.aoa_to_sheet(rows);

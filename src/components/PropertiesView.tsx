@@ -77,6 +77,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   const [selectedColor, setSelectedColor] = useState("blue");
   const [allLabels, setAllLabels] = useState<string[]>([]);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exportDialog, setExportDialog] = useState<{ format: 'pdf' | 'csv' | 'excel' } | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [filters, setFilters] = useState({
     status: "",
@@ -237,15 +238,19 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
     return labels[type] || type;
   };
 
-  const handleExport = async (format: 'pdf' | 'csv' | 'excel') => {
+  const handleExport = (format: 'pdf' | 'csv' | 'excel') => {
+    setShowExportMenu(false);
+    setExportDialog({ format });
+  };
+
+  const executeExport = async (format: 'pdf' | 'csv' | 'excel', includeLoans: boolean) => {
     if (!user) return;
+    setExportDialog(null);
 
     try {
-      setShowExportMenu(false);
-
       const exportData = await Promise.all(
         properties.map(async (property) => {
-          const [unitsRes, equipmentRes] = await Promise.all([
+          const queries: Promise<any>[] = [
             supabase
               .from("property_units")
               .select("id, unit_number, status, size_sqm, rooms, floor_number, cold_rent, total_rent")
@@ -255,14 +260,27 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               .from("property_equipment")
               .select("*")
               .eq("property_id", property.id)
-              .maybeSingle()
-          ]);
+              .maybeSingle(),
+          ];
 
-          const units = unitsRes.data;
-          const equipment = equipmentRes.data;
+          if (includeLoans) {
+            queries.push(
+              supabase
+                .from("loans")
+                .select("lender_name, loan_amount, remaining_balance, interest_rate, monthly_payment, monthly_principal, start_date, end_date, loan_type, loan_status, fixed_interest_end_date, notes")
+                .eq("property_id", property.id)
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+            );
+          }
+
+          const results = await Promise.all(queries);
+          const units = results[0].data;
+          const equipment = results[1].data;
+          const loans = includeLoans ? results[2].data : null;
 
           const unitsWithTenants = await Promise.all(
-            (units || []).map(async (unit) => {
+            (units || []).map(async (unit: any) => {
               const { data: contract } = await supabase
                 .from("rental_contracts")
                 .select(`
@@ -298,6 +316,8 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
             })
           );
 
+          const unitsTotalSqm = (units || []).reduce((sum: number, u: any) => sum + (Number(u.size_sqm) || 0), 0);
+
           return {
             property: {
               id: property.id,
@@ -305,10 +325,10 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               address: property.address,
               property_type: property.property_type,
               property_management_type: property.property_management_type,
-              purchase_price: property.purchase_price,
-              current_value: property.current_value,
+              purchase_price: Number(property.purchase_price) || 0,
+              current_value: property.display_current_value || Number(property.current_value) || 0,
               purchase_date: property.purchase_date,
-              size_sqm: property.size_sqm,
+              size_sqm: Number(property.size_sqm) || unitsTotalSqm || null,
               description: property.description,
             },
             units: unitsWithTenants,
@@ -330,6 +350,20 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               equipment_notes: equipment.equipment_notes,
               special_features: equipment.special_features,
             } : undefined,
+            loans: loans?.map((l: any) => ({
+              lender_name: l.lender_name,
+              loan_amount: Number(l.loan_amount) || 0,
+              remaining_balance: Number(l.remaining_balance) || 0,
+              interest_rate: Number(l.interest_rate) || 0,
+              monthly_payment: Number(l.monthly_payment) || 0,
+              monthly_principal: Number(l.monthly_principal) || 0,
+              start_date: l.start_date,
+              end_date: l.end_date,
+              loan_type: l.loan_type,
+              loan_status: l.loan_status,
+              fixed_interest_end_date: l.fixed_interest_end_date,
+              notes: l.notes,
+            })),
           };
         })
       );
@@ -934,6 +968,38 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
             loadProperties();
           }}
         />
+      )}
+
+      {exportDialog && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-dark">Export-Optionen</h3>
+              <button onClick={() => setExportDialog(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-gray-500 text-sm mb-6">
+              Sollen Kreditdaten (Darlehenssumme, Restschuld, Zinssatz, etc.) in den Export einbezogen werden?
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outlined"
+                className="flex-1"
+                onClick={() => executeExport(exportDialog.format, false)}
+              >
+                Ohne Kreditdaten
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={() => executeExport(exportDialog.format, true)}
+              >
+                Mit Kreditdaten
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
