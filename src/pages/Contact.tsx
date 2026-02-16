@@ -52,7 +52,7 @@ export default function Contact() {
       console.error("Error submitting contact form:", err);
       setError(
         language === "de"
-          ? "Es gab einen Fehler beim Senden Ihrer Nachricht. Bitte versuchen Sie es erneut."
+          ? "Es gab einen Fehler beim Senden Ihrer Nachricht. Bitte versuchen Sie es später erneut."
           : "There was an error sending your message. Please try again."
       );
     } finally {
@@ -71,7 +71,6 @@ export default function Contact() {
       detail: "hallo@rentab.ly",
       href: "mailto:hallo@rentab.ly",
       color: "#3c8af7",
-      bgColor: "#3c8af7",
     },
     {
       icon: Phone,
@@ -86,14 +85,13 @@ export default function Contact() {
           : "Start chat",
       href: `https://wa.me/${WHATSAPP_NUMBER}`,
       color: "#25D366",
-      bgColor: "#25D366",
     },
     {
       icon: Clock,
       title: language === "de" ? "Erreichbarkeit" : "Availability",
       description:
         language === "de"
-          ? "Unser Support-Team ist fuer Sie da"
+          ? "Unser Support-Team ist für Sie da"
           : "Our support team is available",
       detail:
         language === "de"
@@ -101,7 +99,6 @@ export default function Contact() {
           : "Mon - Fri, 9:00 AM - 6:00 PM",
       href: undefined,
       color: "#f59e0b",
-      bgColor: "#f59e0b",
     },
   ];
 
@@ -113,7 +110,7 @@ export default function Contact() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
               <MessageSquare className="w-3.5 h-3.5 text-[#3c8af7]" />
               <span className="text-sm font-medium text-[#3c8af7]">
-                {language === "de" ? "Wir sind fuer Sie da" : "We're here for you"}
+                {language === "de" ? "Wir sind für Sie da" : "We're here for you"}
               </span>
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">
@@ -131,7 +128,7 @@ export default function Contact() {
             </h1>
             <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
               {language === "de"
-                ? "Haben Sie Fragen, Anregungen oder benoetigen Hilfe? Wir freuen uns auf Ihre Nachricht und antworten in der Regel innerhalb weniger Stunden."
+                ? "Haben Sie Fragen, Anregungen oder benötigen Hilfe? Wir freuen uns auf Ihre Nachricht und antworten in der Regel innerhalb weniger Stunden."
                 : "Have questions, suggestions or need help? We look forward to your message and typically respond within a few hours."}
             </p>
           </RevealOnScroll>
@@ -172,7 +169,7 @@ export default function Contact() {
               </h2>
               <p className="mt-3 text-gray-500">
                 {language === "de"
-                  ? "Beschreiben Sie Ihr Anliegen und wir melden uns schnellstmoeglich."
+                  ? "Beschreiben Sie Ihr Anliegen und wir melden uns schnellstmöglich."
                   : "Describe your request and we'll get back to you as soon as possible."}
               </p>
             </div>
@@ -191,7 +188,7 @@ export default function Contact() {
                     </p>
                     <p className="text-emerald-700 text-sm mt-0.5">
                       {language === "de"
-                        ? "Vielen Dank! Wir werden uns so schnell wie moeglich bei Ihnen melden."
+                        ? "Vielen Dank! Wir werden uns so schnell wie möglich bei Ihnen melden."
                         : "Thank you! We will get back to you as soon as possible."}
                     </p>
                   </div>
@@ -324,15 +321,14 @@ function ContactCard({
     detail: string;
     href?: string;
     color: string;
-    bgColor: string;
   };
 }) {
   const Icon = method.icon;
   return (
     <>
       <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
-        style={{ backgroundColor: method.bgColor + "12" }}
+        className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
+        style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
       >
         <Icon className="w-5 h-5" style={{ color: method.color }} />
       </div>
