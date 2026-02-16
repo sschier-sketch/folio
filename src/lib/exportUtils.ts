@@ -131,6 +131,7 @@ const getPropertyTypeLabel = (type: string): string => {
   const labels: Record<string, string> = {
     multi_family: "Mehrfamilienhaus",
     house: "Einfamilienhaus",
+    apartment: "Wohnung",
     commercial: "Gewerbeeinheit",
     parking: "Garage/Stellplatz",
     land: "Grundstück",
@@ -143,6 +144,7 @@ const getManagementTypeLabel = (type?: string): string => {
   if (!type) return "Nicht angegeben";
   const labels: Record<string, string> = {
     self_management: "Eigenverwaltung",
+    property_management: "Hausverwaltung",
     rental_management: "Mietverwaltung",
     weg_management: "WEG-Verwaltung",
     rental_and_weg_management: "Miet- und WEG-Verwaltung",
@@ -220,6 +222,17 @@ const getLoanStatusLabel = (status?: string): string => {
     paid_off: "Abbezahlt",
     refinanced: "Umfinanziert",
     terminated: "Gekündigt",
+  };
+  return labels[status] || status;
+};
+
+const getUnitStatusLabel = (status: string): string => {
+  const labels: Record<string, string> = {
+    rented: "Vermietet",
+    vacant: "Leer",
+    self_occupied: "Selbst genutzt",
+    owner_occupied: "Eigennutzung",
+    maintenance: "Wartung",
   };
   return labels[status] || status;
 };
@@ -512,7 +525,7 @@ async function exportPropertiesToPDF(data: PropertyWithUnitsAndTenants[]) {
 
       const unitsData = item.units.map(u => [
         u.unit.unit_number,
-        u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status === 'self_occupied' ? 'Selbst genutzt' : u.unit.status,
+        getUnitStatusLabel(u.unit.status),
         u.unit.rooms?.toString() || '-',
         u.unit.size_sqm ? `${u.unit.size_sqm} m²` : '-',
         u.unit.cold_rent ? formatCurrency(u.unit.cold_rent) : '-',
@@ -867,7 +880,7 @@ function exportPropertiesToCSV(data: PropertyWithUnitsAndTenants[]) {
       unitRows.push(baseRow(['-', '-', '-', '-', '-', '-', '-']));
     } else {
       item.units.forEach(u => {
-        const statusLabel = u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status === 'self_occupied' ? 'Selbst genutzt' : u.unit.status;
+        const statusLabel = getUnitStatusLabel(u.unit.status);
         unitRows.push(baseRow([
           u.unit.unit_number,
           statusLabel,
@@ -1039,7 +1052,7 @@ function exportPropertiesToExcel(data: PropertyWithUnitsAndTenants[]) {
       unitRows.push(buildRow(['-', '-', '-', '-', '-', '-', '-']));
     } else {
       item.units.forEach(u => {
-        const statusLabel = u.unit.status === 'rented' ? 'Vermietet' : u.unit.status === 'vacant' ? 'Leer' : u.unit.status === 'self_occupied' ? 'Selbst genutzt' : u.unit.status;
+        const statusLabel = getUnitStatusLabel(u.unit.status);
         unitRows.push(buildRow([
           u.unit.unit_number,
           statusLabel,

@@ -257,6 +257,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     const labels: Record<string, string> = {
       multi_family: "Mehrfamilienhaus",
       house: "Einfamilienhaus",
+      apartment: "Wohnung",
       commercial: "Gewerbeeinheit",
       parking: "Garage/Stellplatz",
       land: "Grundstück",
