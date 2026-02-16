@@ -266,7 +266,7 @@ function HeroSection() {
             <div className="mt-8 flex flex-wrap gap-6">
               {[
                 { value: "2.000+", label: "Aktive Vermieter" },
-                { value: "5.000+", label: "Verwaltete Einheiten" },
+                { value: "15.000+", label: "Verwaltete Einheiten" },
               ].map((stat) => (
                 <div key={stat.label}>
                   <div className="text-2xl font-bold text-gray-900">
