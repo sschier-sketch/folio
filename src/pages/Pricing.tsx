@@ -244,7 +244,7 @@ export default function Pricing() {
           <div className="bg-gray-50 rounded-xl p-5 flex items-start gap-3">
             <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-gray-500 leading-relaxed">
-              Alle Preise verstehen sich inkl. MwSt. Die Kosten für eine
+              Alle Preise verstehen sich zzgl. MwSt. Die Kosten für eine
               Immobilienverwaltungssoftware können in der Regel als
               Werbungskosten bei Einkünften aus Vermietung und Verpachtung
               steuerlich geltend gemacht werden.
