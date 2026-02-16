@@ -157,6 +157,11 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    await supabase
+      .from("tenants")
+      .update({ portal_invited_at: new Date().toISOString() })
+      .eq("id", tenantId);
+
     console.log("Tenant activation email sent successfully:", {
       tenantId,
       email: tenant.email,

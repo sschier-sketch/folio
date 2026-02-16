@@ -14,6 +14,7 @@ interface Tenant {
   last_name: string;
   email: string;
   property_id: string;
+  portal_invited_at: string | null;
   portal_activated_at: string | null;
   last_login: string | null;
   property: {
@@ -106,6 +107,7 @@ export default function MieterportalView() {
       }
 
       if (data?.success) {
+        loadTenants();
         alert(
           `Aktivierungslink wurde erfolgreich an ${tenant.email} gesendet!`
         );
@@ -175,11 +177,15 @@ export default function MieterportalView() {
       return <StatusBadge type="neutral" label="Deaktiviert" />;
     }
 
-    if (!tenant.portal_activated_at) {
-      return <StatusBadge type="warning" label="Einladung ausstehend" />;
+    if (tenant.portal_activated_at) {
+      return <StatusBadge type="success" label="Aktiv" />;
     }
 
-    return <StatusBadge type="success" label="Aktiv" />;
+    if (tenant.portal_invited_at) {
+      return <StatusBadge type="info" label="Einladung versendet" />;
+    }
+
+    return <StatusBadge type="warning" label="Einladung ausstehend" />;
   };
 
   if (loading) {
