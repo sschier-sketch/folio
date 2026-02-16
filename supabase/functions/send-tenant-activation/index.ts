@@ -111,7 +111,7 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
 
     const origin = req.headers.get("origin") || "https://rentab.ly";
-    const portalLink = `${origin}/tenant-portal`;
+    const portalLink = `${origin}/mieterportal-aktivierung`;
 
     const landlordName = profile?.first_name && profile?.last_name
       ? `${profile.first_name} ${profile.last_name}`
