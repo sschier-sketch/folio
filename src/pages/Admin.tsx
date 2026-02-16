@@ -11,6 +11,8 @@ import {
   Mail,
   Settings,
   Clock,
+  Check,
+  X,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -57,6 +59,7 @@ interface UserData {
   customer_number?: string;
   trial_ends_at?: string;
   subscription_ends_at?: string;
+  newsletter_opt_in?: boolean;
 }
 
 interface Stats {
@@ -501,6 +504,21 @@ export function Admin() {
                   render: (user: UserData) => (
                     <span className="text-sm text-gray-400">
                       {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString("de-DE") : "-"}
+                    </span>
+                  )
+                },
+                {
+                  key: "newsletter_opt_in",
+                  header: "Marketing",
+                  sortable: true,
+                  align: "center" as const,
+                  render: (user: UserData) => user.newsletter_opt_in ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <Check className="w-3 h-3" /> Ja
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200">
+                      <X className="w-3 h-3" /> Nein
                     </span>
                   )
                 },
