@@ -47,7 +47,7 @@ export default function StepPreview({ state }: Props) {
       <div>
         <h3 className="text-lg font-semibold text-dark mb-1">Vorschau</h3>
         <p className="text-sm text-gray-500">
-          So wird das Erh&ouml;hungsschreiben aussehen. Bei der Finalisierung wird ein PDF generiert.
+          So wird das Erh\u00F6hungsschreiben aussehen. Bei der Finalisierung wird ein PDF generiert.
         </p>
       </div>
 
@@ -59,7 +59,7 @@ export default function StepPreview({ state }: Props) {
 
         <div className="px-8 py-6 font-[serif] text-[15px] leading-relaxed text-gray-900 space-y-5">
           <div className="text-xs text-gray-400 border-b border-gray-200 pb-1">
-            {state.landlordName} &middot; {state.landlordAddress}
+            {state.landlordName} {"\u00B7"} {state.landlordAddress}
           </div>
 
           <div className="mt-4">
@@ -70,29 +70,29 @@ export default function StepPreview({ state }: Props) {
           <p className="text-right text-sm text-gray-500">{formatDateDE(new Date().toISOString().split("T")[0])}</p>
 
           <p className="font-bold text-base">
-            Betreff: Anpassung der Miete gem&auml;&szlig; vereinbarter Indexmiete (&sect; 557b BGB)
+            Betreff: Anpassung der Miete gem\u00E4\u00DF vereinbarter Indexmiete (\u00A7 557b BGB)
           </p>
 
           <p>{salutation},</p>
 
           <p>
-            im Mietvertrag vom {formatDateDE(state.contractDate)} wurde gem&auml;&szlig; &sect; 557b BGB vereinbart, dass die Nettokaltmiete an die Entwicklung des vom Statistischen Bundesamt ver&ouml;ffentlichten Verbraucherpreisindexes f&uuml;r Deutschland (VPI, Basisjahr 2020 = 100) angepasst wird.
+            im Mietvertrag vom {formatDateDE(state.contractDate)} wurde gem\u00E4\u00DF \u00A7 557b BGB vereinbart, dass die Nettokaltmiete an die Entwicklung des vom Statistischen Bundesamt ver\u00F6ffentlichten Verbraucherpreisindexes f\u00FCr Deutschland (VPI, Basisjahr 2020 = 100) angepasst wird.
           </p>
 
           <p>
-            Die letzte Mietfestsetzung erfolgte zum {formatDateDE(state.currentRentValidFrom)} mit einer monatlichen Nettokaltmiete in H&ouml;he von {fmt(state.currentRent)} &euro;.
+            Die letzte Mietfestsetzung erfolgte zum {formatDateDE(state.currentRentValidFrom)} mit einer monatlichen Nettokaltmiete in H\u00F6he von {fmt(state.currentRent)} \u20AC.
           </p>
 
           <div>
             <p className="font-bold mb-2">1. Entwicklung des Verbraucherpreisindexes</p>
             <hr className="border-gray-300 mb-3" />
-            <p className="text-sm mb-1">Zum Zeitpunkt der letzten Mietfestsetzung ma&szlig;geblicher Index:</p>
+            <p className="text-sm mb-1">Zum Zeitpunkt der letzten Mietfestsetzung ma\u00DFgeblicher Index:</p>
             <p className="text-sm font-bold mb-3">
-              {formatMonthDE(state.vpiOldMonth)} &ndash; {oldVal.toFixed(1)} Punkte
+              {formatMonthDE(state.vpiOldMonth)} {"\u2013"} {oldVal.toFixed(1)} Punkte
             </p>
-            <p className="text-sm mb-1">Aktuell ver&ouml;ffentlichter Index:</p>
+            <p className="text-sm mb-1">Aktuell ver\u00F6ffentlichter Index:</p>
             <p className="text-sm font-bold">
-              {formatMonthDE(state.vpiNewMonth)} &ndash; {newVal.toFixed(1)} Punkte
+              {formatMonthDE(state.vpiNewMonth)} {"\u2013"} {newVal.toFixed(1)} Punkte
             </p>
           </div>
 
@@ -101,24 +101,24 @@ export default function StepPreview({ state }: Props) {
             <hr className="border-gray-300 mb-3" />
             <div className="text-sm space-y-2">
               <div>
-                <p>Die Ver&auml;nderung des Indexes betr&auml;gt:</p>
+                <p>Die Ver\u00E4nderung des Indexes betr\u00E4gt:</p>
                 <p className="font-bold">{newVal.toFixed(1)} / {oldVal.toFixed(1)} = {indexFactor.toFixed(6)}</p>
               </div>
               <div>
-                <p>Prozentuale Ver&auml;nderung:</p>
-                <p className="font-bold">({indexFactor.toFixed(6)} - 1) &times; 100 = {indexPercent.toFixed(2)} %</p>
+                <p>Prozentuale Ver\u00E4nderung:</p>
+                <p className="font-bold">({indexFactor.toFixed(6)} - 1) {"\u00D7"} 100 = {indexPercent.toFixed(2)} %</p>
               </div>
               <div>
                 <p>Berechnung der neuen Nettokaltmiete:</p>
-                <p className="font-bold">{fmt(state.currentRent)} &euro; &times; {indexFactor.toFixed(6)} = {fmt(newRentUnrounded)} &euro;</p>
+                <p className="font-bold">{fmt(state.currentRent)} \u20AC {"\u00D7"} {indexFactor.toFixed(6)} = {fmt(newRentUnrounded)} \u20AC</p>
               </div>
               <div>
                 <p>Gerundet auf zwei Nachkommastellen ergibt sich eine neue monatliche Nettokaltmiete von:</p>
-                <p className="font-bold text-base">{fmt(newRent)} &euro;</p>
+                <p className="font-bold text-base">{fmt(newRent)} \u20AC</p>
               </div>
               <div>
-                <p>Die monatliche Erh&ouml;hung betr&auml;gt somit:</p>
-                <p className="font-bold">{fmt(delta)} &euro;</p>
+                <p>Die monatliche Erh\u00F6hung betr\u00E4gt somit:</p>
+                <p className="font-bold">{fmt(delta)} \u20AC</p>
               </div>
             </div>
           </div>
@@ -127,26 +127,26 @@ export default function StepPreview({ state }: Props) {
             <p className="font-bold mb-2">3. Wirksamkeit der Anpassung</p>
             <hr className="border-gray-300 mb-3" />
             <p className="text-sm mb-2">
-              Die angepasste Miete ist gem&auml;&szlig; &sect; 557b BGB ab dem {formatDateDE(state.effectiveDate)} zu zahlen.
+              Die angepasste Miete ist gem\u00E4\u00DF \u00A7 557b BGB ab dem {formatDateDE(state.effectiveDate)} zu zahlen.
             </p>
             <p className="text-sm mb-2">
-              Die Betriebskostenvorauszahlungen bleiben unver&auml;ndert, sofern keine gesonderte Anpassung erfolgt.
+              Die Betriebskostenvorauszahlungen bleiben unver\u00E4ndert, sofern keine gesonderte Anpassung erfolgt.
             </p>
             <p className="text-sm mb-2">
               Die monatlich zu zahlende Gesamtmiete setzt sich somit ab dem oben genannten Zeitpunkt wie folgt zusammen:
             </p>
             <ul className="text-sm space-y-1 ml-4">
-              <li>&ndash; Nettokaltmiete: {fmt(newRent)} &euro;</li>
-              <li>&ndash; Betriebskosten: {fmt(state.currentUtilities)} &euro;</li>
-              <li className="font-bold">&ndash; Gesamtmiete: {fmt(gesamtmiete)} &euro;</li>
+              <li>{"\u2013"} Nettokaltmiete: {fmt(newRent)} \u20AC</li>
+              <li>{"\u2013"} Betriebskosten: {fmt(state.currentUtilities)} \u20AC</li>
+              <li className="font-bold">{"\u2013"} Gesamtmiete: {fmt(gesamtmiete)} \u20AC</li>
             </ul>
             <p className="text-sm mt-3">
-              Bitte &uuml;berweisen Sie den entsprechend angepassten Betrag erstmals f&uuml;r den Monat {formatEffectiveMonth(state.effectiveDate)}.
+              Bitte \u00FCberweisen Sie den entsprechend angepassten Betrag erstmals f\u00FCr den Monat {formatEffectiveMonth(state.effectiveDate)}.
             </p>
           </div>
 
-          <p>F&uuml;r R&uuml;ckfragen stehen wir Ihnen gerne zur Verf&uuml;gung.</p>
-          <p>Mit freundlichen Gr&uuml;&szlig;en</p>
+          <p>F\u00FCr R\u00FCckfragen stehen wir Ihnen gerne zur Verf\u00FCgung.</p>
+          <p>Mit freundlichen Gr\u00FC\u00DFen</p>
           <p className="mt-4 font-semibold">{state.landlordName}</p>
           <p className="text-sm text-gray-600">{state.landlordAddress}</p>
         </div>

@@ -88,11 +88,12 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
 
   async function loadInitialData() {
     try {
-      const [profileRes, historyRes, vpiRes, unitRes] = await Promise.all([
+      const [profileRes, historyRes, vpiRes, unitRes, partnersRes] = await Promise.all([
         supabase.from("account_profiles").select("first_name, last_name, company_name, address_street, address_zip, address_city").eq("user_id", user?.id).maybeSingle(),
-        supabase.from("rent_history").select("effective_date, cold_rent, reason, status").eq("contract_id", calc.contract_id).order("effective_date", { ascending: false }),
+        supabase.from("rent_history").select("effective_date, cold_rent, utilities, reason, status").eq("contract_id", calc.contract_id).order("effective_date", { ascending: false }),
         getLatestVpiValues(calc.contract_id),
         rc.unit_id ? supabase.from("property_units").select("unit_number").eq("id", rc.unit_id).maybeSingle() : Promise.resolve({ data: null }),
+        supabase.from("tenant_contract_partners").select("first_name, last_name").eq("tenant_id", rc.tenant_id),
       ]);
 
       const profile = profileRes.data;
@@ -134,6 +135,13 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
 
       const effectiveDate = computeEarliestEffectiveDate(calc.possible_since, lastChangeDate);
 
+      const partners = partnersRes.data || [];
+      let tenantName = `${tenant.first_name || ""} ${tenant.last_name || ""}`.trim() || tenant.name || "";
+      if (partners.length > 0) {
+        const allNames = [tenantName, ...partners.map((p: any) => `${p.first_name || ""} ${p.last_name || ""}`.trim())].filter(Boolean);
+        tenantName = allNames.join(" und ");
+      }
+
       setState((prev) => ({
         ...prev,
         currentRent,
@@ -148,6 +156,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
         vpiNewValue: "",
         landlordName,
         landlordAddress,
+        tenantName,
         unitNumber: unitRes.data?.unit_number || "",
       }));
     } catch (err) {
@@ -179,7 +188,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
     if (stepIndex > 0) setStep(STEPS[stepIndex - 1].key);
   };
 
-  async function handleFinalize() {
+  async function handleFinalize(autoDownload = false) {
     if (!user || saving) return;
     setSaving(true);
 
@@ -284,6 +293,15 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
         .eq("id", calc.id);
 
       setSaved(true);
+
+      if (autoDownload) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Indexmieterhoehung_${state.tenantName.replace(/\s+/g, "_")}_${state.effectiveDate}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
     } catch (err) {
       console.error("Error finalizing:", err);
       alert("Fehler beim Erstellen der Indexmieterh\u00F6hung. Bitte versuchen Sie es erneut.");

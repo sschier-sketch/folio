@@ -15,7 +15,7 @@ interface Props {
   saving: boolean;
   saved: boolean;
   pdfBlob: Blob | null;
-  onSave: () => void;
+  onSave: (autoDownload: boolean) => void;
 }
 
 export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: Props) {
@@ -152,8 +152,8 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
         </ul>
       </div>
 
-      <div className="flex justify-center pt-2">
-        <Button onClick={onSave} disabled={saving} variant="primary">
+      <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+        <Button onClick={() => onSave(false)} disabled={saving} variant="secondary">
           {saving ? (
             <>
               <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
@@ -162,7 +162,20 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
           ) : (
             <>
               <FileText className="w-4 h-4 mr-1.5" />
-              PDF erstellen & speichern
+              PDF speichern
+            </>
+          )}
+        </Button>
+        <Button onClick={() => onSave(true)} disabled={saving} variant="primary">
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+              Wird erstellt...
+            </>
+          ) : (
+            <>
+              <Download className="w-4 h-4 mr-1.5" />
+              PDF speichern & downloaden
             </>
           )}
         </Button>
