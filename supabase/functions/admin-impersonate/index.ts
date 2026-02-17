@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: adminData, error: adminError } = await supabaseAuth
       .from("admin_users")
-      .select("id, can_impersonate")
+      .select("user_id, can_impersonate")
       .eq("user_id", callerUser.id)
       .maybeSingle();
 

@@ -56,6 +56,7 @@ export default function UserActionsDropdown({
 }: UserActionsDropdownProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [openAbove, setOpenAbove] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -63,9 +64,17 @@ export default function UserActionsDropdown({
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
     const menuWidth = 288;
+    const menuEstimatedHeight = 400;
     let left = rect.right - menuWidth;
     if (left < 8) left = 8;
-    setPosition({ top: rect.bottom + 4, left });
+
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+    const flipped = spaceBelow < menuEstimatedHeight && spaceAbove > spaceBelow;
+
+    setOpenAbove(flipped);
+    const top = flipped ? rect.top - 4 : rect.bottom + 4;
+    setPosition({ top, left });
   }, []);
 
   useEffect(() => {
@@ -170,13 +179,19 @@ export default function UserActionsDropdown({
       {open && createPortal(
         <div
           ref={menuRef}
-          className="fixed w-72 bg-white rounded-xl border border-gray-200 shadow-xl z-[9999] py-1 overflow-hidden"
-          style={{ top: position.top, left: position.left }}
+          className="fixed w-72 bg-white rounded-xl border border-gray-200 shadow-xl z-[9999] py-1 overflow-hidden flex flex-col"
+          style={{
+            left: position.left,
+            maxHeight: 'calc(100vh - 16px)',
+            ...(openAbove
+              ? { bottom: window.innerHeight - position.top }
+              : { top: position.top }),
+          }}
         >
-          <div className="px-3 py-2 border-b border-gray-100">
+          <div className="px-3 py-2 border-b border-gray-100 flex-shrink-0">
             <p className="text-xs font-medium text-gray-500 truncate">{userEmail}</p>
           </div>
-          <div className="py-1 max-h-80 overflow-y-auto">
+          <div className="py-1 overflow-y-auto flex-1 min-h-0">
             {visibleActions.map((action, i) => (
               <button
                 key={i}
