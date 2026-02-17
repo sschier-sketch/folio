@@ -15,6 +15,12 @@ const formatDateDE = (iso: string) => {
   return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 };
 
+const formatEffectiveMonth = (iso: string) => {
+  if (!iso) return "\u2013";
+  const d = new Date(iso);
+  return d.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+};
+
 interface Props {
   state: WizardState;
 }
@@ -22,9 +28,12 @@ interface Props {
 export default function StepPreview({ state }: Props) {
   const oldVal = parseFloat(state.vpiOldValue) || 0;
   const newVal = parseFloat(state.vpiNewValue) || 0;
-  const pctChange = oldVal > 0 ? ((newVal / oldVal - 1) * 100) : 0;
-  const newRent = oldVal > 0 ? Math.round(state.currentRent * (newVal / oldVal) * 100) / 100 : 0;
+  const indexFactor = oldVal > 0 ? newVal / oldVal : 1;
+  const indexPercent = (indexFactor - 1) * 100;
+  const newRent = oldVal > 0 ? Math.round(state.currentRent * indexFactor * 100) / 100 : 0;
+  const newRentUnrounded = state.currentRent * indexFactor;
   const delta = newRent - state.currentRent;
+  const gesamtmiete = newRent + state.currentUtilities;
 
   let salutation = "Sehr geehrte Damen und Herren";
   if (state.tenantSalutation === "male") {
@@ -38,7 +47,7 @@ export default function StepPreview({ state }: Props) {
       <div>
         <h3 className="text-lg font-semibold text-dark mb-1">Vorschau</h3>
         <p className="text-sm text-gray-500">
-          So wird das Erh\u00F6hungsschreiben aussehen. Bei der Finalisierung wird ein PDF generiert.
+          So wird das Erh&ouml;hungsschreiben aussehen. Bei der Finalisierung wird ein PDF generiert.
         </p>
       </div>
 
@@ -48,7 +57,7 @@ export default function StepPreview({ state }: Props) {
           <span className="text-sm font-medium text-gray-700">Briefvorschau</span>
         </div>
 
-        <div className="px-8 py-6 font-[serif] text-[15px] leading-relaxed text-gray-900 space-y-6">
+        <div className="px-8 py-6 font-[serif] text-[15px] leading-relaxed text-gray-900 space-y-5">
           <div className="text-xs text-gray-400 border-b border-gray-200 pb-1">
             {state.landlordName} &middot; {state.landlordAddress}
           </div>
@@ -60,84 +69,86 @@ export default function StepPreview({ state }: Props) {
 
           <p className="text-right text-sm text-gray-500">{formatDateDE(new Date().toISOString().split("T")[0])}</p>
 
-          <p className="font-bold text-lg">Mietanpassung gem\u00E4\u00DF \u00A7 557b BGB (Indexmiete)</p>
-
-          <div className="text-sm text-gray-600">
-            <p>Mietobjekt: {state.propertyAddress}{state.unitNumber ? `, Einheit ${state.unitNumber}` : ""}</p>
-            {state.contractDate && <p>Mietvertrag vom {formatDateDE(state.contractDate)}</p>}
-          </div>
+          <p className="font-bold text-base">
+            Betreff: Anpassung der Miete gem&auml;&szlig; vereinbarter Indexmiete (&sect; 557b BGB)
+          </p>
 
           <p>{salutation},</p>
 
           <p>
-            gem\u00E4\u00DF \u00A7 557b BGB und der in Ihrem Mietvertrag enthaltenen Indexklausel teilen
-            wir Ihnen hiermit die Anpassung der Nettokaltmiete auf Grundlage des Verbraucherpreisindex
-            (VPI) f\u00FCr Deutschland mit.
+            im Mietvertrag vom {formatDateDE(state.contractDate)} wurde gem&auml;&szlig; &sect; 557b BGB vereinbart, dass die Nettokaltmiete an die Entwicklung des vom Statistischen Bundesamt ver&ouml;ffentlichten Verbraucherpreisindexes f&uuml;r Deutschland (VPI, Basisjahr 2020 = 100) angepasst wird.
+          </p>
+
+          <p>
+            Die letzte Mietfestsetzung erfolgte zum {formatDateDE(state.currentRentValidFrom)} mit einer monatlichen Nettokaltmiete in H&ouml;he von {fmt(state.currentRent)} &euro;.
           </p>
 
           <div>
-            <p className="font-bold mb-2">I. Verbraucherpreisindex (VPI)</p>
+            <p className="font-bold mb-2">1. Entwicklung des Verbraucherpreisindexes</p>
             <hr className="border-gray-300 mb-3" />
-            <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
-              <p>Basismonat: <strong>{formatMonthDE(state.vpiOldMonth)}</strong></p>
-              <p>Indexstand: <strong>{oldVal.toFixed(1)}</strong></p>
-              <p>Aktueller Monat: <strong>{formatMonthDE(state.vpiNewMonth)}</strong></p>
-              <p>Indexstand: <strong>{newVal.toFixed(1)}</strong></p>
-            </div>
-            <p className="mt-2 text-sm">
-              Index\u00E4nderung: {newVal.toFixed(1)} / {oldVal.toFixed(1)} &ndash; 1 = <strong>+{pctChange.toFixed(2)} %</strong>
+            <p className="text-sm mb-1">Zum Zeitpunkt der letzten Mietfestsetzung ma&szlig;geblicher Index:</p>
+            <p className="text-sm font-bold mb-3">
+              {formatMonthDE(state.vpiOldMonth)} &ndash; {oldVal.toFixed(1)} Punkte
+            </p>
+            <p className="text-sm mb-1">Aktuell ver&ouml;ffentlichter Index:</p>
+            <p className="text-sm font-bold">
+              {formatMonthDE(state.vpiNewMonth)} &ndash; {newVal.toFixed(1)} Punkte
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-2">II. Berechnung der neuen Miete</p>
+            <p className="font-bold mb-2">2. Berechnung der Mietanpassung</p>
             <hr className="border-gray-300 mb-3" />
-            <div className="text-sm space-y-1">
-              <p>Bisherige Nettokaltmiete: {fmt(state.currentRent)} \u20AC</p>
-              <p>Indexfaktor: {newVal.toFixed(1)} / {oldVal.toFixed(1)} = {(newVal / oldVal).toFixed(6)}</p>
-              <p>Neue Nettokaltmiete: {fmt(state.currentRent)} \u20AC &times; {(newVal / oldVal).toFixed(6)} = <strong>{fmt(newRent)} \u20AC</strong></p>
-              <p className="font-bold mt-2">Erh\u00F6hung: {fmt(delta)} \u20AC pro Monat</p>
-            </div>
-          </div>
-
-          <div>
-            <p className="font-bold mb-2">III. Zusammenfassung</p>
-            <hr className="border-gray-300 mb-3" />
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm space-y-1">
-              <div className="flex justify-between">
-                <span>Bisherige Nettokaltmiete:</span>
-                <span>{fmt(state.currentRent)} \u20AC</span>
+            <div className="text-sm space-y-2">
+              <div>
+                <p>Die Ver&auml;nderung des Indexes betr&auml;gt:</p>
+                <p className="font-bold">{newVal.toFixed(1)} / {oldVal.toFixed(1)} = {indexFactor.toFixed(6)}</p>
               </div>
-              <div className="flex justify-between font-bold">
-                <span>Neue Nettokaltmiete:</span>
-                <span>{fmt(newRent)} \u20AC</span>
+              <div>
+                <p>Prozentuale Ver&auml;nderung:</p>
+                <p className="font-bold">({indexFactor.toFixed(6)} - 1) &times; 100 = {indexPercent.toFixed(2)} %</p>
               </div>
-              <div className="flex justify-between">
-                <span>Wirksamkeitsdatum:</span>
-                <span>{formatDateDE(state.effectiveDate)}</span>
+              <div>
+                <p>Berechnung der neuen Nettokaltmiete:</p>
+                <p className="font-bold">{fmt(state.currentRent)} &euro; &times; {indexFactor.toFixed(6)} = {fmt(newRentUnrounded)} &euro;</p>
+              </div>
+              <div>
+                <p>Gerundet auf zwei Nachkommastellen ergibt sich eine neue monatliche Nettokaltmiete von:</p>
+                <p className="font-bold text-base">{fmt(newRent)} &euro;</p>
+              </div>
+              <div>
+                <p>Die monatliche Erh&ouml;hung betr&auml;gt somit:</p>
+                <p className="font-bold">{fmt(delta)} &euro;</p>
               </div>
             </div>
           </div>
 
           <div>
-            <p className="font-bold mb-2">IV. Rechtliche Hinweise</p>
+            <p className="font-bold mb-2">3. Wirksamkeit der Anpassung</p>
             <hr className="border-gray-300 mb-3" />
-            <p className="text-sm text-gray-700">
-              Die Anpassung der Miete erfolgt auf Grundlage der im Mietvertrag vereinbarten Indexklausel
-              gem\u00E4\u00DF \u00A7 557b BGB. Ma\u00DFgeblich ist der vom Statistischen Bundesamt ver\u00F6ffentlichte
-              Verbraucherpreisindex f\u00FCr Deutschland (Basis 2020 = 100). Die neue Miete wird ab dem oben
-              genannten Wirksamkeitsdatum geschuldet. Die \u00FCbrigen Bestandteile Ihres Mietvertrages bleiben unber\u00FChrt.
+            <p className="text-sm mb-2">
+              Die angepasste Miete ist gem&auml;&szlig; &sect; 557b BGB ab dem {formatDateDE(state.effectiveDate)} zu zahlen.
+            </p>
+            <p className="text-sm mb-2">
+              Die Betriebskostenvorauszahlungen bleiben unver&auml;ndert, sofern keine gesonderte Anpassung erfolgt.
+            </p>
+            <p className="text-sm mb-2">
+              Die monatlich zu zahlende Gesamtmiete setzt sich somit ab dem oben genannten Zeitpunkt wie folgt zusammen:
+            </p>
+            <ul className="text-sm space-y-1 ml-4">
+              <li>&ndash; Nettokaltmiete: {fmt(newRent)} &euro;</li>
+              <li>&ndash; Betriebskosten: {fmt(state.currentUtilities)} &euro;</li>
+              <li className="font-bold">&ndash; Gesamtmiete: {fmt(gesamtmiete)} &euro;</li>
+            </ul>
+            <p className="text-sm mt-3">
+              Bitte &uuml;berweisen Sie den entsprechend angepassten Betrag erstmals f&uuml;r den Monat {formatEffectiveMonth(state.effectiveDate)}.
             </p>
           </div>
 
-          <p className="text-sm">
-            Bitte \u00FCberweisen Sie ab dem {formatDateDE(state.effectiveDate)} den neuen monatlichen Betrag
-            von {fmt(newRent)} \u20AC (Nettokaltmiete) zuz\u00FCglich der vereinbarten Nebenkosten.
-          </p>
-
-          <p>F\u00FCr R\u00FCckfragen stehen wir Ihnen gerne zur Verf\u00FCgung.</p>
-          <p>Mit freundlichen Gr\u00FC\u00DFen</p>
+          <p>F&uuml;r R&uuml;ckfragen stehen wir Ihnen gerne zur Verf&uuml;gung.</p>
+          <p>Mit freundlichen Gr&uuml;&szlig;en</p>
           <p className="mt-4 font-semibold">{state.landlordName}</p>
+          <p className="text-sm text-gray-600">{state.landlordAddress}</p>
         </div>
       </div>
     </div>

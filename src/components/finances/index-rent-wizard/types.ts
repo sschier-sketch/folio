@@ -13,6 +13,8 @@ export interface WizardCalc {
     start_date: string | null;
     cold_rent: number;
     base_rent: number;
+    additional_costs: number;
+    utilities_advance: number;
     unit_id: string | null;
     tenants: {
       id: string;
@@ -35,6 +37,7 @@ export interface WizardCalc {
 
 export interface WizardState {
   currentRent: number;
+  currentUtilities: number;
   currentRentValidFrom: string;
   lastChangeDate: string | null;
   lastChangeReason: string | null;

@@ -22,6 +22,7 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
   const oldVal = parseFloat(state.vpiOldValue) || 0;
   const newVal = parseFloat(state.vpiNewValue) || 0;
   const newRent = oldVal > 0 ? Math.round(state.currentRent * (newVal / oldVal) * 100) / 100 : 0;
+  const gesamtmiete = newRent + state.currentUtilities;
 
   const handleDownload = () => {
     if (!pdfBlob) return;
@@ -51,6 +52,18 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
             <span className="text-gray-500">Neue Nettokaltmiete</span>
             <span className="font-semibold text-dark">{fmt(newRent)}</span>
           </div>
+          {state.currentUtilities > 0 && (
+            <>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Betriebskosten</span>
+                <span className="text-dark">{fmt(state.currentUtilities)}</span>
+              </div>
+              <div className="flex justify-between text-sm border-t border-gray-200 pt-2">
+                <span className="text-gray-500 font-medium">Gesamtmiete</span>
+                <span className="font-bold text-dark">{fmt(gesamtmiete)}</span>
+              </div>
+            </>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Wirksam ab</span>
             <span className="font-semibold text-dark">{formatDateDE(state.effectiveDate)}</span>
@@ -99,6 +112,18 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
           <span className="text-gray-500">Erh\u00F6hung</span>
           <span className="text-emerald-700">+{fmt(newRent - state.currentRent)}</span>
         </div>
+        {state.currentUtilities > 0 && (
+          <>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Betriebskosten</span>
+              <span className="text-dark">{fmt(state.currentUtilities)}</span>
+            </div>
+            <div className="flex justify-between text-sm border-t border-gray-200 pt-2">
+              <span className="text-gray-500 font-medium">Neue Gesamtmiete</span>
+              <span className="font-bold text-dark">{fmt(gesamtmiete)}</span>
+            </div>
+          </>
+        )}
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Wirksam ab</span>
           <span className="font-semibold text-dark">{formatDateDE(state.effectiveDate)}</span>

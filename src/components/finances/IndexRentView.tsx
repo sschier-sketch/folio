@@ -130,6 +130,8 @@ export default function IndexRentView() {
             start_date,
             cold_rent,
             base_rent,
+            additional_costs,
+            utilities_advance,
             unit_id,
             tenants:tenant_id (id, name, first_name, last_name, salutation, street, house_number, zip_code, city),
             properties:property_id (id, name, address)

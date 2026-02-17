@@ -60,6 +60,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
 
   const [state, setState] = useState<WizardState>({
     currentRent: rc.monthly_rent || rc.cold_rent || rc.base_rent || 0,
+    currentUtilities: rc.additional_costs || rc.utilities_advance || 0,
     currentRentValidFrom: "",
     lastChangeDate: null,
     lastChangeReason: null,
@@ -98,6 +99,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
       const history = (historyRes.data || []).filter((h: any) => (h.status || "active") === "active");
 
       let currentRent = state.currentRent;
+      let currentUtilities = state.currentUtilities;
       let currentRentValidFrom = rc.contract_start || rc.start_date || "";
       let lastChangeDate: string | null = null;
       let lastChangeReason: string | null = null;
@@ -107,6 +109,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
         const activeEntries = history.filter((h: any) => h.effective_date <= today);
         if (activeEntries.length > 0) {
           currentRent = activeEntries[0].cold_rent;
+          currentUtilities = activeEntries[0].utilities || currentUtilities;
           currentRentValidFrom = activeEntries[0].effective_date;
         }
         if (history.length > 1) {
@@ -134,6 +137,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
       setState((prev) => ({
         ...prev,
         currentRent,
+        currentUtilities,
         currentRentValidFrom,
         lastChangeDate,
         lastChangeReason,
@@ -197,11 +201,13 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
         contractDate: state.contractDate,
         currentRent: state.currentRent,
         newRent,
+        utilities: state.currentUtilities,
         vpiOldMonth: state.vpiOldMonth,
         vpiOldValue: oldVal,
         vpiNewMonth: state.vpiNewMonth,
         vpiNewValue: newVal,
         effectiveDate: state.effectiveDate,
+        lastRentValidFrom: state.currentRentValidFrom,
         createdDate,
       });
       setPdfBlob(blob);
@@ -257,7 +263,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
         userId: user.id,
         effectiveDate: state.effectiveDate,
         coldRent: newRent,
-        utilities: 0,
+        utilities: state.currentUtilities,
         reason: "index",
         status: isImmediatelyActive ? "active" : "planned",
         notes: `Indexmieterh\u00F6hung: VPI ${oldVal.toFixed(1)} \u2192 ${newVal.toFixed(1)}`,
