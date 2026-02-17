@@ -3,6 +3,7 @@ import { supabase } from "../../lib/supabase";
 import { Eye, EyeOff, ArrowRight, Gift, AlertCircle, CheckCircle2 } from "lucide-react";
 import { getReferralCode, getReferralMetadata, initReferralTracking, clearReferralCode } from "../../lib/referralTracking";
 import { getRefSid } from "../../lib/referralSession";
+import { trackSignupSuccess } from "../../lib/analytics";
 
 interface SignupFormProps {
   onSuccess?: () => void;
@@ -75,6 +76,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       if (error) {
         setMessage({ type: "error", text: error.message });
       } else if (authData.user) {
+        await trackSignupSuccess();
         try {
           const welcomeRes = await fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome-email`,

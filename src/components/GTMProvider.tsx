@@ -6,7 +6,12 @@ export function GTMProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initGTM = async () => {
-      await getSystemSettings();
+      const settings = await getSystemSettings();
+
+      if (typeof window !== "undefined" && settings) {
+        (window as unknown as Record<string, string>).__RENTABLY_SIGNUP_CUSTOM_SCRIPT__ =
+          settings.signup_custom_tracking_script || "";
+      }
 
       const gtmConfig = shouldRenderGTM();
 

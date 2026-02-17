@@ -26,6 +26,7 @@ export default function AdminSystemSettingsView() {
   const [gtmEnabled, setGtmEnabled] = useState(false);
   const [gtmContainerId, setGtmContainerId] = useState("");
   const [gtmCustomHeadHtml, setGtmCustomHeadHtml] = useState("");
+  const [signupCustomScript, setSignupCustomScript] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function AdminSystemSettingsView() {
         setGtmEnabled(settings.gtm_enabled);
         setGtmContainerId(settings.gtm_container_id || "");
         setGtmCustomHeadHtml(settings.gtm_custom_head_html || "");
+        setSignupCustomScript(settings.signup_custom_tracking_script || "");
         setShowAdvanced(!!settings.gtm_custom_head_html);
       }
     } catch (error) {
@@ -62,6 +64,7 @@ export default function AdminSystemSettingsView() {
         gtm_enabled: gtmEnabled,
         gtm_container_id: gtmContainerId || null,
         gtm_custom_head_html: gtmCustomHeadHtml || null,
+        signup_custom_tracking_script: signupCustomScript || null,
       });
 
       if (result.success) {
@@ -273,6 +276,33 @@ export default function AdminSystemSettingsView() {
               Falls keine Datenbank-Einstellung vorhanden ist, werden die
               Umgebungsvariablen VITE_GTM_ENABLED und VITE_GTM_ID
               verwendet.
+            </p>
+          </div>
+
+          <div className="border-t pt-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-primary-blue/10 rounded-lg flex items-center justify-center">
+                <Code className="w-5 h-5 text-primary-blue" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-dark">
+                  Custom Signup Tracking Script
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Wird nach erfolgreicher Registrierung clientseitig ausgefuehrt
+                </p>
+              </div>
+            </div>
+            <textarea
+              value={signupCustomScript}
+              onChange={(e) => setSignupCustomScript(e.target.value)}
+              placeholder={"// Beispiel: Meta Pixel\nfbq('track', 'CompleteRegistration');"}
+              rows={8}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent font-mono text-sm"
+            />
+            <p className="mt-2 text-xs text-gray-500">
+              JavaScript-Code, der nach jedem erfolgreichen Signup im Browser ausgefuehrt wird.
+              Nur Admins koennen dieses Feld aendern. Aenderungen sind nach Speichern und Reload aktiv.
             </p>
           </div>
 

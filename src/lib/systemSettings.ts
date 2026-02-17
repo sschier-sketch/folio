@@ -6,6 +6,7 @@ export interface SystemSettings {
   gtm_container_id: string | null;
   gtm_custom_head_html: string | null;
   default_affiliate_commission_rate: number;
+  signup_custom_tracking_script: string | null;
   updated_at: string;
 }
 
