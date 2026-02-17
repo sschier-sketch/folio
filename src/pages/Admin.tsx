@@ -247,21 +247,41 @@ export function Admin() {
   }
 
   async function handleImpersonate(userId: string, userEmail: string) {
-    if (!confirm(`Moechten Sie sich als ${userEmail} anmelden?`)) return;
+    if (!confirm(`Moechten Sie sich als ${userEmail} anmelden? Es oeffnet sich ein neuer Tab.`)) return;
     try {
-      await supabase
-        .from("admin_activity_log")
-        .insert({
-          admin_user_id: (await supabase.auth.getUser()).data.user?.id,
-          action: "impersonate_user",
-          target_user_id: userId,
-          details: { timestamp: new Date().toISOString() },
-        });
-      alert(
-        "Impersonation-Feature wird in einer spaeteren Version implementiert",
-      );
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("Keine aktive Sitzung gefunden");
+        return;
+      }
+
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-impersonate`;
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ targetUserId: userId }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.error || "Fehler beim Anmelden als Nutzer");
+        return;
+      }
+
+      if (result.actionLink) {
+        const redirectUrl = `${window.location.origin}/dashboard`;
+        const linkWithRedirect = result.actionLink.includes("redirect_to=")
+          ? result.actionLink
+          : `${result.actionLink}&redirect_to=${encodeURIComponent(redirectUrl)}`;
+        window.open(linkWithRedirect, "_blank");
+      }
     } catch (err) {
-      console.error("Error logging impersonation:", err);
+      console.error("Error impersonating user:", err);
+      alert("Fehler beim Anmelden als Nutzer");
     }
   }
 
