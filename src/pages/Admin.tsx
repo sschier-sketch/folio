@@ -274,10 +274,9 @@ export function Admin() {
 
       if (result.actionLink) {
         const redirectUrl = `${window.location.origin}/dashboard`;
-        const linkWithRedirect = result.actionLink.includes("redirect_to=")
-          ? result.actionLink
-          : `${result.actionLink}&redirect_to=${encodeURIComponent(redirectUrl)}`;
-        window.open(linkWithRedirect, "_blank");
+        const url = new URL(result.actionLink);
+        url.searchParams.set('redirect_to', redirectUrl);
+        window.open(url.toString(), "_blank");
       }
     } catch (err) {
       console.error("Error impersonating user:", err);

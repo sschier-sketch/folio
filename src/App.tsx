@@ -57,35 +57,45 @@ function ScrollToTop() {
   return null;
 }
 
-function PasswordRecoveryHandler() {
+function AuthRedirectHandler() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const checkForRecovery = () => {
-      const hash = window.location.hash;
-      const search = window.location.search;
+    const hash = window.location.hash;
+    const search = window.location.search;
 
-      if (
-        (hash && hash.includes("type=recovery")) ||
-        (search && search.includes("type=recovery"))
-      ) {
-        navigate("/reset-password" + hash, { replace: true });
-      }
-    };
+    if (
+      (hash && hash.includes("type=recovery")) ||
+      (search && search.includes("type=recovery"))
+    ) {
+      navigate("/reset-password" + hash, { replace: true });
+      return;
+    }
 
-    checkForRecovery();
+    if (
+      location.pathname === "/" &&
+      hash &&
+      hash.includes("access_token=")
+    ) {
+      navigate("/dashboard", { replace: true });
+      return;
+    }
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") {
-        const hash = window.location.hash;
-        navigate("/reset-password" + hash, { replace: true });
+        const h = window.location.hash;
+        navigate("/reset-password" + h, { replace: true });
+      }
+      if (event === "SIGNED_IN" && location.pathname === "/") {
+        navigate("/dashboard", { replace: true });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   return null;
 }
@@ -103,7 +113,7 @@ function App() {
       <Router>
         <ScrollToTop />
         <SeoHead />
-        <PasswordRecoveryHandler />
+        <AuthRedirectHandler />
         <Routes>
         <Route element={<MarketingLayout />}>
           <Route path="/" element={<LandingPage />} />
