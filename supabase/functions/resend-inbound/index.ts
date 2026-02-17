@@ -317,6 +317,40 @@ Deno.serve(async (req: Request) => {
           html: bodyHtml || undefined,
         };
 
+        if (emailId && webhookData.attachments && webhookData.attachments.length > 0) {
+          console.log(
+            `[inbound] Fetching ${webhookData.attachments.length} attachment(s) for forwarding`
+          );
+          const fwdAttachmentsList = await fetchAttachmentsList(emailId, resendApiKey);
+          const resendAttachments: { filename: string; content: string }[] = [];
+
+          for (const att of fwdAttachmentsList) {
+            try {
+              const downloaded = await downloadAttachmentBuffer(att.download_url);
+              if (!downloaded) continue;
+
+              const bytes = new Uint8Array(downloaded.buffer);
+              let binary = "";
+              for (let i = 0; i < bytes.length; i++) {
+                binary += String.fromCharCode(bytes[i]);
+              }
+              const base64Content = btoa(binary);
+
+              resendAttachments.push({
+                filename: att.filename,
+                content: base64Content,
+              });
+              console.log(`[inbound] Prepared attachment for forwarding: ${att.filename} (${att.size} bytes)`);
+            } catch (attErr) {
+              console.error(`[inbound] Error preparing attachment ${att.filename} for forwarding:`, attErr);
+            }
+          }
+
+          if (resendAttachments.length > 0) {
+            fwdPayload.attachments = resendAttachments;
+          }
+        }
+
         const fwdRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
