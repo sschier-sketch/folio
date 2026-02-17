@@ -14,6 +14,8 @@ import {
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../ui/Button";
+import IndexRentWizard from "./index-rent-wizard/IndexRentWizard";
+import type { WizardCalc } from "./index-rent-wizard/types";
 
 interface IndexRentCalculation {
   id: string;
@@ -37,8 +39,28 @@ interface IndexRentCalculation {
   rental_contract?: {
     tenant_id: string;
     monthly_rent: number;
-    tenants?: { name: string };
-    properties?: { name: string };
+    property_id: string;
+    contract_start: string | null;
+    start_date: string | null;
+    cold_rent: number;
+    base_rent: number;
+    unit_id: string | null;
+    tenants?: {
+      id: string;
+      name: string;
+      first_name: string;
+      last_name: string;
+      salutation: string | null;
+      street: string | null;
+      house_number: string | null;
+      zip_code: string | null;
+      city: string | null;
+    };
+    properties?: {
+      id: string;
+      name: string;
+      address: string;
+    };
   };
 }
 
@@ -84,6 +106,7 @@ export default function IndexRentView() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [activeTab, setActiveTab] = useState<TabFilter>("open");
+  const [wizardCalc, setWizardCalc] = useState<WizardCalc | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -102,8 +125,14 @@ export default function IndexRentView() {
             user_id,
             tenant_id,
             monthly_rent,
-            tenants:tenant_id (name),
-            properties:property_id (name)
+            property_id,
+            contract_start,
+            start_date,
+            cold_rent,
+            base_rent,
+            unit_id,
+            tenants:tenant_id (id, name, first_name, last_name, salutation, street, house_number, zip_code, city),
+            properties:property_id (id, name, address)
           )
         `)
         .eq("user_id", user?.id)
@@ -528,9 +557,21 @@ export default function IndexRentView() {
               onApply={markAsApplied}
               onDismiss={dismissCalculation}
               onRestore={undismissCalculation}
+              onStartWizard={(wc) => setWizardCalc(wc)}
             />
           ))}
         </div>
+      )}
+
+      {wizardCalc && (
+        <IndexRentWizard
+          calc={wizardCalc}
+          onClose={() => setWizardCalc(null)}
+          onComplete={() => {
+            setWizardCalc(null);
+            loadCalculations();
+          }}
+        />
       )}
     </div>
   );
@@ -615,11 +656,13 @@ function CalculationCard({
   onApply,
   onDismiss,
   onRestore,
+  onStartWizard,
 }: {
   calc: IndexRentCalculation;
   onApply: (id: string) => void;
   onDismiss: (id: string) => void;
   onRestore: (id: string) => void;
+  onStartWizard: (wc: WizardCalc) => void;
 }) {
   const tenantName =
     calc.rental_contract?.tenants?.name || "Unbekannter Mieter";
@@ -721,10 +764,42 @@ function CalculationCard({
                 </Button>
                 <Button
                   onClick={() => onApply(calc.id)}
-                  variant="primary"
+                  variant="secondary"
                 >
                   Als durchgefuehrt markieren
                 </Button>
+                {calc.rental_contract?.tenants && calc.rental_contract?.properties && (
+                  <Button
+                    onClick={() => {
+                      const rc = calc.rental_contract!;
+                      const wc: WizardCalc = {
+                        id: calc.id,
+                        contract_id: calc.contract_id,
+                        calculation_date: calc.calculation_date,
+                        basis_monat: calc.basis_monat,
+                        aktueller_monat: calc.aktueller_monat,
+                        possible_since: calc.possible_since || null,
+                        rental_contract: {
+                          tenant_id: rc.tenant_id,
+                          monthly_rent: rc.monthly_rent,
+                          property_id: rc.property_id,
+                          contract_start: rc.contract_start,
+                          start_date: rc.start_date,
+                          cold_rent: rc.cold_rent,
+                          base_rent: rc.base_rent,
+                          unit_id: rc.unit_id,
+                          tenants: rc.tenants!,
+                          properties: rc.properties!,
+                        },
+                      };
+                      onStartWizard(wc);
+                    }}
+                    variant="primary"
+                  >
+                    <FileText className="w-4 h-4 mr-1.5" />
+                    Erh\u00F6hung erstellen
+                  </Button>
+                )}
               </>
             )}
             {calc.status === "dismissed" && (
