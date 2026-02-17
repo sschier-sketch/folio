@@ -31,13 +31,83 @@ export interface CurrentRent {
   notes: string | null;
 }
 
-export async function getCurrentRent(contractId: string): Promise<CurrentRent | null> {
-  const { data, error } = await supabase.rpc("get_current_rent", {
-    p_contract_id: contractId,
-  });
+export async function getCurrentRent(contractId: string, asOfDate?: string): Promise<CurrentRent | null> {
+  const refDate = asOfDate || new Date().toISOString().split("T")[0];
 
-  if (error || !data || data.length === 0) return null;
-  return data[0];
+  const { data, error } = await supabase
+    .from("rent_history")
+    .select("*")
+    .eq("contract_id", contractId)
+    .eq("status", "active")
+    .lte("effective_date", refDate)
+    .order("effective_date", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!error && data) {
+    return {
+      rent_period_id: data.id,
+      cold_rent: data.cold_rent,
+      utilities: data.utilities,
+      effective_date: data.effective_date,
+      reason: data.reason,
+      period_status: data.status || "active",
+      vpi_old_month: data.vpi_old_month,
+      vpi_old_value: data.vpi_old_value,
+      vpi_new_month: data.vpi_new_month,
+      vpi_new_value: data.vpi_new_value,
+      notes: data.notes,
+    };
+  }
+
+  const { data: fallback, error: fbError } = await supabase
+    .from("rental_contracts")
+    .select("monthly_rent, cold_rent, base_rent, additional_costs, utilities_advance, start_date, contract_start")
+    .eq("id", contractId)
+    .maybeSingle();
+
+  if (fbError || !fallback) return null;
+
+  const rent = fallback.monthly_rent || fallback.cold_rent || fallback.base_rent || 0;
+  const utils = fallback.additional_costs || fallback.utilities_advance || 0;
+
+  return {
+    rent_period_id: null,
+    cold_rent: rent,
+    utilities: utils,
+    effective_date: fallback.start_date || fallback.contract_start || "",
+    reason: "migration",
+    period_status: "active",
+    vpi_old_month: null,
+    vpi_old_value: null,
+    vpi_new_month: null,
+    vpi_new_value: null,
+    notes: null,
+  };
+}
+
+export async function getCurrentRentAmount(contractId: string, asOfDate?: string): Promise<number> {
+  const period = await getCurrentRent(contractId, asOfDate);
+  return period?.cold_rent ?? 0;
+}
+
+export async function getCurrentRentPeriod(contractId: string, asOfDate?: string): Promise<RentPeriod | null> {
+  const refDate = asOfDate || new Date().toISOString().split("T")[0];
+
+  const { data, error } = await supabase
+    .from("rent_history")
+    .select("*")
+    .eq("contract_id", contractId)
+    .eq("status", "active")
+    .lte("effective_date", refDate)
+    .order("effective_date", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data;
 }
 
 export async function getRentPeriods(contractId: string): Promise<RentPeriod[]> {

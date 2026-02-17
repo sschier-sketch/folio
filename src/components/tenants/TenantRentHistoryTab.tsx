@@ -400,7 +400,8 @@ export default function TenantRentHistoryTab({
             effective_date: new Date().toISOString().split('T')[0],
             cold_rent: monthlyRent,
             utilities: utilitiesAdvance,
-            reason: "increase",
+            reason: "manual",
+            status: "active",
             notes: "Manuell angepasst",
           },
         ]);
@@ -1370,6 +1371,9 @@ export default function TenantRentHistoryTab({
                             {item.notes}
                           </div>
                         )}
+                        <div className="text-xs text-gray-300 mt-1">
+                          Erstellt am {new Date(item.created_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                        </div>
                       </div>
                       {index < activeHistory.length - 1 && (
                         <div className="text-sm text-emerald-600 font-medium">

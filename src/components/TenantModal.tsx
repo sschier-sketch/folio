@@ -472,17 +472,34 @@ export default function TenantModal({
 
           const { data: existingContract } = await supabase
             .from("rental_contracts")
-            .select("id")
+            .select("id, monthly_rent, additional_costs, utilities_advance")
             .eq("tenant_id", tenant.id)
             .maybeSingle();
 
           if (existingContract) {
+            const oldMonthlyRent = existingContract.monthly_rent || 0;
+            const oldUtilities = existingContract.additional_costs || existingContract.utilities_advance || 0;
+            const rentChanged = monthlyRent !== oldMonthlyRent || utilitiesAdvance !== oldUtilities;
+
             const { error: contractError } = await supabase
               .from("rental_contracts")
               .update(contractUpdateData)
               .eq("tenant_id", tenant.id);
 
             if (contractError) throw contractError;
+
+            if (rentChanged && monthlyRent > 0) {
+              await supabase.from("rent_history").insert([{
+                contract_id: existingContract.id,
+                user_id: user.id,
+                effective_date: new Date().toISOString().split("T")[0],
+                cold_rent: monthlyRent,
+                utilities: utilitiesAdvance,
+                reason: "manual",
+                status: "active",
+                notes: "Über Mieterdialog angepasst",
+              }]);
+            }
 
             if (tenantData.unit_id) {
               const { data: existingRcu } = await supabase
@@ -521,6 +538,19 @@ export default function TenantModal({
               .eq("id", tenant.id);
 
             if (updateError) throw updateError;
+
+            if (monthlyRent > 0) {
+              await supabase.from("rent_history").insert([{
+                contract_id: newContract.id,
+                user_id: user.id,
+                effective_date: tenantData.move_in_date || new Date().toISOString().split("T")[0],
+                cold_rent: monthlyRent,
+                utilities: utilitiesAdvance,
+                reason: "initial",
+                status: "active",
+                notes: "",
+              }]);
+            }
 
             if (tenantData.unit_id) {
               await supabase.from("rental_contract_units").insert({
@@ -633,6 +663,19 @@ export default function TenantModal({
             .eq("id", newTenant.id);
 
           if (updateError) throw updateError;
+
+          if (monthlyRent > 0) {
+            await supabase.from("rent_history").insert([{
+              contract_id: newContract.id,
+              user_id: user.id,
+              effective_date: tenantData.move_in_date || new Date().toISOString().split("T")[0],
+              cold_rent: monthlyRent,
+              utilities: utilitiesAdvance,
+              reason: "initial",
+              status: "active",
+              notes: "",
+            }]);
+          }
 
           if (tenantData.unit_id) {
             await supabase.from("rental_contract_units").insert({
