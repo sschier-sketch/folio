@@ -251,7 +251,7 @@ export default function Dashboard() {
               <img
                 src="/rentably-logo.svg"
                 alt="Rentably"
-                className="h-8 w-auto"
+                className="h-5 w-auto"
               />{" "}
             </div>{" "}
             <div className="flex items-center gap-4">
