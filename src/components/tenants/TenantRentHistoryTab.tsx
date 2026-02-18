@@ -395,11 +395,15 @@ export default function TenantRentHistoryTab({
       if (error) throw error;
 
       if (rentChanged) {
+        if (!editData.effective_date) {
+          alert("Bitte geben Sie das 'Gültig ab'-Datum an.");
+          return;
+        }
         await supabase.from("rent_history").insert([
           {
             contract_id: contract.id,
             user_id: user.id,
-            effective_date: editData.effective_date || new Date().toISOString().split('T')[0],
+            effective_date: editData.effective_date,
             cold_rent: monthlyRent,
             utilities: utilitiesAdvance,
             reason: "manual",
@@ -558,6 +562,23 @@ export default function TenantRentHistoryTab({
 
         {isEditing ? (
           <div className="space-y-4">
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <label className="block text-sm font-semibold text-amber-800 mb-2">
+                Gültig ab *
+              </label>
+              <input
+                type="date"
+                value={editData.effective_date}
+                onChange={(e) =>
+                  setEditData({ ...editData, effective_date: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+              <p className="text-xs text-amber-700 mt-1.5">
+                Ab welchem Datum gilt die geänderte Miete? Bei rückwirkenden Anpassungen unbedingt das korrekte Datum eintragen.
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Mietart *
@@ -577,23 +598,6 @@ export default function TenantRentHistoryTab({
                   Kaltmiete + Betriebskosten + Heizkosten
                 </option>
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Gültig ab
-              </label>
-              <input
-                type="date"
-                value={editData.effective_date}
-                onChange={(e) =>
-                  setEditData({ ...editData, effective_date: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Datum, ab dem die neue Miete gilt. Standardmäßig heute – ändern Sie das Datum z.B. bei nachträglichen Korrekturen.
-              </p>
             </div>
 
             {editData.rent_type === "flat_rate" && (
