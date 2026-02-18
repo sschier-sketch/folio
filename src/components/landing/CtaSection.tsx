@@ -6,10 +6,10 @@ export default function CtaSection() {
   const navigate = useNavigate();
 
   return (
-    <section className="py-[120px] px-6 bg-gray-950">
+    <section className="py-16 sm:py-[120px] px-6 bg-gray-950">
       <RevealOnScroll>
         <div className="max-w-[1200px] mx-auto text-center">
-          <h2 className="text-3xl sm:text-[36px] font-bold text-white tracking-tight leading-tight mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-white tracking-tight leading-tight mb-4">
             Bereit, Ihre Verwaltung zu vereinfachen?
           </h2>
           <p className="text-gray-400 mb-10 max-w-lg mx-auto">

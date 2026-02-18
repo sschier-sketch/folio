@@ -141,11 +141,11 @@ function PropertyMockup() {
 
 export default function FeatureHighlight() {
   return (
-    <section className="py-[100px] px-6">
+    <section className="py-16 sm:py-[100px] px-6">
       <div className="max-w-[1200px] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-20">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center mb-12 sm:mb-20">
           <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 max-w-[700px]">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 max-w-[700px]">
               Alles, was Sie brauchen — an einem Ort
             </h2>
             <p className="text-gray-500 leading-relaxed mb-8 max-w-[650px]">
@@ -183,7 +183,7 @@ export default function FeatureHighlight() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f, i) => (
             <RevealOnScroll key={f.title} delay={i * 80} className="h-full">
-              <div className="bg-[#f8fafc] border border-[#e5e7eb] rounded-xl p-8 hover:shadow-md transition-shadow h-full">
+              <div className="bg-[#f8fafc] border border-[#e5e7eb] rounded-xl p-6 sm:p-8 hover:shadow-md transition-shadow h-full">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
                   style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}

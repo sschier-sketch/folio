@@ -47,17 +47,17 @@ export default function MarketingFooter() {
               <img
                 src="/dsvgo-de.png"
                 alt="DSGVO-konform"
-                className="h-12 w-auto object-contain rounded"
+                className="h-10 sm:h-12 w-auto object-contain rounded"
               />
               <img
                 src="/entwickelt-in-deutschland-de.png"
                 alt="Entwickelt in Deutschland"
-                className="h-12 w-auto object-contain rounded"
+                className="h-10 sm:h-12 w-auto object-contain rounded"
               />
             </div>
           </div>
 
-          <div className="col-span-1 md:col-span-2">
+          <div className="col-span-2 sm:col-span-1 md:col-span-2">
             <h4 className="text-xs font-semibold tracking-wider uppercase text-gray-400 mb-4">
               Ressourcen
             </h4>
@@ -79,7 +79,7 @@ export default function MarketingFooter() {
             </ul>
           </div>
 
-          <div className="col-span-1 md:col-span-3">
+          <div className="col-span-2 sm:col-span-1 md:col-span-3">
             <h4 className="text-xs font-semibold tracking-wider uppercase text-gray-400 mb-4">
               Funktionen
             </h4>
@@ -97,7 +97,7 @@ export default function MarketingFooter() {
             </ul>
           </div>
 
-          <div className="col-span-1 md:col-span-3">
+          <div className="col-span-2 sm:col-span-1 md:col-span-3">
             <h4 className="text-xs font-semibold tracking-wider uppercase text-gray-400 mb-4">
               Unternehmen
             </h4>

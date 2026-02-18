@@ -14,11 +14,11 @@ export default function PricingSection() {
   const yearlyPerMonth = formatPrice((PLANS.pro.priceYearly || 0) / 12);
 
   return (
-    <section className="py-[100px] px-6">
+    <section className="py-16 sm:py-[100px] px-6">
       <div className="max-w-[1200px] mx-auto">
         <RevealOnScroll>
           <div className="text-center mb-6">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
               Keine Hausverwaltungssoftware ist günstiger
             </h2>
             <p className="text-gray-500 leading-relaxed max-w-[620px] mx-auto">
@@ -31,7 +31,7 @@ export default function PricingSection() {
 
         <div className="grid md:grid-cols-2 gap-6 max-w-[880px] mx-auto mt-12">
           <RevealOnScroll delay={80}>
-            <div className="border border-gray-200 rounded-2xl p-7 bg-white flex flex-col">
+            <div className="border border-gray-200 rounded-2xl p-5 sm:p-7 bg-white flex flex-col">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-gray-900">Basic</h3>
               <span className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
@@ -60,8 +60,8 @@ export default function PricingSection() {
           </RevealOnScroll>
 
           <RevealOnScroll delay={160}>
-            <div className="border-2 border-gray-900 rounded-2xl p-7 bg-white flex flex-col relative">
-            <div className="absolute -top-3 left-7 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full">
+            <div className="border-2 border-gray-900 rounded-2xl p-5 sm:p-7 bg-white flex flex-col relative">
+            <div className="absolute -top-3 left-5 sm:left-7 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full">
               30 Tage gratis testen
             </div>
             <div className="flex items-center justify-between mb-5">

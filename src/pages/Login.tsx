@@ -33,7 +33,7 @@ export function Login() {
           <div className="w-14 h-14 rounded-full bg-[#EEF4FF] border border-[#DDE7FF] flex items-center justify-center mx-auto mb-6">
             <Shield className="w-7 h-7 text-gray-900" strokeWidth={1.5} />
           </div>
-          <h1 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-3">
             Willkommen zur&uuml;ck
           </h1>
           <p className="text-gray-500">

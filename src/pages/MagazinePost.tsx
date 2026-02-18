@@ -295,7 +295,7 @@ export function MagazinePost() {
           <img
             src={post.hero_image_url}
             alt={post.hero_image_alt || post.title}
-            className="w-full h-64 md:h-[420px] object-cover rounded-2xl"
+            className="w-full h-48 sm:h-64 md:h-[420px] object-cover rounded-2xl"
           />
         </div>
       )}
@@ -322,7 +322,7 @@ export function MagazinePost() {
               </span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-gray-900 leading-tight mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-gray-900 leading-tight mb-6">
               {post.title}
             </h1>
 

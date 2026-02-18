@@ -551,7 +551,7 @@ function FeatureShowcase() {
         return (
           <RevealOnScroll key={item.title}>
             <div
-              className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
+              className={`grid lg:grid-cols-2 gap-6 sm:gap-12 lg:gap-20 items-center ${
                 isReversed ? "lg:[direction:rtl]" : ""
               }`}
             >
@@ -603,7 +603,7 @@ export default function Mieterportal() {
             Alle Funktionen
           </RefLink>
 
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-6 sm:gap-12 lg:gap-16 items-center">
             <RevealOnScroll>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
@@ -611,7 +611,7 @@ export default function Mieterportal() {
                   Mieterportal
                 </span>
               </div>
-              <h1 className="text-[32px] sm:text-[40px] lg:text-[48px] font-bold text-gray-900 leading-[1.1] tracking-tight">
+              <h1 className="text-2xl sm:text-[32px] md:text-[40px] lg:text-[48px] font-bold text-gray-900 leading-[1.1] tracking-tight">
                 Self-Service{" "}
                 <span className="text-[#3c8af7]">
                   f&uuml;r Ihre Mieter
@@ -660,7 +660,7 @@ export default function Mieterportal() {
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 Leistungsumfang
               </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Alles, was Ihre Mieter brauchen
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
@@ -708,7 +708,7 @@ export default function Mieterportal() {
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 Im Detail
               </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 So arbeiten Ihre Mieter mit dem Portal
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
@@ -729,13 +729,13 @@ export default function Mieterportal() {
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 So funktioniert&apos;s
               </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 In 3 Schritten zum Mieterportal
               </h2>
             </div>
           </RevealOnScroll>
 
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+          <div className="grid lg:grid-cols-2 gap-6 sm:gap-12 lg:gap-20 items-start">
             <RevealOnScroll>
               <div className="space-y-0">
                 {STEPS.map((s, i) => (
@@ -752,7 +752,7 @@ export default function Mieterportal() {
 
             <RevealOnScroll delay={100}>
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
-                <div className="bg-gradient-to-r from-[#3c8af7] to-[#3579de] p-8 text-white">
+                <div className="bg-gradient-to-r from-[#3c8af7] to-[#3579de] p-6 sm:p-8 text-white">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                       <Smartphone className="w-6 h-6" />
@@ -768,7 +768,7 @@ export default function Mieterportal() {
                   </div>
                 </div>
 
-                <div className="p-8">
+                <div className="p-6 sm:p-8">
                   <div className="space-y-5">
                     <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                       Funktionen im &Uuml;berblick
@@ -841,11 +841,11 @@ export default function Mieterportal() {
         </div>
       </section>
 
-      <section className="py-[80px] px-6">
+      <section className="py-12 sm:py-[80px] px-6">
         <div className="max-w-[1200px] mx-auto">
           <RevealOnScroll>
             <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Ihre Daten in sicheren H&auml;nden
               </h2>
               <p className="text-gray-500 leading-relaxed max-w-[600px] mx-auto">
@@ -856,16 +856,16 @@ export default function Mieterportal() {
             </div>
           </RevealOnScroll>
           <RevealOnScroll delay={80}>
-            <div className="flex items-center justify-center gap-12 flex-wrap">
+            <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap">
               <img
                 src="/dsvgo-de.png"
                 alt="DSGVO-konform"
-                className="h-32 w-auto object-contain"
+                className="h-24 sm:h-32 w-auto object-contain"
               />
               <img
                 src="/entwickelt-in-deutschland-de.png"
                 alt="Entwickelt in Deutschland"
-                className="h-32 w-auto object-contain"
+                className="h-24 sm:h-32 w-auto object-contain"
               />
             </div>
           </RevealOnScroll>
@@ -879,7 +879,7 @@ export default function Mieterportal() {
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 Vorteile
               </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Darum nutzen Vermieter das Mieterportal
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto leading-relaxed">
@@ -896,7 +896,7 @@ export default function Mieterportal() {
                 delay={i * 80}
                 className="h-full"
               >
-                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm h-full text-center">
+                <div className="bg-white rounded-xl p-6 sm:p-8 border border-gray-100 shadow-sm h-full text-center">
                   <div
                     className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
                     style={{
@@ -943,7 +943,7 @@ export default function Mieterportal() {
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 Innovativ
               </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Weitere Funktionen f&uuml;r Vermieter
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
@@ -1000,7 +1000,7 @@ export default function Mieterportal() {
 
       <FaqSection pageSlug="mieterportal" />
 
-      <section className="py-[80px] px-6 bg-[#f8fafc]">
+      <section className="py-12 sm:py-[80px] px-6 bg-[#f8fafc]">
         <div className="max-w-[800px] mx-auto">
           <RevealOnScroll>
             <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
@@ -1036,7 +1036,7 @@ export default function Mieterportal() {
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight mb-4">
               Bereit f&uuml;r zufriedenere Mieter?
             </h2>
             <p className="text-gray-500 mb-10 max-w-lg mx-auto">

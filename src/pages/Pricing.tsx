@@ -43,7 +43,7 @@ export default function Pricing() {
     <div>
       <section className="pt-24 pb-10 sm:pt-32 sm:pb-14 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 tracking-tight">
             Einfache, transparente Preise
           </h1>
           <p className="mt-5 text-lg text-gray-500 max-w-xl mx-auto leading-relaxed">
@@ -83,7 +83,7 @@ export default function Pricing() {
 
       <section className="py-10 px-6">
         <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-6">
-          <div className="border border-gray-200 rounded-2xl p-8 bg-white flex flex-col">
+          <div className="border border-gray-200 rounded-2xl p-5 sm:p-8 bg-white flex flex-col">
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900">
                 {PLANS.basic.name}
@@ -117,8 +117,8 @@ export default function Pricing() {
             </button>
           </div>
 
-          <div className="border-2 border-gray-900 rounded-2xl p-8 bg-white flex flex-col relative">
-            <span className="absolute -top-3 left-8 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full">
+          <div className="border-2 border-gray-900 rounded-2xl p-5 sm:p-8 bg-white flex flex-col relative">
+            <span className="absolute -top-3 left-5 sm:left-8 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full">
               Empfohlen
             </span>
             <div className="mb-6">
@@ -191,7 +191,7 @@ export default function Pricing() {
           </p>
 
           <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
-            <div className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_140px_140px] border-b border-gray-200 bg-gray-50">
+            <div className="grid grid-cols-[1fr_80px_80px] sm:grid-cols-[1fr_140px_140px] border-b border-gray-200 bg-gray-50">
               <div className="px-5 py-4 text-sm font-semibold text-gray-500">
                 Funktion
               </div>
@@ -213,7 +213,7 @@ export default function Pricing() {
                 {category.rows.map((row, rowIdx) => (
                   <div
                     key={row.feature}
-                    className={`grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_140px_140px] ${
+                    className={`grid grid-cols-[1fr_80px_80px] sm:grid-cols-[1fr_140px_140px] ${
                       rowIdx < category.rows.length - 1 ||
                       catIdx < COMPARISON_TABLE.length - 1
                         ? "border-b border-gray-100"

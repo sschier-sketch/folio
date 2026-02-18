@@ -67,7 +67,7 @@ export function Signup() {
   return (
     <div className="py-16 sm:py-24 px-6">
       <div className="max-w-[1100px] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-16 lg:gap-20 items-start">
           <div className="hidden lg:block">
             <div className="sticky top-28">
               {hasReferralCode && (
@@ -79,7 +79,7 @@ export function Signup() {
                 </div>
               )}
 
-              <h1 className="text-[36px] lg:text-[44px] font-bold text-gray-900 tracking-tight leading-[1.1] mb-4">
+              <h1 className="text-2xl sm:text-[36px] lg:text-[44px] font-bold text-gray-900 tracking-tight leading-[1.1] mb-4">
                 Starten Sie jetzt mit{" "}
                 <span className="text-[#3c8af7]">rentably</span>
               </h1>

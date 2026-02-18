@@ -109,11 +109,11 @@ export default function TestimonialsSection() {
   const filtered = TESTIMONIALS.filter((t) => t.category === active);
 
   return (
-    <section className="py-[100px] px-6">
+    <section className="py-16 sm:py-[100px] px-6">
       <div className="max-w-[1200px] mx-auto">
         <RevealOnScroll>
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
               Das sagen unsere Nutzer
             </h2>
             <p className="text-gray-500 max-w-[600px] mx-auto mb-10">
@@ -121,12 +121,12 @@ export default function TestimonialsSection() {
               — kostenlos und ohne Kompromisse.
             </p>
 
-            <div className="inline-flex bg-gray-100 rounded-xl p-1 gap-1">
+            <div className="inline-flex flex-wrap justify-center bg-gray-100 rounded-xl p-1 gap-1">
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.key}
                   onClick={() => setActive(cat.key)}
-                  className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                  className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                     active === cat.key
                       ? "bg-white text-gray-900 shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
@@ -142,7 +142,7 @@ export default function TestimonialsSection() {
         <div className="grid md:grid-cols-3 gap-6" key={active}>
           {filtered.map((t, i) => (
             <RevealOnScroll key={`${active}-${t.name}`} delay={i * 80}>
-              <div className="bg-white border border-[#e5e7eb] rounded-xl p-8 hover:shadow-md transition-shadow relative h-full flex flex-col">
+              <div className="bg-white border border-[#e5e7eb] rounded-xl p-6 sm:p-8 hover:shadow-md transition-shadow relative h-full flex flex-col">
                 <Quote className="w-8 h-8 text-[#3c8af7]/15 absolute top-6 right-6" />
                 <div className="flex gap-0.5 mb-4">
                   {Array.from({ length: t.stars }).map((_, j) => (

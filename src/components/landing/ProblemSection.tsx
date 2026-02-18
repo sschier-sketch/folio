@@ -22,17 +22,17 @@ const PROBLEMS: { icon: LucideIcon; title: string; text: string }[] = [
 
 export default function ProblemSection() {
   return (
-    <section className="py-[100px] px-6 bg-[#f8fafc]">
+    <section className="py-16 sm:py-[100px] px-6 bg-[#f8fafc]">
       <div className="max-w-[1200px] mx-auto">
         <RevealOnScroll>
-          <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-14 max-w-[700px]">
+          <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-8 sm:mb-14 max-w-[700px]">
             Schluss mit Excel und Zettelwirtschaft.
           </h2>
         </RevealOnScroll>
         <div className="grid md:grid-cols-3 gap-6">
           {PROBLEMS.map((p, i) => (
             <RevealOnScroll key={p.title} delay={i * 80}>
-              <div className="bg-white border border-[#e5e7eb] rounded-xl p-8 hover:shadow-md transition-shadow">
+              <div className="bg-white border border-[#e5e7eb] rounded-xl p-6 sm:p-8 hover:shadow-md transition-shadow">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
                   style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}

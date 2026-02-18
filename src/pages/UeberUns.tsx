@@ -137,7 +137,7 @@ export default function UeberUns() {
 
       <FaqSection pageSlug="ueber-uns" />
 
-      <section className="py-[80px] px-6 bg-[#f8fafc]">
+      <section className="py-12 sm:py-[80px] px-6 bg-[#f8fafc]">
         <div className="max-w-[800px] mx-auto">
           <RevealOnScroll>
             <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
@@ -178,10 +178,10 @@ export default function UeberUns() {
         </div>
       </section>
 
-      <section className="py-[120px] px-6 bg-gray-950">
+      <section className="py-16 sm:py-[120px] px-6 bg-gray-950">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-white tracking-tight leading-tight mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-white tracking-tight leading-tight mb-4">
               Bereit, Ihre Verwaltung zu vereinfachen?
             </h2>
             <p className="text-gray-400 mb-10 max-w-lg mx-auto">
@@ -205,9 +205,9 @@ export default function UeberUns() {
 
 function HeroSection() {
   return (
-    <section className="pt-16 sm:pt-24 pb-[100px] px-6">
+    <section className="pt-12 sm:pt-24 pb-16 sm:pb-[100px] px-6">
       <div className="max-w-[1200px] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <RevealOnScroll>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
@@ -215,11 +215,11 @@ function HeroSection() {
                 Über uns
               </span>
             </div>
-            <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
+            <h1 className="text-3xl sm:text-[40px] md:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
               Wir machen Immobilien&shy;verwaltung{" "}
               <span className="text-[#3c8af7]">einfach.</span>
             </h1>
-            <p className="mt-6 text-lg sm:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
+            <p className="mt-6 text-base sm:text-lg md:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
               Rentably entstand aus der Überzeugung, dass private Vermieter
               bessere Werkzeuge verdienen — ohne die Komplexität und Kosten
               professioneller Hausverwaltungssoftware.
@@ -257,7 +257,7 @@ function HeroSection() {
 
 function MissionSection() {
   return (
-    <section className="py-[100px] px-6 bg-gray-50">
+    <section className="py-16 sm:py-[100px] px-6 bg-gray-50">
       <div className="max-w-[800px] mx-auto">
         <RevealOnScroll>
           <div className="text-center mb-8">
@@ -288,11 +288,11 @@ function MissionSection() {
 
 function ValuesSection() {
   return (
-    <section className="py-[100px] px-6">
+    <section className="py-16 sm:py-[100px] px-6">
       <div className="max-w-[1200px] mx-auto">
         <RevealOnScroll>
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
               Unsere Werte
             </h2>
             <p className="text-gray-500 max-w-[600px] mx-auto">
@@ -332,11 +332,11 @@ function ValuesSection() {
 
 function PillarsSection() {
   return (
-    <section className="py-[100px] px-6 bg-gray-50">
+    <section className="py-16 sm:py-[100px] px-6 bg-gray-50">
       <div className="max-w-[1200px] mx-auto">
         <RevealOnScroll>
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
               Dafür stehen wir
             </h2>
             <p className="text-gray-500 max-w-[600px] mx-auto">
@@ -345,11 +345,11 @@ function PillarsSection() {
           </div>
         </RevealOnScroll>
 
-        <div className="space-y-20">
+        <div className="space-y-12 sm:space-y-20">
           {PILLARS.map((pillar, i) => (
             <RevealOnScroll key={pillar.title} delay={80}>
               <div
-                className={`grid lg:grid-cols-2 gap-12 lg:gap-16 items-center ${
+                className={`grid lg:grid-cols-2 gap-8 lg:gap-16 items-center ${
                   i % 2 === 1 ? "lg:direction-rtl" : ""
                 }`}
               >
@@ -375,7 +375,7 @@ function PillarsSection() {
                     <img
                       src={pillar.image}
                       alt={pillar.title}
-                      className="w-full h-[340px] object-cover"
+                      className="w-full h-[240px] sm:h-[340px] object-cover"
                     />
                   </div>
                 </div>
@@ -390,17 +390,17 @@ function PillarsSection() {
 
 function FoundersSection() {
   return (
-    <section className="py-[100px] px-6">
+    <section className="py-16 sm:py-[100px] px-6">
       <div className="max-w-[1200px] mx-auto">
         <RevealOnScroll>
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
               <Users className="w-3.5 h-3.5 text-[#3c8af7]" />
               <span className="text-sm font-medium text-[#3c8af7]">
                 Wer wir sind
               </span>
             </div>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
               Die Gründer
             </h2>
             <p className="text-gray-500 max-w-[600px] mx-auto">
@@ -422,7 +422,7 @@ function FoundersSection() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-7">
+                <div className="p-5 sm:p-7">
                   <h3 className="text-xl font-bold text-gray-900">
                     {founder.name}
                   </h3>
@@ -453,11 +453,11 @@ function FoundersSection() {
 
 function TimelineSection() {
   return (
-    <section className="py-[100px] px-6 bg-gray-50">
+    <section className="py-16 sm:py-[100px] px-6 bg-gray-50">
       <div className="max-w-[800px] mx-auto">
         <RevealOnScroll>
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
               Unser Weg
             </h2>
             <p className="text-gray-500 max-w-[500px] mx-auto">

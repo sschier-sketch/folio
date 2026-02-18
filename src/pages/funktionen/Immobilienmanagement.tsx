@@ -111,7 +111,7 @@ function PropertyTableMockup() {
         </div>
       </div>
       <div className="border-t border-gray-100">
-        <div className="grid grid-cols-[1.5fr_0.6fr_0.7fr_1fr_0.8fr] px-6 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+        <div className="hidden sm:grid grid-cols-[1.5fr_0.6fr_0.7fr_1fr_0.8fr] px-6 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
           <span>Objekt</span>
           <span className="text-center">Einheiten</span>
           <span className="text-center">Auslastung</span>
@@ -119,7 +119,7 @@ function PropertyTableMockup() {
           <span className="text-right">Typ</span>
         </div>
         {MOCK_PROPERTIES.map((p, i) => (
-          <div key={p.name} className={`grid grid-cols-[1.5fr_0.6fr_0.7fr_1fr_0.8fr] px-6 py-4 items-center ${i < MOCK_PROPERTIES.length - 1 ? "border-b border-gray-100" : ""}`}>
+          <div key={p.name} className={`hidden sm:grid grid-cols-[1.5fr_0.6fr_0.7fr_1fr_0.8fr] px-6 py-4 items-center ${i < MOCK_PROPERTIES.length - 1 ? "border-b border-gray-100" : ""}`}>
             <div>
               <span className="text-sm font-semibold text-gray-900 block">{p.name}</span>
               <span className="text-xs text-gray-400">{p.city}</span>
@@ -153,13 +153,13 @@ export default function Immobilienmanagement() {
             <ArrowLeft className="w-4 h-4" />
             Alle Funktionen
           </RefLink>
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-6 sm:gap-12 lg:gap-16 items-center">
             <RevealOnScroll>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
                 <span className="text-sm font-medium text-[#3c8af7]">Kerntechnologie</span>
               </div>
-              <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
+              <h1 className="text-3xl sm:text-[40px] md:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
                 Ihr gesamtes Portfolio{" "}
                 <span className="text-[#3c8af7]">digital verwaltet</span>
               </h1>
@@ -196,7 +196,7 @@ export default function Immobilienmanagement() {
           <RevealOnScroll>
             <div className="text-center mb-16">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">Leistungsumfang</p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Professionelle Immobilienverwaltung
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
@@ -225,14 +225,14 @@ export default function Immobilienmanagement() {
           <RevealOnScroll>
             <div className="text-center mb-16">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">Praxisbeispiel</p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 So verwalten Sie Ihre Immobilien mit rentably
               </h2>
             </div>
           </RevealOnScroll>
           <RevealOnScroll delay={100}>
             <div className="max-w-[900px] mx-auto bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
-              <div className="bg-gradient-to-r from-[#3c8af7] to-[#3579de] p-8 text-white">
+              <div className="bg-gradient-to-r from-[#3c8af7] to-[#3579de] p-6 sm:p-8 text-white">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                     <Home className="w-6 h-6" />
@@ -243,7 +243,7 @@ export default function Immobilienmanagement() {
                   </div>
                 </div>
               </div>
-              <div className="p-8">
+              <div className="p-6 sm:p-8">
                 <div className="grid md:grid-cols-2 gap-8 mb-8">
                   <div>
                     <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Objektdaten</h4>
@@ -318,18 +318,18 @@ export default function Immobilienmanagement() {
         </div>
       </section>
 
-      <section className="py-[80px] px-6">
+      <section className="py-12 sm:py-[80px] px-6">
         <div className="max-w-[1200px] mx-auto">
           <RevealOnScroll>
             <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">Ihre Daten in sicheren Händen</h2>
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">Ihre Daten in sicheren Händen</h2>
               <p className="text-gray-500 leading-relaxed max-w-[600px] mx-auto">rentably wird in Deutschland betrieben und erfüllt die Anforderungen der DSGVO. Ihre Daten gehören Ihnen &ndash; heute und in Zukunft.</p>
             </div>
           </RevealOnScroll>
           <RevealOnScroll delay={80}>
-            <div className="flex items-center justify-center gap-12 flex-wrap">
-              <img src="/dsvgo-de.png" alt="DSGVO-konform" className="h-32 w-auto object-contain" />
-              <img src="/entwickelt-in-deutschland-de.png" alt="Entwickelt in Deutschland" className="h-32 w-auto object-contain" />
+            <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap">
+              <img src="/dsvgo-de.png" alt="DSGVO-konform" className="h-24 sm:h-32 w-auto object-contain" />
+              <img src="/entwickelt-in-deutschland-de.png" alt="Entwickelt in Deutschland" className="h-24 sm:h-32 w-auto object-contain" />
             </div>
           </RevealOnScroll>
         </div>
@@ -340,14 +340,14 @@ export default function Immobilienmanagement() {
           <RevealOnScroll>
             <div className="text-center mb-14">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">Vorteile</p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">Darum verwalten Eigentümer mit rentably</h2>
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">Darum verwalten Eigentümer mit rentably</h2>
               <p className="text-gray-500 max-w-[700px] mx-auto leading-relaxed">Ob ein Objekt oder hundert Einheiten &ndash; rentably gibt Ihnen den Überblick und die Werkzeuge für professionelle Immobilienverwaltung.</p>
             </div>
           </RevealOnScroll>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
             {BENEFITS.map((b, i) => (
               <RevealOnScroll key={b.title} delay={i * 80} className="h-full">
-                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm h-full text-center">
+                <div className="bg-white rounded-xl p-6 sm:p-8 border border-gray-100 shadow-sm h-full text-center">
                   <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ backgroundColor: "#E0EDFF", border: "1px solid #C7DCFF" }}>
                     <b.icon className="w-6 h-6 text-[#3c8af7]" strokeWidth={1.5} />
                   </div>
@@ -371,7 +371,7 @@ export default function Immobilienmanagement() {
           <RevealOnScroll>
             <div className="text-center mb-16">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">Innovativ</p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">Weitere Funktionen für Vermieter</h2>
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">Weitere Funktionen für Vermieter</h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">rentably bietet Ihnen umfangreiche Funktionen, die Ihre Immobilienverwaltung auf das nächste Level bringen.</p>
             </div>
           </RevealOnScroll>
@@ -395,7 +395,7 @@ export default function Immobilienmanagement() {
 
       <FaqSection pageSlug="immobilienmanagement" />
 
-      <section className="py-[80px] px-6 bg-[#f8fafc]">
+      <section className="py-12 sm:py-[80px] px-6 bg-[#f8fafc]">
         <div className="max-w-[800px] mx-auto">
           <RevealOnScroll>
             <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
@@ -431,7 +431,7 @@ export default function Immobilienmanagement() {
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight mb-4">Bereit, Ihre Immobilien digital zu verwalten?</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight mb-4">Bereit, Ihre Immobilien digital zu verwalten?</h2>
             <p className="text-gray-500 mb-10 max-w-lg mx-auto">Registrieren Sie sich kostenlos und verwalten Sie Ihr gesamtes Portfolio ab sofort digital &ndash; ohne Kreditkarte.</p>
             <button onClick={goToSignup} className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors">Jetzt kostenlos starten</button>
           </div>

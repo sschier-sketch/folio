@@ -113,7 +113,7 @@ export default function Contact() {
                 {language === "de" ? "Wir sind für Sie da" : "We're here for you"}
               </span>
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 tracking-tight">
               {language === "de" ? (
                 <>
                   Sprechen Sie{" "}
@@ -176,7 +176,7 @@ export default function Contact() {
           </RevealOnScroll>
 
           <RevealOnScroll delay={80}>
-            <div className="bg-white border border-gray-200 rounded-2xl p-8 sm:p-10">
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-8 md:p-10">
               {submitted && (
                 <div className="mb-6 flex items-start gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
                   <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">

@@ -2,7 +2,7 @@ import { RevealOnScroll } from "../common/RevealOnScroll";
 
 export default function SeoTextSection() {
   return (
-    <section className="py-[80px] px-6 bg-[#f8fafc]">
+    <section className="py-12 sm:py-[80px] px-6 bg-[#f8fafc]">
       <div className="max-w-[800px] mx-auto">
         <RevealOnScroll>
           <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">

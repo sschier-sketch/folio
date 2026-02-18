@@ -169,7 +169,7 @@ function InboxMockup() {
       </div>
 
       <div className="border-t border-gray-100">
-        <div className="grid grid-cols-[1.4fr_2fr_0.8fr_0.7fr] px-6 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+        <div className="hidden sm:grid grid-cols-[1.4fr_2fr_0.8fr_0.7fr] px-6 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
           <span>Absender</span>
           <span>Betreff</span>
           <span>Datum</span>
@@ -179,7 +179,7 @@ function InboxMockup() {
         {MOCK_MESSAGES.map((m, i) => (
           <div
             key={m.sender}
-            className={`grid grid-cols-[1.4fr_2fr_0.8fr_0.7fr] px-6 py-4 items-center ${
+            className={`hidden sm:grid grid-cols-[1.4fr_2fr_0.8fr_0.7fr] px-6 py-4 items-center ${
               i < MOCK_MESSAGES.length - 1 ? "border-b border-gray-100" : ""
             }`}
           >
@@ -223,7 +223,7 @@ export default function Kommunikation() {
             Alle Funktionen
           </RefLink>
 
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-6 sm:gap-12 lg:gap-16 items-center">
             <RevealOnScroll>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
@@ -231,7 +231,7 @@ export default function Kommunikation() {
                   Kerntechnologie
                 </span>
               </div>
-              <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
+              <h1 className="text-3xl sm:text-[40px] md:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
                 Mieterkommunikation{" "}
                 <span className="text-[#3c8af7]">zentral & effizient</span>
               </h1>
@@ -278,7 +278,7 @@ export default function Kommunikation() {
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 Weniger Stress, mehr Überblick
               </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Ihre Mieterkommunikation im Griff
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
@@ -318,7 +318,7 @@ export default function Kommunikation() {
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 Praxisbeispiel
               </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 So einfach kommunizieren Sie mit Ihren Mietern
               </h2>
             </div>
@@ -326,7 +326,7 @@ export default function Kommunikation() {
 
           <RevealOnScroll delay={100}>
             <div className="max-w-[900px] mx-auto bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
-              <div className="bg-gradient-to-r from-[#3c8af7] to-[#3579de] p-8 text-white">
+              <div className="bg-gradient-to-r from-[#3c8af7] to-[#3579de] p-6 sm:p-8 text-white">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                     <Mail className="w-6 h-6" />
@@ -345,7 +345,7 @@ export default function Kommunikation() {
                 </div>
               </div>
 
-              <div className="p-8 space-y-6">
+              <div className="p-6 sm:p-8 space-y-6">
                 <div className="flex gap-4">
                   <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-bold text-gray-500">SM</span>
@@ -411,11 +411,11 @@ export default function Kommunikation() {
         </div>
       </section>
 
-      <section className="py-[80px] px-6">
+      <section className="py-12 sm:py-[80px] px-6">
         <div className="max-w-[1200px] mx-auto">
           <RevealOnScroll>
             <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Ihre Daten in sicheren Händen
               </h2>
               <p className="text-gray-500 leading-relaxed max-w-[600px] mx-auto">
@@ -425,16 +425,16 @@ export default function Kommunikation() {
             </div>
           </RevealOnScroll>
           <RevealOnScroll delay={80}>
-            <div className="flex items-center justify-center gap-12 flex-wrap">
+            <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap">
               <img
                 src="/dsvgo-de.png"
                 alt="DSGVO-konform"
-                className="h-32 w-auto object-contain"
+                className="h-24 sm:h-32 w-auto object-contain"
               />
               <img
                 src="/entwickelt-in-deutschland-de.png"
                 alt="Entwickelt in Deutschland"
-                className="h-32 w-auto object-contain"
+                className="h-24 sm:h-32 w-auto object-contain"
               />
             </div>
           </RevealOnScroll>
@@ -448,7 +448,7 @@ export default function Kommunikation() {
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 Vorteile
               </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Darum setzen Vermieter auf rentably
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto leading-relaxed">
@@ -461,7 +461,7 @@ export default function Kommunikation() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
             {BENEFITS.map((benefit, i) => (
               <RevealOnScroll key={benefit.title} delay={i * 80} className="h-full">
-                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm h-full text-center">
+                <div className="bg-white rounded-xl p-6 sm:p-8 border border-gray-100 shadow-sm h-full text-center">
                   <div
                     className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
                     style={{ backgroundColor: "#E0EDFF", border: "1px solid #C7DCFF" }}
@@ -502,7 +502,7 @@ export default function Kommunikation() {
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 Innovativ
               </p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Weitere Funktionen für Vermieter
               </h2>
               <p className="text-gray-500 max-w-[700px] mx-auto">
@@ -548,7 +548,7 @@ export default function Kommunikation() {
 
       <FaqSection pageSlug="kommunikation" />
 
-      <section className="py-[80px] px-6 bg-[#f8fafc]">
+      <section className="py-12 sm:py-[80px] px-6 bg-[#f8fafc]">
         <div className="max-w-[800px] mx-auto">
           <RevealOnScroll>
             <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
@@ -583,7 +583,7 @@ export default function Kommunikation() {
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight mb-4">
               Bereit für professionelle Mieterkommunikation?
             </h2>
             <p className="text-gray-500 mb-10 max-w-lg mx-auto">

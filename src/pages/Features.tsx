@@ -394,7 +394,7 @@ export default function Features() {
                 <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
                 <span className="text-sm font-medium text-[#3c8af7]">Alle Funktionen</span>
               </div>
-              <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.08] tracking-tight">
+              <h1 className="text-3xl sm:text-[40px] md:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.08] tracking-tight">
                 Alles was Sie für Ihre{" "}
                 <span className="text-[#3c8af7]">Immobilienverwaltung</span>{" "}
                 brauchen
@@ -428,7 +428,7 @@ export default function Features() {
             {FEATURES.map((feature, i) => (
               <RevealOnScroll key={feature.title} delay={i * 60}>
                 <RefLink to={feature.path} className="block h-full">
-                  <div className="group relative bg-white border border-gray-200 rounded-2xl p-7 hover:shadow-xl hover:border-gray-300 transition-all duration-300 h-full overflow-hidden">
+                  <div className="group relative bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 hover:shadow-xl hover:border-gray-300 transition-all duration-300 h-full overflow-hidden">
                     <div className="flex gap-6">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-4">
@@ -478,7 +478,7 @@ export default function Features() {
           <RevealOnScroll>
             <div className="text-center mb-14">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">Vorteile</p>
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Warum Vermieter rentably vertrauen
               </h2>
               <p className="text-gray-500 max-w-[640px] mx-auto leading-relaxed">
@@ -490,7 +490,7 @@ export default function Features() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
             {BENEFITS.map((b, i) => (
               <RevealOnScroll key={b.title} delay={i * 80} className="h-full">
-                <div className="bg-white rounded-xl p-8 border border-gray-100 shadow-sm h-full text-center">
+                <div className="bg-white rounded-xl p-6 sm:p-8 border border-gray-100 shadow-sm h-full text-center">
                   <div
                     className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
                     style={{ backgroundColor: "#E0EDFF", border: "1px solid #C7DCFF" }}
@@ -506,11 +506,11 @@ export default function Features() {
         </div>
       </section>
 
-      <section className="py-[80px] px-6">
+      <section className="py-12 sm:py-[80px] px-6">
         <div className="max-w-[1200px] mx-auto">
           <RevealOnScroll>
             <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
                 Ihre Daten in sicheren Händen
               </h2>
               <p className="text-gray-500 leading-relaxed max-w-[600px] mx-auto">
@@ -520,15 +520,15 @@ export default function Features() {
             </div>
           </RevealOnScroll>
           <RevealOnScroll delay={80}>
-            <div className="flex items-center justify-center gap-12 flex-wrap">
-              <img src="/dsvgo-de.png" alt="DSGVO-konform" className="h-32 w-auto object-contain" />
-              <img src="/entwickelt-in-deutschland-de.png" alt="Entwickelt in Deutschland" className="h-32 w-auto object-contain" />
+            <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap">
+              <img src="/dsvgo-de.png" alt="DSGVO-konform" className="h-20 sm:h-32 w-auto object-contain" />
+              <img src="/entwickelt-in-deutschland-de.png" alt="Entwickelt in Deutschland" className="h-20 sm:h-32 w-auto object-contain" />
             </div>
           </RevealOnScroll>
         </div>
       </section>
 
-      <section className="py-[80px] px-6 bg-[#f8fafc]">
+      <section className="py-12 sm:py-[80px] px-6 bg-[#f8fafc]">
         <div className="max-w-[800px] mx-auto">
           <RevealOnScroll>
             <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
@@ -573,7 +573,7 @@ export default function Features() {
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight mb-4">
               Bereit, Ihre Verwaltung zu vereinfachen?
             </h2>
             <p className="text-gray-500 mb-10 max-w-lg mx-auto">

@@ -13,11 +13,11 @@ export default function ByLandlordsSection() {
   const navigate = useNavigate();
 
   return (
-    <section className="py-[100px] px-6 bg-[#f0f5ff]">
+    <section className="py-16 sm:py-[100px] px-6 bg-[#f0f5ff]">
       <div className="max-w-[1200px] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-20 items-center">
           <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-6 max-w-[700px]">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-6 max-w-[700px]">
               Entwickelt von Vermietern für Vermieter
             </h2>
             <p className="text-gray-600 leading-relaxed mb-8 max-w-[600px]">

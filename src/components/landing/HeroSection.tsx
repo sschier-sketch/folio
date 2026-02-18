@@ -94,9 +94,9 @@ export default function HeroSection() {
   const navigate = useNavigate();
 
   return (
-    <section className="pt-16 sm:pt-24 pb-[100px] sm:pb-[120px] px-6">
+    <section className="pt-12 sm:pt-24 pb-16 sm:pb-[120px] px-6">
       <div className="max-w-[1200px] mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <RevealOnScroll>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#3c8af7]" />
@@ -104,11 +104,11 @@ export default function HeroSection() {
                 Die All-in-One Software
               </span>
             </div>
-            <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
+            <h1 className="text-3xl sm:text-[40px] md:text-[48px] lg:text-[56px] font-bold text-gray-900 leading-[1.1] tracking-tight">
               Immobilienverwaltung,{" "}
               <span className="text-[#3c8af7]">die mitdenkt.</span>
             </h1>
-            <p className="mt-6 text-lg sm:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
+            <p className="mt-6 text-base sm:text-lg md:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
               Objekte, Mieter, Finanzen und Dokumente an einem Ort.
               Die Software für private Vermieter, die Ordnung schaffen
               und Zeit sparen wollen.

@@ -16,7 +16,7 @@ export function Datenschutz() {
                 Rechtliches
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 tracking-tight leading-tight">
               Datenschutzerklärung
             </h1>
             <p className="mt-4 text-gray-500 text-lg">

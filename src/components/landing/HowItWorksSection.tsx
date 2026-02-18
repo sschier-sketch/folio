@@ -25,11 +25,11 @@ const STEPS: { num: string; icon: LucideIcon; title: string; text: string }[] = 
 
 export default function HowItWorksSection() {
   return (
-    <section className="py-[100px] px-6">
+    <section className="py-16 sm:py-[100px] px-6">
       <div className="max-w-[1200px] mx-auto">
         <RevealOnScroll>
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
               So einfach geht's
             </h2>
             <p className="text-gray-500 max-w-[500px] mx-auto">
@@ -45,7 +45,7 @@ export default function HowItWorksSection() {
             <RevealOnScroll key={step.num} delay={i * 80}>
               <div className="text-center relative">
                 <div
-                  className="w-[80px] h-[80px] rounded-full flex items-center justify-center mx-auto mb-6 relative z-10"
+                  className="w-16 h-16 sm:w-[80px] sm:h-[80px] rounded-full flex items-center justify-center mx-auto mb-6 relative z-10"
                   style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
                 >
                   <step.icon className="w-7 h-7" style={{ color: "#1E1E24" }} strokeWidth={1.5} />

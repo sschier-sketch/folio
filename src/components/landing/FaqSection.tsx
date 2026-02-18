@@ -143,7 +143,7 @@ function FaqAccordionItem({
           isOpen ? "max-h-[400px] pb-5" : "max-h-0"
         }`}
       >
-        <p className="text-gray-500 leading-relaxed pr-8">{answer}</p>
+        <p className="text-gray-500 leading-relaxed pr-4 sm:pr-8">{answer}</p>
       </div>
     </div>
   );
@@ -182,10 +182,10 @@ export default function FaqSection({ pageSlug = "landing" }: FaqSectionProps) {
   if (items.length === 0) return null;
 
   return (
-    <section className="py-[100px] px-6">
+    <section className="py-16 sm:py-[100px] px-6">
       <div className="max-w-[800px] mx-auto">
         <RevealOnScroll>
-          <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
+          <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
             Häufig gestellte Fragen
           </h2>
           <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
@@ -194,7 +194,7 @@ export default function FaqSection({ pageSlug = "landing" }: FaqSectionProps) {
           </p>
         </RevealOnScroll>
         <RevealOnScroll delay={80}>
-          <div className="bg-white border border-gray-200 rounded-2xl px-8">
+          <div className="bg-white border border-gray-200 rounded-2xl px-4 sm:px-8">
             {items.map((item, i) => (
               <FaqAccordionItem
                 key={item.id}
