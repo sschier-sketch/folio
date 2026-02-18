@@ -521,8 +521,8 @@ export default function Features() {
           </RevealOnScroll>
           <RevealOnScroll delay={80}>
             <div className="flex items-center justify-center gap-12 flex-wrap">
-              <img src="/dsvgo.png" alt="DSGVO-konform" className="h-32 w-auto object-contain" />
-              <img src="/entwickelt-in-deutschland.png" alt="Entwickelt in Deutschland" className="h-32 w-auto object-contain" />
+              <img src="/dsvgo-de.png" alt="DSGVO-konform" className="h-32 w-auto object-contain" />
+              <img src="/entwickelt-in-deutschland-de.png" alt="Entwickelt in Deutschland" className="h-32 w-auto object-contain" />
             </div>
           </RevealOnScroll>
         </div>

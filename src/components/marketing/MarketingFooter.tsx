@@ -45,12 +45,12 @@ export default function MarketingFooter() {
             </p>
             <div className="flex items-center gap-4">
               <img
-                src="/dsvgo.png"
+                src="/dsvgo-de.png"
                 alt="DSGVO-konform"
                 className="h-12 w-auto object-contain rounded"
               />
               <img
-                src="/entwickelt-in-deutschland.png"
+                src="/entwickelt-in-deutschland-de.png"
                 alt="Entwickelt in Deutschland"
                 className="h-12 w-auto object-contain rounded"
               />

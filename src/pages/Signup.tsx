@@ -108,12 +108,12 @@ export function Signup() {
 
               <div className="flex items-center gap-8">
                 <img
-                  src="/dsvgo.png"
+                  src="/dsvgo-de.png"
                   alt="DSGVO-konform"
                   className="h-16 w-auto object-contain"
                 />
                 <img
-                  src="/entwickelt-in-deutschland.png"
+                  src="/entwickelt-in-deutschland-de.png"
                   alt="Entwickelt in Deutschland"
                   className="h-16 w-auto object-contain"
                 />
@@ -178,12 +178,12 @@ export function Signup() {
 
             <div className="mt-6 flex items-center gap-6 justify-center lg:hidden">
               <img
-                src="/dsvgo.png"
+                src="/dsvgo-de.png"
                 alt="DSGVO-konform"
                 className="h-12 w-auto object-contain"
               />
               <img
-                src="/entwickelt-in-deutschland.png"
+                src="/entwickelt-in-deutschland-de.png"
                 alt="Entwickelt in Deutschland"
                 className="h-12 w-auto object-contain"
               />
