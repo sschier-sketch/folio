@@ -2,7 +2,7 @@ import { AlertCircle, TrendingUp, ArrowRight } from "lucide-react";
 import type { WizardState } from "./types";
 
 const formatCurrency = (v: number) =>
-  v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20AC";
+  v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 
 interface Props {
   state: WizardState;
@@ -22,7 +22,7 @@ export default function StepVpi({ state, onChange }: Props) {
     errors.push("Der aktuelle VPI-Monat muss nach dem alten VPI-Monat liegen.");
   }
   if (canCalc && newVal <= oldVal) {
-    errors.push("Der aktuelle VPI-Wert muss h\u00F6her sein als der alte VPI-Wert (sonst keine Erh\u00F6hung m\u00F6glich).");
+    errors.push("Der aktuelle VPI-Wert muss höher sein als der alte VPI-Wert (sonst keine Erhöhung möglich).");
   }
 
   return (
@@ -104,7 +104,7 @@ export default function StepVpi({ state, onChange }: Props) {
           <h4 className="text-sm font-semibold text-emerald-800 mb-4">Berechnungsergebnis</h4>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <p className="text-xs text-emerald-600 mb-1">Index\u00E4nderung</p>
+              <p className="text-xs text-emerald-600 mb-1">Indexänderung</p>
               <p className="text-xl font-bold text-emerald-800">+{pctChange.toFixed(2)}%</p>
             </div>
             <div>
@@ -112,14 +112,14 @@ export default function StepVpi({ state, onChange }: Props) {
               <p className="text-xl font-bold text-emerald-800">{formatCurrency(newRent)}</p>
             </div>
             <div>
-              <p className="text-xs text-emerald-600 mb-1">Erh\u00F6hung / Monat</p>
+              <p className="text-xs text-emerald-600 mb-1">Erhöhung / Monat</p>
               <p className="text-xl font-bold text-emerald-800">+{formatCurrency(delta)}</p>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-emerald-200 flex items-center gap-2 text-xs text-emerald-700">
             <TrendingUp className="w-3.5 h-3.5" />
             <span>
-              {formatCurrency(state.currentRent)} <ArrowRight className="w-3 h-3 inline" /> {formatCurrency(newRent)} (kaufm\u00E4nnisch auf Cent gerundet)
+              {formatCurrency(state.currentRent)} <ArrowRight className="w-3 h-3 inline" /> {formatCurrency(newRent)} (kaufmännisch auf Cent gerundet)
             </span>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function StepVpi({ state, onChange }: Props) {
           className="w-full max-w-xs px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <p className="text-xs text-gray-400 mt-1">
-          Vorausgef\u00FCllt mit dem fr\u00FChesten zul\u00E4ssigen Datum. Sie k\u00F6nnen ein sp\u00E4teres Datum w\u00E4hlen.
+          Vorausgefüllt mit dem frühesten zulässigen Datum. Sie können ein späteres Datum wählen.
         </p>
       </div>
     </div>

@@ -114,7 +114,7 @@ Deno.serve(async (req: Request) => {
       bodyContent = `<p style="margin:0 0 16px 0">${greeting}</p><p style="margin:0 0 16px 0"><strong>${inviterName}</strong> empfiehlt Ihnen rentab.ly.</p><p style="margin:0">Registrieren Sie sich jetzt und erhalten Sie <strong>1 Monat PRO kostenlos</strong>!</p>`;
 
       if (message) {
-        bodyContent += `<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:15px;margin:20px 0"><p style="margin:0;color:#856404"><strong>Pers\u00f6nliche Nachricht:</strong></p><p style="margin:10px 0 0 0;color:#856404">${message}</p></div>`;
+        bodyContent += `<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:15px;margin:20px 0"><p style="margin:0;color:#856404"><strong>Persönliche Nachricht:</strong></p><p style="margin:10px 0 0 0;color:#856404">${message}</p></div>`;
       }
     }
 

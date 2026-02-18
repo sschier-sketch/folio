@@ -559,14 +559,14 @@ function FeatureShowcase() {
                 label: "Wasser",
                 number: "WZ-2201",
                 value: "234,5",
-                unit: "m\u00B3",
+                unit: "m³",
                 color: "#3b82f6",
               },
               {
                 label: "Gas",
                 number: "GZ-1105",
                 value: "8.921",
-                unit: "m\u00B3",
+                unit: "m³",
                 color: "#22c55e",
               },
             ].map((meter) => (

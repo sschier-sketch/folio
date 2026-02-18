@@ -23,12 +23,12 @@ const BENEFITS = [
   {
     icon: Users,
     title: "Mieterverwaltung",
-    text: "Mieter, Vertr\u00e4ge und Kommunikation zentral organisiert.",
+    text: "Mieter, Verträge und Kommunikation zentral organisiert.",
   },
   {
     icon: BarChart3,
     title: "Finanzen im Blick",
-    text: "Mieteing\u00e4nge, Ausgaben und Rendite \u00fcbersichtlich tracken.",
+    text: "Mieteingänge, Ausgaben und Rendite übersichtlich tracken.",
   },
   {
     icon: FileText,
@@ -38,7 +38,7 @@ const BENEFITS = [
 ];
 
 const TRUST_POINTS = [
-  "DSGVO-konform & SSL-verschl\u00fcsselt",
+  "DSGVO-konform & SSL-verschlüsselt",
   "Keine Kreditkarte erforderlich",
   "30 Tage alle Pro-Funktionen gratis",
 ];

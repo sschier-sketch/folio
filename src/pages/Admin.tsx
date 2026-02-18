@@ -381,7 +381,7 @@ export function Admin() {
               />
               <StatCard
                 icon={<DollarSign className="w-5 h-5 text-green-600" />}
-                value={`${stats.monthlyRevenue}\u20AC`}
+                value={`${stats.monthlyRevenue}€`}
                 label="Monatl. Umsatz"
                 bg="bg-green-50"
               />

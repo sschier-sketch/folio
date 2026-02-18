@@ -273,7 +273,7 @@ export default function Immobilienmanagement() {
                     <div className="space-y-3">
                       {[
                         ["Baujahr", "1998"],
-                        ["Gesamtfläche", "320 m\u00B2"],
+                        ["Gesamtfläche", "320 m²"],
                         ["Einheiten", "4 Wohnungen + 2 Stellplätze"],
                         ["Heizungsart", "Gaszentralheizung"],
                       ].map(([label, value], idx) => (
@@ -312,10 +312,10 @@ export default function Immobilienmanagement() {
                   <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-5">Einheiten im Überblick</h4>
                   <div className="space-y-3">
                     {[
-                      { unit: "EG links", tenant: "Sarah Meyer", size: "68 m\u00B2", rent: "950 €" },
-                      { unit: "EG rechts", tenant: "Thomas Klein", size: "72 m\u00B2", rent: "1.020 €" },
-                      { unit: "1. OG links", tenant: "Lisa Wagner", size: "65 m\u00B2", rent: "890 €" },
-                      { unit: "1. OG rechts", tenant: "Michael Hoffmann", size: "62 m\u00B2", rent: "880 €" },
+                      { unit: "EG links", tenant: "Sarah Meyer", size: "68 m²", rent: "950 €" },
+                      { unit: "EG rechts", tenant: "Thomas Klein", size: "72 m²", rent: "1.020 €" },
+                      { unit: "1. OG links", tenant: "Lisa Wagner", size: "65 m²", rent: "890 €" },
+                      { unit: "1. OG rechts", tenant: "Michael Hoffmann", size: "62 m²", rent: "880 €" },
                     ].map((u) => (
                       <div key={u.unit} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                         <div className="flex items-center gap-3">

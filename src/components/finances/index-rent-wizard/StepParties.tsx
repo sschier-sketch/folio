@@ -11,7 +11,7 @@ export default function StepParties({ state, onChange }: Props) {
       <div>
         <h3 className="text-lg font-semibold text-dark mb-1">Parteien & Adressen</h3>
         <p className="text-sm text-gray-500">
-          Pr\u00FCfen und korrigieren Sie die Angaben f\u00FCr das Erh\u00F6hungsschreiben. \u00C4nderungen hier betreffen nur dieses Dokument.
+          Prüfen und korrigieren Sie die Angaben für das Erhöhungsschreiben. Änderungen hier betreffen nur dieses Dokument.
         </p>
       </div>
 
@@ -35,7 +35,7 @@ export default function StepParties({ state, onChange }: Props) {
               value={state.landlordAddress}
               onChange={(e) => onChange({ landlordAddress: e.target.value })}
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Musterstra\u00DFe 1, 12345 Berlin"
+              placeholder="Musterstraße 1, 12345 Berlin"
             />
           </div>
         </div>

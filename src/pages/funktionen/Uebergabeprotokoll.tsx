@@ -300,8 +300,8 @@ export default function Uebergabeprotokoll() {
                       <div className="space-y-3">
                         {[
                           ["Strom", "45.892 kWh"],
-                          ["Gas", "12.340 m\u00B3"],
-                          ["Wasser", "156,8 m\u00B3"],
+                          ["Gas", "12.340 m³"],
+                          ["Wasser", "156,8 m³"],
                         ].map(([label, value], idx) => (
                           <div key={label} className={`flex justify-between py-2 ${idx < 2 ? "border-b border-gray-100" : ""}`}>
                             <span className="text-gray-600">{label}</span>

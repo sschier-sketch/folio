@@ -208,22 +208,22 @@ export default function IndexRentView() {
       } else if (data.contracts_checked === 0) {
         setResult({
           type: "info",
-          message: "Keine Vertr\u00E4ge zu pr\u00FCfen",
+          message: "Keine Verträge zu prüfen",
           details:
-            "Es wurden keine Vertr\u00E4ge mit Indexmiete gefunden.",
+            "Es wurden keine Verträge mit Indexmiete gefunden.",
         });
       } else if (data.calculations_created === 0) {
         setResult({
           type: "info",
-          message: `${data.contracts_checked} ${data.contracts_checked === 1 ? "Vertrag" : "Vertr\u00E4ge"} gepr\u00FCft`,
+          message: `${data.contracts_checked} ${data.contracts_checked === 1 ? "Vertrag" : "Verträge"} geprüft`,
           details:
-            "Keine neue Indexerh\u00F6hung m\u00F6glich. Entweder l\u00E4uft die Mindestfrist noch oder es besteht bereits eine offene Berechnung.",
+            "Keine neue Indexerhöhung möglich. Entweder läuft die Mindestfrist noch oder es besteht bereits eine offene Berechnung.",
         });
       } else {
         setResult({
           type: "success",
-          message: `${data.calculations_created} m\u00F6gliche ${data.calculations_created === 1 ? "Indexerh\u00F6hung" : "Indexerh\u00F6hungen"} gefunden`,
-          details: `${data.contracts_checked} ${data.contracts_checked === 1 ? "Vertrag wurde" : "Vertr\u00E4ge wurden"} gepr\u00FCft. Bitte pr\u00FCfen Sie den aktuellen VPI und entscheiden Sie, ob Sie die Erh\u00F6hung vornehmen m\u00F6chten.`,
+          message: `${data.calculations_created} mögliche ${data.calculations_created === 1 ? "Indexerhöhung" : "Indexerhöhungen"} gefunden`,
+          details: `${data.contracts_checked} ${data.contracts_checked === 1 ? "Vertrag wurde" : "Verträge wurden"} geprüft. Bitte prüfen Sie den aktuellen VPI und entscheiden Sie, ob Sie die Erhöhung vornehmen möchten.`,
         });
       }
 
@@ -235,7 +235,7 @@ export default function IndexRentView() {
         type: "info",
         message: "Fehler bei der Verarbeitung",
         details:
-          "Es ist ein Fehler beim Verarbeiten der Berechnungen aufgetreten. Bitte versuchen Sie es sp\u00E4ter erneut.",
+          "Es ist ein Fehler beim Verarbeiten der Berechnungen aufgetreten. Bitte versuchen Sie es später erneut.",
       });
     } finally {
       setProcessing(false);
@@ -349,8 +349,8 @@ export default function IndexRentView() {
         <div>
           <h2 className="text-2xl font-bold text-dark">Indexmiete</h2>
           <p className="text-gray-500 mt-1">
-            Automatische Pr\u00FCfung der Mietanpassung nach \u00A7557b BGB
-            (t\u00E4glich um 3:00 Uhr)
+            Automatische Prüfung der Mietanpassung nach §557b BGB
+            (täglich um 3:00 Uhr)
           </p>
         </div>
         <Button
@@ -358,7 +358,7 @@ export default function IndexRentView() {
           disabled={processing}
           variant="primary"
         >
-          {processing ? "Pr\u00FCfe..." : "Jetzt pr\u00FCfen"}
+          {processing ? "Prüfe..." : "Jetzt prüfen"}
         </Button>
       </div>
 
@@ -369,14 +369,14 @@ export default function IndexRentView() {
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-amber-900">
-              {summaryMetrics.totalPending} m\u00F6gliche{" "}
+              {summaryMetrics.totalPending} mögliche{" "}
               {summaryMetrics.totalPending === 1
-                ? "Indexmieterh\u00F6hung"
-                : "Indexmieterh\u00F6hungen"}
+                ? "Indexmieterhöhung"
+                : "Indexmieterhöhungen"}
             </h3>
             <p className="text-sm text-amber-800 mt-0.5">
-              Pr\u00FCfen Sie den aktuellen Verbraucherpreisindex (VPI) und
-              entscheiden Sie, ob Sie die Erh\u00F6hung vornehmen m\u00F6chten.
+              Prüfen Sie den aktuellen Verbraucherpreisindex (VPI) und
+              entscheiden Sie, ob Sie die Erhöhung vornehmen möchten.
             </p>
           </div>
         </div>
@@ -388,7 +388,7 @@ export default function IndexRentView() {
             <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
             <div className="flex-1">
               <h3 className="font-semibold text-dark mb-1">
-                Letzte automatische Pr\u00FCfung
+                Letzte automatische Prüfung
               </h3>
               <p className="text-sm text-gray-600 mb-2">
                 {new Date(lastRun.run_date).toLocaleDateString("de-DE", {
@@ -410,8 +410,8 @@ export default function IndexRentView() {
                   </span>{" "}
                   {lastRun.contracts_checked === 1
                     ? "Vertrag"
-                    : "Vertr\u00E4ge"}{" "}
-                  gepr\u00FCft
+                    : "Verträge"}{" "}
+                  geprüft
                 </span>
                 <span className="text-gray-400">&bull;</span>
                 <span
@@ -424,10 +424,10 @@ export default function IndexRentView() {
                   <span className="font-medium">
                     {lastRun.calculations_created}
                   </span>{" "}
-                  m\u00F6gliche{" "}
+                  mögliche{" "}
                   {lastRun.calculations_created === 1
-                    ? "Erh\u00F6hung"
-                    : "Erh\u00F6hungen"}{" "}
+                    ? "Erhöhung"
+                    : "Erhöhungen"}{" "}
                   gefunden
                 </span>
                 <span className="text-gray-400">&bull;</span>
@@ -447,7 +447,7 @@ export default function IndexRentView() {
                     : lastRun.status === "error"
                       ? "Fehler"
                       : lastRun.status === "no_contracts"
-                        ? "Keine Vertr\u00E4ge"
+                        ? "Keine Verträge"
                         : "Ausstehend"}
                 </span>
               </div>
@@ -514,11 +514,11 @@ export default function IndexRentView() {
         <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
         <p className="text-sm text-blue-900">
           Indexmieten werden rechtlich erst nach schriftlicher
-          Mieterh\u00F6hungserkl\u00E4rung wirksam (\u00A7557b BGB). Dieses System
-          erinnert Sie, wenn eine Indexmieterh\u00F6hung m\u00F6glich ist. Bitte
-          pr\u00FCfen Sie den aktuellen Verbraucherpreisindex (VPI) der Deutschen
-          Bundesbank und berechnen Sie die konkrete Erh\u00F6hung selbst. Sie
-          entscheiden, ob und wann Sie die Erh\u00F6hung gegen\u00FCber dem Mieter
+          Mieterhöhungserklärung wirksam (§557b BGB). Dieses System
+          erinnert Sie, wenn eine Indexmieterhöhung möglich ist. Bitte
+          prüfen Sie den aktuellen Verbraucherpreisindex (VPI) der Deutschen
+          Bundesbank und berechnen Sie die konkrete Erhöhung selbst. Sie
+          entscheiden, ob und wann Sie die Erhöhung gegenüber dem Mieter
           geltend machen.
         </p>
       </div>
@@ -530,14 +530,14 @@ export default function IndexRentView() {
           count={counts.open}
           highlight={counts.open > 0}
         >
-          M\u00F6gliche Erh\u00F6hungen
+          Mögliche Erhöhungen
         </TabButton>
         <TabButton
           active={activeTab === "applied"}
           onClick={() => setActiveTab("applied")}
           count={counts.applied}
         >
-          Durchgef\u00FChrt
+          Durchgeführt
         </TabButton>
         <TabButton
           active={activeTab === "dismissed"}
@@ -623,21 +623,21 @@ function EmptyState({ tab }: { tab: TabFilter }) {
   const config = {
     open: {
       icon: <Calculator className="w-12 h-12 text-gray-400" />,
-      title: "Keine offenen Indexerh\u00F6hungen",
+      title: "Keine offenen Indexerhöhungen",
       description:
-        "Aktuell gibt es keine m\u00F6glichen Indexmieterh\u00F6hungen. Berechnungen werden automatisch erstellt, sobald die Voraussetzungen erf\u00FCllt sind (12 Monate seit Mietbeginn oder letzter Erh\u00F6hung).",
+        "Aktuell gibt es keine möglichen Indexmieterhöhungen. Berechnungen werden automatisch erstellt, sobald die Voraussetzungen erfüllt sind (12 Monate seit Mietbeginn oder letzter Erhöhung).",
     },
     applied: {
       icon: <CheckCircle className="w-12 h-12 text-gray-400" />,
-      title: "Noch keine Erh\u00F6hungen durchgef\u00FChrt",
+      title: "Noch keine Erhöhungen durchgeführt",
       description:
-        "Hier erscheinen Indexmieterh\u00F6hungen, die Sie als durchgef\u00FChrt markiert haben.",
+        "Hier erscheinen Indexmieterhöhungen, die Sie als durchgeführt markiert haben.",
     },
     dismissed: {
       icon: <EyeOff className="w-12 h-12 text-gray-400" />,
-      title: "Keine ausgeblendeten Erh\u00F6hungen",
+      title: "Keine ausgeblendeten Erhöhungen",
       description:
-        "Hier erscheinen Berechnungen, die Sie ausgeblendet haben. Diese k\u00F6nnen jederzeit wiederhergestellt werden.",
+        "Hier erscheinen Berechnungen, die Sie ausgeblendet haben. Diese können jederzeit wiederhergestellt werden.",
     },
   };
   const c = config[tab];
@@ -686,7 +686,7 @@ function CalculationCard({
         <div className="bg-amber-50 px-6 py-2.5 flex items-center gap-2 border-b border-amber-200">
           <ArrowUpRight className="w-4 h-4 text-amber-600" />
           <span className="text-sm font-medium text-amber-800">
-            Erh\u00F6hung m\u00F6glich seit {formatDate(calc.possible_since)}
+            Erhöhung möglich seit {formatDate(calc.possible_since)}
           </span>
         </div>
       )}
@@ -709,21 +709,21 @@ function CalculationCard({
           <MetricBox
             label="Basismonat"
             value={calc.basis_monat || "-"}
-            sublabel="f\u00FCr VPI-Vergleich"
+            sublabel="für VPI-Vergleich"
           />
           <MetricBox
             label="Aktueller Monat"
             value={calc.aktueller_monat || "-"}
-            sublabel="f\u00FCr VPI-Vergleich"
+            sublabel="für VPI-Vergleich"
           />
           {calc.wohnflaeche_qm ? (
             <MetricBox
-              label="Wohnfl\u00E4che"
-              value={`${calc.wohnflaeche_qm} m\u00B2`}
+              label="Wohnfläche"
+              value={`${calc.wohnflaeche_qm} m²`}
             />
           ) : (
             <MetricBox
-              label="Gepr\u00FCft am"
+              label="Geprüft am"
               value={formatDate(calc.calculation_date)}
             />
           )}
@@ -732,11 +732,11 @@ function CalculationCard({
         {isOpen && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5">
             <p className="text-sm text-blue-800">
-              Bitte pr\u00FCfen Sie den aktuellen VPI-Wert f\u00FCr den Monat{" "}
+              Bitte prüfen Sie den aktuellen VPI-Wert für den Monat{" "}
               <span className="font-semibold">{calc.aktueller_monat}</span> und
               vergleichen Sie ihn mit dem Basismonat{" "}
               <span className="font-semibold">{calc.basis_monat}</span>, um die
-              konkrete Erh\u00F6hung zu berechnen.
+              konkrete Erhöhung zu berechnen.
             </p>
           </div>
         )}
@@ -744,14 +744,14 @@ function CalculationCard({
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="text-sm text-gray-400">
             {calc.status === "applied" && calc.applied_at && (
-              <>Durchgef\u00FChrt am {formatDate(calc.applied_at)}</>
+              <>Durchgeführt am {formatDate(calc.applied_at)}</>
             )}
             {calc.status === "dismissed" && calc.dismissed_at && (
               <>Ausgeblendet am {formatDate(calc.dismissed_at)}</>
             )}
             {calc.wohnflaeche_qm && (
               <span className="text-gray-500">
-                Gepr\u00FCft am {formatDate(calc.calculation_date)}
+                Geprüft am {formatDate(calc.calculation_date)}
               </span>
             )}
           </div>
@@ -768,7 +768,7 @@ function CalculationCard({
                   onClick={() => onApply(calc.id)}
                   variant="secondary"
                 >
-                  Als durchgef\u00FChrt markieren
+                  Als durchgeführt markieren
                 </Button>
                 {calc.rental_contract?.tenants && calc.rental_contract?.properties && (
                   <Button
@@ -799,7 +799,7 @@ function CalculationCard({
                     variant="primary"
                   >
                     <FileText className="w-4 h-4 mr-1.5" />
-                    Erh\u00F6hung erstellen
+                    Erhöhung erstellen
                   </Button>
                 )}
               </>
@@ -852,7 +852,7 @@ function StatusBadge({ status }: { status: string }) {
       classes: "bg-yellow-100 text-yellow-700",
     },
     calculated: {
-      label: "Erh\u00F6hung m\u00F6glich",
+      label: "Erhöhung möglich",
       classes: "bg-amber-100 text-amber-700",
     },
     notified: {
@@ -860,7 +860,7 @@ function StatusBadge({ status }: { status: string }) {
       classes: "bg-orange-100 text-orange-700",
     },
     applied: {
-      label: "Durchgef\u00FChrt",
+      label: "Durchgeführt",
       classes: "bg-green-100 text-green-700",
     },
     dismissed: {

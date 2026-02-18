@@ -115,7 +115,7 @@ export function generateHausgeldRows(
         id: `hausgeld-${unit.id}-${dateStr}`,
         amount: unit.housegeld_monthly_cents / 100,
         expense_date: dateStr,
-        description: `Hausgeld \u2013 Einheit ${unit.unit_number}`,
+        description: `Hausgeld – Einheit ${unit.unit_number}`,
         notes: "",
         status: "paid",
         category_id: "",

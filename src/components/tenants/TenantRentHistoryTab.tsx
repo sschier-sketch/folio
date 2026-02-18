@@ -1069,7 +1069,7 @@ export default function TenantRentHistoryTab({
               onClick={handleOpenAddPeriod}
               variant="primary"
             >
-              Erh\u00F6hung einstellen
+              Erhöhung einstellen
             </Button>
           </div>
 

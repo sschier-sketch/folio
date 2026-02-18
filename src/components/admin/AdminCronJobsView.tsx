@@ -397,7 +397,7 @@ export default function AdminCronJobsView() {
                   </div>
                   <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
                     {parseCronSchedule(job.schedule)}
-                    {description && ` \u2014 ${description}`}
+                    {description && ` — ${description}`}
                   </p>
                 </div>
 

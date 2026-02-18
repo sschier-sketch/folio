@@ -25,13 +25,13 @@ const fmtCurrency = (v: number) =>
   v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const fmtMonthDE = (iso: string) => {
-  if (!iso) return "\u2013";
+  if (!iso) return "–";
   const d = new Date(iso + (iso.length <= 7 ? "-01" : ""));
   return d.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
 };
 
 const fmtDateDE = (iso: string) => {
-  if (!iso) return "\u2013";
+  if (!iso) return "–";
   return new Date(iso).toLocaleDateString("de-DE", {
     day: "2-digit",
     month: "2-digit",
@@ -40,7 +40,7 @@ const fmtDateDE = (iso: string) => {
 };
 
 const fmtEffectiveMonth = (iso: string) => {
-  if (!iso) return "\u2013";
+  if (!iso) return "–";
   const d = new Date(iso);
   return d.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
 };
@@ -86,7 +86,7 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
     const textX = M_LEFT + 8;
     const lines = doc.splitTextToSize(text, contentWidth - 8);
     checkPageBreak(lines.length * LINE_H);
-    doc.text("\u2013", bulletX, currentY);
+    doc.text("–", bulletX, currentY);
     for (let i = 0; i < lines.length; i++) {
       doc.text(lines[i], textX, currentY);
       currentY += LINE_H;
@@ -111,7 +111,7 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100);
-  const senderLine = `${data.landlordName} \u00B7 ${data.landlordAddress}`;
+  const senderLine = `${data.landlordName} · ${data.landlordAddress}`;
   doc.text(senderLine, M_LEFT, 37);
 
   doc.setFontSize(11);
@@ -128,7 +128,7 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
 
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  doc.text("Anpassung der Miete gem\u00E4\u00DF vereinbarter Indexmiete (\u00A7 557b BGB)", M_LEFT, currentY);
+  doc.text("Anpassung der Miete gemäß vereinbarter Indexmiete (§ 557b BGB)", M_LEFT, currentY);
   currentY += 10;
 
   doc.setFontSize(10);
@@ -137,12 +137,12 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
   currentY += 8;
 
   writeLines(
-    `im Mietvertrag vom ${fmtDateDE(data.contractDate)} wurde gem\u00E4\u00DF \u00A7 557b BGB vereinbart, dass die Nettokaltmiete an die Entwicklung des vom Statistischen Bundesamt ver\u00F6ffentlichten Verbraucherpreisindexes f\u00FCr Deutschland (VPI, Basisjahr 2020 = 100) angepasst wird.`
+    `im Mietvertrag vom ${fmtDateDE(data.contractDate)} wurde gemäß § 557b BGB vereinbart, dass die Nettokaltmiete an die Entwicklung des vom Statistischen Bundesamt veröffentlichten Verbraucherpreisindexes für Deutschland (VPI, Basisjahr 2020 = 100) angepasst wird.`
   );
   currentY += 3;
 
   writeLines(
-    `Die letzte Mietfestsetzung erfolgte zum ${fmtDateDE(data.lastRentValidFrom)} mit einer monatlichen Nettokaltmiete in H\u00F6he von ${fmtCurrency(data.currentRent)} \u20AC.`
+    `Die letzte Mietfestsetzung erfolgte zum ${fmtDateDE(data.lastRentValidFrom)} mit einer monatlichen Nettokaltmiete in Höhe von ${fmtCurrency(data.currentRent)} €.`
   );
   currentY += 6;
 
@@ -158,17 +158,17 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Zum Zeitpunkt der letzten Mietfestsetzung ma\u00DFgeblicher Index:", M_LEFT, currentY);
+  doc.text("Zum Zeitpunkt der letzten Mietfestsetzung maßgeblicher Index:", M_LEFT, currentY);
   currentY += LINE_H;
   doc.setFont("helvetica", "bold");
-  doc.text(`${fmtMonthDE(data.vpiOldMonth)} \u2013 ${data.vpiOldValue.toFixed(1)} Punkte`, M_LEFT, currentY);
+  doc.text(`${fmtMonthDE(data.vpiOldMonth)} – ${data.vpiOldValue.toFixed(1)} Punkte`, M_LEFT, currentY);
   currentY += 8;
 
   doc.setFont("helvetica", "normal");
-  doc.text("Aktuell ver\u00F6ffentlichter Index:", M_LEFT, currentY);
+  doc.text("Aktuell veröffentlichter Index:", M_LEFT, currentY);
   currentY += LINE_H;
   doc.setFont("helvetica", "bold");
-  doc.text(`${fmtMonthDE(data.vpiNewMonth)} \u2013 ${data.vpiNewValue.toFixed(1)} Punkte`, M_LEFT, currentY);
+  doc.text(`${fmtMonthDE(data.vpiNewMonth)} – ${data.vpiNewValue.toFixed(1)} Punkte`, M_LEFT, currentY);
   currentY += 8;
 
   checkPageBreak(50);
@@ -183,7 +183,7 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
 
-  doc.text("Die Ver\u00E4nderung des Indexes betr\u00E4gt:", M_LEFT, currentY);
+  doc.text("Die Veränderung des Indexes beträgt:", M_LEFT, currentY);
   currentY += LINE_H;
   doc.setFont("helvetica", "bold");
   doc.text(
@@ -193,11 +193,11 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
   currentY += 8;
 
   doc.setFont("helvetica", "normal");
-  doc.text("Prozentuale Ver\u00E4nderung:", M_LEFT, currentY);
+  doc.text("Prozentuale Veränderung:", M_LEFT, currentY);
   currentY += LINE_H;
   doc.setFont("helvetica", "bold");
   doc.text(
-    `(${indexFactor.toFixed(6)} - 1) \u00D7 100 = ${indexPercent.toFixed(2)} %`,
+    `(${indexFactor.toFixed(6)} - 1) × 100 = ${indexPercent.toFixed(2)} %`,
     M_LEFT, currentY
   );
   currentY += 8;
@@ -207,7 +207,7 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
   currentY += LINE_H;
   doc.setFont("helvetica", "bold");
   doc.text(
-    `${fmtCurrency(data.currentRent)} \u20AC \u00D7 ${indexFactor.toFixed(6)} = ${fmtCurrency(newRentUnrounded)} \u20AC`,
+    `${fmtCurrency(data.currentRent)} € × ${indexFactor.toFixed(6)} = ${fmtCurrency(newRentUnrounded)} €`,
     M_LEFT, currentY
   );
   currentY += 8;
@@ -216,15 +216,15 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
   writeLines("Gerundet auf zwei Nachkommastellen ergibt sich eine neue monatliche Nettokaltmiete von:");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text(`${fmtCurrency(data.newRent)} \u20AC`, M_LEFT, currentY);
+  doc.text(`${fmtCurrency(data.newRent)} €`, M_LEFT, currentY);
   currentY += 7;
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Die monatliche Erh\u00F6hung betr\u00E4gt somit:", M_LEFT, currentY);
+  doc.text("Die monatliche Erhöhung beträgt somit:", M_LEFT, currentY);
   currentY += LINE_H;
   doc.setFont("helvetica", "bold");
-  doc.text(`${fmtCurrency(delta)} \u20AC`, M_LEFT, currentY);
+  doc.text(`${fmtCurrency(delta)} €`, M_LEFT, currentY);
   currentY += 8;
 
   checkPageBreak(55);
@@ -239,12 +239,12 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   writeLines(
-    `Die angepasste Miete ist gem\u00E4\u00DF \u00A7 557b BGB ab dem ${fmtDateDE(data.effectiveDate)} zu zahlen.`
+    `Die angepasste Miete ist gemäß § 557b BGB ab dem ${fmtDateDE(data.effectiveDate)} zu zahlen.`
   );
   currentY += 3;
 
   writeLines(
-    "Die Betriebskostenvorauszahlungen bleiben unver\u00E4ndert, sofern keine gesonderte Anpassung erfolgt."
+    "Die Betriebskostenvorauszahlungen bleiben unverändert, sofern keine gesonderte Anpassung erfolgt."
   );
   currentY += 3;
 
@@ -253,20 +253,20 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
   );
   currentY += 3;
 
-  writeBullet(`Nettokaltmiete: ${fmtCurrency(data.newRent)} \u20AC`);
-  writeBullet(`Betriebskosten: ${fmtCurrency(data.utilities)} \u20AC`);
-  writeBullet(`Gesamtmiete: ${fmtCurrency(gesamtmiete)} \u20AC`, true);
+  writeBullet(`Nettokaltmiete: ${fmtCurrency(data.newRent)} €`);
+  writeBullet(`Betriebskosten: ${fmtCurrency(data.utilities)} €`);
+  writeBullet(`Gesamtmiete: ${fmtCurrency(gesamtmiete)} €`, true);
   currentY += 5;
 
   writeLines(
-    `Bitte \u00FCberweisen Sie den entsprechend angepassten Betrag erstmals f\u00FCr den Monat ${fmtEffectiveMonth(data.effectiveDate)}.`
+    `Bitte überweisen Sie den entsprechend angepassten Betrag erstmals für den Monat ${fmtEffectiveMonth(data.effectiveDate)}.`
   );
   currentY += 6;
 
-  writeLines("F\u00FCr R\u00FCckfragen stehen wir Ihnen gerne zur Verf\u00FCgung.");
+  writeLines("Für Rückfragen stehen wir Ihnen gerne zur Verfügung.");
   currentY += 8;
 
-  writeLines("Mit freundlichen Gr\u00FC\u00DFen");
+  writeLines("Mit freundlichen Grüßen");
   currentY += 12;
 
   doc.setFont("helvetica", "normal");
@@ -288,7 +288,7 @@ export function generateIndexRentPdfBlob(data: IndexRentPdfData): Blob {
     doc.setTextColor(130);
     doc.setFont("helvetica", "normal");
     doc.text(
-      "Indexmieterh\u00F6hung \u00A7 557b BGB \u00B7 Erstellt mit rentab.ly - Immobilienverwaltung",
+      "Indexmieterhöhung § 557b BGB · Erstellt mit rentab.ly - Immobilienverwaltung",
       M_LEFT,
       footerY
     );

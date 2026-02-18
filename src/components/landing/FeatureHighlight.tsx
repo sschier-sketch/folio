@@ -32,14 +32,14 @@ const FEATURES: {
     icon: Users,
     title: "Mietverwaltung",
     description:
-      "Vertr\u00e4ge, Mieterh\u00f6hungen und Zahlungseing\u00e4nge an einem Ort. Behalten Sie jederzeit den \u00dcberblick \u00fcber Ihre Mietverh\u00e4ltnisse.",
+      "Verträge, Mieterhöhungen und Zahlungseingänge an einem Ort. Behalten Sie jederzeit den Überblick über Ihre Mietverhältnisse.",
     path: "/funktionen/mietverwaltung",
   },
   {
     icon: Building2,
     title: "Immobilienmanagement",
     description:
-      "Stammdaten, Einheiten, Z\u00e4hler und Kontakte zentral verwalten. Jede Immobilie vollst\u00e4ndig dokumentiert.",
+      "Stammdaten, Einheiten, Zähler und Kontakte zentral verwalten. Jede Immobilie vollständig dokumentiert.",
     path: "/funktionen/immobilienmanagement",
   },
   {
@@ -53,14 +53,14 @@ const FEATURES: {
     icon: MessageSquare,
     title: "Kommunikation",
     description:
-      "Mieterportal und Ticketsystem f\u00fcr transparente, nachvollziehbare Kommunikation mit Ihren Mietern.",
+      "Mieterportal und Ticketsystem für transparente, nachvollziehbare Kommunikation mit Ihren Mietern.",
     path: "/funktionen/kommunikation",
   },
   {
     icon: Wallet,
     title: "Nebenkosten",
     description:
-      "Betriebskostenabrechnungen erstellen, Umlageschl\u00fcssel verwalten und Abrechnungen direkt an Mieter versenden.",
+      "Betriebskostenabrechnungen erstellen, Umlageschlüssel verwalten und Abrechnungen direkt an Mieter versenden.",
     path: "/funktionen/buchhaltung",
   },
 ];

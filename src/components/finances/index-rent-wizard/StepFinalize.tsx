@@ -3,10 +3,10 @@ import { Button } from "../../ui/Button";
 import type { WizardState } from "./types";
 
 const fmt = (v: number) =>
-  v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20AC";
+  v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 
 const formatDateDE = (iso: string) => {
-  if (!iso) return "\u2013";
+  if (!iso) return "–";
   return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 };
 
@@ -41,9 +41,9 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
           <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
             <CheckCircle className="w-8 h-8 text-emerald-600" />
           </div>
-          <h3 className="text-xl font-bold text-dark mb-2">Indexmieterh\u00F6hung abgeschlossen</h3>
+          <h3 className="text-xl font-bold text-dark mb-2">Indexmieterhöhung abgeschlossen</h3>
           <p className="text-sm text-gray-500 max-w-md mx-auto">
-            Das Erh\u00F6hungsschreiben wurde als PDF gespeichert und die neue Miete im System hinterlegt.
+            Das Erhöhungsschreiben wurde als PDF gespeichert und die neue Miete im System hinterlegt.
           </p>
         </div>
 
@@ -91,7 +91,7 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
       <div>
         <h3 className="text-lg font-semibold text-dark mb-1">Finalisieren</h3>
         <p className="text-sm text-gray-500">
-          Pr\u00FCfen Sie die Zusammenfassung und erstellen Sie das PDF.
+          Prüfen Sie die Zusammenfassung und erstellen Sie das PDF.
         </p>
       </div>
 
@@ -109,7 +109,7 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
           <span className="font-bold text-emerald-700">{fmt(newRent)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Erh\u00F6hung</span>
+          <span className="text-gray-500">Erhöhung</span>
           <span className="text-emerald-700">+{fmt(newRent - state.currentRent)}</span>
         </div>
         {state.currentUtilities > 0 && (
@@ -147,7 +147,7 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>VPI-Werte werden f\u00FCr k\u00FCnftige Berechnungen gespeichert</span>
+            <span>VPI-Werte werden für künftige Berechnungen gespeichert</span>
           </li>
         </ul>
       </div>

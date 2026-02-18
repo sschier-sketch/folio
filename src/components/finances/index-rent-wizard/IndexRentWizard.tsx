@@ -13,7 +13,7 @@ import StepPreview from "./StepPreview";
 import StepFinalize from "./StepFinalize";
 
 const STEPS: { key: WizardStep; label: string }[] = [
-  { key: "overview", label: "\u00DCbersicht" },
+  { key: "overview", label: "Übersicht" },
   { key: "vpi", label: "VPI-Eingabe" },
   { key: "parties", label: "Parteien" },
   { key: "preview", label: "Vorschau" },
@@ -239,7 +239,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
           file_size: blob.size,
           file_type: "application/pdf",
           document_type: "index_increase_notice",
-          description: `Indexmieterh\u00F6hung f\u00FCr ${state.tenantName}, wirksam ab ${state.effectiveDate}`,
+          description: `Indexmieterhöhung für ${state.tenantName}, wirksam ab ${state.effectiveDate}`,
           document_date: today,
           shared_with_tenant: false,
           metadata: {
@@ -275,7 +275,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
         utilities: state.currentUtilities,
         reason: "index",
         status: isImmediatelyActive ? "active" : "planned",
-        notes: `Indexmieterh\u00F6hung: VPI ${oldVal.toFixed(1)} \u2192 ${newVal.toFixed(1)}`,
+        notes: `Indexmieterhöhung: VPI ${oldVal.toFixed(1)} → ${newVal.toFixed(1)}`,
         vpiOldMonth: state.vpiOldMonth,
         vpiOldValue: oldVal,
         vpiNewMonth: state.vpiNewMonth,
@@ -288,7 +288,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
         .update({
           status: "applied",
           applied_at: new Date().toISOString(),
-          notes: `Indexmieterh\u00F6hung durchgef\u00FChrt: ${state.currentRent.toFixed(2)} \u2192 ${newRent.toFixed(2)} \u20AC, wirksam ab ${state.effectiveDate}`,
+          notes: `Indexmieterhöhung durchgeführt: ${state.currentRent.toFixed(2)} → ${newRent.toFixed(2)} €, wirksam ab ${state.effectiveDate}`,
         })
         .eq("id", calc.id);
 
@@ -304,7 +304,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
       }
     } catch (err) {
       console.error("Error finalizing:", err);
-      alert("Fehler beim Erstellen der Indexmieterh\u00F6hung. Bitte versuchen Sie es erneut.");
+      alert("Fehler beim Erstellen der Indexmieterhöhung. Bitte versuchen Sie es erneut.");
     } finally {
       setSaving(false);
     }
@@ -325,7 +325,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold text-dark">Indexmieterh\u00F6hung erstellen</h2>
+          <h2 className="text-lg font-bold text-dark">Indexmieterhöhung erstellen</h2>
           {!saved && (
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
               <X className="w-5 h-5" />
@@ -378,7 +378,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
             <StepOverview
               state={state}
               tenantName={state.tenantName}
-              propertyName={`${property.name} \u2013 ${property.address}`}
+              propertyName={`${property.name} – ${property.address}`}
             />
           )}
           {step === "vpi" && <StepVpi state={state} onChange={updateState} />}
@@ -401,13 +401,13 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
               {stepIndex > 0 && step !== "finalize" && (
                 <Button onClick={goBack} variant="secondary">
                   <ChevronLeft className="w-4 h-4 mr-1" />
-                  Zur\u00FCck
+                  Zurück
                 </Button>
               )}
               {step === "finalize" && !saving && (
                 <Button onClick={goBack} variant="secondary">
                   <ChevronLeft className="w-4 h-4 mr-1" />
-                  Zur\u00FCck
+                  Zurück
                 </Button>
               )}
             </div>
@@ -428,7 +428,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
               onClick={() => { onComplete(); onClose(); }}
               variant="primary"
             >
-              Schlie\u00DFen
+              Schließen
             </Button>
           </div>
         )}

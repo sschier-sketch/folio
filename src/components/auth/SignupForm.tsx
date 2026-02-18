@@ -38,13 +38,13 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
     setMessage(null);
 
     if (!acceptTerms) {
-      setMessage({ type: "error", text: "Sie m\u00fcssen die Nutzungsbedingungen akzeptieren" });
+      setMessage({ type: "error", text: "Sie müssen die Nutzungsbedingungen akzeptieren" });
       setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      setMessage({ type: "error", text: "Die Passw\u00f6rter stimmen nicht \u00fcberein" });
+      setMessage({ type: "error", text: "Die Passwörter stimmen nicht überein" });
       setLoading(false);
       return;
     }
@@ -126,7 +126,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
               clearReferralCode();
               setMessage({
                 type: "success",
-                text: "Konto erfolgreich erstellt! Sie wurden \u00fcber einen Partner-Link registriert.",
+                text: "Konto erfolgreich erstellt! Sie wurden über einen Partner-Link registriert.",
               });
             } else {
               setMessage({

@@ -46,7 +46,7 @@ const COLORS = {
 };
 
 function formatEur(value: number) {
-  return value.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20ac";
+  return value.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 }
 
 function InfoTooltip({ text }: { text: string }) {
@@ -101,7 +101,7 @@ function SummaryTile({
       </div>
       <div className="text-sm text-gray-400 mb-2">{label}</div>
       <div className="text-xs text-gray-400">
-        {"\u00d8"} {formatEur(average)} / Monat
+        {"Ø"} {formatEur(average)} / Monat
       </div>
     </div>
   );
@@ -250,7 +250,7 @@ export default function CashflowView() {
       const freshUnits: Unit[] = unitsRes.data || [];
 
       const monthNames = [
-        "Jan", "Feb", "M\u00e4r", "Apr", "Mai", "Jun",
+        "Jan", "Feb", "Mär", "Apr", "Mai", "Jun",
         "Jul", "Aug", "Sep", "Okt", "Nov", "Dez",
       ];
 
@@ -356,7 +356,7 @@ export default function CashflowView() {
   );
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-400">{"L\u00e4dt..."}</div>;
+    return <div className="text-center py-12 text-gray-400">{"Lädt..."}</div>;
   }
 
   return (
@@ -459,14 +459,14 @@ export default function CashflowView() {
             <div className={`w-12 h-12 ${COLORS.cashflow.light} rounded-full flex items-center justify-center border ${COLORS.cashflow.border}`}>
               <BarChart3 className={`w-6 h-6 ${COLORS.cashflow.text}`} />
             </div>
-            <InfoTooltip text={"Einnahmen \u2212 Ausgaben \u2212 Kreditzahlungen = Netto-Cashflow"} />
+            <InfoTooltip text={"Einnahmen − Ausgaben − Kreditzahlungen = Netto-Cashflow"} />
           </div>
           <div className={`text-2xl font-bold mt-4 mb-1 ${totalCashflow >= 0 ? "text-sky-600" : "text-red-600"}`}>
             {totalCashflow >= 0 ? "+" : ""}{formatEur(totalCashflow)}
           </div>
           <div className="text-sm text-gray-400 mb-2">Cashflow gesamt</div>
           <div className="text-xs text-gray-400">
-            {"\u00d8"} {formatEur(averageCashflow)} / Monat
+            {"Ø"} {formatEur(averageCashflow)} / Monat
           </div>
         </div>
       </div>
@@ -494,7 +494,7 @@ export default function CashflowView() {
 
       <div className="bg-white rounded-lg p-6">
         <h3 className="text-lg font-semibold text-dark mb-6">
-          {"Cashflow-\u00dcbersicht"}
+          {"Cashflow-Übersicht"}
         </h3>
 
         <div className="space-y-1">
@@ -633,7 +633,7 @@ export default function CashflowView() {
       <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <p className="text-sm font-medium text-blue-900 mb-1">Cashflow-Analyse:</p>
         <p className="text-sm text-blue-900">
-          {"Im ausgew\u00e4hlten Zeitraum haben Sie einen "}
+          {"Im ausgewählten Zeitraum haben Sie einen "}
           {totalCashflow >= 0 ? "positiven" : "negativen"}{" Cashflow von "}
           <span className="font-semibold">{formatEur(totalCashflow)}</span>
           {". Das entspricht durchschnittlich "}
