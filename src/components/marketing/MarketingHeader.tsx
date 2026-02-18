@@ -177,11 +177,11 @@ export default function MarketingHeader() {
     >
       <nav className="max-w-[1200px] mx-auto px-6">
         <div className="flex items-center justify-between h-16">
-          <RefLink to="/" className="flex-shrink-0 -ml-0.5">
+          <RefLink to="/" className="flex-shrink-0 -ml-2">
             <img
               src="/rentably-logo.svg"
               alt="rentably"
-              className="h-7 w-auto"
+              className="h-5 w-auto"
             />
           </RefLink>
 
