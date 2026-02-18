@@ -142,9 +142,9 @@ function App() {
           <Route path="/magazine/:slug" element={<MagazinePost />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/reset-password/confirm" element={<ResetPassword />} />
         </Route>
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/reset-password/confirm" element={<ResetPassword />} />
         <Route path="/mieterportal-aktivierung" element={<TenantPortalSetup />} />
         <Route path="/tenant-portal/reset-password" element={<TenantResetPassword />} />
         <Route path="/tenant-portal" element={<TenantPortalPage />} />
