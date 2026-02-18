@@ -7,7 +7,6 @@ import {
   X,
   EyeOff,
   ArrowUpRight,
-  Bell,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
@@ -361,27 +360,25 @@ export default function IndexRentView() {
       </div>
 
       {summaryMetrics.totalPending > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-            <Bell className="w-5 h-5 text-amber-600" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-amber-900">
-              {summaryMetrics.totalPending} mögliche{" "}
-              {summaryMetrics.totalPending === 1
-                ? "Indexmieterhöhung"
-                : "Indexmieterhöhungen"}
-            </h3>
-            <p className="text-sm text-amber-800 mt-0.5">
-              Prüfen Sie den aktuellen Verbraucherpreisindex (VPI) und
-              entscheiden Sie, ob Sie die Erhöhung vornehmen möchten.
-            </p>
-          </div>
+        <div
+          style={{ backgroundColor: "#fef9ee", borderColor: "#fde68a" }}
+          className="border rounded-lg p-4"
+        >
+          <p className="text-sm font-medium text-amber-900 mb-1">
+            {summaryMetrics.totalPending} mögliche{" "}
+            {summaryMetrics.totalPending === 1
+              ? "Indexmieterhöhung"
+              : "Indexmieterhöhungen"}
+          </p>
+          <p className="text-sm text-amber-900">
+            Prüfen Sie den aktuellen Verbraucherpreisindex (VPI) und
+            entscheiden Sie, ob Sie die Erhöhung vornehmen möchten.
+          </p>
         </div>
       )}
 
       {lastRun && (
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
+        <div className="bg-white rounded-lg p-5">
           <div className="flex items-start gap-3">
             <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
             <div className="flex-1">
@@ -676,7 +673,7 @@ function CalculationCard({
 
   return (
     <div
-      className={`bg-white border rounded-xl overflow-hidden transition-shadow hover:shadow-md ${
+      className={`bg-white border rounded-xl overflow-hidden ${
         isOpen ? "border-amber-200" : "border-gray-200"
       }`}
     >
