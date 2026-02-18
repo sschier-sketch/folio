@@ -113,13 +113,6 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
           currentUtilities = activeEntries[0].utilities || currentUtilities;
           currentRentValidFrom = activeEntries[0].effective_date;
         }
-        if (history.length > 1) {
-          const second = activeEntries.length > 1 ? activeEntries[0] : null;
-          if (second) {
-            lastChangeDate = second.effective_date;
-            lastChangeReason = second.reason;
-          }
-        }
         if (activeEntries.length >= 2) {
           lastChangeDate = activeEntries[0].effective_date;
           lastChangeReason = activeEntries[0].reason;
