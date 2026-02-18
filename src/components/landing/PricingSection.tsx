@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { PLANS, calculateYearlySavings } from "../../config/plans";
-import { Check, ArrowRight, Sparkles } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { RevealOnScroll } from "../common/RevealOnScroll";
 
 function formatPrice(cents: number): string {
@@ -61,8 +61,7 @@ export default function PricingSection() {
 
           <RevealOnScroll delay={160}>
             <div className="border-2 border-gray-900 rounded-2xl p-7 bg-white flex flex-col relative">
-            <div className="absolute -top-3 left-7 flex items-center gap-1.5 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full">
-              <Sparkles className="w-3 h-3" />
+            <div className="absolute -top-3 left-7 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full">
               30 Tage gratis testen
             </div>
             <div className="flex items-center justify-between mb-5">

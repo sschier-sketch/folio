@@ -202,35 +202,35 @@ function FeatureVisual({ type }: { type: string }) {
   if (type === "tenants") {
     return (
       <div className="space-y-2.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-[#3c8af7]/15" />
-            <div className="space-y-1">
-              <div className="h-2 bg-gray-200 rounded-full w-20" />
-              <div className="h-1.5 bg-gray-100 rounded-full w-14" />
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-6 h-6 rounded-full bg-[#3c8af7]/15 flex-shrink-0" />
+            <div className="space-y-1 min-w-0 flex-1">
+              <div className="h-2 bg-gray-200 rounded-full w-full" />
+              <div className="h-1.5 bg-gray-100 rounded-full w-3/4" />
             </div>
           </div>
-          <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Bezahlt</span>
+          <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full flex-shrink-0">Bezahlt</span>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-emerald-100" />
-            <div className="space-y-1">
-              <div className="h-2 bg-gray-200 rounded-full w-24" />
-              <div className="h-1.5 bg-gray-100 rounded-full w-16" />
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-6 h-6 rounded-full bg-emerald-100 flex-shrink-0" />
+            <div className="space-y-1 min-w-0 flex-1">
+              <div className="h-2 bg-gray-200 rounded-full w-full" />
+              <div className="h-1.5 bg-gray-100 rounded-full w-2/3" />
             </div>
           </div>
-          <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Bezahlt</span>
+          <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full flex-shrink-0">Bezahlt</span>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-amber-100" />
-            <div className="space-y-1">
-              <div className="h-2 bg-gray-200 rounded-full w-16" />
-              <div className="h-1.5 bg-gray-100 rounded-full w-12" />
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-6 h-6 rounded-full bg-amber-100 flex-shrink-0" />
+            <div className="space-y-1 min-w-0 flex-1">
+              <div className="h-2 bg-gray-200 rounded-full w-4/5" />
+              <div className="h-1.5 bg-gray-100 rounded-full w-1/2" />
             </div>
           </div>
-          <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Offen</span>
+          <span className="text-[9px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full flex-shrink-0">Offen</span>
         </div>
       </div>
     );
