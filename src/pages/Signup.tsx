@@ -39,8 +39,8 @@ const BENEFITS = [
 
 const TRUST_POINTS = [
   "DSGVO-konform & SSL-verschlüsselt",
-  "Keine Kreditkarte erforderlich",
-  "30 Tage alle Pro-Funktionen gratis",
+  "Keine Zahlungsdaten erforderlich",
+  "Automatisch 30 Tage alle Pro-Funktionen gratis",
 ];
 
 export function Signup() {
@@ -135,7 +135,7 @@ export function Signup() {
                 Konto erstellen
               </h1>
               <p className="text-gray-500">
-                Kostenlos starten &ndash; keine Kreditkarte n&ouml;tig.
+                Kostenlos starten &ndash; keine Zahlungsdaten n&ouml;tig.
               </p>
             </div>
 

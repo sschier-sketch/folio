@@ -6,8 +6,8 @@ import { RevealOnScroll } from "../common/RevealOnScroll";
 
 const HERO_CHECKS = [
   "Komplett kostenlos im Basic-Tarif",
-  "30 Tage alle Pro-Funktionen gratis testen",
-  "Keine Kreditkarte erforderlich",
+  "Automatisch 30 Tage alle Pro-Funktionen gratis testen",
+  "Keine Zahlungsdaten erforderlich",
 ];
 
 function DashboardMockup() {

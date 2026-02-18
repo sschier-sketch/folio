@@ -6,7 +6,7 @@ import { RefLink } from "../components/common/RefLink";
 
 const TRUST_POINTS = [
   "DSGVO-konform & SSL-verschlüsselt",
-  "Keine Kreditkarte erforderlich",
+  "Keine Zahlungsdaten erforderlich",
   "Über 10.000 zufriedene Vermieter",
 ];
 

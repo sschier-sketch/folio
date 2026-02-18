@@ -58,7 +58,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             <img
               src="/rentably-logo.svg"
               alt="Rentably"
-              className="h-8 w-auto"
+              className="h-5 w-auto"
             />{" "}
           </div>{" "}
           <h2 className="text-2xl font-bold text-dark mb-2">
