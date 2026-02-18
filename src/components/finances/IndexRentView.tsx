@@ -708,8 +708,8 @@ function CalculationCard({
           />
           <MetricBox
             label="Basismonat"
-            value={calc.basis_monat || "Unbekannt"}
-            sublabel={calc.basis_monat ? "für VPI-Vergleich" : "Noch keine Indexerhöhung durchgeführt"}
+            value={calc.basis_monat || "–"}
+            sublabel="für VPI-Vergleich"
           />
           <MetricBox
             label="Aktueller Monat"
@@ -732,21 +732,11 @@ function CalculationCard({
         {isOpen && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5">
             <p className="text-sm text-blue-800">
-              {calc.basis_monat ? (
-                <>
-                  Bitte prüfen Sie den aktuellen VPI-Wert für den Monat{" "}
-                  <span className="font-semibold">{calc.aktueller_monat}</span> und
-                  vergleichen Sie ihn mit dem Basismonat{" "}
-                  <span className="font-semibold">{calc.basis_monat}</span>, um die
-                  konkrete Erhöhung zu berechnen.
-                </>
-              ) : (
-                <>
-                  Dies ist die erste Indexmieterhöhung für diesen Vertrag. Bitte geben Sie im
-                  Assistenten den VPI-Basiswert (zum Zeitpunkt des Mietbeginns oder der letzten
-                  Mietanpassung) und den aktuellen VPI-Wert ein.
-                </>
-              )}
+              Bitte prüfen Sie den aktuellen VPI-Wert für den Monat{" "}
+              <span className="font-semibold">{calc.aktueller_monat}</span> und
+              vergleichen Sie ihn mit dem Basismonat{" "}
+              <span className="font-semibold">{calc.basis_monat || "–"}</span>, um die
+              konkrete Erhöhung zu berechnen.
             </p>
           </div>
         )}
