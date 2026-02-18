@@ -22,8 +22,8 @@ export default function AdminSeoGlobalView() {
   const [regenerateSuccess, setRegenerateSuccess] = useState(false);
   const [settings, setSettings] = useState<GlobalSettings>({
     id: "",
-    title_template: "%s – Rentably",
-    default_title: "Rentably – Immobilienverwaltung leicht gemacht",
+    title_template: "%s – rentably",
+    default_title: "rentably – Immobilienverwaltung leicht gemacht",
     default_description:
       "Die moderne Plattform für Vermieter. Verwalten Sie Ihre Immobilien, Mieter und Finanzen an einem Ort.",
     default_robots_index: true,
@@ -119,11 +119,11 @@ export default function AdminSeoGlobalView() {
                     setSettings({ ...settings, title_template: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="%s – Rentably"
+                  placeholder="%s – rentably"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  %s wird durch den Seiten-Title ersetzt. Beispiel: "Startseite – Rentably"
+                  %s wird durch den Seiten-Title ersetzt. Beispiel: "Startseite – rentably"
                 </p>
               </div>
 
@@ -136,7 +136,7 @@ export default function AdminSeoGlobalView() {
                   value={settings.default_title}
                   onChange={(e) => setSettings({ ...settings, default_title: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Rentably – Immobilienverwaltung leicht gemacht"
+                  placeholder="rentably – Immobilienverwaltung leicht gemacht"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">

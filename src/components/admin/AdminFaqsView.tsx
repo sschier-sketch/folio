@@ -27,7 +27,6 @@ const PAGE_OPTIONS: { slug: string; label: string }[] = [
   { slug: "landing", label: "Startseite" },
   { slug: "pricing", label: "Preise" },
   { slug: "features", label: "Funktionen" },
-  { slug: "support", label: "Support" },
 ];
 
 export default function AdminFaqsView() {

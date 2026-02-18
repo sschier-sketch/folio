@@ -243,7 +243,7 @@ export default function AdminSeoPageEdit({ pageId, onBack }: AdminSeoPageEditPro
               />
               <div className="flex items-center justify-between mt-1">
                 <p className="text-xs text-gray-500">
-                  Wird in Template eingesetzt: "%s – Rentably"
+                  Wird in Template eingesetzt: "%s – rentably"
                 </p>
                 <span
                   className={`text-xs ${
@@ -340,7 +340,7 @@ export default function AdminSeoPageEdit({ pageId, onBack }: AdminSeoPageEditPro
                     {formData.path}
                   </div>
                   <div className="text-xl text-blue-800 hover:underline cursor-pointer">
-                    {formData.title ? `${formData.title} – Rentably` : "Rentably"}
+                    {formData.title ? `${formData.title} – rentably` : "rentably"}
                   </div>
                   <div className="text-sm text-gray-600">
                     {formData.description || "Keine Beschreibung vorhanden"}

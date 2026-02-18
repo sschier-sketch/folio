@@ -6,6 +6,7 @@ interface Post {
   title: string;
   excerpt?: string;
   hero_image_url?: string;
+  hero_image_alt?: string;
   category: string;
   reading_time_minutes: number;
   author_name: string;
@@ -33,7 +34,7 @@ export default function MagazineCard({ post, basePath }: Props) {
         {post.hero_image_url ? (
           <img
             src={post.hero_image_url}
-            alt={post.title}
+            alt={post.hero_image_alt || post.title}
             className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
             loading="lazy"
           />

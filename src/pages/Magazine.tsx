@@ -15,6 +15,7 @@ interface Post {
   title: string;
   excerpt?: string;
   hero_image_url?: string;
+  hero_image_alt?: string;
   author_name: string;
   published_at: string;
   category: string;
@@ -54,6 +55,7 @@ export function Magazine() {
         .select(`
           id,
           hero_image_url,
+          hero_image_alt,
           author_name,
           published_at,
           category,
@@ -75,6 +77,7 @@ export function Magazine() {
           title: p.translations?.[0]?.title || "",
           excerpt: p.translations?.[0]?.excerpt,
           hero_image_url: p.hero_image_url,
+          hero_image_alt: p.hero_image_alt,
           author_name: p.author_name,
           published_at: p.published_at,
           category: p.category,
@@ -128,6 +131,7 @@ export function Magazine() {
         .select(`
           id,
           hero_image_url,
+          hero_image_alt,
           author_name,
           published_at,
           category,
@@ -167,6 +171,7 @@ export function Magazine() {
         title: post.translations?.[0]?.title || "",
         excerpt: post.translations?.[0]?.excerpt,
         hero_image_url: post.hero_image_url,
+        hero_image_alt: post.hero_image_alt,
         author_name: post.author_name,
         published_at: post.published_at,
         category: post.category,

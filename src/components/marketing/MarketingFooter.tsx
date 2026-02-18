@@ -13,7 +13,7 @@ const FUNKTIONEN_LINKS = [
 
 const UNTERNEHMEN_LINKS = [
   { label: 'Über uns', path: '/ueber-uns' },
-  { label: 'Blog', path: '/magazin' },
+  { label: 'Magazin', path: '/magazin' },
   { label: 'Kontakt', path: '/kontakt' },
 ];
 

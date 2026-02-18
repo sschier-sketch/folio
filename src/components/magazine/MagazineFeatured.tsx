@@ -6,6 +6,7 @@ interface FeaturedPost {
   title: string;
   excerpt?: string;
   hero_image_url?: string;
+  hero_image_alt?: string;
   category: string;
   reading_time_minutes: number;
   published_at: string;
@@ -28,7 +29,7 @@ export default function MagazineFeatured({ post, basePath }: Props) {
             <div className="overflow-hidden rounded-2xl md:rounded-none md:rounded-l-2xl h-64 md:h-[420px]">
               <img
                 src={post.hero_image_url}
-                alt={post.title}
+                alt={post.hero_image_alt || post.title}
                 className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
               />
             </div>

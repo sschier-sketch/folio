@@ -34,6 +34,7 @@ export default function AdminMagazinePostEditor() {
 
   const [status, setStatus] = useState<"DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED">("DRAFT");
   const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [heroImageAlt, setHeroImageAlt] = useState("");
   const [authorName, setAuthorName] = useState("Rentably Team");
   const [category, setCategory] = useState("allgemein");
   const [isFeatured, setIsFeatured] = useState(false);
@@ -84,6 +85,7 @@ export default function AdminMagazinePostEditor() {
 
       setStatus(post.status);
       setHeroImageUrl(post.hero_image_url || "");
+      setHeroImageAlt(post.hero_image_alt || "");
       setAuthorName(post.author_name);
       setCategory(post.category || "allgemein");
       setIsFeatured(post.is_featured || false);
@@ -208,6 +210,7 @@ export default function AdminMagazinePostEditor() {
       const postData: any = {
         status: publish ? "PUBLISHED" : status,
         hero_image_url: heroImageUrl || null,
+        hero_image_alt: heroImageAlt || null,
         author_name: authorName,
         category,
         is_featured: isFeatured,
@@ -393,16 +396,30 @@ export default function AdminMagazinePostEditor() {
                 </span>
               </label>
               {heroImageUrl && (
-                <div className="relative">
-                  <img src={heroImageUrl} alt="Hero" className="w-full h-48 object-cover rounded-lg" />
-                  <button
-                    type="button"
-                    onClick={() => setHeroImageUrl("")}
-                    className="absolute top-2 right-2 p-1 bg-white/80 hover:bg-white rounded-full transition-colors"
-                  >
-                    <X className="w-4 h-4 text-gray-600" />
-                  </button>
-                </div>
+                <>
+                  <div className="relative">
+                    <img src={heroImageUrl} alt={heroImageAlt || "Hero"} className="w-full h-48 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={() => { setHeroImageUrl(""); setHeroImageAlt(""); }}
+                      className="absolute top-2 right-2 p-1 bg-white/80 hover:bg-white rounded-full transition-colors"
+                    >
+                      <X className="w-4 h-4 text-gray-600" />
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                      Alt-Text (SEO & Barrierefreiheit)
+                    </label>
+                    <input
+                      type="text"
+                      value={heroImageAlt}
+                      onChange={(e) => setHeroImageAlt(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      placeholder="Beschreibung des Bildes, z.B. Vermieter prüft Mietvertrag"
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>

@@ -136,7 +136,6 @@ function App() {
           <Route path="/funktionen/uebergabeprotokoll" element={<Uebergabeprotokoll />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/preise" element={<Pricing />} />
-          <Route path="/support" element={<Navigate to="/kontakt" replace />} />
           <Route path="/magazin" element={<Magazine />} />
           <Route path="/magazin/:slug" element={<MagazinePost />} />
           <Route path="/magazine" element={<Magazine />} />

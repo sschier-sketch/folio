@@ -25,6 +25,7 @@ interface Post {
   content: string;
   summary_points?: string[];
   hero_image_url?: string;
+  hero_image_alt?: string;
   author_name: string;
   published_at: string;
   category: string;
@@ -46,6 +47,7 @@ interface RelatedPost {
   title: string;
   excerpt?: string;
   hero_image_url?: string;
+  hero_image_alt?: string;
   published_at: string;
   category: string;
   reading_time_minutes: number;
@@ -95,6 +97,7 @@ export function MagazinePost() {
         .select(`
           id,
           hero_image_url,
+          hero_image_alt,
           author_name,
           published_at,
           category,
@@ -123,6 +126,7 @@ export function MagazinePost() {
         content: t.content,
         summary_points: Array.isArray(t.summary_points) ? t.summary_points : [],
         hero_image_url: data.hero_image_url,
+        hero_image_alt: data.hero_image_alt,
         author_name: data.author_name,
         published_at: data.published_at,
         category: data.category,
@@ -133,7 +137,7 @@ export function MagazinePost() {
       };
 
       setPost(currentPost);
-      document.title = t.seo_title || `${t.title} - Rentably`;
+      document.title = t.seo_title || `${t.title} – rentably`;
 
       loadFaqs(data.id);
       loadRelated(data.id, data.category);
@@ -166,6 +170,7 @@ export function MagazinePost() {
         .select(`
           id,
           hero_image_url,
+          hero_image_alt,
           author_name,
           published_at,
           category,
@@ -186,6 +191,7 @@ export function MagazinePost() {
             title: p.translations[0]?.title || "",
             excerpt: p.translations[0]?.excerpt,
             hero_image_url: p.hero_image_url,
+            hero_image_alt: p.hero_image_alt,
             published_at: p.published_at,
             category: p.category,
             reading_time_minutes: p.translations[0]?.reading_time_minutes || 1,
@@ -288,7 +294,7 @@ export function MagazinePost() {
         <div className="w-full max-w-[1200px] mx-auto px-4 pt-8">
           <img
             src={post.hero_image_url}
-            alt={post.title}
+            alt={post.hero_image_alt || post.title}
             className="w-full h-64 md:h-[420px] object-cover rounded-2xl"
           />
         </div>
@@ -387,7 +393,7 @@ export function MagazinePost() {
                     <div className="h-48 overflow-hidden">
                       <img
                         src={rp.hero_image_url}
-                        alt={rp.title}
+                        alt={rp.hero_image_alt || rp.title}
                         className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
                         loading="lazy"
                       />
