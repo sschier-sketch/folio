@@ -282,7 +282,7 @@ function HeroSection() {
           <RevealOnScroll delay={100} className="hidden lg:block">
             <div className="rounded-2xl overflow-hidden shadow-lg shadow-gray-900/[0.06]">
               <img
-                src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800"
+                src="/rentably-app.jpg"
                 alt="Das rentably Team bei der Arbeit"
                 className="w-full h-[480px] object-cover"
               />
