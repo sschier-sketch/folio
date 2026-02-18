@@ -1,15 +1,14 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../../components/common/RefLink";
 import { RevealOnScroll } from "../../components/common/RevealOnScroll";
+import FaqSection from "../../components/landing/FaqSection";
 import {
   ArrowLeft,
   FileText,
   MessageSquare,
   Gauge,
   CheckCircle2,
-  ChevronDown,
   Home,
   Users,
   FolderOpen,
@@ -139,39 +138,6 @@ const OTHER_FEATURES = [
     description:
       "Einnahmen, Ausgaben und Steuern übersichtlich verwalten.",
     path: "/funktionen/buchhaltung",
-  },
-];
-
-const FAQS = [
-  {
-    question: "Wie aktiviere ich das Mieterportal für einen Mieter?",
-    answer:
-      "Öffnen Sie den gewünschten Mieter in der Mietverwaltung und klicken Sie auf 'Portal aktivieren'. Rentably versendet automatisch eine Einladungs-E-Mail mit den Zugangsdaten an Ihren Mieter.",
-  },
-  {
-    question: "Welche Informationen sieht mein Mieter im Portal?",
-    answer:
-      "Ihr Mieter sieht sein persönliches Dashboard mit Vertragsinformationen, freigegebene Dokumente wie Mietvertrag und Nebenkostenabrechnung, seine Kommunikation mit Ihnen über das Ticket-System sowie die Möglichkeit, Zählerstände zu melden.",
-  },
-  {
-    question: "Ist das Portal sicher?",
-    answer:
-      "Ja. Jeder Mieter erhält einen individuellen, passwortgeschützten Zugang. Die Datenübertragung ist verschlüsselt und die Datenhaltung erfolgt DSGVO-konform auf deutschen Servern.",
-  },
-  {
-    question: "Können Mieter auch Reparaturen melden?",
-    answer:
-      "Ja. Über das integrierte Ticket-System können Mieter Schadensmeldungen, Reparaturanfragen und andere Anliegen einreichen. Sie erhalten eine Benachrichtigung und können direkt aus rentably antworten.",
-  },
-  {
-    question: "Wie melden Mieter ihre Zählerstände?",
-    answer:
-      "Im Bereich 'Zählerstände' des Portals können Mieter ihre aktuellen Zählerstände für Strom, Wasser, Gas und weitere Zähler eintragen. Die Werte werden automatisch Ihrer Immobilie zugeordnet und fließen in die Nebenkostenabrechnung ein.",
-  },
-  {
-    question: "Kostet das Mieterportal extra?",
-    answer:
-      "Das Mieterportal ist in allen rentably Pro-Plänen enthalten. Es fallen keine zusätzlichen Kosten pro Mieter oder pro Zugang an.",
   },
 ];
 
@@ -377,41 +343,6 @@ function StepCard({
       <div className={`pb-10 ${isLast ? "pb-0" : ""}`}>
         <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-gray-500 leading-relaxed">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-function FaqItem({
-  question,
-  answer,
-}: {
-  question: string;
-  answer: string;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="border-b border-gray-200 last:border-b-0">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-5 text-left gap-4"
-      >
-        <span className="text-base font-medium text-gray-900">
-          {question}
-        </span>
-        <ChevronDown
-          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      <div
-        className={`overflow-hidden transition-all duration-200 ${
-          isOpen ? "max-h-[400px] pb-5" : "max-h-0"
-        }`}
-      >
-        <p className="text-gray-500 leading-relaxed pr-8">{answer}</p>
       </div>
     </div>
   );
@@ -1067,30 +998,7 @@ export default function Mieterportal() {
         </div>
       </section>
 
-      <section className="py-[100px] px-6">
-        <div className="max-w-[800px] mx-auto">
-          <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
-              H&auml;ufig gestellte Fragen
-            </h2>
-            <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
-              Alles Wichtige &uuml;ber das Mieterportal von rentably auf
-              einen Blick.
-            </p>
-          </RevealOnScroll>
-          <RevealOnScroll delay={100}>
-            <div className="bg-white border border-gray-200 rounded-2xl px-8">
-              {FAQS.map((faq) => (
-                <FaqItem
-                  key={faq.question}
-                  question={faq.question}
-                  answer={faq.answer}
-                />
-              ))}
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
+      <FaqSection pageSlug="mieterportal" />
 
       <section className="py-24 px-6">
         <RevealOnScroll>

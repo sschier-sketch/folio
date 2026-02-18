@@ -21,7 +21,7 @@ export function Header() {
             <img
               src="/rentably-logo.svg"
               alt="Rentably"
-              className="h-10 w-auto transition-transform"
+              className="h-5 w-auto transition-transform"
             />{" "}
           </RefLink>{" "}
           <div className="hidden md:flex items-center gap-8">

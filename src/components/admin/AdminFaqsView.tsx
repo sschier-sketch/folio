@@ -27,6 +27,15 @@ const PAGE_OPTIONS: { slug: string; label: string }[] = [
   { slug: "landing", label: "Startseite" },
   { slug: "pricing", label: "Preise" },
   { slug: "features", label: "Funktionen" },
+  { slug: "ueber-uns", label: "Über uns" },
+  { slug: "immobilienmanagement", label: "Immobilienmanagement" },
+  { slug: "mietverwaltung", label: "Mietverwaltung" },
+  { slug: "nebenkostenabrechnung", label: "Nebenkostenabrechnung" },
+  { slug: "buchhaltung", label: "Buchhaltung" },
+  { slug: "kommunikation", label: "Kommunikation" },
+  { slug: "dokumente", label: "Dokumente" },
+  { slug: "uebergabeprotokoll", label: "Übergabeprotokoll" },
+  { slug: "mieterportal", label: "Mieterportal" },
 ];
 
 export default function AdminFaqsView() {

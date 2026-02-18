@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../../components/common/RefLink";
 import { RevealOnScroll } from "../../components/common/RevealOnScroll";
+import FaqSection from "../../components/landing/FaqSection";
 import {
   ArrowLeft,
   FileText,
@@ -13,7 +13,6 @@ import {
   Clock,
   CheckCircle2,
   Users,
-  ChevronDown,
   Home,
   Calendar,
   Building2,
@@ -102,25 +101,6 @@ const OTHER_FEATURES = [
     description: "Optimale Dokumentation für Ihre nächste Wohnungsübergabe.",
     path: "/funktionen/uebergabeprotokoll",
   },
-];
-
-const FAQS = [
-  {
-    question: "Wie lege ich einen neuen Mietvertrag an?",
-    answer: "Sie wählen die gewünschte Immobilie und Einheit aus, geben die Mieterdaten ein und erfassen alle Vertragsdaten wie Mietbeginn, Kaltmiete, Nebenkosten und Kaution. Der Vertrag wird automatisch gespeichert und alle Zahlungen werden ab dem Mietbeginn überwacht."
-  },
-  {
-    question: "Werden Mietzahlungen automatisch erfasst?",
-    answer: "Ja, Sie können Ihr Bankkonto verbinden oder Zahlungen manuell erfassen. Das System ordnet Zahlungen automatisch den jeweiligen Mietverhältnissen zu und zeigt Ihnen offene Posten übersichtlich an."
-  },
-  {
-    question: "Wie funktioniert die automatische Indexmieterhöhung?",
-    answer: "Bei Indexmietverträgen überwacht das System den Verbraucherpreisindex automatisch. Sobald die vereinbarte Schwelle erreicht ist, wird die neue Miethöhe berechnet und Sie erhalten eine Benachrichtigung. Die Berechnung erfolgt transparent und wird vollständig dokumentiert."
-  },
-  {
-    question: "Kann ich Mahnungen automatisch versenden?",
-    answer: "Ja, bei Zahlungsverzug können Sie mehrstufige Mahnungen erstellen und versenden. Jede Mahnstufe wird automatisch protokolliert und dem Mietverhältnis zugeordnet, sodass Sie eine lückenlose Dokumentation haben."
-  }
 ];
 
 const BENEFITS = [
@@ -222,33 +202,6 @@ function TenantTableMockup() {
       <div className="border-t border-gray-100 bg-gray-50 px-6 py-3.5 flex items-center justify-between">
         <span className="text-sm text-gray-500 font-medium">Summe Kaltmiete</span>
         <span className="text-sm font-bold text-gray-900">3.740,00 €/Monat</span>
-      </div>
-    </div>
-  );
-}
-
-function FaqItem({ question, answer }: { question: string; answer: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="border-b border-gray-200 last:border-b-0">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-5 text-left gap-4"
-      >
-        <span className="text-base font-medium text-gray-900">{question}</span>
-        <ChevronDown
-          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      <div
-        className={`overflow-hidden transition-all duration-200 ${
-          isOpen ? "max-h-[400px] pb-5" : "max-h-0"
-        }`}
-      >
-        <p className="text-gray-500 leading-relaxed pr-8">{answer}</p>
       </div>
     </div>
   );
@@ -665,25 +618,7 @@ export default function Mietverwaltung() {
         </div>
       </section>
 
-      <section className="py-[100px] px-6">
-        <div className="max-w-[800px] mx-auto">
-          <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
-              Häufig gestellte Fragen
-            </h2>
-            <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
-              Alles Wichtige über die Mietverwaltung mit rentably auf einen Blick.
-            </p>
-          </RevealOnScroll>
-          <RevealOnScroll delay={100}>
-            <div className="bg-white border border-gray-200 rounded-2xl px-8">
-              {FAQS.map((faq) => (
-                <FaqItem key={faq.question} question={faq.question} answer={faq.answer} />
-              ))}
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
+      <FaqSection pageSlug="mietverwaltung" />
 
       <section className="py-24 px-6">
         <RevealOnScroll>

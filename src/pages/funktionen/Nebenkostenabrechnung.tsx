@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../../components/common/RefLink";
 import { RevealOnScroll } from "../../components/common/RevealOnScroll";
+import FaqSection from "../../components/landing/FaqSection";
 import {
   ArrowLeft,
   FileText,
@@ -12,7 +12,6 @@ import {
   Gauge,
   Scale,
   CheckCircle2,
-  ChevronDown,
   Home,
   Users,
   FolderOpen,
@@ -139,39 +138,6 @@ const OTHER_FEATURES = [
     description:
       "Optimale Dokumentation für Ihre nächste Wohnungsübergabe.",
     path: "/funktionen/uebergabeprotokoll",
-  },
-];
-
-const FAQS = [
-  {
-    question: "Wie erstelle ich eine Nebenkostenabrechnung?",
-    answer:
-      "Klicken Sie im Dashboard auf Nebenkostenabrechnung und starten Sie den Assistenten. In drei einfachen Schritten wählen Sie die Immobilie, erfassen die Kosten und versenden die fertige Abrechnung an Ihren Mieter.",
-  },
-  {
-    question: "Welche Kostenarten werden unterstützt?",
-    answer:
-      "Alle gängigen Betriebskostenarten gemäß Betriebskostenverordnung (BetrKV) sind enthalten: Heizung, Wasser, Abwasser, Müllabfuhr, Grundsteuer, Gebäudeversicherung, Hausmeister, Gartenpflege, Aufzug, Straßenreinigung und viele weitere.",
-  },
-  {
-    question: "Wie funktioniert die Verteilung der Kosten?",
-    answer:
-      "Sie wählen pro Kostenart einen Umlageschlüssel – zum Beispiel nach Wohnfläche, Personenzahl oder Verbrauch. Rentably berechnet die Verteilung automatisch auf Basis der hinterlegten Daten Ihrer Mieter und Einheiten.",
-  },
-  {
-    question: "Wird die Abrechnung als PDF erstellt?",
-    answer:
-      "Ja. Per Klick wird eine professionelle, druckfertige PDF generiert. Diese enthält alle Einzelpositionen, den Verteilerschlüssel, Vorauszahlungen, Nachzahlung oder Guthaben sowie optional den §35a-Steuerausweis.",
-  },
-  {
-    question: "Bis wann muss die Nebenkostenabrechnung erstellt werden?",
-    answer:
-      "Die Nebenkostenabrechnung muss spätestens 12 Monate nach Ende des Abrechnungszeitraums beim Mieter eingehen. Verpassen Sie die Frist, können Sie keine Nachforderungen mehr geltend machen. Rentably hilft Ihnen, die Fristen im Blick zu behalten.",
-  },
-  {
-    question: "Kann ich die Abrechnung direkt an den Mieter senden?",
-    answer:
-      "Ja. Sie können die fertige Abrechnung direkt aus rentably per E-Mail an Ihren Mieter versenden. Die PDF wird automatisch als Anhang beigefügt.",
   },
 ];
 
@@ -395,41 +361,6 @@ function StepCard({
       <div className={`pb-10 ${isLast ? "pb-0" : ""}`}>
         <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-gray-500 leading-relaxed">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-function FaqItem({
-  question,
-  answer,
-}: {
-  question: string;
-  answer: string;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="border-b border-gray-200 last:border-b-0">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-5 text-left gap-4"
-      >
-        <span className="text-base font-medium text-gray-900">
-          {question}
-        </span>
-        <ChevronDown
-          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      <div
-        className={`overflow-hidden transition-all duration-200 ${
-          isOpen ? "max-h-[400px] pb-5" : "max-h-0"
-        }`}
-      >
-        <p className="text-gray-500 leading-relaxed pr-8">{answer}</p>
       </div>
     </div>
   );
@@ -901,30 +832,7 @@ export default function Nebenkostenabrechnung() {
         </div>
       </section>
 
-      <section className="py-[100px] px-6">
-        <div className="max-w-[800px] mx-auto">
-          <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
-              H&auml;ufig gestellte Fragen
-            </h2>
-            <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
-              Alles Wichtige &uuml;ber die Nebenkostenabrechnung mit
-              rentably auf einen Blick.
-            </p>
-          </RevealOnScroll>
-          <RevealOnScroll delay={100}>
-            <div className="bg-white border border-gray-200 rounded-2xl px-8">
-              {FAQS.map((faq) => (
-                <FaqItem
-                  key={faq.question}
-                  question={faq.question}
-                  answer={faq.answer}
-                />
-              ))}
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
+      <FaqSection pageSlug="nebenkostenabrechnung" />
 
       <section className="py-24 px-6">
         <RevealOnScroll>

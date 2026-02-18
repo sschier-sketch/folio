@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../lib/referralTracking";
 import { RevealOnScroll } from "../components/common/RevealOnScroll";
 import TestimonialsSection from "../components/landing/TestimonialsSection";
+import FaqSection from "../components/landing/FaqSection";
 import {
   Heart,
   Sparkles,
@@ -15,7 +15,6 @@ import {
   Headphones,
   ArrowRight,
   Linkedin,
-  ChevronDown,
   Rocket,
   Lightbulb,
   TrendingUp,
@@ -123,42 +122,8 @@ const TIMELINE = [
   },
 ];
 
-const ABOUT_FAQS = [
-  {
-    question: "Wer steckt hinter rentably?",
-    answer:
-      "Rentably wurde von Simon Schier und Philipp Roth gegründet — zwei Unternehmer, die selbst als Vermieter die Herausforderungen der Immobilienverwaltung kennen. Unser Ziel ist es, private Vermieter mit einer modernen, einfachen Software zu unterstützen.",
-  },
-  {
-    question: "Ist rentably wirklich kostenlos?",
-    answer:
-      "Ja. Der Basic-Tarif ist dauerhaft kostenlos — ohne zeitliche Begrenzung und ohne versteckte Kosten. Sie können unbegrenzt viele Immobilien, Einheiten und Mieter verwalten. Für erweiterte Funktionen steht der Pro-Tarif zur Verfügung.",
-  },
-  {
-    question: "Wo werden meine Daten gespeichert?",
-    answer:
-      "Alle Daten werden auf europäischen Servern gehostet. Rentably ist vollständig DSGVO-konform. Ihre Daten werden nicht an Dritte weitergegeben und gehören ausschließlich Ihnen.",
-  },
-  {
-    question: "Für wen ist rentably geeignet?",
-    answer:
-      "Rentably ist primär für private Vermieter und Eigentümer konzipiert, die eine bis mehrere Immobilien verwalten. Auch kleinere Hausverwaltungen und Immobilieninvestoren profitieren von der Software.",
-  },
-  {
-    question: "Wie kann ich rentably kontaktieren?",
-    answer:
-      "Sie erreichen uns per E-Mail an hallo@rentab.ly oder über WhatsApp. Unser Support-Team ist Montag bis Freitag von 9:00 bis 18:00 Uhr für Sie da.",
-  },
-  {
-    question: "Kann ich jederzeit kündigen?",
-    answer:
-      "Ja. Der Pro-Tarif ist monatlich oder jährlich kündbar. Es gibt keine Mindestlaufzeit. Nach der Kündigung behalten Sie Zugriff auf alle Basic-Funktionen und Ihre gespeicherten Daten.",
-  },
-];
-
 export default function UeberUns() {
   const navigate = useNavigate();
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
     <div>
@@ -170,48 +135,44 @@ export default function UeberUns() {
       <TimelineSection />
       <TestimonialsSection />
 
-      <section className="py-[100px] px-6 bg-gray-50">
+      <FaqSection pageSlug="ueber-uns" />
+
+      <section className="py-[80px] px-6 bg-[#f8fafc]">
         <div className="max-w-[800px] mx-auto">
           <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
-              Häufig gestellte Fragen
+            <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              Über rentably — die Hausverwaltungssoftware von Vermietern für Vermieter
             </h2>
-            <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
-              Alles Wichtige über rentably — von den Gründern über Datenschutz
-              bis zu den Funktionen.
-            </p>
-          </RevealOnScroll>
-          <RevealOnScroll delay={80}>
-            <div className="bg-white border border-gray-200 rounded-2xl px-8">
-              {ABOUT_FAQS.map((item, i) => (
-                <div
-                  key={i}
-                  className="border-b border-gray-200 last:border-b-0"
-                >
-                  <button
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="w-full flex items-center justify-between py-5 text-left gap-4"
-                  >
-                    <span className="text-base font-medium text-gray-900">
-                      {item.question}
-                    </span>
-                    <ChevronDown
-                      className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${
-                        openFaq === i ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-200 ${
-                      openFaq === i ? "max-h-[400px] pb-5" : "max-h-0"
-                    }`}
-                  >
-                    <p className="text-gray-500 leading-relaxed pr-8">
-                      {item.answer}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                Rentably wurde 2024 von Simon Schier und Philipp Roth gegründet — zwei
+                Unternehmer, die als Vermieter die Herausforderungen der privaten
+                Immobilienverwaltung aus eigener Erfahrung kennen. Die bestehenden
+                Softwarelösungen waren entweder zu komplex, zu teuer oder nicht auf die
+                Bedürfnisse privater Vermieter zugeschnitten. Diese Lücke wollten sie
+                schließen.
+              </p>
+              <p>
+                Das Ergebnis ist eine webbasierte Plattform, die alle wesentlichen Bereiche
+                der Immobilienverwaltung abdeckt: Objektverwaltung, Mietverträge,
+                Zahlungsüberwachung, Nebenkostenabrechnungen, Dokumentenmanagement,
+                Mieterkommunikation und ein Self-Service-Portal für Mieter. Die Software
+                ist bewusst so gestaltet, dass sie ohne Einarbeitungszeit nutzbar ist —
+                intuitiv, übersichtlich und auf das Wesentliche konzentriert.
+              </p>
+              <p>
+                Rentably wird in Deutschland entwickelt und betrieben. Alle Daten werden
+                DSGVO-konform auf europäischen Servern gespeichert. Das Team arbeitet
+                kontinuierlich an neuen Funktionen und Verbesserungen — immer im engen
+                Austausch mit der wachsenden Community aus privaten Vermietern und
+                Eigentümern, die die Software täglich im Einsatz haben.
+              </p>
+              <p>
+                Der Basic-Tarif ist dauerhaft kostenlos und ohne Einschränkung bei der
+                Anzahl verwalteter Immobilien nutzbar. Neue Nutzer erhalten nach der
+                Registrierung automatisch 30 Tage Zugang zu allen Pro-Funktionen —
+                ohne Zahlungsdaten, ohne Verpflichtung.
+              </p>
             </div>
           </RevealOnScroll>
         </div>

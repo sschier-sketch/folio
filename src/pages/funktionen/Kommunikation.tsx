@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../../components/common/RefLink";
 import { RevealOnScroll } from "../../components/common/RevealOnScroll";
+import FaqSection from "../../components/landing/FaqSection";
 import {
   ArrowLeft,
   Mail,
@@ -12,7 +12,6 @@ import {
   Share2,
   Clock,
   CheckCircle2,
-  ChevronDown,
   Home,
   FolderOpen,
   CreditCard,
@@ -102,25 +101,6 @@ const OTHER_FEATURES = [
     description: "Optimale Dokumentation für Ihre nächste Wohnungsübergabe.",
     path: "/funktionen/uebergabeprotokoll",
   },
-];
-
-const FAQS = [
-  {
-    question: "Kann ich E-Mails direkt aus rentably versenden?",
-    answer: "Ja. Sie können E-Mails direkt aus rentably an Ihre Mieter senden. Alle Nachrichten werden automatisch dokumentiert und dem jeweiligen Mietverhältnis zugeordnet."
-  },
-  {
-    question: "Gibt es fertige Nachrichtenvorlagen?",
-    answer: "Ja. Rentably bietet Ihnen vorgefertigte Vorlagen für häufige Anliegen wie Nebenkostenabrechnungen, Mieterhöhungen oder Instandhaltungshinweise. Sie können auch eigene Vorlagen erstellen."
-  },
-  {
-    question: "Werden eingehende E-Mails automatisch zugeordnet?",
-    answer: "Ja. Eingehende E-Mails werden automatisch dem entsprechenden Mieter und Mietverhältnis zugeordnet. So haben Sie die gesamte Kommunikation immer im Kontext."
-  },
-  {
-    question: "Kann ich Dokumente per E-Mail versenden?",
-    answer: "Ja. Sie können Dokumente, Abrechnungen und Verträge direkt als Anhang per E-Mail an Ihre Mieter senden — sicher und nachvollziehbar."
-  }
 ];
 
 const BENEFITS = [
@@ -222,33 +202,6 @@ function InboxMockup() {
       <div className="border-t border-gray-100 bg-gray-50 px-6 py-3.5 flex items-center justify-between">
         <span className="text-sm text-gray-500 font-medium">Offene Anfragen</span>
         <span className="text-sm font-bold text-gray-900">2 unbeantwortet</span>
-      </div>
-    </div>
-  );
-}
-
-function FaqItem({ question, answer }: { question: string; answer: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="border-b border-gray-200 last:border-b-0">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-5 text-left gap-4"
-      >
-        <span className="text-base font-medium text-gray-900">{question}</span>
-        <ChevronDown
-          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      <div
-        className={`overflow-hidden transition-all duration-200 ${
-          isOpen ? "max-h-[400px] pb-5" : "max-h-0"
-        }`}
-      >
-        <p className="text-gray-500 leading-relaxed pr-8">{answer}</p>
       </div>
     </div>
   );
@@ -593,25 +546,7 @@ export default function Kommunikation() {
         </div>
       </section>
 
-      <section className="py-[100px] px-6">
-        <div className="max-w-[800px] mx-auto">
-          <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">
-              Häufig gestellte Fragen
-            </h2>
-            <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">
-              Alles Wichtige über die Mieterkommunikation mit rentably auf einen Blick.
-            </p>
-          </RevealOnScroll>
-          <RevealOnScroll delay={100}>
-            <div className="bg-white border border-gray-200 rounded-2xl px-8">
-              {FAQS.map((faq) => (
-                <FaqItem key={faq.question} question={faq.question} answer={faq.answer} />
-              ))}
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
+      <FaqSection pageSlug="kommunikation" />
 
       <section className="py-24 px-6">
         <RevealOnScroll>

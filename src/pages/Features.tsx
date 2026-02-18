@@ -528,6 +528,48 @@ export default function Features() {
         </div>
       </section>
 
+      <section className="py-[80px] px-6 bg-[#f8fafc]">
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              Hausverwaltungssoftware mit allen Funktionen — von der Objektverwaltung bis zur Nebenkostenabrechnung
+            </h2>
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                Private Vermieter stehen vor der Herausforderung, zahlreiche Aufgaben rund um ihre
+                Immobilien effizient zu organisieren: Mietverträge verwalten, Zahlungseingänge
+                kontrollieren, Nebenkostenabrechnungen erstellen, Dokumente archivieren und mit
+                Mietern kommunizieren. Ohne eine zentrale Lösung bedeutet das oft einen Mix aus
+                Excel-Tabellen, E-Mails, Ordnern und verschiedenen Tools — ein System, das mit
+                jedem weiteren Objekt unübersichtlicher wird.
+              </p>
+              <p>
+                Rentably bündelt alle Bereiche der Immobilienverwaltung in einer einzigen
+                Plattform: Immobilienmanagement mit Stammdaten, Einheiten und Fotodokumentation,
+                Mietverwaltung mit digitalen Verträgen und automatischer Zahlungsüberwachung,
+                Buchhaltung mit Einnahmen-Ausgaben-Erfassung und Steuerexport,
+                Nebenkostenabrechnungen mit geführtem Assistenten, Dokumentenmanagement mit
+                Cloud-Archiv, Mieterkommunikation über ein integriertes E-Mail-System,
+                professionelle Übergabeprotokolle und ein Self-Service-Mieterportal.
+              </p>
+              <p>
+                Jedes Modul ist so konzipiert, dass es für sich allein funktioniert, aber im
+                Zusammenspiel mit den anderen Modulen seine volle Stärke entfaltet. Daten fließen
+                automatisch zwischen den Bereichen — ein Mietvertrag liefert die Grundlage für
+                die Zahlungsüberwachung, Zählerstände fließen in die Nebenkostenabrechnung, und
+                Dokumente werden automatisch dem richtigen Objekt und Mieter zugeordnet.
+              </p>
+              <p>
+                Die Software ist webbasiert und von jedem Gerät erreichbar. Alle Daten werden
+                DSGVO-konform auf deutschen Servern gespeichert. Es gibt keinen Preis pro
+                Einheit oder pro Immobilie — der Basic-Tarif ist dauerhaft kostenlos, der
+                Pro-Tarif bietet erweiterte Funktionen zu einem festen monatlichen Preis.
+              </p>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">

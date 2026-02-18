@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../../components/common/RefLink";
 import { RevealOnScroll } from "../../components/common/RevealOnScroll";
+import FaqSection from "../../components/landing/FaqSection";
 import {
   ArrowLeft,
   Building2,
@@ -12,7 +12,6 @@ import {
   Wrench,
   Users as UsersIcon,
   CheckCircle2,
-  ChevronDown,
   FolderOpen,
   MessagesSquare,
   CreditCard,
@@ -83,13 +82,6 @@ const OTHER_FEATURES = [
   { icon: ClipboardCheck, title: "Übergabeprotokolle", description: "Optimale Dokumentation für Ihre nächste Wohnungsübergabe.", path: "/funktionen/uebergabeprotokoll" },
 ];
 
-const FAQS = [
-  { question: "Wie viele Immobilien kann ich verwalten?", answer: "Unbegrenzt viele. Es gibt keine Beschränkung bei der Anzahl der Immobilien, Einheiten oder Stellplätze — weder im Basic- noch im Pro-Tarif." },
-  { question: "Kann ich verschiedene Immobilientypen verwalten?", answer: "Ja. Sie können Mietobjekte, Eigentumswohnungen (WEG) und gemischt genutzte Immobilien verwalten. Für jede Einheit legen Sie individuell fest, ob es sich um eine Miet- oder Eigentumseinheit handelt." },
-  { question: "Werden Wertentwicklungen automatisch erfasst?", answer: "Sie können Marktwerte manuell hinterlegen und über die Zeit dokumentieren. Die Werthistorie wird automatisch aufgezeichnet und lässt sich als Diagramm anzeigen." },
-  { question: "Kann ich Fotos zu meinen Immobilien hochladen?", answer: "Ja. Zu jeder Immobilie und Einheit können Sie beliebig viele Fotos hochladen. So dokumentieren Sie den Zustand Ihrer Objekte visuell und übersichtlich." },
-];
-
 const BENEFITS = [
   { icon: LayoutDashboard, title: "Alles auf einen Blick", description: "Behalten Sie Ihr gesamtes Portfolio mit allen Einheiten, Mietern und Kennzahlen im Überblick." },
   { icon: TrendingUp, title: "Wertentwicklung verfolgen", description: "Dokumentieren Sie Marktwerte und verfolgen Sie die Entwicklung Ihres Portfolios über die Zeit." },
@@ -144,21 +136,6 @@ function PropertyTableMockup() {
       <div className="border-t border-gray-100 bg-gray-50 px-6 py-3.5 flex items-center justify-between">
         <span className="text-sm text-gray-500 font-medium">Gesamt-Mieteinnahmen</span>
         <span className="text-sm font-bold text-gray-900">10.980,00 €/Monat</span>
-      </div>
-    </div>
-  );
-}
-
-function FaqItem({ question, answer }: { question: string; answer: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div className="border-b border-gray-200 last:border-b-0">
-      <button onClick={() => setIsOpen(!isOpen)} className="w-full flex items-center justify-between py-5 text-left gap-4">
-        <span className="text-base font-medium text-gray-900">{question}</span>
-        <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
-      </button>
-      <div className={`overflow-hidden transition-all duration-200 ${isOpen ? "max-h-[400px] pb-5" : "max-h-0"}`}>
-        <p className="text-gray-500 leading-relaxed pr-8">{answer}</p>
       </div>
     </div>
   );
@@ -416,19 +393,7 @@ export default function Immobilienmanagement() {
         </div>
       </section>
 
-      <section className="py-[100px] px-6">
-        <div className="max-w-[800px] mx-auto">
-          <RevealOnScroll>
-            <h2 className="text-3xl sm:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4 text-center">Häufig gestellte Fragen</h2>
-            <p className="text-gray-500 leading-relaxed mb-12 text-center max-w-[560px] mx-auto">Alles Wichtige über das Immobilienmanagement mit rentably auf einen Blick.</p>
-          </RevealOnScroll>
-          <RevealOnScroll delay={100}>
-            <div className="bg-white border border-gray-200 rounded-2xl px-8">
-              {FAQS.map((faq) => <FaqItem key={faq.question} question={faq.question} answer={faq.answer} />)}
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
+      <FaqSection pageSlug="immobilienmanagement" />
 
       <section className="py-24 px-6">
         <RevealOnScroll>
