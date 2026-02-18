@@ -156,7 +156,7 @@ const FAQS = [
   {
     question: "Wie funktioniert die Verteilung der Kosten?",
     answer:
-      "Sie wählen pro Kostenart einen Umlageschlüssel – zum Beispiel nach Wohnfläche, Personenzahl oder Verbrauch. rentably berechnet die Verteilung automatisch auf Basis der hinterlegten Daten Ihrer Mieter und Einheiten.",
+      "Sie wählen pro Kostenart einen Umlageschlüssel – zum Beispiel nach Wohnfläche, Personenzahl oder Verbrauch. Rentably berechnet die Verteilung automatisch auf Basis der hinterlegten Daten Ihrer Mieter und Einheiten.",
   },
   {
     question: "Wird die Abrechnung als PDF erstellt?",
@@ -166,7 +166,7 @@ const FAQS = [
   {
     question: "Bis wann muss die Nebenkostenabrechnung erstellt werden?",
     answer:
-      "Die Nebenkostenabrechnung muss spätestens 12 Monate nach Ende des Abrechnungszeitraums beim Mieter eingehen. Verpassen Sie die Frist, können Sie keine Nachforderungen mehr geltend machen. rentably hilft Ihnen, die Fristen im Blick zu behalten.",
+      "Die Nebenkostenabrechnung muss spätestens 12 Monate nach Ende des Abrechnungszeitraums beim Mieter eingehen. Verpassen Sie die Frist, können Sie keine Nachforderungen mehr geltend machen. Rentably hilft Ihnen, die Fristen im Blick zu behalten.",
   },
   {
     question: "Kann ich die Abrechnung direkt an den Mieter senden?",

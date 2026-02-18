@@ -112,7 +112,7 @@ const TIMELINE = [
   {
     year: "2026",
     title: "Öffentlicher Launch",
-    text: "rentably geht live. Tausende Vermieter verwalten ihre Immobilien digital — mit einer Software, die mitdenkt.",
+    text: "Rentably geht live. Tausende Vermieter verwalten ihre Immobilien digital — mit einer Software, die mitdenkt.",
     icon: TrendingUp,
   },
   {
@@ -127,7 +127,7 @@ const ABOUT_FAQS = [
   {
     question: "Wer steckt hinter rentably?",
     answer:
-      "rentably wurde von Simon Schier und Philipp Roth gegründet — zwei Unternehmer, die selbst als Vermieter die Herausforderungen der Immobilienverwaltung kennen. Unser Ziel ist es, private Vermieter mit einer modernen, einfachen Software zu unterstützen.",
+      "Rentably wurde von Simon Schier und Philipp Roth gegründet — zwei Unternehmer, die selbst als Vermieter die Herausforderungen der Immobilienverwaltung kennen. Unser Ziel ist es, private Vermieter mit einer modernen, einfachen Software zu unterstützen.",
   },
   {
     question: "Ist rentably wirklich kostenlos?",
@@ -137,12 +137,12 @@ const ABOUT_FAQS = [
   {
     question: "Wo werden meine Daten gespeichert?",
     answer:
-      "Alle Daten werden auf europäischen Servern gehostet. rentably ist vollständig DSGVO-konform. Ihre Daten werden nicht an Dritte weitergegeben und gehören ausschließlich Ihnen.",
+      "Alle Daten werden auf europäischen Servern gehostet. Rentably ist vollständig DSGVO-konform. Ihre Daten werden nicht an Dritte weitergegeben und gehören ausschließlich Ihnen.",
   },
   {
     question: "Für wen ist rentably geeignet?",
     answer:
-      "rentably ist primär für private Vermieter und Eigentümer konzipiert, die eine bis mehrere Immobilien verwalten. Auch kleinere Hausverwaltungen und Immobilieninvestoren profitieren von der Software.",
+      "Rentably ist primär für private Vermieter und Eigentümer konzipiert, die eine bis mehrere Immobilien verwalten. Auch kleinere Hausverwaltungen und Immobilieninvestoren profitieren von der Software.",
   },
   {
     question: "Wie kann ich rentably kontaktieren?",
@@ -259,7 +259,7 @@ function HeroSection() {
               <span className="text-[#3c8af7]">einfach.</span>
             </h1>
             <p className="mt-6 text-lg sm:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
-              rentably entstand aus der Überzeugung, dass private Vermieter
+              Rentably entstand aus der Überzeugung, dass private Vermieter
               bessere Werkzeuge verdienen — ohne die Komplexität und Kosten
               professioneller Hausverwaltungssoftware.
             </p>

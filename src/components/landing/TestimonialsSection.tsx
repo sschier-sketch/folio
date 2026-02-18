@@ -32,7 +32,7 @@ const TESTIMONIALS: Testimonial[] = [
   {
     name: "Sandra K.",
     role: "Eigentümerin, 2 Objekte",
-    text: "Ich habe lange nach einer einfachen Lösung gesucht. rentably ist genau das — übersichtlich, schnell und vor allem kostenlos für meine Bedürfnisse.",
+    text: "Ich habe lange nach einer einfachen Lösung gesucht. Rentably ist genau das — übersichtlich, schnell und vor allem kostenlos für meine Bedürfnisse.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200",
@@ -95,7 +95,7 @@ const TESTIMONIALS: Testimonial[] = [
   {
     name: "Stefan D.",
     role: "Immobilieninvestor, 20+ Einheiten",
-    text: "Als ich angefangen habe zu skalieren, brauchte ich ein System, das mitwächst. rentably deckt alles ab — Verträge, Zahlungen, Dokumente. Absolut empfehlenswert.",
+    text: "Als ich angefangen habe zu skalieren, brauchte ich ein System, das mitwächst. Rentably deckt alles ab — Verträge, Zahlungen, Dokumente. Absolut empfehlenswert.",
     stars: 5,
     image:
       "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=200",

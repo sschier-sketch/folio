@@ -95,14 +95,14 @@ const FALLBACK_FAQS: FaqItem[] = [
     id: "5",
     question: "Wo werden meine Daten gespeichert?",
     answer:
-      "Alle Daten werden auf europäischen Servern in Deutschland gehostet. rentably ist vollständig DSGVO-konform. Ihre Daten werden nicht an Dritte weitergegeben.",
+      "Alle Daten werden auf europäischen Servern in Deutschland gehostet. Rentably ist vollständig DSGVO-konform. Ihre Daten werden nicht an Dritte weitergegeben.",
     sort_order: 5,
   },
   {
     id: "6",
     question: "Kann ich rentably auch für WEG-Verwaltung nutzen?",
     answer:
-      "rentably ist primär für private Vermieter und Eigentümer konzipiert. Sie können sowohl Miet- als auch Eigentumsobjekte verwalten und Hausgeld-Zahlungen für WEG-Einheiten erfassen.",
+      "Rentably ist primär für private Vermieter und Eigentümer konzipiert. Sie können sowohl Miet- als auch Eigentumsobjekte verwalten und Hausgeld-Zahlungen für WEG-Einheiten erfassen.",
     sort_order: 6,
   },
   {

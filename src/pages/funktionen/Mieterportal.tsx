@@ -146,7 +146,7 @@ const FAQS = [
   {
     question: "Wie aktiviere ich das Mieterportal für einen Mieter?",
     answer:
-      "Öffnen Sie den gewünschten Mieter in der Mietverwaltung und klicken Sie auf 'Portal aktivieren'. rentably versendet automatisch eine Einladungs-E-Mail mit den Zugangsdaten an Ihren Mieter.",
+      "Öffnen Sie den gewünschten Mieter in der Mietverwaltung und klicken Sie auf 'Portal aktivieren'. Rentably versendet automatisch eine Einladungs-E-Mail mit den Zugangsdaten an Ihren Mieter.",
   },
   {
     question: "Welche Informationen sieht mein Mieter im Portal?",

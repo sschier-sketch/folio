@@ -111,7 +111,7 @@ const FAQS = [
   },
   {
     question: "Gibt es fertige Nachrichtenvorlagen?",
-    answer: "Ja. rentably bietet Ihnen vorgefertigte Vorlagen für häufige Anliegen wie Nebenkostenabrechnungen, Mieterhöhungen oder Instandhaltungshinweise. Sie können auch eigene Vorlagen erstellen."
+    answer: "Ja. Rentably bietet Ihnen vorgefertigte Vorlagen für häufige Anliegen wie Nebenkostenabrechnungen, Mieterhöhungen oder Instandhaltungshinweise. Sie können auch eigene Vorlagen erstellen."
   },
   {
     question: "Werden eingehende E-Mails automatisch zugeordnet?",

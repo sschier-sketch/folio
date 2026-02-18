@@ -112,7 +112,7 @@ const FAQS = [
   },
   {
     question: "Wie werden meine Dokumente geschützt?",
-    answer: "Alle Dokumente werden verschlüsselt auf europäischen Servern in Deutschland gespeichert. Der Zugriff ist nur über Ihr persönliches Konto möglich. rentably ist vollständig DSGVO-konform."
+    answer: "Alle Dokumente werden verschlüsselt auf europäischen Servern in Deutschland gespeichert. Der Zugriff ist nur über Ihr persönliches Konto möglich. Rentably ist vollständig DSGVO-konform."
   },
   {
     question: "Kann ich Dokumente mit Mietern teilen?",

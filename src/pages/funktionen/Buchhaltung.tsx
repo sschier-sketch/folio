@@ -120,7 +120,7 @@ const FAQS = [
   },
   {
     question: "Ist die Buchhaltung für die Steuererklärung geeignet?",
-    answer: "rentably erstellt keine Steuererklärung, liefert Ihnen aber alle relevanten Daten sauber aufbereitet. Die Kategorisierung orientiert sich an der Anlage V der Einkommensteuererklärung."
+    answer: "Rentably erstellt keine Steuererklärung, liefert Ihnen aber alle relevanten Daten sauber aufbereitet. Die Kategorisierung orientiert sich an der Anlage V der Einkommensteuererklärung."
   }
 ];
 
