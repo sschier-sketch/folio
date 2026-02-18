@@ -17,23 +17,23 @@ export default function MagazineHero() {
           <div className="relative">
             <div className="grid grid-cols-2 gap-3">
               <img
-                src="https://images.pexels.com/photos/1546168/pexels-photo-1546168.jpeg?auto=compress&cs=tinysrgb&w=600"
-                alt=""
+                src="/rentably-blog1.jpg"
+                alt="Nebenkostenabrechnung"
                 className="rounded-2xl object-cover w-full h-48 md:h-56"
               />
               <img
-                src="https://images.pexels.com/photos/7578939/pexels-photo-7578939.jpeg?auto=compress&cs=tinysrgb&w=600"
-                alt=""
+                src="/rentably-blog2.jpg"
+                alt="Mieterübergabe"
                 className="rounded-2xl object-cover w-full h-48 md:h-56 mt-8"
               />
               <img
-                src="https://images.pexels.com/photos/8293778/pexels-photo-8293778.jpeg?auto=compress&cs=tinysrgb&w=600"
-                alt=""
+                src="/rentably-blog3.jpg"
+                alt="Immobilie mit Solaranlage"
                 className="rounded-2xl object-cover w-full h-48 md:h-56 -mt-4"
               />
               <img
-                src="https://images.pexels.com/photos/5849559/pexels-photo-5849559.jpeg?auto=compress&cs=tinysrgb&w=600"
-                alt=""
+                src="/rentably-blog4.jpg"
+                alt="Finanzen und Buchhaltung"
                 className="rounded-2xl object-cover w-full h-48 md:h-56 mt-4"
               />
             </div>
