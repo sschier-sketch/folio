@@ -561,6 +561,38 @@ export default function Buchhaltung() {
 
       <FaqSection pageSlug="buchhaltung" />
 
+      <section className="py-[80px] px-6 bg-[#f8fafc]">
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              Immobilien-Buchhaltung f&uuml;r Vermieter &ndash; Einnahmen, Ausgaben und Cashflow auf einen Blick
+            </h2>
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                Die finanzielle Seite der Vermietung ist oft die zeitaufw&auml;ndigste: Mieteinnahmen
+                verbuchen, Ausgaben kategorisieren, Darlehen im Blick behalten und am Jahresende
+                steuerrelevante Auswertungen f&uuml;r den Steuerberater erstellen. Ohne eine zentrale
+                L&ouml;sung bedeutet das manuelle Arbeit in Tabellen, verstreute Belege und das Risiko,
+                Buchungen zu vergessen oder falsch zuzuordnen.
+              </p>
+              <p>
+                rentably erfasst alle finanziellen Vorg&auml;nge rund um Ihre Immobilien strukturiert
+                an einem Ort: Mieteinnahmen werden automatisch aus Ihren Mietvertr&auml;gen generiert,
+                Ausgaben lassen sich mit wenigen Klicks erfassen und nach steuerrelevanten Kategorien
+                wie Anlage V sortieren. Die Cashflow-Analyse zeigt Ihnen in Echtzeit, wie sich
+                jede Immobilie finanziell entwickelt &ndash; &uuml;ber Monate und Jahre hinweg.
+              </p>
+              <p>
+                Dar&uuml;ber hinaus behalten Sie Ihre Immobiliendarlehen mit Zinsen, Tilgung und
+                Restschuld im Blick. Belege und Rechnungen laden Sie direkt hoch und ordnen diese
+                den passenden Ausgaben zu. Am Ende des Jahres exportieren Sie alle steuerrelevanten
+                Daten f&uuml;r Ihren Steuerberater &ndash; sauber kategorisiert und l&uuml;ckenlos dokumentiert.
+              </p>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">

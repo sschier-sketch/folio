@@ -395,6 +395,39 @@ export default function Immobilienmanagement() {
 
       <FaqSection pageSlug="immobilienmanagement" />
 
+      <section className="py-[80px] px-6 bg-[#f8fafc]">
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              Immobilienverwaltung f&uuml;r Privatvermieter &ndash; digital, &uuml;bersichtlich und sicher
+            </h2>
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                Wer eine oder mehrere Immobilien vermietet, kennt die Herausforderung: Stammdaten pflegen,
+                Einheiten verwalten, Mieterwechsel dokumentieren und den &Uuml;berblick &uuml;ber Renditen und
+                Kennzahlen behalten. Ohne eine zentrale L&ouml;sung enden diese Aufgaben oft in
+                unterschiedlichen Tabellen, Ordnern und Notizen &ndash; ein System, das mit jedem
+                weiteren Objekt un&uuml;bersichtlicher wird.
+              </p>
+              <p>
+                Mit rentably erfassen Sie alle Immobilien, Einheiten und Stellpl&auml;tze an einem Ort. Jedes
+                Objekt erh&auml;lt ein eigenes Profil mit Adresse, Fl&auml;che, Baujahr, Ausstattungsmerkmalen
+                und Fotodokumentation. Sie k&ouml;nnen Objekte nach Eigentumsart unterscheiden &ndash; egal ob
+                Einfamilienhaus, Mehrfamilienhaus oder Eigentumswohnung &ndash; und sehen auf einen Blick
+                die aktuelle Auslastung, die Mieteinnahmen und die Rendite jedes Objekts.
+              </p>
+              <p>
+                Alle Daten sind miteinander verkn&uuml;pft: Einheiten geh&ouml;ren zu Immobilien, Mieter zu
+                Einheiten, Vertr&auml;ge zu Mietern. So flie&szlig;en &Auml;nderungen automatisch in die
+                richtigen Bereiche &ndash; von der Zahlungs&uuml;berwachung bis zur Nebenkostenabrechnung.
+                Die L&ouml;sung ist webbasiert, jederzeit erreichbar und alle Daten werden DSGVO-konform
+                auf deutschen Servern gespeichert.
+              </p>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">

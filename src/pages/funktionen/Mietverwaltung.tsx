@@ -620,6 +620,40 @@ export default function Mietverwaltung() {
 
       <FaqSection pageSlug="mietverwaltung" />
 
+      <section className="py-[80px] px-6 bg-[#f8fafc]">
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              Mietverwaltungssoftware f&uuml;r Privatvermieter &ndash; Vertr&auml;ge, Zahlungen und Mietanpassungen zentral verwalten
+            </h2>
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                Die Verwaltung von Mietverh&auml;ltnissen ist das Kernst&uuml;ck jeder Immobilienverwaltung.
+                Mietvertr&auml;ge erfassen, Zahlungseingänge kontrollieren, Mieterhöhungen planen und
+                Kautionen dokumentieren — ohne eine zentrale L&ouml;sung verteilen sich diese Aufgaben
+                auf verschiedene Tabellen, E-Mails und Aktenordner. Das kostet Zeit und birgt
+                das Risiko, wichtige Fristen oder offene Zahlungen zu &uuml;bersehen.
+              </p>
+              <p>
+                rentably bringt alle Aspekte der Mietverwaltung in eine &uuml;bersichtliche Plattform:
+                Digitale Mietvertr&auml;ge mit allen Details von Kaltmiete bis Betriebskostenvorauszahlung,
+                automatische Zahlungsverfolgung mit Soll-Ist-Abgleich, Index-basierte Mietanpassungen
+                mit Verbraucherpreisindex-Anbindung, Kautionsverwaltung mit vollst&auml;ndiger Historie
+                und ein integriertes Mahnwesen f&uuml;r s&auml;umige Zahlungen.
+              </p>
+              <p>
+                Jeder Mieter hat ein eigenes Profil mit Vertragsdaten, Zahlungshistorie und
+                Kommunikationsverlauf. Vertr&auml;ge werden automatisch mit Einheiten und Immobilien
+                verkn&uuml;pft, sodass &Auml;nderungen in alle relevanten Bereiche &uuml;bernommen werden.
+                Die Software erinnert Sie rechtzeitig an anstehende Mieterhöhungen und generiert
+                Zahlungsaufforderungen bei Verzug &ndash; so behalten Sie auch bei mehreren Objekten
+                jedes Mietverh&auml;ltnis im Griff.
+              </p>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">

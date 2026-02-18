@@ -1000,6 +1000,39 @@ export default function Mieterportal() {
 
       <FaqSection pageSlug="mieterportal" />
 
+      <section className="py-[80px] px-6 bg-[#f8fafc]">
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              Mieterportal f&uuml;r Vermieter &ndash; Self-Service f&uuml;r zufriedene Mieter und weniger Aufwand
+            </h2>
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                Vermieter erhalten regelm&auml;&szlig;ig die gleichen Anfragen: &bdquo;Wo finde ich meinen
+                Mietvertrag?&ldquo;, &bdquo;K&ouml;nnen Sie mir die Nebenkostenabrechnung nochmal
+                schicken?&ldquo;, &bdquo;Wem melde ich einen Defekt?&ldquo; Jede dieser Fragen kostet
+                Zeit &ndash; Zeit, die Sie besser in die Verwaltung Ihrer Immobilien investieren
+                k&ouml;nnten.
+              </p>
+              <p>
+                Mit dem rentably Mieterportal erhalten Ihre Mieter einen eigenen, passwortgesch&uuml;tzten
+                Zugang zu allen relevanten Informationen: Vertragsdaten, freigegebene Dokumente wie
+                Nebenkostenabrechnungen und Hausordnung, ein Ticket-System f&uuml;r Anfragen und die
+                M&ouml;glichkeit, Z&auml;hlerst&auml;nde selbstst&auml;ndig zu erfassen. Alle Daten flie&szlig;en
+                automatisch in Ihre Verwaltung zur&uuml;ck.
+              </p>
+              <p>
+                Sie aktivieren das Portal f&uuml;r jeden Mieter mit einem Klick &ndash; die
+                Einladungs-E-Mail mit Zugangsdaten wird automatisch versendet. Sie bestimmen,
+                welche Informationen sichtbar sind. Das Ergebnis: weniger R&uuml;ckfragen, mehr
+                Transparenz und zufriedenere Mieter. Das Portal ist DSGVO-konform, verschl&uuml;sselt
+                und von jedem Ger&auml;t erreichbar.
+              </p>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">

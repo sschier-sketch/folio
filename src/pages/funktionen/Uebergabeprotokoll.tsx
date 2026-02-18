@@ -387,6 +387,39 @@ export default function Uebergabeprotokoll() {
 
       <FaqSection pageSlug="uebergabeprotokoll" />
 
+      <section className="py-[80px] px-6 bg-[#f8fafc]">
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              Digitales &Uuml;bergabeprotokoll f&uuml;r Vermieter &ndash; rechtssicher dokumentieren, Streit vermeiden
+            </h2>
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                Bei jeder Wohnungs&uuml;bergabe stehen Vermieter vor der gleichen Herausforderung: den
+                Zustand der Wohnung l&uuml;ckenlos dokumentieren, Z&auml;hlerst&auml;nde erfassen, Schl&uuml;ssel
+                protokollieren und eventuelle M&auml;ngel nachweisbar festhalten. Ohne ein strukturiertes
+                Protokoll wird jede sp&auml;tere Auseinandersetzung um Kaution oder Sch&auml;den zum
+                Risiko &ndash; f&uuml;r beide Seiten.
+              </p>
+              <p>
+                rentably f&uuml;hrt Sie Raum f&uuml;r Raum durch die gesamte &Uuml;bergabe: Boden, W&auml;nde,
+                Decke, Fenster und Ausstattung werden systematisch bewertet. M&auml;ngel dokumentieren
+                Sie mit Beschreibung und Bewertung direkt im System. Z&auml;hlerst&auml;nde f&uuml;r Strom,
+                Gas und Wasser werden erfasst und die Schl&uuml;ssel&uuml;bergabe mit Art und Anzahl
+                aller Schl&uuml;ssel protokolliert.
+              </p>
+              <p>
+                Das fertige Protokoll exportieren Sie per Klick als professionelles PDF-Dokument &ndash;
+                druckfertig und rechtssicher dokumentiert. Alle Protokolle werden automatisch dem
+                Objekt und dem Mieter zugeordnet und in Ihrem Dokumentenarchiv gespeichert. So
+                haben Sie bei jeder sp&auml;teren R&uuml;ckfrage den vollst&auml;ndigen Nachweis &uuml;ber den
+                Zustand der Wohnung zum Zeitpunkt der &Uuml;bergabe.
+              </p>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">

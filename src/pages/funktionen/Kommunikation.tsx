@@ -548,6 +548,38 @@ export default function Kommunikation() {
 
       <FaqSection pageSlug="kommunikation" />
 
+      <section className="py-[80px] px-6 bg-[#f8fafc]">
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              Mieterkommunikation zentral verwalten &ndash; E-Mails, Tickets und Vorlagen an einem Ort
+            </h2>
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                E-Mails gehen unter, Telefonnotizen verschwinden, und ohne klare Dokumentation wird
+                jede Auseinandersetzung zum Wort-gegen-Wort-Problem. F&uuml;r private Vermieter mit
+                mehreren Mietverh&auml;ltnissen ist eine strukturierte Kommunikation nicht nur
+                w&uuml;nschenswert, sondern notwendig &ndash; f&uuml;r den eigenen &Uuml;berblick und als
+                Absicherung im Streitfall.
+              </p>
+              <p>
+                rentably b&uuml;ndelt Ihre gesamte Mieterkommunikation in einem integrierten E-Mail-System:
+                Jede Nachricht wird automatisch dem richtigen Mieter und der richtigen Immobilie zugeordnet.
+                &Uuml;ber das Ticketsystem behalten Sie offene Anfragen mit Status, Priorit&auml;t und
+                Bearbeitungshistorie im Blick. Fertige Vorlagen mit automatischen Platzhaltern f&uuml;r
+                Mieterdaten sparen Ihnen Zeit bei wiederkehrenden Anliegen.
+              </p>
+              <p>
+                Jede Konversation wird l&uuml;ckenlos archiviert und ist jederzeit abrufbar. Dokumente,
+                Abrechnungen und Vertr&auml;ge versenden Sie direkt aus dem System heraus &ndash; sicher
+                und nachvollziehbar. So kommunizieren Sie professionell und haben im Fall einer
+                Auseinandersetzung immer den vollst&auml;ndigen Schriftverkehr zur Hand.
+              </p>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">

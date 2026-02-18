@@ -577,6 +577,39 @@ export default function Dokumente() {
 
       <FaqSection pageSlug="dokumente" />
 
+      <section className="py-[80px] px-6 bg-[#f8fafc]">
+        <div className="max-w-[800px] mx-auto">
+          <RevealOnScroll>
+            <h2 className="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-6">
+              Dokumentenmanagement f&uuml;r Vermieter &ndash; sicher archivieren, schnell finden, einfach teilen
+            </h2>
+            <div className="space-y-4 text-gray-600 leading-relaxed">
+              <p>
+                Mietvertr&auml;ge, Nebenkostenabrechnungen, &Uuml;bergabeprotokolle, Versicherungspolicen,
+                Grundrisse &ndash; als Vermieter sammeln sich schnell Dutzende Dokumente pro Objekt an.
+                Wer diese in physischen Ordnern oder auf der lokalen Festplatte aufbewahrt, riskiert
+                den Verlust wichtiger Unterlagen und verschwendet wertvolle Zeit bei der Suche
+                nach dem richtigen Dokument.
+              </p>
+              <p>
+                rentably bietet ein vollst&auml;ndiges Cloud-Dokumentenmanagement f&uuml;r Ihre Immobilien:
+                Laden Sie Dokumente per Drag &amp; Drop hoch, und die Software ordnet sie automatisch
+                der richtigen Immobilie, Einheit oder dem richtigen Mieter zu. Eine intelligente
+                Kategorisierung nach Dokumententyp &ndash; Vertr&auml;ge, Abrechnungen, Protokolle,
+                Versicherungen und mehr &ndash; sorgt daf&uuml;r, dass Sie jedes Dokument in Sekunden
+                wiederfinden.
+              </p>
+              <p>
+                &Uuml;ber das Mieterportal geben Sie ausgew&auml;hlte Dokumente sicher an Ihre Mieter frei.
+                Alle Dateien werden verschl&uuml;sselt auf europ&auml;ischen Servern gespeichert und sind
+                DSGVO-konform archiviert. So haben Sie Ihre gesamten Unterlagen jederzeit und von
+                &uuml;berall im Zugriff &ndash; auf dem PC, Tablet oder Smartphone.
+              </p>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
       <section className="py-24 px-6">
         <RevealOnScroll>
           <div className="max-w-[1200px] mx-auto text-center">
