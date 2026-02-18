@@ -1045,8 +1045,12 @@ export default function TenantRentHistoryTab({
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-dark">Mieterhöhungen</h3>
-            <Button disabled={rentIncreaseCalcs.section558Status === "blocked"} variant="primary">
-              Erhöhung einstellen
+            <Button
+              disabled={rentIncreaseCalcs.section558Status === "blocked"}
+              onClick={handleOpenAddPeriod}
+              variant="primary"
+            >
+              Erh\u00F6hung einstellen
             </Button>
           </div>
 
