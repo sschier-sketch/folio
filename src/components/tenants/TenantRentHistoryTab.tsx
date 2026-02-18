@@ -134,6 +134,7 @@ export default function TenantRentHistoryTab({
     is_sublet: false,
     vat_applicable: false,
     rent_due_day: 1,
+    effective_date: new Date().toISOString().split("T")[0],
   });
 
   useEffect(() => {
@@ -282,6 +283,7 @@ export default function TenantRentHistoryTab({
           is_sublet: contractData.is_sublet || false,
           vat_applicable: contractData.vat_applicable || false,
           rent_due_day: contractData.rent_due_day || 1,
+          effective_date: new Date().toISOString().split("T")[0],
         });
 
         const [historyRes, rcuRes] = await Promise.all([
@@ -397,7 +399,7 @@ export default function TenantRentHistoryTab({
           {
             contract_id: contract.id,
             user_id: user.id,
-            effective_date: new Date().toISOString().split('T')[0],
+            effective_date: editData.effective_date || new Date().toISOString().split('T')[0],
             cold_rent: monthlyRent,
             utilities: utilitiesAdvance,
             reason: "manual",
@@ -575,6 +577,23 @@ export default function TenantRentHistoryTab({
                   Kaltmiete + Betriebskosten + Heizkosten
                 </option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gültig ab
+              </label>
+              <input
+                type="date"
+                value={editData.effective_date}
+                onChange={(e) =>
+                  setEditData({ ...editData, effective_date: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Datum, ab dem die neue Miete gilt. Standardmäßig heute – ändern Sie das Datum z.B. bei nachträglichen Korrekturen.
+              </p>
             </div>
 
             {editData.rent_type === "flat_rate" && (
