@@ -7,6 +7,7 @@ export interface SystemSettings {
   gtm_custom_head_html: string | null;
   default_affiliate_commission_rate: number;
   signup_custom_tracking_script: string | null;
+  notify_on_new_registration: boolean;
   updated_at: string;
 }
 

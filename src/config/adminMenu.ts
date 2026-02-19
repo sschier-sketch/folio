@@ -14,6 +14,7 @@ import {
   Timer,
   HelpCircle,
   PenLine,
+  Monitor,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ export type AdminTabKey =
   | "system_updates"
   | "feedback"
   | "system_settings"
+  | "system_info"
   | "seo"
   | "affiliates"
   | "pro_features"
@@ -98,6 +100,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
     defaultOpen: true,
     items: [
       { key: "system_settings", label: "Einstellungen", icon: Settings },
+      { key: "system_info", label: "Systeminfos", icon: Monitor },
       { key: "system_updates", label: "System-Updates", icon: Bell },
       { key: "cron_jobs", label: "Cron Jobs", icon: Timer },
     ],

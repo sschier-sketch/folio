@@ -31,6 +31,7 @@ import AdminEmailSettingsView from "../components/admin/AdminEmailSettingsView";
 import AdminCronJobsView from "../components/admin/AdminCronJobsView";
 import AdminFaqsView from "../components/admin/AdminFaqsView";
 import AdminCmsView from "../components/admin/AdminCmsView";
+import AdminSystemInfoView from "../components/admin/AdminSystemInfoView";
 import DeleteUserModal from "../components/admin/DeleteUserModal";
 import RefundWizard from "../components/admin/RefundWizard";
 import AdminLayout from "../components/admin/AdminLayout";
@@ -606,6 +607,7 @@ export function Admin() {
         {activeTab === "system_updates" && <AdminSystemUpdatesView />}
         {activeTab === "feedback" && <AdminFeedbackView />}
         {activeTab === "system_settings" && <AdminSystemSettingsView />}
+        {activeTab === "system_info" && <AdminSystemInfoView />}
         {activeTab === "seo" && <AdminSeoView />}
         {activeTab === "affiliates" && <AdminAffiliatesView />}
         {activeTab === "pro_features" && <AdminProFeaturesView />}

@@ -84,21 +84,34 @@ Deno.serve(async (req: Request) => {
           .eq("id", emailLog.id);
 
         const metadata = emailLog.metadata || {};
-        const templateKey = metadata.template_key || emailLog.mail_type;
-        const variables = metadata.variables || {};
 
-        if (metadata.dashboard_link) {
-          variables.dashboard_link = metadata.dashboard_link;
+        let emailPayload: Record<string, unknown>;
+
+        if (metadata.send_raw && metadata.raw_html) {
+          emailPayload = {
+            to: emailLog.to_email,
+            subject: emailLog.subject,
+            html: metadata.raw_html,
+            mailType: emailLog.mail_type,
+            category: emailLog.category,
+          };
+        } else {
+          const templateKey = metadata.template_key || emailLog.mail_type;
+          const variables = metadata.variables || {};
+
+          if (metadata.dashboard_link) {
+            variables.dashboard_link = metadata.dashboard_link;
+          }
+
+          emailPayload = {
+            to: emailLog.to_email,
+            templateKey: templateKey,
+            userId: emailLog.user_id,
+            mailType: emailLog.mail_type,
+            category: emailLog.category,
+            variables: variables,
+          };
         }
-
-        const emailPayload: Record<string, unknown> = {
-          to: emailLog.to_email,
-          templateKey: templateKey,
-          userId: emailLog.user_id,
-          mailType: emailLog.mail_type,
-          category: emailLog.category,
-          variables: variables,
-        };
 
         const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
           method: "POST",
