@@ -46,7 +46,6 @@ import Dokumente from "./pages/funktionen/Dokumente";
 import Nebenkostenabrechnung from "./pages/funktionen/Nebenkostenabrechnung";
 import Mieterportal from "./pages/funktionen/Mieterportal";
 import Uebergabeprotokoll from "./pages/funktionen/Uebergabeprotokoll";
-import SocialAds from "./pages/SocialAds";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -150,7 +149,6 @@ function App() {
         <Route path="/tenant-portal/reset-password" element={<TenantResetPassword />} />
         <Route path="/tenant-portal" element={<TenantPortalPage />} />
         <Route path="/tenant-portal/:userId" element={<TenantPortalPage />} />
-        <Route path="/social-ads" element={<SocialAds />} />
         <Route path="/account-banned" element={<AccountBanned />} />
         <Route
           path="/dashboard"
