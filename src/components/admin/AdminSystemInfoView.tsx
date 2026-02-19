@@ -10,7 +10,6 @@ import { Button } from "../ui/Button";
 import {
   getSystemSettings,
   updateSystemSettings,
-  SystemSettings,
 } from "../../lib/systemSettings";
 
 export default function AdminSystemInfoView() {
@@ -22,6 +21,8 @@ export default function AdminSystemInfoView() {
   } | null>(null);
 
   const [notifyOnNewRegistration, setNotifyOnNewRegistration] = useState(false);
+  const [notificationEmail, setNotificationEmail] = useState("hello@rentab.ly");
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSettings();
@@ -33,6 +34,7 @@ export default function AdminSystemInfoView() {
       const settings = await getSystemSettings(true);
       if (settings) {
         setNotifyOnNewRegistration(settings.notify_on_new_registration);
+        setNotificationEmail(settings.notification_email || "hello@rentab.ly");
       }
     } catch (error) {
       console.error("Error loading settings:", error);
@@ -42,13 +44,32 @@ export default function AdminSystemInfoView() {
     }
   };
 
+  const validateEmail = (email: string): boolean => {
+    if (!email.trim()) {
+      setEmailError("E-Mail-Adresse darf nicht leer sein");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setEmailError("Bitte eine gueltige E-Mail-Adresse eingeben");
+      return false;
+    }
+    setEmailError(null);
+    return true;
+  };
+
   const handleSave = async () => {
+    if (notifyOnNewRegistration && !validateEmail(notificationEmail)) {
+      return;
+    }
+
     setSaving(true);
     setMessage(null);
 
     try {
       const result = await updateSystemSettings({
         notify_on_new_registration: notifyOnNewRegistration,
+        notification_email: notificationEmail.trim(),
       });
 
       if (result.success) {
@@ -139,7 +160,7 @@ export default function AdminSystemInfoView() {
                   </span>
                   <span className="text-xs text-gray-600 block mt-1">
                     Bei jeder neuen Benutzerregistrierung wird automatisch eine
-                    E-Mail an <span className="font-mono font-semibold">hello@rentab.ly</span> gesendet.
+                    E-Mail an die unten angegebene Adresse gesendet.
                   </span>
                 </div>
               </label>
@@ -156,18 +177,67 @@ export default function AdminSystemInfoView() {
           </div>
 
           {notifyOnNewRegistration && (
-            <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-              <Mail className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">So funktioniert es</p>
-                <p>
-                  Sobald sich ein neuer Nutzer registriert, wird automatisch eine
-                  E-Mail mit der E-Mail-Adresse und dem Zeitpunkt der Registrierung
-                  an <span className="font-mono font-semibold">hello@rentab.ly</span> gesendet.
-                  Die E-Mail wird ueber die bestehende E-Mail-Warteschlange verarbeitet.
+            <>
+              <div>
+                <label
+                  htmlFor="notification-email"
+                  className="block text-sm font-semibold text-dark mb-2"
+                >
+                  Empfaenger-Adresse
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="w-4 h-4 text-gray-400" />
+                  </div>
+                  <input
+                    id="notification-email"
+                    type="email"
+                    value={notificationEmail}
+                    onChange={(e) => {
+                      setNotificationEmail(e.target.value);
+                      if (emailError) setEmailError(null);
+                    }}
+                    onBlur={() => {
+                      if (notificationEmail.trim()) {
+                        validateEmail(notificationEmail);
+                      }
+                    }}
+                    placeholder="hello@rentab.ly"
+                    className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      emailError
+                        ? "border-red-300 focus:ring-red-200 focus:border-red-400"
+                        : "border-gray-200 focus:ring-primary-blue/20 focus:border-primary-blue"
+                    }`}
+                  />
+                </div>
+                {emailError && (
+                  <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {emailError}
+                  </p>
+                )}
+                <p className="mt-1.5 text-xs text-gray-400">
+                  An diese Adresse werden alle Registrierungsbenachrichtigungen gesendet.
                 </p>
               </div>
-            </div>
+
+              <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                <Mail className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-semibold mb-1">So funktioniert es</p>
+                  <p>
+                    Sobald sich ein neuer Nutzer registriert, wird automatisch eine
+                    E-Mail mit der E-Mail-Adresse und dem Zeitpunkt der Registrierung
+                    an{" "}
+                    <span className="font-mono font-semibold">
+                      {notificationEmail || "..."}
+                    </span>{" "}
+                    gesendet. Die E-Mail wird ueber die bestehende E-Mail-Warteschlange
+                    verarbeitet.
+                  </p>
+                </div>
+              </div>
+            </>
           )}
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t">
@@ -201,16 +271,6 @@ export default function AdminSystemInfoView() {
               <p className="text-gray-600">
                 Die Benachrichtigung wird direkt beim Anlegen des neuen Benutzers
                 in die E-Mail-Warteschlange eingereiht und vom Cron-Job verarbeitet.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-primary-blue rounded-full mt-1.5"></div>
-            <div>
-              <p className="font-medium text-dark">Empfaenger</p>
-              <p className="text-gray-600">
-                Alle Registrierungsbenachrichtigungen werden an{" "}
-                <span className="font-mono">hello@rentab.ly</span> gesendet.
               </p>
             </div>
           </div>
