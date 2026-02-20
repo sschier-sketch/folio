@@ -117,7 +117,7 @@ export default function TestimonialsSection() {
               Das sagen unsere Nutzer
             </h2>
             <p className="text-gray-500 max-w-[600px] mx-auto mb-10">
-              Immer mehr Vermieter verwalten ihre Immobilien bereits mit rentably
+              Zufriedene Vermieter verwalten ihre Immobilien mit rentably
               — kostenlos und ohne Kompromisse.
             </p>
 

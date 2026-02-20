@@ -72,7 +72,7 @@ const PILLARS = [
   {
     icon: ShieldCheck,
     title: "Sicherheit für Ihre Daten",
-    text: "In der Immobilienverwaltung geht es um sensible Informationen. Bei rentably steht Datensicherheit an erster Stelle. Alle Daten werden in zertifizierten europäischen Rechenzentren gespeichert — DSGVO-konform und verschlüsselt.",
+    text: "In der Immobilienverwaltung geht es um sensible Informationen. Bei rentably steht Datensicherheit an erster Stelle. Alle Daten werden in zertifizierten Rechenzentren gespeichert — DSGVO-konform und verschlüsselt.",
     image:
       "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
@@ -111,7 +111,7 @@ const TIMELINE = [
   {
     year: "2026",
     title: "Öffentlicher Launch",
-    text: "Rentably geht live. Tausende Vermieter verwalten ihre Immobilien digital — mit einer Software, die mitdenkt.",
+    text: "rentably geht live. Immer mehr Vermieter verwalten ihre Immobilien digital — mit einer Software, die mitdenkt.",
     icon: TrendingUp,
   },
   {
