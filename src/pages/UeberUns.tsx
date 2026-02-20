@@ -40,7 +40,7 @@ const VALUES = [
   {
     icon: ShieldCheck,
     title: "Datenschutz",
-    text: "Alle Daten werden DSGVO-konform auf europäischen Servern gespeichert. Ihre Immobiliendaten gehören Ihnen — immer.",
+    text: "Alle Daten werden DSGVO-konform und sicher auf unseren Servern gespeichert. Ihre Immobiliendaten gehören Ihnen — immer.",
   },
   {
     icon: Handshake,
@@ -57,7 +57,7 @@ const VALUES = [
 const PILLARS = [
   {
     icon: Headphones,
-    title: "Kunden im Fokus",
+    title: "Vermieter im Mittelpunkt",
     text: "Bei rentably stehen Sie nicht allein. Unser Support-Team begleitet Sie persönlich und sorgt dafür, dass keine Frage unbeantwortet bleibt. Ob per E-Mail oder WhatsApp — wir sind da, wo Sie uns brauchen.",
     image:
       "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800",
@@ -296,8 +296,7 @@ function ValuesSection() {
               Unsere Werte
             </h2>
             <p className="text-gray-500 max-w-[600px] mx-auto">
-              Bei rentably leben wir Fortschritt für die Immobilienbranche und
-              zukunftssichere Softwareentwicklung für unsere Kunden.
+              rentably digitalisiert die Immobilienbrache als Betriebssystem zur Verwaltung von Mietobjekten - von Vermietern, für Vermieter.
             </p>
           </div>
         </RevealOnScroll>
