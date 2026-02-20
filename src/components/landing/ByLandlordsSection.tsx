@@ -24,12 +24,9 @@ export default function ByLandlordsSection() {
               <span className="font-semibold text-gray-800">
                 Was uns besonders macht:
               </span>{" "}
-              rentably wird von Vermietern für Vermieter entwickelt. Unser Team
-              vereint junge Talente der Immobilienbranche mit erfahrenen
-              Eigentümern, die genau wissen, worauf es in der Praxis ankommt. So
-              können wir immer mehr Kunden begeistern — mit echter
-              Beratung, langjähriger Branchenerfahrung und einer Software, die
-              Ihren Alltag spürbar einfacher macht.
+              rentably entsteht aus echter Vermieter-Praxis. Wir kennen die Herausforderungen privater Eigentümer – von der Nebenkostenabrechnung bis zur laufenden Verwaltung.
+              Darum entwickeln wir eine Software, die genau dort unterstützt, wo es zählt: einfach, transparent und digital. Ohne unnötige Komplexität. Ohne hohe Einstiegshürden.
+              Eine Lösung, die Vermietern den Rücken freihält – damit Sie sich auf das Wesentliche konzentrieren können.
             </p>
             <ul className="space-y-4 mb-10">
               {POINTS.map((point) => (
