@@ -757,7 +757,7 @@ export default function Nebenkostenabrechnung() {
           <RevealOnScroll>
             <div className="text-center">
               <p className="text-gray-600 mb-6">
-                Teste rentably jetzt kostenlos und unverbindlich.
+                Testen Sie rentably jetzt kostenlos und unverbindlich.
               </p>
               <button
                 onClick={goToSignup}
