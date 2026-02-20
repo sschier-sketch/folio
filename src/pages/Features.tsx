@@ -142,7 +142,7 @@ const BENEFITS = [
   {
     icon: Shield,
     title: "DSGVO-konform",
-    description: "Ihre Daten werden auf deutschen Servern verschlüsselt gespeichert.",
+    description: "Ihre Daten werden auf unseren Servern verschlüsselt gespeichert.",
   },
   {
     icon: Sparkles,

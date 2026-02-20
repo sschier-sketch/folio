@@ -158,7 +158,7 @@ const BENEFITS = [
     icon: Shield,
     title: "DSGVO-konform",
     description:
-      "Sicherer Zugang, verschlüsselte Datenübertragung und Hosting auf deutschen Servern. Datenschutz inklusive.",
+      "Sicherer Zugang, verschlüsselte Datenübertragung und Hosting auf zertifizierten Servern. Datenschutz inklusive.",
   },
   {
     icon: Sparkles,
@@ -923,7 +923,7 @@ export default function Mieterportal() {
           <RevealOnScroll>
             <div className="text-center">
               <p className="text-gray-600 mb-6">
-                Teste rentably jetzt kostenlos und unverbindlich.
+                Testen Sie rentably jetzt kostenlos und unverbindlich.
               </p>
               <button
                 onClick={goToSignup}
