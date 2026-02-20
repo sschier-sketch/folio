@@ -226,8 +226,8 @@ function HeroSection() {
             </p>
             <div className="mt-8 flex flex-wrap gap-6">
               {[
-                { value: "2.000+", label: "Aktive Vermieter" },
-                { value: "15.000+", label: "Verwaltete Einheiten" },
+                { value: "0€", label: "Für immer" },
+                { value: "100%", label: "Vermieter-Fokus" },
                 { value: "22+", label: "Jahre Erfahrung" },
               ].map((stat) => (
                 <div key={stat.label}>
