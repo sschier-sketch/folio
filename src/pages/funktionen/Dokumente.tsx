@@ -118,7 +118,7 @@ const BENEFITS = [
   {
     icon: Shield,
     title: "Sicher archiviert",
-    description: "Verschlüsselte Speicherung auf deutschen Servern. DSGVO-konform."
+    description: "Verschlüsselte Speicherung auf gesicherten Servern. DSGVO-konform."
   },
   {
     icon: Sparkles,
@@ -511,7 +511,7 @@ export default function Dokumente() {
           <RevealOnScroll>
             <div className="text-center">
               <p className="text-gray-600 mb-6">
-                Teste rentably jetzt kostenlos und unverbindlich.
+                Testen Sie rentably jetzt kostenlos und unverbindlich.
               </p>
               <button
                 onClick={goToSignup}

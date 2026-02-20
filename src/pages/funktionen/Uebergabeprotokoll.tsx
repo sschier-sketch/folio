@@ -351,7 +351,7 @@ export default function Uebergabeprotokoll() {
           </div>
           <RevealOnScroll>
             <div className="text-center">
-              <p className="text-gray-600 mb-6">Teste rentably jetzt kostenlos und unverbindlich.</p>
+              <p className="text-gray-600 mb-6">Testen Sie rentably jetzt kostenlos und unverbindlich.</p>
               <button onClick={goToSignup} className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors">Jetzt kostenlos testen</button>
             </div>
           </RevealOnScroll>
