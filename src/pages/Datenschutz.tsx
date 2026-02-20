@@ -241,7 +241,103 @@ function DatenschutzFallbackContent() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">5. Newsletter</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">5. Einsatz von Meta-Technologien (Facebook)</h2>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Meta Pixel (ehemals Facebook Pixel)</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Wir nutzen auf unserer Website das Meta Pixel (ehemals Facebook Pixel) der Meta Platforms Ireland Limited,
+          4 Grand Canal Square, Grand Canal Harbour, Dublin 2, Irland ("Meta"). Das Meta Pixel ist ein
+          JavaScript-Code-Snippet, das auf unserer Website eingebunden ist.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Das Meta Pixel ermöglicht es uns, das Verhalten von Nutzern nachzuverfolgen, nachdem diese durch Klicken
+          auf eine Meta-Werbeanzeige (Facebook oder Instagram) auf unsere Website weitergeleitet wurden. Dadurch
+          können wir die Wirksamkeit der Meta-Werbeanzeigen für statistische und Marktforschungszwecke erfassen
+          und zukünftige Werbemaßnahmen optimieren.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Die erhobenen Daten sind für uns als Betreiber dieser Website anonym, wir können keine Rückschlüsse auf
+          die Identität der Nutzer ziehen. Die Daten werden jedoch von Meta gespeichert und verarbeitet, sodass eine
+          Verbindung zum jeweiligen Nutzerprofil möglich ist und Meta die Daten für eigene Werbezwecke, entsprechend
+          der Meta-Datenverwendungsrichtlinie, verwenden kann.
+        </p>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-6">Cookies durch Meta-Technologien</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Im Rahmen der Nutzung des Meta Pixels werden Cookies auf Ihrem Endgerät gesetzt. Diese Cookies dienen
+          dazu, Ihren Webbrowser wiederzuerkennen, die Nutzung unserer Website zu erfassen und unsere
+          Werbeanzeigen auf den Plattformen von Meta (Facebook, Instagram, Messenger, Audience Network) zu
+          optimieren. Folgende Cookies können gesetzt werden:
+        </p>
+        <ul className="list-disc list-inside space-y-2 ml-1 text-gray-600 leading-relaxed">
+          <li><strong>_fbp</strong> &ndash; Cookie zur Identifikation von Browsern, die unsere Website besuchen. Speicherdauer: 90 Tage.</li>
+          <li><strong>_fbc</strong> &ndash; Cookie zur Speicherung des letzten Klicks auf eine Meta-Werbeanzeige. Speicherdauer: 90 Tage.</li>
+          <li><strong>fr</strong> &ndash; Cookie von Meta zur Bereitstellung und Messung von Werbeanzeigen. Speicherdauer: 90 Tage.</li>
+        </ul>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-6">Conversions API</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Ergänzend zum Meta Pixel nutzen wir ggf. die Meta Conversions API. Hierbei werden bestimmte
+          Nutzerinteraktionen (z.B. Registrierung, Kontaktanfrage) serverseitig an Meta übermittelt, um die
+          Messgenauigkeit zu verbessern und unsere Werbeanzeigen effektiver auszusteuern.
+        </p>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-6">Custom Audiences und Lookalike Audiences</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Wir nutzen die Meta-Funktion "Custom Audiences", um unsere Werbeanzeigen gezielt an bestehende
+          Nutzer oder Websitebesucher auszurichten. Zudem nutzen wir ggf. "Lookalike Audiences", um
+          Werbeanzeigen Personen anzuzeigen, die ähnliche Merkmale wie unsere bestehenden Nutzer aufweisen.
+          Diese Datenverarbeitung erfolgt ausschließlich auf Basis gehashter Daten, sodass Meta keinen
+          Zugriff auf Klartext-Daten erhält.
+        </p>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-6">Zwecke der Verarbeitung</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Die Nutzung der Meta-Technologien erfolgt zu folgenden Zwecken:
+        </p>
+        <ul className="list-disc list-inside space-y-2 ml-1 text-gray-600 leading-relaxed">
+          <li>Auswertung und Optimierung unserer Werbeanzeigen auf Meta-Plattformen</li>
+          <li>Erstellung von Zielgruppen für Werbeanzeigen (Custom Audiences und Lookalike Audiences)</li>
+          <li>Messung von Conversions (z.B. Registrierungen, Kontaktanfragen)</li>
+          <li>Remarketing und Retargeting von Websitebesuchern</li>
+          <li>Statistische Auswertung der Nutzung unserer Website</li>
+        </ul>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-6">Rechtsgrundlage</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Die Nutzung des Meta Pixels und der zugehörigen Cookies erfolgt auf Grundlage Ihrer Einwilligung
+          gemäß Art. 6 Abs. 1 lit. a DSGVO. Sie können Ihre Einwilligung jederzeit mit Wirkung für die
+          Zukunft widerrufen, indem Sie die Cookie-Einstellungen in Ihrem Browser ändern oder die
+          Werbepräferenzen in Ihrem Meta-Konto anpassen.
+        </p>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-6">Datenübermittlung in die USA</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Meta verarbeitet Ihre Daten auch in den USA. Wir weisen darauf hin, dass nach Auffassung des EuGH
+          derzeit kein angemessenes Schutzniveau für die Datenübermittlung in die USA besteht. Die USA
+          verfügen seit dem 10. Juli 2023 über einen Angemessenheitsbeschluss der EU-Kommission (EU-U.S. Data
+          Privacy Framework). Meta Platforms Inc. ist unter dem EU-U.S. Data Privacy Framework zertifiziert
+          und hat sich damit verpflichtet, die europäischen Datenschutzstandards einzuhalten.
+        </p>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-6">Widerspruch und Opt-out</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Sie können der Erfassung durch das Meta Pixel wie folgt widersprechen:
+        </p>
+        <ul className="list-disc list-inside space-y-2 ml-1 text-gray-600 leading-relaxed">
+          <li>Durch Anpassung Ihrer Cookie-Einstellungen in Ihrem Browser (Blockieren von Drittanbieter-Cookies)</li>
+          <li>Über die Werbeeinstellungen Ihres Meta-Kontos: <a href="https://www.facebook.com/ads/preferences/" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://www.facebook.com/ads/preferences/</a></li>
+          <li>Über die Opt-out-Seite der Digital Advertising Alliance: <a href="https://optout.aboutads.info/" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://optout.aboutads.info/</a></li>
+          <li>Über die Opt-out-Seite der European Interactive Digital Advertising Alliance: <a href="https://www.youronlinechoices.com/" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://www.youronlinechoices.com/</a></li>
+        </ul>
+        <p className="text-gray-600 leading-relaxed mt-4">
+          Weitere Informationen zum Datenschutz bei Meta finden Sie in der Datenschutzrichtlinie von Meta
+          unter: <a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://www.facebook.com/privacy/policy/</a>
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">6. Newsletter</h2>
         <p className="text-gray-600 leading-relaxed">
           Wenn Sie den auf der Website angebotenen Newsletter beziehen möchten, benötigen wir von Ihnen eine
           E-Mail-Adresse sowie Informationen, welche uns die Überprüfung gestatten, dass Sie der Inhaber der
