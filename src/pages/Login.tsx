@@ -7,7 +7,7 @@ import { RefLink } from "../components/common/RefLink";
 const TRUST_POINTS = [
   "DSGVO-konform & SSL-verschlüsselt",
   "Keine Zahlungsdaten erforderlich",
-  "Über 10.000 zufriedene Vermieter",
+  "Zufriedene Vermieter vertrauen auf rentably",
 ];
 
 export function Login() {
