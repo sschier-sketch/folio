@@ -19,12 +19,10 @@ export default function PricingSection() {
         <RevealOnScroll>
           <div className="text-center mb-6">
             <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
-              Keine Hausverwaltungssoftware ist günstiger
+              Wohl keine Hausverwaltungssoftware ist günstiger
             </h2>
             <p className="text-gray-500 leading-relaxed max-w-[620px] mx-auto">
-              Andere Anbieter berechnen pro Einheit, pro Mieter oder pro Objekt.
-              Bei rentably zahlen Sie einen festen Preis — egal wie gross
-              Ihr Portfolio ist.
+              Bei rentably zahlen Sie gar nichts. Oder einen festen Preis — egal wie groß Ihr Portfolio ist.
             </p>
           </div>
         </RevealOnScroll>
