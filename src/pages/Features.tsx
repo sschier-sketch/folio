@@ -433,10 +433,10 @@ export default function Features() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-4">
                           <div
-                            className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
+                            className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
                             style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
                           >
-                            <feature.icon className="w-5 h-5" style={{ color: "#1E1E24" }} strokeWidth={1.5} />
+                            <feature.icon className="w-5 h-5 text-[#3c8af7]" strokeWidth={1.5} />
                           </div>
                           <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#3c8af7] transition-colors">
                             {feature.title}
