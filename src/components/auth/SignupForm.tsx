@@ -4,7 +4,6 @@ import { Eye, EyeOff, ArrowRight, Gift, AlertCircle, CheckCircle2 } from "lucide
 import { getReferralCode, getReferralMetadata, initReferralTracking, clearReferralCode } from "../../lib/referralTracking";
 import { getRefSid } from "../../lib/referralSession";
 import { trackSignupSuccess } from "../../lib/analytics";
-import { getSystemSettings } from "../../lib/systemSettings";
 
 interface SignupFormProps {
   onSuccess?: () => void;
@@ -99,39 +98,6 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           }
         } catch (welcomeErr) {
           console.error("Welcome email error:", welcomeErr);
-        }
-
-        try {
-          const settings = await getSystemSettings(true);
-          if (settings?.notify_on_new_registration && settings.notification_email) {
-            const now = new Date().toLocaleString("de-DE", {
-              timeZone: "Europe/Berlin",
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-            await fetch(
-              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-                },
-                body: JSON.stringify({
-                  to: settings.notification_email,
-                  subject: `Neue Registrierung: ${authData.user.email}`,
-                  html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px"><h2 style="color:#1a1a2e;margin-bottom:16px">Neue Registrierung</h2><p style="color:#4a4a4a;font-size:15px;line-height:1.6">Ein neuer Benutzer hat sich bei Rentably registriert:</p><div style="background:#f8f9fa;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 8px;color:#1a1a2e"><strong>E-Mail:</strong> ${authData.user.email}</p><p style="margin:0;color:#1a1a2e"><strong>Zeitpunkt:</strong> ${now} Uhr</p></div><p style="color:#888;font-size:12px;margin-top:24px">Diese Benachrichtigung wurde automatisch gesendet, weil die Admin-Benachrichtigung bei neuen Registrierungen aktiviert ist.</p></div>`,
-                  mailType: "admin_new_registration",
-                  category: "transactional",
-                }),
-              }
-            );
-          }
-        } catch (notifyErr) {
-          console.error("Admin notification error:", notifyErr);
         }
 
         const refSid = getRefSid();
