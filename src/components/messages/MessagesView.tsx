@@ -144,11 +144,16 @@ export default function MessagesView() {
     if (!user) return;
     const confirmed = window.confirm('Papierkorb endgültig leeren? Alle Nachrichten darin werden unwiderruflich gelöscht.');
     if (!confirmed) return;
-    await supabase
+    const { error } = await supabase
       .from('mail_threads')
       .delete()
       .eq('user_id', user.id)
       .eq('folder', 'trash');
+    if (error) {
+      console.error('Failed to empty trash:', error);
+      alert('Papierkorb konnte nicht geleert werden. Bitte versuchen Sie es erneut.');
+      return;
+    }
     setSelectedThread(null);
     loadThreads();
     loadCounts();
