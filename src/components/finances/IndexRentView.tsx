@@ -352,18 +352,6 @@ export default function IndexRentView() {
     return { open, applied, dismissed };
   }, [calculations]);
 
-  const summaryMetrics = useMemo(() => {
-    const openCalcs = calculations.filter(
-      (c) =>
-        c.status === "pending" ||
-        c.status === "calculated" ||
-        c.status === "notified"
-    );
-    const totalPending = openCalcs.length;
-
-    return { totalPending };
-  }, [calculations]);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -390,24 +378,6 @@ export default function IndexRentView() {
           {processing ? "Prüfe..." : "Jetzt prüfen"}
         </Button>
       </div>
-
-      {summaryMetrics.totalPending > 0 && (
-        <div
-          style={{ backgroundColor: "#fef9ee", borderColor: "#fde68a" }}
-          className="border rounded-lg p-4"
-        >
-          <p className="text-sm font-medium text-amber-900 mb-1">
-            {summaryMetrics.totalPending} mögliche{" "}
-            {summaryMetrics.totalPending === 1
-              ? "Indexmieterhöhung"
-              : "Indexmieterhöhungen"}
-          </p>
-          <p className="text-sm text-amber-900">
-            Prüfen Sie den aktuellen Verbraucherpreisindex (VPI) und
-            entscheiden Sie, ob Sie die Erhöhung vornehmen möchten.
-          </p>
-        </div>
-      )}
 
       {lastRun && (
         <div className="bg-white rounded-lg p-5">
