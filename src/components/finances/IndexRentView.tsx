@@ -9,11 +9,15 @@ import {
   ArrowUpRight,
   Calendar,
   Loader2,
+  Send,
+  CalendarClock,
+  AlertOctagon,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../ui/Button";
 import { createRentPeriod } from "../../lib/rentPeriods";
+import { computeDeliveryTiming, formatDateDE, type DeliveryTiming } from "../../lib/indexRentTiming";
 import IndexRentWizard from "./index-rent-wizard/IndexRentWizard";
 import type { WizardCalc } from "./index-rent-wizard/types";
 
@@ -707,18 +711,40 @@ function CalculationCard({
     calc.status === "calculated" ||
     calc.status === "notified";
 
+  const timing = useMemo(
+    () => (isOpen ? computeDeliveryTiming(calc.possible_since) : null),
+    [calc.possible_since, isOpen]
+  );
+
   return (
     <div
       className={`bg-white border rounded-xl overflow-hidden ${
-        isOpen ? "border-amber-200" : "border-gray-200"
+        isOpen && timing?.timingStatus === "NOW_OPTIMAL"
+          ? "border-emerald-300"
+          : isOpen
+            ? "border-amber-200"
+            : "border-gray-200"
       }`}
     >
       {isOpen && calc.possible_since && (
-        <div className="bg-amber-50 px-6 py-2.5 flex items-center gap-2 border-b border-amber-200">
-          <ArrowUpRight className="w-4 h-4 text-amber-600" />
-          <span className="text-sm font-medium text-amber-800">
-            Erhöhung möglich seit {formatDate(calc.possible_since)}
-          </span>
+        <div className={`px-6 py-2.5 flex flex-col gap-1.5 border-b ${
+          timing?.timingStatus === "NOW_OPTIMAL"
+            ? "bg-emerald-50 border-emerald-200"
+            : timing?.timingStatus === "MISSED_WINDOW"
+              ? "bg-red-50 border-red-200"
+              : "bg-amber-50 border-amber-200"
+        }`}>
+          <div className="flex items-center gap-2">
+            <ArrowUpRight className={`w-4 h-4 ${
+              timing?.timingStatus === "NOW_OPTIMAL" ? "text-emerald-600" : timing?.timingStatus === "MISSED_WINDOW" ? "text-red-600" : "text-amber-600"
+            }`} />
+            <span className={`text-sm font-medium ${
+              timing?.timingStatus === "NOW_OPTIMAL" ? "text-emerald-800" : timing?.timingStatus === "MISSED_WINDOW" ? "text-red-800" : "text-amber-800"
+            }`}>
+              Erhoehung moeglich seit {formatDate(calc.possible_since)}
+            </span>
+          </div>
+          {timing && <TimingBanner timing={timing} />}
         </div>
       )}
 
@@ -728,7 +754,15 @@ function CalculationCard({
             <h3 className="font-semibold text-dark text-lg">{tenantName}</h3>
             <p className="text-sm text-gray-500">{propertyName}</p>
           </div>
-          <StatusBadge status={calc.status} />
+          <div className="flex items-center gap-2">
+            {isOpen && timing?.timingStatus === "NOW_OPTIMAL" && (
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                <Send className="w-3 h-3" />
+                Jetzt zustellen
+              </span>
+            )}
+            <StatusBadge status={calc.status} />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
@@ -740,21 +774,21 @@ function CalculationCard({
           <MetricBox
             label="Basismonat"
             value={calc.basis_monat || "–"}
-            sublabel="für VPI-Vergleich"
+            sublabel="fuer VPI-Vergleich"
           />
           <MetricBox
             label="Aktueller Monat"
             value={calc.aktueller_monat || "-"}
-            sublabel="für VPI-Vergleich"
+            sublabel="fuer VPI-Vergleich"
           />
           {calc.wohnflaeche_qm ? (
             <MetricBox
-              label="Wohnfläche"
-              value={`${calc.wohnflaeche_qm} m²`}
+              label="Wohnflaeche"
+              value={`${calc.wohnflaeche_qm} m2`}
             />
           ) : (
             <MetricBox
-              label="Geprüft am"
+              label="Geprueft am"
               value={formatDate(calc.calculation_date)}
             />
           )}
@@ -763,12 +797,17 @@ function CalculationCard({
         {isOpen && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5">
             <p className="text-sm text-blue-800">
-              Bitte prüfen Sie den aktuellen VPI-Wert für den Monat{" "}
+              Bitte pruefen Sie den aktuellen VPI-Wert fuer den Monat{" "}
               <span className="font-semibold">{calc.aktueller_monat}</span> und
               vergleichen Sie ihn mit dem Basismonat{" "}
               <span className="font-semibold">{calc.basis_monat || "–"}</span>, um die
-              konkrete Erhöhung zu berechnen.
+              konkrete Erhoehung zu berechnen.
             </p>
+            {timing && (
+              <p className="text-xs text-blue-700 mt-2 pt-2 border-t border-blue-200">
+                Zustellfenster (fuer fruehestmoegliche Wirksamkeit): {formatDateDE(timing.serviceWindowStart)} – {formatDateDE(timing.serviceWindowEnd)}
+              </p>
+            )}
           </div>
         )}
 
@@ -977,6 +1016,47 @@ function MarkAppliedModal({
       </div>
     </div>
   );
+}
+
+function TimingBanner({ timing }: { timing: DeliveryTiming }) {
+  if (timing.timingStatus === "NOW_OPTIMAL") {
+    return (
+      <div className="flex items-center gap-2 ml-6">
+        <Send className="w-3.5 h-3.5 text-emerald-600" />
+        <span className="text-sm text-emerald-800">
+          Jetzt bis <span className="font-semibold">{formatDateDE(timing.serviceWindowEnd)}</span> zustellen,
+          damit die Erhoehung ab <span className="font-semibold">{formatDateDE(timing.nextEarliestEffectiveFrom)}</span> wirksam
+          wird (kein Ertrag verloren).
+        </span>
+      </div>
+    );
+  }
+
+  if (timing.timingStatus === "BEFORE_WINDOW") {
+    return (
+      <div className="flex items-center gap-2 ml-6">
+        <CalendarClock className="w-3.5 h-3.5 text-amber-600" />
+        <span className="text-sm text-amber-800">
+          Ab <span className="font-semibold">{formatDateDE(timing.serviceWindowStart)}</span> zustellen,
+          damit die Erhoehung ab <span className="font-semibold">{formatDateDE(timing.nextEarliestEffectiveFrom)}</span> wirksam wird.
+        </span>
+      </div>
+    );
+  }
+
+  if (timing.timingStatus === "MISSED_WINDOW") {
+    return (
+      <div className="flex items-center gap-2 ml-6">
+        <AlertOctagon className="w-3.5 h-3.5 text-red-600" />
+        <span className="text-sm text-red-800">
+          Zustellfrist fuer Wirksamkeit ab {formatDateDE(timing.nextEarliestEffectiveFrom)} verpasst.
+          Bei Zustellung heute wird die Erhoehung ab <span className="font-semibold">{formatDateDE(timing.nextEffectiveIfSendToday)}</span> wirksam.
+        </span>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 function StatusBadge({ status }: { status: string }) {
