@@ -46,6 +46,20 @@ function computeEarliestEffectiveDate(possibleSince: string | null, lastRentChan
   return earliest.toISOString().split("T")[0];
 }
 
+function buildTenantAddress(
+  tenant: { street: string | null; house_number: string | null; zip_code: string | null; city: string | null },
+  property: { address: string; name: string },
+): string {
+  const tenantAddr = [
+    [tenant.street, tenant.house_number].filter(Boolean).join(" "),
+    [tenant.zip_code, tenant.city].filter(Boolean).join(" "),
+  ].filter(Boolean).join("\n");
+
+  if (tenantAddr.trim()) return tenantAddr;
+
+  return property.address || property.name || "";
+}
+
 export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
   const { user } = useAuth();
   const [step, setStep] = useState<WizardStep>("overview");
@@ -73,10 +87,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
     landlordAddress: "",
     tenantName: `${tenant.first_name || ""} ${tenant.last_name || ""}`.trim() || tenant.name || "",
     tenantSalutation: (tenant.salutation === "Herr" ? "male" : tenant.salutation === "Frau" ? "female" : "neutral") as WizardState["tenantSalutation"],
-    tenantAddress: [
-      [tenant.street, tenant.house_number].filter(Boolean).join(" "),
-      [tenant.zip_code, tenant.city].filter(Boolean).join(" "),
-    ].filter(Boolean).join("\n"),
+    tenantAddress: buildTenantAddress(tenant, property),
     propertyAddress: property.address || property.name || "",
     unitNumber: "",
     contractDate: rc.contract_start || rc.start_date || "",
