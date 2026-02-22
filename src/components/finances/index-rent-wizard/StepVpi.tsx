@@ -4,9 +4,89 @@ import type { WizardState } from "./types";
 const formatCurrency = (v: number) =>
   v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 
+const MONTHS = [
+  { value: "01", label: "Januar" },
+  { value: "02", label: "Februar" },
+  { value: "03", label: "März" },
+  { value: "04", label: "April" },
+  { value: "05", label: "Mai" },
+  { value: "06", label: "Juni" },
+  { value: "07", label: "Juli" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "Oktober" },
+  { value: "11", label: "November" },
+  { value: "12", label: "Dezember" },
+];
+
+function getYearOptions(): number[] {
+  const currentYear = new Date().getFullYear();
+  const years: number[] = [];
+  for (let y = currentYear; y >= 2015; y--) {
+    years.push(y);
+  }
+  return years;
+}
+
+function parseMonthValue(value: string): { month: string; year: string } {
+  if (!value) return { month: "", year: "" };
+  const clean = value.substring(0, 7);
+  const [y, m] = clean.split("-");
+  return { month: m || "", year: y || "" };
+}
+
+function buildMonthValue(year: string, month: string): string {
+  if (!year || !month) return "";
+  return `${year}-${month}-01`;
+}
+
 interface Props {
   state: WizardState;
   onChange: (partial: Partial<WizardState>) => void;
+}
+
+function MonthYearPicker({
+  value,
+  onChangeValue,
+}: {
+  value: string;
+  onChangeValue: (val: string) => void;
+}) {
+  const { month, year } = parseMonthValue(value);
+  const years = getYearOptions();
+
+  const handleMonthChange = (m: string) => {
+    onChangeValue(buildMonthValue(year || String(new Date().getFullYear()), m));
+  };
+
+  const handleYearChange = (y: string) => {
+    onChangeValue(buildMonthValue(y, month || "01"));
+  };
+
+  return (
+    <div className="flex gap-2">
+      <select
+        value={month}
+        onChange={(e) => handleMonthChange(e.target.value)}
+        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      >
+        <option value="">Monat</option>
+        {MONTHS.map((m) => (
+          <option key={m.value} value={m.value}>{m.label}</option>
+        ))}
+      </select>
+      <select
+        value={year}
+        onChange={(e) => handleYearChange(e.target.value)}
+        className="w-28 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      >
+        <option value="">Jahr</option>
+        {years.map((y) => (
+          <option key={y} value={String(y)}>{y}</option>
+        ))}
+      </select>
+    </div>
+  );
 }
 
 export default function StepVpi({ state, onChange }: Props) {
@@ -40,15 +120,10 @@ export default function StepVpi({ state, onChange }: Props) {
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Monat / Jahr</label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                <input
-                  type="month"
-                  value={state.vpiOldMonth ? state.vpiOldMonth.substring(0, 7) : ""}
-                  onChange={(e) => onChange({ vpiOldMonth: e.target.value ? e.target.value + "-01" : "" })}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                />
-              </div>
+              <MonthYearPicker
+                value={state.vpiOldMonth}
+                onChangeValue={(val) => onChange({ vpiOldMonth: val })}
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">VPI-Wert</label>
@@ -69,15 +144,10 @@ export default function StepVpi({ state, onChange }: Props) {
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Monat / Jahr</label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                <input
-                  type="month"
-                  value={state.vpiNewMonth ? state.vpiNewMonth.substring(0, 7) : ""}
-                  onChange={(e) => onChange({ vpiNewMonth: e.target.value ? e.target.value + "-01" : "" })}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                />
-              </div>
+              <MonthYearPicker
+                value={state.vpiNewMonth}
+                onChangeValue={(val) => onChange({ vpiNewMonth: val })}
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">VPI-Wert</label>
@@ -143,7 +213,7 @@ export default function StepVpi({ state, onChange }: Props) {
           />
         </div>
         <p className="text-xs text-gray-400 mt-1">
-          Vorausgefuellt mit dem fruehesten zulaessigen Datum. Sie koennen ein spaeteres Datum waehlen.
+          Vorausgefüllt mit dem frühesten zulässigen Datum. Sie können ein späteres Datum wählen.
         </p>
       </div>
     </div>
