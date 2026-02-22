@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { TrendingUp, Lock, Calendar, Info, Percent, ParkingSquare, Plus, Clock, Trash2 } from "lucide-react";
+import { TrendingUp, Lock, Calendar, Info, Percent, ParkingSquare, Plus, Clock, Trash2, Send, CheckCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -185,10 +185,90 @@ export default function TenantRentHistoryTab({
     return null;
   }, [contract, history]);
 
+  const indexRentInfo = useMemo(() => {
+    if (!contract || !contract.start_date) return null;
+    if (contract.rent_increase_type !== "index" && !contract.index_rent_active) return null;
+
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+
+    let lastIndexDate: Date | null = null;
+    const sortedHistory = [...history].sort(
+      (a, b) => new Date(b.effective_date).getTime() - new Date(a.effective_date).getTime()
+    );
+    for (const event of sortedHistory) {
+      if (event.reason === "index" && (event.status || "active") === "active") {
+        const d = parseISODate(event.effective_date);
+        if (d <= today) {
+          lastIndexDate = d;
+          break;
+        }
+      }
+    }
+
+    const referenceDate = lastIndexDate
+      || (contract.index_first_increase_date ? parseISODate(contract.index_first_increase_date) : null)
+      || parseISODate(contract.start_date);
+
+    const earliestNextIncrease = lastIndexDate
+      ? addMonths(referenceDate, 12)
+      : referenceDate;
+
+    const deliveryDeadline = addMonths(earliestNextIncrease, -2);
+
+    const daysUntilDelivery = differenceInDays(deliveryDeadline, today);
+    const daysUntilIncrease = differenceInDays(earliestNextIncrease, today);
+
+    return {
+      earliestNextIncrease,
+      deliveryDeadline,
+      daysUntilDelivery,
+      daysUntilIncrease,
+      canIncrease: daysUntilIncrease <= 0,
+      canDeliver: daysUntilDelivery <= 0,
+    };
+  }, [contract, history]);
+
+  const graduatedRentInfo = useMemo(() => {
+    if (!contract || contract.rent_increase_type !== "graduated") return null;
+
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+
+    let lastChangeDate: Date | null = null;
+    const sortedHistory = [...history].sort(
+      (a, b) => new Date(b.effective_date).getTime() - new Date(a.effective_date).getTime()
+    );
+    for (const event of sortedHistory) {
+      const d = parseISODate(event.effective_date);
+      if (d <= today) {
+        lastChangeDate = d;
+        break;
+      }
+    }
+
+    const referenceDate = lastChangeDate
+      || (contract.graduated_rent_date ? parseISODate(contract.graduated_rent_date) : null)
+      || parseISODate(contract.start_date);
+
+    const nextStepDate = lastChangeDate
+      ? addMonths(referenceDate, 12)
+      : referenceDate;
+
+    const daysUntilNext = differenceInDays(nextStepDate, today);
+
+    return {
+      nextStepDate,
+      daysUntilNext,
+      canIncrease: daysUntilNext <= 0,
+      nextAmount: contract.graduated_rent_new_amount || null,
+    };
+  }, [contract, history]);
+
   const rentIncreaseCalcs = useMemo(() => {
     if (!contract) return null;
 
-    if (contract.index_rent_active || contract.rent_increase_type === 'graduated') {
+    if (contract.index_rent_active || contract.rent_increase_type === "index" || contract.rent_increase_type === "graduated") {
       return null;
     }
 
@@ -211,13 +291,13 @@ export default function TenantRentHistoryTab({
       const prevHistoryIndex = history.findIndex(h => h.id === firstEventInWindow.id);
 
       if (prevHistoryIndex >= 0 && prevHistoryIndex < history.length - 1) {
-        const sortedHistory = [...history].sort(
+        const sortedHist = [...history].sort(
           (a, b) => new Date(a.effective_date).getTime() - new Date(b.effective_date).getTime()
         );
-        const indexInSorted = sortedHistory.findIndex(h => h.id === firstEventInWindow.id);
+        const indexInSorted = sortedHist.findIndex(h => h.id === firstEventInWindow.id);
 
         if (indexInSorted > 0) {
-          baseRentForCap = sortedHistory[indexInSorted - 1].cold_rent;
+          baseRentForCap = sortedHist[indexInSorted - 1].cold_rent;
         } else {
           baseRentForCap = firstEventInWindow.cold_rent;
         }
@@ -1064,10 +1144,166 @@ export default function TenantRentHistoryTab({
         )}
       </div>
 
+      {indexRentInfo && (
+        <div className="bg-white rounded-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-semibold text-dark">Indexmieterhöhung</h3>
+              <p className="text-sm text-gray-500 mt-0.5">Indexmiete gem. <span className="font-medium">SS 557b BGB</span></p>
+            </div>
+            <Button
+              disabled={!indexRentInfo.canIncrease}
+              onClick={handleOpenAddPeriod}
+              variant="primary"
+            >
+              Erhöhung einstellen
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500">12-Monats-Frist (SS 557b)</span>
+                  <InfoTooltip text="Bei einer Indexmiete muss zwischen zwei Erhöhungen mindestens 12 Monate liegen (SS 557b BGB). Die Erhöhung wird erst zum übernächsten Monat nach Zugang wirksam." />
+                </div>
+                {indexRentInfo.canIncrease ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                ) : (
+                  <Lock className="w-5 h-5 text-amber-500" />
+                )}
+              </div>
+              {indexRentInfo.canIncrease ? (
+                <>
+                  <p className="text-3xl font-bold text-emerald-600">Möglich</p>
+                  <p className="text-sm text-gray-500 mt-1">12-Monats-Frist erfüllt</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-amber-600">Gesperrt</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    noch {indexRentInfo.daysUntilIncrease} Tage (ab {formatDateDE(indexRentInfo.earliestNextIncrease)})
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500">Zustellfenster</span>
+                  <InfoTooltip text="Die Erhöhungserklärung muss dem Mieter mindestens 2 Monate vor dem gewünschten Wirksamkeitsdatum zugehen. Das Zustellfenster zeigt an, ob Sie die Erklärung bereits versenden können." />
+                </div>
+                <Send className="w-5 h-5 text-[#3c8af7]" />
+              </div>
+              {indexRentInfo.canDeliver ? (
+                <>
+                  <p className="text-3xl font-bold text-emerald-600">Offen</p>
+                  <p className="text-sm text-gray-500 mt-1">Erklärung kann zugestellt werden</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-[#3c8af7]">
+                    {Math.abs(indexRentInfo.daysUntilDelivery)} Tage
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Zustellung ab {formatDateDE(indexRentInfo.deliveryDeadline)}
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500">Frühestes Wirksamkeitsdatum</span>
+                  <InfoTooltip text="Das früheste Datum, zu dem eine Indexmieterhöhung wirksam werden kann. Berücksichtigt die 12-Monats-Frist ab der letzten Erhöhung und die 2-monatige Ankündigungsfrist." />
+                </div>
+                <Calendar className="w-5 h-5 text-[#3c8af7]" />
+              </div>
+              <p className="text-3xl font-bold text-dark">
+                {formatDateDE(indexRentInfo.earliestNextIncrease)}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Nächste Erhöhung möglich
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {graduatedRentInfo && (
+        <div className="bg-white rounded-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-semibold text-dark">Staffelmieterhöhung</h3>
+              <p className="text-sm text-gray-500 mt-0.5">Staffelmiete gem. <span className="font-medium">SS 557a BGB</span></p>
+            </div>
+            <Button
+              disabled={!graduatedRentInfo.canIncrease}
+              onClick={handleOpenAddPeriod}
+              variant="primary"
+            >
+              Erhöhung einstellen
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500">12-Monats-Frist (SS 557a)</span>
+                  <InfoTooltip text="Bei einer Staffelmiete muss zwischen zwei Staffelstufen mindestens 12 Monate liegen. Die vereinbarten Staffelbeträge gelten automatisch zum jeweiligen Stichtag." />
+                </div>
+                {graduatedRentInfo.canIncrease ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                ) : (
+                  <Lock className="w-5 h-5 text-amber-500" />
+                )}
+              </div>
+              {graduatedRentInfo.canIncrease ? (
+                <>
+                  <p className="text-3xl font-bold text-emerald-600">Möglich</p>
+                  <p className="text-sm text-gray-500 mt-1">Nächste Staffelstufe fällig</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-amber-600">Gesperrt</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    noch {graduatedRentInfo.daysUntilNext} Tage
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500">Nächste Staffelstufe</span>
+                  <InfoTooltip text="Das Datum und ggf. der Betrag der nächsten vereinbarten Mietstaffel." />
+                </div>
+                <Calendar className="w-5 h-5 text-[#3c8af7]" />
+              </div>
+              <p className="text-3xl font-bold text-dark">
+                {formatDateDE(graduatedRentInfo.nextStepDate)}
+              </p>
+              {graduatedRentInfo.nextAmount && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Neue Kaltmiete: {graduatedRentInfo.nextAmount.toFixed(2)} EUR
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {rentIncreaseCalcs && (
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-dark">Mieterhöhungen</h3>
+            <div>
+              <h3 className="text-lg font-semibold text-dark">Mieterhöhungen</h3>
+              <p className="text-sm text-gray-500 mt-0.5">Vergleichsmiete gem. <span className="font-medium">SS 558 BGB</span></p>
+            </div>
             <Button
               disabled={rentIncreaseCalcs.section558Status === "blocked"}
               onClick={handleOpenAddPeriod}
@@ -1082,7 +1318,7 @@ export default function TenantRentHistoryTab({
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
                   <span className="text-sm text-gray-500">Kappungsgrenze (3 Jahre)</span>
-                  <InfoTooltip text="Innerhalb von 3 Jahren darf die Miete maximal um 20% erhöht werden (§558 BGB). Zeigt an, wie viel Spielraum für weitere Erhöhungen noch besteht." />
+                  <InfoTooltip text="Innerhalb von 3 Jahren darf die Miete maximal um 20% erhöht werden (SS 558 BGB). Zeigt an, wie viel Spielraum für weitere Erhöhungen noch besteht." />
                 </div>
                 <Percent className="w-5 h-5 text-[#3c8af7]" />
               </div>
@@ -1113,8 +1349,8 @@ export default function TenantRentHistoryTab({
             <div className="rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
-                  <span className="text-sm text-gray-500">15-Monats-Frist (§558)</span>
-                  <InfoTooltip text="Nach einer Mieterhöhung muss eine Sperrfrist von 15 Monaten eingehalten werden, bevor die nächste Erhöhung möglich ist (§558 Abs. 1 BGB)." />
+                  <span className="text-sm text-gray-500">15-Monats-Frist (SS 558)</span>
+                  <InfoTooltip text="Nach einer Mieterhöhung muss eine Sperrfrist von 15 Monaten eingehalten werden, bevor die nächste Erhöhung möglich ist (SS 558 Abs. 1 BGB)." />
                 </div>
                 {rentIncreaseCalcs.section558Status === "possible" ? (
                   <Calendar className="w-5 h-5 text-emerald-500" />
