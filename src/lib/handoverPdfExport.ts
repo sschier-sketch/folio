@@ -474,6 +474,6 @@ export async function generateHandoverPDF(
     drawFooter(i, pageCount);
   }
 
-  const fileName = `Rentably_Uebergabeprotokoll_${typeLabel}_${dateLabel.replace(/\./g, "-")}.pdf`;
+  const fileName = `Rentably_Übergabeprotokoll_${typeLabel}_${dateLabel.replace(/\./g, "-")}.pdf`;
   doc.save(fileName);
 }

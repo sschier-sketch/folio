@@ -306,7 +306,7 @@ export default function TenantPortalCommunication({
     const files = Array.from(e.target.files || []);
     const imageFiles = files.filter((f) => f.type.startsWith("image/"));
     if (imageFiles.length !== files.length) {
-      alert("Bitte nur Bilddateien auswaehlen");
+      alert("Bitte nur Bilddateien auswählen");
     }
     setAttachments((prev) => [...prev, ...imageFiles].slice(0, 5));
   };
@@ -363,7 +363,7 @@ export default function TenantPortalCommunication({
           className="flex items-center gap-2 text-primary-blue hover:text-blue-700 font-medium mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Zurueck
+          Zurück
         </button>
 
         <div className="bg-white rounded-lg shadow-sm">
@@ -427,7 +427,7 @@ export default function TenantPortalCommunication({
           className="flex items-center gap-2 text-primary-blue hover:text-blue-700 font-medium mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Zurueck
+          Zurück
         </button>
 
         <div className="mb-4 flex items-start justify-between">
@@ -726,12 +726,12 @@ export default function TenantPortalCommunication({
 
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Bilder anhaengen (max. 5)
+                  Bilder anhängen (max. 5)
                 </label>
                 <div className="space-y-3">
                   <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-blue hover:bg-blue-50 transition-colors">
                     <Upload className="w-5 h-5 text-gray-400" />
-                    <span className="text-sm text-gray-600">Bilder auswaehlen</span>
+                    <span className="text-sm text-gray-600">Bilder auswählen</span>
                     <input
                       type="file"
                       accept="image/*"

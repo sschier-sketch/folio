@@ -121,7 +121,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
       );
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Rueckerstattung fehlgeschlagen');
+      if (!response.ok) throw new Error(data.error || 'Rückerstattung fehlgeschlagen');
 
       setResult(data);
       setStep('success');
@@ -167,7 +167,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
               <RotateCcw className="w-4.5 h-4.5 text-amber-600" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-gray-900">Rueckerstattung</h2>
+              <h2 className="text-sm font-semibold text-gray-900">Rückerstattung</h2>
               <p className="text-xs text-gray-400">{userEmail}</p>
             </div>
           </div>
@@ -254,7 +254,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
                 <div className="flex items-start gap-3 p-3 bg-amber-50 rounded-xl border border-amber-100">
                   <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   <p className="text-sm text-amber-700">
-                    Die letzte Zahlung wurde bereits erstattet. Eine erneute Rueckerstattung ist nicht moeglich.
+                    Die letzte Zahlung wurde bereits erstattet. Eine erneute Rückerstattung ist nicht möglich.
                   </p>
                 </div>
               ) : (
@@ -283,7 +283,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
                               <span className="text-sm font-medium text-gray-800">Sofort beenden</span>
                             </div>
                             <p className="text-xs text-gray-400 mt-0.5">
-                              Abo wird sofort gekuendigt, Zugang wird auf Gratis zurueckgesetzt
+                              Abo wird sofort gekündigt, Zugang wird auf Gratis zurückgesetzt
                             </p>
                           </div>
                         </label>
@@ -337,9 +337,9 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
               <div className="flex items-start gap-3 p-4 bg-red-50 rounded-xl border border-red-100">
                 <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-red-800">Rueckerstattung bestaetigen</p>
+                  <p className="text-sm font-medium text-red-800">Rückerstattung bestätigen</p>
                   <p className="text-sm text-red-600 mt-1">
-                    Diese Aktion kann nicht rueckgaengig gemacht werden. Folgendes wird ausgefuehrt:
+                    Diese Aktion kann nicht rückgängig gemacht werden. Folgendes wird ausgeführt:
                   </p>
                 </div>
               </div>
@@ -348,7 +348,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <RotateCcw className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   <p className="text-sm text-gray-700">
-                    <span className="font-medium">{formatCurrency(preview.charge.amount, preview.charge.currency)}</span> an Stripe zurueckerstatten
+                    <span className="font-medium">{formatCurrency(preview.charge.amount, preview.charge.currency)}</span> an Stripe zurückerstatten
                   </p>
                 </div>
                 {preview.subscription && (
@@ -376,7 +376,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
           {step === 'processing' && (
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="w-8 h-8 text-blue-400 animate-spin mb-3" />
-              <p className="text-sm text-gray-500 font-medium">Rueckerstattung wird verarbeitet...</p>
+              <p className="text-sm text-gray-500 font-medium">Rückerstattung wird verarbeitet...</p>
               <p className="text-xs text-gray-400 mt-1">Stripe wird kontaktiert</p>
             </div>
           )}
@@ -386,7 +386,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
               <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle2 className="w-7 h-7 text-emerald-500" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 mb-1">Rueckerstattung erfolgreich</h3>
+              <h3 className="text-base font-semibold text-gray-900 mb-1">Rückerstattung erfolgreich</h3>
               <p className="text-sm text-gray-400 mb-5">
                 {formatCurrency(result.amount, result.currency)} wurden erstattet
               </p>
@@ -439,7 +439,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
               onClick={onClose}
               variant="secondary"
             >
-              Schliessen
+              Schließen
             </Button>
           )}
 
@@ -449,7 +449,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
                 onClick={() => setStep('details')}
                 variant="secondary"
               >
-                Zurueck
+                Zurück
               </Button>
               <Button
                 onClick={executeRefund}
@@ -475,7 +475,7 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
                 onClick={onClose}
                 variant="secondary"
               >
-                Schliessen
+                Schließen
               </Button>
               <Button
                 onClick={loadPreview}

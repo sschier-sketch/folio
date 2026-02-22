@@ -224,7 +224,7 @@ export default function ReferralProgramView() {
   const handleShareLinkedIn = () => {
     const referralUrl = `${window.location.origin}/?ref=${referralCode}&utm_source=linkedin&utm_medium=referral&utm_campaign=partner_program`;
     const text = encodeURIComponent(
-      "Ich nutze rentab.ly fuer meine Immobilienverwaltung und bin begeistert! Teste es jetzt kostenlos:"
+      "Ich nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Teste es jetzt kostenlos:"
     );
     const url = encodeURIComponent(referralUrl);
     window.open(
@@ -237,7 +237,7 @@ export default function ReferralProgramView() {
     const referralUrl = `${window.location.origin}/?ref=${referralCode}&utm_source=email&utm_medium=referral&utm_campaign=partner_program`;
     const subject = encodeURIComponent('Entdecke rentab.ly - Die beste Immobilienverwaltung');
     const body = encodeURIComponent(
-      `Hallo,\n\nIch nutze rentab.ly fuer meine Immobilienverwaltung und bin begeistert! Die Software macht die Verwaltung von Immobilien so viel einfacher.\n\nSchau es dir gerne an:\n${referralUrl}\n\nViel Erfolg!\n\nViele Gruesse`
+      `Hallo,\n\nIch nutze rentab.ly für meine Immobilienverwaltung und bin begeistert! Die Software macht die Verwaltung von Immobilien so viel einfacher.\n\nSchau es dir gerne an:\n${referralUrl}\n\nViel Erfolg!\n\nViele Grüße`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
@@ -251,10 +251,10 @@ export default function ReferralProgramView() {
     const defaultBody = [
       greeting,
       "",
-      `${name} empfiehlt Ihnen rentab.ly - die professionelle Loesung fuer Ihre Immobilienverwaltung.`,
+      `${name} empfiehlt Ihnen rentab.ly - die professionelle Lösung für Ihre Immobilienverwaltung.`,
       "",
       "Registrieren Sie sich jetzt und erhalten Sie 1 Monat PRO kostenlos!",
-      ...(personalMessage ? ["", `Persoenliche Nachricht: ${personalMessage}`] : []),
+      ...(personalMessage ? ["", `Persönliche Nachricht: ${personalMessage}`] : []),
     ].join("\n");
 
     setPreviewSubject("Entdecke rentab.ly - Deine Immobilienverwaltung");
@@ -570,12 +570,12 @@ export default function ReferralProgramView() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Persoenliche Nachricht (optional)
+                    Persönliche Nachricht (optional)
                   </label>
                   <textarea
                     value={personalMessage}
                     onChange={(e) => setPersonalMessage(e.target.value)}
-                    placeholder="Fuegen Sie eine persoenliche Nachricht hinzu..."
+                    placeholder="Fügen Sie eine persönliche Nachricht hinzu..."
                     rows={3}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent resize-none"
                   />
@@ -603,8 +603,8 @@ export default function ReferralProgramView() {
 
               <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                 <p className="text-xs text-gray-600">
-                  Im naechsten Schritt sehen Sie eine Vorschau der E-Mail und
-                  koennen den Text vor dem Versand noch anpassen.
+                  Im nächsten Schritt sehen Sie eine Vorschau der E-Mail und
+                  können den Text vor dem Versand noch anpassen.
                 </p>
               </div>
             </>
@@ -658,7 +658,7 @@ export default function ReferralProgramView() {
                   className="flex-1"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Zurueck
+                  Zurück
                 </Button>
                 <Button
                   onClick={handleSendInvitation}

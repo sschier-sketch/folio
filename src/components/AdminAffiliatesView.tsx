@@ -252,7 +252,7 @@ export default function AdminAffiliatesView() {
             onClick={() => setSelectedAffiliate(null)}
             className="text-primary-blue hover:underline flex items-center gap-2 mb-4"
           >
-            ← Zurueck zur Uebersicht
+            ← Zurück zur Übersicht
           </button>
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-start justify-between mb-6">
@@ -351,7 +351,7 @@ export default function AdminAffiliatesView() {
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">Verfuegbar</div>
+                <div className="text-sm text-gray-600 mb-1">Verfügbar</div>
                 <div className="text-2xl font-bold text-dark">
                   {Number(selectedAffiliate.total_pending).toFixed(2)} EUR
                 </div>
@@ -402,7 +402,7 @@ export default function AdminAffiliatesView() {
                       return <StatusBadge type="info" label="Registriert" />;
                     }
                     if (referral.status === "churned") {
-                      return <StatusBadge type="neutral" label="Gekuendigt" />;
+                      return <StatusBadge type="neutral" label="Gekündigt" />;
                     }
                     return null;
                   },
@@ -450,7 +450,7 @@ export default function AdminAffiliatesView() {
               <h3 className="text-xl font-bold text-dark mb-4">Affiliate sperren</h3>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Grund fuer Sperrung *
+                  Grund für Sperrung *
                 </label>
                 <textarea
                   value={blockReason}
@@ -489,7 +489,7 @@ export default function AdminAffiliatesView() {
   }
 
   const tabs: { key: AffiliateTab; label: string; icon: typeof Users }[] = [
-    { key: "overview", label: "Uebersicht", icon: Users },
+    { key: "overview", label: "Übersicht", icon: Users },
     { key: "payouts", label: "Auszahlungsanforderungen", icon: Banknote },
   ];
 
@@ -531,7 +531,7 @@ export default function AdminAffiliatesView() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-dark">Standard-Provisionssatz</h3>
-            <p className="text-xs text-gray-500">Gilt fuer alle neuen Affiliates. Individuelle Saetze koennen pro Nutzer ueberschrieben werden.</p>
+            <p className="text-xs text-gray-500">Gilt für alle neuen Affiliates. Individuelle Sätze können pro Nutzer überschrieben werden.</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -738,7 +738,7 @@ export default function AdminAffiliatesView() {
             },
             {
               key: "pending",
-              header: "Verfuegbar",
+              header: "Verfügbar",
               render: (affiliate: Affiliate) => (
                 <span className="text-sm text-gray-900">
                   {Number(affiliate.total_pending).toFixed(2)} EUR

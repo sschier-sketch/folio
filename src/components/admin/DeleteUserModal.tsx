@@ -51,7 +51,7 @@ export default function DeleteUserModal({ userId, userEmail, onClose, onDeleted 
       }
 
       if (result.partial) {
-        setError('Oeffentliche Daten geloescht, aber Auth-Eintrag konnte nicht entfernt werden. Bitte manuell pruefen.');
+        setError('Öffentliche Daten gelöscht, aber Auth-Eintrag konnte nicht entfernt werden. Bitte manuell prüfen.');
         setLoading(false);
         return;
       }
@@ -80,18 +80,18 @@ export default function DeleteUserModal({ userId, userEmail, onClose, onDeleted 
             <AlertTriangle className="w-6 h-6 text-red-600" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-900">User komplett loeschen</h3>
-            <p className="text-sm text-gray-500">Diese Aktion kann nicht rueckgaengig gemacht werden</p>
+            <h3 className="text-lg font-bold text-gray-900">User komplett löschen</h3>
+            <p className="text-sm text-gray-500">Diese Aktion kann nicht rückgängig gemacht werden</p>
           </div>
         </div>
 
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
           <p className="text-sm text-red-800 font-medium mb-2">
-            Folgende Daten werden unwiderruflich geloescht:
+            Folgende Daten werden unwiderruflich gelöscht:
           </p>
           <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
             <li>Alle Objekte, Einheiten und Mieter</li>
-            <li>Alle Vertraege, Zahlungen und Finanzdaten</li>
+            <li>Alle Verträge, Zahlungen und Finanzdaten</li>
             <li>Alle Dokumente und Kommunikation</li>
             <li>Affiliate- und Referral-Daten</li>
             <li>Profil, Einstellungen und Billing</li>
@@ -107,7 +107,7 @@ export default function DeleteUserModal({ userId, userEmail, onClose, onDeleted 
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tippen Sie <span className="font-mono font-bold text-red-600">DELETE</span> zur Bestaetigung:
+            Tippen Sie <span className="font-mono font-bold text-red-600">DELETE</span> zur Bestätigung:
           </label>
           <input
             type="text"
@@ -141,7 +141,7 @@ export default function DeleteUserModal({ userId, userEmail, onClose, onDeleted 
             variant="danger"
             fullWidth
           >
-            Endgueltig loeschen
+            Endgültig löschen
           </Button>
         </div>
       </div>

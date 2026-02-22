@@ -162,7 +162,7 @@ function ReservedAliasesSection() {
           <div>
             <h3 className="text-sm font-semibold text-gray-900">Neuen Alias sperren</h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Gesperrte Alias-Namen koennen nicht von Nutzern als E-Mail-Adresse verwendet werden.
+              Gesperrte Alias-Namen können nicht von Nutzern als E-Mail-Adresse verwendet werden.
             </p>
           </div>
         </div>
@@ -359,7 +359,7 @@ function ForwardingRulesSection() {
       if (error) {
         setMessage({ type: 'error', text: error.message.includes('duplicate') ? 'Diese Quell-Adresse existiert bereits.' : error.message });
       } else {
-        setMessage({ type: 'success', text: `Weiterleitung fuer ${cleanedSource}@rentab.ly erstellt.` });
+        setMessage({ type: 'success', text: `Weiterleitung für ${cleanedSource}@rentab.ly erstellt.` });
         resetForm();
         await loadRules();
       }
@@ -380,7 +380,7 @@ function ForwardingRulesSection() {
   }
 
   async function handleDelete(alias: string) {
-    if (!confirm(`Weiterleitung fuer "${alias}@rentab.ly" wirklich loeschen?`)) return;
+    if (!confirm(`Weiterleitung für "${alias}@rentab.ly" wirklich löschen?`)) return;
     const { error } = await supabase
       .from('email_forwarding_rules')
       .delete()

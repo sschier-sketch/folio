@@ -101,14 +101,14 @@ export default function ReferralPayoutSection({
           <div>
             <h3 className="text-lg font-semibold text-dark">Auszahlung</h3>
             <p className="text-xs text-gray-500">
-              Auszahlung ab 25,00 EUR Guthaben moeglich
+              Auszahlung ab 25,00 EUR Guthaben möglich
             </p>
           </div>
         </div>
 
         <div className="text-right">
           <p className="text-2xl font-bold text-dark">{balance.toFixed(2)} EUR</p>
-          <p className="text-xs text-gray-500">Verfuegbares Guthaben</p>
+          <p className="text-xs text-gray-500">Verfügbares Guthaben</p>
         </div>
       </div>
 
@@ -130,7 +130,7 @@ export default function ReferralPayoutSection({
           ) : (
             <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
               <AlertTriangle className="w-4 h-4" />
-              Mindestguthaben von 25,00 EUR fuer Auszahlung erforderlich
+              Mindestguthaben von 25,00 EUR für Auszahlung erforderlich
             </div>
           )}
         </div>
@@ -169,7 +169,7 @@ export default function ReferralPayoutSection({
           </div>
 
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
-            Auszahlungsbetrag: <strong>{balance.toFixed(2)} EUR</strong> (gesamtes verfuegbares Guthaben)
+            Auszahlungsbetrag: <strong>{balance.toFixed(2)} EUR</strong> (gesamtes verfügbares Guthaben)
           </div>
 
           <div className="flex gap-3">

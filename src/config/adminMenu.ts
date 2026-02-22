@@ -57,7 +57,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
     label: "Dashboard",
     defaultOpen: true,
     items: [
-      { key: "overview", label: "Uebersicht", icon: Activity },
+      { key: "overview", label: "Übersicht", icon: Activity },
     ],
   },
   {

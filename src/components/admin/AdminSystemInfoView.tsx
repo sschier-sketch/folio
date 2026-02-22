@@ -232,7 +232,7 @@ export default function AdminSystemInfoView() {
                     <span className="font-mono font-semibold">
                       {notificationEmail || "..."}
                     </span>{" "}
-                    gesendet. Die E-Mail wird ueber die bestehende E-Mail-Warteschlange
+                    gesendet. Die E-Mail wird über die bestehende E-Mail-Warteschlange
                     verarbeitet.
                   </p>
                 </div>
@@ -242,7 +242,7 @@ export default function AdminSystemInfoView() {
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t">
             <Button onClick={loadSettings} disabled={saving} variant="outlined">
-              Zuruecksetzen
+              Zurücksetzen
             </Button>
             <Button onClick={handleSave} disabled={saving} variant="primary">
               {saving ? (

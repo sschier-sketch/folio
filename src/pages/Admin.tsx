@@ -191,7 +191,7 @@ export function Admin() {
   };
 
   async function handleCancelSubscription(userId: string) {
-    if (!confirm("Moechten Sie das Abonnement dieses Nutzers wirklich zum Ende der Laufzeit kuendigen?"))
+    if (!confirm("Möchten Sie das Abonnement dieses Nutzers wirklich zum Ende der Laufzeit kündigen?"))
       return;
     try {
       const { data: customer } = await supabase
@@ -238,7 +238,7 @@ export function Admin() {
           target_user_id: userId,
           details: { timestamp: new Date().toISOString() },
         });
-      alert("Abonnement wird zum Ende der Laufzeit gekuendigt.");
+      alert("Abonnement wird zum Ende der Laufzeit gekündigt.");
       await reloadUsers();
     } catch (err) {
       console.error("Error canceling subscription:", err);
@@ -251,7 +251,7 @@ export function Admin() {
   }
 
   async function handleImpersonate(userId: string, userEmail: string) {
-    if (!confirm(`Moechten Sie sich als ${userEmail} anmelden? Es oeffnet sich ein neuer Tab.`)) return;
+    if (!confirm(`Möchten Sie sich als ${userEmail} anmelden? Es öffnet sich ein neuer Tab.`)) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -289,7 +289,7 @@ export function Admin() {
   }
 
   async function handleBanUser(userId: string, userEmail: string) {
-    if (!confirm(`Moechten Sie ${userEmail} wirklich sperren?`)) return;
+    if (!confirm(`Möchten Sie ${userEmail} wirklich sperren?`)) return;
     try {
       const { error } = await supabase.rpc("admin_ban_user", {
         target_user_id: userId,
@@ -305,7 +305,7 @@ export function Admin() {
   }
 
   async function handleUnbanUser(userId: string, userEmail: string) {
-    if (!confirm(`Moechten Sie die Sperre von ${userEmail} aufheben?`)) return;
+    if (!confirm(`Möchten Sie die Sperre von ${userEmail} aufheben?`)) return;
     try {
       const { error } = await supabase.rpc("admin_unban_user", {
         target_user_id: userId,
@@ -322,7 +322,7 @@ export function Admin() {
   async function handleGrantAdmin(userId: string, userEmail: string) {
     if (
       !confirm(
-        `Moechten Sie ${userEmail} wirklich Admin-Rechte erteilen?`,
+        `Möchten Sie ${userEmail} wirklich Admin-Rechte erteilen?`,
       )
     )
       return;
@@ -342,7 +342,7 @@ export function Admin() {
   async function handleRevokeAdmin(userId: string, userEmail: string) {
     if (
       !confirm(
-        `Moechten Sie ${userEmail} wirklich die Admin-Rechte entziehen?`,
+        `Möchten Sie ${userEmail} wirklich die Admin-Rechte entziehen?`,
       )
     )
       return;
@@ -429,7 +429,7 @@ export function Admin() {
                 {([
                   { key: 'all', label: 'Alle' },
                   { key: 'pro', label: 'Pro' },
-                  { key: 'cancelling', label: 'In Kuendigung' },
+                  { key: 'cancelling', label: 'In Kündigung' },
                   { key: 'trial', label: 'Trial' },
                   { key: 'free', label: 'Gratis' },
                 ] as { key: UserFilter; label: string }[]).map(({ key, label }) => (
@@ -757,7 +757,7 @@ function EditEmailModal({ userId, currentEmail, onClose, onSaved }: {
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h3 className="font-semibold text-dark">E-Mail aendern</h3>
+          <h3 className="font-semibold text-dark">E-Mail ändern</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
             <X className="w-5 h-5" />
           </button>

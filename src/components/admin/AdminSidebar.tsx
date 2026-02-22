@@ -182,7 +182,7 @@ export default function AdminSidebar({
             className="flex items-center gap-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
-            Zurueck zum Dashboard
+            Zurück zum Dashboard
           </button>
         </div>
       )}

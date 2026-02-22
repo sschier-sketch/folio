@@ -140,7 +140,7 @@ export default function StepVpi({ state, onChange }: Props) {
         </div>
 
         <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
-          <h4 className="text-sm font-semibold text-gray-700 mb-4">VPI aktuell</h4>
+          <h4 className="text-sm font-semibold text-gray-700 mb-4">VPI Vergleich</h4>
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Monat / Jahr</label>

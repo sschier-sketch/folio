@@ -140,8 +140,8 @@ const BENEFITS = [
 const MOCK_DOCUMENTS = [
   { name: "Mietvertrag_Meyer.pdf", category: "Vertrag", categoryColor: "#3b82f6", categoryBg: "#eff6ff", property: "Musterstr. 10, EG", date: "15.01.2024" },
   { name: "NK_Abrechnung_2023.pdf", category: "Abrechnung", categoryColor: "#22c55e", categoryBg: "#f0fdf4", property: "Musterstr. 10, EG", date: "28.03.2024" },
-  { name: "Uebergabeprotokoll.pdf", category: "Protokoll", categoryColor: "#f59e0b", categoryBg: "#fffbeb", property: "Hauptstr. 25, 1.OG", date: "01.06.2024" },
-  { name: "Gebaeudeversicherung.pdf", category: "Versicherung", categoryColor: "#6b7280", categoryBg: "#f9fafb", property: "Musterstr. 10", date: "01.01.2024" },
+  { name: "Übergabeprotokoll.pdf", category: "Protokoll", categoryColor: "#f59e0b", categoryBg: "#fffbeb", property: "Hauptstr. 25, 1.OG", date: "01.06.2024" },
+  { name: "Gebäudeversicherung.pdf", category: "Versicherung", categoryColor: "#6b7280", categoryBg: "#f9fafb", property: "Musterstr. 10", date: "01.01.2024" },
   { name: "Grundriss_EG.png", category: "Grundriss", categoryColor: "#6b7280", categoryBg: "#f9fafb", property: "Musterstr. 10, EG", date: "10.05.2023" },
 ];
 
@@ -397,7 +397,7 @@ export default function Dokumente() {
                           <Upload className="w-3.5 h-3.5 text-blue-500" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">Uebergabeprotokoll.pdf</p>
+                          <p className="text-sm font-medium text-gray-900">Übergabeprotokoll.pdf</p>
                           <p className="text-xs text-gray-400">Hochgeladen am 01.06.2024</p>
                         </div>
                       </div>

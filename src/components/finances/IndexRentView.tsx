@@ -277,7 +277,7 @@ export default function IndexRentView() {
           utilities,
           reason: "index",
           status: "active",
-          notes: "Indexmieterhoehung als durchgefuehrt markiert",
+          notes: "Indexmieterhöhung als durchgeführt markiert",
           syncToContract: true,
         });
       }
@@ -286,7 +286,7 @@ export default function IndexRentView() {
       loadCalculations();
     } catch (error) {
       console.error("Error marking as applied:", error);
-      alert("Fehler beim Markieren als durchgefuehrt");
+      alert("Fehler beim Markieren als durchgeführt");
     }
   };
 
@@ -713,7 +713,7 @@ function CalculationCard({
             <span className={`text-sm font-medium ${
               timing?.timingStatus === "NOW_OPTIMAL" ? "text-emerald-800" : timing?.timingStatus === "MISSED_WINDOW" ? "text-red-800" : "text-amber-800"
             }`}>
-              Erhoehung moeglich seit {formatDate(calc.possible_since)}
+              Erhöhung möglich {calc.possible_since && calc.possible_since > new Date().toISOString().split("T")[0] ? "zum" : "seit"} {formatDate(calc.possible_since)}
             </span>
           </div>
           {timing && <TimingBanner timing={timing} />}
@@ -746,21 +746,21 @@ function CalculationCard({
           <MetricBox
             label="Basismonat"
             value={calc.basis_monat || "–"}
-            sublabel="fuer VPI-Vergleich"
+            sublabel={calc.basis_monat ? "für VPI-Vergleich" : "siehe Hinweis unten"}
           />
           <MetricBox
-            label="Aktueller Monat"
-            value={calc.aktueller_monat || "-"}
-            sublabel="fuer VPI-Vergleich"
+            label="Vergleichsmonat"
+            value={calc.aktueller_monat || "–"}
+            sublabel="für VPI-Vergleich"
           />
           {calc.wohnflaeche_qm ? (
             <MetricBox
-              label="Wohnflaeche"
-              value={`${calc.wohnflaeche_qm} m2`}
+              label="Wohnfläche"
+              value={`${calc.wohnflaeche_qm} m²`}
             />
           ) : (
             <MetricBox
-              label="Geprueft am"
+              label="Geprüft am"
               value={formatDate(calc.calculation_date)}
             />
           )}
@@ -768,16 +768,26 @@ function CalculationCard({
 
         {isOpen && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5">
-            <p className="text-sm text-blue-800">
-              Bitte pruefen Sie den aktuellen VPI-Wert fuer den Monat{" "}
-              <span className="font-semibold">{calc.aktueller_monat}</span> und
-              vergleichen Sie ihn mit dem Basismonat{" "}
-              <span className="font-semibold">{calc.basis_monat || "–"}</span>, um die
-              konkrete Erhoehung zu berechnen.
-            </p>
+            {calc.basis_monat ? (
+              <p className="text-sm text-blue-800">
+                Bitte prüfen Sie den aktuellen VPI-Wert für den Vergleichsmonat{" "}
+                <span className="font-semibold">{calc.aktueller_monat}</span> und
+                vergleichen Sie ihn mit dem Basismonat{" "}
+                <span className="font-semibold">{calc.basis_monat}</span>, um die
+                konkrete Erhöhung zu berechnen.
+              </p>
+            ) : (
+              <p className="text-sm text-blue-800">
+                Bitte verwenden Sie als Basismonat den bei der letzten Erhöhung
+                verwendeten VPI-Monat. Falls bislang nie eine Erhöhung stattfand,
+                verwenden Sie den Monat des Mietbeginns. Als Vergleichsmonat ist
+                standardmäßig der Vormonat eingetragen – Sie können jedoch auch
+                einen anderen Monat wählen (z.{"\u00A0"}B. 3 Monate zurück).
+              </p>
+            )}
             {timing && (
               <p className="text-xs text-blue-700 mt-2 pt-2 border-t border-blue-200">
-                Zustellfenster (fuer fruehestmoegliche Wirksamkeit): {formatDateDE(timing.serviceWindowStart)} – {formatDateDE(timing.serviceWindowEnd)}
+                Zustellfenster (für frühestmögliche Wirksamkeit): {formatDateDE(timing.serviceWindowStart)} – {formatDateDE(timing.serviceWindowEnd)}
               </p>
             )}
           </div>
@@ -914,14 +924,14 @@ function MarkAppliedModal({
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h3 className="font-semibold text-dark">Als durchgefuehrt markieren</h3>
+          <h3 className="font-semibold text-dark">Als durchgeführt markieren</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
         <div className="p-6 space-y-5">
           <p className="text-sm text-gray-600">
-            Waehlen Sie das Datum, an dem die Mieterhoehung fuer <span className="font-semibold">{tenantName}</span> durchgefuehrt wurde. Dieses Datum wird als letzte Mieterhoehung gespeichert und fuer die naechste Indexberechnung verwendet.
+            Wählen Sie das Datum, an dem die Mieterhöhung für <span className="font-semibold">{tenantName}</span> durchgeführt wurde. Dieses Datum wird als letzte Mieterhöhung gespeichert und für die nächste Indexberechnung verwendet.
           </p>
 
           <div className="space-y-3">
@@ -956,7 +966,7 @@ function MarkAppliedModal({
                 className="mt-0.5 accent-blue-600"
               />
               <div className="flex-1">
-                <p className="text-sm font-medium text-dark">Anderes Datum waehlen</p>
+                <p className="text-sm font-medium text-dark">Anderes Datum wählen</p>
                 {dateOption === "custom" && (
                   <div className="mt-2 relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -975,14 +985,14 @@ function MarkAppliedModal({
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
             <p className="text-xs text-amber-800">
-              Das gewaehlte Datum wird in der Miethistorie als Zeitpunkt der letzten Indexmieterhoehung hinterlegt. Die naechste Erhoehung kann fruehestens 12 Monate nach diesem Datum erfolgen.
+              Das gewählte Datum wird in der Miethistorie als Zeitpunkt der letzten Indexmieterhöhung hinterlegt. Die nächste Erhöhung kann frühestens 12 Monate nach diesem Datum erfolgen.
             </p>
           </div>
         </div>
         <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100">
           <Button onClick={onClose} variant="secondary">Abbrechen</Button>
           <Button onClick={handleConfirm} disabled={saving} variant="primary">
-            {saving ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Speichern...</> : "Bestaetigen"}
+            {saving ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Speichern...</> : "Bestätigen"}
           </Button>
         </div>
       </div>
@@ -997,7 +1007,7 @@ function TimingBanner({ timing }: { timing: DeliveryTiming }) {
         <Send className="w-3.5 h-3.5 text-emerald-600" />
         <span className="text-sm text-emerald-800">
           Jetzt bis <span className="font-semibold">{formatDateDE(timing.serviceWindowEnd)}</span> zustellen,
-          damit die Erhoehung ab <span className="font-semibold">{formatDateDE(timing.nextEarliestEffectiveFrom)}</span> wirksam
+          damit die Erhöhung ab <span className="font-semibold">{formatDateDE(timing.nextEarliestEffectiveFrom)}</span> wirksam
           wird (kein Ertrag verloren).
         </span>
       </div>
@@ -1010,7 +1020,7 @@ function TimingBanner({ timing }: { timing: DeliveryTiming }) {
         <CalendarClock className="w-3.5 h-3.5 text-amber-600" />
         <span className="text-sm text-amber-800">
           Ab <span className="font-semibold">{formatDateDE(timing.serviceWindowStart)}</span> zustellen,
-          damit die Erhoehung ab <span className="font-semibold">{formatDateDE(timing.nextEarliestEffectiveFrom)}</span> wirksam wird.
+          damit die Erhöhung ab <span className="font-semibold">{formatDateDE(timing.nextEarliestEffectiveFrom)}</span> wirksam wird.
         </span>
       </div>
     );
@@ -1021,8 +1031,8 @@ function TimingBanner({ timing }: { timing: DeliveryTiming }) {
       <div className="flex items-center gap-2 ml-6">
         <AlertOctagon className="w-3.5 h-3.5 text-red-600" />
         <span className="text-sm text-red-800">
-          Zustellfrist fuer Wirksamkeit ab {formatDateDE(timing.nextEarliestEffectiveFrom)} verpasst.
-          Bei Zustellung heute wird die Erhoehung ab <span className="font-semibold">{formatDateDE(timing.nextEffectiveIfSendToday)}</span> wirksam.
+          Zustellfrist für Wirksamkeit ab {formatDateDE(timing.nextEarliestEffectiveFrom)} verpasst.
+          Bei Zustellung heute wird die Erhöhung ab <span className="font-semibold">{formatDateDE(timing.nextEffectiveIfSendToday)}</span> wirksam.
         </span>
       </div>
     );

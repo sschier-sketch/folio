@@ -33,7 +33,7 @@ export default function TenantPortalSetup() {
       if (fetchError) throw fetchError;
 
       if (!tenants || tenants.length === 0) {
-        setError("Kein Mieter mit dieser E-Mail-Adresse gefunden. Bitte pruefen Sie die Adresse oder wenden Sie sich an Ihren Vermieter.");
+        setError("Kein Mieter mit dieser E-Mail-Adresse gefunden. Bitte prüfen Sie die Adresse oder wenden Sie sich an Ihren Vermieter.");
         setLoading(false);
         return;
       }
@@ -41,7 +41,7 @@ export default function TenantPortalSetup() {
       const tenant = tenants[0];
 
       if (tenant.password_hash && tenant.password_salt) {
-        setError("Fuer dieses Konto wurde bereits ein Passwort eingerichtet. Bitte melden Sie sich im Mieterportal an.");
+        setError("Für dieses Konto wurde bereits ein Passwort eingerichtet. Bitte melden Sie sich im Mieterportal an.");
         setLoading(false);
         return;
       }
@@ -67,7 +67,7 @@ export default function TenantPortalSetup() {
     }
 
     if (password !== confirmPassword) {
-      setError("Die Passwoerter stimmen nicht ueberein.");
+      setError("Die Passwörter stimmen nicht überein.");
       return;
     }
 
@@ -133,7 +133,7 @@ export default function TenantPortalSetup() {
               <p className="text-sm text-blue-100">
                 {step === "email" && "Geben Sie Ihre E-Mail-Adresse ein"}
                 {step === "password" && `Willkommen${tenantName ? `, ${tenantName}` : ""}`}
-                {step === "success" && "Sie koennen sich jetzt anmelden"}
+                {step === "success" && "Sie können sich jetzt anmelden"}
               </p>
             </div>
           </div>
@@ -170,12 +170,12 @@ export default function TenantPortalSetup() {
 
               <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
                 <p className="text-sm text-blue-700">
-                  <strong>So funktioniert es:</strong> Geben Sie die E-Mail-Adresse ein, die Sie von Ihrem Vermieter erhalten haben. Im naechsten Schritt legen Sie Ihr persoenliches Passwort fest.
+                  <strong>So funktioniert es:</strong> Geben Sie die E-Mail-Adresse ein, die Sie von Ihrem Vermieter erhalten haben. Im nächsten Schritt legen Sie Ihr persönliches Passwort fest.
                 </p>
               </div>
 
               <Button type="submit" disabled={loading} variant="primary" fullWidth>
-                {loading ? "Wird geprueft..." : "Weiter"}
+                {loading ? "Wird geprüft..." : "Weiter"}
               </Button>
 
               <div className="text-center pt-2">
@@ -240,7 +240,7 @@ export default function TenantPortalSetup() {
 
               <div>
                 <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-600 mb-2">
-                  Passwort bestaetigen
+                  Passwort bestätigen
                 </label>
                 <div className="relative">
                   <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
@@ -272,7 +272,7 @@ export default function TenantPortalSetup() {
                   }}
                   className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  Zurueck
+                  Zurück
                 </button>
               </div>
             </form>
@@ -287,7 +287,7 @@ export default function TenantPortalSetup() {
                 Ihr Konto wurde erfolgreich aktiviert!
               </h2>
               <p className="text-gray-500 mb-6 text-sm">
-                Sie koennen sich ab sofort mit Ihrer E-Mail-Adresse und Ihrem Passwort im Mieterportal anmelden.
+                Sie können sich ab sofort mit Ihrer E-Mail-Adresse und Ihrem Passwort im Mieterportal anmelden.
               </p>
               <Button
                 onClick={() => navigate("/tenant-portal")}

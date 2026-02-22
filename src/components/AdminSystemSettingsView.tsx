@@ -289,7 +289,7 @@ export default function AdminSystemSettingsView() {
                   Custom Signup Tracking Script
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Wird nach erfolgreicher Registrierung clientseitig ausgefuehrt
+                  Wird nach erfolgreicher Registrierung clientseitig ausgeführt
                 </p>
               </div>
             </div>
@@ -301,8 +301,8 @@ export default function AdminSystemSettingsView() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent font-mono text-sm"
             />
             <p className="mt-2 text-xs text-gray-500">
-              JavaScript-Code, der nach jedem erfolgreichen Signup im Browser ausgefuehrt wird.
-              Nur Admins koennen dieses Feld aendern. Aenderungen sind nach Speichern und Reload aktiv.
+              JavaScript-Code, der nach jedem erfolgreichen Signup im Browser ausgeführt wird.
+              Nur Admins können dieses Feld ändern. Änderungen sind nach Speichern und Reload aktiv.
             </p>
           </div>
 

@@ -154,7 +154,7 @@ export default function AdminFaqsView() {
 
   async function handleDelete(faq: Faq) {
     if (
-      !confirm(`FAQ "${faq.question.slice(0, 60)}..." wirklich loeschen?`)
+      !confirm(`FAQ "${faq.question.slice(0, 60)}..." wirklich löschen?`)
     )
       return;
     await supabase.from("faqs").delete().eq("id", faq.id);
@@ -209,7 +209,7 @@ export default function AdminFaqsView() {
             FAQ-Verwaltung
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Verwalten Sie die haeufig gestellten Fragen fuer alle Seiten.
+            Verwalten Sie die häufig gestellten Fragen für alle Seiten.
           </p>
         </div>
         <button
@@ -245,7 +245,7 @@ export default function AdminFaqsView() {
       {filteredFaqs.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
           <p className="text-gray-400 text-sm">
-            Keine FAQs fuer diese Seite vorhanden.
+            Keine FAQs für diese Seite vorhanden.
           </p>
           <button
             onClick={openNewForm}

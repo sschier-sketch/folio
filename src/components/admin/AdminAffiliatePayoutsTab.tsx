@@ -416,7 +416,7 @@ export default function AdminAffiliatePayoutsTab() {
             <h3 className="text-xl font-bold text-dark mb-4">Auszahlung ablehnen</h3>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Grund fuer Ablehnung *
+                Grund für Ablehnung *
               </label>
               <textarea
                 value={rejectReason}

@@ -224,7 +224,7 @@ export default function AdminCronJobsView() {
             System-Gesundheit
           </h2>
           <p className="text-sm text-gray-400 mt-0.5">
-            Uebersicht aller automatischen Hintergrundprozesse und deren Status
+            Übersicht aller automatischen Hintergrundprozesse und deren Status
           </p>
         </div>
         <Button
@@ -311,7 +311,7 @@ export default function AdminCronJobsView() {
         <StatCard
           label="Warnungen"
           value={warningCount}
-          sub="ueberpruefen"
+          sub="überprüfen"
           icon={AlertTriangle}
           color="bg-amber-50 border-amber-100"
           iconColor="text-amber-600"
