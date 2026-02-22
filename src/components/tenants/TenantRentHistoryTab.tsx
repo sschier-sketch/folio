@@ -192,27 +192,30 @@ export default function TenantRentHistoryTab({
     const today = new Date();
     today.setHours(12, 0, 0, 0);
 
-    let lastIndexDate: Date | null = null;
+    let lastRentChangeDate: Date | null = null;
     const sortedHistory = [...history].sort(
       (a, b) => new Date(b.effective_date).getTime() - new Date(a.effective_date).getTime()
     );
     for (const event of sortedHistory) {
-      if (event.reason === "index" && (event.status || "active") === "active") {
+      if ((event.status || "active") === "active") {
         const d = parseISODate(event.effective_date);
         if (d <= today) {
-          lastIndexDate = d;
+          lastRentChangeDate = d;
           break;
         }
       }
     }
 
-    const referenceDate = lastIndexDate
-      || (contract.index_first_increase_date ? parseISODate(contract.index_first_increase_date) : null)
-      || parseISODate(contract.start_date);
+    const contractStart = parseISODate(contract.start_date);
+    const fallbackDate = lastRentChangeDate || contractStart;
+    const firstIncreaseDate = contract.index_first_increase_date
+      ? parseISODate(contract.index_first_increase_date)
+      : addMonths(contractStart, 12);
 
-    const earliestNextIncrease = lastIndexDate
-      ? addMonths(referenceDate, 12)
-      : referenceDate;
+    const twelveMonthsAfterLast = addMonths(fallbackDate, 12);
+    const earliestNextIncrease = firstIncreaseDate > twelveMonthsAfterLast
+      ? firstIncreaseDate
+      : twelveMonthsAfterLast;
 
     const deliveryDeadline = addMonths(earliestNextIncrease, -2);
 
