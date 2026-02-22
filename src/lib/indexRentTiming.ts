@@ -36,7 +36,9 @@ export function computeDeliveryTiming(
   const now = today || new Date();
   const todayStr = toDateStr(now);
 
-  const possibleDate = new Date(possibleSince);
+  const psParts = possibleSince.split("-").map(Number);
+  if (psParts.length !== 3 || psParts.some(isNaN)) return null;
+  const possibleDate = new Date(psParts[0], psParts[1] - 1, psParts[2]);
   if (isNaN(possibleDate.getTime())) return null;
 
   const nextEarliestEffective = firstOfMonth(possibleDate);
@@ -74,7 +76,9 @@ export function computeDeliveryTiming(
 
 export function formatDateDE(dateStr: string): string {
   if (!dateStr) return "-";
-  const d = new Date(dateStr);
+  const parts = dateStr.split("-").map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return "-";
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
   if (isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("de-DE", {
     day: "2-digit",

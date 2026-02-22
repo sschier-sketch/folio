@@ -26,6 +26,18 @@ interface Props {
   onComplete: () => void;
 }
 
+function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function toLocalIso(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 function computeEarliestEffectiveDate(possibleSince: string | null, lastRentChangeDate: string | null): string {
   const today = new Date();
   const nextNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 1);
@@ -33,17 +45,17 @@ function computeEarliestEffectiveDate(possibleSince: string | null, lastRentChan
   let earliest = nextNextMonth;
 
   if (possibleSince) {
-    const ps = new Date(possibleSince);
+    const ps = parseLocalDate(possibleSince);
     if (ps > earliest) earliest = ps;
   }
 
   if (lastRentChangeDate) {
-    const lrc = new Date(lastRentChangeDate);
+    const lrc = parseLocalDate(lastRentChangeDate);
     const twelveMonthsAfter = new Date(lrc.getFullYear() + 1, lrc.getMonth(), lrc.getDate());
     if (twelveMonthsAfter > earliest) earliest = twelveMonthsAfter;
   }
 
-  return earliest.toISOString().split("T")[0];
+  return toLocalIso(earliest);
 }
 
 function buildTenantAddress(

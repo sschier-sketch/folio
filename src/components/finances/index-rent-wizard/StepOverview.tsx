@@ -6,7 +6,8 @@ const formatCurrency = (v: number) =>
 
 const formatDateDE = (iso: string) => {
   if (!iso) return "–";
-  return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 };
 
 const getReasonLabel = (reason: string | null) => {

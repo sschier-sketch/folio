@@ -97,7 +97,9 @@ const formatCurrency = (amount?: number) => {
 
 const formatDate = (date?: string) => {
   if (!date) return "-";
-  return new Date(date).toLocaleDateString("de-DE", {
+  const [y, m, d] = date.split("-").map(Number);
+  if (!y || !m || !d) return "-";
+  return new Date(y, m - 1, d).toLocaleDateString("de-DE", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
