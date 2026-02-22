@@ -13,6 +13,7 @@ import {
   Camera,
   Trash2,
   ArrowLeft,
+  MapPin,
 } from "lucide-react";
 import PropertyOverviewTab from "./property/PropertyOverviewTab";
 import PropertyUnitsTab from "./property/PropertyUnitsTab";
@@ -250,7 +251,20 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
 
           <div>
             <h1 className="text-3xl font-bold text-dark mb-2">{currentProperty.name}</h1>
-            <p className="text-gray-400">{currentProperty.address}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-gray-400">{currentProperty.address}</p>
+              {currentProperty.address && (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentProperty.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="In Google Maps anzeigen"
+                  className="flex-shrink-0 text-gray-400 hover:text-primary-blue transition-colors"
+                >
+                  <MapPin className="w-4 h-4" />
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>

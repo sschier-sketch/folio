@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Building2, Calendar, Euro, TrendingUp, Users, Edit2, Trash2, CreditCard, Info, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { Edit, Building2, Calendar, Euro, TrendingUp, Users, Edit2, Trash2, CreditCard, Info, AlertCircle, CheckCircle, Clock, MapPin } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { getMonthlyHausgeldEur } from "../../lib/hausgeldUtils";
@@ -456,7 +456,20 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               />
             ) : (
-              <div className="text-dark font-medium">{property.address}</div>
+              <div className="flex items-center gap-2">
+                <span className="text-dark font-medium">{property.address}</span>
+                {property.address && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="In Google Maps anzeigen"
+                    className="flex-shrink-0 text-gray-400 hover:text-primary-blue transition-colors"
+                  >
+                    <MapPin className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
             )}
           </div>
 
