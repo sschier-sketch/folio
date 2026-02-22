@@ -72,15 +72,8 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
   useEffect(() => {
     setCurrentProperty(property);
     setPhotoUrl(property.photo_url || null);
-  }, [property]);
-
-  useEffect(() => {
-    if (initialTab) {
-      setActiveTab(initialTab);
-    } else if (tabFromUrl) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [tabFromUrl, initialTab]);
+    setActiveTab(initialTab || tabFromUrl || "overview");
+  }, [property, initialTab, tabFromUrl]);
 
   const handlePropertyUpdate = async () => {
     const { data, error } = await supabase
