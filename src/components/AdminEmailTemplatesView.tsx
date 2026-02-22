@@ -198,52 +198,42 @@ export function AdminEmailTemplatesView() {
         </div>{" "}
       </div>{" "}
       <div className="lg:col-span-3 bg-white rounded overflow-hidden">
-        {" "}
         {editedTemplate ? (
-          <div className="flex flex-col h-[calc(100vh-300px)]">
-            {" "}
+          <div className="overflow-auto max-h-[calc(100vh-200px)]">
             <div className="p-6 border-b">
-              {" "}
               <div className="flex items-start justify-between mb-4">
-                {" "}
                 <div className="flex-1">
-                  {" "}
                   <h2 className="text-xl font-bold text-dark mb-1">
-                    {editedTemplate.template_name}
-                  </h2>{" "}
+                    {editedTemplate.template_name || editedTemplate.template_key}
+                  </h2>
                   <p className="text-sm text-gray-400">
                     {editedTemplate.description}
-                  </p>{" "}
-                </div>{" "}
+                  </p>
+                </div>
                 <Button
                   onClick={handleSave}
                   disabled={saving}
                   variant="primary"
                 >
                   {saving ? "Speichern..." : "Speichern"}
-                </Button>{" "}
-              </div>{" "}
-              <div className="space-y-4">
-                {" "}
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    {" "}
-                    Template-Schlüssel (nicht änderbar){" "}
-                  </label>{" "}
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Template-Schlüssel (nicht änderbar)
+                  </label>
                   <input
                     type="text"
                     value={editedTemplate.template_key}
                     disabled
                     className="w-full px-4 py-2 rounded-lg bg-gray-50 text-gray-300"
-                  />{" "}
-                </div>{" "}
+                  />
+                </div>
                 <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    {" "}
-                    Template-Name{" "}
-                  </label>{" "}
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Template-Name
+                  </label>
                   <input
                     type="text"
                     value={editedTemplate.template_name}
@@ -254,14 +244,12 @@ export function AdminEmailTemplatesView() {
                       })
                     }
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  />{" "}
-                </div>{" "}
+                  />
+                </div>
                 <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    {" "}
-                    E-Mail Betreff{" "}
-                  </label>{" "}
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    E-Mail Betreff
+                  </label>
                   <input
                     type="text"
                     value={editedTemplate.subject}
@@ -272,14 +260,12 @@ export function AdminEmailTemplatesView() {
                       })
                     }
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  />{" "}
-                </div>{" "}
+                  />
+                </div>
                 <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    {" "}
-                    Beschreibung{" "}
-                  </label>{" "}
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Beschreibung
+                  </label>
                   <input
                     type="text"
                     value={editedTemplate.description}
@@ -290,14 +276,12 @@ export function AdminEmailTemplatesView() {
                       })
                     }
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  />{" "}
-                </div>{" "}
+                  />
+                </div>
                 <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    {" "}
-                    Sprache{" "}
-                  </label>{" "}
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Sprache
+                  </label>
                   <select
                     value={selectedLanguage}
                     onChange={(e) => setSelectedLanguage(e.target.value as 'de' | 'en')}
@@ -306,118 +290,98 @@ export function AdminEmailTemplatesView() {
                     <option value="de">Deutsch</option>
                     <option value="en">English</option>
                   </select>
-                  <p className="text-xs text-gray-300 mt-1">
-                    Wählen Sie die Sprache aus, um den Inhalt zu bearbeiten
-                  </p>
-                </div>{" "}
+                </div>
                 {editedTemplate.variables &&
                   editedTemplate.variables.length > 0 && (
                     <div>
-                      {" "}
-                      <label className="block text-sm font-medium text-gray-400 mb-2">
-                        {" "}
-                        Verfügbare Variablen{" "}
-                      </label>{" "}
+                      <label className="block text-sm font-medium text-gray-400 mb-1">
+                        Verfügbare Variablen
+                      </label>
                       <div className="flex flex-wrap gap-2">
-                        {" "}
                         {editedTemplate.variables.map((variable) => (
                           <span
                             key={variable}
                             className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-blue/10 text-primary-blue text-xs rounded-full"
                             title={`{{${variable}}}`}
                           >
-                            {" "}
                             <span className="font-mono">{`{{${variable}}}`}</span>
-                            <span className="text-gray-500">—</span>
+                            <span className="text-gray-500">-</span>
                             <span className="font-medium">{getVariableLabel(variable)}</span>
                           </span>
-                        ))}{" "}
-                      </div>{" "}
+                        ))}
+                      </div>
                     </div>
-                  )}{" "}
-              </div>{" "}
-            </div>{" "}
-            <div className="flex-1 overflow-hidden flex flex-col">
-              {" "}
-              <div className="flex-1 overflow-auto p-4 space-y-4">
-                {" "}
-                <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    {" "}
-                    HTML Version{" "}
-                  </label>{" "}
-                  <textarea
-                    value={editedTemplate.body_html}
-                    onChange={(e) =>
-                      setEditedTemplate({
-                        ...editedTemplate,
-                        body_html: e.target.value,
-                      })
-                    }
-                    rows={12}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none font-mono text-sm"
-                  />{" "}
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      {" "}
-                      <Eye className="w-4 h-4 text-gray-400" />{" "}
-                      <label className="text-sm font-medium text-gray-400">
-                        HTML Vorschau
-                      </label>{" "}
-                    </div>{" "}
-                    <div className="border border-gray-200 rounded-lg overflow-auto bg-gray-50 p-4 max-h-64">
-                      {" "}
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: replaceVariables(
-                            editedTemplate.body_html,
-                            editedTemplate.variables || [],
-                          ),
-                        }}
-                      />
-                    </div>{" "}
+                  )}
+              </div>
+            </div>
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  HTML Version
+                </label>
+                <textarea
+                  value={editedTemplate.body_html}
+                  onChange={(e) =>
+                    setEditedTemplate({
+                      ...editedTemplate,
+                      body_html: e.target.value,
+                    })
+                  }
+                  rows={16}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-y font-mono text-sm"
+                />
+                <div className="mt-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Eye className="w-4 h-4 text-gray-400" />
+                    <label className="text-sm font-medium text-gray-400">
+                      HTML Vorschau
+                    </label>
                   </div>
-                </div>{" "}
-                <div>
-                  {" "}
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    {" "}
-                    Text Version (Plain Text){" "}
-                  </label>{" "}
-                  <textarea
-                    value={editedTemplate.body_text}
-                    onChange={(e) =>
-                      setEditedTemplate({
-                        ...editedTemplate,
-                        body_text: e.target.value,
-                      })
-                    }
-                    rows={12}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none font-mono text-sm"
-                  />{" "}
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      {" "}
-                      <Eye className="w-4 h-4 text-gray-400" />{" "}
-                      <label className="text-sm font-medium text-gray-400">
-                        Text Vorschau
-                      </label>{" "}
-                    </div>{" "}
-                    <div className="border border-gray-200 rounded-lg overflow-auto bg-gray-50 p-4 max-h-64">
-                      {" "}
-                      <pre className="whitespace-pre-wrap text-sm text-dark font-sans">
-                        {" "}
-                        {replaceVariables(
-                          editedTemplate.body_text,
+                  <div className="border border-gray-200 rounded-lg overflow-auto bg-gray-50 p-4 max-h-96">
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: replaceVariables(
+                          editedTemplate.body_html,
                           editedTemplate.variables || [],
-                        )}{" "}
-                      </pre>
-                    </div>{" "}
+                        ),
+                      }}
+                    />
                   </div>
-                </div>{" "}
-              </div>{" "}
-            </div>{" "}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Text Version (Plain Text)
+                </label>
+                <textarea
+                  value={editedTemplate.body_text}
+                  onChange={(e) =>
+                    setEditedTemplate({
+                      ...editedTemplate,
+                      body_text: e.target.value,
+                    })
+                  }
+                  rows={10}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-y font-mono text-sm"
+                />
+                <div className="mt-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Eye className="w-4 h-4 text-gray-400" />
+                    <label className="text-sm font-medium text-gray-400">
+                      Text Vorschau
+                    </label>
+                  </div>
+                  <div className="border border-gray-200 rounded-lg overflow-auto bg-gray-50 p-4 max-h-64">
+                    <pre className="whitespace-pre-wrap text-sm text-dark font-sans">
+                      {replaceVariables(
+                        editedTemplate.body_text,
+                        editedTemplate.variables || [],
+                      )}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="flex items-center justify-center h-96 text-gray-300">
