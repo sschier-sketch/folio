@@ -17,6 +17,23 @@ import {
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
 
+interface HealthJobRaw {
+  r_name: string;
+  r_type: string;
+  r_desc: string;
+  r_schedule: string;
+  r_active: boolean;
+  r_health: string;
+  r_last_run: string | null;
+  r_last_status: string | null;
+  r_last_msg: string | null;
+  r_duration: number | null;
+  r_24h: number;
+  r_7d: number;
+  r_fail7d: number;
+  r_runs: RunEntry[];
+}
+
 interface HealthJob {
   job_name: string;
   job_type: "pg_cron" | "edge_function";
@@ -32,6 +49,25 @@ interface HealthJob {
   runs_last_7d: number;
   failures_last_7d: number;
   recent_runs: RunEntry[];
+}
+
+function mapRawToHealthJob(raw: HealthJobRaw): HealthJob {
+  return {
+    job_name: raw.r_name,
+    job_type: raw.r_type as "pg_cron" | "edge_function",
+    description: raw.r_desc,
+    schedule: raw.r_schedule,
+    is_active: raw.r_active,
+    health_status: raw.r_health as "healthy" | "warning" | "error" | "unknown",
+    last_run_at: raw.r_last_run,
+    last_status: raw.r_last_status,
+    last_message: raw.r_last_msg,
+    last_duration_ms: raw.r_duration,
+    runs_last_24h: raw.r_24h,
+    runs_last_7d: raw.r_7d,
+    failures_last_7d: raw.r_fail7d,
+    recent_runs: raw.r_runs || [],
+  };
 }
 
 interface RunEntry {
@@ -158,7 +194,8 @@ export default function AdminCronJobsView() {
         setError(rpcError.message || JSON.stringify(rpcError));
         return;
       }
-      setJobs((data as HealthJob[]) || []);
+      const rawJobs = (data as HealthJobRaw[]) || [];
+      setJobs(rawJobs.map(mapRawToHealthJob));
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : "Unbekannter Fehler beim Laden"
