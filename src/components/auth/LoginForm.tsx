@@ -59,12 +59,21 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setLoading(true);
     setMessage(null);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-magic-link`;
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          redirectTo: `${window.location.origin}/dashboard`,
+        }),
       });
-      if (error) {
-        setMessage({ type: "error", text: error.message });
+      const data = await response.json();
+      if (!response.ok) {
+        setMessage({ type: "error", text: data.error || "Ein Fehler ist aufgetreten" });
       } else {
         setMessage({
           type: "success",
