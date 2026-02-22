@@ -102,6 +102,7 @@ async function storeOutboundMessage(
     threadId?: string;
     recipientName?: string;
     tenantId?: string;
+    attachments?: EmailAttachment[];
   }
 ) {
   let threadId = params.threadId;
@@ -140,7 +141,7 @@ async function storeOutboundMessage(
 
   if (!threadId) return;
 
-  await supabase.from('mail_messages').insert({
+  const { data: msgRow } = await supabase.from('mail_messages').insert({
     thread_id: threadId,
     user_id: params.userId,
     direction: 'outbound',
@@ -152,7 +153,46 @@ async function storeOutboundMessage(
     body_html: params.bodyHtml,
     email_message_id: params.providerMessageId,
     provider_message_id: params.providerMessageId,
-  });
+  }).select('id').maybeSingle();
+
+  if (msgRow && params.attachments && params.attachments.length > 0) {
+    for (const att of params.attachments) {
+      if (!att.path) continue;
+      try {
+        const { data: fileData, error: dlErr } = await supabase.storage
+          .from('documents')
+          .download(att.path);
+        if (dlErr || !fileData) {
+          console.error('Failed to download attachment for storage:', dlErr);
+          continue;
+        }
+
+        const storagePath = `${params.userId}/${msgRow.id}/${Date.now()}_${att.filename.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        const { error: upErr } = await supabase.storage
+          .from('mail-attachments')
+          .upload(storagePath, fileData, {
+            contentType: fileData.type || 'application/octet-stream',
+            upsert: false,
+          });
+        if (upErr) {
+          console.error('Failed to upload attachment to mail-attachments:', upErr);
+          continue;
+        }
+
+        const buf = await fileData.arrayBuffer();
+        await supabase.from('mail_attachments').insert({
+          message_id: msgRow.id,
+          user_id: params.userId,
+          filename: att.filename,
+          content_type: fileData.type || 'application/octet-stream',
+          file_size: buf.byteLength,
+          storage_path: storagePath,
+        });
+      } catch (attErr) {
+        console.error('Error storing outbound attachment:', attErr);
+      }
+    }
+  }
 
   return threadId;
 }
@@ -446,6 +486,7 @@ Deno.serve(async (req: Request) => {
         threadId,
         recipientName,
         tenantId,
+        attachments,
       });
     }
 
