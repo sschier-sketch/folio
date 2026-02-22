@@ -9,20 +9,50 @@ const corsHeaders = {
 
 const BASE_URL = "https://rentably.de";
 
-interface SeoPage {
-  path: string;
-  updated_at: string;
-}
+const STATIC_PUBLIC_PATHS: { path: string; changefreq: string; priority: string }[] = [
+  { path: "/", changefreq: "daily", priority: "1.0" },
+  { path: "/features", changefreq: "weekly", priority: "0.9" },
+  { path: "/funktionen", changefreq: "weekly", priority: "0.9" },
+  { path: "/preise", changefreq: "weekly", priority: "0.9" },
+  { path: "/pricing", changefreq: "weekly", priority: "0.9" },
+  { path: "/ueber-uns", changefreq: "monthly", priority: "0.7" },
+  { path: "/kontakt", changefreq: "monthly", priority: "0.6" },
+  { path: "/contact", changefreq: "monthly", priority: "0.6" },
+  { path: "/impressum", changefreq: "monthly", priority: "0.4" },
+  { path: "/datenschutz", changefreq: "monthly", priority: "0.4" },
+  { path: "/agb", changefreq: "monthly", priority: "0.4" },
+  { path: "/avv", changefreq: "monthly", priority: "0.3" },
+  { path: "/funktionen/mietverwaltung", changefreq: "monthly", priority: "0.8" },
+  { path: "/funktionen/immobilienmanagement", changefreq: "monthly", priority: "0.8" },
+  { path: "/funktionen/kommunikation", changefreq: "monthly", priority: "0.8" },
+  { path: "/funktionen/buchhaltung", changefreq: "monthly", priority: "0.8" },
+  { path: "/funktionen/dokumente", changefreq: "monthly", priority: "0.8" },
+  { path: "/funktionen/nebenkostenabrechnung", changefreq: "monthly", priority: "0.8" },
+  { path: "/funktionen/mieterportal", changefreq: "monthly", priority: "0.8" },
+  { path: "/funktionen/uebergabeprotokoll", changefreq: "monthly", priority: "0.8" },
+  { path: "/magazin", changefreq: "weekly", priority: "0.7" },
+];
 
-interface MagPost {
-  slug: string;
-  updated_at: string;
-  published_at: string | null;
-}
+const EXCLUDED_PATH_PREFIXES = [
+  "/app",
+  "/admin",
+  "/dashboard",
+  "/login",
+  "/signup",
+  "/reset-password",
+  "/einstellungen",
+  "/subscription",
+  "/mieterportal-aktivierung",
+  "/tenant-portal",
+  "/account-banned",
+  "/api",
+];
 
-interface CmsPage {
-  slug: string;
-  updated_at: string;
+interface SitemapEntry {
+  loc: string;
+  lastmod: string;
+  changefreq: string;
+  priority: string;
 }
 
 function escapeXml(str: string): string {
@@ -42,19 +72,119 @@ function toDateStr(ts: string): string {
   }
 }
 
-function priorityForPath(path: string): string {
-  if (path === "/") return "1.0";
-  if (path === "/features" || path === "/preise") return "0.9";
-  if (path.startsWith("/funktionen/")) return "0.8";
-  if (path.startsWith("/magazin")) return "0.7";
-  return "0.7";
+function isExcludedPath(path: string): boolean {
+  return EXCLUDED_PATH_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(prefix + "/")
+  );
 }
 
-function changefreqForPath(path: string): string {
-  if (path === "/") return "daily";
-  if (path.startsWith("/magazin")) return "weekly";
-  if (path === "/preise") return "weekly";
-  return "weekly";
+function buildSitemapXml(entries: SitemapEntry[]): string {
+  const urlElements = entries
+    .map(
+      (u) => `  <url>
+    <loc>${escapeXml(u.loc)}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`
+    )
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlElements}
+</urlset>`;
+}
+
+async function buildSitemapEntries(
+  supabase: ReturnType<typeof createClient>
+): Promise<SitemapEntry[]> {
+  const seen = new Set<string>();
+  const entries: SitemapEntry[] = [];
+  const today = toDateStr(new Date().toISOString());
+
+  function addEntry(entry: SitemapEntry) {
+    if (seen.has(entry.loc)) return;
+    seen.add(entry.loc);
+    entries.push(entry);
+  }
+
+  for (const sp of STATIC_PUBLIC_PATHS) {
+    addEntry({
+      loc: `${BASE_URL}${sp.path}`,
+      lastmod: today,
+      changefreq: sp.changefreq,
+      priority: sp.priority,
+    });
+  }
+
+  try {
+    const { data: seoPages } = await supabase
+      .from("seo_page_settings")
+      .select("path, updated_at")
+      .eq("is_public", true)
+      .eq("allow_indexing", true)
+      .order("path", { ascending: true });
+
+    if (seoPages) {
+      for (const page of seoPages) {
+        if (isExcludedPath(page.path)) continue;
+        addEntry({
+          loc: `${BASE_URL}${page.path}`,
+          lastmod: toDateStr(page.updated_at),
+          changefreq: "weekly",
+          priority: "0.7",
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error loading SEO pages:", err);
+  }
+
+  try {
+    const { data: magPosts } = await supabase
+      .from("mag_post_translations")
+      .select(
+        "slug, updated_at, post:mag_posts!inner(status, published_at)"
+      )
+      .eq("locale", "de")
+      .not("slug", "is", null);
+
+    if (magPosts) {
+      for (const entry of magPosts as any[]) {
+        if (entry.post?.status !== "published") continue;
+        addEntry({
+          loc: `${BASE_URL}/magazin/${entry.slug}`,
+          lastmod: toDateStr(entry.updated_at || entry.post?.published_at),
+          changefreq: "monthly",
+          priority: "0.6",
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error loading magazine posts:", err);
+  }
+
+  try {
+    const { data: cmsPages } = await supabase
+      .from("cms_pages")
+      .select("slug, updated_at");
+
+    if (cmsPages) {
+      for (const page of cmsPages) {
+        addEntry({
+          loc: `${BASE_URL}/s/${page.slug}`,
+          lastmod: toDateStr(page.updated_at),
+          changefreq: "monthly",
+          priority: "0.5",
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error loading CMS pages:", err);
+  }
+
+  return entries;
 }
 
 Deno.serve(async (req: Request) => {
@@ -89,7 +219,8 @@ Deno.serve(async (req: Request) => {
       globalSettings?.sitemap_generated_at
     ) {
       const age =
-        Date.now() - new Date(globalSettings.sitemap_generated_at).getTime();
+        Date.now() -
+        new Date(globalSettings.sitemap_generated_at).getTime();
       const maxAge = 24 * 60 * 60 * 1000;
       if (age < maxAge) {
         return new Response(globalSettings.sitemap_xml_cache, {
@@ -104,89 +235,8 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const urls: { loc: string; lastmod: string; priority: string; changefreq: string }[] = [];
-
-    const { data: seoPages } = await supabase
-      .from("seo_page_settings")
-      .select("path, updated_at")
-      .eq("is_public", true)
-      .eq("allow_indexing", true)
-      .order("path", { ascending: true });
-
-    if (seoPages) {
-      for (const page of seoPages as SeoPage[]) {
-        urls.push({
-          loc: `${BASE_URL}${page.path}`,
-          lastmod: toDateStr(page.updated_at),
-          priority: priorityForPath(page.path),
-          changefreq: changefreqForPath(page.path),
-        });
-      }
-    }
-
-    const seoPathsSet = new Set((seoPages || []).map((p: SeoPage) => p.path));
-
-    const { data: magPosts } = await supabase
-      .from("mag_post_translations")
-      .select("slug, updated_at, post:mag_posts!inner(status, published_at)")
-      .eq("locale", "de")
-      .not("slug", "is", null);
-
-    if (magPosts) {
-      for (const entry of magPosts as any[]) {
-        if (entry.post?.status !== "published") continue;
-        const path = `/magazin/${entry.slug}`;
-        if (seoPathsSet.has(path)) continue;
-        urls.push({
-          loc: `${BASE_URL}${path}`,
-          lastmod: toDateStr(entry.updated_at || entry.post?.published_at),
-          priority: "0.6",
-          changefreq: "monthly",
-        });
-      }
-    }
-
-    if (!seoPathsSet.has("/magazin")) {
-      urls.push({
-        loc: `${BASE_URL}/magazin`,
-        lastmod: toDateStr(new Date().toISOString()),
-        priority: "0.7",
-        changefreq: "weekly",
-      });
-    }
-
-    const { data: cmsPages } = await supabase
-      .from("cms_pages")
-      .select("slug, updated_at");
-
-    if (cmsPages) {
-      for (const page of cmsPages as CmsPage[]) {
-        const path = `/s/${page.slug}`;
-        if (seoPathsSet.has(path)) continue;
-        urls.push({
-          loc: `${BASE_URL}${path}`,
-          lastmod: toDateStr(page.updated_at),
-          priority: "0.5",
-          changefreq: "monthly",
-        });
-      }
-    }
-
-    const urlEntries = urls
-      .map(
-        (u) => `  <url>
-    <loc>${escapeXml(u.loc)}</loc>
-    <lastmod>${u.lastmod}</lastmod>
-    <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority}</priority>
-  </url>`
-      )
-      .join("\n");
-
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urlEntries}
-</urlset>`;
+    const entries = await buildSitemapEntries(supabase);
+    const sitemap = buildSitemapXml(entries);
 
     await supabase
       .from("seo_global_settings")
@@ -203,7 +253,7 @@ ${urlEntries}
         "Content-Type": "application/xml; charset=utf-8",
         "Cache-Control": "public, max-age=3600, s-maxage=86400",
         "X-Sitemap-Source": "generated",
-        "X-Sitemap-Urls": String(urls.length),
+        "X-Sitemap-Urls": String(entries.length),
       },
     });
   } catch (error) {

@@ -4,8 +4,8 @@ User-agent: *
 Allow: /
 
 # Disallow app areas
-Disallow: /dashboard
 Disallow: /app
+Disallow: /dashboard
 Disallow: /admin
 Disallow: /mieterportal
 Disallow: /login
@@ -13,6 +13,9 @@ Disallow: /signup
 Disallow: /reset-password
 Disallow: /einstellungen
 Disallow: /subscription
+Disallow: /tenant-portal
+Disallow: /mieterportal-aktivierung
+Disallow: /account-banned
 
 # Sitemap
 Sitemap: https://rentably.de/sitemap.xml

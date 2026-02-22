@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lock, RefreshCw, CheckCircle2, Map } from "lucide-react";
+import { Lock, RefreshCw, CheckCircle2, Map, Copy, ExternalLink } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { clearSeoCache } from "../../lib/seoResolver";
 import { Button } from '../ui/Button';
@@ -20,6 +20,7 @@ export default function AdminSeoGlobalView() {
 
   const [regenerating, setRegenerating] = useState(false);
   const [regenerateSuccess, setRegenerateSuccess] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [settings, setSettings] = useState<GlobalSettings>({
     id: "",
     title_template: "%s – rentably",
@@ -226,9 +227,13 @@ export default function AdminSeoGlobalView() {
                     setRegenerating(true);
                     setRegenerateSuccess(false);
                     try {
-                      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sitemap?refresh=true`;
+                      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sitemap`;
                       const res = await fetch(url, {
-                        headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ action: "regenerate" }),
                       });
                       if (!res.ok) throw new Error("Fehler beim Generieren");
                       setRegenerateSuccess(true);
@@ -253,34 +258,61 @@ export default function AdminSeoGlobalView() {
               </div>
 
               <p className="text-xs text-gray-500">
-                Die Sitemap wird automatisch taeglich um 04:00 Uhr UTC aktualisiert und enthaelt
+                Die Sitemap wird automatisch taeglich um 05:00 Uhr UTC aktualisiert und enthaelt
                 alle oeffentlichen, indexierbaren Seiten, Magazin-Beitraege und CMS-Seiten.
               </p>
 
-              {settings.sitemap_generated_at && (
-                <div className="bg-gray-50 rounded-lg px-4 py-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500">Letzte Generierung</p>
-                    <p className="text-sm font-medium text-gray-700">
-                      {new Date(settings.sitemap_generated_at).toLocaleString("de-DE", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
+              <div className="bg-gray-50 rounded-lg px-4 py-3 space-y-3">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Oeffentliche Sitemap URL</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-sm font-mono text-gray-800 bg-white border border-gray-200 rounded px-3 py-1.5 truncate">
+                      https://rentably.de/sitemap.xml
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText("https://rentably.de/sitemap.xml");
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+                    >
+                      {copied ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                      {copied ? "Kopiert" : "Kopieren"}
+                    </button>
+                    <a
+                      href="https://rentably.de/sitemap.xml"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-600 bg-white border border-gray-200 rounded hover:bg-blue-50 transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Ansehen
+                    </a>
                   </div>
-                  <a
-                    href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sitemap`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    Sitemap ansehen
-                  </a>
                 </div>
-              )}
+                {settings.sitemap_generated_at && (
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                    <div>
+                      <p className="text-xs text-gray-500">Letzte Generierung</p>
+                      <p className="text-sm font-medium text-gray-700">
+                        {new Date(settings.sitemap_generated_at).toLocaleString("de-DE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
