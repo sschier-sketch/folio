@@ -3,6 +3,7 @@ import { Lock, RefreshCw, CheckCircle2, Map, Copy, ExternalLink } from "lucide-r
 import { supabase } from "../../lib/supabase";
 import { clearSeoCache } from "../../lib/seoResolver";
 import { Button } from '../ui/Button';
+import { SITE_URL } from '../../config/site';
 
 interface GlobalSettings {
   id: string;
@@ -267,12 +268,12 @@ export default function AdminSeoGlobalView() {
                   <p className="text-xs text-gray-500 mb-1">Oeffentliche Sitemap URL</p>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 text-sm font-mono text-gray-800 bg-white border border-gray-200 rounded px-3 py-1.5 truncate">
-                      https://rentably.de/sitemap.xml
+                      {SITE_URL}/sitemap.xml
                     </code>
                     <button
                       type="button"
                       onClick={() => {
-                        navigator.clipboard.writeText("https://rentably.de/sitemap.xml");
+                        navigator.clipboard.writeText(`${SITE_URL}/sitemap.xml`);
                         setCopied(true);
                         setTimeout(() => setCopied(false), 2000);
                       }}
@@ -286,7 +287,7 @@ export default function AdminSeoGlobalView() {
                       {copied ? "Kopiert" : "Kopieren"}
                     </button>
                     <a
-                      href="https://rentably.de/sitemap.xml"
+                      href={`${SITE_URL}/sitemap.xml`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-600 bg-white border border-gray-200 rounded hover:bg-blue-50 transition-colors"

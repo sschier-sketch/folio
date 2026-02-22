@@ -192,7 +192,7 @@ function PortalMockup() {
         <div className="flex-1 mx-8">
           <div className="h-6 bg-gray-100 rounded-md flex items-center px-3">
             <span className="text-[11px] text-gray-400 font-mono">
-              portal.rentably.de
+              portal.rentab.ly
             </span>
           </div>
         </div>

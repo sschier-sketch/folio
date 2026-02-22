@@ -282,7 +282,7 @@ export default function AdminSeoPageEdit({ pageId, onBack }: AdminSeoPageEditPro
                 value={formData.canonical_url}
                 onChange={(e) => setFormData({ ...formData, canonical_url: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://rentably.de/seite"
+                placeholder="https://rentab.ly/seite"
               />
               <p className="text-xs text-gray-500 mt-1">Optional: Bevorzugte URL-Version</p>
             </div>
@@ -319,7 +319,7 @@ export default function AdminSeoPageEdit({ pageId, onBack }: AdminSeoPageEditPro
                 value={formData.og_image_url}
                 onChange={(e) => setFormData({ ...formData, og_image_url: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://rentably.de/og-image.jpg"
+                placeholder="https://rentab.ly/og-image.jpg"
               />
               <p className="text-xs text-gray-500 mt-1">
                 Empfohlen: 1200x630px für optimale Darstellung

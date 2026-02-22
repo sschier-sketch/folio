@@ -7,7 +7,7 @@ const corsHeaders = {
     "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const BASE_URL = "https://rentably.de";
+const BASE_URL = "https://rentab.ly";
 
 const STATIC_PUBLIC_PATHS: { path: string; changefreq: string; priority: string }[] = [
   { path: "/", changefreq: "daily", priority: "1.0" },
