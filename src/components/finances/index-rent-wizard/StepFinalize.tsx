@@ -1,4 +1,4 @@
-import { CheckCircle, FileText, Download, Loader2 } from "lucide-react";
+import { CheckCircle, FileText, Download, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "../../ui/Button";
 import type { WizardState } from "./types";
 
@@ -150,6 +150,22 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, onSave }: 
             <span>VPI-Werte werden für künftige Berechnungen gespeichert</span>
           </li>
         </ul>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-amber-900 mb-1">Wichtiger Hinweis zur Zustellung</p>
+            <p className="text-sm text-amber-800 leading-relaxed">
+              Die Indexmieterhoehung muss dem Mieter gemaess <span className="font-semibold">Paragraph 126b BGB in Textform</span> zugehen,
+              also per E-Mail, Brief oder vergleichbarer lesbarer Erklaerung auf einem dauerhaften Datentraeger.
+              Eine eigenhaendige Unterschrift ist nicht zwingend erforderlich. Im Streitfall muessen Sie jedoch
+              den Zugang der Erhoehungserklaerung beim Mieter nachweisen koennen. Empfehlung: Senden Sie das
+              Schreiben per E-Mail mit Lesebestaetigung oder per Einschreiben.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">

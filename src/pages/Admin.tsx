@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { useAdmin } from "../hooks/useAdmin";
 import {
@@ -13,6 +13,8 @@ import {
   Clock,
   Check,
   X,
+  Pencil,
+  Loader2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -85,6 +87,7 @@ export function Admin() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
   const [refundTarget, setRefundTarget] = useState<{ id: string; email: string } | null>(null);
+  const [editEmailTarget, setEditEmailTarget] = useState<{ id: string; email: string } | null>(null);
   const [userFilter, setUserFilter] = useState<UserFilter>('all');
 
   async function reloadUsers() {
@@ -590,6 +593,7 @@ export function Admin() {
                       onBan={handleBanUser}
                       onUnban={handleUnbanUser}
                       onDelete={(id, email) => setDeleteTarget({ id, email })}
+                      onEditEmail={(id, email) => setEditEmailTarget({ id, email })}
                     />
                   )
                 }
@@ -639,6 +643,18 @@ export function Admin() {
           }}
         />
       )}
+
+      {editEmailTarget && (
+        <EditEmailModal
+          userId={editEmailTarget.id}
+          currentEmail={editEmailTarget.email}
+          onClose={() => setEditEmailTarget(null)}
+          onSaved={() => {
+            setEditEmailTarget(null);
+            reloadUsers();
+          }}
+        />
+      )}
     </>
   );
 }
@@ -681,5 +697,103 @@ function QuickAction({ icon, title, subtitle, onClick }: {
         <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
       </div>
     </button>
+  );
+}
+
+function EditEmailModal({ userId, currentEmail, onClose, onSaved }: {
+  userId: string;
+  currentEmail: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [newEmail, setNewEmail] = useState(currentEmail);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.select(), 50);
+  }, []);
+
+  async function handleSave() {
+    const trimmed = newEmail.trim().toLowerCase();
+    if (!trimmed || trimmed === currentEmail) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError("Ungueltige E-Mail-Adresse");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Keine aktive Sitzung");
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-email`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId, newEmail: trimmed }),
+        }
+      );
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Fehler beim Aktualisieren");
+
+      onSaved();
+    } catch (err: any) {
+      setError(err.message || "Unbekannter Fehler");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h3 className="font-semibold text-dark">E-Mail aendern</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Aktuelle E-Mail</label>
+            <p className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">{currentEmail}</p>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Neue E-Mail</label>
+            <input
+              ref={inputRef}
+              type="email"
+              value={newEmail}
+              onChange={(e) => { setNewEmail(e.target.value); setError(""); }}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="neue@email.de"
+            />
+          </div>
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+          )}
+        </div>
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100">
+          <Button onClick={onClose} variant="secondary">Abbrechen</Button>
+          <Button
+            onClick={handleSave}
+            disabled={saving || !newEmail.trim() || newEmail.trim().toLowerCase() === currentEmail}
+            variant="primary"
+          >
+            {saving ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Speichern...</> : "Speichern"}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

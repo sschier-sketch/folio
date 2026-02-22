@@ -1,4 +1,4 @@
-import { AlertCircle, TrendingUp, ArrowRight } from "lucide-react";
+import { AlertCircle, TrendingUp, ArrowRight, Calendar } from "lucide-react";
 import type { WizardState } from "./types";
 
 const formatCurrency = (v: number) =>
@@ -40,12 +40,15 @@ export default function StepVpi({ state, onChange }: Props) {
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Monat / Jahr</label>
-              <input
-                type="month"
-                value={state.vpiOldMonth ? state.vpiOldMonth.substring(0, 7) : ""}
-                onChange={(e) => onChange({ vpiOldMonth: e.target.value ? e.target.value + "-01" : "" })}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <input
+                  type="month"
+                  value={state.vpiOldMonth ? state.vpiOldMonth.substring(0, 7) : ""}
+                  onChange={(e) => onChange({ vpiOldMonth: e.target.value ? e.target.value + "-01" : "" })}
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">VPI-Wert</label>
@@ -66,12 +69,15 @@ export default function StepVpi({ state, onChange }: Props) {
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Monat / Jahr</label>
-              <input
-                type="month"
-                value={state.vpiNewMonth ? state.vpiNewMonth.substring(0, 7) : ""}
-                onChange={(e) => onChange({ vpiNewMonth: e.target.value ? e.target.value + "-01" : "" })}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <input
+                  type="month"
+                  value={state.vpiNewMonth ? state.vpiNewMonth.substring(0, 7) : ""}
+                  onChange={(e) => onChange({ vpiNewMonth: e.target.value ? e.target.value + "-01" : "" })}
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">VPI-Wert</label>
@@ -127,14 +133,17 @@ export default function StepVpi({ state, onChange }: Props) {
 
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Wirksamkeitsdatum</label>
-        <input
-          type="date"
-          value={state.effectiveDate}
-          onChange={(e) => onChange({ effectiveDate: e.target.value })}
-          className="w-full max-w-xs px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        <div className="relative max-w-xs">
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <input
+            type="date"
+            value={state.effectiveDate}
+            onChange={(e) => onChange({ effectiveDate: e.target.value })}
+            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+          />
+        </div>
         <p className="text-xs text-gray-400 mt-1">
-          Vorausgefüllt mit dem frühesten zulässigen Datum. Sie können ein späteres Datum wählen.
+          Vorausgefuellt mit dem fruehesten zulaessigen Datum. Sie koennen ein spaeteres Datum waehlen.
         </p>
       </div>
     </div>

@@ -7,10 +7,13 @@ import {
   X,
   EyeOff,
   ArrowUpRight,
+  Calendar,
+  Loader2,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../ui/Button";
+import { createRentPeriod } from "../../lib/rentPeriods";
 import IndexRentWizard from "./index-rent-wizard/IndexRentWizard";
 import type { WizardCalc } from "./index-rent-wizard/types";
 
@@ -41,6 +44,8 @@ interface IndexRentCalculation {
     start_date: string | null;
     cold_rent: number;
     base_rent: number;
+    additional_costs: number;
+    utilities_advance: number;
     unit_id: string | null;
     tenants?: {
       id: string;
@@ -104,6 +109,7 @@ export default function IndexRentView() {
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [activeTab, setActiveTab] = useState<TabFilter>("open");
   const [wizardCalc, setWizardCalc] = useState<WizardCalc | null>(null);
+  const [markAppliedTarget, setMarkAppliedTarget] = useState<IndexRentCalculation | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -239,20 +245,42 @@ export default function IndexRentView() {
     }
   };
 
-  const markAsApplied = async (calculationId: string) => {
+  const markAsApplied = (calculationId: string) => {
+    const calc = calculations.find((c) => c.id === calculationId);
+    if (calc) setMarkAppliedTarget(calc);
+  };
+
+  const confirmMarkAsApplied = async (calculationId: string, appliedDate: string, contractId: string, currentRent: number, utilities: number) => {
     try {
       const { error } = await supabase
         .from("index_rent_calculations")
         .update({
           status: "applied",
-          applied_at: new Date().toISOString(),
+          applied_at: new Date(appliedDate).toISOString(),
         })
         .eq("id", calculationId);
 
       if (error) throw error;
+
+      if (user) {
+        await createRentPeriod({
+          contractId,
+          userId: user.id,
+          effectiveDate: appliedDate,
+          coldRent: currentRent,
+          utilities,
+          reason: "index",
+          status: "active",
+          notes: "Indexmieterhoehung als durchgefuehrt markiert",
+          syncToContract: true,
+        });
+      }
+
+      setMarkAppliedTarget(null);
       loadCalculations();
     } catch (error) {
       console.error("Error marking as applied:", error);
+      alert("Fehler beim Markieren als durchgefuehrt");
     }
   };
 
@@ -570,6 +598,14 @@ export default function IndexRentView() {
           }}
         />
       )}
+
+      {markAppliedTarget && (
+        <MarkAppliedModal
+          calc={markAppliedTarget}
+          onClose={() => setMarkAppliedTarget(null)}
+          onConfirm={confirmMarkAsApplied}
+        />
+      )}
     </div>
   );
 }
@@ -835,6 +871,110 @@ function MetricBox({
       {sublabel && (
         <p className="text-xs text-gray-400 mt-0.5">{sublabel}</p>
       )}
+    </div>
+  );
+}
+
+function MarkAppliedModal({
+  calc,
+  onClose,
+  onConfirm,
+}: {
+  calc: IndexRentCalculation;
+  onClose: () => void;
+  onConfirm: (calculationId: string, appliedDate: string, contractId: string, currentRent: number, utilities: number) => void;
+}) {
+  const today = new Date().toISOString().split("T")[0];
+  const [dateOption, setDateOption] = useState<"today" | "custom">("today");
+  const [customDate, setCustomDate] = useState(today);
+  const [saving, setSaving] = useState(false);
+
+  const currentRent = calc.rental_contract?.monthly_rent || calc.rental_contract?.cold_rent || calc.rental_contract?.base_rent || 0;
+  const utilities = calc.rental_contract?.additional_costs || calc.rental_contract?.utilities_advance || 0;
+  const tenantName = calc.rental_contract?.tenants?.name || "Unbekannter Mieter";
+
+  const handleConfirm = async () => {
+    setSaving(true);
+    const date = dateOption === "today" ? today : customDate;
+    onConfirm(calc.id, date, calc.contract_id, currentRent, utilities);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h3 className="font-semibold text-dark">Als durchgefuehrt markieren</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-6 space-y-5">
+          <p className="text-sm text-gray-600">
+            Waehlen Sie das Datum, an dem die Mieterhoehung fuer <span className="font-semibold">{tenantName}</span> durchgefuehrt wurde. Dieses Datum wird als letzte Mieterhoehung gespeichert und fuer die naechste Indexberechnung verwendet.
+          </p>
+
+          <div className="space-y-3">
+            <label
+              className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                dateOption === "today" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <input
+                type="radio"
+                name="dateOption"
+                checked={dateOption === "today"}
+                onChange={() => setDateOption("today")}
+                className="accent-blue-600"
+              />
+              <div>
+                <p className="text-sm font-medium text-dark">Heutiges Datum verwenden</p>
+                <p className="text-xs text-gray-500">{formatDate(today)}</p>
+              </div>
+            </label>
+
+            <label
+              className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                dateOption === "custom" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <input
+                type="radio"
+                name="dateOption"
+                checked={dateOption === "custom"}
+                onChange={() => setDateOption("custom")}
+                className="mt-0.5 accent-blue-600"
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-dark">Anderes Datum waehlen</p>
+                {dateOption === "custom" && (
+                  <div className="mt-2 relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <input
+                      type="date"
+                      value={customDate}
+                      onChange={(e) => setCustomDate(e.target.value)}
+                      max={today}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
+              </div>
+            </label>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-xs text-amber-800">
+              Das gewaehlte Datum wird in der Miethistorie als Zeitpunkt der letzten Indexmieterhoehung hinterlegt. Die naechste Erhoehung kann fruehestens 12 Monate nach diesem Datum erfolgen.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100">
+          <Button onClick={onClose} variant="secondary">Abbrechen</Button>
+          <Button onClick={handleConfirm} disabled={saving} variant="primary">
+            {saving ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Speichern...</> : "Bestaetigen"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

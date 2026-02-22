@@ -10,6 +10,7 @@ import {
   UserCheck,
   Ban,
   Trash2,
+  Mail,
 } from 'lucide-react';
 
 interface UserActionsDropdownProps {
@@ -27,6 +28,7 @@ interface UserActionsDropdownProps {
   onBan: (userId: string, email: string) => void;
   onUnban: (userId: string, email: string) => void;
   onDelete: (userId: string, email: string) => void;
+  onEditEmail: (userId: string, email: string) => void;
 }
 
 interface ActionItem {
@@ -53,6 +55,7 @@ export default function UserActionsDropdown({
   onBan,
   onUnban,
   onDelete,
+  onEditEmail,
 }: UserActionsDropdownProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -112,6 +115,12 @@ export default function UserActionsDropdown({
       description: 'Im Kontext dieses Nutzers einloggen',
       icon: <Eye className="w-4 h-4" />,
       onClick: () => onImpersonate(userId, userEmail),
+    },
+    {
+      label: 'E-Mail aendern',
+      description: 'E-Mail-Adresse dieses Nutzers aktualisieren',
+      icon: <Mail className="w-4 h-4" />,
+      onClick: () => onEditEmail(userId, userEmail),
     },
     {
       label: 'Abo zum Laufzeitende kuendigen',
