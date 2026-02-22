@@ -89,7 +89,7 @@ export default function TenantContractDetails({
     { id: "deposit" as Tab, label: "Kaution", icon: Wallet },
     {
       id: "contract" as Tab,
-      label: "Vertrag & Dokumente",
+      label: "Dokumente",
       icon: FileText,
       premium: true
     },

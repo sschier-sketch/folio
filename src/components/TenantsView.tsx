@@ -480,16 +480,16 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                             </div>
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 max-w-[200px]">
                           <button
                             onClick={() => setSelectedTenantId(tenant.id)}
-                            className="text-left group"
+                            className="text-left group w-full min-w-0"
                           >
-                            <div className="font-medium text-dark text-sm group-hover:text-primary-blue transition-colors">
+                            <div className="font-medium text-dark text-sm group-hover:text-primary-blue transition-colors truncate">
                               {tenant.name}
                             </div>
                             {tenant.email && (
-                              <div className="text-xs text-gray-400">{tenant.email}</div>
+                              <div className="text-xs text-gray-400 truncate">{tenant.email}</div>
                             )}
                           </button>
                         </td>
