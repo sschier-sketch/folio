@@ -177,12 +177,25 @@ function HealthBadge({ status }: { status: keyof typeof healthConfig }) {
   );
 }
 
+const TRIGGERABLE_JOBS: Record<string, { fnName: string; label: string }> = {
+  "weekly-interest-rate-fetch": {
+    fnName: "fetch-interest-rates",
+    label: "Zinsdaten jetzt aktualisieren",
+  },
+};
+
 export default function AdminCronJobsView() {
   const [jobs, setJobs] = useState<HealthJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [triggering, setTriggering] = useState<string | null>(null);
+  const [triggerResult, setTriggerResult] = useState<{
+    job: string;
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   async function loadJobs() {
     try {
@@ -212,6 +225,36 @@ export default function AdminCronJobsView() {
     setRefreshing(true);
     await loadJobs();
     setRefreshing(false);
+  }
+
+  async function handleTriggerJob(jobName: string) {
+    const cfg = TRIGGERABLE_JOBS[jobName];
+    if (!cfg) return;
+    setTriggering(jobName);
+    setTriggerResult(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${cfg.fnName}`;
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setTriggerResult({ job: jobName, type: "error", text: data.error || "Fehler beim Ausfuehren" });
+      } else {
+        setTriggerResult({ job: jobName, type: "success", text: data.message || "Erfolgreich ausgefuehrt" });
+        await loadJobs();
+      }
+    } catch (err) {
+      setTriggerResult({ job: jobName, type: "error", text: err instanceof Error ? err.message : "Unbekannter Fehler" });
+    } finally {
+      setTriggering(null);
+    }
   }
 
   const healthyCount = jobs.filter((j) => j.health_status === "healthy").length;
@@ -458,6 +501,32 @@ export default function AdminCronJobsView() {
                       <p className="text-xs text-gray-600 leading-relaxed">
                         {job.description}
                       </p>
+                    </div>
+                  )}
+
+                  {TRIGGERABLE_JOBS[job.job_name] && (
+                    <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTriggerJob(job.job_name);
+                        }}
+                        disabled={triggering === job.job_name}
+                        variant="primary"
+                        className="!py-1.5 !px-3 !text-xs"
+                      >
+                        {triggering === job.job_name ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                        ) : (
+                          <Zap className="w-3.5 h-3.5 mr-1.5" />
+                        )}
+                        {TRIGGERABLE_JOBS[job.job_name].label}
+                      </Button>
+                      {triggerResult && triggerResult.job === job.job_name && (
+                        <span className={`text-xs ${triggerResult.type === "success" ? "text-emerald-600" : "text-red-600"}`}>
+                          {triggerResult.text}
+                        </span>
+                      )}
                     </div>
                   )}
 
