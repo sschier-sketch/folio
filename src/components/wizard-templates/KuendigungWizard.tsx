@@ -21,6 +21,7 @@ import StepVersand from './StepVersand';
 
 interface Props {
   onBack: () => void;
+  freshStart?: boolean;
 }
 
 function emptyWizardData(): KuendigungWizardData {
@@ -66,7 +67,7 @@ function emptyWizardData(): KuendigungWizardData {
   };
 }
 
-export default function KuendigungWizard({ onBack }: Props) {
+export default function KuendigungWizard({ onBack, freshStart }: Props) {
   const { user } = useAuth();
   const [step, setStep] = useState<KuendigungStep>('vermieter');
   const [data, setData] = useState<KuendigungWizardData>(emptyWizardData());
@@ -78,7 +79,7 @@ export default function KuendigungWizard({ onBack }: Props) {
   useEffect(() => {
     if (user) {
       loadProfile();
-      loadDraft();
+      if (!freshStart) loadDraft();
     }
   }, [user]);
 
@@ -444,7 +445,7 @@ export default function KuendigungWizard({ onBack }: Props) {
 
           {step !== 'ergebnis' && step !== 'versand' && (
             <div className="flex items-center justify-between mt-6">
-              <Button onClick={goPrev} variant="cancel">
+              <Button onClick={goPrev} variant="outlined">
                 {stepIdx === 0 ? 'Abbrechen' : 'Zurück'}
               </Button>
               <Button onClick={goNext} disabled={!canProceed()} variant="dark">
@@ -455,7 +456,7 @@ export default function KuendigungWizard({ onBack }: Props) {
 
           {step === 'versand' && !sent && (
             <div className="flex items-center justify-between mt-6">
-              <Button onClick={() => setStep('ergebnis')} variant="cancel">
+              <Button onClick={() => setStep('ergebnis')} variant="outlined">
                 Zurück
               </Button>
             </div>

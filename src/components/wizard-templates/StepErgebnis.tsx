@@ -11,7 +11,7 @@ export default function StepErgebnis({ generating, onDownload, onSendDigital }: 
         <h4 className="font-semibold text-dark mb-1 text-sm">Hinweise & Tipps</h4>
         <p className="text-sm text-gray-600 leading-relaxed">
           Das Dokument wird nach dem Herunterladen oder Versenden automatisch im
-          Dokumentenbereich des Objekts gespeichert, sodass Sie es jederzeit wieder finden.
+          Dokumentenbereich des Mieters gespeichert, sodass Sie es jederzeit wieder finden.
         </p>
       </div>
 

@@ -34,8 +34,8 @@ export default function StepVersand({ tenants, sending, sent, portalEnabled, onS
   if (sent) {
     return (
       <div className="text-center py-12">
-        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-16 h-16 bg-blue-50 border-2 border-[#3c8af7] rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>

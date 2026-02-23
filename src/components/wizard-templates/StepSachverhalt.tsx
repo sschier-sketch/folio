@@ -18,10 +18,18 @@ export default function StepSachverhalt({ data, onChange }: Props) {
     onChange({ ...data, [field]: value });
 
   function updateAppointment(id: string, partial: Partial<AppointmentSlot>) {
-    onChange({
-      ...data,
-      appointments: data.appointments.map((a) => (a.id === id ? { ...a, ...partial } : a)),
+    const updated = data.appointments.map((a) => {
+      if (a.id !== id) return a;
+      const merged = { ...a, ...partial };
+      if (partial.timeFrom && merged.timeTo && partial.timeFrom >= merged.timeTo) {
+        const [h, m] = partial.timeFrom.split(':').map(Number);
+        const nextH = h + (m >= 30 ? 1 : 0);
+        const nextM = m >= 30 ? 0 : 30;
+        merged.timeTo = `${String(Math.min(nextH, 23)).padStart(2, '0')}:${String(nextM).padStart(2, '0')}`;
+      }
+      return merged;
     });
+    onChange({ ...data, appointments: updated });
   }
 
   function addAppointment() {
@@ -137,9 +145,17 @@ export default function StepSachverhalt({ data, onChange }: Props) {
                 <input
                   type="time"
                   value={apt.timeTo}
-                  onChange={(e) => updateAppointment(apt.id, { timeTo: e.target.value })}
-                  className={inputCls}
+                  min={apt.timeFrom || undefined}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (apt.timeFrom && val <= apt.timeFrom) return;
+                    updateAppointment(apt.id, { timeTo: val });
+                  }}
+                  className={`${inputCls}${apt.timeFrom && apt.timeTo && apt.timeTo <= apt.timeFrom ? ' border-red-300 ring-1 ring-red-300' : ''}`}
                 />
+                {apt.timeFrom && apt.timeTo && apt.timeTo <= apt.timeFrom && (
+                  <p className="text-xs text-red-500 mt-1">Muss nach {apt.timeFrom} liegen</p>
+                )}
               </div>
               {data.appointments.length > 1 && (
                 <button
@@ -167,5 +183,5 @@ export default function StepSachverhalt({ data, onChange }: Props) {
 export function isSachverhaltValid(d: KuendigungSachverhalt): boolean {
   if (!d.versanddatum || !d.eingangsdatum || !d.kuendigungsdatum) return false;
   if (d.appointments.length === 0) return false;
-  return d.appointments.every((a) => a.date && a.timeFrom && a.timeTo);
+  return d.appointments.every((a) => a.date && a.timeFrom && a.timeTo && a.timeTo > a.timeFrom);
 }

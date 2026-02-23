@@ -13,7 +13,7 @@ interface DraftInfo {
 }
 
 interface Props {
-  onStartWizard: (templateId: string) => void;
+  onStartWizard: (templateId: string, freshStart?: boolean) => void;
 }
 
 export default function WizardCreatorSection({ onStartWizard }: Props) {
@@ -55,10 +55,6 @@ export default function WizardCreatorSection({ onStartWizard }: Props) {
     } finally {
       setLoading(false);
     }
-  }
-
-  function getDraftForTemplate(templateId: string): DraftInfo | undefined {
-    return drafts.find((d) => d.template_id === templateId);
   }
 
   function formatDraftDate(iso: string): string {
@@ -158,33 +154,22 @@ export default function WizardCreatorSection({ onStartWizard }: Props) {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTemplates.map((tpl) => {
-            const draft = getDraftForTemplate(tpl.id);
-            return (
-              <div
-                key={tpl.id}
-                className="border border-gray-200 rounded-lg p-5 hover:border-gray-300 hover:shadow-sm transition-all flex flex-col"
+          {filteredTemplates.map((tpl) => (
+            <div
+              key={tpl.id}
+              className="border border-gray-200 rounded-lg p-5 hover:border-gray-300 hover:shadow-sm transition-all flex flex-col"
+            >
+              <h3 className="font-semibold text-dark mb-2">{tpl.title}</h3>
+              <p className="text-sm text-gray-500 flex-1 mb-4">{tpl.description}</p>
+              <Button
+                onClick={() => onStartWizard(tpl.id, true)}
+                variant="dark"
+                className="self-start"
               >
-                <h3 className="font-semibold text-dark mb-2">{tpl.title}</h3>
-                <p className="text-sm text-gray-500 flex-1 mb-4">{tpl.description}</p>
-                {draft && (
-                  <div className="flex items-center gap-1.5 mb-3 text-xs text-amber-700 bg-amber-50 px-2.5 py-1.5 rounded-md">
-                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Entwurf vorhanden
-                  </div>
-                )}
-                <Button
-                  onClick={() => onStartWizard(tpl.id)}
-                  variant="dark"
-                  className="self-start"
-                >
-                  {draft ? 'Entwurf fortsetzen' : 'Dokument erstellen'}
-                </Button>
-              </div>
-            );
-          })}
+                Dokument erstellen
+              </Button>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -47,6 +47,7 @@ export default function TemplatesView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeWizard, setActiveWizard] = useState<string | null>(null);
+  const [wizardFreshStart, setWizardFreshStart] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -174,7 +175,7 @@ export default function TemplatesView() {
   }
 
   if (activeWizard === 'kuendigungsbestaetigung') {
-    return <KuendigungWizard onBack={() => setActiveWizard(null)} />;
+    return <KuendigungWizard onBack={() => { setActiveWizard(null); setWizardFreshStart(false); }} freshStart={wizardFreshStart} />;
   }
 
   return (
@@ -186,7 +187,7 @@ export default function TemplatesView() {
         </p>
       </div>
 
-      <WizardCreatorSection onStartWizard={(id) => setActiveWizard(id)} />
+      <WizardCreatorSection onStartWizard={(id, fresh) => { setWizardFreshStart(!!fresh); setActiveWizard(id); }} />
 
       {templates.length > 0 && (
         <>
