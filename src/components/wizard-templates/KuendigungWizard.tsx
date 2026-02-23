@@ -248,9 +248,6 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
             const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
             const session = (await supabase.auth.getSession()).data.session;
 
-            const landlordName = [data.landlord.prefix, data.landlord.name].filter(Boolean).join(' ').trim() || 'Ihr Vermieter';
-            const propertyAddress = tenant.propertyName || '';
-
             await fetch(`${supabaseUrl}/functions/v1/send-email`, {
               method: 'POST',
               headers: {
@@ -261,12 +258,7 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
               body: JSON.stringify({
                 to: tenantRow.email,
                 subject: betreff,
-                templateKey: 'kuendigungsbestaetigung',
-                variables: {
-                  tenantName: `${tenant.firstName} ${tenant.lastName}`.trim(),
-                  landlordName,
-                  propertyAddress,
-                },
+                text: nachricht,
                 userId: user!.id,
                 mailType: 'kuendigungsbestaetigung',
                 category: 'transactional',

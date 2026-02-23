@@ -44,41 +44,13 @@ function replaceVariables(content: string, variables: Record<string, string>): s
   return result;
 }
 
-interface ResolvedSender {
-  from: string;
-  replyTo: string | null;
-}
-
 async function resolveFromAddress(
   supabase: any,
   userId: string | undefined,
   useUserAlias: boolean | undefined,
   defaultFrom: string
-): Promise<ResolvedSender> {
-  if (!userId || !useUserAlias) return { from: defaultFrom, replyTo: null };
-
-  const { data: profile } = await supabase
-    .from('account_profiles')
-    .select('first_name, last_name, company_name')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  const { data: mailSettings } = await supabase
-    .from('user_mail_settings')
-    .select('sender_name')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  const displayName = mailSettings?.sender_name?.trim()
-    || profile?.company_name
-    || [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
-    || 'Rentably';
-
-  let userEmail: string | null = null;
-  const { data: authUser } = await supabase.auth.admin.getUserById(userId);
-  if (authUser?.user?.email) {
-    userEmail = authUser.user.email;
-  }
+): Promise<string> {
+  if (!userId || !useUserAlias) return defaultFrom;
 
   const { data: mailbox } = await supabase
     .from('user_mailboxes')
@@ -87,14 +59,34 @@ async function resolveFromAddress(
     .eq('is_active', true)
     .maybeSingle();
 
-  const aliasEmail = mailbox
-    ? `${mailbox.alias_localpart}@rentab.ly`
-    : 'noreply@rentab.ly';
+  if (!mailbox) return defaultFrom;
 
-  return {
-    from: `${displayName} <${aliasEmail}>`,
-    replyTo: userEmail,
-  };
+  const aliasEmail = `${mailbox.alias_localpart}@rentab.ly`;
+
+  const { data: mailSettings } = await supabase
+    .from('user_mail_settings')
+    .select('sender_name')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (mailSettings?.sender_name?.trim()) {
+    return `${mailSettings.sender_name.trim()} <${aliasEmail}>`;
+  }
+
+  const { data: profile } = await supabase
+    .from('account_profiles')
+    .select('first_name, last_name, company_name')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (profile) {
+    const displayName = profile.company_name
+      || [profile.first_name, profile.last_name].filter(Boolean).join(' ')
+      || 'Rentably';
+    return `${displayName} <${aliasEmail}>`;
+  }
+
+  return `Rentably <${aliasEmail}>`;
 }
 
 async function storeOutboundMessage(
@@ -389,19 +381,18 @@ Deno.serve(async (req: Request) => {
     }
 
     const DEFAULT_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
-    const resolved = await resolveFromAddress(supabase, userId, useUserAlias, DEFAULT_FROM);
+    const fromAddress = await resolveFromAddress(supabase, userId, useUserAlias, DEFAULT_FROM);
 
     const emailPayload: any = {
-      from: resolved.from,
+      from: fromAddress,
       to: [to],
       subject: finalSubject,
       html: finalHtml,
       text: finalText || '',
     };
 
-    const effectiveReplyTo = replyTo || resolved.replyTo;
-    if (effectiveReplyTo) {
-      emailPayload.reply_to = effectiveReplyTo;
+    if (replyTo) {
+      emailPayload.reply_to = replyTo;
     }
 
     if (attachments && attachments.length > 0) {
@@ -443,7 +434,7 @@ Deno.serve(async (req: Request) => {
       ).then(results => results.filter(r => r !== null));
     }
 
-    console.log('Sending email via Resend:', { to, subject: finalSubject, from: resolved.from });
+    console.log('Sending email via Resend:', { to, subject: finalSubject, from: fromAddress });
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -483,7 +474,7 @@ Deno.serve(async (req: Request) => {
     let resultThreadId: string | undefined;
 
     if (storeAsMessage && userId) {
-      const senderAddr = resolved.from.match(/<(.+)>/)?.[1] || resolved.from;
+      const senderAddr = fromAddress.match(/<(.+)>/)?.[1] || fromAddress;
       resultThreadId = await storeOutboundMessage(supabase, {
         userId,
         to,
