@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../ui/Button';
 import type { TenantEntry } from './types';
 
 interface Props {
@@ -77,26 +76,6 @@ export default function StepMieter({ tenants, onChange }: Props) {
     onChange(updated);
   }
 
-  function removeTenant(index: number) {
-    if (tenants.length <= 1) return;
-    onChange(tenants.filter((_, i) => i !== index));
-  }
-
-  function addTenant() {
-    onChange([
-      ...tenants,
-      {
-        firstName: '',
-        lastName: '',
-        street: '',
-        number: '',
-        zip: '',
-        city: '',
-        prefix: '',
-        country: 'Deutschland',
-      },
-    ]);
-  }
 
   function selectProperty(index: number, propId: string) {
     const prop = properties.find((p) => p.id === propId);
@@ -179,17 +158,8 @@ export default function StepMieter({ tenants, onChange }: Props) {
 
         return (
           <div key={idx} className="mb-6 p-6 bg-gray-50 rounded-lg relative">
-            {tenants.length > 1 && (
-              <button
-                onClick={() => removeTenant(idx)}
-                className="absolute top-4 right-4 text-sm text-red-500 hover:text-red-700 transition-colors"
-              >
-                Entfernen
-              </button>
-            )}
-
             <h4 className="text-lg font-semibold text-dark mb-4">
-              Empfänger {tenants.length > 1 ? idx + 1 : ''}
+              Empfänger
             </h4>
 
             <div className="space-y-4">
@@ -354,9 +324,6 @@ export default function StepMieter({ tenants, onChange }: Props) {
         );
       })}
 
-      <Button onClick={addTenant} variant="dashed" fullWidth>
-        Weiteren Empfänger hinzufügen
-      </Button>
     </div>
   );
 }

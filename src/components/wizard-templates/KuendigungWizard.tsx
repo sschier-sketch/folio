@@ -233,7 +233,7 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
       const blob = generateKuendigungPdf(data);
       const filename = buildKuendigungFilename(data.tenants);
 
-      await saveDocumentToProperty(blob, filename, sharePortal);
+      const filePath = await saveDocumentToProperty(blob, filename, sharePortal);
 
       for (const tenant of data.tenants) {
         if (tenant.tenantId) {
@@ -244,12 +244,32 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
             .maybeSingle();
 
           if (tenantRow?.email) {
-            await supabase.from('email_queue').insert({
-              user_id: user!.id,
-              to_email: tenantRow.email,
-              subject: betreff,
-              body: nachricht,
-              status: 'pending',
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            const session = (await supabase.auth.getSession()).data.session;
+
+            await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session?.access_token || supabaseKey}`,
+                'apikey': supabaseKey,
+              },
+              body: JSON.stringify({
+                to: tenantRow.email,
+                subject: betreff,
+                text: nachricht,
+                userId: user!.id,
+                mailType: 'kuendigungsbestaetigung',
+                category: 'transactional',
+                recipientName: `${tenant.firstName} ${tenant.lastName}`.trim(),
+                tenantId: tenant.tenantId,
+                useUserAlias: true,
+                storeAsMessage: true,
+                attachments: filePath
+                  ? [{ filename, path: filePath }]
+                  : [],
+              }),
             });
           }
         }
@@ -264,9 +284,9 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
     }
   }
 
-  async function saveDocumentToProperty(blob: Blob, filename: string, shareWithTenant: boolean) {
+  async function saveDocumentToProperty(blob: Blob, filename: string, shareWithTenant: boolean): Promise<string | null> {
     const primaryTenant = data.tenants[0];
-    if (!primaryTenant?.propertyId) return;
+    if (!primaryTenant?.propertyId) return null;
 
     const filePath = `${user!.id}/wizard-documents/${Date.now()}_${filename}`;
     await supabase.storage.from('documents').upload(filePath, blob, {
@@ -284,7 +304,7 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
         document_type: 'kuendigungsbestaetigung',
         file_size: blob.size,
         shared_with_tenant: shareWithTenant,
-        description: 'Kündigungsbestätigung (Wizard)',
+        description: 'Kündigungsbestätigung (Assistent)',
       })
       .select('id')
       .maybeSingle();
@@ -325,6 +345,8 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
         await supabase.from('document_associations').insert(associations);
       }
     }
+
+    return filePath;
   }
 
   async function deleteDraft() {
