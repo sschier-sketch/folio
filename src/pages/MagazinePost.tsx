@@ -16,6 +16,7 @@ import ArticleTableOfContents from "../components/magazine/ArticleTableOfContent
 import ArticleFaq from "../components/magazine/ArticleFaq";
 import ArticleShareButtons from "../components/magazine/ArticleShareButtons";
 import MagazineCta from "../components/magazine/MagazineCta";
+import { ARTICLE_COMPONENT_REGISTRY } from "../components/magazine/articleComponents";
 
 interface Post {
   id: string;
@@ -225,6 +226,28 @@ export function MagazinePost() {
     return renderMarkdown(post.content);
   }, [post?.content, isBlocks]);
 
+  const contentSegments = useMemo(() => {
+    if (!htmlContent) return [];
+    const parts = htmlContent.split(/<div data-component="([^"]+)"(?:\s+data-props="([^"]*)")?\s*><\/div>/);
+    const segments: Array<{ type: 'html'; html: string } | { type: 'component'; name: string; props: Record<string, unknown> }> = [];
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 3 === 0) {
+        if (parts[i]) segments.push({ type: 'html', html: parts[i] });
+      } else if (i % 3 === 1) {
+        const name = parts[i];
+        const rawProps = parts[i + 1];
+        let props: Record<string, unknown> = {};
+        if (rawProps) {
+          try { props = JSON.parse(rawProps.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#039;/g, "'")); } catch {}
+        }
+        segments.push({ type: 'component', name, props });
+      }
+    }
+    return segments;
+  }, [htmlContent]);
+
+  const hasComponents = contentSegments.some(s => s.type === 'component');
+
   const summaryPoints = useMemo(
     () => (post?.summary_points || []).filter(p => p.trim()),
     [post?.summary_points]
@@ -360,10 +383,23 @@ export function MagazinePost() {
               </div>
             )}
 
-            <div
-              className="magazine-article-content"
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
-            />
+            {hasComponents ? (
+              <div className="magazine-article-content">
+                {contentSegments.map((seg, i) => {
+                  if (seg.type === 'html') {
+                    return <div key={i} dangerouslySetInnerHTML={{ __html: seg.html }} />;
+                  }
+                  const Comp = ARTICLE_COMPONENT_REGISTRY[seg.name];
+                  if (!Comp) return null;
+                  return <Comp key={i} {...seg.props} />;
+                })}
+              </div>
+            ) : (
+              <div
+                className="magazine-article-content"
+                dangerouslySetInnerHTML={{ __html: htmlContent }}
+              />
+            )}
 
             <ArticleFaq faqs={faqs} />
           </div>

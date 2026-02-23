@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import {
   Plus, ChevronUp, ChevronDown, Trash2, Type, AlignLeft,
   Image as ImageIcon, ListChecks, Upload, Bold, Italic,
-  Link as LinkIcon, List, ListOrdered, Quote, TextQuote
+  Link as LinkIcon, List, ListOrdered, Quote, TextQuote, Puzzle
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { ContentBlock } from '../../lib/contentBlocks';
@@ -12,12 +12,17 @@ interface Props {
   onChange: (blocks: ContentBlock[]) => void;
 }
 
+const AVAILABLE_COMPONENTS = [
+  { name: 'bauzinsen', label: 'Bauzinsen-Chart' },
+];
+
 const BLOCK_TYPES = [
   { type: 'heading' as const, label: 'Überschrift', icon: Type },
   { type: 'text' as const, label: 'Text', icon: AlignLeft },
   { type: 'image' as const, label: 'Bild', icon: ImageIcon },
   { type: 'usp_list' as const, label: 'Aufzählung', icon: ListChecks },
   { type: 'info_box' as const, label: 'Info-Box', icon: TextQuote },
+  { type: 'component' as const, label: 'Komponente', icon: Puzzle },
 ];
 
 const BLOCK_LABELS: Record<string, string> = {
@@ -26,6 +31,7 @@ const BLOCK_LABELS: Record<string, string> = {
   image: 'Bild',
   usp_list: 'Aufzählung',
   info_box: 'Info-Box',
+  component: 'Komponente',
 };
 
 export default function BlockEditor({ blocks, onChange }: Props) {
@@ -48,6 +54,9 @@ export default function BlockEditor({ blocks, onChange }: Props) {
         break;
       case 'info_box':
         newBlock = { type: 'info_box', title: '', items: [''] };
+        break;
+      case 'component':
+        newBlock = { type: 'component', name: AVAILABLE_COMPONENTS[0]?.name || '' };
         break;
       default:
         return;
@@ -292,6 +301,27 @@ export default function BlockEditor({ blocks, onChange }: Props) {
             </button>
           </div>
         );
+
+      case 'component':
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Puzzle className="w-5 h-5 text-teal-600 flex-shrink-0" />
+              <select
+                value={block.name}
+                onChange={(e) => updateBlock(index, { ...block, name: e.target.value })}
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                {AVAILABLE_COMPONENTS.map((c) => (
+                  <option key={c.name} value={c.name}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="px-4 py-3 bg-teal-50 border border-teal-100 rounded-lg text-xs text-teal-700">
+              Interaktive Komponente: Wird als dynamisches Widget im Artikel gerendert. Der Inhalt wird automatisch geladen.
+            </div>
+          </div>
+        );
     }
   }
 
@@ -326,6 +356,7 @@ export default function BlockEditor({ blocks, onChange }: Props) {
               block.type === 'text' ? 'bg-blue-50 text-blue-600' :
               block.type === 'image' ? 'bg-emerald-50 text-emerald-600' :
               block.type === 'info_box' ? 'bg-stone-100 text-stone-600' :
+              block.type === 'component' ? 'bg-teal-50 text-teal-600' :
               'bg-violet-50 text-violet-600'
             }`}>
               {block.type === 'heading' ? `H${(block as any).level}` : BLOCK_LABELS[block.type]}

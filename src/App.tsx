@@ -46,7 +46,6 @@ import Dokumente from "./pages/funktionen/Dokumente";
 import Nebenkostenabrechnung from "./pages/funktionen/Nebenkostenabrechnung";
 import Mieterportal from "./pages/funktionen/Mieterportal";
 import Uebergabeprotokoll from "./pages/funktionen/Uebergabeprotokoll";
-import BauzinsenArticle from "./pages/BauzinsenArticle";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -138,7 +137,6 @@ function App() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/preise" element={<Pricing />} />
           <Route path="/magazin" element={<Magazine />} />
-          <Route path="/magazin/bauzinsen-entwicklung-aktuell-historie" element={<BauzinsenArticle />} />
           <Route path="/magazin/:slug" element={<MagazinePost />} />
           <Route path="/magazine" element={<Magazine />} />
           <Route path="/magazine/:slug" element={<MagazinePost />} />

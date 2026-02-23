@@ -28,7 +28,13 @@ export interface InfoBoxBlock {
   items: string[];
 }
 
-export type ContentBlock = HeadingBlock | TextBlock | ImageBlock | UspListBlock | InfoBoxBlock;
+export interface ComponentBlock {
+  type: 'component';
+  name: string;
+  props?: Record<string, unknown>;
+}
+
+export type ContentBlock = HeadingBlock | TextBlock | ImageBlock | UspListBlock | InfoBoxBlock | ComponentBlock;
 
 export interface HeadingEntry {
   id: string;
@@ -227,6 +233,10 @@ export function renderBlocksToHtml(blocks: ContentBlock[]): string {
         html += block.items.filter(i => i.trim()).map(item => `<li>${formatInline(item)}</li>`).join('');
         html += '</ul></div>';
         return html;
+      }
+      case 'component': {
+        const propsAttr = block.props ? ` data-props="${escapeHtml(JSON.stringify(block.props))}"` : '';
+        return `<div data-component="${escapeHtml(block.name)}"${propsAttr}></div>`;
       }
       default:
         return '';
