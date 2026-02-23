@@ -149,10 +149,9 @@ export default function FeatureHighlight() {
               Alles, was Sie brauchen — an einem Ort
             </h2>
             <p className="text-gray-500 leading-relaxed mb-8 max-w-[650px]">
-              F&uuml;nf Bereiche, die Ihre Immobilienverwaltung vollst&auml;ndig abdecken
+              Acht Bereiche, die Ihre Immobilienverwaltung vollst&auml;ndig abdecken
               &ndash; von der Mietverwaltung bis zur Nebenkostenabrechnung.
-              Im Basic-Tarif kostenlos, mit dem Pro-Test sogar mit
-              allen Premium-Funktionen.
+              Vieles bereits im Basic-Tarif kostenlos, mit dem Pro-Tarif immer inklusive.
             </p>
             <ul className="space-y-4 mb-6">
               {HIGHLIGHTS.map((item) => (
