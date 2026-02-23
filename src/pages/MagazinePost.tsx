@@ -55,6 +55,10 @@ interface RelatedPost {
   author_name: string;
 }
 
+function resolvePlaceholders(text: string): string {
+  return text.replace(/\{\{YEAR\}\}/g, String(new Date().getFullYear()));
+}
+
 export function MagazinePost() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -122,23 +126,25 @@ export function MagazinePost() {
       const currentPost: Post = {
         id: data.id,
         slug: t.slug,
-        title: t.title,
-        excerpt: t.excerpt,
-        content: t.content,
-        summary_points: Array.isArray(t.summary_points) ? t.summary_points : [],
+        title: resolvePlaceholders(t.title),
+        excerpt: t.excerpt ? resolvePlaceholders(t.excerpt) : undefined,
+        content: resolvePlaceholders(t.content),
+        summary_points: Array.isArray(t.summary_points)
+          ? t.summary_points.map(resolvePlaceholders)
+          : [],
         hero_image_url: data.hero_image_url,
         hero_image_alt: data.hero_image_alt,
         author_name: data.author_name,
         published_at: data.published_at,
         category: data.category,
         reading_time_minutes: t.reading_time_minutes || 1,
-        seo_title: t.seo_title,
-        seo_description: t.seo_description,
+        seo_title: t.seo_title ? resolvePlaceholders(t.seo_title) : undefined,
+        seo_description: t.seo_description ? resolvePlaceholders(t.seo_description) : undefined,
         og_image_url: t.og_image_url,
       };
 
       setPost(currentPost);
-      document.title = t.seo_title || `${t.title} – rentably`;
+      document.title = currentPost.seo_title || `${currentPost.title} – rentably`;
 
       loadFaqs(data.id);
       loadRelated(data.id, data.category);
