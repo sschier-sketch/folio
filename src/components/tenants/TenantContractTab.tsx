@@ -436,7 +436,10 @@ export default function TenantContractTab({
                       </div>
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-700">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                      <span
+                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium max-w-full truncate"
+                        title={getDocumentTypeLabel(doc.document_type)}
+                      >
                         {getDocumentTypeLabel(doc.document_type)}
                       </span>
                     </td>

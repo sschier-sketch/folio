@@ -193,11 +193,12 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDocumentTypeColor(
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium max-w-full truncate ${getDocumentTypeColor(
                           doc.document_type
                         )}`}
+                        title={getDocumentTypeLabel(doc.document_type)}
                       >
                         {getDocumentTypeLabel(doc.document_type)}
                       </span>

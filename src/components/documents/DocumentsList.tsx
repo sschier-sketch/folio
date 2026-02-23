@@ -585,9 +585,10 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                     </td>
                     <td className="px-4 py-4">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getDocumentTypeColor(
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium max-w-full truncate ${getDocumentTypeColor(
                           doc.document_type
                         )}`}
+                        title={getDocumentTypeLabel(doc.document_type)}
                       >
                         {getDocumentTypeLabel(doc.document_type)}
                       </span>

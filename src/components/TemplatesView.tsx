@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import Badge from "./common/Badge";
 import { Button } from './ui/Button';
+import { PremiumFeatureGuard } from './PremiumFeatureGuard';
 import WizardCreatorSection from './wizard-templates/WizardCreatorSection';
 import KuendigungWizard from './wizard-templates/KuendigungWizard';
 
@@ -187,7 +188,13 @@ export default function TemplatesView() {
         </p>
       </div>
 
-      <WizardCreatorSection onStartWizard={(id, fresh) => { setWizardFreshStart(!!fresh); setActiveWizard(id); }} />
+      {isPremium ? (
+        <WizardCreatorSection onStartWizard={(id, fresh) => { setWizardFreshStart(!!fresh); setActiveWizard(id); }} />
+      ) : (
+        <PremiumFeatureGuard featureName="Dokument erstellen" inline>
+          <WizardCreatorSection onStartWizard={() => {}} />
+        </PremiumFeatureGuard>
+      )}
 
       {templates.length > 0 && (
         <>

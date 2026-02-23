@@ -133,6 +133,9 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         to: tenant.email,
         templateKey: "tenant_portal_activation",
+        userId: userId,
+        useUserAlias: true,
+        replyTo: landlordEmail,
         variables: {
           tenant_name: `${tenant.first_name} ${tenant.last_name}`,
           tenant_email: tenant.email,
