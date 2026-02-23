@@ -44,13 +44,18 @@ function replaceVariables(content: string, variables: Record<string, string>): s
   return result;
 }
 
+interface ResolvedSender {
+  from: string;
+  replyTo: string | null;
+}
+
 async function resolveFromAddress(
   supabase: any,
   userId: string | undefined,
   useUserAlias: boolean | undefined,
   defaultFrom: string
-): Promise<string> {
-  if (!userId || !useUserAlias) return defaultFrom;
+): Promise<ResolvedSender> {
+  if (!userId || !useUserAlias) return { from: defaultFrom, replyTo: null };
 
   const { data: mailbox } = await supabase
     .from('user_mailboxes')
@@ -59,9 +64,12 @@ async function resolveFromAddress(
     .eq('is_active', true)
     .maybeSingle();
 
-  if (!mailbox) return defaultFrom;
+  if (!mailbox) return { from: defaultFrom, replyTo: null };
 
   const aliasEmail = `${mailbox.alias_localpart}@rentab.ly`;
+
+  const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+  const userRealEmail = authUser?.user?.email || null;
 
   const { data: mailSettings } = await supabase
     .from('user_mail_settings')
@@ -70,7 +78,10 @@ async function resolveFromAddress(
     .maybeSingle();
 
   if (mailSettings?.sender_name?.trim()) {
-    return `${mailSettings.sender_name.trim()} <${aliasEmail}>`;
+    return {
+      from: `${mailSettings.sender_name.trim()} <${aliasEmail}>`,
+      replyTo: userRealEmail,
+    };
   }
 
   const { data: profile } = await supabase
@@ -83,10 +94,13 @@ async function resolveFromAddress(
     const displayName = profile.company_name
       || [profile.first_name, profile.last_name].filter(Boolean).join(' ')
       || 'Rentably';
-    return `${displayName} <${aliasEmail}>`;
+    return {
+      from: `${displayName} <${aliasEmail}>`,
+      replyTo: userRealEmail,
+    };
   }
 
-  return `Rentably <${aliasEmail}>`;
+  return { from: `Rentably <${aliasEmail}>`, replyTo: userRealEmail };
 }
 
 async function storeOutboundMessage(
@@ -381,7 +395,8 @@ Deno.serve(async (req: Request) => {
     }
 
     const DEFAULT_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
-    const fromAddress = await resolveFromAddress(supabase, userId, useUserAlias, DEFAULT_FROM);
+    const resolved = await resolveFromAddress(supabase, userId, useUserAlias, DEFAULT_FROM);
+    const fromAddress = resolved.from;
 
     const emailPayload: any = {
       from: fromAddress,
@@ -391,8 +406,9 @@ Deno.serve(async (req: Request) => {
       text: finalText || '',
     };
 
-    if (replyTo) {
-      emailPayload.reply_to = replyTo;
+    const effectiveReplyTo = replyTo || resolved.replyTo;
+    if (effectiveReplyTo) {
+      emailPayload.reply_to = effectiveReplyTo;
     }
 
     if (attachments && attachments.length > 0) {
