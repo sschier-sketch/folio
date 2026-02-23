@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Download, FileText, Loader, Search, Lock, Calendar, File, FileEdit } from "lucide-react";
+import { FileText, Search, Calendar, File } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
-import AutomaticTemplateWizard from "./AutomaticTemplateWizard";
 import Badge from "./common/Badge";
 import { Button } from './ui/Button';
+import WizardCreatorSection from './wizard-templates/WizardCreatorSection';
+import KuendigungWizard from './wizard-templates/KuendigungWizard';
 
 interface Template {
   id: string;
@@ -45,7 +46,7 @@ export default function TemplatesView() {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showWizard, setShowWizard] = useState(false);
+  const [activeWizard, setActiveWizard] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -172,72 +173,60 @@ export default function TemplatesView() {
     );
   }
 
+  if (activeWizard === 'kuendigungsbestaetigung') {
+    return <KuendigungWizard onBack={() => setActiveWizard(null)} />;
+  }
+
   return (
     <div>
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-dark mb-2">Vorlagen</h1>
-            <p className="text-gray-400">
-              Professionelle Dokumente für Ihre Immobilienverwaltung
-            </p>
-          </div>
-          <button
-            onClick={() => setShowWizard(true)}
-            className="hidden flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-          >
-            <FileEdit className="w-5 h-5" />
-            Automatische Vorlage verwenden
-          </button>
-        </div>
+        <h1 className="text-3xl font-bold text-dark mb-2">Vorlagen</h1>
+        <p className="text-gray-400">
+          Professionelle Dokumente für Ihre Immobilienverwaltung
+        </p>
       </div>
 
-      {showWizard && (
-        <AutomaticTemplateWizard
-          onClose={() => setShowWizard(false)}
-        />
-      )}
+      <WizardCreatorSection onStartWizard={(id) => setActiveWizard(id)} />
 
       {templates.length > 0 && (
-        <div className="mb-6 flex gap-4 items-end">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Vorlagen durchsuchen..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            />
+        <>
+          <div className="mb-4 mt-10">
+            <h2 className="text-lg font-bold text-dark">Vorlagen zum Herunterladen</h2>
+            <p className="text-sm text-gray-400 mt-1">
+              Fertige Dokumente, die von unseren Experten erstellt wurden.
+            </p>
           </div>
-          <div>
-            <select
-              value={selectedCategory || ""}
-              onChange={(e) => setSelectedCategory(e.target.value || null)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white min-w-[200px]"
-            >
-              <option value="">Alle Kategorien</option>
-              {categoryDescriptions.map((cat) => (
-                <option key={cat.category} value={cat.category}>
-                  {cat.title}
-                </option>
-              ))}
-            </select>
+
+          <div className="mb-6 flex gap-4 items-end">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Vorlagen durchsuchen..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            </div>
+            <div>
+              <select
+                value={selectedCategory || ""}
+                onChange={(e) => setSelectedCategory(e.target.value || null)}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white min-w-[200px]"
+              >
+                <option value="">Alle Kategorien</option>
+                {categoryDescriptions.map((cat) => (
+                  <option key={cat.category} value={cat.category}>
+                    {cat.title}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
-      {templates.length === 0 ? (
-        <div className="bg-white rounded-lg p-12 text-center">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-dark mb-2">
-            Noch keine Vorlagen verfügbar
-          </h3>
-          <p className="text-gray-400">
-            Vorlagen werden von Administratoren hochgeladen und stehen Ihnen dann hier zur Verfügung.
-          </p>
-        </div>
-      ) : filteredTemplates.length === 0 ? (
+      {templates.length === 0 ? null : filteredTemplates.length === 0 ? (
         <div className="bg-white rounded-lg p-12 text-center">
           <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-dark mb-2">
@@ -303,11 +292,11 @@ export default function TemplatesView() {
                                 <File className="w-3.5 h-3.5" />
                                 <span>{getFileExtension(template.file_name)}</span>
                               </div>
-                              <span className="text-xs text-gray-400">•</span>
+                              <span className="text-xs text-gray-400">&bull;</span>
                               <span className="text-xs text-gray-500">
                                 {formatFileSize(template.file_size)}
                               </span>
-                              <span className="text-xs text-gray-400">•</span>
+                              <span className="text-xs text-gray-400">&bull;</span>
                               <div className="flex items-center gap-1 text-xs text-gray-500">
                                 <Calendar className="w-3.5 h-3.5" />
                                 <span title="Letzte Aktualisierung">
