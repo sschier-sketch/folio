@@ -9,6 +9,7 @@ interface ProfileData {
   last_name: string;
   company_name: string;
   address_street: string;
+  address_house_number: string;
   address_zip: string;
   address_city: string;
   address_country: string;
@@ -24,6 +25,7 @@ export default function ProfileManagement() {
     last_name: "",
     company_name: "",
     address_street: "",
+    address_house_number: "",
     address_zip: "",
     address_city: "",
     address_country: "Deutschland",
@@ -64,6 +66,7 @@ export default function ProfileManagement() {
           last_name: profile.last_name || "",
           company_name: profile.company_name || "",
           address_street: profile.address_street || "",
+          address_house_number: profile.address_house_number || "",
           address_zip: profile.address_zip || "",
           address_city: profile.address_city || "",
           address_country: profile.address_country || "Deutschland",
@@ -261,17 +264,30 @@ export default function ProfileManagement() {
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Adresse</h3>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Straße + Hausnummer *
-              </label>
-              <input
-                type="text"
-                value={formData.address_street}
-                onChange={(e) => handleChange("address_street", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Straße *
+                </label>
+                <input
+                  type="text"
+                  value={formData.address_street}
+                  onChange={(e) => handleChange("address_street", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hausnummer
+                </label>
+                <input
+                  type="text"
+                  value={formData.address_house_number}
+                  onChange={(e) => handleChange("address_house_number", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -363,7 +379,7 @@ export default function ProfileManagement() {
           <div className="text-sm text-gray-700 whitespace-pre-line bg-white p-4 rounded border border-gray-200">
             {formData.document_sender_name || "Ihr Name"}
             {"\n"}
-            {formData.address_street || "Straße"}
+            {formData.address_street || "Straße"}{formData.address_house_number ? ` ${formData.address_house_number}` : ""}
             {"\n"}
             {formData.address_zip || "PLZ"} {formData.address_city || "Ort"}
             {formData.phone && `\nTel.: ${formData.phone}`}

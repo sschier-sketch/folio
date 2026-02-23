@@ -54,7 +54,6 @@ function emptyWizardData(): KuendigungWizardData {
       versanddatum: new Date().toISOString().split('T')[0],
       eingangsdatum: '',
       kuendigungsdatum: '',
-      schreibenVom: '',
       appointments: [
         {
           id: 'initial',
@@ -87,7 +86,7 @@ export default function KuendigungWizard({ onBack }: Props) {
     const [profileRes, userRes] = await Promise.all([
       supabase
         .from('account_profiles')
-        .select('first_name, last_name, address_street, address_zip, address_city')
+        .select('first_name, last_name, address_street, address_house_number, address_zip, address_city')
         .eq('user_id', user!.id)
         .maybeSingle(),
       supabase
@@ -110,7 +109,7 @@ export default function KuendigungWizard({ onBack }: Props) {
             u?.full_name ||
             prev.landlord.name,
           street: p?.address_street || u?.street || prev.landlord.street,
-          number: u?.house_number || prev.landlord.number,
+          number: p?.address_house_number || u?.house_number || prev.landlord.number,
           zip: p?.address_zip || u?.zip || prev.landlord.zip,
           city: p?.address_city || u?.city || prev.landlord.city,
         },
@@ -268,22 +267,63 @@ export default function KuendigungWizard({ onBack }: Props) {
     const primaryTenant = data.tenants[0];
     if (!primaryTenant?.propertyId) return;
 
-    const filePath = `${user!.id}/wizard-documents/${filename}`;
+    const filePath = `${user!.id}/wizard-documents/${Date.now()}_${filename}`;
     await supabase.storage.from('documents').upload(filePath, blob, {
       contentType: 'application/pdf',
       upsert: true,
     });
 
-    await supabase.from('property_documents').insert({
-      property_id: primaryTenant.propertyId,
-      user_id: user!.id,
-      document_name: filename,
-      document_type: 'kuendigungsbestaetigung',
-      file_url: filePath,
-      file_size: blob.size,
-      shared_with_tenant: shareWithTenant,
-      unit_id: primaryTenant.unitId || null,
-    });
+    const { data: docRow } = await supabase
+      .from('documents')
+      .insert({
+        user_id: user!.id,
+        file_name: filename,
+        file_path: filePath,
+        file_type: 'application/pdf',
+        document_type: 'kuendigungsbestaetigung',
+        file_size: blob.size,
+        shared_with_tenant: shareWithTenant,
+        description: 'Kündigungsbestätigung (Wizard)',
+      })
+      .select('id')
+      .maybeSingle();
+
+    if (docRow?.id) {
+      const associations = [];
+
+      if (primaryTenant.propertyId) {
+        associations.push({
+          document_id: docRow.id,
+          association_type: 'property',
+          association_id: primaryTenant.propertyId,
+          created_by: user!.id,
+        });
+      }
+
+      if (primaryTenant.unitId) {
+        associations.push({
+          document_id: docRow.id,
+          association_type: 'unit',
+          association_id: primaryTenant.unitId,
+          created_by: user!.id,
+        });
+      }
+
+      for (const t of data.tenants) {
+        if (t.tenantId) {
+          associations.push({
+            document_id: docRow.id,
+            association_type: 'tenant',
+            association_id: t.tenantId,
+            created_by: user!.id,
+          });
+        }
+      }
+
+      if (associations.length > 0) {
+        await supabase.from('document_associations').insert(associations);
+      }
+    }
   }
 
   async function deleteDraft() {

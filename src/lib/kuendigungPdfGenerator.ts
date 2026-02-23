@@ -126,7 +126,7 @@ export function generateKuendigungPdf(input: KuendigungPdfInput): Blob {
   y += 2;
   doc.setFont('helvetica', 'normal');
 
-  const mainText = `Bezugnehmend auf Ihr Schreiben vom ${formatDate(sachverhalt.schreibenVom)}, welches am ${formatDate(sachverhalt.eingangsdatum)} bei mir eingegangen ist, bestätige ich Ihnen die fristgerechte Kündigung des Mietverhältnisses zum ${formatDate(sachverhalt.kuendigungsdatum)}`;
+  const mainText = `Bezugnehmend auf Ihr Schreiben, welches am ${formatDate(sachverhalt.eingangsdatum)} bei mir eingegangen ist, bestätige ich Ihnen die fristgerechte Kündigung des Mietverhältnisses zum ${formatDate(sachverhalt.kuendigungsdatum)}.`;
   writeLines(mainText);
 
   y += 5;

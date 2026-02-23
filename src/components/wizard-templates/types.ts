@@ -40,7 +40,6 @@ export interface KuendigungSachverhalt {
   versanddatum: string;
   eingangsdatum: string;
   kuendigungsdatum: string;
-  schreibenVom: string;
   appointments: AppointmentSlot[];
 }
 
@@ -60,8 +59,8 @@ export type KuendigungStep =
   | 'versand';
 
 export const KUENDIGUNG_STEPS: { key: KuendigungStep; label: string }[] = [
-  { key: 'vermieter', label: 'Vermieter:in' },
-  { key: 'mieter', label: 'Mieter:innen' },
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
   { key: 'ansprache', label: 'Ansprache' },
   { key: 'sachverhalt', label: 'Sachverhalt' },
   { key: 'ergebnis', label: 'Ergebnis' },
@@ -76,8 +75,9 @@ export interface WizardTemplate {
 }
 
 export const WIZARD_CATEGORIES: { id: string; label: string }[] = [
-  { id: 'kuendigung', label: 'Kündigung' },
   { id: 'begehungsankuendigung', label: 'Begehungsankündigung' },
-  { id: 'mieterhoehung', label: 'Mieterhöhung' },
+  { id: 'kuendigung', label: 'Kündigung' },
+  { id: 'abmahnungen', label: 'Abmahnungen' },
+  { id: 'mietvertrag', label: 'Mietvertrag' },
   { id: 'sonstiges', label: 'Sonstiges' },
 ];
