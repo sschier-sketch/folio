@@ -5,7 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import Badge from "./common/Badge";
 import { Button } from './ui/Button';
-import { PremiumFeatureGuard } from './PremiumFeatureGuard';
+import { PremiumUpgradePrompt } from './PremiumUpgradePrompt';
 import WizardCreatorSection from './wizard-templates/WizardCreatorSection';
 import KuendigungWizard from './wizard-templates/KuendigungWizard';
 
@@ -191,9 +191,7 @@ export default function TemplatesView() {
       {isPremium ? (
         <WizardCreatorSection onStartWizard={(id, fresh) => { setWizardFreshStart(!!fresh); setActiveWizard(id); }} />
       ) : (
-        <PremiumFeatureGuard featureName="Dokument erstellen" inline>
-          <WizardCreatorSection onStartWizard={() => {}} />
-        </PremiumFeatureGuard>
+        <PremiumUpgradePrompt featureKey="wizard_document_creator" />
       )}
 
       {templates.length > 0 && (

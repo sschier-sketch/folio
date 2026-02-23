@@ -20,6 +20,7 @@ export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   photo: "Foto",
   protocol: "Protokoll",
   correspondence: "Korrespondenz",
+  kuendigungsbestaetigung: "Kündigungsbestätigung",
   other: "Sonstiges",
 };
 
@@ -45,6 +46,7 @@ export const DOCUMENT_TYPE_COLORS: Record<string, string> = {
   photo: "bg-pink-100 text-pink-700",
   protocol: "bg-gray-100 text-gray-700",
   correspondence: "bg-gray-100 text-gray-700",
+  kuendigungsbestaetigung: "bg-red-100 text-red-700",
   other: "bg-gray-100 text-gray-700",
 };
 
@@ -56,7 +58,7 @@ export interface DocumentTypeGroup {
 export const DOCUMENT_TYPE_GROUPS: DocumentTypeGroup[] = [
   {
     label: "Verträge & Urkunden",
-    types: ["contract", "rental_agreement", "main_contract", "amendment", "addendum", "termination", "property_deed"],
+    types: ["contract", "rental_agreement", "main_contract", "amendment", "addendum", "termination", "kuendigungsbestaetigung", "property_deed"],
   },
   {
     label: "Grundrisse & Pläne",
