@@ -7,7 +7,6 @@ import {
   FileSignature,
   AlertTriangle,
   ScrollText,
-  LayoutGrid,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -46,7 +45,7 @@ interface DraftInfo {
   updated_at: string;
 }
 
-type Tab = "alle" | "assistent" | "kuendigung" | "abmahnungen" | "mietvertrag" | "sonstiges" | "downloads";
+type Tab = "alle" | "kuendigung" | "abmahnungen" | "mietvertrag" | "sonstiges" | "downloads";
 
 const CATEGORY_ICON_MAP: Record<string, typeof FileText> = {
   kuendigung: FileSignature,
@@ -56,8 +55,7 @@ const CATEGORY_ICON_MAP: Record<string, typeof FileText> = {
 };
 
 const TABS: { id: Tab; label: string; icon: typeof FileText }[] = [
-  { id: "alle", label: "Alle", icon: LayoutGrid },
-  { id: "assistent", label: "Assistent", icon: Wand2 },
+  { id: "alle", label: "Alle Assistenten", icon: Wand2 },
   { id: "kuendigung", label: "Kündigung", icon: FileSignature },
   { id: "abmahnungen", label: "Abmahnungen", icon: AlertTriangle },
   { id: "sonstiges", label: "Sonstiges", icon: FolderOpen },
@@ -186,23 +184,18 @@ export default function TemplatesView() {
   }
 
   const filteredWizards =
-    activeTab === "alle" || activeTab === "assistent"
+    activeTab === "alle"
       ? wizardTemplates
       : activeTab === "downloads"
       ? []
       : wizardTemplates.filter((w) => w.category === activeTab);
 
   const filteredDownloads =
-    activeTab === "alle" || activeTab === "downloads"
-      ? templates
-      : activeTab === "assistent"
-      ? []
-      : templates.filter((t) => t.category === activeTab);
+    activeTab === "downloads" ? templates : [];
 
   const showWizards = filteredWizards.length > 0;
   const showDownloads = filteredDownloads.length > 0;
-  const showDrafts =
-    drafts.length > 0 && (activeTab === "alle" || activeTab === "assistent");
+  const showDrafts = drafts.length > 0 && activeTab === "alle";
 
   return (
     <div className="space-y-6">
@@ -240,7 +233,7 @@ export default function TemplatesView() {
         </ScrollableTabNav>
       </div>
 
-      {!isPremium && (activeTab === "alle" || activeTab === "assistent") && (
+      {!isPremium && activeTab !== "downloads" && (
         <PremiumUpgradePrompt featureKey="wizard_document_creator" />
       )}
 
@@ -304,16 +297,9 @@ export default function TemplatesView() {
 
       {showWizards && (
         <div>
-          {activeTab !== "assistent" && activeTab !== "alle" && (
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              Dokument erstellen
-            </h3>
-          )}
-          {(activeTab === "assistent" || activeTab === "alle") && (
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              Schritt-für-Schritt Dokument erstellen
-            </h3>
-          )}
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">
+            Dokument erstellen
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredWizards.map((tpl) => {
               const CatIcon =
@@ -324,8 +310,8 @@ export default function TemplatesView() {
                   className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 hover:shadow-sm transition-all flex flex-col"
                 >
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                      <CatIcon className="w-4 h-4 text-primary-blue" />
+                    <div className="w-9 h-9 rounded-full border border-[#DDE7FF] bg-[#EEF4FF] flex items-center justify-center flex-shrink-0">
+                      <CatIcon className="w-4 h-4 text-[#1e1e24]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-dark text-sm leading-tight">
