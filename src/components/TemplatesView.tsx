@@ -11,6 +11,7 @@ import KuendigungWizard from './wizard-templates/KuendigungWizard';
 import ZahlungserinnerungWizard from './wizard-templates/ZahlungserinnerungWizard';
 import AbmahnungRuhestoerungWizard from './wizard-templates/AbmahnungRuhestoerungWizard';
 import AbmahnungBaulicheWizard from './wizard-templates/AbmahnungBaulicheWizard';
+import BetriebskostenVorauszahlungenWizard from './wizard-templates/BetriebskostenVorauszahlungenWizard';
 
 interface Template {
   id: string;
@@ -161,6 +162,10 @@ export default function TemplatesView() {
 
   if (activeWizard === 'abmahnung_bauliche_veraenderungen') {
     return <AbmahnungBaulicheWizard onBack={() => { setActiveWizard(null); setWizardFreshStart(false); }} freshStart={wizardFreshStart} />;
+  }
+
+  if (activeWizard === 'betriebskosten_vorauszahlungen') {
+    return <BetriebskostenVorauszahlungenWizard onBack={() => { setActiveWizard(null); setWizardFreshStart(false); }} freshStart={wizardFreshStart} />;
   }
 
   return (

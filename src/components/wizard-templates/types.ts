@@ -165,6 +165,43 @@ export const ABMAHNUNG_BAULICHE_STEPS: { key: AbmahnungBaulicheStep; label: stri
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface BetriebskostenSachverhalt {
+  modus: 'erhoehen' | 'senken';
+  jahr: string;
+  vorauszahlungProMonat: string;
+  bezahlteMonate: string;
+  abrechnungVon: string;
+  abrechnungBis: string;
+  nachzahlungsanspruch: string;
+  ueberweisungenAb: string;
+  monatlicheAnpassung: string;
+  gesamtsumme: string;
+}
+
+export interface BetriebskostenWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: BetriebskostenSachverhalt;
+}
+
+export type BetriebskostenStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const BETRIEBSKOSTEN_STEPS: { key: BetriebskostenStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;
