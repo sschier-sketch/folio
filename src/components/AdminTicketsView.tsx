@@ -146,8 +146,7 @@ export function AdminTicketsView() {
   async function handleSelectTicket(ticket: Ticket) {
     setSelectedTicket(ticket);
     await loadMessages(ticket.id);
-    const currentSignature = signature;
-    setReplyMessage(currentSignature ? `\n\n${currentSignature}` : "");
+    setReplyMessage("");
     setCloseAfterReply(false);
   }
 
@@ -157,6 +156,11 @@ export function AdminTicketsView() {
       setSending(true);
       const { data: userData } = await supabase.auth.getUser();
       const senderName = userData.user?.email?.split("@")[0] || "Support";
+
+      const fullMessage = signature
+        ? `${replyMessage.trim()}\n\n${signature}`
+        : replyMessage.trim();
+
       const { error: messageError } = await supabase
         .from("ticket_messages")
         .insert({
@@ -164,7 +168,7 @@ export function AdminTicketsView() {
           sender_type: "admin",
           sender_name: senderName,
           sender_email: userData.user?.email,
-          message: replyMessage.trim(),
+          message: fullMessage,
         });
       if (messageError) throw messageError;
 
@@ -205,7 +209,7 @@ export function AdminTicketsView() {
                 recipientName: selectedTicket.contact_name,
                 ticketNumber: selectedTicket.ticket_number,
                 ticketSubject: selectedTicket.subject,
-                replyMessage: replyMessage.trim(),
+                replyMessage: fullMessage,
                 additionalInfo: additionalInfo,
                 senderName: senderName,
               },
@@ -228,7 +232,7 @@ export function AdminTicketsView() {
       }
 
       await loadMessages(selectedTicket.id);
-      setReplyMessage(signature ? `\n\n${signature}` : "");
+      setReplyMessage("");
       setCloseAfterReply(false);
     } catch (err) {
       console.error("Error sending reply:", err);
@@ -519,9 +523,16 @@ export function AdminTicketsView() {
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
                   placeholder="Antwort eingeben..."
-                  rows={5}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none mb-3 text-sm"
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none text-sm"
                 />
+                {signature && (
+                  <div className="px-4 py-3 bg-gray-50 border border-t-0 border-gray-200 rounded-b-lg mb-3">
+                    <p className="text-[11px] text-gray-300 uppercase tracking-wide font-medium mb-1.5">Signatur</p>
+                    <p className="text-sm text-gray-400 whitespace-pre-wrap leading-relaxed">{signature}</p>
+                  </div>
+                )}
+                {!signature && <div className="mb-3" />}
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 text-sm text-gray-400">
                     <input
@@ -530,7 +541,7 @@ export function AdminTicketsView() {
                       onChange={(e) => setCloseAfterReply(e.target.checked)}
                       className="rounded"
                     />
-                    Ticket nach Antwort schließen
+                    Ticket nach Antwort schliessen
                   </label>
                   <Button
                     onClick={handleSendReply}

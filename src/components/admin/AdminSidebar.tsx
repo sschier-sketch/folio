@@ -177,7 +177,7 @@ export default function AdminSidebar({
                         }`}
                       />
                       {!collapsed && (
-                        <span className="text-[13px] truncate flex-1 text-right">{item.label}</span>
+                        <span className="text-[13px] truncate flex-1 text-left">{item.label}</span>
                       )}
                       {!collapsed && item.key === "tickets" && openTicketCount > 0 && (
                         <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-red-500 text-white">
