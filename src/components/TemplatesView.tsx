@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Search, Calendar, File } from "lucide-react";
+import { FileText, Search } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -23,13 +23,6 @@ interface Template {
   created_at: string;
   updated_at: string;
   download_count: number;
-}
-
-interface CategoryGroup {
-  category: string;
-  title: string;
-  description: string;
-  templates: Template[];
 }
 
 interface CategoryDescription {
@@ -133,14 +126,6 @@ export default function TemplatesView() {
     return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString("de-DE", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
   const getFileExtension = (filename: string): string => {
     const ext = filename.split(".").pop()?.toUpperCase();
     return ext || "FILE";
@@ -159,13 +144,6 @@ export default function TemplatesView() {
       template.category.toLowerCase().includes(query)
     );
   });
-
-  const groupedTemplates: CategoryGroup[] = categoryDescriptions.map(cat => ({
-    category: cat.category,
-    title: cat.title,
-    description: cat.description,
-    templates: filteredTemplates.filter(t => t.category === cat.category),
-  }));
 
   if (loading) {
     return (
@@ -203,23 +181,10 @@ export default function TemplatesView() {
             </p>
           </div>
 
-          <div className="mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Vorlagen durchsuchen..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-              />
-            </div>
-          </div>
-
-          <div className="mb-6 flex flex-wrap gap-2">
+          <div className="mb-5 flex flex-wrap items-center gap-2">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
                 selectedCategory === null
                   ? 'bg-[#1e1e24] text-white shadow-sm'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -231,7 +196,7 @@ export default function TemplatesView() {
               <button
                 key={cat.category}
                 onClick={() => setSelectedCategory(selectedCategory === cat.category ? null : cat.category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
                   selectedCategory === cat.category
                     ? 'bg-[#1e1e24] text-white shadow-sm'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -240,6 +205,16 @@ export default function TemplatesView() {
                 {cat.title}
               </button>
             ))}
+            <div className="relative ml-auto">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Suchen..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-44 pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-blue focus:w-60 transition-all bg-gray-50"
+              />
+            </div>
           </div>
         </>
       )}
@@ -264,87 +239,60 @@ export default function TemplatesView() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-8">
-          {groupedTemplates.map(group => {
-            if (group.templates.length === 0) return null;
-
-            return (
-              <div key={group.category} className="bg-white rounded-lg overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4">
-                  <h2 className="text-xl font-bold text-dark">{group.title}</h2>
-                  <p className="text-sm text-gray-600 mt-1">{group.description}</p>
-                </div>
-
-                <div className="p-6">
-                  <div className="grid gap-4">
-                    {group.templates.map(template => (
-                      <div
-                        key={template.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-                            <FileText className="w-5 h-5" style={{ color: '#1e1e24' }} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-medium text-dark truncate">
-                                {template.title}
-                              </h3>
-                              {template.is_premium && (
-                                <Badge variant="pro" size="sm">Pro</Badge>
-                              )}
-                              {!template.is_premium && (
-                                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded font-medium">
-                                  Kostenlos
-                                </span>
-                              )}
-                            </div>
-                            {template.description && (
-                              <p className="text-sm text-gray-500 truncate">
-                                {template.description}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-3 mt-2 flex-wrap">
-                              <div className="flex items-center gap-1 text-xs text-gray-500">
-                                <File className="w-3.5 h-3.5" />
-                                <span>{getFileExtension(template.file_name)}</span>
-                              </div>
-                              <span className="text-xs text-gray-400">&bull;</span>
-                              <span className="text-xs text-gray-500">
-                                {formatFileSize(template.file_size)}
-                              </span>
-                              <span className="text-xs text-gray-400">&bull;</span>
-                              <div className="flex items-center gap-1 text-xs text-gray-500">
-                                <Calendar className="w-3.5 h-3.5" />
-                                <span title="Letzte Aktualisierung">
-                                  {formatDate(template.updated_at)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={() => handleDownload(template)}
-                          disabled={downloading === template.id || (template.is_premium && !isPremium)}
-                          variant={template.is_premium && !isPremium ? "secondary" : "primary"}
-                        >
-                          {downloading === template.id ? (
-                            "Lädt..."
-                          ) : template.is_premium && !isPremium ? (
-                            "Pro"
-                          ) : (
-                            "Herunterladen"
-                          )}
-                        </Button>
-                      </div>
-                    ))}
+        <div className="bg-white rounded-lg overflow-hidden">
+          <div className="divide-y divide-gray-100">
+            {filteredTemplates.map(template => (
+              <div
+                key={template.id}
+                className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-gray-100">
+                    <FileText className="w-4 h-4 text-gray-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-medium text-dark truncate">
+                        {template.title}
+                      </h3>
+                      {template.is_premium && (
+                        <Badge variant="pro" size="sm">Pro</Badge>
+                      )}
+                      {!template.is_premium && (
+                        <span className="px-1.5 py-0.5 bg-green-50 text-green-600 text-[11px] rounded font-medium">
+                          Kostenlos
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-gray-400">
+                        {getFileExtension(template.file_name)}
+                      </span>
+                      <span className="text-xs text-gray-300">&bull;</span>
+                      <span className="text-xs text-gray-400">
+                        {formatFileSize(template.file_size)}
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                <Button
+                  onClick={() => handleDownload(template)}
+                  disabled={downloading === template.id || (template.is_premium && !isPremium)}
+                  variant={template.is_premium && !isPremium ? "secondary" : "primary"}
+                  size="sm"
+                >
+                  {downloading === template.id ? (
+                    "Lädt..."
+                  ) : template.is_premium && !isPremium ? (
+                    "Pro"
+                  ) : (
+                    "Herunterladen"
+                  )}
+                </Button>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       )}
     </div>

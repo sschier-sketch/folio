@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Upload, X, Loader, Edit2 } from "lucide-react";
+import { Plus, Upload, X, Loader, Edit2, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
@@ -28,15 +28,6 @@ interface CategoryDescription {
   description: string;
 }
 
-const CATEGORIES = [
-  { value: "interessentensuche", label: "Interessentensuche" },
-  { value: "wohnungsuebergabe", label: "Wohnungsübergabe" },
-  { value: "mietvertrag", label: "Mietvertrag" },
-  { value: "mietzahlungen", label: "Mietzahlungen" },
-  { value: "kuendigung", label: "Kündigung" },
-  { value: "sonstiges", label: "Sonstiges" },
-];
-
 export function AdminTemplatesView() {
   const { user } = useAuth();
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -49,9 +40,14 @@ export function AdminTemplatesView() {
   const [downloading, setDownloading] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [newCategorySlug, setNewCategorySlug] = useState("");
+  const [newCategoryTitle, setNewCategoryTitle] = useState("");
+  const [newCategoryDescription, setNewCategoryDescription] = useState("");
+  const [addingCategory, setAddingCategory] = useState(false);
+
   const [uploadData, setUploadData] = useState({
     title: "",
-    category: "interessentensuche",
+    category: "",
     description: "",
     content: "",
     is_premium: false,
@@ -223,8 +219,61 @@ export function AdminTemplatesView() {
   };
 
   const getCategoryLabel = (category: string): string => {
-    return CATEGORIES.find((c) => c.value === category)?.label || category;
+    return categoryDescriptions.find((c) => c.category === category)?.title || category;
   };
+
+  async function handleAddCategory() {
+    if (!newCategoryTitle.trim()) return;
+
+    const slug = newCategorySlug.trim() || newCategoryTitle.trim().toLowerCase()
+      .replace(/[äÄ]/g, 'ae').replace(/[öÖ]/g, 'oe').replace(/[üÜ]/g, 'ue').replace(/[ß]/g, 'ss')
+      .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+    try {
+      setAddingCategory(true);
+      const { error } = await supabase
+        .from('template_category_descriptions')
+        .insert({
+          category: slug,
+          title: newCategoryTitle.trim(),
+          description: newCategoryDescription.trim() || newCategoryTitle.trim(),
+        });
+
+      if (error) throw error;
+
+      setNewCategorySlug("");
+      setNewCategoryTitle("");
+      setNewCategoryDescription("");
+      await loadCategoryDescriptions();
+    } catch (error: any) {
+      console.error('Error adding category:', error);
+      alert(error.message?.includes('duplicate') ? 'Diese Kategorie existiert bereits.' : 'Fehler beim Anlegen der Kategorie');
+    } finally {
+      setAddingCategory(false);
+    }
+  }
+
+  async function handleDeleteCategory(cat: CategoryDescription) {
+    const usedCount = templates.filter(t => t.category === cat.category).length;
+    if (usedCount > 0) {
+      alert(`Diese Kategorie wird von ${usedCount} Vorlage(n) verwendet und kann nicht gelöscht werden.`);
+      return;
+    }
+    if (!confirm(`Kategorie "${cat.title}" wirklich löschen?`)) return;
+
+    try {
+      const { error } = await supabase
+        .from('template_category_descriptions')
+        .delete()
+        .eq('id', cat.id);
+
+      if (error) throw error;
+      await loadCategoryDescriptions();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Fehler beim Löschen der Kategorie');
+    }
+  }
 
   if (loading) {
     return (
@@ -237,48 +286,97 @@ export function AdminTemplatesView() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-dark mb-2">Kategoriebeschreibungen</h2>
-        <p className="text-gray-400 mb-4">Bearbeiten Sie die Beschreibungen, die Benutzern für jede Vorlagenkategorie angezeigt werden</p>
+        <h2 className="text-2xl font-bold text-dark mb-2">Kategorien verwalten</h2>
+        <p className="text-gray-400 mb-4">Kategorien, die Benutzern als Filter angezeigt werden</p>
 
-        <div className="bg-white rounded-lg overflow-hidden">
+        <div className="bg-white rounded-lg overflow-hidden mb-4">
           {categoryDescriptions.map((cat) => (
             <div key={cat.id} className="border-b border-gray-100 last:border-b-0">
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-lg font-semibold text-dark">{cat.title}</h3>
+              <div className="px-5 py-4 flex items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-dark">{cat.title}</h3>
+                    <span className="text-xs text-gray-400 font-mono">{cat.category}</span>
+                  </div>
                   {editingCategory === cat.id ? (
-                    <Button
-                      onClick={() => handleSaveCategoryDescription(cat.id)}
-                      variant="primary"
-                    >
-                      Speichern
-                    </Button>
+                    <div className="mt-2 flex gap-2">
+                      <textarea
+                        value={editDescription}
+                        onChange={(e) => setEditDescription(e.target.value)}
+                        rows={2}
+                        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
+                      />
+                      <Button
+                        onClick={() => handleSaveCategoryDescription(cat.id)}
+                        variant="primary"
+                        size="sm"
+                      >
+                        Speichern
+                      </Button>
+                    </div>
                   ) : (
+                    <p className="text-sm text-gray-500 truncate">{cat.description}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {editingCategory !== cat.id && (
                     <button
                       onClick={() => {
                         setEditingCategory(cat.id);
                         setEditDescription(cat.description);
                       }}
-                      className="flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:text-primary-blue transition-colors text-sm"
+                      className="p-2 text-gray-400 hover:text-primary-blue transition-colors"
+                      title="Beschreibung bearbeiten"
                     >
                       <Edit2 className="w-4 h-4" />
-                      Bearbeiten
                     </button>
                   )}
+                  <button
+                    onClick={() => handleDeleteCategory(cat)}
+                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                    title="Kategorie löschen"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                {editingCategory === cat.id ? (
-                  <textarea
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none"
-                  />
-                ) : (
-                  <p className="text-gray-600">{cat.description}</p>
-                )}
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="bg-white rounded-lg p-5">
+          <h3 className="text-sm font-semibold text-dark mb-3">Neue Kategorie anlegen</h3>
+          <div className="flex flex-wrap gap-3 items-end">
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-xs text-gray-500 mb-1">Anzeigename *</label>
+              <input
+                type="text"
+                value={newCategoryTitle}
+                onChange={(e) => setNewCategoryTitle(e.target.value)}
+                placeholder="z.B. Betriebskosten"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            </div>
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-xs text-gray-500 mb-1">Beschreibung</label>
+              <input
+                type="text"
+                value={newCategoryDescription}
+                onChange={(e) => setNewCategoryDescription(e.target.value)}
+                placeholder="Kurzbeschreibung der Kategorie"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              />
+            </div>
+            <Button
+              onClick={handleAddCategory}
+              disabled={!newCategoryTitle.trim() || addingCategory}
+              variant="primary"
+              size="sm"
+            >
+              <Plus className="w-4 h-4" />
+              Anlegen
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -416,9 +514,10 @@ export function AdminTemplatesView() {
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   required
                 >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
+                  <option value="">Kategorie wählen...</option>
+                  {categoryDescriptions.map((cat) => (
+                    <option key={cat.category} value={cat.category}>
+                      {cat.title}
                     </option>
                   ))}
                 </select>
@@ -519,7 +618,7 @@ export function AdminTemplatesView() {
               <Button
                 onClick={handleUpload}
                 disabled={
-                  !uploadData.title || !selectedFile || uploading
+                  !uploadData.title || !uploadData.category || !selectedFile || uploading
                 }
                 variant="primary"
                 fullWidth

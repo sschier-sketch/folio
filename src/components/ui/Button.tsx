@@ -12,8 +12,15 @@ export type ButtonVariant =
   | 'warning'
   | 'dashed';
 
+export type ButtonSize = 'sm' | 'md';
+
+const sizes: Record<ButtonSize, string> = {
+  sm: 'h-[34px] px-3.5 rounded-lg text-xs gap-1.5',
+  md: 'h-[42px] px-5 rounded-xl text-sm gap-2',
+};
+
 const base =
-  'h-[42px] px-5 rounded-xl text-sm font-semibold leading-none inline-flex items-center justify-center transition-all duration-150 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2';
+  'font-semibold leading-none inline-flex items-center justify-center transition-all duration-150 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2';
 
 const variants: Record<ButtonVariant, string> = {
   primary:
@@ -38,20 +45,21 @@ const variants: Record<ButtonVariant, string> = {
     'bg-white text-gray-500 border-2 border-dashed border-gray-300 hover:border-[#3c8af7] hover:text-[#3c8af7] hover:bg-blue-50/50 focus:ring-[#3c8af7]/50',
 };
 
-function cls(variant: ButtonVariant, fullWidth?: boolean, className?: string) {
-  return [base, variants[variant], fullWidth ? 'w-full' : '', className ?? '']
+function cls(variant: ButtonVariant, size: ButtonSize, fullWidth?: boolean, className?: string) {
+  return [base, sizes[size], variants[variant], fullWidth ? 'w-full' : '', className ?? '']
     .filter(Boolean)
     .join(' ');
 }
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   fullWidth?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', fullWidth, className, children, ...rest }, ref) => (
-    <button ref={ref} className={cls(variant, fullWidth, className)} {...rest}>
+  ({ variant = 'primary', size = 'md', fullWidth, className, children, ...rest }, ref) => (
+    <button ref={ref} className={cls(variant, size, fullWidth, className)} {...rest}>
       {children}
     </button>
   )

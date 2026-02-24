@@ -94,7 +94,7 @@ export default function WizardCreatorSection({ onStartWizard }: Props) {
   return (
     <div className="bg-white rounded-lg overflow-hidden mb-8">
       <div className="p-6 lg:p-8">
-        <h2 className="text-xl font-bold text-dark mb-1">Dokument erstellen</h2>
+        <h2 className="text-xl font-bold text-dark mb-1">Schritt-für-Schritt Dokument erstellen</h2>
         <p className="text-sm text-gray-500 mb-6">
           Erstellen Sie professionelle Dokumente mit wenigen Klicks. Der Assistent führt Sie Schritt für Schritt durch den Prozess.
         </p>
