@@ -13,7 +13,11 @@ import { Button } from './ui/Button';
 
 type Tab = "overview" | "list" | "upload" | "archive";
 
-export default function DocumentsView() {
+interface DocumentsViewProps {
+  onNavigateToTemplates?: () => void;
+}
+
+export default function DocumentsView({ onNavigateToTemplates }: DocumentsViewProps = {}) {
   const { isPro } = useSubscription();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
@@ -112,6 +116,7 @@ export default function DocumentsView() {
             key={refreshTrigger}
             onNavigateToUpload={() => setActiveTab("upload")}
             onNavigateToList={() => setActiveTab("list")}
+            onNavigateToTemplates={() => onNavigateToTemplates?.()}
           />
         )}
         {activeTab === "list" && (

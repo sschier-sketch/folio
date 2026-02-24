@@ -616,7 +616,7 @@ export default function Dashboard() {
             {currentView === "messages" && <MessagesView />}{" "}
             {currentView === "mieterportal" && <MieterportalView />}{" "}
             {currentView === "financial" && <FinancesView />}{" "}
-            {currentView === "documents" && <DocumentsView />}{" "}
+            {currentView === "documents" && <DocumentsView onNavigateToTemplates={() => setCurrentView("templates")} />}{" "}
             {currentView === "templates" && <TemplatesView />}{" "}
             {currentView === "billing" && <BillingView />}{" "}
             {currentView === "tickets" && <TicketsView initialTicketId={selectedTicketId} />}{" "}
