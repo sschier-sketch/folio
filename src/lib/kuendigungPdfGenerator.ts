@@ -79,13 +79,13 @@ export function generateKuendigungPdf(input: KuendigungPdfInput): Blob {
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100);
   const senderLine = buildSenderLine(landlord);
-  y = 37;
+  y = 67;
   doc.text(senderLine, ML, y);
 
   doc.setFontSize(11);
   doc.setTextColor(0);
   doc.setFont('helvetica', 'normal');
-  y = 50;
+  y = 80;
 
   const primaryTenant = tenants[0];
   const recipientLines = buildRecipientBlock(primaryTenant);
@@ -94,7 +94,7 @@ export function generateKuendigungPdf(input: KuendigungPdfInput): Blob {
     y += 6;
   });
 
-  y = Math.max(y, 75);
+  y = Math.max(y, 105);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text(`Datum des Schreibens: ${formatDate(sachverhalt.versanddatum)}`, ML, y);
@@ -204,6 +204,15 @@ export function generateKuendigungPdf(input: KuendigungPdfInput): Blob {
   doc.text('Datum', ML + 40, y);
   doc.text('Ort', ML + 90, y);
   doc.text('Datum', ML + 90 + 40, y);
+
+  const totalPages = doc.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(150);
+    doc.text(`${p} / ${totalPages}`, PAGE_W - MR, PAGE_H - 8, { align: 'right' });
+  }
 
   return doc.output('blob');
 }
