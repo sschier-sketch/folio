@@ -307,7 +307,7 @@ export default function TemplatesView() {
               return (
                 <div
                   key={tpl.id}
-                  className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 hover:shadow-sm transition-all flex flex-col"
+                  className="bg-white rounded-lg p-5 hover:shadow-sm transition-all flex flex-col"
                 >
                   <div className="flex items-start gap-3 mb-3">
                     <div className="w-9 h-9 rounded-full border border-[#DDE7FF] bg-[#EEF4FF] flex items-center justify-center flex-shrink-0">
