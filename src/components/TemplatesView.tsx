@@ -180,7 +180,7 @@ export default function TemplatesView() {
           <div className="mb-5 flex flex-wrap items-center gap-2">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 selectedCategory === null
                   ? 'bg-[#1e1e24] text-white shadow-sm'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -192,7 +192,7 @@ export default function TemplatesView() {
               <button
                 key={cat.category}
                 onClick={() => setSelectedCategory(selectedCategory === cat.category ? null : cat.category)}
-                className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   selectedCategory === cat.category
                     ? 'bg-[#1e1e24] text-white shadow-sm'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'

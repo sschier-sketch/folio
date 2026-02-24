@@ -163,7 +163,7 @@ export default function WizardCreatorSection({ onStartWizard }: Props) {
               <p className="text-sm text-gray-500 flex-1 mb-4">{tpl.description}</p>
               <Button
                 onClick={() => onStartWizard(tpl.id, true)}
-                variant="dark"
+                variant="primary"
                 className="self-start"
               >
                 Dokument erstellen
