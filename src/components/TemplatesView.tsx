@@ -12,6 +12,7 @@ import ZahlungserinnerungWizard from './wizard-templates/ZahlungserinnerungWizar
 import AbmahnungRuhestoerungWizard from './wizard-templates/AbmahnungRuhestoerungWizard';
 import AbmahnungBaulicheWizard from './wizard-templates/AbmahnungBaulicheWizard';
 import BetriebskostenVorauszahlungenWizard from './wizard-templates/BetriebskostenVorauszahlungenWizard';
+import MieterselbstauskunftWizard from './wizard-templates/MieterselbstauskunftWizard';
 
 interface Template {
   id: string;
@@ -166,6 +167,10 @@ export default function TemplatesView() {
 
   if (activeWizard === 'betriebskosten_vorauszahlungen') {
     return <BetriebskostenVorauszahlungenWizard onBack={() => { setActiveWizard(null); setWizardFreshStart(false); }} freshStart={wizardFreshStart} />;
+  }
+
+  if (activeWizard === 'mieterselbstauskunft') {
+    return <MieterselbstauskunftWizard onBack={() => { setActiveWizard(null); setWizardFreshStart(false); }} freshStart={wizardFreshStart} />;
   }
 
   return (

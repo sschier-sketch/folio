@@ -165,6 +165,72 @@ export const ABMAHNUNG_BAULICHE_STEPS: { key: AbmahnungBaulicheStep; label: stri
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface MietinteressentData {
+  mietbeginn: string;
+  gewuenschterEinzugstermin: string;
+  geburtsdatum: string;
+  familienstand: string;
+  nettoeinkommenMonatlich: string;
+  telefonnummer: string;
+  email: string;
+  bisherigVermieter: string;
+  kontaktVermieter: string;
+  derzeitigerArbeitgeber: string;
+  kontaktArbeitgeber: string;
+  ausgeuebterBeruf: string;
+  stellungSeit: string;
+}
+
+export interface Bewohner {
+  name: string;
+  verwandtschaftsgrad: string;
+  geburtsdatum: string;
+  eigenesEinkommen: string;
+}
+
+export interface WeitereBewohnerData {
+  hatWeitereBewohner: boolean;
+  bewohner: Bewohner[];
+}
+
+export interface ZulassungData {
+  checkbox1: boolean;
+  checkbox2: boolean;
+  checkbox3: boolean;
+  checkbox4: boolean;
+  checkbox5: boolean;
+  checkbox6: boolean;
+  checkbox7: boolean;
+}
+
+export interface MieterselbstauskunftWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  mietinteressent: MietinteressentData;
+  weitereBewohner: WeitereBewohnerData;
+  zulassung: ZulassungData;
+}
+
+export type MieterselbstauskunftStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'mietinteressent'
+  | 'weitere_bewohner'
+  | 'zulassung'
+  | 'ergebnis';
+
+export const MIETERSELBSTAUSKUNFT_STEPS: { key: MieterselbstauskunftStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'mietinteressent', label: 'Mietinteressent/in' },
+  { key: 'weitere_bewohner', label: 'Weitere Bewohner' },
+  { key: 'zulassung', label: 'Zulassung' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+];
+
 export interface BetriebskostenSachverhalt {
   modus: 'erhoehen' | 'senken';
   jahr: string;
