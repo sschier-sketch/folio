@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ChevronDown,
   ChevronLeft,
@@ -13,6 +13,7 @@ import {
   type AdminTabKey,
   type AdminMenuGroup,
 } from "../../config/adminMenu";
+import { supabase } from "../../lib/supabase";
 
 interface AdminSidebarProps {
   activeTab: AdminTabKey;
@@ -29,6 +30,22 @@ export default function AdminSidebar({
 }: AdminSidebarProps) {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [openTicketCount, setOpenTicketCount] = useState(0);
+
+  useEffect(() => {
+    async function loadOpenTicketCount() {
+      const { count } = await supabase
+        .from("tickets")
+        .select("*", { count: "exact", head: true })
+        .eq("ticket_type", "contact")
+        .eq("status", "open");
+      setOpenTicketCount(count || 0);
+    }
+    loadOpenTicketCount();
+    const interval = setInterval(loadOpenTicketCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     adminMenuGroups.forEach((g) => {
@@ -160,7 +177,12 @@ export default function AdminSidebar({
                         }`}
                       />
                       {!collapsed && (
-                        <span className="text-[13px] truncate">{item.label}</span>
+                        <span className="text-[13px] truncate flex-1">{item.label}</span>
+                      )}
+                      {!collapsed && item.key === "tickets" && openTicketCount > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-red-500 text-white">
+                          {openTicketCount > 99 ? "99+" : openTicketCount}
+                        </span>
                       )}
                     </button>
                   );

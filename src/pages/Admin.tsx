@@ -516,7 +516,8 @@ export function Admin() {
                   sortable: true,
                   render: (user: UserData) => (
                     <span className="text-sm text-gray-400">
-                      {new Date(user.created_at).toLocaleDateString("de-DE")}
+                      {new Date(user.created_at).toLocaleDateString("de-DE")}{" "}
+                      <span className="text-gray-300">{new Date(user.created_at).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</span>
                     </span>
                   )
                 },

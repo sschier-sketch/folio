@@ -204,6 +204,9 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                     </>
                   ) : currentInterval === 'year' ? (
                     <>
+                      <span className="text-lg text-gray-400 line-through font-normal mr-1">
+                        {formatPrice(PLANS.pro.priceMonthly)} {PLANS[currentPlanId].currencySymbol}
+                      </span>
                       {formatPrice((PLANS[currentPlanId].priceYearly || 0) / 12)} {PLANS[currentPlanId].currencySymbol}
                       <span className="text-lg text-gray-500 font-normal">/Monat</span>
                     </>
@@ -442,6 +445,11 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               </div>
 
               <div className="flex items-baseline gap-1 justify-center">
+                {billingInterval === 'year' && (
+                  <span className="text-lg text-gray-400 line-through mr-1">
+                    {formatPrice(PLANS.pro.priceMonthly)} {PLANS.pro.currencySymbol}
+                  </span>
+                )}
                 <span className="text-4xl font-bold text-gray-900">
                   {billingInterval === 'month'
                     ? formatPrice(PLANS.pro.priceMonthly)
@@ -527,6 +535,11 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               </div>
 
               <div className="flex items-baseline gap-1">
+                {billingInterval === 'year' && (
+                  <span className="text-lg text-gray-400 line-through mr-1">
+                    {formatPrice(PLANS.pro.priceMonthly)} {PLANS.pro.currencySymbol}
+                  </span>
+                )}
                 <span className="text-4xl font-bold text-gray-900">
                   {billingInterval === 'month'
                     ? formatPrice(PLANS.pro.priceMonthly)
@@ -586,6 +599,9 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
           <div className="space-y-2 text-sm text-gray-600">
+            <p>
+              <strong>Alle Preise netto:</strong> Alle angegebenen Preise verstehen sich netto zuzüglich der gesetzlichen Mehrwertsteuer.
+            </p>
             <p>
               <strong>Jederzeit kündbar:</strong> Sie können Ihr Abonnement jederzeit über das Kundenportal kündigen.
             </p>

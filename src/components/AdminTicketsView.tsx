@@ -36,7 +36,7 @@ export function AdminTicketsView() {
   const [sending, setSending] = useState(false);
   const [statusFilter, setStatusFilter] = useState<
     "all" | "open" | "answered" | "closed"
-  >("all");
+  >("open");
   const [replyMessage, setReplyMessage] = useState("");
   const [closeAfterReply, setCloseAfterReply] = useState(false);
   useEffect(() => {

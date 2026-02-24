@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Shield, Lock, CreditCard, Eye, EyeOff, Hash } from "lucide-react";
+import { Shield, Lock, CreditCard, Eye, EyeOff, Hash, AtSign, AlertCircle, Check, Info } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -53,10 +53,17 @@ export default function ProfileSettingsView() {
   });
   const [savingBankDetails, setSavingBankDetails] = useState(false);
 
+  const [emailAlias, setEmailAlias] = useState('');
+  const [currentEmailAlias, setCurrentEmailAlias] = useState('');
+  const [savingAlias, setSavingAlias] = useState(false);
+  const [aliasError, setAliasError] = useState('');
+  const [aliasSuccess, setAliasSuccess] = useState(false);
+
   useEffect(() => {
     loadUserSettings();
     loadBankDetails();
     loadCustomerNumber();
+    loadEmailAlias();
   }, [user]);
 
   const loadUserSettings = async () => {
@@ -115,6 +122,81 @@ export default function ProfileSettingsView() {
     } catch (error) {
       console.error("Error loading customer number:", error);
     }
+  };
+
+  const loadEmailAlias = async () => {
+    if (!user) return;
+    try {
+      const { data } = await supabase
+        .from('user_mailboxes')
+        .select('alias_localpart')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data?.alias_localpart) {
+        setEmailAlias(data.alias_localpart);
+        setCurrentEmailAlias(data.alias_localpart);
+      }
+    } catch (error) {
+      console.error('Error loading email alias:', error);
+    }
+  };
+
+  const validateAlias = (val: string): string | null => {
+    const v = val.toLowerCase().trim();
+    if (v.length < 3) return language === 'de' ? 'Mindestens 3 Zeichen erforderlich.' : 'Minimum 3 characters required.';
+    if (v.length > 64) return language === 'de' ? 'Maximal 64 Zeichen erlaubt.' : 'Maximum 64 characters allowed.';
+    if (!/^[a-z0-9][a-z0-9._-]*[a-z0-9]$/.test(v)) {
+      return language === 'de'
+        ? 'Erlaubt: a-z, 0-9, Punkt, Minus, Unterstrich. Muss mit Buchstabe/Zahl beginnen und enden.'
+        : 'Allowed: a-z, 0-9, dot, hyphen, underscore. Must start and end with letter/number.';
+    }
+    if (v.includes('..')) return language === 'de' ? 'Keine aufeinanderfolgenden Punkte erlaubt.' : 'No consecutive dots allowed.';
+    return null;
+  };
+
+  const handleSaveAlias = async () => {
+    const cleaned = emailAlias.toLowerCase().trim();
+    const validationError = validateAlias(cleaned);
+    if (validationError) {
+      setAliasError(validationError);
+      return;
+    }
+    if (cleaned === currentEmailAlias) {
+      setAliasSuccess(true);
+      setTimeout(() => setAliasSuccess(false), 2500);
+      return;
+    }
+
+    setSavingAlias(true);
+    setAliasError('');
+    setAliasSuccess(false);
+
+    const { data: reserved } = await supabase
+      .from('reserved_email_aliases')
+      .select('alias_localpart')
+      .eq('alias_localpart', cleaned)
+      .maybeSingle();
+
+    if (reserved) {
+      setAliasError(language === 'de' ? 'Dieser Alias ist reserviert und kann nicht verwendet werden.' : 'This alias is reserved.');
+      setSavingAlias(false);
+      return;
+    }
+
+    const { error: rpcError } = await supabase.rpc('update_user_mailbox_alias', {
+      new_alias: cleaned,
+    });
+
+    if (rpcError) {
+      setAliasError(rpcError.message || (language === 'de' ? 'Fehler beim Speichern der Adresse.' : 'Error saving address.'));
+      setSavingAlias(false);
+      return;
+    }
+
+    setSavingAlias(false);
+    setCurrentEmailAlias(cleaned);
+    setAliasSuccess(true);
+    setTimeout(() => setAliasSuccess(false), 2500);
   };
 
   const handlePasswordChange = async () => {
@@ -392,6 +474,77 @@ export default function ProfileSettingsView() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="bg-white rounded shadow-sm p-6 mt-6">
+        <div className="flex items-center gap-3 mb-6">
+          <AtSign className="w-6 h-6 text-primary-blue" />
+          <h3 className="text-lg font-semibold text-dark">
+            {language === "de" ? "Dokumente & Kommunikation" : "Documents & Communication"}
+          </h3>
+        </div>
+
+        <div className="space-y-4 max-w-2xl">
+          {aliasError && (
+            <div className="flex items-start gap-2 px-4 py-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>{aliasError}</span>
+            </div>
+          )}
+          {aliasSuccess && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-green-50 text-green-700 text-sm rounded-lg border border-green-200">
+              <Check className="w-4 h-4" />
+              <span>{language === "de" ? "E-Mail-Adresse erfolgreich gespeichert!" : "Email address saved successfully!"}</span>
+            </div>
+          )}
+
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-medium text-gray-700">
+                {language === "de" ? "Ihre Rentably E-Mail" : "Your Rentably Email"}
+              </span>
+              <div className="relative group">
+                <button type="button" className="w-5 h-5 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                  <Info className="w-3.5 h-3.5 text-gray-500" />
+                </button>
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 px-4 py-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <p className="font-semibold mb-1.5">
+                    {language === "de" ? "Ihre persönliche Rentably E-Mail-Adresse" : "Your personal Rentably email address"}
+                  </p>
+                  <ul className="space-y-1 text-gray-300 leading-relaxed">
+                    <li>{language === "de" ? "Wird als Absender für Ihre E-Mails verwendet" : "Used as sender for your emails"}</li>
+                    <li>{language === "de" ? "Antworten werden automatisch im Posteingang angezeigt" : "Replies are shown automatically in your inbox"}</li>
+                  </ul>
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900" />
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-0">
+              <input
+                type="text"
+                value={emailAlias}
+                onChange={(e) => { setEmailAlias(e.target.value.toLowerCase()); setAliasError(''); }}
+                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                placeholder="mein-alias"
+              />
+              <span className="px-4 py-2.5 bg-gray-50 border border-l-0 border-gray-200 rounded-r-lg text-sm text-gray-500 font-medium whitespace-nowrap">
+                @rentab.ly
+              </span>
+            </div>
+            <p className="mt-1.5 text-xs text-gray-400">
+              {language === "de"
+                ? "Unter dieser Adresse empfangen und senden Sie E-Mails. Diese Einstellung gilt auch für Nachrichten."
+                : "You send and receive emails under this address. This setting also applies to Messages."}
+            </p>
+          </div>
+          {emailAlias.trim() !== currentEmailAlias && emailAlias.trim().length >= 3 && (
+            <Button variant="primary" onClick={handleSaveAlias} disabled={savingAlias}>
+              {savingAlias
+                ? (language === "de" ? "Speichern..." : "Saving...")
+                : (language === "de" ? "Adresse speichern" : "Save Address")}
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded shadow-sm p-6 mt-6">

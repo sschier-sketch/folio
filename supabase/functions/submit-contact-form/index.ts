@@ -107,6 +107,33 @@ Deno.serve(async (req: Request) => {
       throw new Error("Failed to create ticket message");
     }
 
+    try {
+      const { data: settings } = await supabase
+        .from("system_settings")
+        .select("value")
+        .eq("key", "notification_email")
+        .maybeSingle();
+
+      const notificationEmail = settings?.value;
+
+      if (notificationEmail) {
+        await supabase.from("email_logs").insert({
+          to_email: notificationEmail,
+          template_key: "admin_notify_new_ticket",
+          variables: {
+            ticketNumber,
+            contactName: formData.name,
+            contactEmail: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+          },
+          status: "queued",
+        });
+      }
+    } catch (notifyErr) {
+      console.warn("Could not queue admin notification:", notifyErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

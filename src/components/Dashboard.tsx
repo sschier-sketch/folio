@@ -26,6 +26,7 @@ import {
   ExternalLink,
   Copy,
   Mail,
+  Headphones,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -50,6 +51,7 @@ import TemplatesView from "./TemplatesView";
 import BillingView from "./BillingView";
 import TicketsView from "./TicketsView";
 import MessagesView from "./messages/MessagesView";
+import ServiceView from "./ServiceView";
 import Footer from "./Footer";
 import SystemUpdatesModal from "./SystemUpdatesModal";
 import Badge from "./common/Badge";
@@ -68,6 +70,7 @@ type View =
   | "settings-profile"
   | "settings-billing"
   | "feedback"
+  | "service"
   | "referral";
 export default function Dashboard() {
   const [currentView, setCurrentView] = useState<View>("home");
@@ -98,7 +101,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const view = searchParams.get('view');
-    if (view && ['home', 'properties', 'tenants', 'mieterportal', 'messages', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'referral'].includes(view)) {
+    if (view && ['home', 'properties', 'tenants', 'mieterportal', 'messages', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'service', 'referral'].includes(view)) {
       setCurrentView(view as View);
       const preserved: Record<string, string> = {};
       const tab = searchParams.get('tab');
@@ -331,6 +334,16 @@ export default function Dashboard() {
                       {" "}
                       <Lightbulb className="w-4 h-4" />{" "}
                       <span className="text-sm">{t("feedback.menu")}</span>{" "}
+                    </button>{" "}
+                    <button
+                      onClick={() => {
+                        setCurrentView("service");
+                        setShowSettingsDropdown(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-gray-400 hover:bg-gray-50 transition-colors"
+                    >
+                      <Headphones className="w-4 h-4" />
+                      <span className="text-sm">Service</span>
                     </button>{" "}
                     {isAdmin && (
                       <>
@@ -623,6 +636,7 @@ export default function Dashboard() {
             {currentView === "settings-profile" && <ProfileSettingsView />}{" "}
             {currentView === "settings-billing" && <BillingSettingsView />}{" "}
             {currentView === "feedback" && <FeedbackListView />}{" "}
+            {currentView === "service" && <ServiceView />}{" "}
             {currentView === "referral" && <ReferralProgramView />}{" "}
           </main>{" "}
           </div>
