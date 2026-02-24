@@ -258,7 +258,19 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
       const blob = generateKuendigungPdf(data);
       const filename = buildKuendigungFilename(data.tenants);
 
-      const filePath = await saveDocumentToProperty(blob, filename, sharePortal);
+      await saveDocumentToProperty(blob, filename, sharePortal);
+
+      const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const emailAttachmentPath = `${user!.id}/email-attachments/${Date.now()}_${safeFilename}`;
+      const { error: uploadErr } = await supabase.storage
+        .from('documents')
+        .upload(emailAttachmentPath, blob, {
+          contentType: 'application/pdf',
+          upsert: true,
+        });
+
+      const attachments =
+        !uploadErr ? [{ filename, path: emailAttachmentPath }] : [];
 
       for (const tenant of data.tenants) {
         if (tenant.tenantId) {
@@ -291,9 +303,7 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
                 tenantId: tenant.tenantId,
                 useUserAlias: true,
                 storeAsMessage: true,
-                attachments: filePath
-                  ? [{ filename, path: filePath }]
-                  : [],
+                attachments,
               }),
             });
           }
@@ -313,7 +323,8 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
     const primaryTenant = data.tenants[0];
     if (!primaryTenant?.propertyId) return null;
 
-    const filePath = `${user!.id}/wizard-documents/${Date.now()}_${filename}`;
+    const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const filePath = `${user!.id}/wizard-documents/${Date.now()}_${safeFilename}`;
     await supabase.storage.from('documents').upload(filePath, blob, {
       contentType: 'application/pdf',
       upsert: true,
