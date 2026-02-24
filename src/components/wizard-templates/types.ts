@@ -136,6 +136,35 @@ export const ABMAHNUNG_RUHESTOERUNG_STEPS: { key: AbmahnungRuhestoerungStep; lab
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface AbmahnungBaulicheSachverhalt {
+  beschreibung: string;
+  reparaturFrist: string;
+}
+
+export interface AbmahnungBaulicheWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: AbmahnungBaulicheSachverhalt;
+}
+
+export type AbmahnungBaulicheStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const ABMAHNUNG_BAULICHE_STEPS: { key: AbmahnungBaulicheStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;

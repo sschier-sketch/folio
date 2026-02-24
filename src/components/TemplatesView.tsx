@@ -10,6 +10,7 @@ import WizardCreatorSection from './wizard-templates/WizardCreatorSection';
 import KuendigungWizard from './wizard-templates/KuendigungWizard';
 import ZahlungserinnerungWizard from './wizard-templates/ZahlungserinnerungWizard';
 import AbmahnungRuhestoerungWizard from './wizard-templates/AbmahnungRuhestoerungWizard';
+import AbmahnungBaulicheWizard from './wizard-templates/AbmahnungBaulicheWizard';
 
 interface Template {
   id: string;
@@ -156,6 +157,10 @@ export default function TemplatesView() {
 
   if (activeWizard === 'abmahnung_ruhestoerung') {
     return <AbmahnungRuhestoerungWizard onBack={() => { setActiveWizard(null); setWizardFreshStart(false); }} freshStart={wizardFreshStart} />;
+  }
+
+  if (activeWizard === 'abmahnung_bauliche_veraenderungen') {
+    return <AbmahnungBaulicheWizard onBack={() => { setActiveWizard(null); setWizardFreshStart(false); }} freshStart={wizardFreshStart} />;
   }
 
   return (
