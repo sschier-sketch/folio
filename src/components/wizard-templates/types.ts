@@ -97,6 +97,45 @@ export const ZAHLUNGSERINNERUNG_STEPS: { key: ZahlungserinnerungStep; label: str
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface StoerungsEreignis {
+  id: string;
+  datum: string;
+  uhrzeit: string;
+  kategorie: string;
+  beschreibung: string;
+}
+
+export interface AbmahnungRuhestoerungSachverhalt {
+  nachbarName: string;
+  datumEreignis: string;
+  anzahlEreignisse: number;
+  ereignisse: StoerungsEreignis[];
+}
+
+export interface AbmahnungRuhestoerungWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: AbmahnungRuhestoerungSachverhalt;
+}
+
+export type AbmahnungRuhestoerungStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const ABMAHNUNG_RUHESTOERUNG_STEPS: { key: AbmahnungRuhestoerungStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;
