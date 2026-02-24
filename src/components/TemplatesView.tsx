@@ -203,8 +203,8 @@ export default function TemplatesView() {
             </p>
           </div>
 
-          <div className="mb-6 flex gap-4 items-end">
-            <div className="relative flex-1">
+          <div className="mb-4">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
@@ -214,20 +214,32 @@ export default function TemplatesView() {
                 className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
               />
             </div>
-            <div>
-              <select
-                value={selectedCategory || ""}
-                onChange={(e) => setSelectedCategory(e.target.value || null)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-white min-w-[200px]"
+          </div>
+
+          <div className="mb-6 flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                selectedCategory === null
+                  ? 'bg-[#1e1e24] text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Alle
+            </button>
+            {categoryDescriptions.map((cat) => (
+              <button
+                key={cat.category}
+                onClick={() => setSelectedCategory(selectedCategory === cat.category ? null : cat.category)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  selectedCategory === cat.category
+                    ? 'bg-[#1e1e24] text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
               >
-                <option value="">Alle Kategorien</option>
-                {categoryDescriptions.map((cat) => (
-                  <option key={cat.category} value={cat.category}>
-                    {cat.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {cat.title}
+              </button>
+            ))}
           </div>
         </>
       )}
