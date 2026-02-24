@@ -59,6 +59,11 @@ function normalizeSubject(subject: string): string {
     .toLowerCase();
 }
 
+function extractTicketNumber(subject: string): string | null {
+  const match = subject.match(/\[Ticket\s*#([A-Z0-9-]+)\]/i);
+  return match ? match[1] : null;
+}
+
 function parseReferences(refs: string | undefined | null): string[] {
   if (!refs) return [];
   return refs
@@ -396,6 +401,61 @@ Deno.serve(async (req: Request) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
+    }
+
+    const ticketNumber = extractTicketNumber(subject);
+    if (ticketNumber) {
+      const { data: ticket } = await supabase
+        .from("tickets")
+        .select("id, ticket_number, contact_email, contact_name, status, user_id")
+        .eq("ticket_number", ticketNumber)
+        .maybeSingle();
+
+      if (ticket && ticket.contact_email?.toLowerCase() === fromAddress.toLowerCase()) {
+        console.log(
+          `[inbound] Matched contact ticket reply: ${ticketNumber} from ${fromAddress}`
+        );
+
+        const replyBody = bodyText
+          ? bodyText.split(/\n\s*>/).shift()?.trim() || bodyText.trim()
+          : "(Kein Textinhalt)";
+
+        const { error: msgErr } = await supabase
+          .from("ticket_messages")
+          .insert({
+            ticket_id: ticket.id,
+            sender_type: "contact",
+            sender_name: ticket.contact_name || fromName,
+            sender_email: fromAddress,
+            message: replyBody,
+          });
+
+        if (msgErr) {
+          console.error("[inbound] Failed to insert ticket message:", msgErr);
+        } else {
+          const newStatus = ticket.status === "closed" ? "open" : "open";
+          await supabase
+            .from("tickets")
+            .update({
+              status: newStatus,
+              updated_at: new Date().toISOString(),
+              last_email_received_at: receivedAt,
+            })
+            .eq("id", ticket.id);
+
+          console.log(
+            `[inbound] Created ticket_message for ticket ${ticketNumber}, status -> ${newStatus}`
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, ticket_reply: ticketNumber }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
     }
 
     let processed = 0;
