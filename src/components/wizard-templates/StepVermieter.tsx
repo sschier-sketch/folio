@@ -56,7 +56,7 @@ export default function StepVermieter({ data, onChange }: Props) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Nr. *
+              Nr.
             </label>
             <input
               type="text"
@@ -125,5 +125,5 @@ export default function StepVermieter({ data, onChange }: Props) {
 }
 
 export function isVermieterValid(d: LandlordData): boolean {
-  return !!(d.name.trim() && d.street.trim() && d.number.trim() && d.zip.trim() && d.city.trim());
+  return !!(d.name.trim() && d.street.trim() && d.zip.trim() && d.city.trim());
 }

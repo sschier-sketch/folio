@@ -260,7 +260,7 @@ export default function StepMieter({ tenants, onChange }: Props) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Nr. *
+                    Nr.
                   </label>
                   <input
                     type="text"
@@ -335,7 +335,6 @@ export function isMieterValid(tenants: TenantEntry[]): boolean {
       t.firstName.trim() &&
       t.lastName.trim() &&
       t.street.trim() &&
-      t.number.trim() &&
       t.zip.trim() &&
       t.city.trim(),
   );
