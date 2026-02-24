@@ -34,6 +34,7 @@ import AdminCronJobsView from "../components/admin/AdminCronJobsView";
 import AdminFaqsView from "../components/admin/AdminFaqsView";
 import AdminCmsView from "../components/admin/AdminCmsView";
 import AdminSystemInfoView from "../components/admin/AdminSystemInfoView";
+import AdminAnalyticsChart from "../components/admin/AdminAnalyticsChart";
 import DeleteUserModal from "../components/admin/DeleteUserModal";
 import RefundWizard from "../components/admin/RefundWizard";
 import AdminLayout from "../components/admin/AdminLayout";
@@ -364,6 +365,8 @@ export function Admin() {
       <AdminLayout activeTab={activeTab} onTabChange={setActiveTab}>
         {activeTab === "overview" && (
           <div>
+            <AdminAnalyticsChart />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
               <StatCard
                 icon={<Users className="w-5 h-5 text-primary-blue" />}
