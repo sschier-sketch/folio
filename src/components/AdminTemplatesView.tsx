@@ -49,7 +49,6 @@ export function AdminTemplatesView() {
     title: "",
     category: "",
     description: "",
-    content: "",
     is_premium: false,
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -130,7 +129,6 @@ export function AdminTemplatesView() {
         title: uploadData.title,
         category: uploadData.category,
         description: uploadData.description || null,
-        content: uploadData.content || null,
         file_name: selectedFile.name,
         file_path: filePath,
         file_size: selectedFile.size,
@@ -144,9 +142,8 @@ export function AdminTemplatesView() {
       setShowUploadModal(false);
       setUploadData({
         title: "",
-        category: "interessentensuche",
+        category: "",
         description: "",
-        content: "",
         is_premium: false,
       });
       setSelectedFile(null);
@@ -539,27 +536,6 @@ export function AdminTemplatesView() {
                   rows={3}
                   placeholder="Optionale Beschreibung..."
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Suchbegriffe / Inhalt
-                </label>
-                <textarea
-                  value={uploadData.content}
-                  onChange={(e) =>
-                    setUploadData({
-                      ...uploadData,
-                      content: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  rows={4}
-                  placeholder="Wichtige Suchbegriffe, Schlüsselwörter oder Inhaltszusammenfassung für bessere Auffindbarkeit..."
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Diese Informationen helfen Benutzern, die Vorlage über die Suche zu finden
-                </p>
               </div>
 
               <div className="flex items-center gap-2">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Search } from "lucide-react";
+import { FileText } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -14,7 +14,6 @@ interface Template {
   title: string;
   category: string;
   description: string | null;
-  content: string | null;
   file_name: string;
   file_path: string;
   file_size: number;
@@ -38,7 +37,6 @@ export default function TemplatesView() {
   const [categoryDescriptions, setCategoryDescriptions] = useState<CategoryDescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeWizard, setActiveWizard] = useState<string | null>(null);
   const [wizardFreshStart, setWizardFreshStart] = useState(false);
@@ -135,14 +133,7 @@ export default function TemplatesView() {
     if (selectedCategory && template.category !== selectedCategory) {
       return false;
     }
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      template.title.toLowerCase().includes(query) ||
-      template.description?.toLowerCase().includes(query) ||
-      template.content?.toLowerCase().includes(query) ||
-      template.category.toLowerCase().includes(query)
-    );
+    return true;
   });
 
   if (loading) {
@@ -205,37 +196,24 @@ export default function TemplatesView() {
                 {cat.title}
               </button>
             ))}
-            <div className="relative ml-auto">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Suchen..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-44 pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-blue focus:w-60 transition-all bg-gray-50"
-              />
-            </div>
           </div>
         </>
       )}
 
       {templates.length === 0 ? null : filteredTemplates.length === 0 ? (
         <div className="bg-white rounded-lg p-12 text-center">
-          <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-dark mb-2">
             Keine Vorlagen gefunden
           </h3>
           <p className="text-gray-400 mb-6">
-            Es wurden keine Vorlagen gefunden, die Ihren Suchkriterien entsprechen.
+            Keine Vorlagen in dieser Kategorie vorhanden.
           </p>
           <Button
-            onClick={() => {
-              setSearchQuery("");
-              setSelectedCategory(null);
-            }}
+            onClick={() => setSelectedCategory(null)}
             variant="primary"
           >
-            Filter zurücksetzen
+            Alle anzeigen
           </Button>
         </div>
       ) : (
@@ -244,11 +222,11 @@ export default function TemplatesView() {
             {filteredTemplates.map(template => (
               <div
                 key={template.id}
-                className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between px-5 py-4"
               >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-gray-100">
-                    <FileText className="w-4 h-4 text-gray-500" />
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border border-[#DDE7FF] bg-[#EEF4FF]">
+                    <FileText className="w-4 h-4 text-[#1e1e24]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
