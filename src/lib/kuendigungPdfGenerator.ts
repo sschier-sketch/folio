@@ -79,13 +79,13 @@ export function generateKuendigungPdf(input: KuendigungPdfInput): Blob {
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100);
   const senderLine = buildSenderLine(landlord);
-  y = 67;
+  y = 57;
   doc.text(senderLine, ML, y);
 
   doc.setFontSize(11);
   doc.setTextColor(0);
   doc.setFont('helvetica', 'normal');
-  y = 80;
+  y = 70;
 
   const primaryTenant = tenants[0];
   const recipientLines = buildRecipientBlock(primaryTenant);
@@ -94,7 +94,7 @@ export function generateKuendigungPdf(input: KuendigungPdfInput): Blob {
     y += 6;
   });
 
-  y = Math.max(y, 105);
+  y = Math.max(y, 95);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text(`Datum des Schreibens: ${formatDate(sachverhalt.versanddatum)}`, ML, y);
