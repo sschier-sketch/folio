@@ -8,12 +8,16 @@ interface Props {
   sent: boolean;
   portalEnabled: boolean;
   onSend: (betreff: string, nachricht: string, sharePortal: boolean) => void;
+  defaultSubject?: string;
+  defaultMessage?: string;
+  documentLabel?: string;
 }
 
 const inputCls =
   'w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue';
 
-export default function StepVersand({ tenants, sending, sent, portalEnabled, onSend }: Props) {
+export default function StepVersand({ tenants, sending, sent, portalEnabled, onSend, defaultSubject, defaultMessage, documentLabel }: Props) {
+  const docName = documentLabel || 'Kündigungsbestätigung';
   const tenantNames = tenants
     .map((t) => `${t.firstName} ${t.lastName}`.trim())
     .filter(Boolean)
@@ -25,9 +29,9 @@ export default function StepVersand({ tenants, sending, sent, portalEnabled, onS
     })
     .filter(Boolean);
 
-  const [betreff, setBetreff] = useState('Kündigungsbestätigung');
+  const [betreff, setBetreff] = useState(defaultSubject || docName);
   const [nachricht, setNachricht] = useState(
-    `Sehr geehrte/r ${tenantNames},\n\nanbei erhalten Sie die Kündigungsbestätigung für Ihr Mietverhältnis.\n\nMit freundlichen Grüßen`,
+    defaultMessage || `Sehr geehrte/r ${tenantNames},\n\nanbei erhalten Sie die ${docName} für Ihr Mietverhältnis.\n\nMit freundlichen Grüßen`,
   );
   const [sharePortal, setSharePortal] = useState(false);
 
@@ -41,7 +45,7 @@ export default function StepVersand({ tenants, sending, sent, portalEnabled, onS
         </div>
         <h3 className="text-2xl font-bold text-dark mb-2">Erfolgreich versendet</h3>
         <p className="text-gray-500 max-w-md mx-auto">
-          Die Kündigungsbestätigung wurde per E-Mail versendet und im Dokumentenbereich gespeichert.
+          Die {docName} wurde per E-Mail versendet und im Dokumentenbereich gespeichert.
           {sharePortal && portalEnabled && (
             <> Das Dokument wurde zusätzlich im Mieterportal bereitgestellt.</>
           )}
@@ -63,7 +67,7 @@ export default function StepVersand({ tenants, sending, sent, portalEnabled, onS
 
       <h3 className="text-2xl font-bold text-dark mb-2">Digital versenden</h3>
       <p className="text-sm text-gray-500 mb-8">
-        Versenden Sie die Kündigungsbestätigung per E-Mail. Das PDF wird automatisch als Anhang beigefügt.
+        Versenden Sie die {docName} per E-Mail. Das PDF wird automatisch als Anhang beigefügt.
       </p>
 
       <div className="space-y-5">
@@ -104,7 +108,7 @@ export default function StepVersand({ tenants, sending, sent, portalEnabled, onS
         </div>
 
         <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
-          Anhang: Kündigungsbestätigung.pdf (wird automatisch beigefügt)
+          Anhang: {docName}.pdf (wird automatisch beigefügt)
         </div>
 
         <label className="flex items-center gap-3 cursor-pointer">

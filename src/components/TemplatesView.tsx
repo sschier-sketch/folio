@@ -8,6 +8,7 @@ import { Button } from './ui/Button';
 import { PremiumUpgradePrompt } from './PremiumUpgradePrompt';
 import WizardCreatorSection from './wizard-templates/WizardCreatorSection';
 import KuendigungWizard from './wizard-templates/KuendigungWizard';
+import ZahlungserinnerungWizard from './wizard-templates/ZahlungserinnerungWizard';
 
 interface Template {
   id: string;
@@ -146,6 +147,10 @@ export default function TemplatesView() {
 
   if (activeWizard === 'kuendigungsbestaetigung') {
     return <KuendigungWizard onBack={() => { setActiveWizard(null); setWizardFreshStart(false); }} freshStart={wizardFreshStart} />;
+  }
+
+  if (activeWizard === 'zahlungserinnerung') {
+    return <ZahlungserinnerungWizard onBack={() => { setActiveWizard(null); setWizardFreshStart(false); }} freshStart={wizardFreshStart} />;
   }
 
   return (

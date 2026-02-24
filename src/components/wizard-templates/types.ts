@@ -67,6 +67,36 @@ export const KUENDIGUNG_STEPS: { key: KuendigungStep; label: string }[] = [
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface ZahlungserinnerungSachverhalt {
+  zahlungErwartetBis: string;
+  offenerBetrag: string;
+  zahlungsfrist: string;
+}
+
+export interface ZahlungserinnerungWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: ZahlungserinnerungSachverhalt;
+}
+
+export type ZahlungserinnerungStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const ZAHLUNGSERINNERUNG_STEPS: { key: ZahlungserinnerungStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;
