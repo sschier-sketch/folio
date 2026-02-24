@@ -9,6 +9,7 @@ import {
 import type {
   KuendigungStep,
   KuendigungWizardData,
+  LandlordData,
   TenantEntry,
 } from './types';
 import { KUENDIGUNG_STEPS } from './types';
@@ -75,15 +76,15 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (user) {
-      loadProfile();
-      if (!freshStart) loadDraft();
+      initWizard();
     }
   }, [user]);
 
-  async function loadProfile() {
+  async function initWizard() {
     const [profileRes, userRes] = await Promise.all([
       supabase
         .from('account_profiles')
@@ -100,45 +101,69 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
     const p = profileRes.data;
     const u = userRes.data;
 
+    const profileLandlord: Partial<LandlordData> = {};
     if (p || u) {
+      profileLandlord.name =
+        (p && `${p.first_name || ''} ${p.last_name || ''}`.trim()) ||
+        u?.full_name ||
+        '';
+      profileLandlord.street = p?.address_street || u?.street || '';
+      profileLandlord.number = p?.address_house_number || u?.house_number || '';
+      profileLandlord.zip = p?.address_zip || u?.zip || '';
+      profileLandlord.city = p?.address_city || u?.city || '';
+    }
+
+    let draftData: KuendigungWizardData | null = null;
+    let draftRow: { id: string; current_step: number | null } | null = null;
+
+    if (!freshStart) {
+      const { data: draft } = await supabase
+        .from('wizard_drafts')
+        .select('*')
+        .eq('user_id', user!.id)
+        .eq('template_id', 'kuendigungsbestaetigung')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (draft) {
+        const saved = draft.draft_data as KuendigungWizardData;
+        if (saved.landlord) {
+          draftRow = { id: draft.id, current_step: draft.current_step };
+          draftData = saved;
+        }
+      }
+    }
+
+    if (draftData && draftRow) {
+      setDraftId(draftRow.id);
+      const merged: KuendigungWizardData = {
+        ...draftData,
+        landlord: {
+          ...draftData.landlord,
+          name: draftData.landlord.name || profileLandlord.name || '',
+          street: draftData.landlord.street || profileLandlord.street || '',
+          number: draftData.landlord.number || profileLandlord.number || '',
+          zip: draftData.landlord.zip || profileLandlord.zip || '',
+          city: draftData.landlord.city || profileLandlord.city || '',
+        },
+      };
+      setData(merged);
+      const si = draftRow.current_step || 0;
+      if (si >= 0 && si < KUENDIGUNG_STEPS.length) {
+        setStep(KUENDIGUNG_STEPS[si].key);
+      }
+    } else {
       setData((prev) => ({
         ...prev,
         landlord: {
           ...prev.landlord,
-          name:
-            (p && `${p.first_name || ''} ${p.last_name || ''}`.trim()) ||
-            u?.full_name ||
-            prev.landlord.name,
-          street: p?.address_street || u?.street || prev.landlord.street,
-          number: p?.address_house_number || u?.house_number || prev.landlord.number,
-          zip: p?.address_zip || u?.zip || prev.landlord.zip,
-          city: p?.address_city || u?.city || prev.landlord.city,
+          ...profileLandlord,
         },
       }));
     }
-  }
 
-  async function loadDraft() {
-    const { data: draft } = await supabase
-      .from('wizard_drafts')
-      .select('*')
-      .eq('user_id', user!.id)
-      .eq('template_id', 'kuendigungsbestaetigung')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (draft) {
-      setDraftId(draft.id);
-      const saved = draft.draft_data as KuendigungWizardData;
-      if (saved.landlord) {
-        setData(saved);
-        const stepIdx = draft.current_step || 0;
-        if (stepIdx >= 0 && stepIdx < KUENDIGUNG_STEPS.length) {
-          setStep(KUENDIGUNG_STEPS[stepIdx].key);
-        }
-      }
-    }
+    setReady(true);
   }
 
   const saveDraft = useCallback(
@@ -354,6 +379,14 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
       await supabase.from('wizard_drafts').delete().eq('id', draftId);
       setDraftId(null);
     }
+  }
+
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <div className="w-6 h-6 border-2 border-gray-300 border-t-primary-blue rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return (
