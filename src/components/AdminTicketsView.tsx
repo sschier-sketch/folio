@@ -5,9 +5,12 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  Settings,
+  Save,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { Button } from './ui/Button';
+
 interface Ticket {
   id: string;
   ticket_number: string;
@@ -20,6 +23,7 @@ interface Ticket {
   answered_at?: string;
   closed_at?: string;
 }
+
 interface TicketMessage {
   id: string;
   sender_type: string;
@@ -28,6 +32,7 @@ interface TicketMessage {
   message: string;
   created_at: string;
 }
+
 export function AdminTicketsView() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
@@ -39,9 +44,55 @@ export function AdminTicketsView() {
   >("open");
   const [replyMessage, setReplyMessage] = useState("");
   const [closeAfterReply, setCloseAfterReply] = useState(false);
+
+  const [activePanel, setActivePanel] = useState<"tickets" | "settings">("tickets");
+  const [signature, setSignature] = useState("");
+  const [savingSignature, setSavingSignature] = useState(false);
+  const [signatureSaved, setSignatureSaved] = useState(false);
+  const [systemSettingsId, setSystemSettingsId] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadSignature();
+  }, []);
+
   useEffect(() => {
     loadTickets();
   }, [statusFilter]);
+
+  async function loadSignature() {
+    try {
+      const { data } = await supabase
+        .from("system_settings")
+        .select("id, ticket_reply_signature")
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setSystemSettingsId(data.id);
+        setSignature(data.ticket_reply_signature || "");
+      }
+    } catch (err) {
+      console.error("Error loading signature:", err);
+    }
+  }
+
+  async function handleSaveSignature() {
+    if (!systemSettingsId) return;
+    setSavingSignature(true);
+    try {
+      const { error } = await supabase
+        .from("system_settings")
+        .update({ ticket_reply_signature: signature || null })
+        .eq("id", systemSettingsId);
+      if (error) throw error;
+      setSignatureSaved(true);
+      setTimeout(() => setSignatureSaved(false), 2500);
+    } catch (err) {
+      console.error("Error saving signature:", err);
+    } finally {
+      setSavingSignature(false);
+    }
+  }
+
   async function loadTickets() {
     try {
       setLoading(true);
@@ -77,27 +128,29 @@ export function AdminTicketsView() {
       setLoading(false);
     }
   }
+
   async function loadMessages(ticketId: string) {
     try {
       const { data, error } = await supabase
         .from("ticket_messages")
         .select("*")
         .eq("ticket_id", ticketId)
-        .order("created_at", {
-          ascending: true,
-        });
+        .order("created_at", { ascending: true });
       if (error) throw error;
       setMessages(data || []);
     } catch (err) {
       console.error("Error loading messages:", err);
     }
   }
+
   async function handleSelectTicket(ticket: Ticket) {
     setSelectedTicket(ticket);
     await loadMessages(ticket.id);
-    setReplyMessage("");
+    const currentSignature = signature;
+    setReplyMessage(currentSignature ? `\n\n${currentSignature}` : "");
     setCloseAfterReply(false);
   }
+
   async function handleSendReply() {
     if (!selectedTicket || !replyMessage.trim()) return;
     try {
@@ -175,7 +228,7 @@ export function AdminTicketsView() {
       }
 
       await loadMessages(selectedTicket.id);
-      setReplyMessage("");
+      setReplyMessage(signature ? `\n\n${signature}` : "");
       setCloseAfterReply(false);
     } catch (err) {
       console.error("Error sending reply:", err);
@@ -184,6 +237,7 @@ export function AdminTicketsView() {
       setSending(false);
     }
   }
+
   async function handleChangeStatus(newStatus: string) {
     if (!selectedTicket) return;
     try {
@@ -214,11 +268,7 @@ export function AdminTicketsView() {
       alert("Fehler beim Ändern des Status");
     }
   }
-  async function handleCloseTicket() {
-    if (!selectedTicket) return;
-    if (!confirm("Möchten Sie dieses Ticket wirklich schließen?")) return;
-    await handleChangeStatus("closed");
-  }
+
   const getStatusBadge = (status: string) => {
     const badges = {
       open: {
@@ -244,238 +294,244 @@ export function AdminTicketsView() {
     const Icon = badge.icon;
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${badge.bg}
-${badge.text}`}
+        className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${badge.bg} ${badge.text}`}
       >
-        {" "}
         <Icon className="w-3 h-3" /> {badge.label}
       </span>
     );
   };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
-      {" "}
       <div className="lg:col-span-1 bg-white rounded overflow-hidden flex flex-col">
-        {" "}
         <div className="p-4 border-b">
-          {" "}
-          <h2 className="text-lg font-bold text-dark mb-3">
-            Kontakt-Tickets
-          </h2>{" "}
-          <div className="flex gap-2">
-            {" "}
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-dark">Kontakt-Tickets</h2>
             <button
-              onClick={() => setStatusFilter("all")}
-              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${statusFilter === "all" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
+              onClick={() => setActivePanel(activePanel === "settings" ? "tickets" : "settings")}
+              className={`p-1.5 rounded-lg transition-colors ${activePanel === "settings" ? "bg-primary-blue/10 text-primary-blue" : "text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}
+              title="Einstellungen"
             >
-              {" "}
-              Alle ({tickets.length}){" "}
-            </button>{" "}
-            <button
-              onClick={() => setStatusFilter("open")}
-              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${statusFilter === "open" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
-            >
-              {" "}
-              Offen{" "}
-            </button>{" "}
-            <button
-              onClick={() => setStatusFilter("answered")}
-              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${statusFilter === "answered" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
-            >
-              {" "}
-              Beantwortet{" "}
-            </button>{" "}
-            <button
-              onClick={() => setStatusFilter("closed")}
-              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${statusFilter === "closed" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
-            >
-              {" "}
-              Geschlossen{" "}
-            </button>{" "}
-          </div>{" "}
-        </div>{" "}
-        <div className="flex-1 overflow-y-auto">
-          {" "}
-          {loading ? (
-            <div className="flex items-center justify-center p-8">
-              {" "}
-              <div className="w-6 h-6 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />{" "}
-            </div>
-          ) : tickets.length === 0 ? (
-            <div className="p-6 text-center text-gray-300">
-              {" "}
-              <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-200" />{" "}
-              <p>Keine Tickets gefunden</p>{" "}
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-200">
-              {" "}
-              {tickets.map((ticket) => (
-                <button
-                  key={ticket.id}
-                  onClick={() => handleSelectTicket(ticket)}
-                  className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${selectedTicket?.id === ticket.id ? "bg-primary-blue/5" : ""}`}
-                >
-                  {" "}
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    {" "}
-                    <span className="text-xs text-gray-300">
-                      #{ticket.ticket_number}
-                    </span>{" "}
-                    {getStatusBadge(ticket.status)}
-                  </div>{" "}
-                  <h3 className="font-semibold text-dark mb-1 line-clamp-1">
-                    {ticket.subject}
-                  </h3>{" "}
-                  <p className="text-sm text-gray-400 mb-1">
-                    {ticket.contact_name}
-                  </p>{" "}
-                  <p className="text-xs text-gray-300">
-                    {new Date(ticket.created_at).toLocaleString("de-DE")}
-                  </p>{" "}
-                </button>
-              ))}
+              <Settings className="w-4 h-4" />
+            </button>
+          </div>
+          {activePanel === "tickets" && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStatusFilter("all")}
+                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${statusFilter === "all" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
+              >
+                Alle ({tickets.length})
+              </button>
+              <button
+                onClick={() => setStatusFilter("open")}
+                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${statusFilter === "open" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
+              >
+                Offen
+              </button>
+              <button
+                onClick={() => setStatusFilter("answered")}
+                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${statusFilter === "answered" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
+              >
+                Beantwortet
+              </button>
+              <button
+                onClick={() => setStatusFilter("closed")}
+                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${statusFilter === "closed" ? "bg-primary-blue text-white" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
+              >
+                Geschlossen
+              </button>
             </div>
           )}
-        </div>{" "}
-      </div>{" "}
+        </div>
+
+        {activePanel === "settings" ? (
+          <div className="flex-1 overflow-y-auto p-5">
+            <div className="mb-5">
+              <h3 className="text-sm font-semibold text-dark mb-1">Antwort-Signatur</h3>
+              <p className="text-xs text-gray-400 mb-3">
+                Diese Signatur wird automatisch in das Antwortfeld eingefugt, wenn Sie ein Ticket offnen.
+              </p>
+              <textarea
+                value={signature}
+                onChange={(e) => setSignature(e.target.value)}
+                placeholder={`Mit freundlichen Grüßen\n\nIhr Rentably-Team\nsupport@rentably.de`}
+                rows={8}
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none font-mono"
+              />
+              <div className="flex items-center justify-between mt-3">
+                {signatureSaved && (
+                  <span className="text-xs text-emerald-600 flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5" /> Gespeichert
+                  </span>
+                )}
+                {!signatureSaved && <span />}
+                <Button
+                  onClick={handleSaveSignature}
+                  disabled={savingSignature}
+                  variant="primary"
+                >
+                  <Save className="w-4 h-4 mr-1.5" />
+                  {savingSignature ? "Wird gespeichert..." : "Speichern"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="w-6 h-6 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : tickets.length === 0 ? (
+              <div className="p-6 text-center text-gray-300">
+                <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-200" />
+                <p>Keine Tickets gefunden</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-200">
+                {tickets.map((ticket) => (
+                  <button
+                    key={ticket.id}
+                    onClick={() => handleSelectTicket(ticket)}
+                    className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${selectedTicket?.id === ticket.id ? "bg-primary-blue/5" : ""}`}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <span className="text-xs text-gray-300">
+                        #{ticket.ticket_number}
+                      </span>
+                      {getStatusBadge(ticket.status)}
+                    </div>
+                    <h3 className="font-semibold text-dark mb-1 line-clamp-1">
+                      {ticket.subject}
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-1">
+                      {ticket.contact_name}
+                    </p>
+                    <p className="text-xs text-gray-300">
+                      {new Date(ticket.created_at).toLocaleString("de-DE")}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="lg:col-span-2 bg-white rounded overflow-hidden flex flex-col">
-        {" "}
         {selectedTicket ? (
           <>
-            {" "}
             <div className="p-6 border-b">
-              {" "}
               <div className="flex items-start justify-between mb-3">
-                {" "}
                 <div className="flex-1">
-                  {" "}
                   <div className="flex items-center gap-2 mb-2">
-                    {" "}
                     <h2 className="text-xl font-bold text-dark">
                       {selectedTicket.subject}
-                    </h2>{" "}
+                    </h2>
                     {getStatusBadge(selectedTicket.status)}
-                  </div>{" "}
+                  </div>
                   <p className="text-sm text-gray-400">
                     Ticket #{selectedTicket.ticket_number}
-                  </p>{" "}
-                </div>{" "}
+                  </p>
+                </div>
                 <div className="flex items-center gap-2">
-                  {" "}
                   <select
                     value={selectedTicket.status}
                     onChange={(e) => handleChangeStatus(e.target.value)}
                     className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   >
-                    {" "}
-                    <option value="open">Offen</option>{" "}
-                    <option value="answered">Beantwortet</option>{" "}
-                    <option value="closed">Geschlossen</option>{" "}
-                  </select>{" "}
-                </div>{" "}
-              </div>{" "}
+                    <option value="open">Offen</option>
+                    <option value="answered">Beantwortet</option>
+                    <option value="closed">Geschlossen</option>
+                  </select>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                {" "}
                 <div>
-                  {" "}
-                  <p className="text-gray-300">Von:</p>{" "}
+                  <p className="text-gray-300">Von:</p>
                   <p className="font-medium text-dark">
                     {selectedTicket.contact_name}
-                  </p>{" "}
-                </div>{" "}
+                  </p>
+                </div>
                 <div>
-                  {" "}
-                  <p className="text-gray-300">E-Mail:</p>{" "}
+                  <p className="text-gray-300">E-Mail:</p>
                   <p className="font-medium text-dark">
                     {selectedTicket.contact_email}
-                  </p>{" "}
-                </div>{" "}
+                  </p>
+                </div>
                 <div>
-                  {" "}
-                  <p className="text-gray-300">Erstellt:</p>{" "}
+                  <p className="text-gray-300">Erstellt:</p>
                   <p className="font-medium text-dark">
-                    {new Date(selectedTicket.created_at).toLocaleString(
-                      "de-DE",
-                    )}
-                  </p>{" "}
-                </div>{" "}
+                    {new Date(selectedTicket.created_at).toLocaleString("de-DE")}
+                  </p>
+                </div>
                 {selectedTicket.answered_at && (
                   <div>
-                    {" "}
-                    <p className="text-gray-300">Beantwortet:</p>{" "}
+                    <p className="text-gray-300">Beantwortet:</p>
                     <p className="font-medium text-dark">
-                      {new Date(selectedTicket.answered_at).toLocaleString(
-                        "de-DE",
-                      )}
-                    </p>{" "}
+                      {new Date(selectedTicket.answered_at).toLocaleString("de-DE")}
+                    </p>
                   </div>
                 )}
-              </div>{" "}
-            </div>{" "}
+              </div>
+            </div>
+
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {" "}
               {messages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex gap-3 ${msg.sender_type === "admin" ? "flex-row-reverse" : ""}`}
                 >
-                  {" "}
                   <div
                     className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${msg.sender_type === "admin" ? "bg-primary-blue" : "bg-gray-400"}`}
                   >
-                    {" "}
                     {msg.sender_type === "admin" ? (
                       <Mail className="w-5 h-5 text-white" />
                     ) : (
                       <MessageSquare className="w-5 h-5 text-white" />
                     )}
-                  </div>{" "}
+                  </div>
                   <div
                     className={`flex-1 ${msg.sender_type === "admin" ? "text-right" : ""}`}
                   >
-                    {" "}
                     <div className="flex items-center gap-2 mb-1">
-                      {" "}
                       <span className="font-medium text-dark">
                         {msg.sender_name}
-                      </span>{" "}
+                      </span>
                       <span className="text-xs text-gray-300">
                         {new Date(msg.created_at).toLocaleString("de-DE")}
-                      </span>{" "}
-                    </div>{" "}
+                      </span>
+                    </div>
                     <div
                       className={`inline-block max-w-[80%] p-3 rounded-lg ${msg.sender_type === "admin" ? "bg-primary-blue text-white" : "bg-gray-50 text-dark"}`}
                     >
-                      {" "}
-                      <p className="whitespace-pre-wrap">{msg.message}</p>{" "}
-                    </div>{" "}
-                  </div>{" "}
+                      <p className="whitespace-pre-wrap">{msg.message}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
-            </div>{" "}
+            </div>
+
             {selectedTicket.status !== "closed" && (
               <div className="p-6 border-t">
-                {" "}
                 <textarea
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
                   placeholder="Antwort eingeben..."
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none mb-3"
-                />{" "}
+                  rows={5}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none mb-3 text-sm"
+                />
                 <div className="flex items-center justify-between">
-                  {" "}
                   <label className="flex items-center gap-2 text-sm text-gray-400">
-                    {" "}
                     <input
                       type="checkbox"
                       checked={closeAfterReply}
                       onChange={(e) => setCloseAfterReply(e.target.checked)}
                       className="rounded"
-                    />{" "}
-                    Ticket nach Antwort schließen{" "}
-                  </label>{" "}
+                    />
+                    Ticket nach Antwort schließen
+                  </label>
                   <Button
                     onClick={handleSendReply}
                     disabled={!replyMessage.trim() || sending}
@@ -489,22 +545,20 @@ ${badge.text}`}
                     ) : (
                       "Antworten"
                     )}
-                  </Button>{" "}
-                </div>{" "}
+                  </Button>
+                </div>
               </div>
             )}
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-300">
-            {" "}
             <div className="text-center">
-              {" "}
-              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-200" />{" "}
-              <p>Wählen Sie ein Ticket aus der Liste</p>{" "}
-            </div>{" "}
+              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-200" />
+              <p>Wählen Sie ein Ticket aus der Liste</p>
+            </div>
           </div>
         )}
-      </div>{" "}
+      </div>
     </div>
   );
 }
