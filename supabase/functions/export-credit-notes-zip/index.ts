@@ -112,12 +112,8 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const dateStr = new Date(cn.created_at_stripe).toISOString().slice(0, 10);
-        const customerPart = (cn.customer_name || cn.customer_email || 'unknown')
-          .replace(/[^a-zA-Z0-9äöüÄÖÜß@._-]/g, '_')
-          .slice(0, 40);
         const numberPart = (cn.number || cn.stripe_credit_note_id).replace(/[^a-zA-Z0-9_-]/g, '_');
-        const filename = `${dateStr}_CreditNote_${numberPart}_${customerPart}.pdf`;
+        const filename = `${numberPart}.pdf`;
 
         const buffer = await fileData.arrayBuffer();
         zip.file(filename, buffer);
