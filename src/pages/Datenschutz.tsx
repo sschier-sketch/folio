@@ -225,23 +225,165 @@ function DatenschutzFallbackContent() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">4. Analyse Tools und Werbung</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">4. Hosting und Backend-Infrastruktur</h2>
 
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Google Analytics</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Vercel</h3>
         <p className="text-gray-600 leading-relaxed">
-          Diese Website nutzt Funktionen des Webanalysedienstes Google Analytics. Anbieter ist die Google
-          Inc., 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA.
+          Unsere Website wird bei Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA, gehostet.
+          Beim Aufruf unserer Website werden durch Vercel automatisch Zugriffsdaten (sog. Server-Log-Dateien)
+          erhoben, die Ihre IP-Adresse, den aufgerufenen URL-Pfad, Datum und Uhrzeit des Zugriffs sowie
+          Browsertyp und Betriebssystem umfassen.
         </p>
         <p className="text-gray-600 leading-relaxed">
-          Google Analytics verwendet so genannte "Cookies". Das sind Textdateien, die auf Ihrem Computer
-          gespeichert werden und die eine Analyse der Benutzung der Website durch Sie ermöglichen. Die durch
-          den Cookie erzeugten Informationen über Ihre Benutzung dieser Website werden in der Regel an einen
-          Server von Google in den USA übertragen und dort gespeichert.
+          Die Verarbeitung erfolgt auf Grundlage unseres berechtigten Interesses an der sicheren und
+          effizienten Bereitstellung unserer Website gemäß Art. 6 Abs. 1 lit. f DSGVO. Vercel Inc. ist unter
+          dem EU-U.S. Data Privacy Framework zertifiziert, sodass ein angemessenes Datenschutzniveau
+          gewährleistet ist.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Weitere Informationen: <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://vercel.com/legal/privacy-policy</a>
+        </p>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-6">Supabase (Datenbank und Authentifizierung)</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Für die Speicherung von Nutzerdaten, die Authentifizierung und den Betrieb der
+          Applikations-Infrastruktur nutzen wir den Dienst Supabase der Supabase Inc., 970 Toa Payoh North
+          #07-04, Singapore 318992. Supabase stellt uns eine PostgreSQL-Datenbank, Authentifizierungsdienste,
+          Dateispeicher (Storage) und serverlose Funktionen (Edge Functions) bereit.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          In der Datenbank werden alle im Rahmen der Nutzung unserer Plattform anfallenden personenbezogenen
+          Daten gespeichert, darunter Stammdaten (Name, Adresse), Kontaktdaten (E-Mail, Telefon),
+          Vertragsdaten, Zahlungsdaten sowie Kommunikationsdaten. Die Verarbeitung erfolgt auf Grundlage der
+          Vertragserfüllung gemäß Art. 6 Abs. 1 lit. b DSGVO bzw. unseres berechtigten Interesses gemäß
+          Art. 6 Abs. 1 lit. f DSGVO.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Die Daten werden in Rechenzentren der Amazon Web Services (AWS) in der EU (Frankfurt, Deutschland)
+          verarbeitet. Für Teile der Infrastruktur kann eine Datenübermittlung in die USA stattfinden, die
+          durch Standardvertragsklauseln gemäß Art. 46 Abs. 2 lit. c DSGVO abgesichert ist.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Weitere Informationen: <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://supabase.com/privacy</a>
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">5. Einsatz von Meta-Technologien (Facebook)</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">5. Zahlungsabwicklung</h2>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Stripe</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Für die Abwicklung von Zahlungen und die Verwaltung von Abonnements nutzen wir den
+          Zahlungsdienstleister Stripe, Inc., 354 Oyster Point Blvd, South San Francisco, CA 94080, USA
+          (europäische Niederlassung: Stripe Payments Europe, Limited, 1 Grand Canal Street Lower, Grand
+          Canal Dock, Dublin, D02 H210, Irland).
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Im Rahmen der Zahlungsabwicklung werden folgende personenbezogene Daten an Stripe übermittelt:
+        </p>
+        <ul className="list-disc list-inside space-y-2 ml-1 text-gray-600 leading-relaxed">
+          <li>E-Mail-Adresse</li>
+          <li>Zahlungsdaten (Kreditkartennummer, Ablaufdatum, CVC &ndash; diese werden ausschließlich von Stripe verarbeitet und nicht auf unseren Servern gespeichert)</li>
+          <li>Abo-Informationen (Plan, Laufzeit, Status)</li>
+          <li>Rechnungs- und Gutschriftdaten</li>
+          <li>IP-Adresse (zur Betrugsprävention)</li>
+        </ul>
+        <p className="text-gray-600 leading-relaxed mt-4">
+          Die Verarbeitung erfolgt auf Grundlage der Vertragserfüllung gemäß Art. 6 Abs. 1 lit. b DSGVO.
+          Stripe Payments Europe, Limited ist als europäischer Auftragsverarbeiter tätig. Für die
+          Datenübermittlung in die USA ist Stripe Inc. unter dem EU-U.S. Data Privacy Framework zertifiziert.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Wir speichern lokal lediglich die Stripe-Kunden-ID, die letzten vier Ziffern der Karte, den
+          Kartentyp sowie Rechnungs- und Gutschriftdokumente (PDF). Vollständige Zahlungsdaten werden
+          ausschließlich von Stripe verarbeitet.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Weitere Informationen: <a href="https://stripe.com/de/privacy" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://stripe.com/de/privacy</a>
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">6. E-Mail-Versand</h2>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Resend</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Für den Versand transaktionaler E-Mails (z.B. Registrierungsbestätigungen, Passwort-Zurücksetzungen,
+          Benachrichtigungen, Ticket-Antworten, Mahnungen) nutzen wir den Dienst Resend der Resend, Inc.,
+          2261 Market Street #4059, San Francisco, CA 94114, USA.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Im Rahmen des E-Mail-Versands werden folgende Daten an Resend übermittelt:
+        </p>
+        <ul className="list-disc list-inside space-y-2 ml-1 text-gray-600 leading-relaxed">
+          <li>Empfänger-E-Mail-Adresse</li>
+          <li>E-Mail-Inhalt (Betreff, HTML- und Text-Body)</li>
+          <li>Ggf. Dateianhänge</li>
+          <li>Absenderinformationen</li>
+        </ul>
+        <p className="text-gray-600 leading-relaxed mt-4">
+          Zudem nutzen wir die Inbound-Funktion von Resend, um eingehende E-Mails an unsere Plattform
+          weiterzuleiten und im Nachrichten-System der Applikation zuzuordnen. Dabei werden die vollständigen
+          E-Mail-Inhalte inklusive Absender, Betreff, Body und Anhänge verarbeitet.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Die Verarbeitung erfolgt auf Grundlage der Vertragserfüllung gemäß Art. 6 Abs. 1 lit. b DSGVO
+          bzw. unseres berechtigten Interesses an der Kommunikation mit Nutzern gemäß Art. 6 Abs. 1 lit. f
+          DSGVO. Für die Datenübermittlung in die USA gelten Standardvertragsklauseln gemäß Art. 46 Abs. 2
+          lit. c DSGVO.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Weitere Informationen: <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://resend.com/legal/privacy-policy</a>
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">7. Analyse Tools und Werbung</h2>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Google Tag Manager</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Wir nutzen den Google Tag Manager der Google Ireland Limited, Gordon House, Barrow Street,
+          Dublin 4, Irland. Der Google Tag Manager ist ein Tool, mit dem wir Tracking- und Analyse-Tags
+          auf unserer Website verwalten können, ohne den Quellcode der Website direkt ändern zu müssen.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Der Google Tag Manager selbst speichert keine Cookies und erhebt keine personenbezogenen Daten.
+          Er fungiert als Verwaltungswerkzeug, das die Auslösung anderer Tags und Skripte steuert, die
+          ihrerseits Daten erfassen können. Auf die über den Google Tag Manager eingebundenen Dienste wird
+          in den jeweiligen Abschnitten dieser Datenschutzerklärung gesondert eingegangen.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Die Verarbeitung erfolgt auf Grundlage unseres berechtigten Interesses an der Optimierung unserer
+          Marketingmaßnahmen gemäß Art. 6 Abs. 1 lit. f DSGVO bzw. auf Grundlage Ihrer Einwilligung gemäß
+          Art. 6 Abs. 1 lit. a DSGVO, soweit eine solche abgefragt wurde.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Google Ireland Limited ist eine Tochtergesellschaft der Google LLC, USA. Google LLC ist unter dem
+          EU-U.S. Data Privacy Framework zertifiziert. Weitere Informationen: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://policies.google.com/privacy</a>
+        </p>
+
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-6">Google Analytics</h3>
+        <p className="text-gray-600 leading-relaxed">
+          Über den Google Tag Manager kann Google Analytics der Google Ireland Limited, Gordon House,
+          Barrow Street, Dublin 4, Irland, eingebunden werden. Google Analytics verwendet Cookies, die eine
+          Analyse der Benutzung der Website ermöglichen. Die durch den Cookie erzeugten Informationen über
+          Ihre Benutzung dieser Website werden in der Regel an einen Server von Google in den USA übertragen
+          und dort gespeichert.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Wir nutzen Google Analytics mit der Erweiterung "IP-Anonymisierung". Dadurch wird Ihre IP-Adresse
+          von Google innerhalb von Mitgliedstaaten der Europäischen Union oder in anderen Vertragsstaaten des
+          Abkommens über den Europäischen Wirtschaftsraum zuvor gekürzt. Die Verarbeitung erfolgt auf
+          Grundlage Ihrer Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO.
+        </p>
+        <p className="text-gray-600 leading-relaxed">
+          Google LLC ist unter dem EU-U.S. Data Privacy Framework zertifiziert. Weitere Informationen:
+          {' '}<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#3c8af7] hover:underline">https://policies.google.com/privacy</a>
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">8. Einsatz von Meta-Technologien (Facebook)</h2>
 
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Meta Pixel (ehemals Facebook Pixel)</h3>
         <p className="text-gray-600 leading-relaxed">
@@ -337,7 +479,7 @@ function DatenschutzFallbackContent() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">6. Newsletter</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-4">9. Newsletter</h2>
         <p className="text-gray-600 leading-relaxed">
           Wenn Sie den auf der Website angebotenen Newsletter beziehen möchten, benötigen wir von Ihnen eine
           E-Mail-Adresse sowie Informationen, welche uns die Überprüfung gestatten, dass Sie der Inhaber der

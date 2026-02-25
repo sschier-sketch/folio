@@ -75,6 +75,8 @@ function AVVFallbackContent() {
           <li>Hosting und Betrieb der Softwareplattform</li>
           <li>Speicherung und Verarbeitung von Immobilien- und Mieterdaten</li>
           <li>Bereitstellung von Analyse- und Reporting-Funktionen</li>
+          <li>Versand transaktionaler E-Mails und Verarbeitung eingehender E-Mails</li>
+          <li>Abwicklung von Zahlungen und Abonnement-Verwaltung</li>
           <li>Technischer Support und Wartung</li>
           <li>Datensicherung und -wiederherstellung</li>
         </ul>
@@ -191,16 +193,49 @@ function AVVFallbackContent() {
         <p className="text-gray-600 leading-relaxed">
           Der Auftragsverarbeiter nutzt folgende Unterauftragsverarbeiter:
         </p>
-        <ul className="list-disc list-inside space-y-2 ml-1 text-gray-600 leading-relaxed mt-2">
-          <li>
-            <strong className="text-gray-900">Supabase Inc.</strong> — Datenbankhosting und Backend-Services<br/>
-            <span className="text-sm text-gray-500 ml-6">Standort: USA (Standardvertragsklauseln gemäß Art. 46 DSGVO)</span>
-          </li>
-          <li>
-            <strong className="text-gray-900">Vercel Inc.</strong> — Hosting der Webanwendung<br/>
-            <span className="text-sm text-gray-500 ml-6">Standort: USA (Standardvertragsklauseln gemäß Art. 46 DSGVO)</span>
-          </li>
-        </ul>
+        <div className="overflow-x-auto mt-4">
+          <table className="w-full text-sm text-left border border-gray-200 rounded-xl overflow-hidden">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 font-semibold text-gray-900 border-b border-gray-200">Unterauftragsverarbeiter</th>
+                <th className="px-4 py-3 font-semibold text-gray-900 border-b border-gray-200">Zweck</th>
+                <th className="px-4 py-3 font-semibold text-gray-900 border-b border-gray-200">Standort / Rechtsgrundlage</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-600 divide-y divide-gray-200">
+              <tr>
+                <td className="px-4 py-3 font-medium text-gray-900">Supabase Inc.</td>
+                <td className="px-4 py-3">Datenbankhosting, Authentifizierung, Dateispeicher, Edge Functions</td>
+                <td className="px-4 py-3">Singapur / USA &ndash; Standardvertragsklauseln gem. Art. 46 DSGVO; Datenverarbeitung in AWS EU (Frankfurt)</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-gray-900">Vercel Inc.</td>
+                <td className="px-4 py-3">Hosting und Bereitstellung der Webanwendung</td>
+                <td className="px-4 py-3">USA &ndash; EU-U.S. Data Privacy Framework</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-gray-900">Stripe Payments Europe, Ltd. / Stripe, Inc.</td>
+                <td className="px-4 py-3">Zahlungsabwicklung, Abonnement-Verwaltung, Rechnungserstellung</td>
+                <td className="px-4 py-3">Irland / USA &ndash; EU-U.S. Data Privacy Framework</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-gray-900">Resend, Inc.</td>
+                <td className="px-4 py-3">Transaktionaler E-Mail-Versand und E-Mail-Empfang (Inbound)</td>
+                <td className="px-4 py-3">USA &ndash; Standardvertragsklauseln gem. Art. 46 DSGVO</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-gray-900">Google Ireland Limited / Google LLC</td>
+                <td className="px-4 py-3">Google Tag Manager, ggf. Google Analytics (Webanalyse)</td>
+                <td className="px-4 py-3">Irland / USA &ndash; EU-U.S. Data Privacy Framework</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-medium text-gray-900">Meta Platforms Ireland Limited / Meta Platforms, Inc.</td>
+                <td className="px-4 py-3">Meta Pixel (Conversion-Tracking, Remarketing)</td>
+                <td className="px-4 py-3">Irland / USA &ndash; EU-U.S. Data Privacy Framework</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <p className="text-gray-600 leading-relaxed mt-4">
           Der Auftragsverarbeiter verpflichtet sich, den Verantwortlichen über beabsichtigte Änderungen in
           Bezug auf die Hinzuziehung oder die Ersetzung von Unterauftragsverarbeitern zu informieren.
