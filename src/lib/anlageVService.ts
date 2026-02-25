@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { type AfaSettings, type AfaCalculationResult, calculateAfaForYear } from './afaService';
 
 export interface AnlageVIncomeRow {
   id: string;
@@ -50,9 +51,12 @@ export interface AnlageVSummary {
   ownership_share: number;
   income_total: number;
   expense_total: number;
+  afa_total: number;
   result_total: number;
   income_breakdown: IncomeBreakdown;
   expense_breakdown: ExpenseBreakdown;
+  afa: AfaCalculationResult;
+  afa_settings: AfaSettings | null;
   missing_receipts_count: number;
   total_expenses_count: number;
   incomes: AnlageVIncomeRow[];
@@ -129,11 +133,13 @@ export async function getAnlageVSummary(
 
     let scopeLabel = '';
     let scopeAddress = '';
+    let afaSettings: AfaSettings | null = null;
+    let propertyIdForAfa = '';
 
     if (scopeType === 'unit') {
       const { data: unitData } = await supabase
         .from('property_units')
-        .select('unit_number, property_id, properties(name, address)')
+        .select('unit_number, property_id, properties(name, address, afa_settings)')
         .eq('id', scopeId)
         .eq('user_id', userId)
         .maybeSingle();
@@ -141,17 +147,21 @@ export async function getAnlageVSummary(
         const prop = (unitData as any).properties;
         scopeLabel = `${prop?.name || ''} - Einheit ${unitData.unit_number}`;
         scopeAddress = prop?.address || '';
+        afaSettings = prop?.afa_settings || null;
+        propertyIdForAfa = unitData.property_id;
       }
     } else {
       const { data: propData } = await supabase
         .from('properties')
-        .select('name, address')
+        .select('name, address, afa_settings')
         .eq('id', scopeId)
         .eq('user_id', userId)
         .maybeSingle();
       if (propData) {
         scopeLabel = propData.name;
         scopeAddress = propData.address || '';
+        afaSettings = (propData as any).afa_settings || null;
+        propertyIdForAfa = scopeId;
       }
     }
 
@@ -204,6 +214,9 @@ export async function getAnlageVSummary(
 
     const missingReceipts = expenseRows.filter(e => !e.document_id).length;
 
+    const afaResult = calculateAfaForYear(afaSettings, year);
+    const afaTotal = afaResult.afa_amount;
+
     return {
       data: {
         year,
@@ -214,9 +227,12 @@ export async function getAnlageVSummary(
         ownership_share: ownershipShare,
         income_total: incomeTotal,
         expense_total: expenseTotal,
-        result_total: round2(incomeTotal - expenseTotal),
+        afa_total: afaTotal,
+        result_total: round2(incomeTotal - expenseTotal - afaTotal),
         income_breakdown: incomeBreakdown,
         expense_breakdown: expenseBreakdown,
+        afa: afaResult,
+        afa_settings: afaSettings,
         missing_receipts_count: missingReceipts,
         total_expenses_count: expenseRows.length,
         incomes: incomeRows,

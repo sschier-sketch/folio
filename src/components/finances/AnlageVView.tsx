@@ -8,11 +8,10 @@ import {
   TrendingDown,
   Building2,
   ChevronDown,
-  X,
   Receipt,
   Banknote,
-  Lock,
   ChevronRight,
+  Settings,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -24,11 +23,13 @@ import {
   type AnlageVExpenseRow,
 } from '../../lib/anlageVService';
 import { generateAnlageVPdf, exportAnlageVCsv } from '../../lib/anlageVPdfGenerator';
+import AfaSetupModal from './AfaSetupModal';
 
 interface Property {
   id: string;
   name: string;
   address: string;
+  property_type: string | null;
 }
 
 interface Unit {
@@ -54,6 +55,7 @@ export default function AnlageVView() {
   const [error, setError] = useState('');
   const [exporting, setExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showAfaSetup, setShowAfaSetup] = useState(false);
 
   const yearOptions = useMemo(() => {
     const yrs: number[] = [];
@@ -69,7 +71,7 @@ export default function AnlageVView() {
       setLoadingProps(true);
       const { data: props } = await supabase
         .from('properties')
-        .select('id, name, address')
+        .select('id, name, address, property_type')
         .eq('user_id', user.id)
         .order('name');
       setProperties(props || []);
@@ -107,10 +109,15 @@ export default function AnlageVView() {
     finally { setExporting(false); }
   }
 
-  function handleExportCsv(type: 'incomes' | 'expenses') {
+  function handleExportCsv(type: 'incomes' | 'expenses' | 'afa') {
     if (!summary) return;
     setShowExportMenu(false);
     exportAnlageVCsv(summary, type);
+  }
+
+  function handleAfaSaved() {
+    setShowAfaSetup(false);
+    calculate();
   }
 
   if (loadingProps) {
@@ -160,6 +167,11 @@ export default function AnlageVView() {
                   <button onClick={() => handleExportCsv('expenses')} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                     <TrendingDown className="w-4 h-4 text-gray-400" />CSV Ausgaben
                   </button>
+                  {summary.afa && summary.afa.enabled && summary.afa.afa_amount > 0 && (
+                    <button onClick={() => handleExportCsv('afa')} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
+                      <Building2 className="w-4 h-4 text-gray-400" />CSV AfA
+                    </button>
+                  )}
                 </div>
               </>
             )}
@@ -186,8 +198,23 @@ export default function AnlageVView() {
           onExportPdf={handleExportPdf}
           exporting={exporting}
         />
-        <MainPanel summary={summary} loading={loading} error={error} />
+        <MainPanel
+          summary={summary}
+          loading={loading}
+          error={error}
+          onOpenAfaSetup={() => setShowAfaSetup(true)}
+        />
       </div>
+
+      {showAfaSetup && user && selectedPropertyId && (
+        <AfaSetupModal
+          propertyId={selectedPropertyId}
+          userId={user.id}
+          propertyType={selectedProperty?.property_type || null}
+          onClose={() => setShowAfaSetup(false)}
+          onSaved={handleAfaSaved}
+        />
+      )}
     </div>
   );
 }
@@ -328,7 +355,12 @@ function SidebarKeyfacts({ summary }: { summary: AnlageVSummary }) {
       <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-100">
         <MiniKpi label="Einnahmen" value={fmtEur(summary.income_total)} color="text-dark" />
         <MiniKpi label="Werbungskosten" value={`-${fmtEur(summary.expense_total)}`} color="text-dark" />
-        <MiniKpi label="AfA" value="0 EUR" color="text-gray-300" tooltip="Kommt in Phase 2" />
+        <MiniKpi
+          label="AfA"
+          value={summary.afa.enabled ? `-${fmtEur(summary.afa_total)}` : '0 EUR'}
+          color={summary.afa.enabled ? 'text-dark' : 'text-gray-300'}
+          tooltip={summary.afa.enabled ? undefined : 'AfA noch nicht eingerichtet'}
+        />
       </div>
     </div>
   );
@@ -375,10 +407,11 @@ function SidebarReceipts({ summary }: { summary: AnlageVSummary }) {
   );
 }
 
-function MainPanel({ summary, loading, error }: {
+function MainPanel({ summary, loading, error, onOpenAfaSetup }: {
   summary: AnlageVSummary | null;
   loading: boolean;
   error: string;
+  onOpenAfaSetup: () => void;
 }) {
   if (error) {
     return (
@@ -431,13 +464,14 @@ function MainPanel({ summary, loading, error }: {
       <HeroCard summary={summary} />
       <IncomeAccordion summary={summary} />
       <ExpenseAccordion summary={summary} />
-      <AfaAccordion />
+      <AfaAccordion summary={summary} onOpenSetup={onOpenAfaSetup} />
     </div>
   );
 }
 
 function HeroCard({ summary }: { summary: AnlageVSummary }) {
   const isLoss = summary.result_total < 0;
+  const hasAfa = summary.afa.enabled && summary.afa_total > 0;
 
   return (
     <div className="bg-white rounded-lg border border-gray-100 px-8 py-8">
@@ -469,10 +503,10 @@ function HeroCard({ summary }: { summary: AnlageVSummary }) {
           value={`-${fmtEur(summary.expense_total)}`}
         />
         <HeroKpi
-          icon={<Lock className="w-4.5 h-4.5 text-gray-300" />}
+          icon={<Building2 className={`w-5 h-5 ${hasAfa ? 'text-gray-400' : 'text-gray-300'}`} />}
           label="AfA"
-          value="-0 EUR"
-          muted
+          value={hasAfa ? `-${fmtEur(summary.afa_total)}` : '-0 EUR'}
+          muted={!hasAfa}
         />
       </div>
     </div>
@@ -605,21 +639,80 @@ function ExpenseAccordion({ summary }: { summary: AnlageVSummary }) {
   );
 }
 
-function AfaAccordion() {
+function AfaAccordion({ summary, onOpenSetup }: { summary: AnlageVSummary; onOpenSetup: () => void }) {
+  const [open, setOpen] = useState(true);
+  const { afa, afa_settings: settings } = summary;
+  const isConfigured = afa.enabled;
+  const usageLabels: Record<string, string> = { residential: 'Wohnen', commercial: 'Gewerbe', mixed: 'Gemischt' };
+
   return (
-    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden opacity-60">
-      <div className="flex items-center justify-between px-5 py-4">
+    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors"
+      >
         <div className="flex items-center gap-2">
-          <Lock className="w-4 h-4 text-gray-300" />
-          <span className="text-sm font-semibold text-gray-400">Absetzung fur Abnutzung (AfA)</span>
+          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${open ? '' : '-rotate-90'}`} />
+          <span className="text-sm font-semibold text-dark">Absetzung fuer Abnutzung (AfA)</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">
-            Kommt in Phase 2
-          </span>
-          <span className="text-sm font-bold text-gray-300">0 EUR</span>
+        <span className={`text-sm font-bold ${isConfigured ? 'text-dark' : 'text-gray-300'}`}>
+          {isConfigured ? `-${fmtEur(summary.afa_total)}` : '0 EUR'}
+        </span>
+      </button>
+      {open && (
+        <div className="border-t border-gray-100">
+          {isConfigured && settings ? (
+            <>
+              <div className="flex items-center justify-between px-5 py-3 border-b border-gray-50">
+                <span className="text-sm text-gray-600 pl-6">AfA Gebaeude</span>
+                <span className="text-sm text-gray-700 font-medium">{fmtEur(summary.afa_total)}</span>
+              </div>
+              <div className="px-5 py-2.5 border-b border-gray-50">
+                <p className="text-[11px] text-gray-400 pl-6 leading-relaxed">
+                  Berechnungsgrundlage: {fmtEurFull(afa.building_value_amount)} x {(afa.afa_rate * 100).toFixed(1)}%
+                  {afa.months_factor < 1 ? ` (zeitanteilig ${Math.round(afa.months_factor * 12)} Mon.)` : ''}
+                  {afa.ownership_share < 100 ? ` x ${afa.ownership_share}% Anteil` : ''}
+                </p>
+              </div>
+              <div className="px-5 py-3 grid grid-cols-3 gap-4">
+                <AfaDetail label="Nutzung" value={usageLabels[settings.usage_type] || settings.usage_type} />
+                <AfaDetail label="AfA-Satz" value={`${(settings.afa_rate * 100).toFixed(1)}%`} />
+                <AfaDetail label="Gebaeudeanteil" value={
+                  settings.building_share_type === 'percent'
+                    ? `${settings.building_share_value}%`
+                    : fmtEurFull(settings.building_share_value)
+                } />
+              </div>
+            </>
+          ) : (
+            <div className="px-5 py-6 text-center">
+              <Building2 className="w-8 h-8 mx-auto mb-2 text-gray-200" />
+              <p className="text-sm text-gray-500 mb-1">AfA noch nicht eingerichtet</p>
+              <p className="text-xs text-gray-400 mb-4">
+                Richte die Abschreibung ein, um sie in der Steueruebersicht zu beruecksichtigen.
+              </p>
+            </div>
+          )}
+          <div className="px-5 py-3 border-t border-gray-100 flex justify-end">
+            <button
+              onClick={(e) => { e.stopPropagation(); onOpenSetup(); }}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-blue hover:underline"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              {isConfigured ? 'AfA bearbeiten' : 'AfA einrichten'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+    </div>
+  );
+}
+
+function AfaDetail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="text-center">
+      <p className="text-[10px] text-gray-400 mb-0.5">{label}</p>
+      <p className="text-xs font-semibold text-gray-700">{value}</p>
     </div>
   );
 }
@@ -674,6 +767,10 @@ function DetailTable({ rows, type }: { rows: AnlageVIncomeRow[] | AnlageVExpense
 
 function fmtEur(v: number): string {
   return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+}
+
+function fmtEurFull(v: number): string {
+  return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(v);
 }
 
 function fmtDate(d: string): string {

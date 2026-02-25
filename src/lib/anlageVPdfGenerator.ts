@@ -129,11 +129,18 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
   doc.text('Zusammenfassung', M_LEFT, currentY);
   currentY += 5;
 
-  const summaryData = [
+  const hasAfa = summary.afa && summary.afa.enabled && summary.afa.afa_amount > 0;
+
+  const summaryData: string[][] = [
     ['Einnahmen gesamt', fmtCurrency(summary.income_total)],
     ['Ausgaben gesamt', fmtCurrency(summary.expense_total)],
-    ['Ergebnis (Einnahmen - Ausgaben)', fmtCurrency(summary.result_total)],
   ];
+  if (hasAfa) {
+    summaryData.push(['AfA (Abschreibung)', fmtCurrency(summary.afa_total)]);
+    summaryData.push(['Ergebnis (Einnahmen - Ausgaben - AfA)', fmtCurrency(summary.result_total)]);
+  } else {
+    summaryData.push(['Ergebnis (Einnahmen - Ausgaben)', fmtCurrency(summary.result_total)]);
+  }
 
   autoTable(doc, {
     startY: currentY,
@@ -238,6 +245,64 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
     currentY = (doc as any).lastAutoTable.finalY + 10;
   }
 
+  if (hasAfa) {
+    ensureSpace(45);
+    doc.setFontSize(12);
+    doc.setFont(undefined as any, 'bold');
+    doc.text('AfA (Absetzung fuer Abnutzung)', M_LEFT, currentY);
+    currentY += 5;
+
+    const afaParams: string[][] = [
+      ['AfA-Betrag ' + summary.year, fmtCurrency(summary.afa.afa_amount)],
+      ['Jaehrliche AfA (voll)', fmtCurrency(summary.afa.annual_afa_full)],
+      ['Gebaeudeanteil (Bemessungsgrundlage)', fmtCurrency(summary.afa.building_value_amount)],
+      ['AfA-Satz', `${(summary.afa.afa_rate * 100).toFixed(1)}%`],
+      ['Eigentumsanteil', `${summary.afa.ownership_share}%`],
+      ['Monatsfaktor', summary.afa.months_factor < 1 ? `${Math.round(summary.afa.months_factor * 12)}/12 (anteilig)` : '12/12'],
+    ];
+
+    if (summary.afa_settings?.purchase_date) {
+      afaParams.push(['Anschaffungsdatum', fmtDate(summary.afa_settings.purchase_date)]);
+    }
+    if (summary.afa_settings?.usage_type) {
+      const usageLabels: Record<string, string> = { residential: 'Wohnnutzung', commercial: 'Gewerblich', mixed: 'Gemischt' };
+      afaParams.push(['Nutzungstyp', usageLabels[summary.afa_settings.usage_type] || summary.afa_settings.usage_type]);
+    }
+
+    autoTable(doc, {
+      startY: currentY,
+      body: afaParams,
+      theme: 'plain',
+      margin: { left: M_LEFT, right: M_RIGHT },
+      tableWidth: PAGE_W - M_LEFT - M_RIGHT,
+      styles: {
+        fontSize: 9,
+        cellPadding: { top: 1.5, right: 2, bottom: 1.5, left: 2 },
+        textColor: 20,
+        lineColor: 230,
+        lineWidth: 0.1,
+      },
+      columnStyles: {
+        0: { cellWidth: 100, textColor: 80 },
+        1: { cellWidth: 70, halign: 'right' as const, fontStyle: 'bold' },
+      },
+      didDrawPage: () => drawHeader(),
+    });
+    currentY = (doc as any).lastAutoTable.finalY + 4;
+
+    doc.setFontSize(7);
+    doc.setFont(undefined as any, 'italic');
+    doc.setTextColor(120);
+    doc.text(
+      'Hinweis: Die AfA-Berechnung dient ausschliesslich der Uebersicht. Sie ersetzt keine steuerliche Beratung.',
+      M_LEFT,
+      currentY
+    );
+    doc.setFont(undefined as any, 'normal');
+    doc.setTextColor(0);
+    currentY += 8;
+  }
+
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
@@ -247,7 +312,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
   doc.save(`Anlage_V_${summary.year}_${summary.scope_label.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
 }
 
-export function exportAnlageVCsv(summary: AnlageVSummary, type: 'incomes' | 'expenses'): void {
+export function exportAnlageVCsv(summary: AnlageVSummary, type: 'incomes' | 'expenses' | 'afa'): void {
   const rows: string[][] = [];
 
   if (type === 'incomes') {
@@ -263,6 +328,20 @@ export function exportAnlageVCsv(summary: AnlageVSummary, type: 'incomes' | 'exp
         r.unit_number,
         r.id,
       ]);
+    }
+  } else if (type === 'afa') {
+    rows.push(['Parameter', 'Wert']);
+    rows.push(['AfA-Betrag ' + summary.year, summary.afa.afa_amount.toFixed(2).replace('.', ',')]);
+    rows.push(['Jaehrliche AfA (voll)', summary.afa.annual_afa_full.toFixed(2).replace('.', ',')]);
+    rows.push(['Gebaeudeanteil', summary.afa.building_value_amount.toFixed(2).replace('.', ',')]);
+    rows.push(['AfA-Satz', (summary.afa.afa_rate * 100).toFixed(1).replace('.', ',') + '%']);
+    rows.push(['Eigentumsanteil', summary.afa.ownership_share + '%']);
+    rows.push(['Monatsfaktor', summary.afa.months_factor < 1 ? `${Math.round(summary.afa.months_factor * 12)}/12` : '12/12']);
+    if (summary.afa_settings?.purchase_date) {
+      rows.push(['Anschaffungsdatum', fmtDate(summary.afa_settings.purchase_date)]);
+    }
+    if (summary.afa_settings?.usage_type) {
+      rows.push(['Nutzungstyp', summary.afa_settings.usage_type]);
     }
   } else {
     rows.push(['Datum', 'Betrag', 'Kategorie', 'Anlage-V-Gruppe', 'Empfaenger', 'Notiz', 'Immobilie', 'Einheit', 'ID']);
@@ -285,7 +364,8 @@ export function exportAnlageVCsv(summary: AnlageVSummary, type: 'incomes' | 'exp
   const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `anlage-v-${type === 'incomes' ? 'einnahmen' : 'ausgaben'}-${summary.year}.csv`;
+  const typeLabels: Record<string, string> = { incomes: 'einnahmen', expenses: 'ausgaben', afa: 'afa' };
+  link.download = `anlage-v-${typeLabels[type]}-${summary.year}.csv`;
   link.click();
   URL.revokeObjectURL(link.href);
 }
