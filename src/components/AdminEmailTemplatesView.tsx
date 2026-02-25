@@ -30,6 +30,8 @@ const ACTIVE_TEMPLATE_KEYS = new Set([
   "ticket_reply",
   "admin_notify_new_ticket",
   "tenant_portal_activation",
+  "subscription_started",
+  "subscription_cancelled",
 ]);
 
 const CRON_TEMPLATE_KEYS: Record<string, string> = {

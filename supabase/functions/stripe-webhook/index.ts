@@ -334,6 +334,38 @@ async function updateBillingInfo(customerId: string, plan: string, status: strin
     if (plan === 'pro' && status === 'active' && !billingData.pro_activated_at) {
       updateData.pro_activated_at = new Date().toISOString();
       console.info(`Setting pro_activated_at for customer ${customerId}`);
+
+      try {
+        const { data: authUser } = await getSupabase().auth.admin.getUserById(billingData.user_id);
+        const email = authUser?.user?.email;
+        if (email) {
+          const { data: profile } = await getSupabase()
+            .from('account_profiles')
+            .select('first_name, last_name')
+            .eq('user_id', billingData.user_id)
+            .maybeSingle();
+
+          const userName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || email;
+
+          await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            },
+            body: JSON.stringify({
+              to: email,
+              templateKey: 'subscription_started',
+              variables: { user_name: userName, subscription_plan: 'Pro' },
+              userId: billingData.user_id,
+              idempotencyKey: `subscription_started_${billingData.user_id}_${Date.now()}`,
+            }),
+          });
+          console.info(`Sent subscription_started email to ${email}`);
+        }
+      } catch (emailErr) {
+        console.error('Failed to send subscription_started email:', emailErr);
+      }
     }
 
     if (plan === 'pro' && status === 'active') {

@@ -159,6 +159,38 @@ Deno.serve(async (req: Request) => {
       })
       .eq("user_id", user.id);
 
+    try {
+      const { data: profile } = await supabase
+        .from("account_profiles")
+        .select("first_name, last_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const userName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || user.email;
+      const endDateFormatted = new Date(subscription.current_period_end * 1000).toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+
+      await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          to: user.email,
+          templateKey: "subscription_cancelled",
+          variables: { user_name: userName, end_date: endDateFormatted },
+          userId: user.id,
+          idempotencyKey: `subscription_cancelled_${user.id}_${Date.now()}`,
+        }),
+      });
+    } catch (emailErr) {
+      console.error("Failed to send subscription_cancelled email:", emailErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
