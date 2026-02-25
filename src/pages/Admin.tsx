@@ -30,6 +30,8 @@ import AdminAffiliatesView from "../components/AdminAffiliatesView";
 import AdminEmailLogsView from "../components/AdminEmailLogsView";
 import AdminMagazineView from "../components/admin/AdminMagazineView";
 import AdminEmailSettingsView from "../components/admin/AdminEmailSettingsView";
+import AdminEmailAutomationsView from "../components/admin/AdminEmailAutomationsView";
+import AdminEmailCampaignsView from "../components/admin/AdminEmailCampaignsView";
 import AdminCronJobsView from "../components/admin/AdminCronJobsView";
 import AdminFaqsView from "../components/admin/AdminFaqsView";
 import AdminCmsView from "../components/admin/AdminCmsView";
@@ -621,6 +623,8 @@ export function Admin() {
         {activeTab === "affiliates" && <AdminAffiliatesView />}
         {activeTab === "pro_features" && <AdminProFeaturesView />}
         {activeTab === "email_logs" && <AdminEmailLogsView />}
+        {activeTab === "email_automations" && <AdminEmailAutomationsView />}
+        {activeTab === "email_campaigns" && <AdminEmailCampaignsView />}
         {activeTab === "magazine" && <AdminMagazineView />}
         {activeTab === "email_settings" && <AdminEmailSettingsView />}
         {activeTab === "cron_jobs" && <AdminCronJobsView />}

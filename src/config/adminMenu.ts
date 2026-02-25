@@ -16,6 +16,8 @@ import {
   PenLine,
   Monitor,
   Receipt,
+  Zap,
+  Send,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +27,8 @@ export type AdminTabKey =
   | "tickets"
   | "templates"
   | "email_logs"
+  | "email_automations"
+  | "email_campaigns"
   | "document_templates"
   | "system_updates"
   | "feedback"
@@ -78,6 +82,8 @@ export const adminMenuGroups: AdminMenuGroup[] = [
     defaultOpen: true,
     items: [
       { key: "templates", label: "E-Mail Templates", icon: Mail },
+      { key: "email_automations", label: "Automationen", icon: Zap },
+      { key: "email_campaigns", label: "Kampagnen", icon: Send },
       { key: "email_logs", label: "E-Mail Logs", icon: Activity },
       { key: "email_settings", label: "E-Mail Einstellungen", icon: AtSign },
       { key: "document_templates", label: "Dokument-Vorlagen", icon: FileText },
