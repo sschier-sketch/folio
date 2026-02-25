@@ -108,6 +108,10 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
   doc.setTextColor(80);
   doc.text(`Objekt: ${summary.scope_label}`, M_LEFT, currentY);
   currentY += 5;
+  if (summary.scope_address) {
+    doc.text(`Adresse: ${summary.scope_address}`, M_LEFT, currentY);
+    currentY += 5;
+  }
   if (summary.ownership_share !== 100) {
     doc.text(`Eigentumsanteil: ${summary.ownership_share}%`, M_LEFT, currentY);
     currentY += 5;

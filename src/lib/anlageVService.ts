@@ -24,15 +24,37 @@ export interface AnlageVExpenseRow {
   document_id: string | null;
 }
 
+export interface IncomeBreakdown {
+  rent: number;
+  nk_prepay: number;
+  other: number;
+}
+
+export interface ExpenseBreakdown {
+  grundsteuer: number;
+  versicherungen: number;
+  verwaltung: number;
+  reparaturen: number;
+  zinsen: number;
+  betriebskosten: number;
+  fahrtkosten: number;
+  sonstiges: number;
+}
+
 export interface AnlageVSummary {
   year: number;
   scope_type: 'property' | 'unit';
   scope_id: string;
   scope_label: string;
+  scope_address: string;
   ownership_share: number;
   income_total: number;
   expense_total: number;
   result_total: number;
+  income_breakdown: IncomeBreakdown;
+  expense_breakdown: ExpenseBreakdown;
+  missing_receipts_count: number;
+  total_expenses_count: number;
   incomes: AnlageVIncomeRow[];
   expenses: AnlageVExpenseRow[];
 }
@@ -89,6 +111,10 @@ function mapToAnlageVGroup(categoryName: string | null): string {
   return 'Sonstiges';
 }
 
+function round2(v: number): number {
+  return Math.round(v * 100) / 100;
+}
+
 export async function getAnlageVSummary(
   userId: string,
   year: number,
@@ -101,11 +127,10 @@ export async function getAnlageVSummary(
     const endDate = `${year}-12-31`;
     const shareFactor = ownershipShare / 100;
 
-    let unitIds: string[] = [];
     let scopeLabel = '';
+    let scopeAddress = '';
 
     if (scopeType === 'unit') {
-      unitIds = [scopeId];
       const { data: unitData } = await supabase
         .from('property_units')
         .select('unit_number, property_id, properties(name, address)')
@@ -115,6 +140,7 @@ export async function getAnlageVSummary(
       if (unitData) {
         const prop = (unitData as any).properties;
         scopeLabel = `${prop?.name || ''} - Einheit ${unitData.unit_number}`;
+        scopeAddress = prop?.address || '';
       }
     } else {
       const { data: propData } = await supabase
@@ -124,31 +150,59 @@ export async function getAnlageVSummary(
         .eq('user_id', userId)
         .maybeSingle();
       if (propData) {
-        scopeLabel = `${propData.name} (${propData.address})`;
+        scopeLabel = propData.name;
+        scopeAddress = propData.address || '';
       }
-      const { data: units } = await supabase
-        .from('property_units')
-        .select('id')
-        .eq('property_id', scopeId)
-        .eq('user_id', userId);
-      unitIds = (units || []).map(u => u.id);
     }
 
-    const incomes = await fetchIncomes(userId, year, scopeType, scopeId, unitIds, startDate, endDate);
-    const expenses = await fetchExpenses(userId, scopeType, scopeId, unitIds, startDate, endDate);
+    const incomes = await fetchIncomes(userId, year, scopeType, scopeId, startDate, endDate);
+    const expenses = await fetchExpenses(userId, scopeType, scopeId, startDate, endDate);
 
     const incomeRows: AnlageVIncomeRow[] = incomes.map(row => ({
       ...row,
-      amount: Math.round(row.amount * shareFactor * 100) / 100,
+      amount: round2(row.amount * shareFactor),
     }));
 
     const expenseRows: AnlageVExpenseRow[] = expenses.map(row => ({
       ...row,
-      amount: Math.round(row.amount * shareFactor * 100) / 100,
+      amount: round2(row.amount * shareFactor),
     }));
 
-    const incomeTotal = Math.round(incomeRows.reduce((s, r) => s + r.amount, 0) * 100) / 100;
-    const expenseTotal = Math.round(expenseRows.reduce((s, r) => s + r.amount, 0) * 100) / 100;
+    const incomeTotal = round2(incomeRows.reduce((s, r) => s + r.amount, 0));
+    const expenseTotal = round2(expenseRows.reduce((s, r) => s + r.amount, 0));
+
+    const incomeBreakdown: IncomeBreakdown = { rent: 0, nk_prepay: 0, other: 0 };
+    for (const row of incomeRows) {
+      if (row.source_type === 'Miete') {
+        incomeBreakdown.rent = round2(incomeBreakdown.rent + row.amount);
+      } else if (row.source_type.toLowerCase().includes('nebenkosten') || row.source_type.toLowerCase().includes('vorauszahlung')) {
+        incomeBreakdown.nk_prepay = round2(incomeBreakdown.nk_prepay + row.amount);
+      } else {
+        incomeBreakdown.other = round2(incomeBreakdown.other + row.amount);
+      }
+    }
+
+    const expenseBreakdown: ExpenseBreakdown = {
+      grundsteuer: 0, versicherungen: 0, verwaltung: 0,
+      reparaturen: 0, zinsen: 0, betriebskosten: 0,
+      fahrtkosten: 0, sonstiges: 0,
+    };
+    const groupKeyMap: Record<string, keyof ExpenseBreakdown> = {
+      'Grundsteuer': 'grundsteuer',
+      'Versicherungen': 'versicherungen',
+      'Verwaltungskosten': 'verwaltung',
+      'Instandhaltung / Reparatur': 'reparaturen',
+      'Schuldzinsen': 'zinsen',
+      'Betriebskosten': 'betriebskosten',
+      'Fahrtkosten': 'fahrtkosten',
+      'Sonstiges': 'sonstiges',
+    };
+    for (const row of expenseRows) {
+      const key = groupKeyMap[row.anlage_v_group] || 'sonstiges';
+      expenseBreakdown[key] = round2(expenseBreakdown[key] + row.amount);
+    }
+
+    const missingReceipts = expenseRows.filter(e => !e.document_id).length;
 
     return {
       data: {
@@ -156,10 +210,15 @@ export async function getAnlageVSummary(
         scope_type: scopeType,
         scope_id: scopeId,
         scope_label: scopeLabel,
+        scope_address: scopeAddress,
         ownership_share: ownershipShare,
         income_total: incomeTotal,
         expense_total: expenseTotal,
-        result_total: Math.round((incomeTotal - expenseTotal) * 100) / 100,
+        result_total: round2(incomeTotal - expenseTotal),
+        income_breakdown: incomeBreakdown,
+        expense_breakdown: expenseBreakdown,
+        missing_receipts_count: missingReceipts,
+        total_expenses_count: expenseRows.length,
         incomes: incomeRows,
         expenses: expenseRows,
       },
@@ -173,10 +232,9 @@ export async function getAnlageVSummary(
 
 async function fetchIncomes(
   userId: string,
-  year: number,
+  _year: number,
   scopeType: 'property' | 'unit',
   scopeId: string,
-  unitIds: string[],
   startDate: string,
   endDate: string
 ): Promise<AnlageVIncomeRow[]> {
@@ -284,7 +342,6 @@ async function fetchExpenses(
   userId: string,
   scopeType: 'property' | 'unit',
   scopeId: string,
-  unitIds: string[],
   startDate: string,
   endDate: string
 ): Promise<AnlageVExpenseRow[]> {
