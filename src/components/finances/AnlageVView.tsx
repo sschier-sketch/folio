@@ -48,6 +48,7 @@ export default function AnlageVView() {
 
   const [year, setYear] = useState(defaultYear);
   const [selectedPropertyId, setSelectedPropertyId] = useState('');
+  const [ownershipShare, setOwnershipShare] = useState(100);
   const [summary, setSummary] = useState<AnlageVSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -88,15 +89,15 @@ export default function AnlageVView() {
     setLoading(true);
     setError('');
     setSummary(null);
-    const { data, error: err } = await getAnlageVSummary(user.id, year, 'property', selectedPropertyId, 100);
+    const { data, error: err } = await getAnlageVSummary(user.id, year, 'property', selectedPropertyId, ownershipShare);
     if (err) setError(err);
     else setSummary(data);
     setLoading(false);
-  }, [user, year, selectedPropertyId]);
+  }, [user, year, selectedPropertyId, ownershipShare]);
 
   useEffect(() => {
     if (selectedPropertyId && user) calculate();
-  }, [selectedPropertyId, year]);
+  }, [selectedPropertyId, year, ownershipShare]);
 
   async function handleExportPdf() {
     if (!summary) return;
@@ -178,6 +179,8 @@ export default function AnlageVView() {
           properties={properties}
           selectedPropertyId={selectedPropertyId}
           onSelect={(id) => setSelectedPropertyId(id)}
+          ownershipShare={ownershipShare}
+          onOwnershipShareChange={setOwnershipShare}
           summary={summary}
           loading={loading}
           onExportPdf={handleExportPdf}
@@ -190,11 +193,13 @@ export default function AnlageVView() {
 }
 
 function Sidebar({
-  properties, selectedPropertyId, onSelect, summary, loading, onExportPdf, exporting,
+  properties, selectedPropertyId, onSelect, ownershipShare, onOwnershipShareChange, summary, loading, onExportPdf, exporting,
 }: {
   properties: Property[];
   selectedPropertyId: string;
   onSelect: (id: string) => void;
+  ownershipShare: number;
+  onOwnershipShareChange: (v: number) => void;
   summary: AnlageVSummary | null;
   loading: boolean;
   onExportPdf: () => void;
@@ -240,6 +245,34 @@ function Sidebar({
         )}
       </div>
 
+      <div>
+        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Eigentumsanteil</p>
+        <div className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200">
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={ownershipShare}
+            onChange={(e) => {
+              const v = Math.min(100, Math.max(1, Number(e.target.value) || 1));
+              onOwnershipShareChange(v);
+            }}
+            className="w-16 text-sm font-semibold text-dark text-center border border-gray-200 rounded-md py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-blue"
+          />
+          <span className="text-sm text-gray-500">%</span>
+          <div className="flex-1">
+            <input
+              type="range"
+              min={1}
+              max={100}
+              value={ownershipShare}
+              onChange={(e) => onOwnershipShareChange(Number(e.target.value))}
+              className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary-blue"
+            />
+          </div>
+        </div>
+      </div>
+
       <button
         onClick={onExportPdf}
         disabled={!summary || exporting}
@@ -282,7 +315,9 @@ function SidebarKeyfacts({ summary }: { summary: AnlageVSummary }) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-1">
-        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Ergebnis</p>
+        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+          Ergebnis{summary.ownership_share < 100 ? ` (${summary.ownership_share}%)` : ''}
+        </p>
         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${isLoss ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
           {isLoss ? 'Verlust' : 'Uberschuss'}
         </span>

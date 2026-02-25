@@ -156,7 +156,7 @@ export async function getAnlageVSummary(
     }
 
     const incomes = await fetchIncomes(userId, year, scopeType, scopeId, startDate, endDate);
-    const expenses = await fetchExpenses(userId, scopeType, scopeId, startDate, endDate);
+    const expenses = await fetchExpenses(userId, year, scopeType, scopeId, startDate, endDate);
 
     const incomeRows: AnlageVIncomeRow[] = incomes.map(row => ({
       ...row,
@@ -243,14 +243,14 @@ async function fetchIncomes(
   let rentQuery = supabase
     .from('rent_payments')
     .select(`
-      id, paid_date, paid_amount, amount, payment_status, partial_payments,
+      id, due_date, paid_date, paid_amount, amount, payment_status, partial_payments,
       property:properties(name),
       tenant:tenants(first_name, last_name),
-      rental_contract:rental_contracts(unit_id, unit:property_units(unit_number))
+      rental_contract:rental_contracts(unit_id, cold_rent, additional_costs, total_rent, unit:property_units(unit_number))
     `)
     .eq('user_id', userId)
-    .gte('paid_date', startDate)
-    .lte('paid_date', endDate);
+    .gte('due_date', startDate)
+    .lte('due_date', endDate);
 
   if (scopeType === 'property') {
     rentQuery = rentQuery.eq('property_id', scopeId);
@@ -261,46 +261,63 @@ async function fetchIncomes(
   const { data: rentPayments } = await rentQuery;
 
   for (const rp of rentPayments || []) {
-    if (rp.payment_status === 'unpaid') continue;
-
     const contract = rp.rental_contract as any;
     const contractUnitId = contract?.unit_id;
 
     if (scopeType === 'unit' && contractUnitId !== scopeId) continue;
 
-    const paidAmount = rp.payment_status === 'paid'
-      ? Number(rp.amount)
-      : Number(rp.paid_amount || 0);
+    const effectiveDate = rp.paid_date || rp.due_date;
+    const totalAmount = Number(rp.amount);
+    if (totalAmount === 0) continue;
 
-    if (paidAmount === 0) continue;
+    const coldRent = Number(contract?.cold_rent || 0);
+    const nkAdvance = Number(contract?.additional_costs || 0);
+    const contractTotal = Number(contract?.total_rent || 0);
 
-    const partials = (rp.partial_payments as any[]) || [];
-    if (partials.length > 0) {
-      for (const p of partials) {
-        const pDate = p.date as string;
-        if (pDate >= startDate && pDate <= endDate) {
-          rows.push({
-            id: `${rp.id}_partial_${pDate}`,
-            date: pDate,
-            amount: Number(p.amount),
-            source_type: 'Miete',
-            tenant_name: formatTenantName(rp.tenant),
-            contract_info: contract?.unit?.unit_number ? `Einheit ${contract.unit.unit_number}` : '',
-            property_name: (rp.property as any)?.name || '',
-            unit_number: contract?.unit?.unit_number || '',
-          });
-        }
+    const propName = (rp.property as any)?.name || '';
+    const unitNum = contract?.unit?.unit_number || '';
+    const tenantName = formatTenantName(rp.tenant);
+    const contractInfo = unitNum ? `Einheit ${unitNum}` : '';
+
+    if (coldRent > 0 && nkAdvance > 0 && contractTotal > 0) {
+      const coldRentShare = coldRent / contractTotal;
+      const nkShare = nkAdvance / contractTotal;
+      const rentPortion = round2(totalAmount * coldRentShare);
+      const nkPortion = round2(totalAmount * nkShare);
+
+      rows.push({
+        id: `${rp.id}_rent`,
+        date: effectiveDate,
+        amount: rentPortion,
+        source_type: 'Miete',
+        tenant_name: tenantName,
+        contract_info: contractInfo,
+        property_name: propName,
+        unit_number: unitNum,
+      });
+
+      if (nkPortion > 0) {
+        rows.push({
+          id: `${rp.id}_nk`,
+          date: effectiveDate,
+          amount: nkPortion,
+          source_type: 'Nebenkosten-Vorauszahlung',
+          tenant_name: tenantName,
+          contract_info: contractInfo,
+          property_name: propName,
+          unit_number: unitNum,
+        });
       }
-    } else if (rp.payment_status === 'paid' && rp.paid_date) {
+    } else {
       rows.push({
         id: rp.id,
-        date: rp.paid_date,
-        amount: paidAmount,
+        date: effectiveDate,
+        amount: totalAmount,
         source_type: 'Miete',
-        tenant_name: formatTenantName(rp.tenant),
-        contract_info: contract?.unit?.unit_number ? `Einheit ${contract.unit.unit_number}` : '',
-        property_name: (rp.property as any)?.name || '',
-        unit_number: contract?.unit?.unit_number || '',
+        tenant_name: tenantName,
+        contract_info: contractInfo,
+        property_name: propName,
+        unit_number: unitNum,
       });
     }
   }
@@ -309,7 +326,6 @@ async function fetchIncomes(
     .from('income_entries')
     .select('id, entry_date, amount, description, recipient, status, property_id, unit_id, properties(name)')
     .eq('user_id', userId)
-    .eq('status', 'paid')
     .gte('entry_date', startDate)
     .lte('entry_date', endDate);
 
@@ -340,6 +356,7 @@ async function fetchIncomes(
 
 async function fetchExpenses(
   userId: string,
+  year: number,
   scopeType: 'property' | 'unit',
   scopeId: string,
   startDate: string,
@@ -351,7 +368,6 @@ async function fetchExpenses(
     .from('expenses')
     .select('id, expense_date, amount, description, recipient, notes, status, category_id, property_id, unit_id, document_id, properties(name), expense_categories:category_id(name)')
     .eq('user_id', userId)
-    .eq('status', 'paid')
     .gte('expense_date', startDate)
     .lte('expense_date', endDate);
 
@@ -378,6 +394,43 @@ async function fetchExpenses(
       unit_number: '',
       document_id: ex.document_id,
     });
+  }
+
+  const propertyId = scopeType === 'property'
+    ? scopeId
+    : (await getPropertyIdsForUnit(userId, scopeId))[0] || null;
+
+  if (propertyId) {
+    const { data: loans } = await supabase
+      .from('loans')
+      .select('id, lender_name, monthly_payment, monthly_principal, interest_rate, loan_status, property_id, properties(name)')
+      .eq('user_id', userId)
+      .eq('property_id', propertyId)
+      .eq('loan_status', 'active');
+
+    for (const loan of loans || []) {
+      const monthlyPayment = Number(loan.monthly_payment || 0);
+      const monthlyPrincipal = Number(loan.monthly_principal || 0);
+      const monthlyInterest = round2(monthlyPayment - monthlyPrincipal);
+
+      if (monthlyInterest <= 0) continue;
+
+      for (let m = 0; m < 12; m++) {
+        const monthDate = `${year}-${String(m + 1).padStart(2, '0')}-01`;
+        rows.push({
+          id: `loan_${loan.id}_${m + 1}`,
+          date: monthDate,
+          amount: monthlyInterest,
+          category: 'Darlehenszinsen',
+          anlage_v_group: 'Schuldzinsen',
+          vendor: loan.lender_name || '',
+          note: `${Number(loan.interest_rate)}% Zinssatz`,
+          property_name: (loan.properties as any)?.name || '',
+          unit_number: '',
+          document_id: null,
+        });
+      }
+    }
   }
 
   rows.sort((a, b) => a.date.localeCompare(b.date));
