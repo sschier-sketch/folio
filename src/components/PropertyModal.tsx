@@ -19,6 +19,7 @@ interface Property {
   purchase_price: number;
   current_value: number;
   purchase_date: string | null;
+  construction_year: number | null;
   size_sqm: number | null;
   parking_spot_number?: string;
   description: string;
@@ -42,6 +43,7 @@ interface Unit {
   purchase_price?: string;
   current_value?: string;
   purchase_date?: string;
+  construction_year?: string;
   broker_costs?: string;
   notary_costs?: string;
   lawyer_costs?: string;
@@ -71,6 +73,7 @@ export default function PropertyModal({
     purchase_price: "",
     current_value: "",
     purchase_date: "",
+    construction_year: "",
     parking_spot_number: "",
     description: "",
     broker_costs: "",
@@ -107,6 +110,7 @@ export default function PropertyModal({
         purchase_price: property.purchase_price ? String(property.purchase_price) : "",
         current_value: property.current_value ? String(property.current_value) : "",
         purchase_date: property.purchase_date || "",
+        construction_year: property.construction_year ? String(property.construction_year) : "",
         parking_spot_number: property.parking_spot_number || "",
         description: property.description,
         broker_costs: propertyWithCosts.broker_costs ? String(propertyWithCosts.broker_costs) : "",
@@ -192,6 +196,7 @@ export default function PropertyModal({
         purchase_price: formData.ownership_type === 'full_property' ? parseNumberInput(formData.purchase_price) : 0,
         current_value: formData.ownership_type === 'full_property' ? parseNumberInput(formData.current_value) : 0,
         purchase_date: formData.ownership_type === 'full_property' && formData.purchase_date && formData.purchase_date.trim() !== '' ? formData.purchase_date : null,
+        construction_year: formData.ownership_type === 'full_property' && formData.construction_year ? parseInt(formData.construction_year) : null,
         user_id: user.id,
         parking_spot_number:
           formData.property_type === "parking"
@@ -257,6 +262,7 @@ export default function PropertyModal({
               baseData.purchase_price = unit.purchase_price ? parseNumberInput(unit.purchase_price) : 0;
               baseData.current_value = unit.current_value ? parseNumberInput(unit.current_value) : 0;
               baseData.purchase_date = unit.purchase_date && unit.purchase_date.trim() !== '' ? unit.purchase_date : null;
+              baseData.construction_year = unit.construction_year ? parseInt(unit.construction_year) : null;
               baseData.broker_costs = unit.broker_costs ? parseNumberInput(unit.broker_costs) : 0;
               baseData.notary_costs = unit.notary_costs ? parseNumberInput(unit.notary_costs) : 0;
               baseData.lawyer_costs = unit.lawyer_costs ? parseNumberInput(unit.lawyer_costs) : 0;
@@ -464,6 +470,7 @@ export default function PropertyModal({
                         purchase_price: unit.purchase_price || "",
                         current_value: unit.current_value || "",
                         purchase_date: unit.purchase_date || "",
+                        construction_year: unit.construction_year || "",
                         broker_costs: unit.broker_costs || "",
                         notary_costs: unit.notary_costs || "",
                         lawyer_costs: unit.lawyer_costs || "",
@@ -499,6 +506,31 @@ export default function PropertyModal({
                   value={formData.purchase_date}
                   onChange={(e) =>
                     setFormData({ ...formData, purchase_date: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <label className="block text-sm font-medium text-gray-400">
+                    Baujahr
+                  </label>
+                  <div className="relative group">
+                    <Info className="w-3.5 h-3.5 text-gray-300 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-800 text-white text-[11px] rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                      Alternativ: Bezugsfertig seit
+                    </div>
+                  </div>
+                </div>
+                <input
+                  type="number"
+                  min="1800"
+                  max={new Date().getFullYear()}
+                  placeholder="z.B. 1995"
+                  value={formData.construction_year}
+                  onChange={(e) =>
+                    setFormData({ ...formData, construction_year: e.target.value })
                   }
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                 />
@@ -938,6 +970,28 @@ export default function PropertyModal({
                                 type="date"
                                 value={unit.purchase_date || ""}
                                 onChange={(e) => handleUnitChange(index, 'purchase_date', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <label className="block text-xs font-medium text-gray-500">
+                                  Baujahr
+                                </label>
+                                <div className="relative group">
+                                  <Info className="w-3 h-3 text-gray-300 cursor-help" />
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-800 text-white text-[11px] rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                                    Alternativ: Bezugsfertig seit
+                                  </div>
+                                </div>
+                              </div>
+                              <input
+                                type="number"
+                                min="1800"
+                                max={new Date().getFullYear()}
+                                placeholder="z.B. 1995"
+                                value={unit.construction_year || ""}
+                                onChange={(e) => handleUnitChange(index, 'construction_year', e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
                               />
                             </div>

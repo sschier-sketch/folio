@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Trash2, Home, X, FileText, Link2 } from "lucide-react";
+import { Edit, Trash2, Home, X, FileText, Link2, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -30,6 +30,7 @@ interface PropertyUnit {
   purchase_price?: number | null;
   current_value?: number | null;
   purchase_date?: string | null;
+  construction_year?: number | null;
   broker_costs?: number | null;
   notary_costs?: number | null;
   lawyer_costs?: number | null;
@@ -75,6 +76,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
     purchase_price: "",
     current_value: "",
     purchase_date: "",
+    construction_year: "",
     broker_costs: "",
     notary_costs: "",
     lawyer_costs: "",
@@ -266,6 +268,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
         unitData.purchase_price = formData.purchase_price ? parseNumberInput(formData.purchase_price) : 0;
         unitData.current_value = formData.current_value ? parseNumberInput(formData.current_value) : 0;
         unitData.purchase_date = formData.purchase_date && formData.purchase_date.trim() !== "" ? formData.purchase_date : null;
+        unitData.construction_year = formData.construction_year ? parseInt(formData.construction_year) : null;
         unitData.broker_costs = formData.broker_costs ? parseNumberInput(formData.broker_costs) : 0;
         unitData.notary_costs = formData.notary_costs ? parseNumberInput(formData.notary_costs) : 0;
         unitData.lawyer_costs = formData.lawyer_costs ? parseNumberInput(formData.lawyer_costs) : 0;
@@ -328,6 +331,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       purchase_price: unit.purchase_price ? String(unit.purchase_price) : "",
       current_value: unit.current_value ? String(unit.current_value) : "",
       purchase_date: unit.purchase_date || "",
+      construction_year: unit.construction_year ? String(unit.construction_year) : "",
       broker_costs: unit.broker_costs ? String(unit.broker_costs) : "",
       notary_costs: unit.notary_costs ? String(unit.notary_costs) : "",
       lawyer_costs: unit.lawyer_costs ? String(unit.lawyer_costs) : "",
@@ -353,6 +357,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
       purchase_price: "",
       current_value: "",
       purchase_date: "",
+      construction_year: "",
       broker_costs: "",
       notary_costs: "",
       lawyer_costs: "",
@@ -825,6 +830,30 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                         value={formData.purchase_date}
                         onChange={(e) =>
                           setFormData({ ...formData, purchase_date: e.target.value })
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Baujahr
+                        </label>
+                        <div className="relative group">
+                          <Info className="w-3.5 h-3.5 text-gray-300 cursor-help" />
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-800 text-white text-[11px] rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                            Alternativ: Bezugsfertig seit
+                          </div>
+                        </div>
+                      </div>
+                      <input
+                        type="number"
+                        min="1800"
+                        max={new Date().getFullYear()}
+                        placeholder="z.B. 1995"
+                        value={formData.construction_year}
+                        onChange={(e) =>
+                          setFormData({ ...formData, construction_year: e.target.value })
                         }
                         className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       />
