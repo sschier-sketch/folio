@@ -329,7 +329,7 @@ function Sidebar({
       {summary && (
         <>
           <SidebarKeyfacts summary={summary} />
-          <SidebarReceipts summary={summary} />
+          <SidebarReceipts />
         </>
       )}
     </div>
@@ -380,29 +380,20 @@ function MiniKpi({ label, value, color, tooltip }: { label: string; value: strin
   );
 }
 
-function SidebarReceipts({ summary }: { summary: AnlageVSummary }) {
-  if (summary.total_expenses_count === 0) return null;
-  const attached = summary.total_expenses_count - summary.missing_receipts_count;
-  const pct = Math.round((attached / summary.total_expenses_count) * 100);
-
+function SidebarReceipts() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 opacity-50 pointer-events-none select-none">
       <div className="flex items-center justify-between mb-2">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Belege</p>
-        <p className="text-xs text-gray-500 font-medium">{attached}/{summary.total_expenses_count}</p>
+        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">In Kürze</span>
       </div>
       <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${pct === 100 ? 'bg-emerald-500' : 'bg-primary-blue'}`}
-          style={{ width: `${pct}%` }}
-        />
+        <div className="h-full rounded-full bg-gray-200" style={{ width: '0%' }} />
       </div>
-      {summary.missing_receipts_count > 0 && (
-        <p className="mt-2 text-xs text-red-500 flex items-center gap-1">
-          <Receipt className="w-3 h-3" />
-          {summary.missing_receipts_count} Ausgabe{summary.missing_receipts_count > 1 ? 'n' : ''} ohne Beleg
-        </p>
-      )}
+      <p className="mt-2 text-xs text-gray-400 flex items-center gap-1">
+        <Receipt className="w-3 h-3" />
+        Belegprüfung für Ausgaben
+      </p>
     </div>
   );
 }

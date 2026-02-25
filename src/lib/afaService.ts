@@ -66,16 +66,42 @@ export async function getAfaSetupStatus(propertyId: string, userId: string): Pro
     return { property_id: propertyId, missing_fields: ['all'], current_values: {}, proposed_defaults: {}, is_complete: false };
   }
 
+  let unitFallbackDate: string | null = null;
+  let unitFallbackPrice: number | null = null;
+  let unitFallbackConstructionYear: number | null = null;
+
+  const { data: units } = await supabase
+    .from('property_units')
+    .select('purchase_date, purchase_price, construction_year')
+    .eq('property_id', propertyId)
+    .eq('user_id', userId);
+
+  if (units && units.length > 0) {
+    const firstWithDate = units.find(u => u.purchase_date);
+    if (firstWithDate) unitFallbackDate = firstWithDate.purchase_date;
+
+    const firstWithPrice = units.find(u => u.purchase_price && Number(u.purchase_price) > 0);
+    if (firstWithPrice) unitFallbackPrice = Number(firstWithPrice.purchase_price);
+
+    const firstWithYear = units.find(u => u.construction_year);
+    if (firstWithYear) unitFallbackConstructionYear = firstWithYear.construction_year;
+  }
+
   const existing: Partial<AfaSettings> = property.afa_settings || {};
 
-  const purchaseDate = existing.purchase_date || property.purchase_date || null;
+  const purchaseDate = existing.purchase_date
+    || property.purchase_date
+    || unitFallbackDate
+    || null;
   if (purchaseDate) {
     currentValues.purchase_date = purchaseDate;
   } else {
     missingFields.push('purchase_date');
   }
 
-  const purchasePrice = existing.purchase_price_total || (property.purchase_price ? Number(property.purchase_price) : null);
+  const purchasePrice = existing.purchase_price_total
+    || (property.purchase_price && Number(property.purchase_price) > 0 ? Number(property.purchase_price) : null)
+    || (unitFallbackPrice && unitFallbackPrice > 0 ? unitFallbackPrice : null);
   if (purchasePrice && purchasePrice > 0) {
     currentValues.purchase_price_total = purchasePrice;
   } else {
@@ -91,7 +117,7 @@ export async function getAfaSetupStatus(propertyId: string, userId: string): Pro
     proposedDefaults.building_share_value = 80;
   }
 
-  const constructionYear = existing.construction_year || property.construction_year || null;
+  const constructionYear = existing.construction_year || property.construction_year || unitFallbackConstructionYear || null;
   if (constructionYear) {
     currentValues.construction_year = constructionYear;
   }
