@@ -332,8 +332,8 @@ export function exportAnlageVCsv(summary: AnlageVSummary, type: 'incomes' | 'exp
   } else if (type === 'afa') {
     rows.push(['Parameter', 'Wert']);
     rows.push(['AfA-Betrag ' + summary.year, summary.afa.afa_amount.toFixed(2).replace('.', ',')]);
-    rows.push(['Jaehrliche AfA (voll)', summary.afa.annual_afa_full.toFixed(2).replace('.', ',')]);
-    rows.push(['Gebaeudeanteil', summary.afa.building_value_amount.toFixed(2).replace('.', ',')]);
+    rows.push(['Jährliche AfA (voll)', summary.afa.annual_afa_full.toFixed(2).replace('.', ',')]);
+    rows.push(['Gebäudeanteil', summary.afa.building_value_amount.toFixed(2).replace('.', ',')]);
     rows.push(['AfA-Satz', (summary.afa.afa_rate * 100).toFixed(1).replace('.', ',') + '%']);
     rows.push(['Eigentumsanteil', summary.afa.ownership_share + '%']);
     rows.push(['Monatsfaktor', summary.afa.months_factor < 1 ? `${Math.round(summary.afa.months_factor * 12)}/12` : '12/12']);
@@ -344,7 +344,7 @@ export function exportAnlageVCsv(summary: AnlageVSummary, type: 'incomes' | 'exp
       rows.push(['Nutzungstyp', summary.afa_settings.usage_type]);
     }
   } else {
-    rows.push(['Datum', 'Betrag', 'Kategorie', 'Anlage-V-Gruppe', 'Empfaenger', 'Notiz', 'Immobilie', 'Einheit', 'ID']);
+    rows.push(['Datum', 'Betrag', 'Kategorie', 'Anlage-V-Gruppe', 'Empfänger', 'Notiz', 'Immobilie', 'Einheit', 'ID']);
     for (const r of summary.expenses) {
       rows.push([
         fmtDate(r.date),

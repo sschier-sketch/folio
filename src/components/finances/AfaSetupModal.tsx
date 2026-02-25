@@ -79,11 +79,11 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
 
     if (!purchaseDate) { setError('Bitte Anschaffungsdatum angeben.'); return; }
     const priceNum = parseFloat(purchasePriceTotal.replace(/\./g, '').replace(',', '.'));
-    if (!priceNum || priceNum <= 0) { setError('Bitte einen gueltigen Kaufpreis angeben.'); return; }
+    if (!priceNum || priceNum <= 0) { setError('Bitte einen gültigen Kaufpreis angeben.'); return; }
 
     const shareNum = parseFloat(buildingShareValue.replace(',', '.'));
-    if (!shareNum || shareNum <= 0) { setError('Bitte Gebaeudeanteil angeben.'); return; }
-    if (buildingShareType === 'percent' && shareNum > 100) { setError('Gebaeudeanteil darf maximal 100% betragen.'); return; }
+    if (!shareNum || shareNum <= 0) { setError('Bitte Gebäudeanteil angeben.'); return; }
+    if (buildingShareType === 'percent' && shareNum > 100) { setError('Gebäudeanteil darf maximal 100% betragen.'); return; }
 
     const rateNum = parseFloat(afaRate.replace(',', '.')) / 100;
     if (!rateNum || rateNum <= 0 || rateNum > 0.2) { setError('AfA-Satz muss zwischen 0,01% und 20% liegen.'); return; }
@@ -92,7 +92,7 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
     if (!ownerNum || ownerNum <= 0 || ownerNum > 100) { setError('Eigentumsanteil muss zwischen 1 und 100% liegen.'); return; }
 
     const cyNum = constructionYear ? parseInt(constructionYear) : null;
-    if (cyNum && (cyNum < 1800 || cyNum > new Date().getFullYear())) { setError('Bitte ein gueltiges Baujahr angeben.'); return; }
+    if (cyNum && (cyNum < 1800 || cyNum > new Date().getFullYear())) { setError('Bitte ein gültiges Baujahr angeben.'); return; }
 
     const settings: AfaSettings = {
       enabled,
@@ -154,14 +154,14 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
           <div className="flex items-start gap-2 px-3 py-2.5 bg-amber-50 rounded-lg border border-amber-200">
             <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-700">
-              Die AfA-Berechnung ersetzt keine Steuerberatung. Bitte pruefe die Angaben mit deinem Steuerberater.
+              Die AfA-Berechnung ersetzt keine Steuerberatung. Bitte prüfe die Angaben mit deinem Steuerberater.
             </p>
           </div>
 
           <div className="flex items-center justify-between px-3 py-3 bg-gray-50 rounded-lg border border-gray-200">
             <div>
               <p className="text-sm font-semibold text-dark">AfA aktiv</p>
-              <p className="text-xs text-gray-400 mt-0.5">Abschreibung in Steueruebersicht beruecksichtigen</p>
+              <p className="text-xs text-gray-400 mt-0.5">Abschreibung in Steuerübersicht berücksichtigen</p>
             </div>
             <button
               type="button"
@@ -203,7 +203,7 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <label className="text-sm font-medium text-gray-700">
-                    Gebaeudeanteil <span className="text-red-500">*</span>
+                    Gebäudeanteil <span className="text-red-500">*</span>
                   </label>
                   <div className="relative group">
                     <Info className="w-3.5 h-3.5 text-gray-300 cursor-help" />
@@ -248,7 +248,7 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
                 </div>
                 {computedBuildingValue > 0 && (
                   <p className="text-xs text-gray-400 mt-1.5">
-                    Gebaeudeanteil: {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(computedBuildingValue)}
+                    Gebäudeanteil: {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(computedBuildingValue)}
                   </p>
                 )}
               </div>
@@ -286,7 +286,7 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
                     <option value="mixed">Gemischt</option>
                   </select>
                   {propertyType === 'parking' && (
-                    <p className="text-xs text-amber-600 mt-1">Stellplatz/Garage: AfA-Satz kann abweichen – bitte pruefen.</p>
+                    <p className="text-xs text-amber-600 mt-1">Stellplatz/Garage: AfA-Satz kann abweichen – bitte prüfen.</p>
                   )}
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
                     <div className="relative group">
                       <Info className="w-3.5 h-3.5 text-gray-300 cursor-help" />
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-800 text-white text-[11px] rounded-lg max-w-[200px] text-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                        Bitte mit Steuerberater pruefen
+                        Bitte mit Steuerberater prüfen
                       </div>
                     </div>
                   </div>
@@ -313,7 +313,7 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
                   />
                   {computedAnnualAfa > 0 && (
                     <p className="text-xs text-gray-400 mt-1">
-                      Jaehrliche AfA: {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(computedAnnualAfa)}
+                      Jährliche AfA: {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(computedAnnualAfa)}
                     </p>
                   )}
                 </div>

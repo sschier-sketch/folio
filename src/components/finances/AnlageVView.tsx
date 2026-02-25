@@ -132,8 +132,8 @@ export default function AnlageVView() {
     <div>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-dark">Steuerubersicht</h2>
-          <p className="text-sm text-gray-400 mt-0.5">Einkunfte aus Vermietung und Verpachtung</p>
+          <h2 className="text-2xl font-bold text-dark">Steuerübersicht</h2>
+          <p className="text-sm text-gray-400 mt-0.5">Einkünfte aus Vermietung und Verpachtung</p>
         </div>
         <div className="flex items-center gap-3">
           <select
@@ -159,7 +159,7 @@ export default function AnlageVView() {
                 <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
                 <div className="absolute right-0 mt-1.5 w-52 bg-white rounded-lg border border-gray-200 shadow-lg z-20 py-1 animate-fade-in">
                   <button onClick={handleExportPdf} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
-                    <FileText className="w-4 h-4 text-gray-400" />PDF Ubersicht
+                    <FileText className="w-4 h-4 text-gray-400" />PDF Übersicht
                   </button>
                   <button onClick={() => handleExportCsv('incomes')} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5">
                     <TrendingUp className="w-4 h-4 text-gray-400" />CSV Einnahmen
@@ -182,7 +182,7 @@ export default function AnlageVView() {
       <div className="flex items-start gap-2 px-4 py-2.5 bg-amber-50 rounded-lg border border-amber-200 mb-6">
         <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-amber-700">
-          Hinweis: rentably ersetzt keine Steuerberatung. Prufe die Angaben vor Abgabe und besprich sie mit deinem Steuerberater.
+          Hinweis: rentably ersetzt keine Steuerberatung. Prüfe die Angaben vor Abgabe und besprich sie mit deinem Steuerberater.
         </p>
       </div>
 
@@ -266,7 +266,7 @@ function Sidebar({
             onChange={(e) => onSelect(e.target.value)}
             className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-blue"
           >
-            <option value="">Immobilie wahlen</option>
+            <option value="">Immobilie wählen</option>
             {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         )}
@@ -346,7 +346,7 @@ function SidebarKeyfacts({ summary }: { summary: AnlageVSummary }) {
           Ergebnis{summary.ownership_share < 100 ? ` (${summary.ownership_share}%)` : ''}
         </p>
         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${isLoss ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
-          {isLoss ? 'Verlust' : 'Uberschuss'}
+          {isLoss ? 'Verlust' : 'Überschuss'}
         </span>
       </div>
       <p className={`text-xl font-bold ${isLoss ? 'text-red-600' : 'text-emerald-700'}`}>
@@ -453,7 +453,7 @@ function MainPanel({ summary, loading, error, onOpenAfaSetup }: {
       <div className="flex-1 flex items-center justify-center bg-white rounded-lg border border-gray-100 min-h-[400px]">
         <div className="text-center">
           <Building2 className="w-12 h-12 mx-auto mb-3 text-gray-200" />
-          <p className="text-gray-400 text-sm">Wahle eine Immobilie aus</p>
+          <p className="text-gray-400 text-sm">Wähle eine Immobilie aus</p>
         </div>
       </div>
     );
@@ -477,7 +477,7 @@ function HeroCard({ summary }: { summary: AnlageVSummary }) {
     <div className="bg-white rounded-lg border border-gray-100 px-8 py-8">
       <div className="flex flex-col items-center text-center">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
-          Einkunfte aus V+V
+          Einkünfte aus V+V
         </p>
         <div className="flex items-center gap-2">
           {isLoss && <TrendingDown className="w-6 h-6 text-red-500" />}
@@ -487,7 +487,7 @@ function HeroCard({ summary }: { summary: AnlageVSummary }) {
           </p>
         </div>
         <p className={`text-sm font-medium mt-1 ${isLoss ? 'text-red-400' : 'text-emerald-500'}`}>
-          {isLoss ? 'Verlust' : 'Uberschuss'}
+          {isLoss ? 'Verlust' : 'Überschuss'}
         </p>
       </div>
 
@@ -653,7 +653,7 @@ function AfaAccordion({ summary, onOpenSetup }: { summary: AnlageVSummary; onOpe
       >
         <div className="flex items-center gap-2">
           <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${open ? '' : '-rotate-90'}`} />
-          <span className="text-sm font-semibold text-dark">Absetzung fuer Abnutzung (AfA)</span>
+          <span className="text-sm font-semibold text-dark">Absetzung für Abnutzung (AfA)</span>
         </div>
         <span className={`text-sm font-bold ${isConfigured ? 'text-dark' : 'text-gray-300'}`}>
           {isConfigured ? `-${fmtEur(summary.afa_total)}` : '0 EUR'}
@@ -664,7 +664,7 @@ function AfaAccordion({ summary, onOpenSetup }: { summary: AnlageVSummary; onOpe
           {isConfigured && settings ? (
             <>
               <div className="flex items-center justify-between px-5 py-3 border-b border-gray-50">
-                <span className="text-sm text-gray-600 pl-6">AfA Gebaeude</span>
+                <span className="text-sm text-gray-600 pl-6">AfA Gebäude</span>
                 <span className="text-sm text-gray-700 font-medium">{fmtEur(summary.afa_total)}</span>
               </div>
               <div className="px-5 py-2.5 border-b border-gray-50">
@@ -677,7 +677,7 @@ function AfaAccordion({ summary, onOpenSetup }: { summary: AnlageVSummary; onOpe
               <div className="px-5 py-3 grid grid-cols-3 gap-4">
                 <AfaDetail label="Nutzung" value={usageLabels[settings.usage_type] || settings.usage_type} />
                 <AfaDetail label="AfA-Satz" value={`${(settings.afa_rate * 100).toFixed(1)}%`} />
-                <AfaDetail label="Gebaeudeanteil" value={
+                <AfaDetail label="Gebäudeanteil" value={
                   settings.building_share_type === 'percent'
                     ? `${settings.building_share_value}%`
                     : fmtEurFull(settings.building_share_value)
@@ -689,7 +689,7 @@ function AfaAccordion({ summary, onOpenSetup }: { summary: AnlageVSummary; onOpe
               <Building2 className="w-8 h-8 mx-auto mb-2 text-gray-200" />
               <p className="text-sm text-gray-500 mb-1">AfA noch nicht eingerichtet</p>
               <p className="text-xs text-gray-400 mb-4">
-                Richte die Abschreibung ein, um sie in der Steueruebersicht zu beruecksichtigen.
+                Richte die Abschreibung ein, um sie in der Steuerübersicht zu berücksichtigen.
               </p>
             </div>
           )}
@@ -731,7 +731,7 @@ function DetailTable({ rows, type }: { rows: AnlageVIncomeRow[] | AnlageVExpense
               {type === 'income' ? 'Quelle' : 'Kategorie'}
             </th>
             <th className="text-left px-3 py-2 font-medium text-gray-500">
-              {type === 'income' ? 'Mieter' : 'Empfanger'}
+              {type === 'income' ? 'Mieter' : 'Empfänger'}
             </th>
           </tr>
         </thead>
