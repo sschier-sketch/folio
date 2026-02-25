@@ -99,6 +99,16 @@ async function handleEvent(event: Stripe.Event) {
     await upsertInvoiceArchive(event.data.object as Stripe.Invoice);
   }
 
+  const creditNoteEvents = [
+    'credit_note.created',
+    'credit_note.updated',
+    'credit_note.voided',
+  ];
+
+  if (creditNoteEvents.includes(event.type)) {
+    await upsertCreditNoteArchive(event.data.object as Stripe.CreditNote);
+  }
+
   if (event.type === 'invoice.paid') {
     await handleInvoicePaid(event);
     return;
@@ -635,6 +645,116 @@ async function cacheInvoicePdf(invoice: Stripe.Invoice) {
     console.log(`Cached PDF for invoice ${invoice.id} at ${storagePath}`);
   } catch (err: any) {
     console.error(`Error caching PDF for ${invoice.id}:`, err.message);
+  }
+}
+
+async function upsertCreditNoteArchive(creditNote: Stripe.CreditNote) {
+  try {
+    const customerId = typeof creditNote.customer === 'string' ? creditNote.customer : null;
+    const invoiceId = typeof creditNote.invoice === 'string' ? creditNote.invoice : null;
+    const refundId = typeof creditNote.refund === 'string' ? creditNote.refund : null;
+    const createdAt = new Date(creditNote.created * 1000).toISOString();
+
+    const row = {
+      stripe_credit_note_id: creditNote.id,
+      stripe_invoice_id: invoiceId ?? '',
+      stripe_customer_id: customerId,
+      stripe_refund_id: refundId,
+      number: creditNote.number ?? null,
+      status: creditNote.status ?? 'issued',
+      currency: creditNote.currency ?? 'eur',
+      total: creditNote.amount ?? 0,
+      subtotal: creditNote.subtotal ?? null,
+      tax: creditNote.tax ?? null,
+      reason: creditNote.reason ?? null,
+      memo: creditNote.memo ?? null,
+      created_at_stripe: createdAt,
+      customer_email: creditNote.customer_email ?? null,
+      customer_name: creditNote.customer_name ?? null,
+      pdf_url: creditNote.pdf ?? null,
+      updated_at: new Date().toISOString(),
+      raw: {
+        id: creditNote.id,
+        number: creditNote.number,
+        status: creditNote.status,
+        amount: creditNote.amount,
+        invoice: invoiceId,
+        refund: refundId,
+      },
+    };
+
+    const { error: upsertError } = await getSupabase()
+      .from('stripe_credit_notes')
+      .upsert(row, { onConflict: 'stripe_credit_note_id' });
+
+    if (upsertError) {
+      console.error('Error upserting credit note archive:', upsertError);
+      return;
+    }
+
+    console.log(`Archived credit note ${creditNote.id} (status: ${creditNote.status})`);
+
+    if (creditNote.pdf && creditNote.status === 'issued') {
+      await cacheCreditNotePdf(creditNote);
+    }
+  } catch (err: any) {
+    console.error('Error in upsertCreditNoteArchive:', err.message);
+  }
+}
+
+async function cacheCreditNotePdf(creditNote: Stripe.CreditNote) {
+  try {
+    if (!creditNote.pdf) return;
+
+    const { data: existing } = await getSupabase()
+      .from('stripe_credit_notes')
+      .select('pdf_storage_path, pdf_cached_at, updated_at')
+      .eq('stripe_credit_note_id', creditNote.id)
+      .maybeSingle();
+
+    if (existing?.pdf_storage_path && existing.pdf_cached_at) {
+      const cachedAt = new Date(existing.pdf_cached_at).getTime();
+      const updatedAt = new Date(existing.updated_at).getTime();
+      if (cachedAt >= updatedAt) {
+        console.log(`Credit note PDF already cached for ${creditNote.id}`);
+        return;
+      }
+    }
+
+    const pdfResponse = await fetch(creditNote.pdf);
+    if (!pdfResponse.ok) {
+      console.error(`Failed to download credit note PDF for ${creditNote.id}: ${pdfResponse.status}`);
+      return;
+    }
+
+    const pdfBuffer = await pdfResponse.arrayBuffer();
+    const createdDate = new Date(creditNote.created * 1000);
+    const yyyy = createdDate.getFullYear().toString();
+    const mm = String(createdDate.getMonth() + 1).padStart(2, '0');
+    const safeName = (creditNote.number ?? creditNote.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const storagePath = `stripe/credit_notes/${yyyy}/${mm}/${creditNote.id}_${safeName}.pdf`;
+
+    const { error: uploadError } = await getSupabase().storage
+      .from('billing')
+      .upload(storagePath, pdfBuffer, { contentType: 'application/pdf', upsert: true });
+
+    if (uploadError) {
+      console.error(`Failed to upload credit note PDF for ${creditNote.id}:`, uploadError);
+      return;
+    }
+
+    await getSupabase()
+      .from('stripe_credit_notes')
+      .update({
+        pdf_storage_path: storagePath,
+        pdf_cached_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('stripe_credit_note_id', creditNote.id);
+
+    console.log(`Cached credit note PDF for ${creditNote.id} at ${storagePath}`);
+  } catch (err: any) {
+    console.error(`Error caching credit note PDF for ${creditNote.id}:`, err.message);
   }
 }
 

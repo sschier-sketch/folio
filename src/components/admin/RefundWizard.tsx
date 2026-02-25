@@ -10,6 +10,7 @@ import {
   Clock,
   Zap,
   XCircle,
+  ReceiptText,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/Button';
@@ -45,6 +46,11 @@ interface RefundResult {
   amount: number;
   currency: string;
   cancelledImmediately: boolean;
+  credit_note?: {
+    id: string;
+    number: string | null;
+    error: string | null;
+  } | null;
 }
 
 interface RefundWizardProps {
@@ -401,6 +407,33 @@ export default function RefundWizard({ userId, userEmail, onClose, onComplete }:
                     {result.cancelledImmediately ? 'Sofort beendet' : 'Endet zum Laufzeitende'}
                   </span>
                 </div>
+
+                {result.credit_note && !result.credit_note.error && result.credit_note.id && (
+                  <div className="flex justify-between items-center text-sm px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-100">
+                    <span className="flex items-center gap-1.5 text-emerald-700">
+                      <ReceiptText className="w-3.5 h-3.5" />
+                      Gutschrift erstellt
+                    </span>
+                    <span className="text-emerald-700 font-mono text-xs">{result.credit_note.number || result.credit_note.id}</span>
+                  </div>
+                )}
+
+                {result.credit_note?.error && (
+                  <div className="flex items-start gap-2.5 text-sm px-3 py-2.5 bg-amber-50 rounded-lg border border-amber-100">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-amber-700 font-medium text-xs">Gutschrift konnte nicht erstellt werden</p>
+                      <p className="text-amber-600 text-xs mt-0.5">{result.credit_note.error}</p>
+                    </div>
+                  </div>
+                )}
+
+                {!result.credit_note && (
+                  <div className="flex items-center gap-2 text-sm px-3 py-2 bg-gray-50 rounded-lg">
+                    <ReceiptText className="w-3.5 h-3.5 text-gray-400" />
+                    <span className="text-gray-400 text-xs">Keine Gutschrift (Credit Note) erstellt</span>
+                  </div>
+                )}
               </div>
             </div>
           )}

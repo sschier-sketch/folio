@@ -161,10 +161,142 @@ Deno.serve(async (req) => {
       }
     }
 
+    let creditNotesSynced = 0;
+    let creditNotePdfsCached = 0;
+    let cnHasMore = true;
+    let cnStartingAfter: string | undefined;
+
+    while (cnHasMore) {
+      const cnParams: Stripe.CreditNoteListParams = {
+        limit: 100,
+      };
+      if (cnStartingAfter) {
+        cnParams.starting_after = cnStartingAfter;
+      }
+
+      const creditNotes = await stripe.creditNotes.list(cnParams);
+
+      for (const cn of creditNotes.data) {
+        if (cn.created < cutoffDate) {
+          cnHasMore = false;
+          break;
+        }
+
+        try {
+          const customerId = typeof cn.customer === 'string' ? cn.customer : null;
+          const invoiceId = typeof cn.invoice === 'string' ? cn.invoice : null;
+          const refundId = typeof cn.refund === 'string' ? cn.refund : null;
+          const createdAt = new Date(cn.created * 1000).toISOString();
+
+          const { error: cnUpsertError } = await supabase
+            .from('stripe_credit_notes')
+            .upsert({
+              stripe_credit_note_id: cn.id,
+              stripe_invoice_id: invoiceId ?? '',
+              stripe_customer_id: customerId,
+              stripe_refund_id: refundId,
+              number: cn.number ?? null,
+              status: cn.status ?? 'issued',
+              currency: cn.currency ?? 'eur',
+              total: cn.amount ?? 0,
+              subtotal: cn.subtotal ?? null,
+              tax: cn.tax ?? null,
+              reason: cn.reason ?? null,
+              memo: cn.memo ?? null,
+              created_at_stripe: createdAt,
+              customer_email: cn.customer_email ?? null,
+              customer_name: cn.customer_name ?? null,
+              pdf_url: cn.pdf ?? null,
+              updated_at: new Date().toISOString(),
+              raw: {
+                id: cn.id,
+                number: cn.number,
+                status: cn.status,
+                amount: cn.amount,
+                invoice: invoiceId,
+                refund: refundId,
+              },
+            }, { onConflict: 'stripe_credit_note_id' });
+
+          if (cnUpsertError) {
+            errors.push(`cn upsert ${cn.id}: ${cnUpsertError.message}`);
+          } else {
+            creditNotesSynced++;
+          }
+        } catch (err: any) {
+          errors.push(`cn process ${cn.id}: ${err.message}`);
+        }
+      }
+
+      if (cnHasMore) {
+        cnHasMore = creditNotes.has_more;
+      }
+      if (creditNotes.data.length > 0) {
+        cnStartingAfter = creditNotes.data[creditNotes.data.length - 1].id;
+      }
+    }
+
+    const { data: cnNeedsPdf } = await supabase
+      .from('stripe_credit_notes')
+      .select('stripe_credit_note_id, pdf_url, pdf_storage_path, pdf_cached_at, updated_at, created_at_stripe, number')
+      .eq('status', 'issued')
+      .not('pdf_url', 'is', null)
+      .order('created_at_stripe', { ascending: false });
+
+    const cnToCachePdfs = (cnNeedsPdf ?? []).filter((row) => {
+      if (!row.pdf_storage_path) return true;
+      if (!row.pdf_cached_at) return true;
+      return new Date(row.pdf_cached_at).getTime() < new Date(row.updated_at).getTime();
+    });
+
+    for (let i = 0; i < cnToCachePdfs.length; i += PDF_CONCURRENCY) {
+      const batch = cnToCachePdfs.slice(i, i + PDF_CONCURRENCY);
+      const results = await Promise.allSettled(
+        batch.map(async (row) => {
+          const createdDate = new Date(row.created_at_stripe);
+          const yyyy = createdDate.getFullYear().toString();
+          const mm = String(createdDate.getMonth() + 1).padStart(2, '0');
+          const safeName = (row.number ?? row.stripe_credit_note_id).replace(/[^a-zA-Z0-9_-]/g, '_');
+          const storagePath = `stripe/credit_notes/${yyyy}/${mm}/${row.stripe_credit_note_id}_${safeName}.pdf`;
+
+          const pdfRes = await fetch(row.pdf_url!);
+          if (!pdfRes.ok) throw new Error(`HTTP ${pdfRes.status}`);
+          const pdfBuffer = await pdfRes.arrayBuffer();
+
+          const { error: uploadErr } = await supabase.storage
+            .from('billing')
+            .upload(storagePath, pdfBuffer, { contentType: 'application/pdf', upsert: true });
+
+          if (uploadErr) throw uploadErr;
+
+          await supabase
+            .from('stripe_credit_notes')
+            .update({
+              pdf_storage_path: storagePath,
+              pdf_cached_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('stripe_credit_note_id', row.stripe_credit_note_id);
+
+          return row.stripe_credit_note_id;
+        })
+      );
+
+      for (const r of results) {
+        if (r.status === 'fulfilled') {
+          creditNotePdfsCached++;
+        } else {
+          errors.push(`cn pdf: ${r.reason?.message ?? 'unknown'}`);
+        }
+      }
+    }
+
     const result = {
       synced,
       pdfs_cached: pdfsCached,
       pdfs_pending: toCachePdfs.length,
+      credit_notes_synced: creditNotesSynced,
+      credit_notes_pdfs_cached: creditNotePdfsCached,
       errors_count: errors.length,
       errors: errors.slice(0, 20),
     };

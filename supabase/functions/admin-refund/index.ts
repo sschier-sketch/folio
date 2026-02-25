@@ -144,6 +144,19 @@ Deno.serve(async (req: Request) => {
       reason: "requested_by_customer",
     });
 
+    let creditNoteResult: { id: string; number: string | null; error?: string } | null = null;
+    try {
+      creditNoteResult = await createCreditNoteForRefund(
+        previewData.charge.id,
+        refund.id,
+        refund.amount,
+        reason || "Admin refund",
+      );
+    } catch (cnErr: any) {
+      console.error("Credit note creation failed (refund still valid):", cnErr.message);
+      creditNoteResult = { id: "", number: null, error: cnErr.message };
+    }
+
     if (previewData.subscription) {
       if (cancelImmediately === false) {
         await stripe.subscriptions.update(previewData.subscription.id, {
@@ -204,6 +217,8 @@ Deno.serve(async (req: Request) => {
         charge_id: previewData.charge.id,
         reason: reason || "Admin refund",
         cancel_immediately: cancelImmediately !== false,
+        credit_note_id: creditNoteResult?.id || null,
+        credit_note_error: creditNoteResult?.error || null,
         timestamp: new Date().toISOString(),
       },
     });
@@ -215,6 +230,13 @@ Deno.serve(async (req: Request) => {
         amount: refund.amount / 100,
         currency: refund.currency,
         cancelledImmediately: cancelImmediately !== false,
+        credit_note: creditNoteResult
+          ? {
+              id: creditNoteResult.id,
+              number: creditNoteResult.number,
+              error: creditNoteResult.error || null,
+            }
+          : null,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -233,3 +255,125 @@ Deno.serve(async (req: Request) => {
     );
   }
 });
+
+async function createCreditNoteForRefund(
+  chargeId: string,
+  refundId: string,
+  refundAmountCents: number,
+  memo: string,
+): Promise<{ id: string; number: string | null; error?: string }> {
+  const { data: existing } = await supabase
+    .from("stripe_credit_notes")
+    .select("stripe_credit_note_id, number")
+    .eq("stripe_refund_id", refundId)
+    .maybeSingle();
+
+  if (existing) {
+    console.log(`Credit note already exists for refund ${refundId}: ${existing.stripe_credit_note_id}`);
+    return { id: existing.stripe_credit_note_id, number: existing.number };
+  }
+
+  const charge = await stripe.charges.retrieve(chargeId);
+  const invoiceId = typeof charge.invoice === "string" ? charge.invoice : null;
+
+  if (!invoiceId) {
+    console.warn(`No invoice linked to charge ${chargeId}, cannot create credit note`);
+    return { id: "", number: null, error: "Keine Invoice vorhanden, Credit Note nicht moeglich" };
+  }
+
+  const invoice = await stripe.invoices.retrieve(invoiceId);
+
+  if (refundAmountCents !== invoice.total) {
+    console.warn(`Partial refund detected (${refundAmountCents} vs ${invoice.total}). Creating credit note for refund amount.`);
+  }
+
+  const creditNote = await stripe.creditNotes.create(
+    {
+      invoice: invoiceId,
+      refund: refundId,
+      reason: "order_change",
+      memo: `Refund via Admin: ${memo}`,
+      credit_amount: 0,
+      out_of_band_amount: 0,
+      refund_amount: refundAmountCents,
+    },
+    {
+      idempotencyKey: `credit_note_refund_${refundId}`,
+    },
+  );
+
+  const customerId = typeof creditNote.customer === "string" ? creditNote.customer : null;
+  const createdAt = new Date(creditNote.created * 1000).toISOString();
+
+  const { error: upsertError } = await supabase
+    .from("stripe_credit_notes")
+    .upsert(
+      {
+        stripe_credit_note_id: creditNote.id,
+        stripe_invoice_id: invoiceId,
+        stripe_customer_id: customerId,
+        stripe_refund_id: refundId,
+        number: creditNote.number ?? null,
+        status: creditNote.status ?? "issued",
+        currency: creditNote.currency ?? "eur",
+        total: creditNote.amount ?? 0,
+        subtotal: creditNote.subtotal ?? null,
+        tax: creditNote.tax ?? null,
+        reason: creditNote.reason ?? null,
+        memo: creditNote.memo ?? null,
+        created_at_stripe: createdAt,
+        customer_email: creditNote.customer_email ?? null,
+        customer_name: creditNote.customer_name ?? null,
+        pdf_url: creditNote.pdf ?? null,
+        updated_at: new Date().toISOString(),
+        raw: {
+          id: creditNote.id,
+          number: creditNote.number,
+          status: creditNote.status,
+          amount: creditNote.amount,
+          invoice: invoiceId,
+          refund: refundId,
+        },
+      },
+      { onConflict: "stripe_credit_note_id" },
+    );
+
+  if (upsertError) {
+    console.error("Error upserting credit note:", upsertError);
+  }
+
+  if (creditNote.pdf) {
+    try {
+      const pdfRes = await fetch(creditNote.pdf);
+      if (pdfRes.ok) {
+        const pdfBuffer = await pdfRes.arrayBuffer();
+        const createdDate = new Date(creditNote.created * 1000);
+        const yyyy = createdDate.getFullYear().toString();
+        const mm = String(createdDate.getMonth() + 1).padStart(2, "0");
+        const safeName = (creditNote.number ?? creditNote.id).replace(/[^a-zA-Z0-9_-]/g, "_");
+        const storagePath = `stripe/credit_notes/${yyyy}/${mm}/${creditNote.id}_${safeName}.pdf`;
+
+        const { error: uploadErr } = await supabase.storage
+          .from("billing")
+          .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: true });
+
+        if (!uploadErr) {
+          await supabase
+            .from("stripe_credit_notes")
+            .update({
+              pdf_storage_path: storagePath,
+              pdf_cached_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("stripe_credit_note_id", creditNote.id);
+          console.log(`Cached credit note PDF at ${storagePath}`);
+        }
+      }
+    } catch (pdfErr: any) {
+      console.error(`Failed to cache credit note PDF: ${pdfErr.message}`);
+    }
+  }
+
+  console.log(`Created credit note ${creditNote.id} for refund ${refundId}`);
+  return { id: creditNote.id, number: creditNote.number ?? null };
+}

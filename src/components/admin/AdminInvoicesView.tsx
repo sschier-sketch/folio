@@ -13,9 +13,11 @@ import {
   Clock,
   XCircle,
   Archive,
+  ReceiptText,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/Button';
+import AdminCreditNotesTab from './AdminCreditNotesTab';
 
 interface StripeInvoice {
   id: string;
@@ -38,6 +40,7 @@ interface StripeInvoice {
 }
 
 type StatusFilter = 'all' | 'paid' | 'open' | 'void' | 'uncollectible' | 'draft';
+type ActiveTab = 'invoices' | 'credit_notes';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   paid: { label: 'Bezahlt', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: <CheckCircle2 className="w-3 h-3" /> },
@@ -64,13 +67,14 @@ function getDefaultDateRange(): { from: string; to: string } {
 }
 
 export default function AdminInvoicesView() {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('invoices');
+  const [dateRange, setDateRange] = useState(getDefaultDateRange);
   const [invoices, setInvoices] = useState<StripeInvoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [dateRange, setDateRange] = useState(getDefaultDateRange);
   const [pdfLoading, setPdfLoading] = useState<string | null>(null);
 
   const loadInvoices = useCallback(async () => {
@@ -99,8 +103,10 @@ export default function AdminInvoicesView() {
   }, [dateRange, statusFilter]);
 
   useEffect(() => {
-    loadInvoices();
-  }, [loadInvoices]);
+    if (activeTab === 'invoices') {
+      loadInvoices();
+    }
+  }, [loadInvoices, activeTab]);
 
   const filteredInvoices = invoices.filter((inv) => {
     if (!searchQuery) return true;
@@ -143,8 +149,17 @@ export default function AdminInvoicesView() {
       if (!res.ok) {
         alert(`Sync-Fehler: ${result.error}`);
       } else {
-        alert(`Sync abgeschlossen: ${result.synced} Rechnungen synchronisiert, ${result.pdfs_cached} PDFs gecached.`);
-        await loadInvoices();
+        const parts = [`${result.synced} Rechnungen`, `${result.pdfs_cached} PDFs`];
+        if (result.credit_notes_synced !== undefined) {
+          parts.push(`${result.credit_notes_synced} Gutschriften`);
+        }
+        if (result.credit_notes_pdfs_cached !== undefined) {
+          parts.push(`${result.credit_notes_pdfs_cached} Gutschrift-PDFs`);
+        }
+        alert(`Sync abgeschlossen: ${parts.join(', ')} synchronisiert.`);
+        if (activeTab === 'invoices') {
+          await loadInvoices();
+        }
       }
     } catch (err: any) {
       alert(`Fehler: ${err.message}`);
@@ -200,7 +215,7 @@ export default function AdminInvoicesView() {
 
   async function handleOpenPdf(invoice: StripeInvoice) {
     if (!invoice.pdf_storage_path && !invoice.hosted_invoice_url) {
-      alert('Kein PDF verfügbar');
+      alert('Kein PDF verfuegbar');
       return;
     }
 
@@ -235,227 +250,258 @@ export default function AdminInvoicesView() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard
-          icon={<FileText className="w-5 h-5 text-blue-600" />}
-          value={invoices.length}
-          label="Rechnungen gesamt"
-          bg="bg-blue-50"
-        />
-        <StatCard
-          icon={<CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-          value={statusCounts['paid'] ?? 0}
-          label="Bezahlt"
-          bg="bg-emerald-50"
-        />
-        <StatCard
-          icon={<Clock className="w-5 h-5 text-amber-600" />}
-          value={statusCounts['open'] ?? 0}
-          label="Offen"
-          bg="bg-amber-50"
-        />
-        <StatCard
-          icon={<Archive className="w-5 h-5 text-green-600" />}
-          value={totalRevenue > 0 ? formatCents(totalRevenue, 'eur') : '0,00 €'}
-          label="Umsatz (bezahlt)"
-          bg="bg-green-50"
-        />
+      <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => setActiveTab('invoices')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'invoices'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          Rechnungen
+        </button>
+        <button
+          onClick={() => setActiveTab('credit_notes')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'credit_notes'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <ReceiptText className="w-4 h-4" />
+          Gutschriften
+        </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-        <div className="p-5 border-b border-gray-100 space-y-4">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <h2 className="text-base font-semibold text-gray-800">Stripe Rechnungen</h2>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outlined"
-                size="sm"
-                onClick={handleSync}
-                disabled={syncing}
-              >
-                {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                Sync
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleExportZip}
-                disabled={exporting || filteredInvoices.length === 0}
-              >
-                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                ZIP Export
-              </Button>
+      {activeTab === 'credit_notes' ? (
+        <AdminCreditNotesTab dateRange={dateRange} onDateRangeChange={setDateRange} />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <StatCard
+              icon={<FileText className="w-5 h-5 text-blue-600" />}
+              value={invoices.length}
+              label="Rechnungen gesamt"
+              bg="bg-blue-50"
+            />
+            <StatCard
+              icon={<CheckCircle2 className="w-5 h-5 text-emerald-600" />}
+              value={statusCounts['paid'] ?? 0}
+              label="Bezahlt"
+              bg="bg-emerald-50"
+            />
+            <StatCard
+              icon={<Clock className="w-5 h-5 text-amber-600" />}
+              value={statusCounts['open'] ?? 0}
+              label="Offen"
+              bg="bg-amber-50"
+            />
+            <StatCard
+              icon={<Archive className="w-5 h-5 text-green-600" />}
+              value={totalRevenue > 0 ? formatCents(totalRevenue, 'eur') : '0,00 \u20AC'}
+              label="Umsatz (bezahlt)"
+              bg="bg-green-50"
+            />
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <div className="p-5 border-b border-gray-100 space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <h2 className="text-base font-semibold text-gray-800">Stripe Rechnungen</h2>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outlined"
+                    size="sm"
+                    onClick={handleSync}
+                    disabled={syncing}
+                  >
+                    {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                    Sync
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleExportZip}
+                    disabled={exporting || filteredInvoices.length === 0}
+                  >
+                    {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    ZIP Export
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <input
+                    type="date"
+                    value={dateRange.from}
+                    onChange={(e) => setDateRange((prev) => ({ ...prev, from: e.target.value }))}
+                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-400 text-sm">bis</span>
+                  <input
+                    type="date"
+                    value={dateRange.to}
+                    onChange={(e) => setDateRange((prev) => ({ ...prev, to: e.target.value }))}
+                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Suche nach Nummer, E-Mail, Kunde..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <Filter className="w-4 h-4 text-gray-400" />
+                {([
+                  { key: 'all', label: 'Alle' },
+                  { key: 'paid', label: 'Bezahlt' },
+                  { key: 'open', label: 'Offen' },
+                  { key: 'draft', label: 'Entwurf' },
+                  { key: 'void', label: 'Storniert' },
+                  { key: 'uncollectible', label: 'Uneinbringlich' },
+                ] as { key: StatusFilter; label: string }[]).map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setStatusFilter(key)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      statusFilter === key
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {label}
+                    {key !== 'all' && statusCounts[key] !== undefined && (
+                      <span className={`ml-1.5 text-xs ${statusFilter === key ? 'text-gray-300' : 'text-gray-400'}`}>
+                        {statusCounts[key]}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-400" />
-              <input
-                type="date"
-                value={dateRange.from}
-                onChange={(e) => setDateRange((prev) => ({ ...prev, from: e.target.value }))}
-                className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="text-gray-400 text-sm">bis</span>
-              <input
-                type="date"
-                value={dateRange.to}
-                onChange={(e) => setDateRange((prev) => ({ ...prev, to: e.target.value }))}
-                className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Suche nach Nummer, E-Mail, Kunde..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <Filter className="w-4 h-4 text-gray-400" />
-            {([
-              { key: 'all', label: 'Alle' },
-              { key: 'paid', label: 'Bezahlt' },
-              { key: 'open', label: 'Offen' },
-              { key: 'draft', label: 'Entwurf' },
-              { key: 'void', label: 'Storniert' },
-              { key: 'uncollectible', label: 'Uneinbringlich' },
-            ] as { key: StatusFilter; label: string }[]).map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setStatusFilter(key)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  statusFilter === key
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {label}
-                {key !== 'all' && statusCounts[key] !== undefined && (
-                  <span className={`ml-1.5 text-xs ${statusFilter === key ? 'text-gray-300' : 'text-gray-400'}`}>
-                    {statusCounts[key]}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-          </div>
-        ) : filteredInvoices.length === 0 ? (
-          <div className="p-12 text-center">
-            <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400">Keine Rechnungen gefunden</p>
-            <p className="text-xs text-gray-300 mt-1">
-              Passen Sie den Zeitraum oder die Filter an, oder starten Sie einen Sync.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Datum</th>
-                  <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Rechnungsnr.</th>
-                  <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Kunde</th>
-                  <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Status</th>
-                  <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Netto</th>
-                  <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Steuer</th>
-                  <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Brutto</th>
-                  <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">PDF</th>
-                  <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Archiv</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredInvoices.map((inv) => {
-                  const cfg = STATUS_CONFIG[inv.status] ?? STATUS_CONFIG['draft'];
-                  return (
-                    <tr key={inv.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-3.5 text-sm text-gray-600">
-                        {new Date(inv.created_at_stripe).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span className="text-sm font-mono text-gray-800">{inv.invoice_number || '-'}</span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <div className="text-sm text-gray-800">{inv.customer_name || '-'}</div>
-                        {inv.customer_email && (
-                          <div className="text-xs text-gray-400">{inv.customer_email}</div>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.color}`}>
-                          {cfg.icon}
-                          {cfg.label}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-gray-600 text-right font-mono">
-                        {inv.subtotal !== null ? formatCents(inv.subtotal, inv.currency) : '-'}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-gray-600 text-right font-mono">
-                        {inv.tax !== null ? formatCents(inv.tax, inv.currency) : '-'}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-gray-800 text-right font-semibold font-mono">
-                        {formatCents(inv.total, inv.currency)}
-                      </td>
-                      <td className="px-5 py-3.5 text-center">
-                        {(inv.pdf_storage_path || inv.hosted_invoice_url) ? (
-                          <button
-                            onClick={() => handleOpenPdf(inv)}
-                            disabled={pdfLoading === inv.stripe_invoice_id}
-                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm disabled:opacity-50"
-                            title="PDF öffnen"
-                          >
-                            {pdfLoading === inv.stripe_invoice_id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : inv.pdf_storage_path ? (
-                              <FileText className="w-4 h-4" />
-                            ) : (
-                              <ExternalLink className="w-4 h-4" />
-                            )}
-                          </button>
-                        ) : (
-                          <span className="text-gray-300">-</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5 text-center">
-                        {inv.pdf_storage_path ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-600" title={`Archiviert: ${inv.pdf_cached_at ? new Date(inv.pdf_cached_at).toLocaleDateString('de-DE') : ''}`}>
-                            <CheckCircle2 className="w-4 h-4" />
-                          </span>
-                        ) : (
-                          <span className="text-gray-300" title="Nicht archiviert">
-                            <XCircle className="w-4 h-4" />
-                          </span>
-                        )}
-                      </td>
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+              </div>
+            ) : filteredInvoices.length === 0 ? (
+              <div className="p-12 text-center">
+                <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-400">Keine Rechnungen gefunden</p>
+                <p className="text-xs text-gray-300 mt-1">
+                  Passen Sie den Zeitraum oder die Filter an, oder starten Sie einen Sync.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Datum</th>
+                      <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Rechnungsnr.</th>
+                      <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Kunde</th>
+                      <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Status</th>
+                      <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Netto</th>
+                      <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Steuer</th>
+                      <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Brutto</th>
+                      <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">PDF</th>
+                      <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Archiv</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredInvoices.map((inv) => {
+                      const cfg = STATUS_CONFIG[inv.status] ?? STATUS_CONFIG['draft'];
+                      return (
+                        <tr key={inv.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-5 py-3.5 text-sm text-gray-600">
+                            {new Date(inv.created_at_stripe).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="text-sm font-mono text-gray-800">{inv.invoice_number || '-'}</span>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <div className="text-sm text-gray-800">{inv.customer_name || '-'}</div>
+                            {inv.customer_email && (
+                              <div className="text-xs text-gray-400">{inv.customer_email}</div>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.color}`}>
+                              {cfg.icon}
+                              {cfg.label}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-sm text-gray-600 text-right font-mono">
+                            {inv.subtotal !== null ? formatCents(inv.subtotal, inv.currency) : '-'}
+                          </td>
+                          <td className="px-5 py-3.5 text-sm text-gray-600 text-right font-mono">
+                            {inv.tax !== null ? formatCents(inv.tax, inv.currency) : '-'}
+                          </td>
+                          <td className="px-5 py-3.5 text-sm text-gray-800 text-right font-semibold font-mono">
+                            {formatCents(inv.total, inv.currency)}
+                          </td>
+                          <td className="px-5 py-3.5 text-center">
+                            {(inv.pdf_storage_path || inv.hosted_invoice_url) ? (
+                              <button
+                                onClick={() => handleOpenPdf(inv)}
+                                disabled={pdfLoading === inv.stripe_invoice_id}
+                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors text-sm disabled:opacity-50"
+                                title="PDF oeffnen"
+                              >
+                                {pdfLoading === inv.stripe_invoice_id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : inv.pdf_storage_path ? (
+                                  <FileText className="w-4 h-4" />
+                                ) : (
+                                  <ExternalLink className="w-4 h-4" />
+                                )}
+                              </button>
+                            ) : (
+                              <span className="text-gray-300">-</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5 text-center">
+                            {inv.pdf_storage_path ? (
+                              <span className="inline-flex items-center gap-1 text-emerald-600" title={`Archiviert: ${inv.pdf_cached_at ? new Date(inv.pdf_cached_at).toLocaleDateString('de-DE') : ''}`}>
+                                <CheckCircle2 className="w-4 h-4" />
+                              </span>
+                            ) : (
+                              <span className="text-gray-300" title="Nicht archiviert">
+                                <XCircle className="w-4 h-4" />
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
-        {!loading && filteredInvoices.length > 0 && (
-          <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-            <span>{filteredInvoices.length} Rechnung{filteredInvoices.length !== 1 ? 'en' : ''}</span>
-            <span>
-              {filteredInvoices.filter((i) => i.pdf_storage_path).length} / {filteredInvoices.length} PDFs archiviert
-            </span>
+            {!loading && filteredInvoices.length > 0 && (
+              <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                <span>{filteredInvoices.length} Rechnung{filteredInvoices.length !== 1 ? 'en' : ''}</span>
+                <span>
+                  {filteredInvoices.filter((i) => i.pdf_storage_path).length} / {filteredInvoices.length} PDFs archiviert
+                </span>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
