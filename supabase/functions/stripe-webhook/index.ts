@@ -87,6 +87,18 @@ async function handleEvent(event: Stripe.Event) {
     return;
   }
 
+  const invoiceArchiveEvents = [
+    'invoice.finalized',
+    'invoice.paid',
+    'invoice.payment_failed',
+    'invoice.voided',
+    'invoice.updated',
+  ];
+
+  if (invoiceArchiveEvents.includes(event.type)) {
+    await upsertInvoiceArchive(event.data.object as Stripe.Invoice);
+  }
+
   if (event.type === 'invoice.paid') {
     await handleInvoicePaid(event);
     return;
@@ -508,6 +520,121 @@ async function handleChargeRefunded(event: Stripe.Event) {
     console.log(`Reversed commission for invoice ${charge.invoice}`);
   } catch (error) {
     console.error('Error handling charge.refunded:', error);
+  }
+}
+
+async function upsertInvoiceArchive(invoice: Stripe.Invoice) {
+  try {
+    const customerId = typeof invoice.customer === 'string' ? invoice.customer : null;
+    const createdAt = new Date(invoice.created * 1000).toISOString();
+    const periodStart = invoice.period_start ? new Date(invoice.period_start * 1000).toISOString() : null;
+    const periodEnd = invoice.period_end ? new Date(invoice.period_end * 1000).toISOString() : null;
+
+    const row = {
+      stripe_invoice_id: invoice.id,
+      stripe_customer_id: customerId,
+      invoice_number: invoice.number ?? null,
+      status: invoice.status ?? 'draft',
+      currency: invoice.currency ?? 'eur',
+      total: invoice.total ?? 0,
+      tax: invoice.tax ?? null,
+      subtotal: invoice.subtotal ?? null,
+      created_at_stripe: createdAt,
+      period_start: periodStart,
+      period_end: periodEnd,
+      customer_email: invoice.customer_email ?? null,
+      customer_name: invoice.customer_name ?? null,
+      hosted_invoice_url: invoice.hosted_invoice_url ?? null,
+      invoice_pdf_url: invoice.invoice_pdf ?? null,
+      updated_at: new Date().toISOString(),
+      raw: {
+        id: invoice.id,
+        number: invoice.number,
+        status: invoice.status,
+        total: invoice.total,
+        tax: invoice.tax,
+        subtotal: invoice.subtotal,
+        currency: invoice.currency,
+        lines_count: invoice.lines?.data?.length ?? 0,
+      },
+    };
+
+    const { error: upsertError } = await getSupabase()
+      .from('stripe_invoices')
+      .upsert(row, { onConflict: 'stripe_invoice_id' });
+
+    if (upsertError) {
+      console.error('Error upserting invoice archive:', upsertError);
+      return;
+    }
+
+    console.log(`Archived invoice ${invoice.id} (status: ${invoice.status})`);
+
+    if (invoice.invoice_pdf && ['open', 'paid', 'uncollectible', 'void'].includes(invoice.status ?? '')) {
+      await cacheInvoicePdf(invoice);
+    }
+  } catch (err: any) {
+    console.error('Error in upsertInvoiceArchive:', err.message);
+  }
+}
+
+async function cacheInvoicePdf(invoice: Stripe.Invoice) {
+  try {
+    if (!invoice.invoice_pdf) return;
+
+    const createdDate = new Date(invoice.created * 1000);
+    const yyyy = createdDate.getFullYear().toString();
+    const mm = String(createdDate.getMonth() + 1).padStart(2, '0');
+    const safeName = (invoice.number ?? invoice.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const storagePath = `stripe/invoices/${yyyy}/${mm}/${invoice.id}_${safeName}.pdf`;
+
+    const { data: existing } = await getSupabase()
+      .from('stripe_invoices')
+      .select('pdf_storage_path, pdf_cached_at, updated_at')
+      .eq('stripe_invoice_id', invoice.id)
+      .maybeSingle();
+
+    if (existing?.pdf_storage_path && existing.pdf_cached_at) {
+      const cachedAt = new Date(existing.pdf_cached_at).getTime();
+      const updatedAt = new Date(existing.updated_at).getTime();
+      if (cachedAt >= updatedAt) {
+        console.log(`PDF already cached for ${invoice.id}`);
+        return;
+      }
+    }
+
+    const pdfResponse = await fetch(invoice.invoice_pdf);
+    if (!pdfResponse.ok) {
+      console.error(`Failed to download PDF for ${invoice.id}: ${pdfResponse.status}`);
+      return;
+    }
+
+    const pdfBuffer = await pdfResponse.arrayBuffer();
+
+    const { error: uploadError } = await getSupabase().storage
+      .from('billing')
+      .upload(storagePath, pdfBuffer, {
+        contentType: 'application/pdf',
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error(`Failed to upload PDF for ${invoice.id}:`, uploadError);
+      return;
+    }
+
+    await getSupabase()
+      .from('stripe_invoices')
+      .update({
+        pdf_storage_path: storagePath,
+        pdf_cached_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('stripe_invoice_id', invoice.id);
+
+    console.log(`Cached PDF for invoice ${invoice.id} at ${storagePath}`);
+  } catch (err: any) {
+    console.error(`Error caching PDF for ${invoice.id}:`, err.message);
   }
 }
 

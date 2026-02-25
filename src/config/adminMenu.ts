@@ -15,6 +15,7 @@ import {
   HelpCircle,
   PenLine,
   Monitor,
+  Receipt,
   type LucideIcon,
 } from "lucide-react";
 
@@ -36,7 +37,8 @@ export type AdminTabKey =
   | "email_settings"
   | "cron_jobs"
   | "faqs"
-  | "cms";
+  | "cms"
+  | "invoices";
 
 export interface AdminMenuItem {
   key: AdminTabKey;
@@ -92,6 +94,14 @@ export const adminMenuGroups: AdminMenuGroup[] = [
       { key: "seo", label: "SEO", icon: Globe },
       { key: "affiliates", label: "Affiliates", icon: TrendingUp },
       { key: "pro_features", label: "Pro-Features", icon: Sparkles },
+    ],
+  },
+  {
+    id: "billing",
+    label: "Finanzen",
+    defaultOpen: true,
+    items: [
+      { key: "invoices", label: "Rechnungen", icon: Receipt },
     ],
   },
   {

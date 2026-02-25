@@ -34,6 +34,7 @@ import AdminCronJobsView from "../components/admin/AdminCronJobsView";
 import AdminFaqsView from "../components/admin/AdminFaqsView";
 import AdminCmsView from "../components/admin/AdminCmsView";
 import AdminSystemInfoView from "../components/admin/AdminSystemInfoView";
+import AdminInvoicesView from "../components/admin/AdminInvoicesView";
 import AdminAnalyticsChart from "../components/admin/AdminAnalyticsChart";
 import DeleteUserModal from "../components/admin/DeleteUserModal";
 import RefundWizard from "../components/admin/RefundWizard";
@@ -625,6 +626,7 @@ export function Admin() {
         {activeTab === "cron_jobs" && <AdminCronJobsView />}
         {activeTab === "faqs" && <AdminFaqsView />}
         {activeTab === "cms" && <AdminCmsView />}
+        {activeTab === "invoices" && <AdminInvoicesView />}
       </AdminLayout>
 
       {refundTarget && (
