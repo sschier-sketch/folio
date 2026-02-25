@@ -255,8 +255,90 @@ Deno.serve(async (req) => {
       }
     }
 
+    // --- Stripe Tax: ensure customer has a country for tax calculation ---
+    // Priority: 1) account_profiles.address_country  2) existing Stripe customer  3) fallback "DE"
+    // - Customer without country -> Stripe Customer gets country "DE"
+    // - DE customer -> MwSt (VAT) will be shown on invoice
+    // - EU customer with VAT-ID -> Reverse Charge (0%) + VAT-ID stored
+    const countryNameToIso: Record<string, string> = {
+      'deutschland': 'DE', 'germany': 'DE',
+      'österreich': 'AT', 'austria': 'AT',
+      'schweiz': 'CH', 'switzerland': 'CH',
+      'frankreich': 'FR', 'france': 'FR',
+      'italien': 'IT', 'italy': 'IT',
+      'spanien': 'ES', 'spain': 'ES',
+      'niederlande': 'NL', 'netherlands': 'NL',
+      'belgien': 'BE', 'belgium': 'BE',
+      'polen': 'PL', 'poland': 'PL',
+      'tschechien': 'CZ', 'czech republic': 'CZ', 'czechia': 'CZ',
+      'dänemark': 'DK', 'denmark': 'DK',
+      'schweden': 'SE', 'sweden': 'SE',
+      'finnland': 'FI', 'finland': 'FI',
+      'portugal': 'PT',
+      'irland': 'IE', 'ireland': 'IE',
+      'griechenland': 'GR', 'greece': 'GR',
+      'ungarn': 'HU', 'hungary': 'HU',
+      'rumänien': 'RO', 'romania': 'RO',
+      'bulgarien': 'BG', 'bulgaria': 'BG',
+      'kroatien': 'HR', 'croatia': 'HR',
+      'slowakei': 'SK', 'slovakia': 'SK',
+      'slowenien': 'SI', 'slovenia': 'SI',
+      'litauen': 'LT', 'lithuania': 'LT',
+      'lettland': 'LV', 'latvia': 'LV',
+      'estland': 'EE', 'estonia': 'EE',
+      'luxemburg': 'LU', 'luxembourg': 'LU',
+      'malta': 'MT',
+      'zypern': 'CY', 'cyprus': 'CY',
+    };
+
+    function resolveCountryIso(raw: string | null | undefined): string | null {
+      if (!raw) return null;
+      const trimmed = raw.trim();
+      if (trimmed.length === 2 && /^[A-Z]{2}$/.test(trimmed)) return trimmed;
+      if (trimmed.length === 2) return trimmed.toUpperCase();
+      return countryNameToIso[trimmed.toLowerCase()] ?? null;
+    }
+
+    let customerCountryIso: string | null = null;
+
+    // 1) Try account_profiles
+    const { data: profile } = await supabase
+      .from('account_profiles')
+      .select('address_country')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (profile?.address_country) {
+      customerCountryIso = resolveCountryIso(profile.address_country);
+    }
+
+    // 2) Try existing Stripe customer address
+    if (!customerCountryIso) {
+      try {
+        const stripeCustomer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+        if (stripeCustomer.address?.country) {
+          customerCountryIso = stripeCustomer.address.country;
+        }
+      } catch (_) { /* ignore – customer was already verified above */ }
+    }
+
+    // 3) Fallback: Germany
+    if (!customerCountryIso) {
+      customerCountryIso = 'DE';
+      console.log(`No country found for customer ${customerId}, using fallback "DE"`);
+    }
+
+    // Update Stripe customer with country so Stripe Tax can calculate correctly
+    try {
+      await stripe.customers.update(customerId, {
+        address: { country: customerCountryIso },
+      });
+    } catch (updateErr: any) {
+      console.warn(`Could not update customer country: ${updateErr.message}`);
+    }
+
     // create Checkout Session
-    console.log(`Creating checkout session for customer ${customerId} with price ${price_id} in ${mode} mode`);
+    console.log(`Creating checkout session for customer ${customerId} with price ${price_id} in ${mode} mode (country: ${customerCountryIso})`);
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -270,6 +352,9 @@ Deno.serve(async (req) => {
       mode,
       success_url,
       cancel_url,
+      automatic_tax: { enabled: true },
+      tax_id_collection: { enabled: true },
+      customer_update: { address: 'auto', name: 'auto' },
     });
 
     console.log(`Created checkout session ${session.id} for customer ${customerId}`);
