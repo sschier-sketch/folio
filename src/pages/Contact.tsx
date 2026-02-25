@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { RevealOnScroll } from "../components/common/RevealOnScroll";
 
-const WHATSAPP_NUMBER = "4915731853648";
+const WHATSAPP_NUMBER = "493022334467";
 
 export default function Contact() {
   const { language } = useLanguage();
