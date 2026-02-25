@@ -60,8 +60,13 @@ function normalizeSubject(subject: string): string {
 }
 
 function extractTicketNumber(subject: string): string | null {
-  const match = subject.match(/\[Ticket\s*#([A-Z0-9-]+)\]/i);
-  return match ? match[1] : null;
+  const exact = subject.match(/\[Ticket\s*#\s*(CONTACT-\d{8}-\d{3})\]/i);
+  if (exact) return exact[1].toUpperCase();
+
+  const loose = subject.match(/(CONTACT-\d{8}-\d{3})/i);
+  if (loose) return loose[1].toUpperCase();
+
+  return null;
 }
 
 function parseReferences(refs: string | undefined | null): string[] {
@@ -433,18 +438,17 @@ Deno.serve(async (req: Request) => {
         if (msgErr) {
           console.error("[inbound] Failed to insert ticket message:", msgErr);
         } else {
-          const newStatus = ticket.status === "closed" ? "open" : "open";
           await supabase
             .from("tickets")
             .update({
-              status: newStatus,
+              status: "open",
               updated_at: new Date().toISOString(),
               last_email_received_at: receivedAt,
             })
             .eq("id", ticket.id);
 
           console.log(
-            `[inbound] Created ticket_message for ticket ${ticketNumber}, status -> ${newStatus}`
+            `[inbound] Created ticket_message for ticket ${ticketNumber}, status -> open`
           );
         }
 
