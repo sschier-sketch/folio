@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Mail, Eye, Code, FileText } from "lucide-react";
+import { Mail, Eye, Clock, CheckCircle, AlertTriangle, Megaphone, Send } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { Button } from "./ui/Button";
+
 interface EmailTemplate {
   id: string;
   template_key: string;
@@ -11,19 +12,41 @@ interface EmailTemplate {
   body_text: string;
   variables: string[];
   description: string;
-  language: 'de' | 'en';
+  language: "de" | "en";
+  category: "transactional" | "marketing";
   created_at: string;
   updated_at: string;
 }
+
+const ACTIVE_TEMPLATE_KEYS = new Set([
+  "registration",
+  "magic_link",
+  "password_reset",
+  "tenant_password_reset",
+  "referral_invitation",
+  "referral_reward_earned",
+  "trial_ended",
+  "trial_ending",
+  "ticket_reply",
+  "admin_notify_new_ticket",
+  "tenant_portal_activation",
+]);
+
+const CRON_TEMPLATE_KEYS: Record<string, string> = {
+  trial_ended: "cron-trial-ended",
+  trial_ending: "cron-trial-ending",
+};
+
 export function AdminEmailTemplatesView() {
-  const [allTemplates, setAllTemplates] = useState<EmailTemplate[]>([]);
-  const [groupedTemplates, setGroupedTemplates] = useState<Map<string, EmailTemplate[]>>(new Map());
+  const [groupedTemplates, setGroupedTemplates] = useState<
+    Map<string, EmailTemplate[]>
+  >(new Map());
   const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>("");
-  const [selectedLanguage, setSelectedLanguage] = useState<'de' | 'en'>('de');
+  const [selectedLanguage, setSelectedLanguage] = useState<"de" | "en">("de");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editedTemplate, setEditedTemplate] = useState<EmailTemplate | null>(
-    null,
+    null
   );
 
   useEffect(() => {
@@ -33,12 +56,13 @@ export function AdminEmailTemplatesView() {
   useEffect(() => {
     if (selectedTemplateKey && groupedTemplates.has(selectedTemplateKey)) {
       const templates = groupedTemplates.get(selectedTemplateKey)!;
-      const template = templates.find(t => t.language === selectedLanguage);
+      const template = templates.find((t) => t.language === selectedLanguage);
       if (template) {
         setEditedTemplate({ ...template });
       }
     }
   }, [selectedTemplateKey, selectedLanguage, groupedTemplates]);
+
   async function loadTemplates() {
     try {
       setLoading(true);
@@ -49,10 +73,8 @@ export function AdminEmailTemplatesView() {
 
       if (error) throw error;
 
-      setAllTemplates(data || []);
-
       const grouped = new Map<string, EmailTemplate[]>();
-      (data || []).forEach(template => {
+      (data || []).forEach((template) => {
         if (!grouped.has(template.template_key)) {
           grouped.set(template.template_key, []);
         }
@@ -71,6 +93,7 @@ export function AdminEmailTemplatesView() {
       setLoading(false);
     }
   }
+
   async function handleSave() {
     if (!editedTemplate) return;
     try {
@@ -83,6 +106,7 @@ export function AdminEmailTemplatesView() {
           body_html: editedTemplate.body_html,
           body_text: editedTemplate.body_text,
           description: editedTemplate.description,
+          category: editedTemplate.category,
           updated_at: new Date().toISOString(),
         })
         .eq("id", editedTemplate.id);
@@ -96,6 +120,7 @@ export function AdminEmailTemplatesView() {
       setSaving(false);
     }
   }
+
   function getVariableLabel(variable: string): string {
     const labels: Record<string, string> = {
       tenant_name: "Mieter Name",
@@ -118,7 +143,10 @@ export function AdminEmailTemplatesView() {
     return labels[variable] || variable;
   }
 
-  function replaceVariables(content: string, variables: string[] | null | undefined): string {
+  function replaceVariables(
+    content: string,
+    variables: string[] | null | undefined
+  ): string {
     let result = content;
     if (!variables || !Array.isArray(variables)) {
       return result;
@@ -130,32 +158,32 @@ export function AdminEmailTemplatesView() {
     });
     return result;
   }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        {" "}
-        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />{" "}
+        <div className="w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      {" "}
       <div className="lg:col-span-1 bg-white rounded overflow-hidden">
-        {" "}
         <div className="p-4 border-b">
-          {" "}
-          <h2 className="text-lg font-bold text-dark">E-Mail Templates</h2>{" "}
+          <h2 className="text-lg font-bold text-dark">E-Mail Templates</h2>
           <p className="text-xs text-gray-300 mt-1">
             {groupedTemplates.size} Templates
-          </p>{" "}
-        </div>{" "}
+          </p>
+        </div>
         <div className="divide-y divide-slate-200">
-          {" "}
           {Array.from(groupedTemplates.entries()).map(([key, templates]) => {
-            const deTemplate = templates.find(t => t.language === 'de');
-            const enTemplate = templates.find(t => t.language === 'en');
+            const deTemplate = templates.find((t) => t.language === "de");
+            const enTemplate = templates.find((t) => t.language === "en");
             const displayTemplate = deTemplate || templates[0];
+            const isActive = ACTIVE_TEMPLATE_KEYS.has(key);
+            const cronJob = CRON_TEMPLATE_KEYS[key];
+            const isMarketing = displayTemplate.category === "marketing";
 
             return (
               <button
@@ -163,22 +191,31 @@ export function AdminEmailTemplatesView() {
                 onClick={() => setSelectedTemplateKey(key)}
                 className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${selectedTemplateKey === key ? "bg-primary-blue/5" : ""}`}
               >
-                {" "}
                 <div className="flex items-start gap-3">
-                  {" "}
-                  <div className="flex-shrink-0 w-10 h-10 bg-primary-blue/10 rounded-full flex items-center justify-center">
-                    {" "}
-                    <Mail className="w-5 h-5 text-primary-blue" />{" "}
-                  </div>{" "}
+                  <div
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${isActive ? "bg-primary-blue/10" : "bg-gray-100"}`}
+                  >
+                    <Mail
+                      className={`w-5 h-5 ${isActive ? "text-primary-blue" : "text-gray-300"}`}
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    {" "}
-                    <h3 className="font-semibold text-dark mb-1">
-                      {displayTemplate.template_name}
-                    </h3>{" "}
-                    <p className="text-xs text-gray-300 line-clamp-2">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <h3
+                        className={`font-semibold truncate ${isActive ? "text-dark" : "text-gray-400"}`}
+                      >
+                        {displayTemplate.template_name || key}
+                      </h3>
+                      {cronJob && (
+                        <span title={`Cron: ${cronJob}`}>
+                          <Clock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-300 line-clamp-1">
                       {displayTemplate.description}
-                    </p>{" "}
-                    <div className="flex gap-1 mt-2">
+                    </p>
+                    <div className="flex flex-wrap gap-1 mt-2">
                       {deTemplate && (
                         <span className="inline-block px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700">
                           DE
@@ -189,32 +226,70 @@ export function AdminEmailTemplatesView() {
                           EN
                         </span>
                       )}
+                      {isMarketing ? (
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-xs rounded bg-orange-100 text-orange-700">
+                          <Megaphone className="w-3 h-3" />
+                          Mkt
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-600">
+                          <Send className="w-3 h-3" />
+                          Txn
+                        </span>
+                      )}
+                      {isActive ? (
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-xs rounded bg-emerald-100 text-emerald-700">
+                          <CheckCircle className="w-3 h-3" />
+                          Aktiv
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-xs rounded bg-amber-50 text-amber-600">
+                          <AlertTriangle className="w-3 h-3" />
+                          Unbenutzt
+                        </span>
+                      )}
                     </div>
-                  </div>{" "}
-                </div>{" "}
+                  </div>
+                </div>
               </button>
             );
-          })}{" "}
-        </div>{" "}
-      </div>{" "}
+          })}
+        </div>
+      </div>
       <div className="lg:col-span-3 bg-white rounded overflow-hidden">
         {editedTemplate ? (
           <div className="overflow-auto max-h-[calc(100vh-200px)]">
             <div className="p-6 border-b">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-dark mb-1">
-                    {editedTemplate.template_name || editedTemplate.template_key}
-                  </h2>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h2 className="text-xl font-bold text-dark">
+                      {editedTemplate.template_name ||
+                        editedTemplate.template_key}
+                    </h2>
+                    {ACTIVE_TEMPLATE_KEYS.has(editedTemplate.template_key) ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
+                        <CheckCircle className="w-3 h-3" />
+                        Aktiv im Code
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-600">
+                        <AlertTriangle className="w-3 h-3" />
+                        Nicht im Code verwendet
+                      </span>
+                    )}
+                    {CRON_TEMPLATE_KEYS[editedTemplate.template_key] && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700">
+                        <Clock className="w-3 h-3" />
+                        {CRON_TEMPLATE_KEYS[editedTemplate.template_key]}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-400">
                     {editedTemplate.description}
                   </p>
                 </div>
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  variant="primary"
-                >
+                <Button onClick={handleSave} disabled={saving} variant="primary">
                   {saving ? "Speichern..." : "Speichern"}
                 </Button>
               </div>
@@ -284,16 +359,38 @@ export function AdminEmailTemplatesView() {
                   </label>
                   <select
                     value={selectedLanguage}
-                    onChange={(e) => setSelectedLanguage(e.target.value as 'de' | 'en')}
+                    onChange={(e) =>
+                      setSelectedLanguage(e.target.value as "de" | "en")
+                    }
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   >
                     <option value="de">Deutsch</option>
                     <option value="en">English</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Kategorie
+                  </label>
+                  <select
+                    value={editedTemplate.category || "transactional"}
+                    onChange={(e) =>
+                      setEditedTemplate({
+                        ...editedTemplate,
+                        category: e.target.value as
+                          | "transactional"
+                          | "marketing",
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  >
+                    <option value="transactional">Transaktional</option>
+                    <option value="marketing">Marketing</option>
+                  </select>
+                </div>
                 {editedTemplate.variables &&
                   editedTemplate.variables.length > 0 && (
-                    <div>
+                    <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-400 mb-1">
                         Verfügbare Variablen
                       </label>
@@ -306,7 +403,9 @@ export function AdminEmailTemplatesView() {
                           >
                             <span className="font-mono">{`{{${variable}}}`}</span>
                             <span className="text-gray-500">-</span>
-                            <span className="font-medium">{getVariableLabel(variable)}</span>
+                            <span className="font-medium">
+                              {getVariableLabel(variable)}
+                            </span>
                           </span>
                         ))}
                       </div>
@@ -342,7 +441,7 @@ export function AdminEmailTemplatesView() {
                       dangerouslySetInnerHTML={{
                         __html: replaceVariables(
                           editedTemplate.body_html,
-                          editedTemplate.variables || [],
+                          editedTemplate.variables || []
                         ),
                       }}
                     />
@@ -375,7 +474,7 @@ export function AdminEmailTemplatesView() {
                     <pre className="whitespace-pre-wrap text-sm text-dark font-sans">
                       {replaceVariables(
                         editedTemplate.body_text,
-                        editedTemplate.variables || [],
+                        editedTemplate.variables || []
                       )}
                     </pre>
                   </div>
@@ -385,15 +484,13 @@ export function AdminEmailTemplatesView() {
           </div>
         ) : (
           <div className="flex items-center justify-center h-96 text-gray-300">
-            {" "}
             <div className="text-center">
-              {" "}
-              <Mail className="w-16 h-16 mx-auto mb-4 text-gray-200" />{" "}
-              <p>Wählen Sie ein Template aus der Liste</p>{" "}
-            </div>{" "}
+              <Mail className="w-16 h-16 mx-auto mb-4 text-gray-200" />
+              <p>Wählen Sie ein Template aus der Liste</p>
+            </div>
           </div>
-        )}{" "}
-      </div>{" "}
+        )}
+      </div>
     </div>
   );
 }
