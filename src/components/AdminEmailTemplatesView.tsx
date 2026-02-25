@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Mail, Eye, Clock, CheckCircle, AlertTriangle, Megaphone, Send } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Mail, Eye, Clock, CheckCircle, AlertTriangle, Megaphone, Send, Filter } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { Button } from "./ui/Button";
 
@@ -18,6 +18,9 @@ interface EmailTemplate {
   updated_at: string;
 }
 
+type StatusFilter = "all" | "active" | "inactive";
+type CategoryFilter = "all" | "transactional" | "marketing";
+
 const ACTIVE_TEMPLATE_KEYS = new Set([
   "registration",
   "magic_link",
@@ -32,6 +35,7 @@ const ACTIVE_TEMPLATE_KEYS = new Set([
   "tenant_portal_activation",
   "subscription_started",
   "subscription_cancelled",
+  "contact_ticket_confirmation",
 ]);
 
 const CRON_TEMPLATE_KEYS: Record<string, string> = {
@@ -50,6 +54,8 @@ export function AdminEmailTemplatesView() {
   const [editedTemplate, setEditedTemplate] = useState<EmailTemplate | null>(
     null
   );
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
 
   useEffect(() => {
     loadTemplates();
@@ -161,6 +167,27 @@ export function AdminEmailTemplatesView() {
     return result;
   }
 
+  const filteredEntries = useMemo(() => {
+    return Array.from(groupedTemplates.entries()).filter(([key, templates]) => {
+      const isActive = ACTIVE_TEMPLATE_KEYS.has(key);
+      if (statusFilter === "active" && !isActive) return false;
+      if (statusFilter === "inactive" && isActive) return false;
+
+      if (categoryFilter !== "all") {
+        const displayTemplate = templates.find((t) => t.language === "de") || templates[0];
+        if (displayTemplate.category !== categoryFilter) return false;
+      }
+
+      return true;
+    });
+  }, [groupedTemplates, statusFilter, categoryFilter]);
+
+  const activeCount = useMemo(
+    () => Array.from(groupedTemplates.keys()).filter((k) => ACTIVE_TEMPLATE_KEYS.has(k)).length,
+    [groupedTemplates]
+  );
+  const inactiveCount = groupedTemplates.size - activeCount;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -175,11 +202,60 @@ export function AdminEmailTemplatesView() {
         <div className="p-4 border-b">
           <h2 className="text-lg font-bold text-dark">E-Mail Templates</h2>
           <p className="text-xs text-gray-300 mt-1">
-            {groupedTemplates.size} Templates
+            {filteredEntries.length} von {groupedTemplates.size} Templates
           </p>
         </div>
+        <div className="p-3 border-b space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 mb-1">
+            <Filter className="w-3.5 h-3.5" />
+            Filter
+          </div>
+          <div className="flex gap-1">
+            {([
+              ["all", "Alle", null],
+              ["active", "Aktiv", activeCount],
+              ["inactive", "Inaktiv", inactiveCount],
+            ] as const).map(([value, label, count]) => (
+              <button
+                key={value}
+                onClick={() => setStatusFilter(value as StatusFilter)}
+                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors ${
+                  statusFilter === value
+                    ? "bg-primary-blue text-white"
+                    : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                }`}
+              >
+                {label}
+                {count !== null && (
+                  <span className={`ml-1 ${statusFilter === value ? "text-white/70" : "text-gray-300"}`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1">
+            {([
+              ["all", "Alle"],
+              ["transactional", "Txn"],
+              ["marketing", "Mkt"],
+            ] as const).map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => setCategoryFilter(value as CategoryFilter)}
+                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors ${
+                  categoryFilter === value
+                    ? "bg-primary-blue text-white"
+                    : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="divide-y divide-slate-200">
-          {Array.from(groupedTemplates.entries()).map(([key, templates]) => {
+          {filteredEntries.map(([key, templates]) => {
             const deTemplate = templates.find((t) => t.language === "de");
             const enTemplate = templates.find((t) => t.language === "en");
             const displayTemplate = deTemplate || templates[0];

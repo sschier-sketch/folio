@@ -134,6 +134,22 @@ Deno.serve(async (req: Request) => {
       console.warn("Could not queue admin notification:", notifyErr);
     }
 
+    try {
+      await supabase.from("email_logs").insert({
+        to_email: formData.email,
+        template_key: "contact_ticket_confirmation",
+        variables: {
+          contact_name: formData.name,
+          ticket_number: ticketNumber,
+          subject: formData.subject,
+        },
+        status: "queued",
+        idempotency_key: `contact_confirm_${ticketNumber}`,
+      });
+    } catch (confirmErr) {
+      console.warn("Could not queue confirmation email:", confirmErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
