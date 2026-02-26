@@ -627,7 +627,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
           )}
         </div>
 
-        {recipientType === 'tenant' && !isMultiSend && (
+        {recipientType === 'tenant' && (selectedTenant || isMultiSend) && (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50/50">
             <label className="flex items-center gap-3 px-4 py-3 cursor-pointer">
               <input
@@ -645,9 +645,11 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
               <div className="px-4 pb-3 flex items-start gap-2 text-xs text-emerald-700">
                 <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                 <span>
-                  {selectedTenant
-                    ? `Die Nachricht wird im Mieterportal von ${selectedTenant.first_name} ${selectedTenant.last_name} angezeigt.`
-                    : 'Bitte wählen Sie einen Mieter aus.'}
+                  {isMultiSend
+                    ? `Die Nachricht wird im Mieterportal aller ${recipientCount} Mieter angezeigt.`
+                    : selectedTenant
+                      ? `Die Nachricht wird im Mieterportal von ${selectedTenant.first_name} ${selectedTenant.last_name} angezeigt.`
+                      : 'Bitte wählen Sie einen Mieter aus.'}
                 </span>
               </div>
             )}
