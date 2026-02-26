@@ -9,6 +9,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useSubscription } from "../hooks/useSubscription";
+import { useAuth } from "../contexts/AuthContext";
 import IncomeView from "./finances/IncomeView";
 import ExpensesView from "./finances/ExpensesView";
 import CashflowView from "./finances/CashflowView";
@@ -19,6 +20,18 @@ import AnlageVView from "./finances/AnlageVView";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
+import { Button } from "./ui/Button";
+import {
+  loadIncomeExportData,
+  loadExpenseExportData,
+  loadCashflowExportData,
+  exportIncomeToCSV,
+  exportIncomeToExcel,
+  exportExpensesToCSV,
+  exportExpensesToExcel,
+  exportCashflowToCSV,
+  exportCashflowToExcel,
+} from "../lib/financeExportUtils";
 
 type Tab =
   | "income"
@@ -29,9 +42,14 @@ type Tab =
   | "intelligence"
   | "bank";
 
+const EXPORTABLE_TABS: Tab[] = ["income", "expenses", "cashflow"];
+
 export default function FinancesView() {
+  const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [activeTab, setActiveTab] = useState<Tab>("income");
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const tabs = [
     { id: "income" as Tab, label: "Einnahmen", icon: TrendingUp },
@@ -43,13 +61,76 @@ export default function FinancesView() {
     { id: "bank" as Tab, label: "Bankanbindung", icon: CreditCard, premium: true },
   ];
 
+  const canExport = EXPORTABLE_TABS.includes(activeTab) && (activeTab !== "cashflow" || isPremium);
+
+  async function handleExport(format: "csv" | "excel") {
+    if (!user || exporting) return;
+    setExporting(true);
+    setShowExportMenu(false);
+
+    try {
+      if (activeTab === "income") {
+        const data = await loadIncomeExportData(user.id);
+        if (data.length === 0) {
+          alert("Keine Einnahmen zum Exportieren vorhanden.");
+          return;
+        }
+        format === "csv" ? exportIncomeToCSV(data) : exportIncomeToExcel(data);
+      } else if (activeTab === "expenses") {
+        const data = await loadExpenseExportData(user.id);
+        if (data.length === 0) {
+          alert("Keine Ausgaben zum Exportieren vorhanden.");
+          return;
+        }
+        format === "csv" ? exportExpensesToCSV(data) : exportExpensesToExcel(data);
+      } else if (activeTab === "cashflow") {
+        const data = await loadCashflowExportData(user.id);
+        format === "csv" ? exportCashflowToCSV(data) : exportCashflowToExcel(data);
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      alert("Fehler beim Exportieren der Daten.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-dark">Finanzen</h1>
-        <p className="text-gray-400 mt-1">
-          Verwalten Sie Ihre Einnahmen, Ausgaben und den Cashflow
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-dark">Finanzen</h1>
+          <p className="text-gray-400 mt-1">
+            Verwalten Sie Ihre Einnahmen, Ausgaben und den Cashflow
+          </p>
+        </div>
+        {canExport && (
+          <div className="relative">
+            <Button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              variant="outlined"
+              disabled={exporting}
+            >
+              {exporting ? "Exportiert..." : "Exportieren"}
+            </Button>
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
+                <button
+                  onClick={() => handleExport("csv")}
+                  className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  CSV exportieren
+                </button>
+                <button
+                  onClick={() => handleExport("excel")}
+                  className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Excel exportieren
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-lg mb-6">
@@ -61,7 +142,12 @@ export default function FinancesView() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => !isDisabled && setActiveTab(tab.id)}
+                  onClick={() => {
+                    if (!isDisabled) {
+                      setActiveTab(tab.id);
+                      setShowExportMenu(false);
+                    }
+                  }}
                   disabled={isDisabled}
                   className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
                     isDisabled
