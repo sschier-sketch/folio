@@ -1,9 +1,9 @@
 import { supabase } from "./supabase";
 import { SITE_URL } from "../config/site";
 
-const DEFAULT_TITLE = "rentably – Immobilienverwaltung fuer Vermieter";
+const DEFAULT_TITLE = "Startseite – rentably";
 const DEFAULT_DESCRIPTION =
-  "Immobilienverwaltung kostenlos fuer Vermieter. Nebenkostenabrechnung, Mietverwaltung & mehr.";
+  "Rentably ist die moderne Plattform für Vermieter. Verwalten Sie Ihre Immobilien, Mieter und Finanzen einfach und effizient.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/rentably-app.jpg`;
 
 const DEFAULT_HEAD_HTML = `<link rel="canonical" href="{{PAGE_URL}}" />
