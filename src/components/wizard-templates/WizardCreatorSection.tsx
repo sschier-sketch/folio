@@ -140,7 +140,7 @@ export default function WizardCreatorSection({ onStartWizard }: Props) {
                       role="button"
                       title="Entwurf löschen"
                       onClick={(e) => deleteDraft(e, draft.id)}
-                      className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                      className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all flex-shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </span>
