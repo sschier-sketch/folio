@@ -60,7 +60,7 @@ const TABS: { id: Tab; label: string; icon: typeof FileText }[] = [
   { id: "kuendigung", label: "Kündigung", icon: FileSignature },
   { id: "abmahnungen", label: "Abmahnungen", icon: AlertTriangle },
   { id: "sonstiges", label: "Sonstiges", icon: FolderOpen },
-  { id: "downloads", label: "Downloads", icon: Download },
+  { id: "downloads", label: "Download-Vorlagen", icon: Download },
 ];
 
 export default function TemplatesView() {
