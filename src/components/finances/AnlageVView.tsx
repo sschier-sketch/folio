@@ -45,9 +45,8 @@ export default function AnlageVView() {
   const [loadingProps, setLoadingProps] = useState(true);
 
   const currentYear = new Date().getFullYear();
-  const defaultYear = currentYear - 1;
 
-  const [year, setYear] = useState(defaultYear);
+  const [year, setYear] = useState(currentYear);
   const [selectedPropertyId, setSelectedPropertyId] = useState('');
   const [ownershipShare, setOwnershipShare] = useState(100);
   const [summary, setSummary] = useState<AnlageVSummary | null>(null);

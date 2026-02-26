@@ -1,17 +1,16 @@
 import * as XLSX from 'xlsx';
 import { supabase } from './supabase';
+import {
+  generateHausgeldRows,
+  isExpenseSupersededBySystemHausgeld,
+  getMonthlyHausgeldEur,
+  type HausgeldUnit,
+  HAUSGELD_UNIT_FIELDS,
+} from './hausgeldUtils';
 
 const formatDate = (date: string | null): string => {
   if (!date) return '-';
   return new Date(date).toLocaleDateString('de-DE');
-};
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 2,
-  }).format(value);
 };
 
 interface IncomeRow {
@@ -56,58 +55,127 @@ function getStatusLabel(status: string): string {
   return STATUS_LABELS[status] || status;
 }
 
+async function loadHausgeldUnits(userId: string): Promise<HausgeldUnit[]> {
+  const { data } = await supabase
+    .from('property_units')
+    .select(HAUSGELD_UNIT_FIELDS)
+    .eq('user_id', userId);
+  return (data || []) as HausgeldUnit[];
+}
+
 export async function loadIncomeExportData(userId: string): Promise<IncomeRow[]> {
-  const { data, error } = await supabase
-    .from('income_entries')
-    .select('entry_date, description, amount, status, recipient, category_id, properties(name)')
-    .eq('user_id', userId)
-    .order('entry_date', { ascending: false });
+  const [manualRes, contractsRes, propRes, catRes] = await Promise.all([
+    supabase
+      .from('income_entries')
+      .select('entry_date, description, amount, status, recipient, category_id, properties(name)')
+      .eq('user_id', userId)
+      .order('entry_date', { ascending: false }),
+    supabase
+      .from('rental_contracts')
+      .select('id, total_rent, base_rent, additional_costs, start_date, contract_start, contract_end, status, property_id')
+      .eq('user_id', userId)
+      .eq('status', 'active'),
+    supabase
+      .from('properties')
+      .select('id, name')
+      .eq('user_id', userId),
+    supabase
+      .from('expense_categories')
+      .select('id, name'),
+  ]);
 
-  if (error || !data) return [];
+  const catMap = new Map((catRes.data || []).map((c: any) => [c.id, c.name]));
+  const propMap = new Map((propRes.data || []).map((p: any) => [p.id, p.name]));
 
-  const { data: categories } = await supabase
-    .from('expense_categories')
-    .select('id, name');
+  const rows: IncomeRow[] = [];
 
-  const catMap = new Map((categories || []).map(c => [c.id, c.name]));
+  for (const row of (manualRes.data || []) as any[]) {
+    rows.push({
+      entry_date: row.entry_date,
+      description: row.description,
+      property_name: row.properties?.name || '-',
+      status: row.status,
+      amount: parseFloat(row.amount?.toString() || '0'),
+      recipient: row.recipient,
+      category_name: catMap.get(row.category_id) || null,
+    });
+  }
 
-  return data.map((row: any) => ({
-    entry_date: row.entry_date,
-    description: row.description,
-    property_name: row.properties?.name || '-',
-    status: row.status,
-    amount: parseFloat(row.amount?.toString() || '0'),
-    recipient: row.recipient,
-    category_name: catMap.get(row.category_id) || null,
-  }));
+  const today = new Date();
+  for (const c of (contractsRes.data || []) as any[]) {
+    const startDate = new Date(c.contract_start || c.start_date);
+    const endDate = c.contract_end ? new Date(c.contract_end) : null;
+    if (startDate > today) continue;
+    if (endDate && endDate < today) continue;
+
+    rows.push({
+      entry_date: today.toISOString().split('T')[0],
+      description: 'Mieteinnahmen (monatlich)',
+      property_name: propMap.get(c.property_id) || '-',
+      status: 'active',
+      amount: parseFloat(c.base_rent?.toString() || c.total_rent?.toString() || '0'),
+      recipient: null,
+      category_name: 'Mieteinnahmen',
+    });
+  }
+
+  return rows;
 }
 
 export async function loadExpenseExportData(userId: string): Promise<ExpenseRow[]> {
-  const { data, error } = await supabase
-    .from('expenses')
-    .select('expense_date, description, amount, status, recipient, category_id, property_id')
-    .eq('user_id', userId)
-    .order('expense_date', { ascending: false });
-
-  if (error || !data) return [];
-
-  const [catRes, propRes] = await Promise.all([
+  const [expenseRes, catRes, propRes, units] = await Promise.all([
+    supabase
+      .from('expenses')
+      .select('expense_date, description, amount, status, recipient, category_id, property_id, unit_id')
+      .eq('user_id', userId)
+      .order('expense_date', { ascending: false }),
     supabase.from('expense_categories').select('id, name'),
     supabase.from('properties').select('id, name').eq('user_id', userId),
+    loadHausgeldUnits(userId),
   ]);
 
-  const catMap = new Map((catRes.data || []).map(c => [c.id, c.name]));
-  const propMap = new Map((propRes.data || []).map(p => [p.id, p.name]));
+  const catMap = new Map((catRes.data || []).map((c: any) => [c.id, c.name]));
+  const propMap = new Map((propRes.data || []).map((p: any) => [p.id, p.name]));
 
-  return data.map((row: any) => ({
-    expense_date: row.expense_date,
-    description: row.description,
-    category_name: catMap.get(row.category_id) || '-',
-    property_name: propMap.get(row.property_id) || '-',
-    amount: parseFloat(row.amount?.toString() || '0'),
-    status: row.status,
-    recipient: row.recipient,
-  }));
+  const rows: ExpenseRow[] = [];
+
+  for (const row of (expenseRes.data || []) as any[]) {
+    const catName = catMap.get(row.category_id) || '-';
+    const superseded = isExpenseSupersededBySystemHausgeld(
+      { description: row.description, category_name: catName, property_id: row.property_id, unit_id: row.unit_id },
+      units,
+    );
+    if (superseded) continue;
+
+    rows.push({
+      expense_date: row.expense_date,
+      description: row.description,
+      category_name: catName,
+      property_name: propMap.get(row.property_id) || '-',
+      amount: parseFloat(row.amount?.toString() || '0'),
+      status: row.status,
+      recipient: row.recipient,
+    });
+  }
+
+  const now = new Date();
+  const rangeStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const rangeEnd = new Date(now.getFullYear(), now.getMonth(), 1);
+  const hausgeldRows = generateHausgeldRows(units, rangeStart, rangeEnd);
+
+  for (const h of hausgeldRows) {
+    rows.push({
+      expense_date: h.expense_date,
+      description: h.description,
+      category_name: 'Hausgeld',
+      property_name: propMap.get(h.property_id) || '-',
+      amount: h.amount,
+      status: 'paid',
+      recipient: null,
+    });
+  }
+
+  return rows;
 }
 
 export async function loadCashflowExportData(userId: string): Promise<CashflowRow[]> {
@@ -116,7 +184,7 @@ export async function loadCashflowExportData(userId: string): Promise<CashflowRo
   const filterStart = `${year}-01-01`;
   const filterEnd = `${year}-12-31`;
 
-  const [contractsRes, incomeRes, expensesRes, loansRes] = await Promise.all([
+  const [contractsRes, incomeRes, expensesRes, loansRes, units] = await Promise.all([
     supabase
       .from('rental_contracts')
       .select('total_rent, start_date, end_date, status')
@@ -131,7 +199,7 @@ export async function loadCashflowExportData(userId: string): Promise<CashflowRo
       .lte('entry_date', filterEnd),
     supabase
       .from('expenses')
-      .select('expense_date, amount')
+      .select('expense_date, amount, description, category_id, property_id, unit_id')
       .eq('user_id', userId)
       .eq('is_cashflow_relevant', true)
       .gte('expense_date', filterStart)
@@ -140,12 +208,16 @@ export async function loadCashflowExportData(userId: string): Promise<CashflowRo
       .from('loans')
       .select('monthly_payment, start_date, end_date, loan_status')
       .eq('user_id', userId),
+    loadHausgeldUnits(userId),
   ]);
 
   const contracts = contractsRes.data || [];
   const incomes = incomeRes.data || [];
-  const expenses = expensesRes.data || [];
+  const expenses = (expensesRes.data || []) as any[];
   const loans = loansRes.data || [];
+
+  const { data: categories } = await supabase.from('expense_categories').select('id, name');
+  const catMap = new Map((categories || []).map((c: any) => [c.id, c.name]));
 
   const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
   const rows: CashflowRow[] = [];
@@ -170,12 +242,21 @@ export async function loadCashflowExportData(userId: string): Promise<CashflowRo
       })
       .reduce((sum: number, i: any) => sum + parseFloat(i.amount?.toString() || '0'), 0);
 
-    const monthExpenses = expenses
+    const dbExpenses = expenses
       .filter((e: any) => {
         const d = new Date(e.expense_date);
-        return d.getFullYear() === year && d.getMonth() === m;
+        if (d.getFullYear() !== year || d.getMonth() !== m) return false;
+        const catName = catMap.get(e.category_id) || '';
+        if (isExpenseSupersededBySystemHausgeld(
+          { description: e.description, category_name: catName, property_id: e.property_id, unit_id: e.unit_id },
+          units,
+        )) return false;
+        return true;
       })
       .reduce((sum: number, e: any) => sum + parseFloat(e.amount?.toString() || '0'), 0);
+
+    const monthHausgeld = getMonthlyHausgeldEur(units);
+    const monthExpenses = dbExpenses + monthHausgeld;
 
     const loanPayments = loans
       .filter((l: any) => {
