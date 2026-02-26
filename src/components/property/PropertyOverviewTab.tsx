@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { getMonthlyHausgeldEur } from "../../lib/hausgeldUtils";
 import { useSubscription } from "../../hooks/useSubscription";
 import LoanModal from "../LoanModal";
+import RestschuldCalculator from "./RestschuldCalculator";
 import { Button } from '../ui/Button';
 
 interface PropertyOverviewTabProps {
@@ -92,6 +93,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
   const [contracts, setContracts] = useState<RentalContract[]>([]);
   const [showLoanModal, setShowLoanModal] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
+  const [showRestschuld, setShowRestschuld] = useState(false);
   const [showGrossYieldTooltip, setShowGrossYieldTooltip] = useState(false);
   const [showNetYieldTooltip, setShowNetYieldTooltip] = useState(false);
   const [showCashflowTooltip, setShowCashflowTooltip] = useState(false);
@@ -389,6 +391,15 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
+  }
+
+  if (showRestschuld) {
+    return (
+      <RestschuldCalculator
+        loans={loans}
+        onBack={() => setShowRestschuld(false)}
+      />
+    );
   }
 
   return (
@@ -807,15 +818,25 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           <h2 className="text-xl font-semibold text-dark">
             Kredite & Finanzierungen
           </h2>
-          <Button
-            onClick={() => {
-              setSelectedLoan(null);
-              setShowLoanModal(true);
-            }}
-            variant="primary"
-          >
-            Kredit hinzufügen
-          </Button>
+          <div className="flex items-center gap-3">
+            {loans.length > 0 && (
+              <Button
+                onClick={() => setShowRestschuld(true)}
+                variant="outlined"
+              >
+                Restschuld berechnen
+              </Button>
+            )}
+            <Button
+              onClick={() => {
+                setSelectedLoan(null);
+                setShowLoanModal(true);
+              }}
+              variant="primary"
+            >
+              Kredit hinzufügen
+            </Button>
+          </div>
         </div>
 
         {loans.length === 0 ? (
