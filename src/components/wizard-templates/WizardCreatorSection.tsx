@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
@@ -67,6 +68,16 @@ export default function WizardCreatorSection({ onStartWizard }: Props) {
     });
   }
 
+  async function deleteDraft(e: React.MouseEvent, draftId: string) {
+    e.stopPropagation();
+    try {
+      await supabase.from('wizard_drafts').delete().eq('id', draftId);
+      setDrafts((prev) => prev.filter((d) => d.id !== draftId));
+    } catch (err) {
+      console.error('Error deleting draft:', err);
+    }
+  }
+
   const categoriesWithTemplates = WIZARD_CATEGORIES.filter((cat) =>
     templates.some((t) => t.category === cat.id),
   );
@@ -125,6 +136,14 @@ export default function WizardCreatorSection({ onStartWizard }: Props) {
                         Zuletzt bearbeitet: {formatDraftDate(draft.updated_at)}
                       </p>
                     </div>
+                    <span
+                      role="button"
+                      title="Entwurf löschen"
+                      onClick={(e) => deleteDraft(e, draft.id)}
+                      className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </span>
                     <svg className="w-4 h-4 text-gray-400 group-hover:text-amber-600 flex-shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
