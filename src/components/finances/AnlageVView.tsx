@@ -661,7 +661,7 @@ function AfaAccordion({ summary, onOpenSetup }: { summary: AnlageVSummary; onOpe
                 <p className="text-[11px] text-gray-400 pl-6 leading-relaxed">
                   Berechnungsgrundlage: {fmtEurFull(afa.building_value_amount)} x {(afa.afa_rate * 100).toFixed(1)}%
                   {afa.months_factor < 1 ? ` (zeitanteilig ${Math.round(afa.months_factor * 12)} Mon.)` : ''}
-                  {afa.ownership_share < 100 ? ` x ${afa.ownership_share}% Anteil` : ''}
+                  {summary.ownership_share < 100 ? ` x ${summary.ownership_share}% Anteil` : ''}
                 </p>
               </div>
               <div className="px-5 py-3 grid grid-cols-3 gap-4">

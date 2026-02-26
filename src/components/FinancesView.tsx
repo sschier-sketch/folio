@@ -6,7 +6,6 @@ import {
   CreditCard,
   Lightbulb,
   Calculator,
-  FileText,
 } from "lucide-react";
 import { useSubscription } from "../hooks/useSubscription";
 import { useAuth } from "../contexts/AuthContext";
@@ -16,7 +15,6 @@ import CashflowView from "./finances/CashflowView";
 import BankConnectionView from "./finances/BankConnectionView";
 import IntelligenceView from "./finances/IntelligenceView";
 import IndexRentView from "./finances/IndexRentView";
-import AnlageVView from "./finances/AnlageVView";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
@@ -38,7 +36,6 @@ type Tab =
   | "expenses"
   | "cashflow"
   | "indexrent"
-  | "anlage_v"
   | "intelligence"
   | "bank";
 
@@ -56,7 +53,6 @@ export default function FinancesView() {
     { id: "expenses" as Tab, label: "Ausgaben", icon: TrendingDown },
     { id: "cashflow" as Tab, label: "Cashflow", icon: BarChart3, premium: true },
     { id: "indexrent" as Tab, label: "Indexmiete", icon: Calculator, premium: true },
-    { id: "anlage_v" as Tab, label: "Anlage V", icon: FileText, premium: true },
     { id: "intelligence" as Tab, label: "Intelligenz", icon: Lightbulb, premium: true },
     { id: "bank" as Tab, label: "Bankanbindung", icon: CreditCard, premium: true },
   ];
@@ -191,13 +187,6 @@ export default function FinancesView() {
             <IndexRentView />
           ) : (
             <PremiumUpgradePrompt featureKey="finances_indexrent" />
-          )
-        )}
-        {activeTab === "anlage_v" && (
-          isPremium ? (
-            <AnlageVView />
-          ) : (
-            <PremiumUpgradePrompt featureKey="finances_anlage_v" />
           )
         )}
         {activeTab === "intelligence" && <IntelligenceView />}

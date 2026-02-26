@@ -30,7 +30,6 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
   const [constructionYear, setConstructionYear] = useState('');
   const [usageType, setUsageType] = useState<'residential' | 'commercial' | 'mixed'>('residential');
   const [afaRate, setAfaRate] = useState('');
-  const [ownershipShare, setOwnershipShare] = useState('100');
   const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
@@ -64,7 +63,6 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
     const effectiveRate = cv.afa_rate || pd.afa_rate || getDefaultAfaRate(effectiveUsage);
     setAfaRate(String(Math.round(effectiveRate * 10000) / 100));
 
-    if (cv.ownership_share != null) setOwnershipShare(String(cv.ownership_share));
     if (cv.enabled != null) setEnabled(cv.enabled);
   }
 
@@ -88,9 +86,6 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
     const rateNum = parseFloat(afaRate.replace(',', '.')) / 100;
     if (!rateNum || rateNum <= 0 || rateNum > 0.2) { setError('AfA-Satz muss zwischen 0,01% und 20% liegen.'); return; }
 
-    const ownerNum = parseFloat(ownershipShare.replace(',', '.'));
-    if (!ownerNum || ownerNum <= 0 || ownerNum > 100) { setError('Eigentumsanteil muss zwischen 1 und 100% liegen.'); return; }
-
     const cyNum = constructionYear ? parseInt(constructionYear) : null;
     if (cyNum && (cyNum < 1800 || cyNum > new Date().getFullYear())) { setError('Bitte ein gültiges Baujahr angeben.'); return; }
 
@@ -104,7 +99,7 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
       construction_year: cyNum,
       usage_type: usageType,
       afa_rate: rateNum,
-      ownership_share: ownerNum,
+      ownership_share: 100,
     };
 
     setSaving(true);
@@ -291,42 +286,30 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <label className="text-sm font-medium text-gray-700">
-                      AfA-Satz (%) <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative group">
-                      <Info className="w-3.5 h-3.5 text-gray-300 cursor-help" />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-800 text-white text-[11px] rounded-lg max-w-[200px] text-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                        Bitte mit Steuerberater prüfen
-                      </div>
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <label className="text-sm font-medium text-gray-700">
+                    AfA-Satz (%) <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative group">
+                    <Info className="w-3.5 h-3.5 text-gray-300 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-800 text-white text-[11px] rounded-lg max-w-[200px] text-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                      Bitte mit Steuerberater prüfen
                     </div>
                   </div>
-                  <input
-                    type="text"
-                    value={afaRate}
-                    onChange={(e) => setAfaRate(e.target.value)}
-                    placeholder="z.B. 2"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-blue focus:border-primary-blue outline-none text-sm"
-                  />
-                  {computedAnnualAfa > 0 && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      Jährliche AfA: {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(computedAnnualAfa)}
-                    </p>
-                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Eigentumsanteil (%)</label>
-                  <input
-                    type="text"
-                    value={ownershipShare}
-                    onChange={(e) => setOwnershipShare(e.target.value)}
-                    placeholder="100"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-blue focus:border-primary-blue outline-none text-sm"
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={afaRate}
+                  onChange={(e) => setAfaRate(e.target.value)}
+                  placeholder="z.B. 2"
+                  className="w-full max-w-[200px] px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-blue focus:border-primary-blue outline-none text-sm"
+                />
+                {computedAnnualAfa > 0 && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Jährliche AfA: {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(computedAnnualAfa)}
+                  </p>
+                )}
               </div>
             </>
           )}

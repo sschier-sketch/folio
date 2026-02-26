@@ -219,12 +219,11 @@ export function calculateAfaForYear(settings: AfaSettings | null | undefined, ye
   }
 
   if (monthsFactor <= 0) {
-    return { ...empty, building_value_amount: buildingValue, afa_rate: settings.afa_rate, ownership_share: settings.ownership_share ?? 100, enabled: true };
+    return { ...empty, building_value_amount: buildingValue, afa_rate: settings.afa_rate, ownership_share: 100, enabled: true };
   }
 
   const annualAfaFull = round2(buildingValue * settings.afa_rate);
-  const ownershipShare = settings.ownership_share ?? 100;
-  const afaAmount = round2(annualAfaFull * monthsFactor * (ownershipShare / 100));
+  const afaAmount = round2(annualAfaFull * monthsFactor);
 
   return {
     afa_amount: afaAmount,
@@ -232,7 +231,7 @@ export function calculateAfaForYear(settings: AfaSettings | null | undefined, ye
     months_factor: Math.round(monthsFactor * 100) / 100,
     building_value_amount: buildingValue,
     afa_rate: settings.afa_rate,
-    ownership_share: ownershipShare,
+    ownership_share: 100,
     enabled: true,
   };
 }

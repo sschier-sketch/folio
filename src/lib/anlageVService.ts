@@ -215,7 +215,7 @@ export async function getAnlageVSummary(
     const missingReceipts = expenseRows.filter(e => !e.document_id).length;
 
     const afaResult = calculateAfaForYear(afaSettings, year);
-    const afaTotal = afaResult.afa_amount;
+    const afaTotal = round2(afaResult.afa_amount * shareFactor);
 
     return {
       data: {
@@ -248,7 +248,7 @@ export async function getAnlageVSummary(
 
 async function fetchIncomes(
   userId: string,
-  _year: number,
+  year: number,
   scopeType: 'property' | 'unit',
   scopeId: string,
   startDate: string,
@@ -256,31 +256,37 @@ async function fetchIncomes(
 ): Promise<AnlageVIncomeRow[]> {
   const rows: AnlageVIncomeRow[] = [];
 
+  const propertyIds = scopeType === 'property' ? [scopeId] : await getPropertyIdsForUnit(userId, scopeId);
+
   let rentQuery = supabase
     .from('rent_payments')
     .select(`
-      id, due_date, paid_date, paid_amount, amount, payment_status, partial_payments,
+      id, due_date, paid_date, paid_amount, amount, payment_status, partial_payments, contract_id,
       property:properties(name),
       tenant:tenants(first_name, last_name),
       rental_contract:rental_contracts(unit_id, cold_rent, additional_costs, total_rent, unit:property_units(unit_number))
     `)
     .eq('user_id', userId)
     .gte('due_date', startDate)
-    .lte('due_date', endDate);
-
-  if (scopeType === 'property') {
-    rentQuery = rentQuery.eq('property_id', scopeId);
-  } else {
-    rentQuery = rentQuery.in('property_id', await getPropertyIdsForUnit(userId, scopeId));
-  }
+    .lte('due_date', endDate)
+    .in('property_id', propertyIds);
 
   const { data: rentPayments } = await rentQuery;
+
+  const coveredMonths = new Map<string, Set<string>>();
 
   for (const rp of rentPayments || []) {
     const contract = rp.rental_contract as any;
     const contractUnitId = contract?.unit_id;
 
     if (scopeType === 'unit' && contractUnitId !== scopeId) continue;
+
+    const contractId = rp.contract_id as string;
+    if (contractId) {
+      const dueMonth = (rp.due_date as string).substring(0, 7);
+      if (!coveredMonths.has(contractId)) coveredMonths.set(contractId, new Set());
+      coveredMonths.get(contractId)!.add(dueMonth);
+    }
 
     const effectiveDate = rp.paid_date || rp.due_date;
     const totalAmount = Number(rp.amount);
@@ -337,6 +343,8 @@ async function fetchIncomes(
       });
     }
   }
+
+  await backfillFromContracts(rows, coveredMonths, userId, year, scopeType, scopeId, propertyIds);
 
   let incomeQuery = supabase
     .from('income_entries')
@@ -451,6 +459,118 @@ async function fetchExpenses(
 
   rows.sort((a, b) => a.date.localeCompare(b.date));
   return rows;
+}
+
+async function backfillFromContracts(
+  rows: AnlageVIncomeRow[],
+  coveredMonths: Map<string, Set<string>>,
+  userId: string,
+  year: number,
+  scopeType: 'property' | 'unit',
+  scopeId: string,
+  propertyIds: string[]
+): Promise<void> {
+  const { data: contracts } = await supabase
+    .from('rental_contracts')
+    .select(`
+      id, cold_rent, additional_costs, total_rent, start_date, contract_start, contract_end, end_date, status, unit_id, property_id,
+      tenant:tenants(first_name, last_name),
+      property:properties(name),
+      unit:property_units(unit_number)
+    `)
+    .eq('user_id', userId)
+    .in('property_id', propertyIds)
+    .in('status', ['active', 'terminated']);
+
+  if (!contracts || contracts.length === 0) return;
+
+  const rentHistoryMap = new Map<string, { effective_date: string; cold_rent: number; utilities: number }[]>();
+  const contractIds = contracts.map(c => c.id);
+  const { data: rentHistoryRows } = await supabase
+    .from('rent_history')
+    .select('contract_id, effective_date, cold_rent, utilities')
+    .in('contract_id', contractIds)
+    .order('effective_date', { ascending: true });
+
+  for (const rh of rentHistoryRows || []) {
+    const key = rh.contract_id;
+    if (!rentHistoryMap.has(key)) rentHistoryMap.set(key, []);
+    rentHistoryMap.get(key)!.push({
+      effective_date: rh.effective_date,
+      cold_rent: Number(rh.cold_rent || 0),
+      utilities: Number(rh.utilities || 0),
+    });
+  }
+
+  for (const contract of contracts) {
+    const contractStart = new Date(contract.contract_start || contract.start_date);
+    const contractEnd = contract.contract_end || contract.end_date
+      ? new Date(contract.contract_end || contract.end_date)
+      : null;
+
+    if (scopeType === 'unit' && contract.unit_id !== scopeId) continue;
+
+    const covered = coveredMonths.get(contract.id) || new Set<string>();
+    const tenantName = formatTenantName(contract.tenant);
+    const propName = (contract.property as any)?.name || '';
+    const unitNum = (contract.unit as any)?.unit_number || '';
+    const contractInfo = unitNum ? `Einheit ${unitNum}` : '';
+    const history = rentHistoryMap.get(contract.id) || [];
+
+    for (let m = 0; m < 12; m++) {
+      const monthStr = `${year}-${String(m + 1).padStart(2, '0')}`;
+      if (covered.has(monthStr)) continue;
+
+      const monthStart = new Date(year, m, 1);
+      const monthEnd = new Date(year, m + 1, 0);
+
+      if (contractStart > monthEnd) continue;
+      if (contractEnd && contractEnd < monthStart) continue;
+
+      let coldRent = Number(contract.cold_rent || 0);
+      let nkAdvance = Number(contract.additional_costs || 0);
+
+      if (history.length > 0) {
+        for (const rh of history) {
+          if (rh.effective_date <= `${monthStr}-28`) {
+            coldRent = rh.cold_rent;
+            nkAdvance = rh.utilities;
+          }
+        }
+      }
+
+      const totalRent = coldRent + nkAdvance;
+      if (totalRent <= 0) continue;
+
+      const dateStr = `${monthStr}-01`;
+
+      if (coldRent > 0) {
+        rows.push({
+          id: `backfill_${contract.id}_${monthStr}_rent`,
+          date: dateStr,
+          amount: round2(coldRent),
+          source_type: 'Miete',
+          tenant_name: tenantName,
+          contract_info: contractInfo,
+          property_name: propName,
+          unit_number: unitNum,
+        });
+      }
+
+      if (nkAdvance > 0) {
+        rows.push({
+          id: `backfill_${contract.id}_${monthStr}_nk`,
+          date: dateStr,
+          amount: round2(nkAdvance),
+          source_type: 'Nebenkosten-Vorauszahlung',
+          tenant_name: tenantName,
+          contract_info: contractInfo,
+          property_name: propName,
+          unit_number: unitNum,
+        });
+      }
+    }
+  }
 }
 
 async function getPropertyIdsForUnit(userId: string, unitId: string): Promise<string[]> {

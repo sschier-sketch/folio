@@ -4,31 +4,33 @@ import {
   Calculator,
   Gauge,
   Download,
-  Receipt,
 } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import BillingOverview from "./billing/BillingOverview";
 import OperatingCostsView from "./billing/OperatingCostsView";
 import MetersView from "./billing/MetersView";
 import BillingExportView from "./billing/BillingExportView";
+import AnlageVView from "./finances/AnlageVView";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
+import { useSubscription } from "../hooks/useSubscription";
+import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 
 type Tab =
   | "operating-costs"
   | "meters"
-  | "taxes"
+  | "anlage_v"
   | "export";
 
 export default function BillingView() {
   const location = useLocation();
+  const { isPremium } = useSubscription();
   const [activeTab, setActiveTab] = useState<Tab>("operating-costs");
   const [viewKey, setViewKey] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab && ['operating-costs', 'meters', 'taxes', 'export'].includes(tab)) {
+    if (tab && ['operating-costs', 'meters', 'anlage_v', 'export'].includes(tab)) {
       setActiveTab(tab as Tab);
       setViewKey(prev => prev + 1);
       const preserved = new URLSearchParams();
@@ -50,11 +52,10 @@ export default function BillingView() {
     },
     { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },
     {
-      id: "taxes" as Tab,
-      label: "Steuern",
-      icon: Receipt,
+      id: "anlage_v" as Tab,
+      label: "Anlage V",
+      icon: FileText,
       premium: true,
-      disabled: true,
     },
     { id: "export" as Tab, label: "Export", icon: Download, premium: true, disabled: true },
   ];
@@ -108,6 +109,13 @@ export default function BillingView() {
       <div>
         {activeTab === "meters" && <MetersView key={`meters-${viewKey}`} />}
         {activeTab === "operating-costs" && <OperatingCostsView key={`operating-costs-${viewKey}`} />}
+        {activeTab === "anlage_v" && (
+          isPremium ? (
+            <AnlageVView />
+          ) : (
+            <PremiumUpgradePrompt featureKey="finances_anlage_v" />
+          )
+        )}
         {activeTab === "export" && <BillingExportView key={`export-${viewKey}`} />}
       </div>
     </div>
