@@ -7,6 +7,7 @@ import {
   FileSignature,
   AlertTriangle,
   ScrollText,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -152,6 +153,16 @@ export default function TemplatesView() {
     });
   }
 
+  async function deleteDraft(e: React.MouseEvent, draftId: string) {
+    e.stopPropagation();
+    try {
+      await supabase.from("wizard_drafts").delete().eq("id", draftId);
+      setDrafts((prev) => prev.filter((d) => d.id !== draftId));
+    } catch (err) {
+      console.error("Error deleting draft:", err);
+    }
+  }
+
   function startWizard(id: string, fresh?: boolean) {
     setWizardFreshStart(!!fresh);
     setActiveWizard(id);
@@ -275,19 +286,14 @@ export default function TemplatesView() {
                       Zuletzt bearbeitet: {formatDraftDate(draft.updated_at)}
                     </p>
                   </div>
-                  <svg
-                    className="w-4 h-4 text-gray-400 group-hover:text-amber-600 flex-shrink-0 transition-colors"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                  <span
+                    role="button"
+                    title="Entwurf löschen"
+                    onClick={(e) => deleteDraft(e, draft.id)}
+                    className="p-2 rounded-md text-amber-700/60 hover:text-red-600 hover:bg-red-50 transition-all flex-shrink-0"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
+                    <Trash2 className="w-4 h-4" />
+                  </span>
                 </button>
               );
             })}
