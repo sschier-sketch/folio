@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { SITE_URL } from "../config/site";
 
 export interface SeoMetadata {
   title: string;
@@ -44,7 +45,7 @@ const APP_PATHS = [
   '/account-banned'
 ];
 
-const BASE_URL = window.location.origin;
+const BASE_URL = SITE_URL;
 
 let globalSettingsCache: SeoGlobalSettings | null = null;
 let pageSettingsCache: Map<string, SeoPageSettings> = new Map();

@@ -30,6 +30,7 @@ import { AccountBanned } from "./pages/AccountBanned";
 import { supabase } from "./lib/supabase";
 import { GTMProvider } from "./components/GTMProvider";
 import SeoHead from "./components/SeoHead";
+import GlobalHead from "./components/GlobalHead";
 import OperatingCostWizardStep1 from "./components/billing/OperatingCostWizardStep1";
 import OperatingCostWizardStep2 from "./components/billing/OperatingCostWizardStep2";
 import OperatingCostWizardStep3 from "./components/billing/OperatingCostWizardStep3";
@@ -113,6 +114,7 @@ function App() {
       <Router>
         <ScrollToTop />
         <SeoHead />
+        <GlobalHead />
         <AuthRedirectHandler />
         <Routes>
         <Route element={<MarketingLayout />}>

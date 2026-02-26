@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Settings, FileText, Globe } from "lucide-react";
+import { Settings, FileText, Globe, Code2 } from "lucide-react";
 import AdminSeoPagesView from "./admin/AdminSeoPagesView";
 import AdminSeoGlobalView from "./admin/AdminSeoGlobalView";
+import AdminSeoHeadView from "./admin/AdminSeoHeadView";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 
-type Tab = "pages" | "global";
+type Tab = "pages" | "global" | "head";
 
 export default function AdminSeoView() {
   const [activeTab, setActiveTab] = useState<Tab>("pages");
@@ -12,6 +13,7 @@ export default function AdminSeoView() {
   const tabs = [
     { id: "pages" as Tab, label: "Seiten", icon: FileText },
     { id: "global" as Tab, label: "SEO-Einstellungen", icon: Settings },
+    { id: "head" as Tab, label: "Head der Website", icon: Code2 },
   ];
 
   return (
@@ -62,6 +64,7 @@ export default function AdminSeoView() {
       <div>
         {activeTab === "pages" && <AdminSeoPagesView />}
         {activeTab === "global" && <AdminSeoGlobalView />}
+        {activeTab === "head" && <AdminSeoHeadView />}
       </div>
     </div>
   );

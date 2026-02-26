@@ -10,6 +10,8 @@ export interface SystemSettings {
   notify_on_new_registration: boolean;
   notification_email: string;
   updated_at: string;
+  global_head_html: string | null;
+  global_head_html_updated_at: string | null;
 }
 
 let cachedSettings: SystemSettings | null = null;

@@ -22,10 +22,11 @@ export default function SeoHead() {
         updateLinkTag('canonical', meta.canonical);
       }
 
+      updateMetaTag('property', 'og:site_name', 'rentably');
       updateMetaTag('property', 'og:title', meta.ogTitle);
       updateMetaTag('property', 'og:description', meta.ogDescription);
       updateMetaTag('property', 'og:type', 'website');
-      updateMetaTag('property', 'og:url', window.location.href);
+      updateMetaTag('property', 'og:url', meta.canonical || window.location.href);
 
       if (meta.ogImageUrl) {
         updateMetaTag('property', 'og:image', meta.ogImageUrl);
