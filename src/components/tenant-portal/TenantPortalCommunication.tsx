@@ -121,6 +121,7 @@ export default function TenantPortalCommunication({
       .from("tickets")
       .select("*")
       .eq("tenant_id", tenantId)
+      .eq("tenant_visible", true)
       .order("created_at", { ascending: false });
     setTickets(data || []);
   }
