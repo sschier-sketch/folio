@@ -77,6 +77,7 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
   const [sent, setSent] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [endContractChecked, setEndContractChecked] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -228,6 +229,46 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
     }
   }
 
+  async function endLinkedContract() {
+    if (!endContractChecked || !data.sachverhalt.kuendigungsdatum) return;
+    const moveOutDate = data.sachverhalt.kuendigungsdatum;
+
+    for (const tenant of data.tenants) {
+      if (!tenant.tenantId) continue;
+
+      await supabase
+        .from('tenants')
+        .update({ move_out_date: moveOutDate })
+        .eq('id', tenant.tenantId);
+
+      const { data: contracts } = await supabase
+        .from('rental_contracts')
+        .select('id')
+        .eq('tenant_id', tenant.tenantId)
+        .eq('status', 'active')
+        .limit(1);
+
+      if (contracts && contracts.length > 0) {
+        const contractId = contracts[0].id;
+        await supabase
+          .from('rental_contracts')
+          .update({ contract_end: moveOutDate, end_date: moveOutDate })
+          .eq('id', contractId);
+
+        const endMonth = new Date(moveOutDate);
+        const cutoffDate = new Date(endMonth.getFullYear(), endMonth.getMonth() + 1, 1);
+        const cutoff = cutoffDate.toISOString().split('T')[0];
+
+        await supabase
+          .from('rent_payments')
+          .delete()
+          .eq('contract_id', contractId)
+          .eq('payment_status', 'unpaid')
+          .gte('due_date', cutoff);
+      }
+    }
+  }
+
   async function handleDownload() {
     setGenerating(true);
     try {
@@ -244,6 +285,7 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
       URL.revokeObjectURL(url);
 
       await saveDocumentToProperty(blob, filename, false);
+      await endLinkedContract();
       await deleteDraft();
     } catch (err) {
       console.error('PDF generation error:', err);
@@ -310,6 +352,7 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
         }
       }
 
+      await endLinkedContract();
       await deleteDraft();
       setSent(true);
     } catch (err) {
@@ -495,6 +538,10 @@ export default function KuendigungWizard({ onBack, freshStart }: Props) {
                 generating={generating}
                 onDownload={handleDownload}
                 onSendDigital={() => setStep('versand')}
+                hasLinkedContract={data.tenants.some((t) => !!t.tenantId)}
+                kuendigungsdatum={data.sachverhalt.kuendigungsdatum}
+                endContractChecked={endContractChecked}
+                onEndContractChange={setEndContractChecked}
               />
             )}
 

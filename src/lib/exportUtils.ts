@@ -775,7 +775,7 @@ async function exportTenantsToPDF(data: TenantWithDetails[]) {
         c.unit_number || '-',
         formatCurrency(c.monthly_rent || c.total_rent || 0),
         formatCurrency(c.deposit || 0),
-        c.status === 'active' ? 'Aktiv' : c.status === 'terminated' ? 'Gekündigt' : c.status,
+        c.status === 'active' ? 'Aktiv' : c.status === 'terminated' ? 'Beendet' : c.status,
       ]);
 
       autoTable(doc, {
@@ -981,7 +981,7 @@ function exportTenantsToCSV(data: TenantWithDetails[]) {
           c.unit_number || '-',
           (c.monthly_rent || c.total_rent || 0).toString(),
           (c.deposit || 0).toString(),
-          c.status === 'active' ? 'Aktiv' : c.status === 'terminated' ? 'Gekündigt' : c.status,
+          c.status === 'active' ? 'Aktiv' : c.status === 'terminated' ? 'Beendet' : c.status,
           c.rent_type || '-',
           c.is_sublet ? 'Ja' : 'Nein',
           c.vat_applicable ? 'Ja' : 'Nein',
@@ -1152,7 +1152,7 @@ function exportTenantsToExcel(data: TenantWithDetails[]) {
           c.unit_number || '-',
           c.monthly_rent || c.total_rent || 0,
           c.deposit || 0,
-          c.status === 'active' ? 'Aktiv' : c.status === 'terminated' ? 'Gekündigt' : c.status,
+          c.status === 'active' ? 'Aktiv' : c.status === 'terminated' ? 'Beendet' : c.status,
           c.rent_type || '-',
           c.is_sublet ? 'Ja' : 'Nein',
           c.vat_applicable ? 'Ja' : 'Nein',

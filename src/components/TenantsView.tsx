@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import TenantContractDetails from "./TenantContractDetails";
 import TenantModal from "./TenantModal";
+import EndContractModal from "./tenants/EndContractModal";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
 import TableActionsDropdown from "./common/TableActionsDropdown";
 import { Button } from './ui/Button';
@@ -47,9 +48,10 @@ interface TenantWithDetails extends Tenant {
 interface TenantsViewProps {
   selectedTenantId?: string | null;
   onClearSelection?: () => void;
+  onNavigateToTemplates?: () => void;
 }
 
-export default function TenantsView({ selectedTenantId: externalSelectedTenantId, onClearSelection }: TenantsViewProps = {}) {
+export default function TenantsView({ selectedTenantId: externalSelectedTenantId, onClearSelection, onNavigateToTemplates }: TenantsViewProps = {}) {
   const { user } = useAuth();
   const [tenants, setTenants] = useState<TenantWithDetails[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -57,6 +59,11 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   const [showTenantModal, setShowTenantModal] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [endContractTarget, setEndContractTarget] = useState<{
+    tenantId: string;
+    tenantName: string;
+    contractId: string | null;
+  } | null>(null);
   const [filters, setFilters] = useState({
     property_id: "",
     status: "",
@@ -158,7 +165,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
       case "ending_soon":
         return "Endet bald";
       case "terminated":
-        return "Gekündigt";
+        return "Beendet";
       default:
         return status;
     }
@@ -413,7 +420,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                   <option value="">Alle Status</option>
                   <option value="active">Aktiv</option>
                   <option value="ending_soon">Endet bald</option>
-                  <option value="terminated">Gekündigt</option>
+                  <option value="terminated">Beendet</option>
                 </select>
               </div>
 
@@ -536,7 +543,15 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                                 {
                                   label: 'Details anzeigen',
                                   onClick: () => setSelectedTenantId(tenant.id)
-                                }
+                                },
+                                ...(tenantStatus === 'active' || tenantStatus === 'ending_soon' ? [{
+                                  label: 'Mietverhältnis beenden',
+                                  onClick: () => setEndContractTarget({
+                                    tenantId: tenant.id,
+                                    tenantName: tenant.name,
+                                    contractId: currentContract?.id || null,
+                                  }),
+                                }] : []),
                               ]}
                             />
                           </div>
@@ -560,6 +575,23 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
           onSave={() => {
             setShowTenantModal(false);
             loadData();
+          }}
+        />
+      )}
+
+      {endContractTarget && (
+        <EndContractModal
+          tenantId={endContractTarget.tenantId}
+          tenantName={endContractTarget.tenantName}
+          contractId={endContractTarget.contractId}
+          onClose={() => setEndContractTarget(null)}
+          onSaved={() => {
+            setEndContractTarget(null);
+            loadData();
+          }}
+          onNavigateToWizard={() => {
+            setEndContractTarget(null);
+            if (onNavigateToTemplates) onNavigateToTemplates();
           }}
         />
       )}

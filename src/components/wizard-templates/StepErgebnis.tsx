@@ -1,10 +1,26 @@
+import { useState } from 'react';
+
 interface Props {
   generating: boolean;
   onDownload: () => void;
   onSendDigital: () => void;
+  hasLinkedContract?: boolean;
+  kuendigungsdatum?: string;
+  endContractChecked?: boolean;
+  onEndContractChange?: (checked: boolean) => void;
 }
 
-export default function StepErgebnis({ generating, onDownload, onSendDigital }: Props) {
+export default function StepErgebnis({
+  generating,
+  onDownload,
+  onSendDigital,
+  hasLinkedContract,
+  kuendigungsdatum,
+  endContractChecked,
+  onEndContractChange,
+}: Props) {
+  const showEndContractOption = hasLinkedContract && kuendigungsdatum;
+
   return (
     <div>
       <div className="bg-blue-50 rounded-lg px-5 py-4 mb-6">
@@ -19,6 +35,27 @@ export default function StepErgebnis({ generating, onDownload, onSendDigital }: 
       <p className="text-sm text-gray-500 mb-8">
         Ihre Kündigungsbestätigung wurde erfolgreich erstellt. Wählen Sie, wie Sie fortfahren möchten.
       </p>
+
+      {showEndContractOption && (
+        <div className="mb-6 p-5 border-2 border-gray-200 rounded-lg bg-gray-50/50">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={endContractChecked || false}
+              onChange={(e) => onEndContractChange?.(e.target.checked)}
+              className="w-4 h-4 mt-0.5 rounded border-gray-300 text-primary-blue focus:ring-primary-blue"
+            />
+            <div>
+              <span className="text-sm font-semibold text-dark block mb-0.5">
+                Mietverhältnis zum {new Date(kuendigungsdatum!).toLocaleDateString('de-DE')} als beendet eintragen
+              </span>
+              <span className="text-xs text-gray-500">
+                Das Auszugsdatum wird automatisch gesetzt und ab dem Folgemonat werden keine Mieten mehr berechnet.
+              </span>
+            </div>
+          </label>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <button

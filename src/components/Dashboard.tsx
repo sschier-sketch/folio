@@ -624,7 +624,7 @@ export default function Dashboard() {
             {" "}
             {currentView === "home" && <DashboardHome onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} onChangeView={(view) => setCurrentView(view as View)} />}{" "}
             {currentView === "properties" && <PropertiesView selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
-            {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} />}{" "}
+            {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} onNavigateToTemplates={() => setCurrentView("templates")} />}{" "}
             {currentView === "payments" && <RentPaymentsView />}{" "}
             {currentView === "messages" && <MessagesView />}{" "}
             {currentView === "mieterportal" && <MieterportalView />}{" "}
