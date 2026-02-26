@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Send, Users, AtSign, Upload, File as FileIcon, Globe, Info, Building2, DoorOpen, ChevronRight, ArrowLeft, X, FileText } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Users, AtSign, Upload, File as FileIcon, Globe, Info, Building2, DoorOpen, ChevronRight, ArrowLeft, X, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { sanitizeFileName } from '../../lib/utils';
@@ -40,6 +40,9 @@ interface ComposeInlineProps {
   onCancel: () => void;
 }
 
+const ALL_PROPERTIES = '__all__';
+const ALL_TENANTS = '__all__';
+
 export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeInlineProps) {
   const { user } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -49,17 +52,39 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
   const [selectedPropertyId, setSelectedPropertyId] = useState('');
   const [selectedUnitId, setSelectedUnitId] = useState('');
   const [recipientType, setRecipientType] = useState<'tenant' | 'manual'>('tenant');
-  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [selectedTenantId, setSelectedTenantId] = useState('');
   const [manualEmail, setManualEmail] = useState('');
   const [manualName, setManualName] = useState('');
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
   const [signature, setSignature] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendProgress, setSendProgress] = useState({ sent: 0, total: 0 });
   const [error, setError] = useState('');
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [publishToPortal, setPublishToPortal] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+
+  const isAllProperties = selectedPropertyId === ALL_PROPERTIES;
+  const isAllUnits = !selectedUnitId;
+  const isAllTenants = selectedTenantId === ALL_TENANTS;
+
+  const selectedTenant = useMemo(() => {
+    if (!selectedTenantId || selectedTenantId === ALL_TENANTS) return null;
+    return tenants.find(t => t.id === selectedTenantId) || null;
+  }, [selectedTenantId, tenants]);
+
+  const sendableRecipients = useMemo(() => {
+    if (recipientType !== 'tenant') return [];
+    if (isAllTenants || (!selectedTenantId && isAllUnits)) {
+      return tenants.filter(t => t.email);
+    }
+    if (selectedTenant?.email) return [selectedTenant];
+    return [];
+  }, [recipientType, isAllTenants, selectedTenantId, isAllUnits, tenants, selectedTenant]);
+
+  const isMultiSend = recipientType === 'tenant' && (isAllTenants || (!selectedTenantId && isAllUnits && tenants.length > 1));
+  const recipientCount = sendableRecipients.length;
 
   useEffect(() => {
     if (user) {
@@ -70,7 +95,10 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
   }, [user]);
 
   useEffect(() => {
-    if (selectedPropertyId) {
+    if (selectedPropertyId === ALL_PROPERTIES) {
+      setUnits([]);
+      loadAllTenants();
+    } else if (selectedPropertyId) {
       loadUnits(selectedPropertyId);
       loadTenants(selectedPropertyId, '');
     } else {
@@ -78,15 +106,21 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
       setTenants([]);
     }
     setSelectedUnitId('');
-    setSelectedTenant(null);
+    setSelectedTenantId('');
   }, [selectedPropertyId]);
 
   useEffect(() => {
-    if (selectedPropertyId) {
+    if (selectedPropertyId && selectedPropertyId !== ALL_PROPERTIES) {
       loadTenants(selectedPropertyId, selectedUnitId);
     }
-    setSelectedTenant(null);
+    setSelectedTenantId('');
   }, [selectedUnitId]);
+
+  useEffect(() => {
+    if (isAllUnits && tenants.length > 0 && !selectedTenantId) {
+      setSelectedTenantId(ALL_TENANTS);
+    }
+  }, [tenants, isAllUnits]);
 
   async function loadSignature() {
     if (!user) return;
@@ -136,6 +170,17 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
     setTenants(data || []);
   }
 
+  async function loadAllTenants() {
+    if (!user) return;
+    const { data } = await supabase
+      .from('tenants')
+      .select('id, first_name, last_name, email, property_id, unit_id')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .order('last_name');
+    setTenants(data || []);
+  }
+
   async function loadTemplates() {
     if (!user) return;
     const { data } = await supabase
@@ -169,23 +214,71 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
     return content.trim();
   }
 
+  async function sendToSingleRecipient(
+    tenant: Tenant,
+    emailText: string,
+    attachment: { filePath: string } | null,
+  ) {
+    if (!user || !tenant.email) return;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const rName = `${tenant.first_name} ${tenant.last_name}`.trim();
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        to: tenant.email,
+        subject: subject.trim(),
+        text: emailText,
+        userId: user.id,
+        useUserAlias: true,
+        storeAsMessage: true,
+        recipientName: rName,
+        tenantId: tenant.id,
+        mailType: 'user_message',
+        category: 'transactional',
+        attachments: attachment && attachedFile ? [{
+          filename: attachedFile.name,
+          path: attachment.filePath,
+        }] : undefined,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || result.error) {
+      throw new Error(result.error || `Fehler beim Senden an ${tenant.email}`);
+    }
+
+    await supabase.from('tenant_communications').insert({
+      user_id: user.id,
+      tenant_id: tenant.id,
+      communication_type: 'message',
+      subject: subject.trim(),
+      content: getMessageBody(),
+      is_internal: !publishToPortal,
+    });
+  }
+
   async function handleSend() {
     if (!user) return;
     setError('');
-    const recipientEmail = recipientType === 'tenant'
-      ? selectedTenant?.email || ''
-      : manualEmail.trim();
-    const rName = recipientType === 'tenant'
-      ? `${selectedTenant?.first_name} ${selectedTenant?.last_name}`.trim()
-      : manualName.trim() || manualEmail.trim();
 
-    if (!recipientEmail && recipientType === 'manual') {
-      setError('Bitte geben Sie eine E-Mail-Adresse ein.');
-      return;
-    }
-    if (recipientType === 'tenant' && !selectedTenant) {
-      setError('Bitte wählen Sie einen Mieter aus.');
-      return;
+    if (recipientType === 'manual') {
+      if (!manualEmail.trim()) {
+        setError('Bitte geben Sie eine E-Mail-Adresse ein.');
+        return;
+      }
+    } else {
+      if (sendableRecipients.length === 0) {
+        setError(tenants.length > 0
+          ? 'Keiner der ausgewählten Mieter hat eine E-Mail-Adresse.'
+          : 'Bitte wählen Sie mindestens einen Mieter aus.');
+        return;
+      }
     }
     if (!subject.trim()) {
       setError('Bitte geben Sie einen Betreff ein.');
@@ -197,59 +290,69 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
     }
 
     setSending(true);
-    const tenantId = recipientType === 'tenant' ? selectedTenant?.id : undefined;
 
     try {
       let attachment: { filePath: string } | null = null;
       if (attachedFile) attachment = await uploadAttachment();
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
       let emailText = getMessageBody();
       if (attachment && attachedFile) emailText += `\n\nAnhang: ${attachedFile.name}`;
 
-      const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-        },
-        body: JSON.stringify({
-          to: recipientEmail,
-          subject: subject.trim(),
-          text: emailText,
-          userId: user.id,
-          useUserAlias: true,
-          storeAsMessage: true,
-          recipientName: rName,
-          tenantId: tenantId || undefined,
-          mailType: 'user_message',
-          category: 'transactional',
-          attachments: attachment && attachedFile ? [{
-            filename: attachedFile.name,
-            path: attachment.filePath,
-          }] : undefined,
-        }),
-      });
-
-      const result = await response.json();
-      if (!response.ok || result.error) {
-        setError(result.error || 'Fehler beim Senden der Nachricht.');
-        setSending(false);
-        return;
-      }
-
-      if (tenantId) {
-        await supabase.from('tenant_communications').insert({
-          user_id: user.id,
-          tenant_id: tenantId,
-          communication_type: 'message',
-          subject: subject.trim(),
-          content: getMessageBody(),
-          is_internal: !publishToPortal,
-          attachment_id: attachment?.docId || null,
+      if (recipientType === 'manual') {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+          },
+          body: JSON.stringify({
+            to: manualEmail.trim(),
+            subject: subject.trim(),
+            text: emailText,
+            userId: user.id,
+            useUserAlias: true,
+            storeAsMessage: true,
+            recipientName: manualName.trim() || manualEmail.trim(),
+            mailType: 'user_message',
+            category: 'transactional',
+            attachments: attachment && attachedFile ? [{
+              filename: attachedFile.name,
+              path: attachment.filePath,
+            }] : undefined,
+          }),
         });
+        const result = await response.json();
+        if (!response.ok || result.error) {
+          setError(result.error || 'Fehler beim Senden der Nachricht.');
+          setSending(false);
+          return;
+        }
+      } else {
+        const total = sendableRecipients.length;
+        setSendProgress({ sent: 0, total });
+        const errors: string[] = [];
+
+        for (let i = 0; i < sendableRecipients.length; i++) {
+          try {
+            await sendToSingleRecipient(sendableRecipients[i], emailText, attachment);
+          } catch (err: any) {
+            errors.push(`${sendableRecipients[i].first_name} ${sendableRecipients[i].last_name}: ${err.message || 'Fehler'}`);
+          }
+          setSendProgress({ sent: i + 1, total });
+        }
+
+        if (errors.length > 0 && errors.length === total) {
+          setError(`Fehler beim Senden an alle ${total} Empfänger.`);
+          setSending(false);
+          return;
+        }
+        if (errors.length > 0) {
+          setError(`${total - errors.length} von ${total} gesendet. Fehler bei: ${errors.join('; ')}`);
+          setSending(false);
+          return;
+        }
       }
 
       setSending(false);
@@ -259,6 +362,22 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
       setSending(false);
     }
   }
+
+  function handlePropertyChange(value: string) {
+    setSelectedPropertyId(value);
+  }
+
+  function handleUnitChange(value: string) {
+    setSelectedUnitId(value);
+  }
+
+  function handleTenantChange(value: string) {
+    setSelectedTenantId(value);
+  }
+
+  const showUnitDropdown = selectedPropertyId && selectedPropertyId !== ALL_PROPERTIES && units.length > 0;
+  const showTenantDropdown = selectedPropertyId && tenants.length > 0;
+  const showAllTenantsOption = isAllProperties || isAllUnits;
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -316,7 +435,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
             <Users className="w-4 h-4" /> Mieter
           </button>
           <button
-            onClick={() => { setRecipientType('manual'); setSelectedTenant(null); }}
+            onClick={() => { setRecipientType('manual'); setSelectedTenantId(''); }}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               recipientType === 'manual' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
             }`}
@@ -334,17 +453,20 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
               </label>
               <select
                 value={selectedPropertyId}
-                onChange={(e) => setSelectedPropertyId(e.target.value)}
+                onChange={(e) => handlePropertyChange(e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
               >
                 <option value="">Immobilie auswählen...</option>
+                {properties.length > 1 && (
+                  <option value={ALL_PROPERTIES}>Alle Immobilien</option>
+                )}
                 {properties.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}{p.address ? ` - ${p.address}` : ''}</option>
                 ))}
               </select>
             </div>
 
-            {selectedPropertyId && units.length > 0 && (
+            {showUnitDropdown && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <DoorOpen className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
@@ -352,7 +474,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
                 </label>
                 <select
                   value={selectedUnitId}
-                  onChange={(e) => setSelectedUnitId(e.target.value)}
+                  onChange={(e) => handleUnitChange(e.target.value)}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                 >
                   <option value="">Alle Einheiten</option>
@@ -363,43 +485,69 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
               </div>
             )}
 
-            {selectedPropertyId && (
+            {showTenantDropdown && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <Users className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
                   Mieter
                 </label>
-                {tenants.length > 0 ? (
-                  <select
-                    value={selectedTenant?.id || ''}
-                    onChange={(e) => {
-                      const t = tenants.find((t) => t.id === e.target.value);
-                      setSelectedTenant(t || null);
-                    }}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
-                  >
-                    <option value="">Mieter auswählen...</option>
-                    {tenants.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.first_name} {t.last_name}{t.email ? ` (${t.email})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <p className="text-sm text-gray-400 py-2">Keine Mieter für diese Auswahl vorhanden.</p>
-                )}
+                <select
+                  value={selectedTenantId}
+                  onChange={(e) => handleTenantChange(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                >
+                  {showAllTenantsOption ? (
+                    <>
+                      <option value={ALL_TENANTS}>Alle Mieter</option>
+                      {tenants.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.first_name} {t.last_name}{t.email ? ` (${t.email})` : ' (keine E-Mail)'}
+                        </option>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <option value="">Mieter auswählen...</option>
+                      {tenants.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.first_name} {t.last_name}{t.email ? ` (${t.email})` : ' (keine E-Mail)'}
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </select>
               </div>
             )}
 
-            {selectedTenant && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-                <ChevronRight className="w-3.5 h-3.5 text-blue-500" />
-                <span className="text-blue-800 font-medium">
-                  {selectedTenant.first_name} {selectedTenant.last_name}
-                </span>
-                {selectedTenant.email && (
-                  <span className="text-blue-600">{selectedTenant.email}</span>
-                )}
+            {selectedPropertyId && tenants.length === 0 && (
+              <p className="text-sm text-gray-400 py-2">Keine aktiven Mieter für diese Auswahl vorhanden.</p>
+            )}
+
+            {recipientType === 'tenant' && recipientCount > 0 && (
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm border bg-blue-50 border-blue-200">
+                {isMultiSend ? (
+                  <>
+                    <Users className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                    <span className="text-blue-800 font-medium">
+                      Versand an {recipientCount} Mieter
+                    </span>
+                    {tenants.filter(t => !t.email).length > 0 && (
+                      <span className="text-blue-500 text-xs ml-auto">
+                        ({tenants.filter(t => !t.email).length} ohne E-Mail)
+                      </span>
+                    )}
+                  </>
+                ) : selectedTenant ? (
+                  <>
+                    <ChevronRight className="w-3.5 h-3.5 text-blue-500" />
+                    <span className="text-blue-800 font-medium">
+                      {selectedTenant.first_name} {selectedTenant.last_name}
+                    </span>
+                    {selectedTenant.email && (
+                      <span className="text-blue-600">{selectedTenant.email}</span>
+                    )}
+                  </>
+                ) : null}
               </div>
             )}
           </div>
@@ -479,7 +627,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
           )}
         </div>
 
-        {recipientType === 'tenant' && (
+        {recipientType === 'tenant' && !isMultiSend && (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50/50">
             <label className="flex items-center gap-3 px-4 py-3 cursor-pointer">
               <input
@@ -512,13 +660,25 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
         </div>
       </div>
 
-      <div className="px-5 py-4 border-t border-gray-200 bg-white flex justify-end gap-3 flex-shrink-0">
-        <Button variant="secondary" onClick={onCancel}>
-          Abbrechen
-        </Button>
-        <Button variant="primary" onClick={handleSend} disabled={sending}>
-          {sending ? 'Wird gesendet...' : 'Senden'}
-        </Button>
+      <div className="px-5 py-4 border-t border-gray-200 bg-white flex items-center justify-between gap-3 flex-shrink-0">
+        <div className="text-xs text-gray-400 min-w-0 truncate">
+          {sending && sendProgress.total > 1 && (
+            <span>Sende {sendProgress.sent}/{sendProgress.total}...</span>
+          )}
+        </div>
+        <div className="flex gap-3 flex-shrink-0">
+          <Button variant="secondary" onClick={onCancel} disabled={sending}>
+            Abbrechen
+          </Button>
+          <Button variant="primary" onClick={handleSend} disabled={sending}>
+            {sending
+              ? (sendProgress.total > 1 ? `Sende ${sendProgress.sent}/${sendProgress.total}...` : 'Wird gesendet...')
+              : isMultiSend
+                ? `An ${recipientCount} Mieter senden`
+                : 'Senden'
+            }
+          </Button>
+        </div>
       </div>
     </div>
   );
