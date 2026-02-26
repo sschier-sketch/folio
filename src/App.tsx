@@ -47,6 +47,7 @@ import Dokumente from "./pages/funktionen/Dokumente";
 import Nebenkostenabrechnung from "./pages/funktionen/Nebenkostenabrechnung";
 import Mieterportal from "./pages/funktionen/Mieterportal";
 import Uebergabeprotokoll from "./pages/funktionen/Uebergabeprotokoll";
+import NotFound from "./pages/NotFound";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -211,6 +212,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route element={<MarketingLayout />}>
+          <Route path="*" element={<NotFound />} />
+        </Route>
       </Routes>
       </Router>
     </GTMProvider>

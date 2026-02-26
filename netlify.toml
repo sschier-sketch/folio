@@ -4,11 +4,6 @@ to = "https://mypuvkzsgwanilduniup.supabase.co/functions/v1/sitemap"
 status = 200
 force = true
 
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
-
 [[headers]]
 for = "/fonts/*"
 [headers.values]

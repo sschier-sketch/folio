@@ -12,9 +12,36 @@
       "source": "/sitemap.xml",
       "destination": "https://mypuvkzsgwanilduniup.supabase.co/functions/v1/sitemap"
     },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/ueber-uns", "destination": "/index.html" },
+    { "source": "/contact", "destination": "/index.html" },
+    { "source": "/kontakt", "destination": "/index.html" },
+    { "source": "/impressum", "destination": "/index.html" },
+    { "source": "/datenschutz", "destination": "/index.html" },
+    { "source": "/agb", "destination": "/index.html" },
+    { "source": "/avv", "destination": "/index.html" },
+    { "source": "/features", "destination": "/index.html" },
+    { "source": "/funktionen", "destination": "/index.html" },
+    { "source": "/funktionen/:path*", "destination": "/index.html" },
+    { "source": "/pricing", "destination": "/index.html" },
+    { "source": "/preise", "destination": "/index.html" },
+    { "source": "/magazin", "destination": "/index.html" },
+    { "source": "/magazin/:path*", "destination": "/index.html" },
+    { "source": "/magazine", "destination": "/index.html" },
+    { "source": "/magazine/:path*", "destination": "/index.html" },
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/signup", "destination": "/index.html" },
+    { "source": "/reset-password", "destination": "/index.html" },
+    { "source": "/reset-password/:path*", "destination": "/index.html" },
+    { "source": "/mieterportal-aktivierung", "destination": "/index.html" },
+    { "source": "/tenant-portal", "destination": "/index.html" },
+    { "source": "/tenant-portal/:path*", "destination": "/index.html" },
+    { "source": "/account-banned", "destination": "/index.html" },
+    { "source": "/dashboard", "destination": "/index.html" },
+    { "source": "/subscription", "destination": "/index.html" },
+    { "source": "/subscription/:path*", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/admin/:path*", "destination": "/index.html" },
+    { "source": "/abrechnungen/:path*", "destination": "/index.html" }
   ]
 }
