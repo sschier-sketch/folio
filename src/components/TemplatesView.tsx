@@ -379,9 +379,9 @@ export default function TemplatesView() {
                             Pro
                           </Badge>
                         ) : (
-                          <span className="px-1.5 py-0.5 bg-green-50 text-green-600 text-[11px] rounded font-medium">
+                          <Badge variant="green" size="sm">
                             Kostenlos
-                          </span>
+                          </Badge>
                         )}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">

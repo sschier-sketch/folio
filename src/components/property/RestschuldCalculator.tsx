@@ -1,16 +1,14 @@
 import { useState, useMemo } from "react";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Area,
-  ComposedChart,
+  Bar,
+  BarChart,
 } from "recharts";
 import { Button } from "../ui/Button";
 
@@ -222,35 +220,24 @@ export default function RestschuldCalculator({ loans, onBack }: RestschuldCalcul
             <p className="text-sm text-gray-400 mb-6">
               {selectedLoan.lender_name} — {rows.length} Monate bis {endDateLabel}
             </p>
-            <ResponsiveContainer width="100%" height={340}>
-              <ComposedChart data={chartData}>
-                <defs>
-                  <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.08} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <ResponsiveContainer width="100%" height={380}>
+              <BarChart data={chartData} barCategoryGap="15%">
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis
                   dataKey="monthLabel"
                   tick={{ fontSize: 11 }}
                   stroke="#999"
                   interval={Math.max(0, Math.floor(chartData.length / 8) - 1)}
+                  tickLine={false}
+                  axisLine={{ stroke: '#e5e7eb' }}
                 />
                 <YAxis
-                  yAxisId="balance"
                   tick={{ fontSize: 11 }}
                   stroke="#999"
                   tickFormatter={(v: number) => formatCompact(v)}
-                  width={80}
-                />
-                <YAxis
-                  yAxisId="monthly"
-                  orientation="right"
-                  tick={{ fontSize: 11 }}
-                  stroke="#999"
-                  tickFormatter={(v: number) => `${Math.round(v)} €`}
-                  width={70}
+                  width={85}
+                  tickLine={false}
+                  axisLine={false}
                 />
                 <Tooltip
                   contentStyle={{
@@ -258,46 +245,42 @@ export default function RestschuldCalculator({ loans, onBack }: RestschuldCalcul
                     border: "1px solid #e5e7eb",
                     borderRadius: "8px",
                     fontSize: "12px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                   }}
                   formatter={(value: number, name: string) => [
                     formatCurrency(value),
                     name,
                   ]}
                   labelFormatter={(label: string) => label}
+                  cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: "12px", paddingTop: "12px" }}
+                  wrapperStyle={{ fontSize: "12px", paddingTop: "16px" }}
+                  iconType="circle"
+                  iconSize={8}
                 />
-                <Area
-                  yAxisId="balance"
-                  type="monotone"
+                <Bar
                   dataKey="balance"
                   name="Restschuld"
-                  stroke="#3b82f6"
-                  strokeWidth={2.5}
-                  fill="url(#balanceGradient)"
-                  dot={false}
+                  fill="#3b82f6"
+                  radius={[3, 3, 0, 0]}
+                  maxBarSize={32}
                 />
-                <Line
-                  yAxisId="monthly"
-                  type="monotone"
+                <Bar
                   dataKey="principal"
                   name="Tilgung"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  dot={false}
+                  fill="#10b981"
+                  radius={[3, 3, 0, 0]}
+                  maxBarSize={32}
                 />
-                <Line
-                  yAxisId="monthly"
-                  type="monotone"
+                <Bar
                   dataKey="interest"
                   name="Zinsen"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                  dot={false}
-                  strokeDasharray="4 2"
+                  fill="#f59e0b"
+                  radius={[3, 3, 0, 0]}
+                  maxBarSize={32}
                 />
-              </ComposedChart>
+              </BarChart>
             </ResponsiveContainer>
           </div>
 
