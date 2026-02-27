@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../common/RefLink";
-import { CheckCircle2, Home, Users, BarChart3, FileText } from "lucide-react";
+import { CheckCircle2, Home, Users, BarChart3, FileText, Sparkles } from "lucide-react";
 import { RevealOnScroll } from "../common/RevealOnScroll";
 
 const HERO_CHECKS = [
@@ -130,9 +130,18 @@ export default function HeroSection() {
               </button>
               <RefLink
                 to="/funktionen"
-                className="h-12 inline-flex items-center px-8 rounded-lg text-base font-semibold border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
+                className="group relative h-12 inline-flex items-center gap-2 px-8 rounded-lg text-base font-semibold border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors overflow-hidden"
               >
+                <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3c8af7] opacity-60" />
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#3c8af7] items-center justify-center">
+                    <Sparkles className="w-2 h-2 text-white" />
+                  </span>
+                </span>
                 Funktionen ansehen
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200 animate-pulse">
+                  Neu
+                </span>
               </RefLink>
             </div>
           </RevealOnScroll>
