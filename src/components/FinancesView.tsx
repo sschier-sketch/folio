@@ -53,8 +53,8 @@ export default function FinancesView() {
     { id: "expenses" as Tab, label: "Ausgaben", icon: TrendingDown },
     { id: "cashflow" as Tab, label: "Cashflow", icon: BarChart3, premium: true },
     { id: "indexrent" as Tab, label: "Indexmiete", icon: Calculator, premium: true },
-    { id: "intelligence" as Tab, label: "Intelligenz", icon: Lightbulb, premium: true },
     { id: "bank" as Tab, label: "Bankanbindung", icon: CreditCard, premium: true },
+    { id: "intelligence" as Tab, label: "Intelligenz", icon: Lightbulb, premium: true },
   ];
 
   const canExport = EXPORTABLE_TABS.includes(activeTab) && (activeTab !== "cashflow" || isPremium);
@@ -155,10 +155,17 @@ export default function FinancesView() {
                 >
                   <Icon className="w-3 h-3" />
                   {tab.label}
-                  {tab.premium && tab.id === "intelligence" ? (
+                  {tab.id === "intelligence" ? (
                     <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>
                       Bald
                     </span>
+                  ) : tab.id === "bank" ? (
+                    <>
+                      <Badge variant="pro" size="sm">Pro</Badge>
+                      <span className="px-2 py-0.5 text-[10px] rounded-full font-semibold bg-amber-100 text-amber-700 tracking-wide uppercase">
+                        Beta
+                      </span>
+                    </>
                   ) : tab.premium ? (
                     <Badge variant="pro" size="sm">Pro</Badge>
                   ) : null}
