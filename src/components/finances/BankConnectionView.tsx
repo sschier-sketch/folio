@@ -1,87 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Upload,
   Inbox as InboxIcon,
   FileSpreadsheet,
   FileCode,
   History,
-  CheckCircle,
-  AlertTriangle,
-  Clock,
-  Loader,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import CsvImportFlow from './bank-import/CsvImportFlow';
 import CamtImportFlow from './bank-import/CamtImportFlow';
 import TransactionInbox from './bank-import/TransactionInbox';
-import type { BankImportFile } from '../../lib/bankImport/types';
+import ImportHistoryView from './bank-import/ImportHistoryView';
 
-type MainTab = 'inbox' | 'import';
+type MainTab = 'inbox' | 'import' | 'history';
 type ImportTab = 'csv' | 'camt';
-
-const SOURCE_LABELS: Record<string, string> = {
-  csv: 'CSV',
-  camt053: 'CAMT.053',
-  mt940: 'MT940',
-};
-
-const STATUS_CONFIG: Record<
-  string,
-  { icon: typeof CheckCircle; color: string; label: string }
-> = {
-  completed: {
-    icon: CheckCircle,
-    color: 'text-emerald-600',
-    label: 'Abgeschlossen',
-  },
-  failed: {
-    icon: AlertTriangle,
-    color: 'text-red-500',
-    label: 'Fehlgeschlagen',
-  },
-  processing: {
-    icon: Loader,
-    color: 'text-[#3c8af7]',
-    label: 'Verarbeitung...',
-  },
-  pending: {
-    icon: Clock,
-    color: 'text-amber-500',
-    label: 'Ausstehend',
-  },
-};
 
 export default function BankConnectionView() {
   const { user } = useAuth();
   const [mainTab, setMainTab] = useState<MainTab>('inbox');
   const [importTab, setImportTab] = useState<ImportTab>('csv');
-  const [importHistory, setImportHistory] = useState<BankImportFile[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
   const [inboxCount, setInboxCount] = useState(0);
+  const [historyKey, setHistoryKey] = useState(0);
 
   useEffect(() => {
-    if (user) {
-      loadImportHistory();
-      loadInboxCount();
-    }
+    if (user) loadInboxCount();
   }, [user]);
-
-  async function loadImportHistory() {
-    if (!user) return;
-    setLoadingHistory(true);
-    try {
-      const { data } = await supabase
-        .from('bank_import_files')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      if (data) setImportHistory(data);
-    } finally {
-      setLoadingHistory(false);
-    }
-  }
 
   async function loadInboxCount() {
     if (!user) return;
@@ -93,6 +37,11 @@ export default function BankConnectionView() {
     setInboxCount(count || 0);
   }
 
+  const handleRollbackComplete = useCallback(() => {
+    loadInboxCount();
+    setHistoryKey((k) => k + 1);
+  }, []);
+
   const mainTabs = [
     {
       id: 'inbox' as MainTab,
@@ -101,6 +50,7 @@ export default function BankConnectionView() {
       badge: inboxCount > 0 ? inboxCount : undefined,
     },
     { id: 'import' as MainTab, label: 'Import', icon: Upload },
+    { id: 'history' as MainTab, label: 'Import-Historie', icon: History },
   ];
 
   const importTabs = [
@@ -178,96 +128,6 @@ export default function BankConnectionView() {
             {importTab === 'camt' && <CamtImportFlow />}
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200">
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-100">
-              <History className="w-4 h-4 text-gray-400" />
-              <h3 className="text-sm font-semibold text-dark">Import-Verlauf</h3>
-              <button
-                onClick={loadImportHistory}
-                className="ml-auto text-xs text-[#3c8af7] hover:underline"
-              >
-                Aktualisieren
-              </button>
-            </div>
-
-            {loadingHistory ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader className="w-5 h-5 text-gray-400 animate-spin" />
-              </div>
-            ) : importHistory.length === 0 ? (
-              <div className="px-5 py-8 text-center">
-                <p className="text-sm text-gray-400">
-                  Noch keine Importe vorhanden
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {importHistory.map((file) => {
-                  const config =
-                    STATUS_CONFIG[file.status] || STATUS_CONFIG.pending;
-                  const StatusIcon = config.icon;
-                  return (
-                    <div
-                      key={file.id}
-                      className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/50 transition-colors"
-                    >
-                      <StatusIcon
-                        className={`w-4 h-4 flex-shrink-0 ${config.color} ${
-                          file.status === 'processing' ? 'animate-spin' : ''
-                        }`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-dark truncate">
-                            {file.filename}
-                          </p>
-                          <span className="text-[10px] font-medium text-gray-500 bg-gray-100 rounded px-1.5 py-0.5">
-                            {SOURCE_LABELS[file.source_type] ||
-                              file.source_type}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-400">
-                          {new Date(file.uploaded_at).toLocaleDateString(
-                            'de-DE',
-                            {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            }
-                          )}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs">
-                        {file.status === 'completed' && (
-                          <>
-                            <span className="text-emerald-600 font-medium">
-                              {file.imported_rows} importiert
-                            </span>
-                            {file.duplicate_rows > 0 && (
-                              <span className="text-amber-600">
-                                {file.duplicate_rows} Duplikate
-                              </span>
-                            )}
-                          </>
-                        )}
-                        {file.status === 'failed' && file.error_message && (
-                          <span className="text-red-500 max-w-[200px] truncate">
-                            {file.error_message}
-                          </span>
-                        )}
-                        <span className={`${config.color} font-medium`}>
-                          {config.label}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
           <div
             style={{ backgroundColor: '#eff4fe', borderColor: '#DDE7FF' }}
             className="border rounded-lg p-4"
@@ -280,6 +140,15 @@ export default function BankConnectionView() {
             </p>
           </div>
         </>
+      )}
+
+      {mainTab === 'history' && (
+        <div className="bg-white rounded-lg p-5 border border-gray-200">
+          <ImportHistoryView
+            key={historyKey}
+            onRollbackComplete={handleRollbackComplete}
+          />
+        </div>
       )}
     </div>
   );

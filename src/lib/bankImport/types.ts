@@ -19,14 +19,29 @@ export interface BankImportFile {
   filename: string;
   source_type: 'csv' | 'camt053' | 'mt940';
   file_size_bytes?: number;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'rolled_back' | 'deleted';
   total_rows: number;
   imported_rows: number;
   duplicate_rows: number;
   error_message?: string;
   raw_meta?: Record<string, unknown>;
+  storage_path?: string | null;
+  rollback_available: boolean;
+  deleted_at?: string | null;
+  summary?: Record<string, unknown>;
   uploaded_at: string;
   processed_at?: string;
+}
+
+export interface RollbackResult {
+  status: 'success' | 'already_deleted';
+  message?: string;
+  error?: string;
+  deleted_allocations?: number;
+  deleted_transactions?: number;
+  deleted_income?: number;
+  deleted_expenses?: number;
+  recalced_rents?: number;
 }
 
 export interface BankTransaction {

@@ -8,6 +8,7 @@ export type {
   AllocationInput,
   CsvColumnMapping,
   ImportResult,
+  RollbackResult,
 } from './types';
 
 export { parseCamt053Xml } from './camt053Parser';
@@ -19,6 +20,8 @@ export {
   importFromCamt053,
   importFromCsv,
   listImportFiles,
+  rollbackAndDeleteImport,
+  listRecentImportFiles,
 } from './importService';
 
 export {

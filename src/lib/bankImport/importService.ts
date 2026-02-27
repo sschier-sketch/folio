@@ -7,6 +7,7 @@ import type {
   CsvColumnMapping,
   ImportResult,
   BankImportFile,
+  RollbackResult,
 } from './types';
 
 export async function createImportFile(
@@ -178,6 +179,44 @@ export async function listImportFiles(userId: string): Promise<BankImportFile[]>
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function rollbackAndDeleteImport(
+  importFileId: string
+): Promise<RollbackResult> {
+  const { data, error } = await supabase.rpc('rollback_and_delete_import', {
+    p_import_file_id: importFileId,
+  });
+
+  if (error) {
+    throw new Error(`Rollback failed: ${error.message}`);
+  }
+
+  const result = data as RollbackResult;
+
+  if (result.error) {
+    throw new Error(result.error);
+  }
+
+  return result;
+}
+
+export async function listRecentImportFiles(
+  userId: string,
+  days: number = 14
+): Promise<BankImportFile[]> {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+
+  const { data, error } = await supabase
+    .from('bank_import_files')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('uploaded_at', cutoff.toISOString())
+    .order('uploaded_at', { ascending: false });
 
   if (error) throw new Error(error.message);
   return data || [];
