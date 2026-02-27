@@ -110,24 +110,30 @@ Deno.serve(async (req: Request) => {
     try {
       const { data: settings } = await supabase
         .from("system_settings")
-        .select("value")
-        .eq("key", "notification_email")
+        .select("notification_email")
+        .eq("id", 1)
         .maybeSingle();
 
-      const notificationEmail = settings?.value;
+      const notificationEmail = settings?.notification_email;
 
       if (notificationEmail) {
         await supabase.from("email_logs").insert({
+          mail_type: "admin_notify_new_ticket",
+          category: "transactional",
           to_email: notificationEmail,
-          template_key: "admin_notify_new_ticket",
-          variables: {
-            ticketNumber,
-            contactName: formData.name,
-            contactEmail: formData.email,
-            subject: formData.subject,
-            message: formData.message,
-          },
+          subject: `Neues Support-Ticket #${ticketNumber}`,
           status: "queued",
+          idempotency_key: `admin_notify_ticket_${ticketNumber}`,
+          metadata: {
+            template_key: "admin_notify_new_ticket",
+            variables: {
+              ticketNumber,
+              contactName: formData.name,
+              contactEmail: formData.email,
+              subject: formData.subject,
+              message: formData.message,
+            },
+          },
         });
       }
     } catch (notifyErr) {
@@ -136,15 +142,20 @@ Deno.serve(async (req: Request) => {
 
     try {
       await supabase.from("email_logs").insert({
+        mail_type: "contact_ticket_confirmation",
+        category: "transactional",
         to_email: formData.email,
-        template_key: "contact_ticket_confirmation",
-        variables: {
-          contact_name: formData.name,
-          ticket_number: ticketNumber,
-          subject: formData.subject,
-        },
+        subject: `Ihre Anfrage #${ticketNumber} wurde empfangen`,
         status: "queued",
         idempotency_key: `contact_confirm_${ticketNumber}`,
+        metadata: {
+          template_key: "contact_ticket_confirmation",
+          variables: {
+            contact_name: formData.name,
+            ticket_number: ticketNumber,
+            subject: formData.subject,
+          },
+        },
       });
     } catch (confirmErr) {
       console.warn("Could not queue confirmation email:", confirmErr);
