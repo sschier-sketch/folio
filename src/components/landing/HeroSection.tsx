@@ -128,21 +128,22 @@ export default function HeroSection() {
               >
                 Kostenlos starten
               </button>
-              <RefLink
-                to="/funktionen"
-                className="group relative h-12 inline-flex items-center gap-2 px-8 rounded-lg text-base font-semibold border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors overflow-hidden"
-              >
-                <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3c8af7] opacity-60" />
-                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#3c8af7] items-center justify-center">
-                    <Sparkles className="w-2 h-2 text-white" />
+              <div className="flex flex-col items-start gap-2">
+                <RefLink
+                  to="/funktionen"
+                  className="group h-12 inline-flex items-center gap-2.5 px-8 rounded-lg text-base font-semibold border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
+                >
+                  <Sparkles className="w-4 h-4 text-[#3c8af7] animate-[spin_3s_linear_infinite]" />
+                  Funktionen ansehen
+                </RefLink>
+                <span className="inline-flex items-center gap-1.5 pl-2 text-sm text-gray-500">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                   </span>
+                  +5 neue Funktionen im Februar
                 </span>
-                Funktionen ansehen
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200 animate-pulse">
-                  Neu
-                </span>
-              </RefLink>
+              </div>
             </div>
           </RevealOnScroll>
 
