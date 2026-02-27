@@ -11,6 +11,7 @@ import {
   Share2,
   Building2,
   Lock,
+  Wand2,
   CheckCircle2,
   Home,
   FolderOpen,
@@ -29,7 +30,7 @@ import {
 const HERO_CHECKS = [
   "Alle Dokumente sicher in der Cloud",
   "Automatische Zuordnung zu Immobilien & Mietern",
-  "Dokumente direkt mit Mietern teilen"
+  "Schreiben per Assistent erstellen & als PDF exportieren"
 ];
 
 const FEATURES = [
@@ -62,6 +63,11 @@ const FEATURES = [
     icon: Lock,
     title: "Sichere Speicherung",
     description: "Alle Dokumente werden verschlüsselt auf europäischen Servern gespeichert. DSGVO-konform und jederzeit verfügbar."
+  },
+  {
+    icon: Wand2,
+    title: "Dokument-Assistent",
+    description: "Erstellen Sie Kündigungen, Abmahnungen, Zahlungserinnerungen und weitere Schreiben mit einem geführten Assistenten. Schritt für Schritt zum fertigen PDF."
   }
 ];
 
@@ -598,6 +604,11 @@ export default function Dokumente() {
                 Kategorisierung nach Dokumententyp &ndash; Vertr&auml;ge, Abrechnungen, Protokolle,
                 Versicherungen und mehr &ndash; sorgt daf&uuml;r, dass Sie jedes Dokument in Sekunden
                 wiederfinden.
+              </p>
+              <p>
+                Der integrierte Dokument-Assistent hilft Ihnen, wichtige Schreiben wie
+                K&uuml;ndigungen, Abmahnungen, Zahlungserinnerungen oder Mieterselbstausk&uuml;nfte
+                in wenigen Schritten zu erstellen &ndash; rechtssicher und sofort als PDF exportierbar.
               </p>
               <p>
                 &Uuml;ber das Mieterportal geben Sie ausgew&auml;hlte Dokumente sicher an Ihre Mieter frei.

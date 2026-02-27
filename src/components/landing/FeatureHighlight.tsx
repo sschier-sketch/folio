@@ -46,7 +46,7 @@ const FEATURES: {
     icon: Receipt,
     title: "Buchhaltung",
     description:
-      "Einnahmen, Ausgaben, Betriebskostenabrechnungen und Mahnwesen. Ihre Finanzen strukturiert und nachvollziehbar.",
+      "Einnahmen, Ausgaben, Anlage V und Restschuldberechnung. Ihre Finanzen strukturiert und steuerlich vorbereitet.",
     path: "/funktionen/buchhaltung",
   },
   {

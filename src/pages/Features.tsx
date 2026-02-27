@@ -65,11 +65,11 @@ const FEATURES = [
     icon: BarChart3,
     title: "Buchhaltung & Finanzen",
     description:
-      "Einnahmen, Ausgaben und Cashflow strukturiert aufbereitet. Steuerexporte auf Knopfdruck.",
+      "Einnahmen, Ausgaben und Cashflow strukturiert aufbereitet. Anlage V, Restschuldberechnung und Steuerexporte auf Knopfdruck.",
     bullets: [
-      "Einnahmen & Ausgaben erfassen",
+      "Anlage V aus Ihren Daten erstellen",
+      "Restschuld & Darlehen tagesgenau berechnen",
       "Cashflow-Analyse pro Objekt",
-      "Export für den Steuerberater",
     ],
     path: "/funktionen/buchhaltung",
     visual: "finance",
@@ -91,10 +91,10 @@ const FEATURES = [
     icon: FolderOpen,
     title: "Dokumentenmanagement",
     description:
-      "Verträge, Abrechnungen und Belege sicher in der Cloud archivieren und sofort wiederfinden.",
+      "Verträge, Abrechnungen und Belege sicher in der Cloud archivieren. Schreiben per Assistent erstellen.",
     bullets: [
+      "Dokument-Assistent für Schreiben & Vorlagen",
       "Cloud-Upload per Drag & Drop",
-      "Automatische Kategorisierung",
       "Dokumente mit Mietern teilen",
     ],
     path: "/funktionen/dokumente",

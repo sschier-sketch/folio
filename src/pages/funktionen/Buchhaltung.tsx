@@ -12,6 +12,8 @@ import {
   Wallet,
   Receipt,
   CheckCircle2,
+  Calculator,
+  Scale,
   ChevronDown,
   Home,
   FolderOpen,
@@ -29,8 +31,8 @@ import {
 
 const HERO_CHECKS = [
   "Einnahmen & Ausgaben automatisch erfassen",
-  "Cashflow-Analyse je Immobilie",
-  "Steuerrelevante Auswertungen auf Knopfdruck"
+  "Anlage V direkt aus Ihren Daten erstellen",
+  "Restschuld & Darlehen tagesgenau berechnen"
 ];
 
 const FEATURES = [
@@ -63,6 +65,16 @@ const FEATURES = [
     icon: Receipt,
     title: "Belegverwaltung",
     description: "Laden Sie Belege und Rechnungen hoch und ordnen Sie diese direkt den passenden Ausgaben zu."
+  },
+  {
+    icon: Calculator,
+    title: "Anlage V",
+    description: "Erstellen Sie die steuerliche Anlage V direkt aus Ihren erfassten Daten. Einnahmen und Werbungskosten werden automatisch zugeordnet."
+  },
+  {
+    icon: Scale,
+    title: "Restschuldberechnung",
+    description: "Berechnen Sie die aktuelle Restschuld Ihrer Darlehen tagesgenau. Zinsbindungsende, Sondertilgungen und Anschlussfinanzierung im Blick."
   }
 ];
 
@@ -294,7 +306,7 @@ export default function Buchhaltung() {
             </div>
           </RevealOnScroll>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
             {FEATURES.map((feature, i) => (
               <RevealOnScroll key={feature.title} delay={i * 80}>
                 <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow h-full">
@@ -584,9 +596,13 @@ export default function Buchhaltung() {
               </p>
               <p>
                 Dar&uuml;ber hinaus behalten Sie Ihre Immobiliendarlehen mit Zinsen, Tilgung und
-                Restschuld im Blick. Belege und Rechnungen laden Sie direkt hoch und ordnen diese
-                den passenden Ausgaben zu. Am Ende des Jahres exportieren Sie alle steuerrelevanten
-                Daten f&uuml;r Ihren Steuerberater &ndash; sauber kategorisiert und l&uuml;ckenlos dokumentiert.
+                Restschuld im Blick &ndash; inklusive tagesgenauer Restschuldberechnung, die
+                Sondertilgungen und Zinsbindungsende ber&uuml;cksichtigt. Die integrierte Anlage V
+                erstellt Ihre steuerliche Einnahmen-&Uuml;berschuss-Rechnung direkt aus den erfassten
+                Daten: Mieteinnahmen, Werbungskosten und AfA werden automatisch zugeordnet.
+                Belege und Rechnungen laden Sie direkt hoch und ordnen diese den passenden Ausgaben
+                zu. Am Ende des Jahres exportieren Sie alle steuerrelevanten Daten f&uuml;r Ihren
+                Steuerberater &ndash; sauber kategorisiert und l&uuml;ckenlos dokumentiert.
               </p>
             </div>
           </RevealOnScroll>
