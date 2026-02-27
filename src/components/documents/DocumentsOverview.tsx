@@ -164,7 +164,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-              <FileText className="w-6 h-6" style={{ color: '#1e1e24' }} />
+              <FileText className="w-6 h-6" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
             </div>
           </div>
           <div className="text-2xl font-bold text-dark mb-1">{stats.totalDocuments}</div>
@@ -174,7 +174,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-              <FolderCheck className="w-6 h-6" style={{ color: '#1e1e24' }} />
+              <FolderCheck className="w-6 h-6" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
             </div>
           </div>
           <div className="text-2xl font-bold text-dark mb-1">{stats.assignedDocuments}</div>
@@ -187,7 +187,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-              <HardDrive className="w-6 h-6" style={{ color: '#1e1e24' }} />
+              <HardDrive className="w-6 h-6" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
             </div>
           </div>
           <div className="text-2xl font-bold text-dark mb-1">{formatFileSize(stats.totalSize)}</div>
@@ -211,7 +211,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-              <Clock className="w-6 h-6" style={{ color: '#1e1e24' }} />
+              <Clock className="w-6 h-6" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
             </div>
           </div>
           <div className="text-2xl font-bold text-dark mb-1">{stats.recentUploads}</div>
@@ -254,7 +254,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
                 className="flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-                  <Upload className="w-5 h-5" style={{ color: '#1e1e24' }} />
+                  <Upload className="w-5 h-5" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
                 </div>
                 <div>
                   <div className="font-medium text-dark">Dokument hochladen</div>
@@ -267,7 +267,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
                 className="flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-                  <Wand2 className="w-5 h-5" style={{ color: '#1e1e24' }} />
+                  <Wand2 className="w-5 h-5" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
                 </div>
                 <div>
                   <div className="font-medium text-dark">Dokument erstellen</div>
@@ -281,7 +281,7 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
               className="w-full flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-left"
             >
               <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-                <FileText className="w-5 h-5" style={{ color: '#1e1e24' }} />
+                <FileText className="w-5 h-5" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
               </div>
               <div>
                 <div className="font-medium text-dark">Alle Dokumente</div>
