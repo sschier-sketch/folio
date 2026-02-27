@@ -29,3 +29,8 @@ export {
   listBankTransactions,
   getAllocationsForTransaction,
 } from './allocationService';
+
+export {
+  suggestTenantMatch,
+  runSuggestionsForUnmatched,
+} from './suggestionEngine';
