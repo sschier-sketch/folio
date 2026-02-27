@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   FileText,
-  Download,
   Loader2,
   AlertTriangle,
   TrendingUp,
@@ -150,7 +149,7 @@ export default function AnlageVView() {
             >
               {exporting
                 ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Exportiere...</>
-                : <><Download className="w-4 h-4 mr-1.5" />Export</>
+                : 'Export'
               }
             </Button>
             {showExportMenu && summary && (
@@ -178,10 +177,9 @@ export default function AnlageVView() {
         </div>
       </div>
 
-      <div className="flex items-start gap-2 px-4 py-2.5 bg-amber-50 rounded-lg border border-amber-200 mb-6">
-        <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+      <div className="px-4 py-2.5 bg-amber-50 rounded-lg border border-amber-200 mb-6">
         <p className="text-xs text-amber-700">
-          Hinweis: rentably ersetzt keine Steuerberatung. Prüfe die Angaben vor Abgabe und besprich sie mit deinem Steuerberater.
+          Hinweis: rentably ersetzt keine Steuerberatung. Prüfen Sie die Angaben vor Abgabe mit einem Steuerberater/in.
         </p>
       </div>
 
@@ -238,7 +236,7 @@ function Sidebar({
       <div>
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Immobilie</p>
         {selected ? (
-          <div className="flex items-center gap-3 p-3.5 bg-white rounded-lg border border-gray-200">
+          <div className="flex items-center gap-3 p-3.5 bg-white rounded-lg">
             <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <Building2 className="w-4.5 h-4.5 text-gray-500" />
             </div>
@@ -273,7 +271,7 @@ function Sidebar({
 
       <div>
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Eigentumsanteil</p>
-        <div className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200">
+        <div className="flex items-center gap-2 p-3 bg-white rounded-lg">
           <input
             type="number"
             min={1}
@@ -313,7 +311,7 @@ function Sidebar({
 
       {loading && !summary && (
         <div className="space-y-3">
-          <div className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
+          <div className="bg-white rounded-lg p-4 animate-pulse">
             <div className="h-3 bg-gray-100 rounded w-2/3 mb-3" />
             <div className="h-5 bg-gray-100 rounded w-1/2 mb-2" />
             <div className="grid grid-cols-3 gap-2 mt-3">
@@ -339,7 +337,7 @@ function SidebarKeyfacts({ summary }: { summary: AnlageVSummary }) {
   const isLoss = summary.result_total < 0;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white rounded-lg p-4">
       <div className="flex items-center justify-between mb-1">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
           Ergebnis{summary.ownership_share < 100 ? ` (${summary.ownership_share}%)` : ''}
@@ -381,7 +379,7 @@ function MiniKpi({ label, value, color, tooltip }: { label: string; value: strin
 
 function SidebarReceipts() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 opacity-50 pointer-events-none select-none">
+    <div className="bg-white rounded-lg p-4 opacity-50 pointer-events-none select-none">
       <div className="flex items-center justify-between mb-2">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Belege</p>
         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">In Kürze</span>
@@ -417,7 +415,7 @@ function MainPanel({ summary, loading, error, onOpenAfaSetup }: {
   if (loading && !summary) {
     return (
       <div className="flex-1 space-y-6">
-        <div className="bg-white rounded-lg border border-gray-100 p-10 animate-pulse">
+        <div className="bg-white rounded-lg p-10 animate-pulse">
           <div className="flex flex-col items-center">
             <div className="h-3 bg-gray-100 rounded w-40 mb-4" />
             <div className="h-10 bg-gray-100 rounded w-32 mb-2" />
@@ -430,7 +428,7 @@ function MainPanel({ summary, loading, error, onOpenAfaSetup }: {
           </div>
         </div>
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-white rounded-lg border border-gray-100 p-5 animate-pulse">
+          <div key={i} className="bg-white rounded-lg p-5 animate-pulse">
             <div className="flex justify-between"><div className="h-4 bg-gray-100 rounded w-28" /><div className="h-4 bg-gray-100 rounded w-16" /></div>
           </div>
         ))}
@@ -440,7 +438,7 @@ function MainPanel({ summary, loading, error, onOpenAfaSetup }: {
 
   if (!summary) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white rounded-lg border border-gray-100 min-h-[400px]">
+      <div className="flex-1 flex items-center justify-center bg-white rounded-lg min-h-[400px]">
         <div className="text-center">
           <Building2 className="w-12 h-12 mx-auto mb-3 text-gray-200" />
           <p className="text-gray-400 text-sm">Wähle eine Immobilie aus</p>
@@ -464,7 +462,7 @@ function HeroCard({ summary }: { summary: AnlageVSummary }) {
   const hasAfa = summary.afa.enabled && summary.afa_total > 0;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 px-8 py-8">
+    <div className="bg-white rounded-lg px-8 py-8">
       <div className="flex flex-col items-center text-center">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
           Einkünfte aus V+V
@@ -483,17 +481,17 @@ function HeroCard({ summary }: { summary: AnlageVSummary }) {
 
       <div className="grid grid-cols-3 gap-6 mt-8 pt-6 border-t border-gray-100">
         <HeroKpi
-          icon={<Banknote className="w-5 h-5 text-gray-400" />}
+          icon={<Banknote className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />}
           label="Mieteinnahmen"
           value={fmtEur(summary.income_total)}
         />
         <HeroKpi
-          icon={<Receipt className="w-5 h-5 text-gray-400" />}
+          icon={<Receipt className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />}
           label="Werbungskosten"
           value={`-${fmtEur(summary.expense_total)}`}
         />
         <HeroKpi
-          icon={<Building2 className={`w-5 h-5 ${hasAfa ? 'text-gray-400' : 'text-gray-300'}`} />}
+          icon={<Building2 className={`w-5 h-5 ${hasAfa ? '' : 'text-gray-300'}`} style={hasAfa ? { color: '#1E1E24' } : undefined} strokeWidth={1.5} />}
           label="AfA"
           value={hasAfa ? `-${fmtEur(summary.afa_total)}` : '-0 EUR'}
           muted={!hasAfa}
@@ -506,7 +504,10 @@ function HeroCard({ summary }: { summary: AnlageVSummary }) {
 function HeroKpi({ icon, label, value, muted }: { icon: React.ReactNode; label: string; value: string; muted?: boolean }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 ${muted ? 'bg-gray-50' : 'bg-gray-100'}`}>
+      <div
+        className="w-10 h-10 rounded-full flex items-center justify-center mb-2"
+        style={muted ? { backgroundColor: '#f9fafb' } : { backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}
+      >
         {icon}
       </div>
       <p className={`text-[11px] mb-0.5 ${muted ? 'text-gray-300' : 'text-gray-400'}`}>{label}</p>
@@ -530,7 +531,7 @@ function IncomeAccordion({ summary }: { summary: AnlageVSummary }) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors"
@@ -592,7 +593,7 @@ function ExpenseAccordion({ summary }: { summary: AnlageVSummary }) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors"
@@ -636,7 +637,7 @@ function AfaAccordion({ summary, onOpenSetup }: { summary: AnlageVSummary; onOpe
   const usageLabels: Record<string, string> = { residential: 'Wohnen', commercial: 'Gewerbe', mixed: 'Gemischt' };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors"

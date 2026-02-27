@@ -146,10 +146,9 @@ export default function AfaSetupModal({ propertyId, userId, propertyType, onClos
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
-          <div className="flex items-start gap-2 px-3 py-2.5 bg-amber-50 rounded-lg border border-amber-200">
-            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="px-3 py-2.5 bg-amber-50 rounded-lg border border-amber-200">
             <p className="text-xs text-amber-700">
-              Die AfA-Berechnung ersetzt keine Steuerberatung. Bitte prüfe die Angaben mit deinem Steuerberater.
+              Die AfA-Berechnung ersetzt keine Steuerberatung.
             </p>
           </div>
 
