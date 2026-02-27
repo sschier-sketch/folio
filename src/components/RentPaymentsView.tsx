@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell, ArrowUpDown, FileText, Clock } from "lucide-react";
+import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell, ArrowUpDown, FileText, Clock, Landmark } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -11,6 +11,14 @@ import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown"
 import Badge from "./common/Badge";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 import { Button } from './ui/Button';
+import AllocationDetailModal from "./finances/bank-import/AllocationDetailModal";
+import { undoAllocation } from "../lib/bankImport";
+
+interface AllocationInfo {
+  bank_transaction_id: string;
+  created_by: string;
+  amount_allocated: number;
+}
 interface PartialPayment {
   amount: number;
   date: string;
@@ -61,6 +69,10 @@ export default function RentPaymentsView() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const paymentsPerPage = 12;
+  const [allocationMap, setAllocationMap] = useState<Record<string, AllocationInfo[]>>({});
+  const [showAllocationDetail, setShowAllocationDetail] = useState<string | null>(null);
+  const [confirmUndoId, setConfirmUndoId] = useState<string | null>(null);
+  const [undoing, setUndoing] = useState(false);
   useEffect(() => {
     loadData();
   }, [user]);
@@ -148,8 +160,58 @@ export default function RentPaymentsView() {
       });
 
       setPayments(filteredPayments);
+      await loadAllocations(filteredPayments.map(p => p.id));
     } catch (error) {
       console.error("Error loading payments:", error);
+    }
+  };
+
+  const loadAllocations = async (paymentIds: string[]) => {
+    if (paymentIds.length === 0) {
+      setAllocationMap({});
+      return;
+    }
+    try {
+      const { data } = await supabase
+        .from('bank_transaction_allocations')
+        .select('bank_transaction_id, target_id, amount_allocated, created_by')
+        .eq('target_type', 'rent_payment')
+        .in('target_id', paymentIds)
+        .is('deleted_at', null);
+
+      const map: Record<string, AllocationInfo[]> = {};
+      for (const row of data || []) {
+        if (!map[row.target_id]) map[row.target_id] = [];
+        map[row.target_id].push({
+          bank_transaction_id: row.bank_transaction_id,
+          created_by: row.created_by,
+          amount_allocated: Number(row.amount_allocated),
+        });
+      }
+      setAllocationMap(map);
+    } catch {
+      setAllocationMap({});
+    }
+  };
+
+  const handleUndoAllocation = async (paymentId: string) => {
+    if (!user) return;
+    const allocs = allocationMap[paymentId];
+    if (!allocs || allocs.length === 0) return;
+
+    setUndoing(true);
+    try {
+      const txIds = [...new Set(allocs.map(a => a.bank_transaction_id))];
+      for (const txId of txIds) {
+        await undoAllocation(user.id, txId);
+      }
+      setConfirmUndoId(null);
+      loadPayments();
+    } catch (err) {
+      console.error("Undo allocation failed:", err);
+      alert("Fehler beim Aufheben der Zuordnung");
+    } finally {
+      setUndoing(false);
     }
   };
 
@@ -617,60 +679,91 @@ export default function RentPaymentsView() {
             header: "Status",
             sortable: true,
             render: (payment: RentPayment) => {
-              if (payment.payment_status === 'paid') {
-                return (
-                  <div>
-                    <StatusBadge type="success" label="Bezahlt" />
-                    {payment.paid_date && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        {formatDate(payment.paid_date)}
-                      </div>
-                    )}
-                  </div>
-                );
-              } else if (payment.payment_status === 'partial') {
-                return (
-                  <StatusBadge type="info" label="Teilzahlung" />
-                );
-              } else if (isOverdue(payment)) {
-                return (
-                  <StatusBadge type="error" label="Überfällig" />
-                );
-              } else {
-                return (
-                  <StatusBadge type="warning" label="Ausstehend" />
-                );
-              }
+              const allocs = allocationMap[payment.id];
+              const hasBankAlloc = allocs && allocs.length > 0;
+              const isAuto = hasBankAlloc && allocs.some(a => a.created_by === 'auto');
+
+              return (
+                <div className="space-y-1">
+                  {payment.payment_status === 'paid' ? (
+                    <div>
+                      <StatusBadge type="success" label="Bezahlt" />
+                      {payment.paid_date && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {formatDate(payment.paid_date)}
+                        </div>
+                      )}
+                    </div>
+                  ) : payment.payment_status === 'partial' ? (
+                    <StatusBadge type="info" label="Teilzahlung" />
+                  ) : isOverdue(payment) ? (
+                    <StatusBadge type="error" label="Überfällig" />
+                  ) : (
+                    <StatusBadge type="warning" label="Ausstehend" />
+                  )}
+                  {hasBankAlloc && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowAllocationDetail(payment.id);
+                      }}
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                        isAuto
+                          ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                      title="Aus Bankimport - Klicken fuer Details"
+                    >
+                      <Landmark className="w-2.5 h-2.5" />
+                      {isAuto ? 'Auto' : 'Bank'}
+                    </button>
+                  )}
+                </div>
+              );
             }
           },
           {
             key: "actions",
             header: "Aktionen",
             align: "center" as const,
-            render: (payment: RentPayment) => (
-              <TableActionsDropdown
-                actions={[
-                  {
-                    label: 'Als unbezahlt markieren',
-                    onClick: () => handleMarkAsUnpaid(payment.id),
-                    hidden: payment.payment_status !== 'paid'
-                  },
-                  {
-                    label: 'Als bezahlt markieren',
-                    onClick: () => handleMarkAsPaid(payment.id),
-                    hidden: payment.payment_status === 'paid'
-                  },
-                  {
-                    label: 'Teilzahlung erfassen',
-                    onClick: () => {
-                      setSelectedPayment(payment);
-                      setShowPartialPaymentModal(true);
+            render: (payment: RentPayment) => {
+              const hasBankAlloc = allocationMap[payment.id] && allocationMap[payment.id].length > 0;
+              return (
+                <TableActionsDropdown
+                  actions={[
+                    {
+                      label: 'Zuordnung ansehen',
+                      onClick: () => setShowAllocationDetail(payment.id),
+                      hidden: !hasBankAlloc
                     },
-                    hidden: payment.payment_status === 'paid'
-                  }
-                ]}
-              />
-            )
+                    {
+                      label: 'Zuordnung aufheben',
+                      onClick: () => setConfirmUndoId(payment.id),
+                      variant: 'danger' as const,
+                      hidden: !hasBankAlloc
+                    },
+                    {
+                      label: 'Als unbezahlt markieren',
+                      onClick: () => handleMarkAsUnpaid(payment.id),
+                      hidden: payment.payment_status !== 'paid'
+                    },
+                    {
+                      label: 'Als bezahlt markieren',
+                      onClick: () => handleMarkAsPaid(payment.id),
+                      hidden: payment.payment_status === 'paid'
+                    },
+                    {
+                      label: 'Teilzahlung erfassen',
+                      onClick: () => {
+                        setSelectedPayment(payment);
+                        setShowPartialPaymentModal(true);
+                      },
+                      hidden: payment.payment_status === 'paid'
+                    }
+                  ]}
+                />
+              );
+            }
           }
         ]}
         data={paginatedPayments}
@@ -838,6 +931,43 @@ export default function RentPaymentsView() {
                 variant="primary"
               >
                 Teilzahlung speichern
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAllocationDetail && user && (
+        <AllocationDetailModal
+          rentPaymentId={showAllocationDetail}
+          userId={user.id}
+          onClose={() => setShowAllocationDetail(null)}
+          onUndone={() => {
+            setShowAllocationDetail(null);
+            loadPayments();
+          }}
+        />
+      )}
+
+      {confirmUndoId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmUndoId(null)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+            <h3 className="text-base font-semibold text-dark mb-2">Zuordnung aufheben?</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Die Bank-Zuordnung wird entfernt und die Transaktion erscheint wieder in der Zuordnungs-Inbox. Der Zahlungsstatus dieser Forderung wird neu berechnet.
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <Button variant="cancel" size="sm" onClick={() => setConfirmUndoId(null)}>
+                Abbrechen
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => handleUndoAllocation(confirmUndoId)}
+                disabled={undoing}
+              >
+                {undoing ? 'Wird aufgehoben...' : 'Ja, aufheben'}
               </Button>
             </div>
           </div>
