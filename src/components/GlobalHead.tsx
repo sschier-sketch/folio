@@ -2,9 +2,12 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
   getGlobalHeadHtml,
-  resolveHeadVariables,
   replaceHeadPlaceholders,
+  HeadVariables,
 } from "../lib/globalHead";
+import { SITE_URL } from "../config/site";
+
+const DEFAULT_OG_IMAGE = `${SITE_URL}/rentably-app.jpg`;
 
 const MANAGED_SELECTORS = [
   'meta[property="og:site_name"]',
@@ -58,35 +61,44 @@ function parseAndInjectHtml(html: string) {
   }
 }
 
+async function injectHead(pathname: string, seoDetail?: { title?: string; description?: string; ogTitle?: string; ogDescription?: string; ogImageUrl?: string }) {
+  const template = await getGlobalHeadHtml();
+
+  const cleanPath = pathname.split("?")[0].split("#")[0];
+  const pageUrl = cleanPath === "/" ? `${SITE_URL}/` : `${SITE_URL}${cleanPath}`;
+
+  const title = seoDetail?.ogTitle || seoDetail?.title || document.title || "rentably";
+  const description = seoDetail?.ogDescription || seoDetail?.description || document.querySelector('meta[name="description"]')?.getAttribute("content") || "";
+
+  const vars: HeadVariables = {
+    siteUrl: SITE_URL,
+    pageUrl,
+    title,
+    description,
+    ogImage: seoDetail?.ogImageUrl || DEFAULT_OG_IMAGE,
+  };
+
+  const resolved = replaceHeadPlaceholders(template, vars);
+  parseAndInjectHtml(resolved);
+}
+
 export default function GlobalHead() {
   const location = useLocation();
 
   useEffect(() => {
     let cancelled = false;
 
-    async function inject() {
-      const template = await getGlobalHeadHtml();
+    function handleSeoUpdated(e: Event) {
       if (cancelled) return;
-
-      const title = document.title || undefined;
-      const descMeta = document.querySelector('meta[name="description"]');
-      const description = descMeta?.getAttribute("content") || undefined;
-
-      const vars = resolveHeadVariables(
-        location.pathname,
-        title,
-        description
-      );
-
-      const resolved = replaceHeadPlaceholders(template, vars);
-      parseAndInjectHtml(resolved);
+      const detail = (e as CustomEvent).detail;
+      injectHead(location.pathname, detail);
     }
 
-    const timer = setTimeout(inject, 50);
+    window.addEventListener('seo-head-updated', handleSeoUpdated);
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
+      window.removeEventListener('seo-head-updated', handleSeoUpdated);
     };
   }, [location.pathname]);
 

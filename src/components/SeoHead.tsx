@@ -52,6 +52,10 @@ export default function SeoHead() {
       } else {
         removeJsonLd();
       }
+
+      window.dispatchEvent(new CustomEvent('seo-head-updated', {
+        detail: { title: meta.title, description: meta.description, ogTitle: meta.ogTitle, ogDescription: meta.ogDescription, ogImageUrl: meta.ogImageUrl }
+      }));
     }
 
     loadMetadata();
