@@ -134,7 +134,7 @@ export default function FinancesView() {
           <div className="flex">
             {tabs.map((tab) => {
               const Icon = tab.icon;
-              const isDisabled = tab.id === "bank" || tab.id === "intelligence";
+              const isDisabled = tab.id === "intelligence";
               return (
                 <button
                   key={tab.id}
@@ -155,7 +155,7 @@ export default function FinancesView() {
                 >
                   <Icon className="w-3 h-3" />
                   {tab.label}
-                  {tab.premium && (tab.id === "intelligence" || tab.id === "bank") ? (
+                  {tab.premium && tab.id === "intelligence" ? (
                     <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>
                       Bald
                     </span>
