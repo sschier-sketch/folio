@@ -104,8 +104,8 @@ export default function ServiceView() {
           const Icon = method.icon;
           const content = (
             <div className="bg-white rounded-lg p-5">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 border border-gray-200">
-                <Icon className="w-5 h-5 text-gray-900" />
+              <div className="w-10 h-10 rounded-full bg-[#EEF4FF] border border-[#DDE7FF] flex items-center justify-center mb-3">
+                <Icon className="w-5 h-5 text-gray-900" strokeWidth={1.5} />
               </div>
               <h3 className="text-sm font-semibold text-gray-900">{method.title}</h3>
               <p className="text-xs text-gray-500 mt-1">{method.description}</p>

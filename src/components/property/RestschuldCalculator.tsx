@@ -7,8 +7,8 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Bar,
-  BarChart,
+  Line,
+  LineChart,
 } from "recharts";
 import { Button } from "../ui/Button";
 
@@ -221,7 +221,7 @@ export default function RestschuldCalculator({ loans, onBack }: RestschuldCalcul
               {selectedLoan.lender_name} — {rows.length} Monate bis {endDateLabel}
             </p>
             <ResponsiveContainer width="100%" height={380}>
-              <BarChart data={chartData} barCategoryGap="15%">
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis
                   dataKey="monthLabel"
@@ -252,7 +252,6 @@ export default function RestschuldCalculator({ loans, onBack }: RestschuldCalcul
                     name,
                   ]}
                   labelFormatter={(label: string) => label}
-                  cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                 />
                 <Legend
                   content={() => (
@@ -272,28 +271,34 @@ export default function RestschuldCalculator({ loans, onBack }: RestschuldCalcul
                     </div>
                   )}
                 />
-                <Bar
+                <Line
+                  type="monotone"
                   dataKey="balance"
                   name="Restschuld"
-                  fill="#3b82f6"
-                  radius={[3, 3, 0, 0]}
-                  maxBarSize={32}
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 0 }}
                 />
-                <Bar
+                <Line
+                  type="monotone"
                   dataKey="principal"
                   name="Tilgung"
-                  fill="#10b981"
-                  radius={[3, 3, 0, 0]}
-                  maxBarSize={32}
+                  stroke="#10b981"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 0 }}
                 />
-                <Bar
+                <Line
+                  type="monotone"
                   dataKey="interest"
                   name="Zinsen"
-                  fill="#f59e0b"
-                  radius={[3, 3, 0, 0]}
-                  maxBarSize={32}
+                  stroke="#f59e0b"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 0 }}
                 />
-              </BarChart>
+              </LineChart>
             </ResponsiveContainer>
           </div>
 
