@@ -50,13 +50,13 @@ export default function BillingView() {
       icon: Calculator,
       premium: true,
     },
-    { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },
     {
       id: "anlage_v" as Tab,
       label: "Anlage V",
       icon: FileText,
       premium: true,
     },
+    { id: "meters" as Tab, label: "Zähler & Verbrauch", icon: Gauge },
     { id: "export" as Tab, label: "Export", icon: Download, premium: true, disabled: true },
   ];
 

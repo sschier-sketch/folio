@@ -70,7 +70,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
     doc.setFont(undefined as any, 'normal');
     doc.setTextColor(130);
     doc.text(
-      'Hinweis: Diese Uebersicht ersetzt keine Steuerberatung. Alle Angaben ohne Gewaehr.',
+      'Hinweis: Diese Übersicht ersetzt keine Steuerberatung. Alle Angaben ohne Gewähr.',
       M_LEFT,
       lineY + 4
     );
@@ -94,7 +94,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
 
   doc.setFontSize(18);
   doc.setFont(undefined as any, 'bold');
-  doc.text(`Anlage V - Jahresuebersicht ${summary.year}`, M_LEFT, currentY);
+  doc.text(`Anlage V - Jahresübersicht ${summary.year}`, M_LEFT, currentY);
   currentY += 8;
 
   doc.setFontSize(10);
@@ -215,7 +215,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
 
     autoTable(doc, {
       startY: currentY,
-      head: [['Datum', 'Betrag', 'Gruppe', 'Kategorie', 'Empfaenger']],
+      head: [['Datum', 'Betrag', 'Gruppe', 'Kategorie', 'Empfänger']],
       body: expenseRows,
       theme: 'plain',
       margin: { left: M_LEFT, right: M_RIGHT, top: HEADER_END_Y, bottom: M_BOTTOM + FOOTER_H },
@@ -243,13 +243,13 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
     ensureSpace(45);
     doc.setFontSize(12);
     doc.setFont(undefined as any, 'bold');
-    doc.text('AfA (Absetzung fuer Abnutzung)', M_LEFT, currentY);
+    doc.text('AfA (Absetzung für Abnutzung)', M_LEFT, currentY);
     currentY += 5;
 
     const afaParams: string[][] = [
       ['AfA-Betrag ' + summary.year, fmtCurrency(summary.afa.afa_amount)],
-      ['Jaehrliche AfA (voll)', fmtCurrency(summary.afa.annual_afa_full)],
-      ['Gebaeudeanteil (Bemessungsgrundlage)', fmtCurrency(summary.afa.building_value_amount)],
+      ['Jährliche AfA (voll)', fmtCurrency(summary.afa.annual_afa_full)],
+      ['Gebäudeanteil (Bemessungsgrundlage)', fmtCurrency(summary.afa.building_value_amount)],
       ['AfA-Satz', `${(summary.afa.afa_rate * 100).toFixed(1)}%`],
       ['Eigentumsanteil', `${summary.afa.ownership_share}%`],
       ['Monatsfaktor', summary.afa.months_factor < 1 ? `${Math.round(summary.afa.months_factor * 12)}/12 (anteilig)` : '12/12'],
@@ -288,7 +288,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
     doc.setFont(undefined as any, 'italic');
     doc.setTextColor(120);
     doc.text(
-      'Hinweis: Die AfA-Berechnung dient ausschliesslich der Uebersicht. Sie ersetzt keine steuerliche Beratung.',
+      'Hinweis: Die AfA-Berechnung dient ausschließlich der Übersicht. Sie ersetzt keine steuerliche Beratung.',
       M_LEFT,
       currentY
     );
