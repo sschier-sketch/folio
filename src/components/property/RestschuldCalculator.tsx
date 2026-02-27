@@ -255,9 +255,22 @@ export default function RestschuldCalculator({ loans, onBack }: RestschuldCalcul
                   cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: "12px", paddingTop: "16px" }}
-                  iconType="circle"
-                  iconSize={8}
+                  content={() => (
+                    <div className="flex items-center justify-center gap-2 pt-4">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                        <span className="w-2 h-2 rounded-full bg-blue-500" />
+                        Restschuld
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        Tilgung
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                        Zinsen
+                      </span>
+                    </div>
+                  )}
                 />
                 <Bar
                   dataKey="balance"

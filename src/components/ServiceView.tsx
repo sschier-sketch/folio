@@ -103,9 +103,9 @@ export default function ServiceView() {
         {contactMethods.map((method) => {
           const Icon = method.icon;
           const content = (
-            <div className="bg-white rounded-lg shadow-sm p-5">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-blue-50">
-                <Icon className="w-5 h-5 text-primary-blue" />
+            <div className="bg-white rounded-lg p-5">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 border border-gray-200">
+                <Icon className="w-5 h-5 text-gray-900" />
               </div>
               <h3 className="text-sm font-semibold text-gray-900">{method.title}</h3>
               <p className="text-xs text-gray-500 mt-1">{method.description}</p>
@@ -123,7 +123,7 @@ export default function ServiceView() {
                 href={method.href}
                 target={method.href.startsWith("https") ? "_blank" : undefined}
                 rel={method.href.startsWith("https") ? "noopener noreferrer" : undefined}
-                className="block hover:shadow-md transition-shadow rounded-lg"
+                className="block rounded-lg"
               >
                 {content}
               </a>
@@ -133,7 +133,7 @@ export default function ServiceView() {
         })}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
+      <div className="bg-white rounded-lg p-6 md:p-8">
         <h3 className="text-lg font-semibold text-dark mb-1">
           {language === "de" ? "Nachricht senden" : "Send a Message"}
         </h3>
@@ -165,7 +165,7 @@ export default function ServiceView() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5 max-w-2xl">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
