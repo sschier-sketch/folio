@@ -17,25 +17,19 @@ function loadLogo(): Promise<string | null> {
     const img = new Image();
     img.crossOrigin = 'Anonymous';
     img.onload = () => {
-      const maxWidth = 200;
-      const scale = Math.min(1, maxWidth / img.width);
-      const w = img.width * scale;
-      const h = img.height * scale;
       const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = img.width;
+      canvas.height = img.height;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
       } else {
         resolve(null);
       }
     };
     img.onerror = () => resolve(null);
-    img.src = '/asset_1@4x.png';
+    img.src = '/Asset_3@4x.png';
   });
 }
 
@@ -56,7 +50,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
 
   const drawHeader = () => {
     if (logoData) {
-      doc.addImage(logoData, 'JPEG', PAGE_W - M_RIGHT - 40, M_TOP, 40, 8);
+      doc.addImage(logoData, 'PNG', PAGE_W - M_RIGHT - 40, M_TOP, 40, 8);
     }
     doc.setFontSize(10);
     doc.setFont(undefined as any, 'normal');
@@ -146,7 +140,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
     startY: currentY,
     body: summaryData,
     theme: 'plain',
-    margin: { left: M_LEFT, right: M_RIGHT },
+    margin: { left: M_LEFT, right: M_RIGHT, top: HEADER_END_Y, bottom: M_BOTTOM + FOOTER_H },
     tableWidth: PAGE_W - M_LEFT - M_RIGHT,
     styles: {
       fontSize: 10,
@@ -183,7 +177,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
       head: [['Datum', 'Betrag', 'Quelle', 'Mieter', 'Immobilie']],
       body: incomeRows,
       theme: 'plain',
-      margin: { left: M_LEFT, right: M_RIGHT },
+      margin: { left: M_LEFT, right: M_RIGHT, top: HEADER_END_Y, bottom: M_BOTTOM + FOOTER_H },
       styles: {
         fontSize: 8.5,
         cellPadding: { top: 1.5, right: 1.5, bottom: 1.5, left: 1.5 },
@@ -224,7 +218,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
       head: [['Datum', 'Betrag', 'Gruppe', 'Kategorie', 'Empfaenger']],
       body: expenseRows,
       theme: 'plain',
-      margin: { left: M_LEFT, right: M_RIGHT },
+      margin: { left: M_LEFT, right: M_RIGHT, top: HEADER_END_Y, bottom: M_BOTTOM + FOOTER_H },
       styles: {
         fontSize: 8.5,
         cellPadding: { top: 1.5, right: 1.5, bottom: 1.5, left: 1.5 },
@@ -273,7 +267,7 @@ export async function generateAnlageVPdf(summary: AnlageVSummary): Promise<void>
       startY: currentY,
       body: afaParams,
       theme: 'plain',
-      margin: { left: M_LEFT, right: M_RIGHT },
+      margin: { left: M_LEFT, right: M_RIGHT, top: HEADER_END_Y, bottom: M_BOTTOM + FOOTER_H },
       tableWidth: PAGE_W - M_LEFT - M_RIGHT,
       styles: {
         fontSize: 9,

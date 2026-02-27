@@ -237,8 +237,8 @@ function Sidebar({
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Immobilie</p>
         {selected ? (
           <div className="flex items-center gap-3 p-3.5 bg-white rounded-lg">
-            <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-4.5 h-4.5 text-gray-500" />
+            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+              <Building2 className="w-4 h-4" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-dark truncate">{selected.name}</p>
@@ -300,13 +300,10 @@ function Sidebar({
       <button
         onClick={onExportPdf}
         disabled={!summary || exporting}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold rounded-lg bg-primary-blue text-white hover:bg-blue-600 active:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {exporting
-          ? <Loader2 className="w-4 h-4 animate-spin" />
-          : <FileText className="w-4 h-4 text-gray-500" />
-        }
-        Anlage V exportieren
+        {exporting && <Loader2 className="w-4 h-4 animate-spin" />}
+        {exporting ? 'Exportiere...' : 'Anlage V exportieren'}
       </button>
 
       {loading && !summary && (
