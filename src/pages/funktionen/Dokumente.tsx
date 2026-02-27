@@ -67,8 +67,9 @@ const FEATURES = [
   {
     icon: Wand2,
     title: "Dokument-Assistent",
-    description: "Erstellen Sie Kündigungen, Abmahnungen, Zahlungserinnerungen und weitere Schreiben mit einem geführten Assistenten. Schritt für Schritt zum fertigen PDF."
-  }
+    description: "Erstellen Sie Kündigungen, Abmahnungen, Zahlungserinnerungen und weitere Schreiben mit einem geführten Assistenten. Schritt für Schritt zum fertigen PDF.",
+    isNew: true,
+  },
 ];
 
 const OTHER_FEATURES = [
@@ -298,7 +299,12 @@ export default function Dokumente() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {FEATURES.map((feature, i) => (
               <RevealOnScroll key={feature.title} delay={i * 80}>
-                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow h-full">
+                <div className={`bg-white border rounded-xl p-6 hover:shadow-md transition-shadow h-full relative ${feature.isNew ? 'border-[#3c8af7]/30 ring-1 ring-[#3c8af7]/10' : 'border-gray-200'}`}>
+                  {feature.isNew && (
+                    <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#3c8af7]/10 text-[#3c8af7] border border-[#3c8af7]/20">
+                      Neue Funktion
+                    </span>
+                  )}
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
                     style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}

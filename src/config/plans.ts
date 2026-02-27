@@ -68,9 +68,16 @@ export const PLANS: Record<PlanId, Plan> = {
   },
 };
 
+export interface ComparisonRow {
+  feature: string;
+  basic: string | boolean;
+  pro: string | boolean;
+  isNew?: boolean;
+}
+
 export interface ComparisonCategory {
   name: string;
-  rows: { feature: string; basic: string | boolean; pro: string | boolean }[];
+  rows: ComparisonRow[];
 }
 
 export const COMPARISON_TABLE: ComparisonCategory[] = [
@@ -105,6 +112,8 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
     rows: [
       { feature: 'Einnahmen & Ausgaben', basic: true, pro: true },
       { feature: 'Cashflow-Übersicht', basic: false, pro: true },
+      { feature: 'Anlage V', basic: false, pro: true, isNew: true },
+      { feature: 'Restschuldberechnung', basic: false, pro: true, isNew: true },
       { feature: 'Indexmiete', basic: false, pro: true },
       { feature: 'Finanzanalyse & Prognosen', basic: false, pro: true },
       { feature: 'Mahnwesen (Erinnerungen, Vorlagen, Historie)', basic: false, pro: true },
@@ -145,6 +154,7 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
     rows: [
       { feature: 'Standard-Vorlagen', basic: true, pro: true },
       { feature: 'Premium-Vorlagen', basic: false, pro: true },
+      { feature: 'Dokument-Assistent', basic: false, pro: true, isNew: true },
       { feature: 'Support', basic: 'E-Mail', pro: 'Priorität (24h)' },
     ],
   },

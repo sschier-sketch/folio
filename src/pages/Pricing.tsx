@@ -220,8 +220,13 @@ export default function Pricing() {
                         : ""
                     }`}
                   >
-                    <div className="px-5 py-3.5 text-sm text-gray-700">
+                    <div className="px-5 py-3.5 text-sm text-gray-700 flex items-center gap-2">
                       {row.feature}
+                      {row.isNew && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#3c8af7]/10 text-[#3c8af7] border border-[#3c8af7]/20 whitespace-nowrap">
+                          Neu
+                        </span>
+                      )}
                     </div>
                     <div className="px-3 py-3.5 text-center">
                       <CellValue value={row.basic} />
