@@ -41,6 +41,7 @@ export interface RollbackResult {
   deleted_transactions?: number;
   deleted_income?: number;
   deleted_expenses?: number;
+  deleted_rent_payments?: number;
   recalced_rents?: number;
 }
 

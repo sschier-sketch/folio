@@ -90,6 +90,7 @@ export default function IncomeExpenseAssignmentPanel({
         description: description || (isIncome ? 'Bank-Eingang' : 'Bank-Ausgang'),
         status: 'paid',
         source_bank_transaction_id: tx.id,
+        source_bank_import_file_id: tx.import_file_id || null,
         ...(isIncome
           ? { entry_date: tx.transaction_date }
           : { expense_date: tx.transaction_date }),
