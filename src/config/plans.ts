@@ -62,7 +62,7 @@ export const PLANS: Record<PlanId, Plan> = {
       { text: 'Mahnwesen & Indexmiete', included: true },
       { text: 'Cashflow & Finanzanalyse', included: true },
       { text: 'Dokumenten-Upload (erweitert)', included: true },
-      { text: 'Alle Vorlagen inkl. Premium', included: true },
+      { text: 'Alle Vorlagen inkl. Dokument-Assistent', included: true },
       { text: 'Prioritäts-Support (24h)', included: true },
     ],
   },
