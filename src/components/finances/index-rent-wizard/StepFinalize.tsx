@@ -16,15 +16,15 @@ import { useAuth } from "../../../contexts/AuthContext";
 import type { WizardState } from "./types";
 
 const fmt = (v: number) =>
-  v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20AC";
+  v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 
 const formatDateDE = (iso: string) => {
-  if (!iso) return "\u2013";
+  if (!iso) return "–";
   return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 };
 
 const formatEffectiveMonth = (iso: string) => {
-  if (!iso) return "\u2013";
+  if (!iso) return "–";
   const d = new Date(iso);
   return d.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
 };
@@ -41,7 +41,7 @@ interface Props {
 }
 
 function buildDefaultSubject(state: WizardState): string {
-  return `Anpassung Ihrer Miete gem\u00E4\u00DF Indexvereinbarung \u2013 wirksam ab ${formatEffectiveMonth(state.effectiveDate)}`;
+  return `Anpassung Ihrer Miete gemäß Indexvereinbarung – wirksam ab ${formatEffectiveMonth(state.effectiveDate)}`;
 }
 
 function buildDefaultBody(state: WizardState): string {
@@ -60,22 +60,22 @@ function buildDefaultBody(state: WizardState): string {
   const lines = [
     `${salutation},`,
     "",
-    `gem\u00E4\u00DF der in unserem Mietvertrag vom ${formatDateDE(state.contractDate)} vereinbarten Indexklausel (\u00A7 557b BGB) ergibt sich aufgrund der Ver\u00E4nderung des Verbraucherpreisindexes eine Anpassung Ihrer Nettokaltmiete.`,
+    `gemäß der in unserem Mietvertrag vom ${formatDateDE(state.contractDate)} vereinbarten Indexklausel (§ 557b BGB) ergibt sich aufgrund der Veränderung des Verbraucherpreisindexes eine Anpassung Ihrer Nettokaltmiete.`,
     "",
-    `Die neue monatliche Nettokaltmiete betr\u00E4gt ab dem ${formatDateDE(state.effectiveDate)}: ${fmt(newRent)}.`,
+    `Die neue monatliche Nettokaltmiete beträgt ab dem ${formatDateDE(state.effectiveDate)}: ${fmt(newRent)}.`,
   ];
 
   if (state.currentUtilities > 0) {
-    lines.push(`Die Betriebskostenvorauszahlung bleibt unver\u00E4ndert bei ${fmt(state.currentUtilities)}.`);
-    lines.push(`Somit betr\u00E4gt die neue monatliche Gesamtmiete: ${fmt(gesamtmiete)}.`);
+    lines.push(`Die Betriebskostenvorauszahlung bleibt unverändert bei ${fmt(state.currentUtilities)}.`);
+    lines.push(`Somit beträgt die neue monatliche Gesamtmiete: ${fmt(gesamtmiete)}.`);
   }
 
   lines.push("");
-  lines.push("Das ausf\u00FChrliche Erh\u00F6hungsschreiben mit der detaillierten Berechnung finden Sie als PDF im Anhang dieser E-Mail.");
+  lines.push("Das ausführliche Erhöhungsschreiben mit der detaillierten Berechnung finden Sie als PDF im Anhang dieser E-Mail.");
   lines.push("");
-  lines.push(`Bitte \u00FCberweisen Sie den angepassten Betrag erstmals f\u00FCr den Monat ${formatEffectiveMonth(state.effectiveDate)}.`);
+  lines.push(`Bitte überweisen Sie den angepassten Betrag erstmals für den Monat ${formatEffectiveMonth(state.effectiveDate)}.`);
   lines.push("");
-  lines.push("F\u00FCr R\u00FCckfragen stehen wir Ihnen gerne zur Verf\u00FCgung.");
+  lines.push("Für Rückfragen stehen wir Ihnen gerne zur Verfügung.");
 
   return lines.join("\n");
 }
@@ -136,12 +136,12 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, emailSent,
             <CheckCircle className="w-8 h-8 text-emerald-600" />
           </div>
           <h3 className="text-xl font-bold text-dark mb-2">
-            Indexmieterh\u00F6hung abgeschlossen
+            Indexmieterhöhung abgeschlossen
           </h3>
           <p className="text-sm text-gray-500 max-w-md mx-auto">
             {emailSent
-              ? `Das Erh\u00F6hungsschreiben wurde per E-Mail an ${state.tenantEmail} gesendet, als PDF gespeichert und die neue Miete im System hinterlegt.`
-              : "Das Erh\u00F6hungsschreiben wurde als PDF gespeichert und die neue Miete im System hinterlegt."}
+              ? `Das Erhöhungsschreiben wurde per E-Mail an ${state.tenantEmail} gesendet, als PDF gespeichert und die neue Miete im System hinterlegt.`
+              : "Das Erhöhungsschreiben wurde als PDF gespeichert und die neue Miete im System hinterlegt."}
           </p>
         </div>
 
@@ -204,7 +204,7 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, emailSent,
           <div>
             <h3 className="text-lg font-semibold text-dark">E-Mail-Vorschau</h3>
             <p className="text-sm text-gray-500">
-              Die Indexmieterh\u00F6hung wird als PDF an {state.tenantEmail} gesendet.
+              Die Indexmieterhöhung wird als PDF an {state.tenantEmail} gesendet.
             </p>
           </div>
         </div>
@@ -296,7 +296,7 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, emailSent,
       <div>
         <h3 className="text-lg font-semibold text-dark mb-1">Finalisieren</h3>
         <p className="text-sm text-gray-500">
-          Pr\u00FCfen Sie die Zusammenfassung und w\u00E4hlen Sie, wie Sie das Schreiben zustellen m\u00F6chten.
+          Prüfen Sie die Zusammenfassung und wählen Sie, wie Sie das Schreiben zustellen möchten.
         </p>
       </div>
 
@@ -314,7 +314,7 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, emailSent,
           <span className="font-bold text-emerald-700">{fmt(newRent)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Erh\u00F6hung</span>
+          <span className="text-gray-500">Erhöhung</span>
           <span className="text-emerald-700">+{fmt(newRent - state.currentRent)}</span>
         </div>
         {state.currentUtilities > 0 && (
@@ -352,7 +352,7 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, emailSent,
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span>VPI-Werte werden f\u00FCr k\u00FCnftige Berechnungen gespeichert</span>
+            <span>VPI-Werte werden für künftige Berechnungen gespeichert</span>
           </li>
         </ul>
       </div>
@@ -363,9 +363,9 @@ export default function StepFinalize({ state, saving, saved, pdfBlob, emailSent,
           <div>
             <p className="text-sm font-medium text-amber-900 mb-1">Wichtiger Hinweis zur Zustellung</p>
             <p className="text-sm text-amber-800 leading-relaxed">
-              Die Indexmieterh\u00F6hung muss dem Mieter gem\u00E4\u00DF <span className="font-semibold">\u00A7 126b BGB in Textform</span> zugehen,
-              also per E-Mail, Brief oder vergleichbarer lesbarer Erkl\u00E4rung auf einem dauerhaften Datentr\u00E4ger.
-              Eine eigenh\u00E4ndige Unterschrift ist nicht zwingend erforderlich.
+              Die Indexmieterhöhung muss dem Mieter gemäß <span className="font-semibold">§ 126b BGB in Textform</span> zugehen,
+              also per E-Mail, Brief oder vergleichbarer lesbarer Erklärung auf einem dauerhaften Datenträger.
+              Eine eigenhändige Unterschrift ist nicht zwingend erforderlich.
             </p>
           </div>
         </div>
