@@ -69,7 +69,8 @@ function buildTenantAddress(
 
   if (tenantAddr.trim()) return tenantAddr;
 
-  return property.address || property.name || "";
+  const fallback = property.address || property.name || "";
+  return fallback.replace(/,\s*/g, "\n");
 }
 
 export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
@@ -148,7 +149,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
         ? (profile.company_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim())
         : "";
       const landlordAddress = profile
-        ? `${profile.address_street || ""}, ${profile.address_zip || ""} ${profile.address_city || ""}`.replace(/^,\s*/, "").replace(/,\s*$/, "")
+        ? [profile.address_street, [profile.address_zip, profile.address_city].filter(Boolean).join(" ")].filter(Boolean).join("\n")
         : "";
 
       const effectiveDate = computeEarliestEffectiveDate(calc.possible_since, lastChangeDate);

@@ -30,12 +30,12 @@ export default function StepParties({ state, onChange }: Props) {
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Adresse *</label>
-            <input
-              type="text"
+            <textarea
               value={state.landlordAddress}
               onChange={(e) => onChange({ landlordAddress: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Musterstraße 1, 12345 Berlin"
+              rows={2}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              placeholder={"Musterstraße 1\n12345 Berlin"}
             />
           </div>
         </div>
