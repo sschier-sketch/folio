@@ -8,101 +8,82 @@ const corsHeaders = {
     "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-interface ActivationRequest {
-  tenantId: string;
-  userId: string;
+function jsonResponse(body: Record<string, unknown>, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function replaceVariables(content: string, variables: Record<string, string>): string {
+  let result = content;
+  for (const [key, value] of Object.entries(variables)) {
+    result = result.replaceAll(`{{${key}}}`, value);
+  }
+  return result;
 }
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
+    return new Response(null, { status: 200, headers: corsHeaders });
   }
 
   try {
-    const { tenantId, userId }: ActivationRequest = await req.json();
-
-    console.log("Processing activation request:", { tenantId, userId });
+    const { tenantId, userId } = await req.json();
 
     if (!tenantId || !userId) {
-      return new Response(
-        JSON.stringify({
-          error: "Missing required fields: tenantId and userId",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResponse({ error: "Missing required fields: tenantId and userId" }, 400);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { data: tenant, error: tenantError } = await supabase
       .from("tenants")
-      .select("first_name, last_name, email, property:properties(name, street, zip_code, city)")
+      .select("first_name, last_name, email, property_id")
       .eq("id", tenantId)
       .maybeSingle();
 
     if (tenantError) {
       console.error("Error fetching tenant:", tenantError);
-      return new Response(
-        JSON.stringify({
-          error: "Error fetching tenant data",
-          details: tenantError.message,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResponse({ error: "Error fetching tenant data", details: tenantError.message }, 500);
     }
 
     if (!tenant) {
-      console.error("Tenant not found:", tenantId);
-      return new Response(
-        JSON.stringify({
-          error: "Tenant not found",
-        }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResponse({ error: "Tenant not found" }, 404);
     }
 
     if (!tenant.email) {
-      return new Response(
-        JSON.stringify({
-          error: "Tenant has no email address",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResponse({ error: "Tenant has no email address" }, 400);
+    }
+
+    let propertyName = "";
+    let propertyAddress = "";
+    if (tenant.property_id) {
+      const { data: prop } = await supabase
+        .from("properties")
+        .select("name, street, zip_code, city")
+        .eq("id", tenant.property_id)
+        .maybeSingle();
+
+      if (prop) {
+        propertyAddress = [prop.street, [prop.zip_code, prop.city].filter(Boolean).join(" ")]
+          .filter(Boolean)
+          .join(", ");
+        propertyName = prop.name || propertyAddress || "";
+      }
     }
 
     const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
 
     if (authError || !authUser?.user) {
       console.error("Error fetching landlord:", authError);
-      return new Response(
-        JSON.stringify({
-          error: "Landlord not found",
-        }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResponse({ error: "Landlord not found" }, 404);
     }
 
-    const landlordEmail = authUser.user.email || '';
+    const landlordEmail = authUser.user.email || "";
 
     const { data: profile } = await supabase
       .from("account_profiles")
@@ -110,62 +91,179 @@ Deno.serve(async (req: Request) => {
       .eq("user_id", userId)
       .maybeSingle();
 
+    const landlordName =
+      profile?.first_name && profile?.last_name
+        ? `${profile.first_name} ${profile.last_name}`
+        : landlordEmail;
+
     const origin = req.headers.get("origin") || "https://rentab.ly";
     const portalLink = `${origin}/mieterportal-aktivierung`;
 
-    const landlordName = profile?.first_name && profile?.last_name
-      ? `${profile.first_name} ${profile.last_name}`
-      : landlordEmail;
+    const variables: Record<string, string> = {
+      tenant_name: `${tenant.first_name} ${tenant.last_name}`.trim(),
+      tenant_email: tenant.email,
+      portal_link: portalLink,
+      landlord_name: landlordName,
+      landlord_email: landlordEmail,
+      property_name: propertyName,
+      property_address: propertyAddress,
+    };
 
-    const prop = tenant.property as any;
-    const propertyAddress = prop
-      ? [prop.street, [prop.zip_code, prop.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
-      : '';
-    const propertyName = prop?.name || propertyAddress || '';
+    let userLanguage = "de";
+    const { data: langPref } = await supabase
+      .from("admin_users")
+      .select("preferred_language")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-    const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`;
-    const emailResponse = await fetch(sendEmailUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${supabaseKey}`,
-      },
-      body: JSON.stringify({
-        to: tenant.email,
-        templateKey: "tenant_portal_activation",
-        userId: userId,
-        useUserAlias: true,
-        replyTo: landlordEmail,
-        variables: {
-          tenant_name: `${tenant.first_name} ${tenant.last_name}`,
-          tenant_email: tenant.email,
-          portal_link: portalLink,
-          landlord_name: landlordName,
-          landlord_email: landlordEmail,
-          property_name: propertyName,
-          property_address: propertyAddress,
-        },
-      }),
+    if (langPref?.preferred_language) {
+      userLanguage = langPref.preferred_language;
+    }
+
+    const { data: template, error: templateError } = await supabase
+      .from("email_templates")
+      .select("subject, body_html, body_text")
+      .eq("template_key", "tenant_portal_activation")
+      .eq("language", userLanguage)
+      .maybeSingle();
+
+    let resolvedTemplate = template;
+
+    if (templateError || !resolvedTemplate) {
+      const { data: fallback } = await supabase
+        .from("email_templates")
+        .select("subject, body_html, body_text")
+        .eq("template_key", "tenant_portal_activation")
+        .eq("language", "de")
+        .maybeSingle();
+
+      if (!fallback) {
+        console.error("Template not found: tenant_portal_activation");
+        return jsonResponse({
+          error: "Email template not found",
+          details: "tenant_portal_activation template missing",
+        }, 500);
+      }
+
+      resolvedTemplate = fallback;
+    }
+
+    const finalSubject = replaceVariables(resolvedTemplate.subject, variables);
+    const finalHtml = replaceVariables(resolvedTemplate.body_html, variables);
+    const finalText = replaceVariables(resolvedTemplate.body_text || "", variables);
+
+    let fromAddress = "Rentably <hallo@rentab.ly>";
+
+    const { data: mailbox } = await supabase
+      .from("user_mailboxes")
+      .select("alias_localpart, is_active")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (mailbox?.alias_localpart) {
+      const aliasEmail = `${mailbox.alias_localpart}@rentab.ly`;
+
+      const { data: mailSettings } = await supabase
+        .from("user_mail_settings")
+        .select("sender_name")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (mailSettings?.sender_name?.trim()) {
+        fromAddress = `${mailSettings.sender_name.trim()} <${aliasEmail}>`;
+      } else if (profile) {
+        const displayName =
+          [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "Rentably";
+        fromAddress = `${displayName} <${aliasEmail}>`;
+      } else {
+        fromAddress = `Rentably <${aliasEmail}>`;
+      }
+    }
+
+    const { data: logEntry } = await supabase
+      .from("email_logs")
+      .insert({
+        mail_type: "tenant_portal_activation",
+        category: "transactional",
+        to_email: tenant.email,
+        user_id: userId,
+        subject: finalSubject,
+        provider: "resend",
+        status: "queued",
+        metadata: { tenantId },
+      })
+      .select("id")
+      .maybeSingle();
+
+    const logId = logEntry?.id;
+
+    if (!resendApiKey) {
+      if (logId) {
+        await supabase
+          .from("email_logs")
+          .update({ status: "failed", error_code: "CONFIG_ERROR", error_message: "RESEND_API_KEY not configured" })
+          .eq("id", logId);
+      }
+      return jsonResponse({ error: "Email provider not configured (RESEND_API_KEY missing)" }, 500);
+    }
+
+    const emailPayload: Record<string, unknown> = {
+      from: fromAddress,
+      to: [tenant.email],
+      subject: finalSubject,
+      html: finalHtml,
+      text: finalText || undefined,
+    };
+
+    if (landlordEmail) {
+      emailPayload.reply_to = landlordEmail;
+    }
+
+    console.log("Sending tenant activation email:", {
+      to: tenant.email,
+      from: fromAddress,
+      subject: finalSubject,
     });
 
-    const emailData = await emailResponse.json();
+    const resendResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(emailPayload),
+    });
 
-    if (!emailResponse.ok) {
-      console.error("Failed to send email:", {
-        status: emailResponse.status,
-        data: emailData,
-      });
-      return new Response(
-        JSON.stringify({
-          error: "Failed to send activation email",
-          status: emailResponse.status,
-          details: emailData,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    const resendData = await resendResponse.json();
+
+    if (!resendResponse.ok) {
+      console.error("Resend API error:", resendData);
+      if (logId) {
+        await supabase
+          .from("email_logs")
+          .update({
+            status: "failed",
+            error_code: `RESEND_${resendResponse.status}`,
+            error_message: resendData.message || "Resend API error",
+          })
+          .eq("id", logId);
+      }
+      return jsonResponse({
+        error: "Failed to send email via provider",
+        details: resendData.message || `Resend returned ${resendResponse.status}`,
+      }, 500);
+    }
+
+    if (logId) {
+      await supabase
+        .from("email_logs")
+        .update({
+          status: "sent",
+          provider_message_id: resendData.id,
+          sent_at: new Date().toISOString(),
+        })
+        .eq("id", logId);
     }
 
     await supabase
@@ -176,33 +274,19 @@ Deno.serve(async (req: Request) => {
     console.log("Tenant activation email sent successfully:", {
       tenantId,
       email: tenant.email,
-      portalLink,
+      resendId: resendData.id,
     });
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Activation email sent successfully",
-        recipient: tenant.email,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return jsonResponse({
+      success: true,
+      message: "Activation email sent successfully",
+      recipient: tenant.email,
+    }, 200);
   } catch (error) {
-    console.error("Error sending tenant activation email:", error);
+    console.error("Error in send-tenant-activation:", error);
 
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error
-          ? error.message
-          : "Failed to send activation email",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return jsonResponse({
+      error: error instanceof Error ? error.message : "Failed to send activation email",
+    }, 500);
   }
 });
