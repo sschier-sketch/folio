@@ -142,7 +142,7 @@ export default function IndexRentView() {
             additional_costs,
             utilities_advance,
             unit_id,
-            tenants:tenant_id (id, name, first_name, last_name, salutation, street, house_number, zip_code, city),
+            tenants:tenant_id (id, name, first_name, last_name, email, salutation, street, house_number, zip_code, city),
             properties:property_id (id, name, address)
           )
         `)

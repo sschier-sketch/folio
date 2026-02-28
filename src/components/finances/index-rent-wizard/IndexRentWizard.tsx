@@ -79,6 +79,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
 
   const rc = calc.rental_contract;
   const tenant = rc.tenants;
@@ -98,6 +99,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
     landlordName: "",
     landlordAddress: "",
     tenantName: `${tenant.first_name || ""} ${tenant.last_name || ""}`.trim() || tenant.name || "",
+    tenantEmail: tenant.email || "",
     tenantSalutation: (tenant.salutation === "Herr" ? "male" : tenant.salutation === "Frau" ? "female" : "neutral") as WizardState["tenantSalutation"],
     tenantAddress: buildTenantAddress(tenant, property),
     propertyAddress: property.address || property.name || "",
@@ -204,7 +206,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
     if (stepIndex > 0) setStep(STEPS[stepIndex - 1].key);
   };
 
-  async function handleFinalize(autoDownload = false) {
+  async function handleFinalize(mode: "download" | "email", emailData?: { subject: string; body: string }) {
     if (!user || saving) return;
     setSaving(true);
 
@@ -308,9 +310,55 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
         })
         .eq("id", calc.id);
 
+      if (mode === "email" && emailData && state.tenantEmail) {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        const recipientName = state.tenantName;
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${supabaseAnonKey}`,
+          },
+          body: JSON.stringify({
+            to: state.tenantEmail,
+            subject: emailData.subject,
+            text: emailData.body,
+            userId: user.id,
+            useUserAlias: true,
+            storeAsMessage: true,
+            recipientName,
+            tenantId: rc.tenant_id,
+            mailType: "index_rent_increase",
+            category: "transactional",
+            attachments: [{
+              filename: `Indexmieterhoehung_${state.tenantName.replace(/\s+/g, "_")}_${state.effectiveDate}.pdf`,
+              path: fileName,
+            }],
+          }),
+        });
+
+        const result = await response.json();
+        if (!response.ok || result.error) {
+          throw new Error(result.error || "Fehler beim Senden der E-Mail");
+        }
+
+        await supabase.from("tenant_communications").insert({
+          user_id: user.id,
+          tenant_id: rc.tenant_id,
+          communication_type: "message",
+          subject: emailData.subject,
+          content: emailData.body,
+          is_internal: false,
+        });
+
+        setEmailSent(true);
+      }
+
       setSaved(true);
 
-      if (autoDownload) {
+      if (mode === "download") {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -320,7 +368,8 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
       }
     } catch (err) {
       console.error("Error finalizing:", err);
-      alert("Fehler beim Erstellen der Indexmieterhöhung. Bitte versuchen Sie es erneut.");
+      const msg = err instanceof Error ? err.message : "Unbekannter Fehler";
+      alert(`Fehler beim Erstellen der Indexmieterhöhung:\n\n${msg}`);
     } finally {
       setSaving(false);
     }
@@ -406,6 +455,7 @@ export default function IndexRentWizard({ calc, onClose, onComplete }: Props) {
               saving={saving}
               saved={saved}
               pdfBlob={pdfBlob}
+              emailSent={emailSent}
               onSave={handleFinalize}
             />
           )}

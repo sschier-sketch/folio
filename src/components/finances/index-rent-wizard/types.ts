@@ -21,6 +21,7 @@ export interface WizardCalc {
       name: string;
       first_name: string;
       last_name: string;
+      email: string | null;
       salutation: string | null;
       street: string | null;
       house_number: string | null;
@@ -49,6 +50,7 @@ export interface WizardState {
   landlordName: string;
   landlordAddress: string;
   tenantName: string;
+  tenantEmail: string;
   tenantSalutation: "male" | "female" | "neutral";
   tenantAddress: string;
   propertyAddress: string;
