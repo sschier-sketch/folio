@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { TrendingUp, Lock, Calendar, Info, Percent, ParkingSquare, Plus, Clock, Trash2, Send, CheckCircle } from "lucide-react";
+import { TrendingUp, Lock, Calendar, Info, Percent, ParkingSquare, Plus, Clock, Trash2, Send, CheckCircle, Pencil, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -117,6 +117,14 @@ export default function TenantRentHistoryTab({
     vpi_old_value: "",
     vpi_new_month: "",
     vpi_new_value: "",
+  });
+  const [editingPeriodId, setEditingPeriodId] = useState<string | null>(null);
+  const [editPeriodData, setEditPeriodData] = useState({
+    cold_rent: "",
+    utilities: "",
+    effective_date: "",
+    reason: "increase" as string,
+    notes: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -449,30 +457,37 @@ export default function TenantRentHistoryTab({
       const oldMonthlyRent = contract.monthly_rent || 0;
       const oldUtilities = contract.utilities_advance || contract.additional_costs || 0;
       const rentChanged = monthlyRent !== oldMonthlyRent || utilitiesAdvance !== oldUtilities;
+      const today = new Date().toISOString().split("T")[0];
+      const isFuture = editData.effective_date > today;
+
+      const contractUpdate: Record<string, any> = {
+        rent_type: editData.rent_type,
+        flat_rate_amount: editData.rent_type === "flat_rate" ? parseFloat(editData.flat_rate_amount) || 0 : 0,
+        total_advance: editData.rent_type === "cold_rent_advance" ? parseFloat(editData.total_advance) || 0 : 0,
+        operating_costs: editData.rent_type === "cold_rent_utilities_heating" ? parseFloat(editData.operating_costs) || 0 : 0,
+        heating_costs: editData.rent_type === "cold_rent_utilities_heating" ? parseFloat(editData.heating_costs) || 0 : 0,
+        rent_increase_type: editData.rent_increase_type,
+        graduated_rent_date: editData.rent_increase_type === "graduated" ? editData.graduated_rent_date || null : null,
+        graduated_rent_new_amount: editData.rent_increase_type === "graduated" ? parseFloat(editData.graduated_rent_new_amount) || null : null,
+        index_first_increase_date: editData.rent_increase_type === "index" ? editData.index_first_increase_date || null : null,
+        auto_create_rent_increase_tickets: editData.rent_increase_type !== "none" ? editData.auto_create_rent_increase_tickets : false,
+        is_sublet: editData.is_sublet,
+        vat_applicable: editData.vat_applicable,
+        rent_due_day: editData.rent_due_day,
+      };
+
+      if (!isFuture) {
+        contractUpdate.cold_rent = editData.rent_type !== "flat_rate" ? parseFloat(editData.cold_rent) || 0 : 0;
+        contractUpdate.base_rent = monthlyRent;
+        contractUpdate.monthly_rent = monthlyRent;
+        contractUpdate.additional_costs = utilitiesAdvance;
+        contractUpdate.utilities_advance = utilitiesAdvance;
+        contractUpdate.total_rent = totalRent;
+      }
 
       const { error } = await supabase
         .from("rental_contracts")
-        .update({
-          rent_type: editData.rent_type,
-          flat_rate_amount: editData.rent_type === "flat_rate" ? parseFloat(editData.flat_rate_amount) || 0 : 0,
-          cold_rent: editData.rent_type !== "flat_rate" ? parseFloat(editData.cold_rent) || 0 : 0,
-          total_advance: editData.rent_type === "cold_rent_advance" ? parseFloat(editData.total_advance) || 0 : 0,
-          operating_costs: editData.rent_type === "cold_rent_utilities_heating" ? parseFloat(editData.operating_costs) || 0 : 0,
-          heating_costs: editData.rent_type === "cold_rent_utilities_heating" ? parseFloat(editData.heating_costs) || 0 : 0,
-          base_rent: monthlyRent,
-          monthly_rent: monthlyRent,
-          additional_costs: utilitiesAdvance,
-          utilities_advance: utilitiesAdvance,
-          total_rent: totalRent,
-          rent_increase_type: editData.rent_increase_type,
-          graduated_rent_date: editData.rent_increase_type === "graduated" ? editData.graduated_rent_date || null : null,
-          graduated_rent_new_amount: editData.rent_increase_type === "graduated" ? parseFloat(editData.graduated_rent_new_amount) || null : null,
-          index_first_increase_date: editData.rent_increase_type === "index" ? editData.index_first_increase_date || null : null,
-          auto_create_rent_increase_tickets: editData.rent_increase_type !== "none" ? editData.auto_create_rent_increase_tickets : false,
-          is_sublet: editData.is_sublet,
-          vat_applicable: editData.vat_applicable,
-          rent_due_day: editData.rent_due_day,
-        })
+        .update(contractUpdate)
         .eq("id", contract.id);
 
       if (error) throw error;
@@ -482,18 +497,30 @@ export default function TenantRentHistoryTab({
           alert("Bitte geben Sie das 'Gültig ab'-Datum an.");
           return;
         }
-        await supabase.from("rent_history").insert([
-          {
+
+        const latestActive = activeHistory.find(h =>
+          h.effective_date === editData.effective_date && h.reason === "manual"
+        );
+        if (latestActive) {
+          await supabase
+            .from("rent_history")
+            .update({
+              cold_rent: monthlyRent,
+              utilities: utilitiesAdvance,
+            })
+            .eq("id", latestActive.id);
+        } else {
+          await supabase.from("rent_history").insert([{
             contract_id: contract.id,
             user_id: user.id,
             effective_date: editData.effective_date,
             cold_rent: monthlyRent,
             utilities: utilitiesAdvance,
             reason: "manual",
-            status: "active",
+            status: isFuture ? "planned" : "active",
             notes: "Manuell angepasst",
-          },
-        ]);
+          }]);
+        }
       }
 
       for (const eu of editableUnits) {
@@ -509,7 +536,6 @@ export default function TenantRentHistoryTab({
 
       setIsEditing(false);
       await loadData();
-      alert("Mietdaten erfolgreich aktualisiert");
     } catch (error) {
       console.error("Error updating rent:", error);
       alert("Fehler beim Aktualisieren der Mietdaten");
@@ -581,6 +607,68 @@ export default function TenantRentHistoryTab({
     }
   }
 
+  function startEditPeriod(item: RentHistory) {
+    setEditingPeriodId(item.id);
+    setEditPeriodData({
+      cold_rent: item.cold_rent.toString(),
+      utilities: item.utilities.toString(),
+      effective_date: item.effective_date,
+      reason: item.reason,
+      notes: item.notes || "",
+    });
+  }
+
+  async function handleSavePeriodEdit() {
+    if (!editingPeriodId || !contract) return;
+    try {
+      const newColdRent = parseFloat(editPeriodData.cold_rent) || 0;
+      const newUtilities = parseFloat(editPeriodData.utilities) || 0;
+
+      const { error } = await supabase
+        .from("rent_history")
+        .update({
+          cold_rent: newColdRent,
+          utilities: newUtilities,
+          effective_date: editPeriodData.effective_date,
+          reason: editPeriodData.reason,
+          notes: editPeriodData.notes,
+        })
+        .eq("id", editingPeriodId);
+
+      if (error) throw error;
+
+      const today = new Date().toISOString().split("T")[0];
+      const isCurrent = editPeriodData.effective_date <= today;
+      if (isCurrent) {
+        const laterActive = history.find(h =>
+          h.id !== editingPeriodId &&
+          (h.status || "active") === "active" &&
+          h.effective_date > editPeriodData.effective_date &&
+          h.effective_date <= today
+        );
+        if (!laterActive) {
+          await supabase
+            .from("rental_contracts")
+            .update({
+              monthly_rent: newColdRent,
+              base_rent: newColdRent,
+              cold_rent: newColdRent,
+              additional_costs: newUtilities,
+              utilities_advance: newUtilities,
+              total_rent: newColdRent + newUtilities,
+            })
+            .eq("id", contract.id);
+        }
+      }
+
+      setEditingPeriodId(null);
+      await loadData();
+    } catch (error) {
+      console.error("Error updating period:", error);
+      alert("Fehler beim Aktualisieren der Mietperiode");
+    }
+  }
+
   const getReasonLabel = (reason: string) => {
     switch (reason) {
       case "initial":
@@ -602,8 +690,12 @@ export default function TenantRentHistoryTab({
     }
   };
 
-  const activeHistory = history.filter(h => (h.status || 'active') === 'active');
-  const plannedHistory = history.filter(h => h.status === 'planned');
+  const today = new Date().toISOString().split("T")[0];
+  const activeHistory = history.filter(h => (h.status || 'active') === 'active' && h.effective_date <= today);
+  const futureHistory = history.filter(h =>
+    (h.effective_date > today && (h.status || 'active') === 'active') || h.status === 'planned'
+  );
+  const allHistory = history.filter(h => (h.status || 'active') === 'active');
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
@@ -1092,13 +1184,13 @@ export default function TenantRentHistoryTab({
               </div>
             )}
 
-            {history.length > 0 && (
+            {activeHistory.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <div className="text-sm text-gray-400">Letzte Änderung</div>
                 <div className="text-sm text-gray-700 mt-1">
-                  {new Date(history[0].effective_date).toLocaleDateString("de-DE")}
+                  {new Date(activeHistory[0].effective_date).toLocaleDateString("de-DE")}
                   {" - "}
-                  {getReasonLabel(history[0].reason)}
+                  {getReasonLabel(activeHistory[0].reason)}
                 </div>
               </div>
             )}
@@ -1149,18 +1241,9 @@ export default function TenantRentHistoryTab({
 
       {indexRentInfo && (
         <div className="bg-white rounded-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-lg font-semibold text-dark">Indexmieterhöhung</h3>
-              <p className="text-sm text-gray-500 mt-0.5">Indexmiete gem. <span className="font-medium">SS 557b BGB</span></p>
-            </div>
-            <Button
-              disabled={!indexRentInfo.canIncrease}
-              onClick={handleOpenAddPeriod}
-              variant="primary"
-            >
-              Erhöhung einstellen
-            </Button>
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-dark">Indexmieterhöhung</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Indexmiete gem. <span className="font-medium">SS 557b BGB</span></p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1237,18 +1320,9 @@ export default function TenantRentHistoryTab({
 
       {graduatedRentInfo && (
         <div className="bg-white rounded-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-lg font-semibold text-dark">Staffelmieterhöhung</h3>
-              <p className="text-sm text-gray-500 mt-0.5">Staffelmiete gem. <span className="font-medium">SS 557a BGB</span></p>
-            </div>
-            <Button
-              disabled={!graduatedRentInfo.canIncrease}
-              onClick={handleOpenAddPeriod}
-              variant="primary"
-            >
-              Erhöhung einstellen
-            </Button>
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-dark">Staffelmieterhöhung</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Staffelmiete gem. <span className="font-medium">SS 557a BGB</span></p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1302,18 +1376,9 @@ export default function TenantRentHistoryTab({
 
       {rentIncreaseCalcs && (
         <div className="bg-white rounded-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-lg font-semibold text-dark">Mieterhöhungen</h3>
-              <p className="text-sm text-gray-500 mt-0.5">Vergleichsmiete gem. <span className="font-medium">SS 558 BGB</span></p>
-            </div>
-            <Button
-              disabled={rentIncreaseCalcs.section558Status === "blocked"}
-              onClick={handleOpenAddPeriod}
-              variant="primary"
-            >
-              Erhöhung einstellen
-            </Button>
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-dark">Mieterhöhungen</h3>
+            <p className="text-sm text-gray-500 mt-0.5">Vergleichsmiete gem. <span className="font-medium">SS 558 BGB</span></p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1385,7 +1450,7 @@ export default function TenantRentHistoryTab({
         </div>
       )}
 
-{plannedHistory.length > 0 && (
+{futureHistory.length > 0 && (
         <div className="bg-white rounded-lg">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center gap-3">
@@ -1394,7 +1459,7 @@ export default function TenantRentHistoryTab({
             </div>
           </div>
           <div className="p-6 space-y-4">
-            {plannedHistory.map((item) => (
+            {futureHistory.map((item) => (
               <div key={item.id} className="flex items-start justify-between p-4 rounded-lg bg-amber-50 border border-amber-200">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -1422,13 +1487,22 @@ export default function TenantRentHistoryTab({
                   )}
                   {item.notes && <div className="text-xs text-amber-500 mt-1">{item.notes}</div>}
                 </div>
-                <button
-                  onClick={() => handleDeletePlanned(item.id)}
-                  className="text-amber-400 hover:text-red-500 transition-colors p-1"
-                  title="Geplante Periode löschen"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => startEditPeriod(item)}
+                    className="text-amber-400 hover:text-amber-600 transition-colors p-1"
+                    title="Bearbeiten"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeletePlanned(item.id)}
+                    className="text-amber-400 hover:text-red-500 transition-colors p-1"
+                    title="Geplante Periode löschen"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -1587,7 +1661,7 @@ export default function TenantRentHistoryTab({
             </div>
           )}
 
-          {activeHistory.length === 0 ? (
+          {allHistory.length === 0 ? (
             <div className="p-12 text-center">
               <TrendingUp className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-400 mb-4">Keine Historie vorhanden</p>
@@ -1598,61 +1672,154 @@ export default function TenantRentHistoryTab({
           ) : (
             <div className="p-6">
               <div className="space-y-4">
-                {activeHistory.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="relative pl-8 pb-4 border-l-2 border-gray-200 last:border-0"
-                  >
-                    <div className={`absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full ${index === 0 ? "bg-primary-blue" : "bg-gray-300"}`}></div>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-medium text-gray-700">
-                            {new Date(item.effective_date).toLocaleDateString("de-DE")}
-                          </span>
-                          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                            {getReasonLabel(item.reason)}
-                          </span>
-                          {index === 0 && (
-                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium border border-emerald-200">
-                              Aktuell
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Kaltmiete: {item.cold_rent.toFixed(2)} €
-                          {item.utilities > 0 &&
-                            ` | Nebenkosten: ${item.utilities.toFixed(2)} €`}
-                        </div>
-                        {(item.vpi_old_value || item.vpi_new_value) && (
-                          <div className="text-xs text-blue-600 mt-1">
-                            VPI: {item.vpi_old_month ? new Date(item.vpi_old_month).toLocaleDateString("de-DE", { month: "short", year: "numeric" }) : "–"} ({item.vpi_old_value ?? "–"})
-                            {" → "}
-                            {item.vpi_new_month ? new Date(item.vpi_new_month).toLocaleDateString("de-DE", { month: "short", year: "numeric" }) : "–"} ({item.vpi_new_value ?? "–"})
+                {allHistory.map((item, index) => {
+                  const isFutureEntry = item.effective_date > today;
+                  const isCurrentEntry = !isFutureEntry && index === allHistory.findIndex(h => h.effective_date <= today);
+                  const prevItems = allHistory.filter(h => h.effective_date <= today);
+                  const nextOlderIndex = prevItems.indexOf(item);
+                  const olderItem = nextOlderIndex >= 0 && nextOlderIndex < prevItems.length - 1 ? prevItems[nextOlderIndex + 1] : null;
+                  const rentDiff = olderItem ? item.cold_rent - olderItem.cold_rent : null;
+                  const isEditingThis = editingPeriodId === item.id;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="relative pl-8 pb-4 border-l-2 border-gray-200 last:border-0"
+                    >
+                      <div className={`absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full ${
+                        isFutureEntry ? "bg-amber-400" : isCurrentEntry ? "bg-primary-blue" : "bg-gray-300"
+                      }`} />
+
+                      {isEditingThis ? (
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-semibold text-dark">Mietperiode bearbeiten</span>
+                            <button onClick={() => setEditingPeriodId(null)} className="text-gray-400 hover:text-gray-600 p-1">
+                              <X className="w-4 h-4" />
+                            </button>
                           </div>
-                        )}
-                        {item.notes && (
-                          <div className="text-xs text-gray-400 mt-1">
-                            {item.notes}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Gültig ab</label>
+                              <input
+                                type="date"
+                                value={editPeriodData.effective_date}
+                                onChange={(e) => setEditPeriodData({ ...editPeriodData, effective_date: e.target.value })}
+                                className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Art</label>
+                              <select
+                                value={editPeriodData.reason}
+                                onChange={(e) => setEditPeriodData({ ...editPeriodData, reason: e.target.value })}
+                                className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                              >
+                                <option value="initial">Anfangsmiete</option>
+                                <option value="increase">Mieterhöhung</option>
+                                <option value="index">Indexmiete</option>
+                                <option value="stepped">Staffelmiete</option>
+                                <option value="manual">Manuell</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Kaltmiete (EUR)</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={editPeriodData.cold_rent}
+                                onChange={(e) => setEditPeriodData({ ...editPeriodData, cold_rent: e.target.value })}
+                                className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Nebenkosten (EUR)</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={editPeriodData.utilities}
+                                onChange={(e) => setEditPeriodData({ ...editPeriodData, utilities: e.target.value })}
+                                className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                              />
+                            </div>
                           </div>
-                        )}
-                        <div className="text-xs text-gray-300 mt-1">
-                          Erstellt am {new Date(item.created_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Notiz</label>
+                            <input
+                              type="text"
+                              value={editPeriodData.notes}
+                              onChange={(e) => setEditPeriodData({ ...editPeriodData, notes: e.target.value })}
+                              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                              placeholder="Optional"
+                            />
+                          </div>
+                          <div className="flex justify-end gap-2 pt-1">
+                            <Button onClick={() => setEditingPeriodId(null)} variant="cancel">Abbrechen</Button>
+                            <Button onClick={handleSavePeriodEdit} variant="primary">Speichern</Button>
+                          </div>
                         </div>
-                      </div>
-                      {index < activeHistory.length - 1 && (
-                        <div className="text-sm text-emerald-600 font-medium">
-                          +
-                          {(
-                            item.cold_rent - activeHistory[index + 1].cold_rent
-                          ).toFixed(2)}{" "}
-                          €
+                      ) : (
+                        <div className="flex items-start justify-between group">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <Calendar className="w-4 h-4 text-gray-400" />
+                              <span className="text-sm font-medium text-gray-700">
+                                {new Date(item.effective_date).toLocaleDateString("de-DE")}
+                              </span>
+                              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                {getReasonLabel(item.reason)}
+                              </span>
+                              {isFutureEntry && (
+                                <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-xs font-medium border border-amber-200">
+                                  Geplant
+                                </span>
+                              )}
+                              {isCurrentEntry && (
+                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium border border-emerald-200">
+                                  Aktuell
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              Kaltmiete: {item.cold_rent.toFixed(2)} €
+                              {item.utilities > 0 &&
+                                ` | Nebenkosten: ${item.utilities.toFixed(2)} €`}
+                            </div>
+                            {(item.vpi_old_value || item.vpi_new_value) && (
+                              <div className="text-xs text-blue-600 mt-1">
+                                VPI: {item.vpi_old_month ? new Date(item.vpi_old_month).toLocaleDateString("de-DE", { month: "short", year: "numeric" }) : "–"} ({item.vpi_old_value ?? "–"})
+                                {" → "}
+                                {item.vpi_new_month ? new Date(item.vpi_new_month).toLocaleDateString("de-DE", { month: "short", year: "numeric" }) : "–"} ({item.vpi_new_value ?? "–"})
+                              </div>
+                            )}
+                            {item.notes && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                {item.notes}
+                              </div>
+                            )}
+                            <div className="text-xs text-gray-300 mt-1">
+                              Erstellt am {new Date(item.created_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {rentDiff !== null && rentDiff !== 0 && (
+                              <div className={`text-sm font-medium ${rentDiff > 0 ? "text-emerald-600" : "text-red-500"}`}>
+                                {rentDiff > 0 ? "+" : ""}{rentDiff.toFixed(2)} €
+                              </div>
+                            )}
+                            <button
+                              onClick={() => startEditPeriod(item)}
+                              className="text-gray-300 hover:text-gray-600 transition-colors p-1 opacity-0 group-hover:opacity-100"
+                              title="Bearbeiten"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
