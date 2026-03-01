@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../common/RefLink";
-import { CheckCircle2, Home, Users, BarChart3, FileText, Sparkles } from "lucide-react";
+import { CheckCircle2, Home, Users, BarChart3, FileText } from "lucide-react";
 import { RevealOnScroll } from "../common/RevealOnScroll";
+import { supabase } from "../../lib/supabase";
 
 const HERO_CHECKS = [
   "Komplett kostenlos im Basic-Tarif",
@@ -90,8 +92,40 @@ function DashboardMockup() {
   );
 }
 
+const MONTH_NAMES_DE = [
+  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+];
+
 export default function HeroSection() {
   const navigate = useNavigate();
+  const [featureCount, setFeatureCount] = useState<number | null>(null);
+  const [totalFeatures, setTotalFeatures] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchCounts() {
+      const now = new Date();
+      const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01T00:00:00`;
+
+      const [monthRes, totalRes] = await Promise.all([
+        supabase
+          .from('system_updates')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_published', true)
+          .gte('published_at', monthStart),
+        supabase
+          .from('system_updates')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_published', true),
+      ]);
+
+      if (monthRes.count !== null) setFeatureCount(monthRes.count);
+      if (totalRes.count !== null) setTotalFeatures(totalRes.count);
+    }
+    fetchCounts();
+  }, []);
+
+  const currentMonth = MONTH_NAMES_DE[new Date().getMonth()];
 
   return (
     <section className="pt-12 sm:pt-24 pb-16 sm:pb-[120px] px-6">
@@ -133,16 +167,22 @@ export default function HeroSection() {
                   to="/funktionen"
                   className="group h-12 inline-flex items-center gap-2.5 px-8 rounded-lg text-base font-semibold border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
                 >
-                  <Sparkles className="w-4 h-4 text-[#3c8af7] animate-[spin_3s_linear_infinite]" />
                   Funktionen ansehen
+                  {totalFeatures !== null && (
+                    <span className="text-xs font-medium text-gray-400">
+                      ({totalFeatures})
+                    </span>
+                  )}
                 </RefLink>
-                <span className="inline-flex items-center gap-1.5 pl-2 text-sm text-gray-500">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                {featureCount !== null && featureCount > 0 && (
+                  <span className="inline-flex items-center gap-1.5 pl-2 text-sm text-gray-500">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    </span>
+                    +{featureCount} neue {featureCount === 1 ? 'Funktion' : 'Funktionen'} im {currentMonth}
                   </span>
-                  +5 neue Funktionen im Februar
-                </span>
+                )}
               </div>
             </div>
           </RevealOnScroll>

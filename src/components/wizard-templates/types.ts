@@ -438,6 +438,37 @@ export const MIETKAUTION_STEPS: { key: MietkautionStep; label: string }[] = [
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface SchoenheitsreparaturenSachverhalt {
+  versanddatum: string;
+  besichtigungDatum: string;
+  maengel: string;
+  fristBis: string;
+}
+
+export interface SchoenheitsreparaturenWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: SchoenheitsreparaturenSachverhalt;
+}
+
+export type SchoenheitsreparaturenStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const SCHOENHEITSREPARATUREN_STEPS: { key: SchoenheitsreparaturenStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;

@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   ScrollText,
   Trash2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -27,6 +29,7 @@ import KuendigungAbmahnungWizard from "./wizard-templates/KuendigungAbmahnungWiz
 import EigenbedarfWizard from "./wizard-templates/EigenbedarfWizard";
 import ZahlungsverzugWizard from "./wizard-templates/ZahlungsverzugWizard";
 import MietkautionWizard from "./wizard-templates/MietkautionWizard";
+import SchoenheitsreparaturenWizard from "./wizard-templates/SchoenheitsreparaturenWizard";
 import type { WizardTemplate } from "./wizard-templates/types";
 
 interface Template {
@@ -200,6 +203,8 @@ export default function TemplatesView() {
     return <ZahlungsverzugWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
   if (activeWizard === "mietkaution_rueckgriff")
     return <MietkautionWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
+  if (activeWizard === "schoenheitsreparaturen")
+    return <SchoenheitsreparaturenWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
 
   if (loading) {
     return (
@@ -218,6 +223,19 @@ export default function TemplatesView() {
 
   const filteredDownloads =
     activeTab === "downloads" ? templates : [];
+
+  const WIZARDS_PER_PAGE = 9;
+  const [wizardPage, setWizardPage] = useState(0);
+
+  useEffect(() => {
+    setWizardPage(0);
+  }, [activeTab]);
+
+  const totalWizardPages = Math.ceil(filteredWizards.length / WIZARDS_PER_PAGE);
+  const paginatedWizards = filteredWizards.slice(
+    wizardPage * WIZARDS_PER_PAGE,
+    (wizardPage + 1) * WIZARDS_PER_PAGE
+  );
 
   const showWizards = filteredWizards.length > 0;
   const showDownloads = filteredDownloads.length > 0;
@@ -322,7 +340,7 @@ export default function TemplatesView() {
             Dokument erstellen
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredWizards.map((tpl) => {
+            {paginatedWizards.map((tpl) => {
               const CatIcon =
                 CATEGORY_ICON_MAP[tpl.category] || FileText;
               return (
@@ -365,6 +383,38 @@ export default function TemplatesView() {
               );
             })}
           </div>
+
+          {totalWizardPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={() => setWizardPage((p) => Math.max(0, p - 1))}
+                disabled={wizardPage === 0}
+                className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              {Array.from({ length: totalWizardPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setWizardPage(i)}
+                  className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                    wizardPage === i
+                      ? 'bg-primary-blue text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => setWizardPage((p) => Math.min(totalWizardPages - 1, p + 1))}
+                disabled={wizardPage === totalWizardPages - 1}
+                className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
