@@ -364,6 +364,41 @@ export const EIGENBEDARF_STEPS: { key: EigenbedarfStep; label: string }[] = [
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface OffeneZahlung {
+  betrag: string;
+  faelligkeitsdatum: string;
+}
+
+export interface ZahlungsverzugSachverhalt {
+  versanddatum: string;
+  zahlungen: OffeneZahlung[];
+  rueckgabeDatum: string;
+}
+
+export interface ZahlungsverzugWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: ZahlungsverzugSachverhalt;
+}
+
+export type ZahlungsverzugStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const ZAHLUNGSVERZUG_STEPS: { key: ZahlungsverzugStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;

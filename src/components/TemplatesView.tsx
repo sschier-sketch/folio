@@ -25,6 +25,7 @@ import MieterselbstauskunftWizard from "./wizard-templates/MieterselbstauskunftW
 import RaeumungsaufforderungWizard from "./wizard-templates/RaeumungsaufforderungWizard";
 import KuendigungAbmahnungWizard from "./wizard-templates/KuendigungAbmahnungWizard";
 import EigenbedarfWizard from "./wizard-templates/EigenbedarfWizard";
+import ZahlungsverzugWizard from "./wizard-templates/ZahlungsverzugWizard";
 import type { WizardTemplate } from "./wizard-templates/types";
 
 interface Template {
@@ -194,6 +195,8 @@ export default function TemplatesView() {
     return <KuendigungAbmahnungWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
   if (activeWizard === "kuendigung_eigenbedarf")
     return <EigenbedarfWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
+  if (activeWizard === "kuendigung_zahlungsverzug")
+    return <ZahlungsverzugWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
 
   if (loading) {
     return (
