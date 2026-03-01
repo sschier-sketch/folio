@@ -7,6 +7,7 @@ import {
   Clock,
   Settings,
   Save,
+  Bell,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { Button } from './ui/Button';
@@ -22,6 +23,7 @@ interface Ticket {
   created_at: string;
   answered_at?: string;
   closed_at?: string;
+  notify_admin_on_reply?: boolean;
 }
 
 interface TicketMessage {
@@ -273,6 +275,24 @@ export function AdminTicketsView() {
     }
   }
 
+  async function handleToggleNotify() {
+    if (!selectedTicket) return;
+    const newValue = !selectedTicket.notify_admin_on_reply;
+    try {
+      const { error } = await supabase
+        .from("tickets")
+        .update({ notify_admin_on_reply: newValue })
+        .eq("id", selectedTicket.id);
+      if (error) throw error;
+      setSelectedTicket({ ...selectedTicket, notify_admin_on_reply: newValue });
+      setTickets((prev) =>
+        prev.map((t) => t.id === selectedTicket.id ? { ...t, notify_admin_on_reply: newValue } : t)
+      );
+    } catch (err) {
+      console.error("Error toggling notification:", err);
+    }
+  }
+
   const getStatusBadge = (status: string) => {
     const badges = {
       open: {
@@ -439,7 +459,21 @@ export function AdminTicketsView() {
                     Ticket #{selectedTicket.ticket_number}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleToggleNotify}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                      selectedTicket.notify_admin_on_reply
+                        ? "bg-primary-blue/10 border-primary-blue/30 text-primary-blue"
+                        : "border-gray-200 text-gray-400 hover:bg-gray-50"
+                    }`}
+                    title={selectedTicket.notify_admin_on_reply ? "Benachrichtigung aktiv" : "Bei Antworten benachrichtigen"}
+                  >
+                    <Bell className={`w-3.5 h-3.5 ${selectedTicket.notify_admin_on_reply ? "fill-current" : ""}`} />
+                    <span className="hidden xl:inline">
+                      {selectedTicket.notify_admin_on_reply ? "Benachrichtigung an" : "Benachrichtigen"}
+                    </span>
+                  </button>
                   <select
                     value={selectedTicket.status}
                     onChange={(e) => handleChangeStatus(e.target.value)}

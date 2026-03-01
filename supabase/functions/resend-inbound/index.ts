@@ -301,6 +301,131 @@ Deno.serve(async (req: Request) => {
       `[inbound] from=${fromAddress} to=${toAddresses.join(",")} subject="${subject}" email_id=${emailId || "n/a"}`
     );
 
+    const ticketNumber = extractTicketNumber(subject);
+    if (ticketNumber) {
+      const { data: ticket } = await supabase
+        .from("tickets")
+        .select("id, ticket_number, contact_email, contact_name, status, user_id, notify_admin_on_reply")
+        .eq("ticket_number", ticketNumber)
+        .maybeSingle();
+
+      if (ticket && ticket.contact_email?.toLowerCase() === fromAddress.toLowerCase()) {
+        console.log(
+          `[inbound] Matched contact ticket reply: ${ticketNumber} from ${fromAddress}`
+        );
+
+        const replyBody = bodyText
+          ? bodyText.split(/\n\s*>/).shift()?.trim() || bodyText.trim()
+          : "(Kein Textinhalt)";
+
+        const { error: msgErr } = await supabase
+          .from("ticket_messages")
+          .insert({
+            ticket_id: ticket.id,
+            sender_type: "contact",
+            sender_name: ticket.contact_name || fromName,
+            sender_email: fromAddress,
+            message: replyBody,
+          });
+
+        if (msgErr) {
+          console.error("[inbound] Failed to insert ticket message:", msgErr);
+        } else {
+          await supabase
+            .from("tickets")
+            .update({
+              status: "open",
+              updated_at: new Date().toISOString(),
+              last_email_received_at: receivedAt,
+            })
+            .eq("id", ticket.id);
+
+          console.log(
+            `[inbound] Created ticket_message for ticket ${ticketNumber}, status -> open`
+          );
+
+          if (ticket.notify_admin_on_reply) {
+            try {
+              const { data: settings } = await supabase
+                .from("system_settings")
+                .select("notification_email")
+                .limit(1)
+                .maybeSingle();
+
+              const notifyEmail = settings?.notification_email;
+              if (notifyEmail) {
+                const truncatedBody = replyBody.length > 500 ? replyBody.substring(0, 500) + "..." : replyBody;
+                await supabase.from("email_logs").insert({
+                  mail_type: "ticket_reply_notification",
+                  category: "transactional",
+                  to_email: notifyEmail,
+                  subject: `Neue Antwort auf Ticket #${ticketNumber}`,
+                  provider: "resend",
+                  status: "queued",
+                  metadata: {
+                    ticket_id: ticket.id,
+                    ticket_number: ticketNumber,
+                    contact_name: ticket.contact_name,
+                    contact_email: fromAddress,
+                    reply_preview: truncatedBody,
+                  },
+                });
+
+                const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+                const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "Rentably <hallo@rentab.ly>";
+                if (RESEND_API_KEY) {
+                  const notifyRes = await fetch("https://api.resend.com/emails", {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${RESEND_API_KEY}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      from: EMAIL_FROM,
+                      to: [notifyEmail],
+                      subject: `Neue Antwort auf Ticket #${ticketNumber}: ${ticket.contact_name}`,
+                      html: `<div style="font-family: Arial, sans-serif; max-width: 600px;">
+<h2 style="color: #1E1E24; font-size: 18px;">Neue Antwort auf Ticket #${ticketNumber}</h2>
+<p style="color: #555; font-size: 14px;"><strong>Von:</strong> ${ticket.contact_name} (${fromAddress})</p>
+<p style="color: #555; font-size: 14px;"><strong>Betreff:</strong> ${subject}</p>
+<div style="background: #f8f9fb; border-left: 3px solid #3c8af7; padding: 16px 20px; margin: 16px 0; border-radius: 0 6px 6px 0;">
+<p style="color: #1E1E24; font-size: 14px; white-space: pre-wrap; margin: 0;">${truncatedBody}</p>
+</div>
+<p style="color: #999; font-size: 12px;">Bitte antworten Sie dem Kunden über das Admin-Dashboard.</p>
+</div>`,
+                      text: `Neue Antwort auf Ticket #${ticketNumber}\n\nVon: ${ticket.contact_name} (${fromAddress})\nBetreff: ${subject}\n\n${truncatedBody}\n\nBitte antworten Sie dem Kunden über das Admin-Dashboard.`,
+                    }),
+                  });
+
+                  if (notifyRes.ok) {
+                    console.log(`[inbound] Admin notification sent to ${notifyEmail} for ticket ${ticketNumber}`);
+                    await supabase
+                      .from("email_logs")
+                      .update({ status: "sent", sent_at: new Date().toISOString() })
+                      .eq("mail_type", "ticket_reply_notification")
+                      .eq("to_email", notifyEmail)
+                      .eq("status", "queued")
+                      .order("created_at", { ascending: false })
+                      .limit(1);
+                  }
+                }
+              }
+            } catch (notifyErr) {
+              console.error("[inbound] Error sending admin notification:", notifyErr);
+            }
+          }
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, ticket_reply: ticketNumber }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+    }
+
     let forwarded = 0;
     for (const toAddr of toAddresses) {
       if (!toAddr.endsWith("@rentab.ly")) continue;
@@ -406,60 +531,6 @@ Deno.serve(async (req: Request) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
-    }
-
-    const ticketNumber = extractTicketNumber(subject);
-    if (ticketNumber) {
-      const { data: ticket } = await supabase
-        .from("tickets")
-        .select("id, ticket_number, contact_email, contact_name, status, user_id")
-        .eq("ticket_number", ticketNumber)
-        .maybeSingle();
-
-      if (ticket && ticket.contact_email?.toLowerCase() === fromAddress.toLowerCase()) {
-        console.log(
-          `[inbound] Matched contact ticket reply: ${ticketNumber} from ${fromAddress}`
-        );
-
-        const replyBody = bodyText
-          ? bodyText.split(/\n\s*>/).shift()?.trim() || bodyText.trim()
-          : "(Kein Textinhalt)";
-
-        const { error: msgErr } = await supabase
-          .from("ticket_messages")
-          .insert({
-            ticket_id: ticket.id,
-            sender_type: "contact",
-            sender_name: ticket.contact_name || fromName,
-            sender_email: fromAddress,
-            message: replyBody,
-          });
-
-        if (msgErr) {
-          console.error("[inbound] Failed to insert ticket message:", msgErr);
-        } else {
-          await supabase
-            .from("tickets")
-            .update({
-              status: "open",
-              updated_at: new Date().toISOString(),
-              last_email_received_at: receivedAt,
-            })
-            .eq("id", ticket.id);
-
-          console.log(
-            `[inbound] Created ticket_message for ticket ${ticketNumber}, status -> open`
-          );
-        }
-
-        return new Response(
-          JSON.stringify({ success: true, ticket_reply: ticketNumber }),
-          {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
     }
 
     let processed = 0;
