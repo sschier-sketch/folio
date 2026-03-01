@@ -332,6 +332,38 @@ export const KUENDIGUNG_ABMAHNUNG_STEPS: { key: KuendigungAbmahnungStep; label: 
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface EigenbedarfSachverhalt {
+  versanddatum: string;
+  raeumungsdatum: string;
+  raeumungsgrund: string;
+  hatAndereWohnung: 'ja' | 'nein' | '';
+  andereWohnungNutzbar: 'ja' | 'nein' | '';
+}
+
+export interface EigenbedarfWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: EigenbedarfSachverhalt;
+}
+
+export type EigenbedarfStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const EIGENBEDARF_STEPS: { key: EigenbedarfStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;

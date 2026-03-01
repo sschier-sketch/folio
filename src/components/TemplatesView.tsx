@@ -24,6 +24,7 @@ import BetriebskostenVorauszahlungenWizard from "./wizard-templates/Betriebskost
 import MieterselbstauskunftWizard from "./wizard-templates/MieterselbstauskunftWizard";
 import RaeumungsaufforderungWizard from "./wizard-templates/RaeumungsaufforderungWizard";
 import KuendigungAbmahnungWizard from "./wizard-templates/KuendigungAbmahnungWizard";
+import EigenbedarfWizard from "./wizard-templates/EigenbedarfWizard";
 import type { WizardTemplate } from "./wizard-templates/types";
 
 interface Template {
@@ -191,6 +192,8 @@ export default function TemplatesView() {
     return <RaeumungsaufforderungWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
   if (activeWizard === "kuendigung_abmahnung")
     return <KuendigungAbmahnungWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
+  if (activeWizard === "kuendigung_eigenbedarf")
+    return <EigenbedarfWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
 
   if (loading) {
     return (
