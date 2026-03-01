@@ -82,10 +82,15 @@ export default function TemplatesView() {
   const [activeTab, setActiveTab] = useState<Tab>("alle");
   const [activeWizard, setActiveWizard] = useState<string | null>(null);
   const [wizardFreshStart, setWizardFreshStart] = useState(false);
+  const [wizardPage, setWizardPage] = useState(0);
 
   useEffect(() => {
     if (user) loadAll();
   }, [user]);
+
+  useEffect(() => {
+    setWizardPage(0);
+  }, [activeTab]);
 
   async function loadAll() {
     try {
@@ -225,11 +230,6 @@ export default function TemplatesView() {
     activeTab === "downloads" ? templates : [];
 
   const WIZARDS_PER_PAGE = 9;
-  const [wizardPage, setWizardPage] = useState(0);
-
-  useEffect(() => {
-    setWizardPage(0);
-  }, [activeTab]);
 
   const totalWizardPages = Math.ceil(filteredWizards.length / WIZARDS_PER_PAGE);
   const paginatedWizards = filteredWizards.slice(
