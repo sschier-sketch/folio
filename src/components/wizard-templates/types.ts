@@ -268,6 +268,36 @@ export const BETRIEBSKOSTEN_STEPS: { key: BetriebskostenStep; label: string }[] 
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface RaeumungsaufforderungSachverhalt {
+  versanddatum: string;
+  kuendigungsDatum: string;
+  fristAuszug: string;
+}
+
+export interface RaeumungsaufforderungWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: RaeumungsaufforderungSachverhalt;
+}
+
+export type RaeumungsaufforderungStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const RAEUMUNGSAUFFORDERUNG_STEPS: { key: RaeumungsaufforderungStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;
