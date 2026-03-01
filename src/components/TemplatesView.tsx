@@ -26,6 +26,7 @@ import RaeumungsaufforderungWizard from "./wizard-templates/Raeumungsaufforderun
 import KuendigungAbmahnungWizard from "./wizard-templates/KuendigungAbmahnungWizard";
 import EigenbedarfWizard from "./wizard-templates/EigenbedarfWizard";
 import ZahlungsverzugWizard from "./wizard-templates/ZahlungsverzugWizard";
+import MietkautionWizard from "./wizard-templates/MietkautionWizard";
 import type { WizardTemplate } from "./wizard-templates/types";
 
 interface Template {
@@ -197,6 +198,8 @@ export default function TemplatesView() {
     return <EigenbedarfWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
   if (activeWizard === "kuendigung_zahlungsverzug")
     return <ZahlungsverzugWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
+  if (activeWizard === "mietkaution_rueckgriff")
+    return <MietkautionWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
 
   if (loading) {
     return (

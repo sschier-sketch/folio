@@ -399,6 +399,45 @@ export const ZAHLUNGSVERZUG_STEPS: { key: ZahlungsverzugStep; label: string }[] 
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface MietkautionSachverhalt {
+  versanddatum: string;
+  fristAuszug: string;
+  zahlungsrueckstand: string;
+  verspaetertMonat: string;
+  geschuldeterMietbetrag: string;
+  schadensersatz: string;
+  betriebskostennachzahlung: string;
+  kautionBetrag: string;
+  zinsen: string;
+  forderungHoeher: 'ja' | 'nein' | '';
+  restsumme: string;
+  ueberweisungsfrist: string;
+}
+
+export interface MietkautionWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: MietkautionSachverhalt;
+}
+
+export type MietkautionStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const MIETKAUTION_STEPS: { key: MietkautionStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;
