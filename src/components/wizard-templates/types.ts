@@ -298,6 +298,40 @@ export const RAEUMUNGSAUFFORDERUNG_STEPS: { key: RaeumungsaufforderungStep; labe
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface KuendigungAbmahnungSachverhalt {
+  versanddatum: string;
+  datumWarnung: string;
+  warnungsgrund: string;
+  fristBis: string;
+  kuendigungsgrund: string;
+  verlassenBis: string;
+  berufungsfrist: string;
+}
+
+export interface KuendigungAbmahnungWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: KuendigungAbmahnungSachverhalt;
+}
+
+export type KuendigungAbmahnungStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'ansprache'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const KUENDIGUNG_ABMAHNUNG_STEPS: { key: KuendigungAbmahnungStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'ansprache', label: 'Ansprache' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;
