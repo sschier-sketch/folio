@@ -469,6 +469,46 @@ export const SCHOENHEITSREPARATUREN_STEPS: { key: SchoenheitsreparaturenStep; la
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface MeldepflichtigePerson {
+  name: string;
+  geburtsdatum: string;
+}
+
+export interface MeldebestaetigungFormData {
+  selbstgenutzesWohneigentum: boolean;
+  eigentuemerName: string;
+  eigentuemerStrasse: string;
+  eigentuemerNr: string;
+  eigentuemerPlz: string;
+  eigentuemerStadt: string;
+  einOderAuszug: 'einzug' | 'auszug';
+  datum: string;
+  meldepflichtigePersonen: MeldepflichtigePerson[];
+  beauftragtePersonName: string;
+  beauftragtePersonStrasse: string;
+  beauftragtePersonNr: string;
+  beauftragtePersonPlz: string;
+  beauftragtePersonStadt: string;
+  mietobjektStrasse: string;
+  mietobjektNr: string;
+  mietobjektPlz: string;
+  mietobjektStadt: string;
+  mietobjektPraefix: string;
+}
+
+export interface MeldebestaetigungWizardData {
+  landlord: LandlordData;
+  form: MeldebestaetigungFormData;
+}
+
+export type MeldebestaetigungStep = 'vermieter' | 'meldebestaetigung' | 'ergebnis';
+
+export const MELDEBESTAETIGUNG_STEPS: { key: MeldebestaetigungStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'meldebestaetigung', label: 'Meldebestätigung' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;
