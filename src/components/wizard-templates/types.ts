@@ -509,6 +509,31 @@ export const MELDEBESTAETIGUNG_STEPS: { key: MeldebestaetigungStep; label: strin
   { key: 'ergebnis', label: 'Ergebnis' },
 ];
 
+export interface WohnungsgeberSachverhaltData {
+  einOderAuszug: '' | 'einzug' | 'auszug';
+  umzugDatum: string;
+  drittperson: boolean;
+  maklerName: string;
+  istEigentuemer: boolean;
+  anmerkung: string;
+}
+
+export interface WohnungsgeberWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  sachverhalt: WohnungsgeberSachverhaltData;
+}
+
+export type WohnungsgeberStep = 'vermieter' | 'mieter' | 'sachverhalt' | 'ergebnis' | 'versand';
+
+export const WOHNUNGSGEBER_STEPS: { key: WohnungsgeberStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;

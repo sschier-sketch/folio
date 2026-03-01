@@ -31,6 +31,7 @@ import ZahlungsverzugWizard from "./wizard-templates/ZahlungsverzugWizard";
 import MietkautionWizard from "./wizard-templates/MietkautionWizard";
 import SchoenheitsreparaturenWizard from "./wizard-templates/SchoenheitsreparaturenWizard";
 import MeldebestaetigungWizard from "./wizard-templates/MeldebestaetigungWizard";
+import WohnungsgeberbestaetigungWizard from "./wizard-templates/WohnungsgeberbestaetigungWizard";
 import type { WizardTemplate } from "./wizard-templates/types";
 
 interface Template {
@@ -213,6 +214,8 @@ export default function TemplatesView() {
     return <SchoenheitsreparaturenWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
   if (activeWizard === "meldebestaetigung")
     return <MeldebestaetigungWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
+  if (activeWizard === "wohnungsgeberbestaetigung")
+    return <WohnungsgeberbestaetigungWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
 
   if (loading) {
     return (
