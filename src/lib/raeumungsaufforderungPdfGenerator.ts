@@ -27,21 +27,10 @@ function buildSenderLine(l: LandlordData): string {
   return parts.filter(Boolean).join(', ');
 }
 
-function buildRecipientBlock(t: TenantEntry): string[] {
-  const lines: string[] = [];
-  const fullName = `${t.firstName} ${t.lastName}`.trim();
-  if (fullName) lines.push(fullName);
-  const streetLine = `${t.street} ${t.number}`.trim();
-  if (streetLine && streetLine !== ' ') lines.push(streetLine);
-  const cityLine = `${t.zip} ${t.city}`.trim();
-  if (cityLine) lines.push(cityLine);
-  return lines;
-}
-
 function buildPropertyDesignation(t: TenantEntry): string {
   const streetLine = `${t.street} ${t.number}`.trim();
   const cityLine = `${t.zip} ${t.city}`.trim();
-  return [streetLine, cityLine].filter(Boolean).join(', ');
+  return [streetLine, cityLine].filter(Boolean).join(' , ');
 }
 
 function buildTenantNames(tenants: TenantEntry[]): string {
@@ -86,42 +75,41 @@ export function generateRaeumungsaufforderungPdf(input: RaeumungsaufforderungPdf
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100);
   const senderLine = buildSenderLine(landlord);
-  y = 57;
+  y = 45;
   doc.text(senderLine, ML, y);
 
   doc.setFontSize(11);
   doc.setTextColor(0);
   doc.setFont('helvetica', 'normal');
-  y = 70;
+  y = 55;
 
   const allNames = buildTenantNames(tenants);
   const primaryTenant = tenants[0];
 
-  const recipientNames = allNames;
-  doc.text(recipientNames, ML, y);
-  y += 6;
+  doc.text(allNames, ML, y);
+  y += 5;
   const streetLine = `${primaryTenant.street} ${primaryTenant.number}`.trim();
   if (streetLine) {
     doc.text(streetLine + ' ,', ML, y);
-    y += 6;
+    y += 5;
   }
   const cityLine = `${primaryTenant.zip} ${primaryTenant.city}`.trim();
   if (cityLine) {
     doc.text(cityLine, ML, y);
-    y += 6;
+    y += 5;
   }
 
-  y = Math.max(y, 95);
+  y += 8;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text(`Datum des Schreibens: ${formatDate(sachverhalt.versanddatum)}`, ML, y);
 
-  y += 12;
+  y += 10;
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Raeumungsaufforderung', ML, y);
+  doc.text('Räumungsaufforderung', ML, y);
 
-  y += 7;
+  y += 6;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   const designation = buildPropertyDesignation(primaryTenant);
@@ -129,7 +117,7 @@ export function generateRaeumungsaufforderungPdf(input: RaeumungsaufforderungPdf
   y += 5;
   doc.text(designation, ML, y);
 
-  y += 10;
+  y += 8;
   doc.text(`Sehr geehrte/r ${allNames},`, ML, y);
 
   y += 8;
@@ -139,27 +127,28 @@ export function generateRaeumungsaufforderungPdf(input: RaeumungsaufforderungPdf
     y += 3;
   }
 
-  y += 2;
   doc.setFont('helvetica', 'normal');
 
   const mainText = `mit Schreiben vom ${formatDate(sachverhalt.kuendigungsDatum)} haben wir das Mietverhältnis mit Ihnen für die oben bezeichnete Wohnung, fristgemäß zum ${formatDate(sachverhalt.fristAuszug)} gekündigt. Trotz dieser Kündigung sind Sie nicht aus der Wohnung ausgezogen.`;
   writeLines(mainText);
 
-  y += 5;
+  y += 4;
   const widerspruchText = 'Wir erheben hiermit Widerspruch gegen die stillschweigende Fortsetzung des Mietgebrauchs gemäß § 545 BGB. Gleichzeitig fordern wir Sie zur sofortigen Räumung auf.';
   writeLines(widerspruchText);
 
-  y += 5;
+  y += 4;
   const drohungText = 'Sollten Sie dieser Aufforderung nicht innerhalb einer Frist von 14 Tagen nachkommen, werden wir die Räumung der Mietwohnung klageweise durchsetzen.';
   writeLines(drohungText);
 
-  y += 5;
+  y += 4;
   writeLines('Mit freundlichen Grüßen');
 
-  y += 20;
-  checkPage(60);
+  y += 15;
   doc.setDrawColor(0);
   doc.setLineWidth(0.3);
+
+  const sigBlockHeight = tenants.length > 1 ? 55 : 35;
+  checkPage(sigBlockHeight);
 
   doc.line(ML, y, ML + 60, y);
   doc.line(ML + 90, y, ML + 90 + 60, y);
@@ -169,15 +158,15 @@ export function generateRaeumungsaufforderungPdf(input: RaeumungsaufforderungPdf
   doc.text('Mieter', ML + 90, y);
 
   if (tenants.length > 1) {
-    y += 20;
-    checkPage(30);
+    y += 18;
+    checkPage(20);
     doc.line(ML + 90, y, ML + 90 + 60, y);
     y += 4;
     doc.text('Mieter', ML + 90, y);
   }
 
   y += 10;
-  checkPage(20);
+  checkPage(15);
   const ortDatumLine = y;
   doc.setLineWidth(0.2);
   doc.line(ML, ortDatumLine, ML + 35, ortDatumLine);

@@ -23,8 +23,8 @@ export default function StepRaeumungSachverhalt({ data, onChange }: Props) {
     <div>
       <h3 className="text-2xl font-bold text-dark mb-2">Sachverhalt</h3>
       <p className="text-sm text-gray-500 mb-8">
-        Geben Sie die relevanten Daten zur Kuendigung und Raeumungsfrist an.
-        Alle Daten muessen in der Vergangenheit liegen.
+        Geben Sie die relevanten Daten zur Kündigung und Räumungsfrist an.
+        Alle Daten müssen in der Vergangenheit liegen.
       </p>
 
       <div className="space-y-6">
@@ -42,10 +42,10 @@ export default function StepRaeumungSachverhalt({ data, onChange }: Props) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Datum der Kuendigung *
+            Datum der Kündigung *
           </label>
           <p className="text-xs text-gray-400 mb-1.5">
-            Das Datum, an dem die Kuendigung ausgesprochen wurde.
+            Das Datum, an dem die Kündigung ausgesprochen wurde.
           </p>
           <input
             type="date"
@@ -58,7 +58,7 @@ export default function StepRaeumungSachverhalt({ data, onChange }: Props) {
           />
           {kuendigungInFuture && (
             <p className="text-xs text-red-500 mt-1">
-              Das Kuendigungsdatum muss in der Vergangenheit liegen.
+              Das Kündigungsdatum muss in der Vergangenheit liegen.
             </p>
           )}
         </div>
@@ -68,7 +68,7 @@ export default function StepRaeumungSachverhalt({ data, onChange }: Props) {
             Frist zum Auszug *
           </label>
           <p className="text-xs text-gray-400 mb-1.5">
-            Das Datum, bis zu dem der Mieter haette ausziehen muessen.
+            Das Datum, bis zu dem der Mieter hätte ausziehen müssen.
           </p>
           <input
             type="date"
@@ -89,9 +89,9 @@ export default function StepRaeumungSachverhalt({ data, onChange }: Props) {
 
       <div className="mt-8 bg-amber-50 border border-amber-200 rounded-lg p-4">
         <p className="text-sm text-amber-800">
-          <strong>Hinweis:</strong> Die Raeumungsaufforderung setzt voraus, dass die Kuendigung
+          <strong>Hinweis:</strong> Die Räumungsaufforderung setzt voraus, dass die Kündigung
           bereits wirksam zugestellt wurde und die Frist zum Auszug verstrichen ist. Beide Daten
-          muessen daher in der Vergangenheit liegen.
+          müssen daher in der Vergangenheit liegen.
         </p>
       </div>
     </div>
