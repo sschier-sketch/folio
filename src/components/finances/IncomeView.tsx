@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Calendar, CheckCircle2, Trash2, Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, Trash2, Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle, Receipt } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
@@ -50,6 +50,21 @@ interface RentalContract {
   };
 }
 
+interface NebenkostenPayment {
+  id: string;
+  property_id: string;
+  tenant_id: string | null;
+  due_date: string;
+  amount: number;
+  paid_amount: number;
+  payment_status: string;
+  description: string | null;
+  notes: string | null;
+  created_at: string;
+  tenant_name?: string;
+  property_name?: string;
+}
+
 interface Property {
   id: string;
   name: string;
@@ -65,6 +80,7 @@ export default function IncomeView() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [manualIncomes, setManualIncomes] = useState<ManualIncome[]>([]);
+  const [nebenkostenPayments, setNebenkostenPayments] = useState<NebenkostenPayment[]>([]);
   const [rentalContracts, setRentalContracts] = useState<RentalContract[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -177,12 +193,57 @@ export default function IncomeView() {
         contractsQuery = contractsQuery.eq("property_id", selectedProperty);
       }
 
-      const [manualRes, contractsRes] = await Promise.all([manualQuery, contractsQuery]);
+      let nkQuery = supabase
+        .from("rent_payments")
+        .select("id, property_id, tenant_id, due_date, amount, paid_amount, payment_status, description, notes, created_at")
+        .eq("user_id", user!.id)
+        .eq("payment_type", "nebenkosten")
+        .order("due_date", { ascending: false });
+
+      if (selectedProperty) {
+        nkQuery = nkQuery.eq("property_id", selectedProperty);
+      }
+
+      if (timePeriod !== "all" && filterStartDate && filterEndDate) {
+        nkQuery = nkQuery
+          .gte("due_date", filterStartDate)
+          .lte("due_date", filterEndDate);
+      }
+
+      const [manualRes, contractsRes, nkRes] = await Promise.all([manualQuery, contractsQuery, nkQuery]);
 
       if (manualRes.error) throw manualRes.error;
       if (contractsRes.error) throw contractsRes.error;
+      if (nkRes.error) throw nkRes.error;
 
       setManualIncomes(manualRes.data || []);
+
+      const nkData: NebenkostenPayment[] = nkRes.data || [];
+      const tenantIds = [...new Set(nkData.filter(n => n.tenant_id).map(n => n.tenant_id!))];
+      const propertyIds = [...new Set(nkData.map(n => n.property_id))];
+
+      const [tenantMap, propMap] = await Promise.all([
+        tenantIds.length > 0
+          ? supabase.from("tenants").select("id, first_name, last_name").in("id", tenantIds).then(r => {
+              const map: Record<string, string> = {};
+              (r.data || []).forEach(t => { map[t.id] = `${t.first_name} ${t.last_name}`; });
+              return map;
+            })
+          : Promise.resolve({} as Record<string, string>),
+        propertyIds.length > 0
+          ? supabase.from("properties").select("id, name").in("id", propertyIds).then(r => {
+              const map: Record<string, string> = {};
+              (r.data || []).forEach(p => { map[p.id] = p.name; });
+              return map;
+            })
+          : Promise.resolve({} as Record<string, string>),
+      ]);
+
+      setNebenkostenPayments(nkData.map(n => ({
+        ...n,
+        tenant_name: n.tenant_id ? tenantMap[n.tenant_id] || "-" : "-",
+        property_name: propMap[n.property_id] || "-",
+      })));
 
       const contractsWithRelations = await Promise.all(
         (contractsRes.data || []).map(async (contract: any) => {
@@ -226,6 +287,8 @@ export default function IncomeView() {
   const totalRentIncome = activeStartedContracts.reduce((sum, contract) => {
     return sum + parseFloat(contract.base_rent.toString());
   }, 0);
+  const totalNebenkostenIncome = nebenkostenPayments.reduce((sum, p) => sum + p.amount, 0);
+  const totalNebenkostenPaid = nebenkostenPayments.reduce((sum, p) => sum + (p.paid_amount || 0), 0);
   const totalIncome = totalManualIncome + totalRentIncome;
 
   async function handleSaveIncome() {
@@ -594,7 +657,7 @@ export default function IncomeView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
             <TrendingUp className="w-6 h-6 text-[#1e1e24]" strokeWidth={1.5} />
@@ -623,6 +686,21 @@ export default function IncomeView() {
             {totalRentIncome.toFixed(2)} €
           </div>
           <div className="text-sm text-gray-500">Monatliche Mieteinnahmen</div>
+        </div>
+
+        <div className="bg-white rounded-lg p-6">
+          <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-4 border border-amber-200">
+            <Receipt className="w-6 h-6 text-amber-700" strokeWidth={1.5} />
+          </div>
+          <div className="text-2xl font-bold text-dark mb-1">
+            {totalNebenkostenIncome.toFixed(2)} €
+          </div>
+          <div className="text-sm text-gray-500">
+            Nebenkosten-Nachzahlungen
+            {totalNebenkostenPaid > 0 && (
+              <span className="ml-1 text-emerald-600">({totalNebenkostenPaid.toFixed(2)} € bezahlt)</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -740,6 +818,70 @@ export default function IncomeView() {
           </div>
         )}
       </div>
+
+      {nebenkostenPayments.length > 0 && (
+        <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
+          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-dark">Nebenkosten-Nachzahlungen</h3>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                {nebenkostenPayments.length}
+              </span>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fällig am</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beschreibung</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mieter</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Objekt</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Betrag</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {nebenkostenPayments.map((nk) => {
+                  const openAmount = nk.amount - (nk.paid_amount || 0);
+                  return (
+                    <tr key={nk.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {new Date(nk.due_date).toLocaleDateString("de-DE", { year: "numeric", month: "short", day: "numeric" })}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-dark">
+                        {nk.description || "Nebenkostennachzahlung"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {nk.tenant_name || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {nk.property_name || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                          nk.payment_status === "paid" ? "bg-emerald-100 text-emerald-700" :
+                          nk.payment_status === "partial" ? "bg-blue-100 text-blue-700" :
+                          "bg-amber-100 text-amber-700"
+                        }`}>
+                          {nk.payment_status === "paid" ? "Bezahlt" :
+                           nk.payment_status === "partial" ? "Teilzahlung" : "Offen"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                        <div className="font-medium text-dark">+{nk.amount.toFixed(2)} €</div>
+                        {nk.payment_status === "partial" && openAmount > 0 && (
+                          <div className="text-xs text-amber-600">Offen: {openAmount.toFixed(2)} €</div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-100">

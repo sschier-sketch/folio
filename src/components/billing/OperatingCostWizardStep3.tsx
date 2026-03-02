@@ -158,7 +158,7 @@ export default function OperatingCostWizardStep3() {
   }
 
   async function handleSaveStatement() {
-    if (!statementId) return;
+    if (!statementId || !user || !statement) return;
 
     setSaving(true);
     setError(null);
@@ -170,6 +170,45 @@ export default function OperatingCostWizardStep3() {
       );
 
       if (error) throw error;
+
+      for (const result of results) {
+        if (Number(result.balance) > 0 && result.tenant_id) {
+          const { data: existing } = await supabase
+            .from('rent_payments')
+            .select('id')
+            .eq('operating_cost_statement_id', statementId)
+            .eq('tenant_id', result.tenant_id)
+            .limit(1);
+
+          if (existing && existing.length > 0) continue;
+
+          const { data: contractData } = await supabase
+            .from('rental_contracts')
+            .select('id')
+            .eq('tenant_id', result.tenant_id)
+            .eq('property_id', statement.property_id)
+            .eq('user_id', user.id)
+            .order('start_date', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          await supabase.from('rent_payments').insert({
+            user_id: user.id,
+            contract_id: contractData?.id || null,
+            property_id: statement.property_id,
+            tenant_id: result.tenant_id,
+            due_date: new Date().toISOString().split('T')[0],
+            amount: Number(result.balance),
+            paid: false,
+            paid_amount: 0,
+            payment_status: 'unpaid',
+            payment_type: 'nebenkosten',
+            operating_cost_statement_id: statementId,
+            description: `Nebenkostenabrechnung ${statement.year}`,
+            notes: `Nachzahlung aus Betriebskostenabrechnung ${statement.year}`,
+          });
+        }
+      }
 
       navigate(`/dashboard?view=billing&tab=operating-costs&year=${statement?.year || ''}`);
     } catch (err: any) {

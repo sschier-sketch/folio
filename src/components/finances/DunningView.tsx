@@ -12,6 +12,8 @@ interface RentPayment {
   paid: boolean;
   paid_amount: number;
   payment_status: 'paid' | 'partial' | 'unpaid';
+  payment_type?: 'rent' | 'nebenkosten';
+  description?: string;
   days_overdue: number;
   dunning_level: number;
   last_reminder_sent: string | null;
@@ -219,19 +221,26 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
       const outstandingAmount = payment.amount - payment.paid_amount;
       const totalAmount = outstandingAmount + mahngebuehr;
 
+      const paymentTypeLabel = payment.payment_type === 'nebenkosten' ? 'Nebenkostennachzahlung' : 'Miete';
+      const descriptionText = payment.description || paymentTypeLabel;
+
       let subject = template.subject
         .replace(/\[TENANT_NAME\]/g, tenantName)
         .replace(/\[PROPERTY_NAME\]/g, propertyNameFull)
         .replace(/\[AMOUNT\]/g, formatCurrency(outstandingAmount))
         .replace(/\[DUE_DATE\]/g, formatDate(payment.due_date))
-        .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount));
+        .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount))
+        .replace(/\[DESCRIPTION\]/g, descriptionText)
+        .replace(/\[PAYMENT_TYPE\]/g, paymentTypeLabel);
 
       let message = template.message
         .replace(/\[TENANT_NAME\]/g, tenantName)
         .replace(/\[PROPERTY_NAME\]/g, propertyNameFull)
         .replace(/\[AMOUNT\]/g, formatCurrency(outstandingAmount))
         .replace(/\[DUE_DATE\]/g, formatDate(payment.due_date))
-        .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount));
+        .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount))
+        .replace(/\[DESCRIPTION\]/g, descriptionText)
+        .replace(/\[PAYMENT_TYPE\]/g, paymentTypeLabel);
 
       const htmlBody = `<!DOCTYPE html>
 <html lang="de">
@@ -450,7 +459,7 @@ ${message}
           <div className="text-center py-12">
             <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
             <p className="text-gray-600">Keine offenen Posten gefunden</p>
-            <p className="text-sm text-gray-400 mt-1">Alle Mieten sind auf dem neuesten Stand</p>
+            <p className="text-sm text-gray-400 mt-1">Alle Zahlungen sind auf dem neuesten Stand</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -472,14 +481,22 @@ ${message}
                     <AlertTriangle className={`w-5 h-5 mt-0.5 ${payment.suggestedLevel === 3 ? 'text-red-600' : payment.suggestedLevel === 2 ? 'text-amber-600' : 'text-blue-600'}`} />
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-dark">
-                          {unitInfo} - {tenantName}
-                        </h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold text-dark">
+                            {unitInfo} - {tenantName}
+                          </h4>
+                          {payment.payment_type === 'nebenkosten' && (
+                            <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">NK</span>
+                          )}
+                        </div>
                         <span className={`text-xs ${levelInfo.color} px-3 py-1 rounded-full font-medium`}>
                           {levelInfo.label}
                         </span>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">
+                        {payment.payment_type === 'nebenkosten' && payment.description ? (
+                          <span className="font-medium text-amber-700 mr-1">{payment.description}:</span>
+                        ) : null}
                         {payment.payment_status === 'partial' ? (
                           <>Teilzahlung erkannt: {formatCurrency(payment.paid_amount)} von {formatCurrency(payment.amount)} eingegangen. Fehlbetrag: {formatCurrency(outstandingAmount)}</>
                         ) : payment.days_overdue >= 30 ? (

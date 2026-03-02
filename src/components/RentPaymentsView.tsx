@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell, ArrowUpDown, FileText, Clock, Landmark } from "lucide-react";
+import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell, ArrowUpDown, FileText, Clock, Landmark, Plus } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -35,9 +35,14 @@ interface RentPayment {
   payment_status: 'paid' | 'partial' | 'unpaid';
   partial_payments: PartialPayment[];
   notes: string;
+  description?: string;
+  payment_type: 'rent' | 'nebenkosten';
   days_overdue?: number;
   dunning_level?: number;
   last_reminder_sent?: string | null;
+  contract_id?: string | null;
+  property_id?: string | null;
+  tenant_id?: string | null;
   property: { name: string; address: string } | null;
   rental_contract: {
     tenants: Array<{ first_name: string; last_name: string; email: string }>;
@@ -65,6 +70,7 @@ export default function RentPaymentsView() {
   const [partialAmount, setPartialAmount] = useState("");
   const [partialDate, setPartialDate] = useState(new Date().toISOString().split('T')[0]);
   const [partialNote, setPartialNote] = useState("");
+  const [filterPaymentType, setFilterPaymentType] = useState<"all" | "rent" | "nebenkosten">("all");
   const [sortBy, setSortBy] = useState<"date" | "property" | "tenant" | "amount" | "status">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,6 +79,17 @@ export default function RentPaymentsView() {
   const [showAllocationDetail, setShowAllocationDetail] = useState<string | null>(null);
   const [confirmUndoId, setConfirmUndoId] = useState<string | null>(null);
   const [undoing, setUndoing] = useState(false);
+  const [showNebenkostenModal, setShowNebenkostenModal] = useState(false);
+  const [nkForm, setNkForm] = useState({
+    property_id: "",
+    contract_id: "",
+    tenant_id: "",
+    amount: "",
+    due_date: new Date().toISOString().split("T")[0],
+    description: "",
+    notes: "",
+  });
+  const [savingNk, setSavingNk] = useState(false);
   useEffect(() => {
     loadData();
   }, [user]);
@@ -80,7 +97,7 @@ export default function RentPaymentsView() {
     if (properties.length > 0 && contracts.length > 0) {
       loadPayments();
     }
-  }, [filterProperty, filterContract, filterStatus, startDate, endDate]);
+  }, [filterProperty, filterContract, filterStatus, filterPaymentType, startDate, endDate]);
   const loadData = async () => {
     if (!user) return;
     try {
@@ -136,6 +153,9 @@ export default function RentPaymentsView() {
       if (filterContract !== "all") {
         query = query.eq("contract_id", filterContract);
       }
+      if (filterPaymentType !== "all") {
+        query = query.eq("payment_type", filterPaymentType);
+      }
       if (filterStatus === "paid") {
         query = query.eq("payment_status", "paid");
       } else if (filterStatus === "unpaid") {
@@ -152,12 +172,34 @@ export default function RentPaymentsView() {
       if (error) throw error;
 
       const filteredPayments = (data || []).filter(payment => {
+        if (payment.payment_type === 'nebenkosten') return true;
         if (!payment.rental_contract) return false;
         if (!payment.rental_contract.tenants || payment.rental_contract.tenants.length === 0) return false;
         const tenant = payment.rental_contract.tenants[0];
         if (!tenant.first_name || !tenant.last_name) return false;
         return true;
       });
+
+      const nkWithoutContract = filteredPayments.filter(
+        p => p.payment_type === 'nebenkosten' && !p.rental_contract && p.tenant_id
+      );
+      if (nkWithoutContract.length > 0) {
+        const tenantIds = [...new Set(nkWithoutContract.map(p => p.tenant_id!))];
+        const { data: tenantRows } = await supabase
+          .from('tenants')
+          .select('id, first_name, last_name, email')
+          .in('id', tenantIds);
+        const tenantMap = new Map((tenantRows || []).map(t => [t.id, t]));
+        for (const p of nkWithoutContract) {
+          const t = tenantMap.get(p.tenant_id!);
+          if (t && !p.rental_contract) {
+            (p as any).rental_contract = {
+              tenants: [{ first_name: t.first_name, last_name: t.last_name, email: t.email || '' }],
+              rent_due_day: 1,
+            };
+          }
+        }
+      }
 
       setPayments(filteredPayments);
       await loadAllocations(filteredPayments.map(p => p.id));
@@ -405,6 +447,65 @@ export default function RentPaymentsView() {
     (currentPage - 1) * paymentsPerPage,
     currentPage * paymentsPerPage
   );
+  const nkContracts = contracts.filter((c: any) => {
+    if (nkForm.property_id && c.property_id !== nkForm.property_id) return false;
+    return true;
+  });
+
+  const handleSaveNebenkosten = async () => {
+    if (!user || !nkForm.amount || !nkForm.due_date || !nkForm.description) {
+      alert("Bitte Betrag, Fälligkeitsdatum und Beschreibung ausfüllen.");
+      return;
+    }
+    setSavingNk(true);
+    try {
+      let tenantId = nkForm.tenant_id || null;
+      let propertyId = nkForm.property_id || null;
+      const contractId = nkForm.contract_id || null;
+
+      if (contractId && (!tenantId || !propertyId)) {
+        const c = contracts.find((c: any) => c.id === contractId);
+        if (c) {
+          if (!tenantId && c.tenants?.[0]) {
+            const { data: tenantRow } = await supabase
+              .from('tenants')
+              .select('id')
+              .eq('contract_id', contractId)
+              .limit(1)
+              .maybeSingle();
+            tenantId = tenantRow?.id || null;
+          }
+          if (!propertyId) propertyId = c.property_id;
+        }
+      }
+
+      const { error } = await supabase.from('rent_payments').insert({
+        user_id: user.id,
+        contract_id: contractId,
+        property_id: propertyId,
+        tenant_id: tenantId,
+        due_date: nkForm.due_date,
+        amount: parseFloat(nkForm.amount),
+        paid: false,
+        paid_amount: 0,
+        payment_status: 'unpaid',
+        payment_type: 'nebenkosten',
+        description: nkForm.description,
+        notes: nkForm.notes || null,
+      });
+
+      if (error) throw error;
+
+      setShowNebenkostenModal(false);
+      await loadPayments();
+    } catch (error) {
+      console.error("Error saving Nebenkosten:", error);
+      alert("Fehler beim Speichern der Nebenkosten-Forderung.");
+    } finally {
+      setSavingNk(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -415,11 +516,31 @@ export default function RentPaymentsView() {
   }
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-dark mb-2">Mieteingänge</h1>
-        <p className="text-gray-600">
-          Verwalten Sie ausstehende und bezahlte Mieten
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-dark mb-2">Mieteingänge</h1>
+          <p className="text-gray-600">
+            Verwalten Sie ausstehende und bezahlte Mieten und Nebenkosten
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          onClick={() => {
+            setNkForm({
+              property_id: "",
+              contract_id: "",
+              tenant_id: "",
+              amount: "",
+              due_date: new Date().toISOString().split("T")[0],
+              description: "",
+              notes: "",
+            });
+            setShowNebenkostenModal(true);
+          }}
+        >
+          <Plus className="w-4 h-4 mr-1.5" />
+          Nebenkosten erfassen
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg mb-6">
@@ -522,7 +643,21 @@ export default function RentPaymentsView() {
         <div className="mb-4">
           <h3 className="font-semibold text-dark">Filter</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Einnahmenart
+            </label>
+            <select
+              value={filterPaymentType}
+              onChange={(e) => setFilterPaymentType(e.target.value as "all" | "rent" | "nebenkosten")}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="all">Alle</option>
+              <option value="rent">Miete</option>
+              <option value="nebenkosten">Nebenkosten</option>
+            </select>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Immobilie
@@ -614,6 +749,21 @@ export default function RentPaymentsView() {
             )
           },
           {
+            key: "type",
+            header: "Art",
+            render: (payment: RentPayment) => (
+              payment.payment_type === 'nebenkosten' ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                  Nebenkosten
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                  Miete
+                </span>
+              )
+            )
+          },
+          {
             key: "property",
             header: "Immobilie",
             sortable: true,
@@ -669,7 +819,15 @@ export default function RentPaymentsView() {
                 {(payment.payment_status === 'partial' || payment.payment_status === 'paid') && payment.paid_amount > 0 && (
                   <div className="text-xs text-gray-500">
                     Bezahlt: {formatCurrency(payment.paid_amount || 0)}
+                    {payment.payment_status === 'partial' && (
+                      <span className="ml-1 text-orange-500">
+                        (Offen: {formatCurrency(payment.amount - (payment.paid_amount || 0))})
+                      </span>
+                    )}
                   </div>
+                )}
+                {payment.payment_type === 'nebenkosten' && payment.description && (
+                  <div className="text-xs text-gray-400 mt-0.5">{payment.description}</div>
                 )}
               </div>
             )
@@ -968,6 +1126,105 @@ export default function RentPaymentsView() {
                 disabled={undoing}
               >
                 {undoing ? 'Wird aufgehoben...' : 'Ja, aufheben'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNebenkostenModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full max-w-lg">
+            <div className="bg-gray-50 px-6 py-4 flex justify-between items-center rounded-t-lg">
+              <h3 className="text-xl font-bold text-dark">Nebenkosten-Forderung erfassen</h3>
+              <button
+                onClick={() => setShowNebenkostenModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Mieter / Mietverhältnis *</label>
+                <select
+                  value={nkForm.contract_id}
+                  onChange={(e) => {
+                    const cId = e.target.value;
+                    const c = contracts.find((c: any) => c.id === cId);
+                    setNkForm({
+                      ...nkForm,
+                      contract_id: cId,
+                      property_id: c?.property_id || nkForm.property_id,
+                    });
+                  }}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  required
+                >
+                  <option value="">Bitte wählen...</option>
+                  {nkContracts.map((contract: any) => (
+                    <option key={contract.id} value={contract.id}>
+                      {contract.properties?.name} - {contract.tenants?.map((t: any) => `${t.first_name} ${t.last_name}`).join(", ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Betrag (EUR) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={nkForm.amount}
+                    onChange={(e) => setNkForm({ ...nkForm, amount: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Fälligkeitsdatum *</label>
+                  <input
+                    type="date"
+                    value={nkForm.due_date}
+                    onChange={(e) => setNkForm({ ...nkForm, due_date: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Beschreibung *</label>
+                <input
+                  type="text"
+                  value={nkForm.description}
+                  onChange={(e) => setNkForm({ ...nkForm, description: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  placeholder="z.B. Nebenkostenabrechnung 2024"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notiz (optional)</label>
+                <textarea
+                  value={nkForm.notes}
+                  onChange={(e) => setNkForm({ ...nkForm, notes: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  rows={2}
+                  placeholder="Optionale Notiz..."
+                />
+              </div>
+            </div>
+            <div className="bg-gray-50 px-6 py-4 flex gap-3 rounded-b-lg">
+              <Button onClick={() => setShowNebenkostenModal(false)} variant="cancel">
+                Abbrechen
+              </Button>
+              <Button
+                onClick={handleSaveNebenkosten}
+                disabled={savingNk || !nkForm.contract_id || !nkForm.amount || !nkForm.description}
+                variant="primary"
+              >
+                {savingNk ? "Speichern..." : "Nebenkosten speichern"}
               </Button>
             </div>
           </div>
