@@ -173,7 +173,7 @@ export default function TransactionInbox({ dateFrom, dateTo }: TransactionInboxP
             size="sm"
             onClick={handleRunAutoMatch}
             disabled={runningAutoMatch}
-            title="Automatische Vorschlaege generieren"
+            title="Automatische Vorschläge generieren"
           >
             {runningAutoMatch ? (
               <Loader className="w-3.5 h-3.5 animate-spin" />
@@ -225,7 +225,7 @@ export default function TransactionInbox({ dateFrom, dateTo }: TransactionInboxP
             </p>
             <p className="text-xs text-gray-400">
               {debouncedSearch
-                ? 'Keine Treffer fuer Ihre Suche.'
+                ? 'Keine Treffer für Ihre Suche.'
                 : activeFilter === 'ALL_OPEN'
                 ? 'Alle Transaktionen wurden zugeordnet oder ignoriert.'
                 : 'Keine Transaktionen mit diesem Filter.'}
@@ -257,7 +257,7 @@ export default function TransactionInbox({ dateFrom, dateTo }: TransactionInboxP
                 disabled={page === 0}
                 className="px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Zurueck
+                Zurück
               </button>
               <span className="text-xs text-gray-500 px-2">
                 {page + 1} / {totalPages}

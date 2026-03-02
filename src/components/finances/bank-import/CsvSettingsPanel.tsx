@@ -92,7 +92,7 @@ export default function CsvSettingsPanel({
 
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">
-            Kopfzeilen ueberspringen
+            Kopfzeilen überspringen
           </label>
           <input
             type="number"

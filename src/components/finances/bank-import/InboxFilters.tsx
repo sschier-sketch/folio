@@ -13,7 +13,7 @@ interface InboxFiltersProps {
 const FILTERS: { id: FilterType; label: string }[] = [
   { id: 'ALL', label: 'Alle' },
   { id: 'ALL_OPEN', label: 'Offen' },
-  { id: 'SUGGESTED', label: 'Vorschlaege' },
+  { id: 'SUGGESTED', label: 'Vorschläge' },
   { id: 'MATCHED_MANUAL', label: 'Zugeordnet' },
   { id: 'MATCHED_AUTO', label: 'Automatisch' },
   { id: 'IGNORED', label: 'Ignoriert' },

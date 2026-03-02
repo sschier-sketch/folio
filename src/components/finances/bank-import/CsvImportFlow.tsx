@@ -71,7 +71,7 @@ export default function CsvImportFlow() {
     (content: string, currentSettings: CsvSettings) => {
       const lines = content.split(/\r?\n/).filter((l) => l.trim());
       if (lines.length < 2) {
-        setError('Die CSV-Datei enthaelt zu wenig Zeilen.');
+        setError('Die CSV-Datei enthält zu wenig Zeilen.');
         return;
       }
 
@@ -384,7 +384,7 @@ export default function CsvImportFlow() {
         CSV-Datei hier ablegen
       </p>
       <p className="text-xs text-gray-400 mb-4">
-        Unterstuetzte Formate: CSV (Sparkasse, DKB, ING, Commerzbank, etc.)
+        Unterstützte Formate: CSV (Sparkasse, DKB, ING, Commerzbank, etc.)
       </p>
       <label className="inline-block">
         <input
@@ -395,7 +395,7 @@ export default function CsvImportFlow() {
         />
         <span className="inline-flex items-center gap-2 h-[42px] px-5 rounded-xl text-sm font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] cursor-pointer transition-colors">
           <Upload className="w-4 h-4" />
-          Datei auswaehlen
+          Datei auswählen
         </span>
       </label>
 

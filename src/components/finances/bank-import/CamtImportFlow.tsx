@@ -25,7 +25,7 @@ export default function CamtImportFlow() {
 
       if (!content.includes('<Document') && !content.includes('<BkToCstmrStmt')) {
         setError(
-          'Die Datei scheint kein gueltiges CAMT.053-Format zu sein. Bitte pruefen Sie das Format.'
+          'Die Datei scheint kein gültiges CAMT.053-Format zu sein. Bitte prüfen Sie das Format.'
         );
         setImporting(false);
         return;
@@ -118,7 +118,7 @@ export default function CamtImportFlow() {
           Importiere {fileName}...
         </p>
         <p className="text-xs text-gray-400">
-          Transaktionen werden verarbeitet und auf Duplikate geprueft.
+          Transaktionen werden verarbeitet und auf Duplikate geprüft.
         </p>
       </div>
     );
@@ -143,7 +143,7 @@ export default function CamtImportFlow() {
         CAMT.053 XML hier ablegen
       </p>
       <p className="text-xs text-gray-400 mb-4">
-        Standardformat fuer elektronische Kontoauszuege (ISO 20022)
+        Standardformat für elektronische Kontoauszüge (ISO 20022)
       </p>
       <label className="inline-block">
         <input
@@ -154,7 +154,7 @@ export default function CamtImportFlow() {
         />
         <span className="inline-flex items-center gap-2 h-[42px] px-5 rounded-xl text-sm font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] cursor-pointer transition-colors">
           <Upload className="w-4 h-4" />
-          XML-Datei auswaehlen
+          XML-Datei auswählen
         </span>
       </label>
 

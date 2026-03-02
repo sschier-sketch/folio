@@ -134,7 +134,7 @@ export default function AllocationDetailModal({
     if (!matchedBy) return 'Manuell';
     if (matchedBy === 'auto') return 'Automatisch';
     if (matchedBy === 'manual') return 'Manuell';
-    if (matchedBy.startsWith('suggestion:')) return 'Vorschlag (bestaetigt)';
+    if (matchedBy.startsWith('suggestion:')) return 'Vorschlag (bestätigt)';
     return matchedBy;
   }
 

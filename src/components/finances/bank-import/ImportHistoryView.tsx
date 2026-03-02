@@ -67,13 +67,13 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
     icon: Trash2,
     color: 'text-gray-400',
     bg: 'bg-gray-50',
-    label: 'Geloescht',
+    label: 'Gelöscht',
   },
   rolled_back: {
     icon: Trash2,
     color: 'text-gray-400',
     bg: 'bg-gray-50',
-    label: 'Rueckgaengig',
+    label: 'Rückgängig',
   },
 };
 
@@ -334,7 +334,7 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
                         )}
                       </div>
                       <p className="text-gray-400 mt-1">
-                        Geloescht am{' '}
+                        Gelöscht am{' '}
                         {formatDate(String(file.summary.rolled_back_at))}
                       </p>
                     </div>
@@ -357,26 +357,26 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
                           <AlertOctagon className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                           <div className="text-xs">
                             <p className="font-medium text-red-700 mb-1">
-                              Import rueckgaengig machen und loeschen?
+                              Import rückgängig machen und löschen?
                             </p>
                             <p className="text-red-600">
                               Alle importierten Transaktionen und Zuordnungen
                               (Miete/Einnahmen/Ausgaben) werden entfernt. Dieser
-                              Vorgang kann nicht rueckgaengig gemacht werden.
+                              Vorgang kann nicht rückgängig gemacht werden.
                             </p>
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs text-gray-500 mb-1">
-                            Tippen Sie <strong>LOESCHEN</strong> zur
-                            Bestaetigung:
+                            Tippen Sie <strong>LÖSCHEN</strong> zur
+                            Bestätigung:
                           </label>
                           <input
                             type="text"
                             value={confirmText}
                             onChange={(e) => setConfirmText(e.target.value)}
                             className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
-                            placeholder="LOESCHEN"
+                            placeholder="LÖSCHEN"
                             autoFocus
                           />
                         </div>
@@ -391,18 +391,18 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
                             size="sm"
                             onClick={() => handleRollback(file.id)}
                             disabled={
-                              confirmText !== 'LOESCHEN' || rolling
+                              confirmText !== 'LÖSCHEN' || rolling
                             }
                           >
                             {rolling ? (
                               <>
                                 <Loader className="w-3 h-3 animate-spin" />
-                                Wird geloescht...
+                                Wird gelöscht...
                               </>
                             ) : (
                               <>
                                 <Trash2 className="w-3 h-3" />
-                                Endgueltig loeschen
+                                Endgültig löschen
                               </>
                             )}
                           </Button>
@@ -430,7 +430,7 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
-                        Import rueckgaengig machen & loeschen
+                        Import rückgängig machen & löschen
                       </Button>
                     )}
                   </div>

@@ -290,7 +290,7 @@ export default function RentAssignmentPanel({
           }}
           className="text-xs text-[#3c8af7] hover:underline"
         >
-          Anderen Mieter waehlen
+          Anderen Mieter wählen
         </button>
       </div>
 
@@ -324,7 +324,7 @@ export default function RentAssignmentPanel({
       ) : rentPayments.length === 0 ? (
         <div className="py-6 text-center">
           <p className="text-sm text-gray-400">
-            Keine offenen Forderungen fuer diesen Mieter
+            Keine offenen Forderungen für diesen Mieter
           </p>
         </div>
       ) : (
@@ -332,7 +332,7 @@ export default function RentAssignmentPanel({
           <table className="w-full text-xs">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-3 py-2 text-left font-medium text-gray-500">Faellig</th>
+                <th className="px-3 py-2 text-left font-medium text-gray-500">Fällig</th>
                 <th className="px-3 py-2 text-left font-medium text-gray-500">Art</th>
                 <th className="px-3 py-2 text-right font-medium text-gray-500">Soll</th>
                 <th className="px-3 py-2 text-right font-medium text-gray-500">Bezahlt</th>
@@ -442,7 +442,7 @@ export default function RentAssignmentPanel({
         <div className="flex items-center gap-2 p-2 bg-red-50 rounded-lg">
           <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
           <p className="text-xs text-red-600">
-            Die Zuordnung uebersteigt den Transaktionsbetrag.
+            Die Zuordnung übersteigt den Transaktionsbetrag.
           </p>
         </div>
       )}

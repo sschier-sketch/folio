@@ -10,11 +10,11 @@ const FIELDS = [
   { key: 'bookingDate', label: 'Buchungsdatum', required: true },
   { key: 'amount', label: 'Betrag', required: true },
   { key: 'usageText', label: 'Verwendungszweck', required: false },
-  { key: 'counterpartyName', label: 'Auftraggeber / Empfaenger', required: false },
+  { key: 'counterpartyName', label: 'Auftraggeber / Empfänger', required: false },
   { key: 'counterpartyIban', label: 'IBAN', required: false },
   { key: 'valueDate', label: 'Wertstellung', required: false },
   { key: 'creditDebitIndicator', label: 'Soll/Haben Kennzeichen', required: false },
-  { key: 'currency', label: 'Waehrung', required: false },
+  { key: 'currency', label: 'Währung', required: false },
 ] as const;
 
 export default function CsvColumnMapper({

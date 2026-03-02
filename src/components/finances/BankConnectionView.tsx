@@ -158,7 +158,7 @@ export default function BankConnectionView() {
                   <button
                     onClick={() => { setCustomFrom(''); setCustomTo(''); }}
                     className="p-1 text-gray-400 hover:text-gray-600"
-                    title="Datumsfilter zuruecksetzen"
+                    title="Datumsfilter zurücksetzen"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -185,7 +185,7 @@ export default function BankConnectionView() {
                   Kontoauszug importieren
                 </h3>
                 <p className="text-xs text-gray-400">
-                  Laden Sie Ihre Kontoauszuege als CSV oder CAMT.053 XML hoch
+                  Laden Sie Ihre Kontoauszüge als CSV oder CAMT.053 XML hoch
                 </p>
               </div>
             </div>
@@ -221,7 +221,7 @@ export default function BankConnectionView() {
             <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
             <p className="text-sm text-blue-900">
               Importierte Transaktionen werden automatisch auf Duplikate
-              geprueft. Bereits importierte Buchungen werden uebersprungen. Ihre
+              geprüft. Bereits importierte Buchungen werden übersprungen. Ihre
               Daten werden sicher verarbeitet und nie an Dritte weitergegeben.
             </p>
           </div>

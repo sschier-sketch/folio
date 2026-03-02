@@ -26,7 +26,7 @@ const FIELD_LABELS: Record<string, string> = {
   counterpartyIban: 'IBAN',
   usageText: 'Verwendungszweck',
   creditDebitIndicator: 'Soll/Haben',
-  currency: 'Waehrung',
+  currency: 'Währung',
 };
 
 export default function CsvPreviewTable({

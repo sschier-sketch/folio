@@ -109,7 +109,7 @@ export default function SavedMappingsSelect({
             variant="text-danger"
             size="sm"
             onClick={() => handleDelete(selectedId)}
-            title="Mapping loeschen"
+            title="Mapping löschen"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
