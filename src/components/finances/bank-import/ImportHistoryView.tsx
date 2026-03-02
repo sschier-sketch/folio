@@ -6,13 +6,13 @@ import {
   Clock,
   Loader,
   Trash2,
-  X,
   FileSpreadsheet,
   FileCode,
   RefreshCw,
   AlertOctagon,
   ChevronDown,
   ChevronUp,
+  Copy,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { listRecentImportFiles, rollbackAndDeleteImport } from '../../../lib/bankImport';
@@ -77,6 +77,98 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
   },
 };
 
+interface StoredDuplicate {
+  rowIndex: number;
+  bookingDate: string;
+  amount: number;
+  counterpartyName?: string;
+  usageText?: string;
+  reason: 'db' | 'batch';
+}
+
+function DuplicateDetailPanel({
+  rawMeta,
+  duplicateRows,
+}: {
+  rawMeta?: Record<string, unknown>;
+  duplicateRows: number;
+}) {
+  const duplicates = (rawMeta?.duplicates as StoredDuplicate[] | undefined) || [];
+
+  if (duplicates.length === 0) {
+    return (
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-600">
+        {duplicateRows} Duplikate erkannt (Details nicht gespeichert, da Import vor Update stattfand).
+      </div>
+    );
+  }
+
+  const batchDups = duplicates.filter((d) => d.reason === 'batch');
+  const dbDups = duplicates.filter((d) => d.reason === 'db');
+
+  return (
+    <div className="space-y-2">
+      {batchDups.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Copy className="w-3.5 h-3.5 text-amber-600" />
+            <p className="text-xs font-semibold text-amber-700">
+              {batchDups.length} doppelte Zeilen innerhalb der Datei
+            </p>
+          </div>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
+            {batchDups.map((d, i) => (
+              <div
+                key={i}
+                className="text-xs bg-white/60 rounded px-2 py-1.5 flex items-center gap-3"
+              >
+                <span className="text-amber-500 font-mono flex-shrink-0">
+                  Zeile {d.rowIndex}
+                </span>
+                <span className="text-gray-600 truncate">
+                  {new Date(d.bookingDate).toLocaleDateString('de-DE')}
+                  {' | '}
+                  {d.amount.toFixed(2)} EUR
+                  {d.counterpartyName ? ` | ${d.counterpartyName}` : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {dbDups.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="w-3.5 h-3.5 text-blue-600" />
+            <p className="text-xs font-semibold text-blue-700">
+              {dbDups.length} bereits vorhandene Transaktionen
+            </p>
+          </div>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
+            {dbDups.map((d, i) => (
+              <div
+                key={i}
+                className="text-xs bg-white/60 rounded px-2 py-1.5 flex items-center gap-3"
+              >
+                <span className="text-blue-500 font-mono flex-shrink-0">
+                  Zeile {d.rowIndex}
+                </span>
+                <span className="text-gray-600 truncate">
+                  {new Date(d.bookingDate).toLocaleDateString('de-DE')}
+                  {' | '}
+                  {d.amount.toFixed(2)} EUR
+                  {d.counterpartyName ? ` | ${d.counterpartyName}` : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface ImportHistoryViewProps {
   onRollbackComplete?: () => void;
 }
@@ -86,6 +178,7 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
   const [imports, setImports] = useState<BankImportFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showDuplicatesId, setShowDuplicatesId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmText, setConfirmText] = useState('');
   const [rolling, setRolling] = useState(false);
@@ -274,9 +367,26 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
                   </div>
                   <div>
                     <span className="text-gray-400">Duplikate</span>
-                    <p className="font-medium text-amber-600">
-                      {file.duplicate_rows}
-                    </p>
+                    {file.duplicate_rows > 0 ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowDuplicatesId(
+                            showDuplicatesId === file.id ? null : file.id
+                          );
+                        }}
+                        className="flex items-center gap-1 font-medium text-amber-600 hover:text-amber-700 hover:underline"
+                      >
+                        {file.duplicate_rows}
+                        {showDuplicatesId === file.id ? (
+                          <ChevronUp className="w-3 h-3" />
+                        ) : (
+                          <ChevronDown className="w-3 h-3" />
+                        )}
+                      </button>
+                    ) : (
+                      <p className="font-medium text-amber-600">0</p>
+                    )}
                   </div>
                   <div>
                     <span className="text-gray-400">Verarbeitet</span>
@@ -287,6 +397,10 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
                     </p>
                   </div>
                 </div>
+
+                {showDuplicatesId === file.id && file.duplicate_rows > 0 && (
+                  <DuplicateDetailPanel rawMeta={file.raw_meta} duplicateRows={file.duplicate_rows} />
+                )}
 
                 {file.summary &&
                   typeof file.summary === 'object' &&

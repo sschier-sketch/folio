@@ -104,7 +104,8 @@ async function insertTransactions(
         tx.amount,
         tx.counterpartyIban,
         tx.usageText,
-        tx.bankReference || tx.endToEndId
+        tx.bankReference || tx.endToEndId,
+        tx.counterpartyName
       );
 
       if (seenFingerprints.has(fp)) {
@@ -188,6 +189,19 @@ async function insertTransactions(
     }
   }
 
+  const rawMeta: Record<string, unknown> = {};
+  if (errors.length > 0) rawMeta.errors = errors;
+  if (duplicates.length > 0) {
+    rawMeta.duplicates = duplicates.map((d) => ({
+      rowIndex: d.rowIndex,
+      bookingDate: d.bookingDate,
+      amount: d.amount,
+      counterpartyName: d.counterpartyName || '',
+      usageText: d.usageText || '',
+      reason: d.reason,
+    }));
+  }
+
   await supabase
     .from('bank_import_files')
     .update({
@@ -196,7 +210,7 @@ async function insertTransactions(
       imported_rows: importedRows,
       duplicate_rows: duplicateRows,
       processed_at: new Date().toISOString(),
-      raw_meta: errors.length > 0 ? { errors } : {},
+      raw_meta: rawMeta,
     })
     .eq('id', importFileId);
 

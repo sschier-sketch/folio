@@ -4,7 +4,8 @@ export async function computeFingerprint(
   amount: number,
   iban?: string,
   usageText?: string,
-  reference?: string
+  reference?: string,
+  counterpartyName?: string
 ): Promise<string> {
   const raw =
     userId +
@@ -12,7 +13,8 @@ export async function computeFingerprint(
     '|' + (amount != null ? String(amount) : '') +
     '|' + (iban ? iban.trim().toUpperCase() : '') +
     '|' + (usageText ? usageText.trim().substring(0, 140) : '') +
-    '|' + (reference ? reference.trim() : '');
+    '|' + (reference ? reference.trim() : '') +
+    '|' + (counterpartyName ? counterpartyName.trim().toUpperCase() : '');
 
   const encoded = new TextEncoder().encode(raw);
   const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
