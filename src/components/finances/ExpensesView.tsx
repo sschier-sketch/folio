@@ -77,6 +77,7 @@ export default function ExpensesView() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<string>("");
   const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [timePeriod, setTimePeriod] = useState<"current" | "last" | "all">("current");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -107,7 +108,7 @@ export default function ExpensesView() {
     if (user) {
       loadData();
     }
-  }, [user, selectedProperty, selectedUnit, timePeriod, startDate, endDate]);
+  }, [user, selectedProperty, selectedUnit, selectedCategory, timePeriod, startDate, endDate]);
 
   async function loadData() {
     try {
@@ -141,6 +142,10 @@ export default function ExpensesView() {
 
       if (selectedUnit) {
         expensesQuery = expensesQuery.eq("unit_id", selectedUnit);
+      }
+
+      if (selectedCategory) {
+        expensesQuery = expensesQuery.eq("category_id", selectedCategory);
       }
 
       if (timePeriod !== "all" && filterStartDate && filterEndDate) {
@@ -512,7 +517,7 @@ export default function ExpensesView() {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Objekt
@@ -552,6 +557,24 @@ export default function ExpensesView() {
                     Einheit {unit.unit_number}
                   </option>
                 ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Kategorie
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+            >
+              <option value="">Alle Kategorien</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -756,7 +779,7 @@ export default function ExpensesView() {
                                 }
                               },
                               {
-                                label: 'Loeschen',
+                                label: 'Löschen',
                                 onClick: () => handleDeleteExpense(row.id),
                                 variant: 'danger' as const
                               }

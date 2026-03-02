@@ -8,6 +8,7 @@ interface InboxFiltersProps {
   counts: Record<string, number>;
   unmatchedOnly: boolean;
   onUnmatchedOnlyChange: (value: boolean) => void;
+  effectiveOpenCount?: number;
 }
 
 const FILTERS: { id: FilterType; label: string }[] = [
@@ -35,13 +36,16 @@ export default function InboxFilters({
   counts,
   unmatchedOnly,
   onUnmatchedOnlyChange,
+  effectiveOpenCount,
 }: InboxFiltersProps) {
   return (
     <div className="flex items-center gap-3 flex-wrap">
       <div className="flex gap-1 flex-wrap">
         {FILTERS.map((f) => {
           const isActive = activeFilter === f.id;
-          const count = getCount(f.id, counts);
+          const count = f.id === 'ALL_OPEN' && effectiveOpenCount !== undefined
+            ? effectiveOpenCount
+            : getCount(f.id, counts);
           return (
             <button
               key={f.id}

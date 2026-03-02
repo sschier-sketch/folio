@@ -166,6 +166,11 @@ export default function TransactionInbox({ dateFrom, dateTo }: TransactionInboxP
           counts={counts}
           unmatchedOnly={unmatchedOnly}
           onUnmatchedOnlyChange={handleUnmatchedOnlyChange}
+          effectiveOpenCount={
+            unmatchedOnly
+              ? (counts['UNMATCHED'] || 0)
+              : (counts['UNMATCHED'] || 0) + (counts['SUGGESTED'] || 0)
+          }
         />
         <div className="flex items-center gap-2">
           <Button
