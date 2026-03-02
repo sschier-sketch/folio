@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { suggestTenantMatch } from './suggestionEngine';
 import type {
   AllocationInput,
   BankTransaction,
@@ -100,12 +101,34 @@ export async function undoAllocation(
     throw new Error(`Failed to undo allocations: ${softDeleteError.message}`);
   }
 
+  const { data: fullTx } = await supabase
+    .from('bank_transactions')
+    .select('*')
+    .eq('id', bankTransactionId)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  let restoredStatus: BankTransactionStatus = 'UNMATCHED';
+  let restoredMatchedBy: string | null = null;
+  let restoredConfidence: number | null = null;
+
+  if (fullTx && fullTx.direction === 'credit') {
+    const suggestion = await suggestTenantMatch(userId, fullTx as BankTransaction);
+    if (suggestion && suggestion.confidence >= 0.6) {
+      restoredStatus = 'SUGGESTED';
+      restoredMatchedBy = suggestion.suggestedPaymentType === 'nebenkosten'
+        ? `suggestion:${suggestion.tenantId}:nk`
+        : `suggestion:${suggestion.tenantId}`;
+      restoredConfidence = suggestion.confidence;
+    }
+  }
+
   await supabase
     .from('bank_transactions')
     .update({
-      status: 'UNMATCHED',
-      matched_by: null,
-      confidence: null,
+      status: restoredStatus,
+      matched_by: restoredMatchedBy,
+      confidence: restoredConfidence,
     })
     .eq('id', bankTransactionId)
     .eq('user_id', userId);
@@ -256,6 +279,7 @@ export async function listBankTransactions(
     dateTo?: string;
     direction?: 'credit' | 'debit';
     importFileId?: string;
+    search?: string;
     limit?: number;
     offset?: number;
   }
@@ -285,6 +309,13 @@ export async function listBankTransactions(
   }
   if (filters?.importFileId) {
     query = query.eq('import_file_id', filters.importFileId);
+  }
+
+  if (filters?.search) {
+    const term = filters.search.trim();
+    query = query.or(
+      `counterparty_name.ilike.%${term}%,usage_text.ilike.%${term}%,description.ilike.%${term}%`
+    );
   }
 
   const limit = filters?.limit ?? 50;

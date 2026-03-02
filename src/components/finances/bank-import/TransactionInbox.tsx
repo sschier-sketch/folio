@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Inbox, Loader, Sparkles, RefreshCw } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Inbox, Loader, Sparkles, RefreshCw, Search, X } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Button } from '../../ui/Button';
 import {
@@ -10,39 +10,62 @@ import {
   runSuggestionsForUnmatched,
 } from '../../../lib/bankImport';
 import type { BankTransaction, BankTransactionStatus } from '../../../lib/bankImport/types';
-import InboxFilters from './InboxFilters';
+import InboxFilters, { type FilterType } from './InboxFilters';
 import TransactionRow from './TransactionRow';
 import TransactionDetailDrawer from './TransactionDetailDrawer';
 
-type FilterType = BankTransactionStatus | 'ALL_OPEN';
+interface TransactionInboxProps {
+  dateFrom?: string;
+  dateTo?: string;
+}
 
-export default function TransactionInbox() {
+export default function TransactionInbox({ dateFrom, dateTo }: TransactionInboxProps) {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<BankTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>('ALL_OPEN');
+  const [unmatchedOnly, setUnmatchedOnly] = useState(true);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [selectedTx, setSelectedTx] = useState<BankTransaction | null>(null);
   const [runningAutoMatch, setRunningAutoMatch] = useState(false);
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
   const PAGE_SIZE = 30;
 
+  useEffect(() => {
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(0);
+    }, 300);
+    return () => clearTimeout(debounceTimer.current);
+  }, [searchTerm]);
+
+  function getStatusFilter(filter: FilterType, onlyUnmatched: boolean): BankTransactionStatus[] | undefined {
+    if (filter === 'ALL') return undefined;
+    if (filter === 'ALL_OPEN') {
+      return onlyUnmatched ? ['UNMATCHED'] : ['UNMATCHED', 'SUGGESTED'];
+    }
+    return [filter as BankTransactionStatus];
+  }
+
   const loadTransactions = useCallback(
-    async (filter: FilterType, pageNum: number) => {
+    async (filter: FilterType, pageNum: number, search: string, onlyUnmatched: boolean) => {
       if (!user) return;
       setLoading(true);
 
       try {
-        const statusFilter: BankTransactionStatus[] =
-          filter === 'ALL_OPEN'
-            ? ['UNMATCHED', 'SUGGESTED']
-            : [filter as BankTransactionStatus];
+        const statusFilter = getStatusFilter(filter, onlyUnmatched);
 
         const result = await listBankTransactions(user.id, {
           status: statusFilter,
           limit: PAGE_SIZE,
           offset: pageNum * PAGE_SIZE,
+          search: search || undefined,
+          dateFrom: dateFrom || undefined,
+          dateTo: dateTo || undefined,
         });
 
         setTransactions(result.data);
@@ -51,7 +74,7 @@ export default function TransactionInbox() {
         setLoading(false);
       }
     },
-    [user]
+    [user, dateFrom, dateTo]
   );
 
   const loadCounts = useCallback(async () => {
@@ -72,25 +95,32 @@ export default function TransactionInbox() {
         status,
         limit: 0,
         offset: 0,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
       });
       newCounts[status] = result.count;
     }
 
     setCounts(newCounts);
-  }, [user]);
+  }, [user, dateFrom, dateTo]);
 
   useEffect(() => {
-    loadTransactions(activeFilter, page);
+    loadTransactions(activeFilter, page, debouncedSearch, unmatchedOnly);
     loadCounts();
-  }, [activeFilter, page, loadTransactions, loadCounts]);
+  }, [activeFilter, page, debouncedSearch, unmatchedOnly, loadTransactions, loadCounts]);
 
   function handleFilterChange(filter: FilterType) {
     setActiveFilter(filter);
     setPage(0);
   }
 
+  function handleUnmatchedOnlyChange(value: boolean) {
+    setUnmatchedOnly(value);
+    setPage(0);
+  }
+
   function refresh() {
-    loadTransactions(activeFilter, page);
+    loadTransactions(activeFilter, page, debouncedSearch, unmatchedOnly);
     loadCounts();
   }
 
@@ -129,14 +159,14 @@ export default function TransactionInbox() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <InboxFilters
-            activeFilter={activeFilter}
-            onFilterChange={handleFilterChange}
-            counts={counts}
-          />
-        </div>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <InboxFilters
+          activeFilter={activeFilter}
+          onFilterChange={handleFilterChange}
+          counts={counts}
+          unmatchedOnly={unmatchedOnly}
+          onUnmatchedOnlyChange={handleUnmatchedOnlyChange}
+        />
         <div className="flex items-center gap-2">
           <Button
             variant="outlined"
@@ -163,6 +193,25 @@ export default function TransactionInbox() {
         </div>
       </div>
 
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Suche nach Name, Verwendungszweck, Betrag..."
+          className="w-full pl-9 pr-9 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#3c8af7]/30 focus:border-[#3c8af7] placeholder:text-gray-400"
+        />
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -175,7 +224,9 @@ export default function TransactionInbox() {
               Keine Transaktionen
             </p>
             <p className="text-xs text-gray-400">
-              {activeFilter === 'ALL_OPEN'
+              {debouncedSearch
+                ? 'Keine Treffer fuer Ihre Suche.'
+                : activeFilter === 'ALL_OPEN'
                 ? 'Alle Transaktionen wurden zugeordnet oder ignoriert.'
                 : 'Keine Transaktionen mit diesem Filter.'}
             </p>

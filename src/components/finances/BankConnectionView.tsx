@@ -5,6 +5,8 @@ import {
   FileSpreadsheet,
   FileCode,
   History,
+  Calendar,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -15,6 +17,11 @@ import ImportHistoryView from './bank-import/ImportHistoryView';
 
 type MainTab = 'inbox' | 'import' | 'history';
 type ImportTab = 'csv' | 'camt';
+type DatePreset = 'all' | 'current_year' | 'last_year' | 'custom';
+
+function getYearRange(year: number) {
+  return { from: `${year}-01-01`, to: `${year}-12-31` };
+}
 
 export default function BankConnectionView() {
   const { user } = useAuth();
@@ -22,6 +29,28 @@ export default function BankConnectionView() {
   const [importTab, setImportTab] = useState<ImportTab>('csv');
   const [inboxCount, setInboxCount] = useState(0);
   const [historyKey, setHistoryKey] = useState(0);
+
+  const [datePreset, setDatePreset] = useState<DatePreset>('all');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+
+  let dateFrom = '';
+  let dateTo = '';
+  if (datePreset === 'current_year') {
+    const r = getYearRange(currentYear);
+    dateFrom = r.from;
+    dateTo = r.to;
+  } else if (datePreset === 'last_year') {
+    const r = getYearRange(currentYear - 1);
+    dateFrom = r.from;
+    dateTo = r.to;
+  } else if (datePreset === 'custom') {
+    dateFrom = customFrom;
+    dateTo = customTo;
+  }
 
   useEffect(() => {
     if (user) loadInboxCount();
@@ -85,7 +114,64 @@ export default function BankConnectionView() {
         })}
       </div>
 
-      {mainTab === 'inbox' && <TransactionInbox />}
+      {(mainTab === 'inbox' || mainTab === 'history') && (
+        <div className="bg-white rounded-lg border border-gray-200 px-4 py-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span className="text-xs font-medium text-gray-500">Zeitraum:</span>
+            <div className="flex gap-1 flex-wrap">
+              {([
+                { id: 'all', label: 'Alle' },
+                { id: 'current_year', label: String(currentYear) },
+                { id: 'last_year', label: String(currentYear - 1) },
+                { id: 'custom', label: 'Benutzerdefiniert' },
+              ] as { id: DatePreset; label: string }[]).map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => setDatePreset(opt.id)}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                    datePreset === opt.id
+                      ? 'bg-[#3c8af7] text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {datePreset === 'custom' && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                  className="px-2 py-1 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#3c8af7]"
+                />
+                <span className="text-xs text-gray-400">bis</span>
+                <input
+                  type="date"
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                  className="px-2 py-1 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#3c8af7]"
+                />
+                {(customFrom || customTo) && (
+                  <button
+                    onClick={() => { setCustomFrom(''); setCustomTo(''); }}
+                    className="p-1 text-gray-400 hover:text-gray-600"
+                    title="Datumsfilter zuruecksetzen"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {mainTab === 'inbox' && (
+        <TransactionInbox dateFrom={dateFrom} dateTo={dateTo} />
+      )}
 
       {mainTab === 'import' && (
         <>
