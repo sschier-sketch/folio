@@ -359,11 +359,19 @@ export default function TenantRentHistoryTab({
 
       if (contractData) {
         setContract(contractData);
+        const rentType = contractData.rent_type || "flat_rate";
+        const canonicalColdRent = contractData.monthly_rent ?? contractData.base_rent ?? contractData.cold_rent ?? 0;
+        const canonicalUtilities = contractData.utilities_advance ?? contractData.additional_costs ?? 0;
+
         setEditData({
-          rent_type: contractData.rent_type || "flat_rate",
-          flat_rate_amount: contractData.flat_rate_amount?.toString() || "0",
-          cold_rent: contractData.cold_rent?.toString() || "0",
-          total_advance: contractData.total_advance?.toString() || "0",
+          rent_type: rentType,
+          flat_rate_amount: rentType === "flat_rate"
+            ? (canonicalColdRent || contractData.flat_rate_amount || 0).toString()
+            : (contractData.flat_rate_amount?.toString() || "0"),
+          cold_rent: (rentType !== "flat_rate" ? canonicalColdRent : contractData.cold_rent ?? 0).toString(),
+          total_advance: rentType === "cold_rent_advance"
+            ? canonicalUtilities.toString()
+            : (contractData.total_advance?.toString() || "0"),
           operating_costs: contractData.operating_costs?.toString() || "0",
           heating_costs: contractData.heating_costs?.toString() || "0",
           rent_increase_type: contractData.rent_increase_type || "none",
