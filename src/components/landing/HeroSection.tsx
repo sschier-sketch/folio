@@ -4,7 +4,7 @@ import { withRef } from "../../lib/referralTracking";
 import { RefLink } from "../common/RefLink";
 import { CheckCircle2, Home, Users, BarChart3, FileText } from "lucide-react";
 import { RevealOnScroll } from "../common/RevealOnScroll";
-import { supabase } from "../../lib/supabase";
+import { getSystemSettings } from "../../lib/systemSettings";
 
 const HERO_CHECKS = [
   "Komplett kostenlos im Basic-Tarif",
@@ -100,29 +100,15 @@ const MONTH_NAMES_DE = [
 export default function HeroSection() {
   const navigate = useNavigate();
   const [featureCount, setFeatureCount] = useState<number | null>(null);
-  const [totalFeatures, setTotalFeatures] = useState<number | null>(null);
 
   useEffect(() => {
-    async function fetchCounts() {
-      const now = new Date();
-      const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01T00:00:00`;
-
-      const [monthRes, totalRes] = await Promise.all([
-        supabase
-          .from('system_updates')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_published', true)
-          .gte('published_at', monthStart),
-        supabase
-          .from('system_updates')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_published', true),
-      ]);
-
-      if (monthRes.count !== null) setFeatureCount(monthRes.count);
-      if (totalRes.count !== null) setTotalFeatures(totalRes.count);
+    async function fetchCount() {
+      const settings = await getSystemSettings();
+      if (settings) {
+        setFeatureCount(settings.monthly_feature_count);
+      }
     }
-    fetchCounts();
+    fetchCount();
   }, []);
 
   const currentMonth = MONTH_NAMES_DE[new Date().getMonth()];
@@ -168,11 +154,6 @@ export default function HeroSection() {
                   className="group h-12 inline-flex items-center gap-2.5 px-8 rounded-lg text-base font-semibold border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
                 >
                   Funktionen ansehen
-                  {totalFeatures !== null && (
-                    <span className="text-xs font-medium text-gray-400">
-                      ({totalFeatures})
-                    </span>
-                  )}
                 </RefLink>
                 {featureCount !== null && featureCount > 0 && (
                   <span className="inline-flex items-center gap-1.5 pl-2 text-sm text-gray-500">

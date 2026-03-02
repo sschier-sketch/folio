@@ -12,6 +12,7 @@ export interface SystemSettings {
   updated_at: string;
   global_head_html: string | null;
   global_head_html_updated_at: string | null;
+  monthly_feature_count: number;
 }
 
 let cachedSettings: SystemSettings | null = null;
