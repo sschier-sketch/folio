@@ -16,6 +16,7 @@ import { supabase } from "../lib/supabase";
 import { BaseTable, StatusBadge } from "./common/BaseTable";
 import { Button } from './ui/Button';
 import AdminAffiliatePayoutsTab from "./admin/AdminAffiliatePayoutsTab";
+import AdminAffiliateChart from "./admin/AdminAffiliateChart";
 
 type AffiliateTab = "overview" | "payouts";
 
@@ -558,6 +559,8 @@ export default function AdminAffiliatesView() {
           </Button>
         </div>
       </div>
+
+      <AdminAffiliateChart />
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm p-6">
