@@ -11,6 +11,7 @@ export interface MatchSuggestion {
 }
 
 export interface ExpenseMatchSuggestion {
+  type: 'hausgeld' | 'existing_expense';
   propertyId: string;
   propertyName: string;
   unitId: string;
@@ -18,13 +19,38 @@ export interface ExpenseMatchSuggestion {
   category: string;
   confidence: number;
   reason: string;
+  existingEntryId?: string;
 }
+
+export interface IncomeMatchSuggestion {
+  type: 'existing_income';
+  entryId: string;
+  propertyId?: string;
+  propertyName?: string;
+  category: string;
+  description: string;
+  confidence: number;
+  reason: string;
+}
+
+export type DebitSuggestion = ExpenseMatchSuggestion;
+export type CreditSuggestion = MatchSuggestion | IncomeMatchSuggestion;
 
 const NK_KEYWORDS = [
   'nebenkosten', 'betriebskosten', 'nebenkostenabrechnung',
   'betriebskostenabrechnung', 'nachzahlung nk', 'nachzahlung bk',
   'bka', ' nk ', ' bk ',
 ];
+
+const AMOUNT_TOLERANCE_CENTS = 1;
+
+function centsOf(eur: number): number {
+  return Math.round(Math.abs(eur) * 100);
+}
+
+function amountMatches(aCents: number, bCents: number): boolean {
+  return Math.abs(aCents - bCents) <= AMOUNT_TOLERANCE_CENTS;
+}
 
 export async function suggestTenantMatch(
   userId: string,
@@ -108,13 +134,10 @@ export async function suggestTenantMatch(
   return null;
 }
 
-export async function suggestExpenseMatch(
+async function suggestHausgeldMatch(
   userId: string,
-  tx: BankTransaction
+  txCents: number
 ): Promise<ExpenseMatchSuggestion | null> {
-  const txAmount = Math.abs(tx.amount);
-  if (txAmount <= 0) return null;
-
   const { data: userProperties } = await supabase
     .from('properties')
     .select('id, name')
@@ -133,86 +156,278 @@ export async function suggestExpenseMatch(
 
   if (!units || units.length === 0) return null;
 
-  const txCents = Math.round(txAmount * 100);
-  let best: ExpenseMatchSuggestion | null = null;
-
   for (const u of units) {
-    const hausgeldCents = u.housegeld_monthly_cents;
-    if (!hausgeldCents || hausgeldCents <= 0) continue;
-
+    if (!u.housegeld_monthly_cents || u.housegeld_monthly_cents <= 0) continue;
     const propName = propMap.get(u.property_id);
     if (!propName) continue;
 
-    if (txCents === hausgeldCents) {
-      const confidence = 0.8;
-      const reason = `Betrag entspricht Hausgeld ${(hausgeldCents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR für ${propName} (${u.unit_number})`;
-
-      if (confidence > (best?.confidence || 0)) {
-        best = {
-          propertyId: u.property_id,
-          propertyName: propName,
-          unitId: u.id,
-          unitNumber: u.unit_number,
-          category: 'Hausverwaltung',
-          confidence,
-          reason,
-        };
-      }
+    if (amountMatches(txCents, u.housegeld_monthly_cents)) {
+      return {
+        type: 'hausgeld',
+        propertyId: u.property_id,
+        propertyName: propName,
+        unitId: u.id,
+        unitNumber: u.unit_number,
+        category: 'Hausverwaltung',
+        confidence: 0.8,
+        reason: `Betrag entspricht Hausgeld ${(u.housegeld_monthly_cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR fuer ${propName} (${u.unit_number})`,
+      };
     }
   }
 
-  if (!best) {
-    const propertyTotals = new Map<string, { cents: number; name: string; unitIds: string[]; unitNumbers: string[] }>();
+  const propertyTotals = new Map<string, { cents: number; name: string; unitIds: string[]; unitNumbers: string[] }>();
+  for (const u of units) {
+    const propName = propMap.get(u.property_id);
+    if (!propName) continue;
+    const existing = propertyTotals.get(u.property_id);
+    if (existing) {
+      existing.cents += u.housegeld_monthly_cents;
+      existing.unitIds.push(u.id);
+      existing.unitNumbers.push(u.unit_number);
+    } else {
+      propertyTotals.set(u.property_id, {
+        cents: u.housegeld_monthly_cents,
+        name: propName,
+        unitIds: [u.id],
+        unitNumbers: [u.unit_number],
+      });
+    }
+  }
 
-    for (const u of units) {
-      const propName = propMap.get(u.property_id);
-      if (!propName) continue;
+  for (const [propertyId, info] of propertyTotals) {
+    if (info.unitIds.length <= 1) continue;
+    if (amountMatches(txCents, info.cents)) {
+      return {
+        type: 'hausgeld',
+        propertyId,
+        propertyName: info.name,
+        unitId: info.unitIds[0],
+        unitNumber: info.unitNumbers.join(', '),
+        category: 'Hausverwaltung',
+        confidence: 0.75,
+        reason: `Betrag entspricht Gesamt-Hausgeld ${(info.cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR fuer ${info.name}`,
+      };
+    }
+  }
 
-      const existing = propertyTotals.get(u.property_id);
-      if (existing) {
-        existing.cents += u.housegeld_monthly_cents;
-        existing.unitIds.push(u.id);
-        existing.unitNumbers.push(u.unit_number);
-      } else {
-        propertyTotals.set(u.property_id, {
-          cents: u.housegeld_monthly_cents,
-          name: propName,
-          unitIds: [u.id],
-          unitNumbers: [u.unit_number],
-        });
+  return null;
+}
+
+async function suggestExistingExpenseMatch(
+  userId: string,
+  tx: BankTransaction,
+  txCents: number
+): Promise<ExpenseMatchSuggestion | null> {
+  const { data: openExpenses } = await supabase
+    .from('expenses')
+    .select('id, amount, category, description, recipient, property_id, properties(name)')
+    .eq('user_id', userId)
+    .eq('status', 'open')
+    .is('source_bank_transaction_id', null)
+    .limit(200);
+
+  if (!openExpenses || openExpenses.length === 0) return null;
+
+  let best: ExpenseMatchSuggestion | null = null;
+
+  for (const e of openExpenses) {
+    const expCents = centsOf(Number(e.amount));
+    if (!amountMatches(txCents, expCents)) continue;
+
+    let confidence = 0.65;
+    const reasons: string[] = [];
+    const propName = (e.properties as { name: string } | null)?.name || '';
+    const label = e.description || e.category || 'Ausgabe';
+
+    reasons.push(`Betrag stimmt ueberein mit "${label}" (${(expCents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR)`);
+
+    if (e.recipient && tx.counterparty_name) {
+      const recipLower = e.recipient.toLowerCase();
+      const cpLower = tx.counterparty_name.toLowerCase();
+      if (cpLower.includes(recipLower) || recipLower.includes(cpLower)) {
+        confidence = 0.85;
+        reasons.push(`Empfaenger "${e.recipient}" passt zur Gegenpartei`);
       }
     }
 
-    for (const [propertyId, info] of propertyTotals) {
-      if (info.unitIds.length <= 1) continue;
+    if (propName) {
+      reasons.push(propName);
+    }
 
-      if (txCents === info.cents) {
-        best = {
-          propertyId,
-          propertyName: info.name,
-          unitId: info.unitIds[0],
-          unitNumber: info.unitNumbers.join(', '),
-          category: 'Hausverwaltung',
-          confidence: 0.75,
-          reason: `Betrag entspricht Gesamt-Hausgeld ${(info.cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR für ${info.name}`,
-        };
-        break;
-      }
+    if (confidence > (best?.confidence || 0)) {
+      best = {
+        type: 'existing_expense',
+        propertyId: e.property_id || '',
+        propertyName: propName,
+        unitId: '',
+        unitNumber: '',
+        category: e.category || '',
+        confidence,
+        reason: reasons.join(' - '),
+        existingEntryId: e.id,
+      };
     }
   }
 
   return best;
 }
 
-export function parseExpenseSuggestion(matchedBy: string): { propertyId: string; unitId: string; category: string } | null {
-  if (!matchedBy.startsWith('suggestion:hausgeld:')) return null;
-  const parts = matchedBy.split(':');
-  if (parts.length < 4) return null;
+export async function suggestExpenseMatch(
+  userId: string,
+  tx: BankTransaction
+): Promise<ExpenseMatchSuggestion | null> {
+  const txAmount = Math.abs(tx.amount);
+  if (txAmount <= 0) return null;
+  const txCents = centsOf(txAmount);
+
+  const [hausgeld, existingExpense] = await Promise.all([
+    suggestHausgeldMatch(userId, txCents),
+    suggestExistingExpenseMatch(userId, tx, txCents),
+  ]);
+
+  if (hausgeld && existingExpense) {
+    return hausgeld.confidence >= existingExpense.confidence ? hausgeld : existingExpense;
+  }
+  return hausgeld || existingExpense;
+}
+
+export async function suggestIncomeMatch(
+  userId: string,
+  tx: BankTransaction
+): Promise<IncomeMatchSuggestion | null> {
+  const txAmount = Math.abs(tx.amount);
+  if (txAmount <= 0) return null;
+  const txCents = centsOf(txAmount);
+
+  const { data: openIncome } = await supabase
+    .from('income_entries')
+    .select('id, amount, category, description, recipient, property_id, properties(name)')
+    .eq('user_id', userId)
+    .eq('status', 'open')
+    .is('source_bank_transaction_id', null)
+    .limit(200);
+
+  if (!openIncome || openIncome.length === 0) return null;
+
+  let best: IncomeMatchSuggestion | null = null;
+
+  for (const e of openIncome) {
+    const incomeCents = centsOf(Number(e.amount));
+    if (!amountMatches(txCents, incomeCents)) continue;
+
+    let confidence = 0.65;
+    const reasons: string[] = [];
+    const propName = (e.properties as { name: string } | null)?.name || '';
+    const label = e.description || e.category || 'Einnahme';
+
+    reasons.push(`Betrag stimmt ueberein mit "${label}" (${(incomeCents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR)`);
+
+    if (e.recipient && tx.counterparty_name) {
+      const recipLower = e.recipient.toLowerCase();
+      const cpLower = tx.counterparty_name.toLowerCase();
+      if (cpLower.includes(recipLower) || recipLower.includes(cpLower)) {
+        confidence = 0.85;
+        reasons.push(`Absender "${e.recipient}" passt zur Gegenpartei`);
+      }
+    }
+
+    if (propName) {
+      reasons.push(propName);
+    }
+
+    if (confidence > (best?.confidence || 0)) {
+      best = {
+        type: 'existing_income',
+        entryId: e.id,
+        propertyId: e.property_id || undefined,
+        propertyName: propName || undefined,
+        category: e.category || '',
+        description: e.description || '',
+        confidence,
+        reason: reasons.join(' - '),
+      };
+    }
+  }
+
+  return best;
+}
+
+export interface ParsedSuggestion {
+  type: 'tenant' | 'hausgeld' | 'existing_expense' | 'existing_income';
+  tenantId?: string;
+  propertyId?: string;
+  unitId?: string;
+  category?: string;
+  existingEntryId?: string;
+  isNk?: boolean;
+}
+
+export function parseSuggestion(matchedBy: string): ParsedSuggestion | null {
+  if (!matchedBy.startsWith('suggestion:')) return null;
+
+  if (matchedBy.startsWith('suggestion:hausgeld:')) {
+    const parts = matchedBy.split(':');
+    if (parts.length < 4) return null;
+    return {
+      type: 'hausgeld',
+      propertyId: parts[2],
+      unitId: parts[3],
+      category: 'Hausverwaltung',
+    };
+  }
+
+  if (matchedBy.startsWith('suggestion:expense:')) {
+    const parts = matchedBy.split(':');
+    if (parts.length < 3) return null;
+    return {
+      type: 'existing_expense',
+      existingEntryId: parts[2],
+    };
+  }
+
+  if (matchedBy.startsWith('suggestion:income:')) {
+    const parts = matchedBy.split(':');
+    if (parts.length < 3) return null;
+    return {
+      type: 'existing_income',
+      existingEntryId: parts[2],
+    };
+  }
+
+  const rest = matchedBy.replace('suggestion:', '');
+  const parts = rest.split(':');
   return {
-    propertyId: parts[2],
-    unitId: parts[3],
-    category: 'Hausverwaltung',
+    type: 'tenant',
+    tenantId: parts[0],
+    isNk: parts[1] === 'nk',
   };
+}
+
+export function parseExpenseSuggestion(matchedBy: string): { propertyId: string; unitId: string; category: string } | null {
+  const parsed = parseSuggestion(matchedBy);
+  if (!parsed || parsed.type !== 'hausgeld') return null;
+  return {
+    propertyId: parsed.propertyId!,
+    unitId: parsed.unitId!,
+    category: parsed.category!,
+  };
+}
+
+function buildMatchedBy(
+  type: 'tenant' | 'hausgeld' | 'existing_expense' | 'existing_income',
+  ids: Record<string, string>,
+  isNk?: boolean
+): string {
+  switch (type) {
+    case 'tenant':
+      return isNk ? `suggestion:${ids.tenantId}:nk` : `suggestion:${ids.tenantId}`;
+    case 'hausgeld':
+      return `suggestion:hausgeld:${ids.propertyId}:${ids.unitId}`;
+    case 'existing_expense':
+      return `suggestion:expense:${ids.entryId}`;
+    case 'existing_income':
+      return `suggestion:income:${ids.entryId}`;
+  }
 }
 
 export async function runSuggestionsForUnmatched(userId: string): Promise<number> {
@@ -229,39 +444,46 @@ export async function runSuggestionsForUnmatched(userId: string): Promise<number
 
   for (const tx of unmatched) {
     const isCredit = tx.direction === 'credit' || tx.amount > 0;
+    let matchedBy: string | null = null;
+    let confidence = 0;
 
     if (isCredit) {
-      const suggestion = await suggestTenantMatch(userId, tx);
-      if (suggestion && suggestion.confidence >= 0.6) {
-        const matchedBy = suggestion.suggestedPaymentType === 'nebenkosten'
-          ? `suggestion:${suggestion.tenantId}:nk`
-          : `suggestion:${suggestion.tenantId}`;
-        await supabase
-          .from('bank_transactions')
-          .update({
-            status: 'SUGGESTED',
-            confidence: suggestion.confidence,
-            matched_by: matchedBy,
-          })
-          .eq('id', tx.id)
-          .eq('user_id', userId);
-        count++;
+      const tenantSugg = await suggestTenantMatch(userId, tx);
+      if (tenantSugg && tenantSugg.confidence >= 0.6) {
+        matchedBy = buildMatchedBy('tenant', { tenantId: tenantSugg.tenantId }, tenantSugg.suggestedPaymentType === 'nebenkosten');
+        confidence = tenantSugg.confidence;
+      }
+
+      if (!matchedBy) {
+        const incomeSugg = await suggestIncomeMatch(userId, tx);
+        if (incomeSugg && incomeSugg.confidence >= 0.6) {
+          matchedBy = buildMatchedBy('existing_income', { entryId: incomeSugg.entryId });
+          confidence = incomeSugg.confidence;
+        }
       }
     } else {
-      const suggestion = await suggestExpenseMatch(userId, tx);
-      if (suggestion && suggestion.confidence >= 0.6) {
-        const matchedBy = `suggestion:hausgeld:${suggestion.propertyId}:${suggestion.unitId}`;
-        await supabase
-          .from('bank_transactions')
-          .update({
-            status: 'SUGGESTED',
-            confidence: suggestion.confidence,
-            matched_by: matchedBy,
-          })
-          .eq('id', tx.id)
-          .eq('user_id', userId);
-        count++;
+      const expSugg = await suggestExpenseMatch(userId, tx);
+      if (expSugg && expSugg.confidence >= 0.6) {
+        if (expSugg.type === 'hausgeld') {
+          matchedBy = buildMatchedBy('hausgeld', { propertyId: expSugg.propertyId, unitId: expSugg.unitId });
+        } else {
+          matchedBy = buildMatchedBy('existing_expense', { entryId: expSugg.existingEntryId! });
+        }
+        confidence = expSugg.confidence;
       }
+    }
+
+    if (matchedBy && confidence >= 0.6) {
+      await supabase
+        .from('bank_transactions')
+        .update({
+          status: 'SUGGESTED',
+          confidence,
+          matched_by: matchedBy,
+        })
+        .eq('id', tx.id)
+        .eq('user_id', userId);
+      count++;
     }
   }
 

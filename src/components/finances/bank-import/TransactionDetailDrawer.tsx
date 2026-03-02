@@ -20,7 +20,7 @@ import {
   getAllocationsForTransaction,
 } from '../../../lib/bankImport';
 import type { BankTransaction, BankTransactionAllocation } from '../../../lib/bankImport/types';
-import { parseExpenseSuggestion } from '../../../lib/bankImport/suggestionEngine';
+import { parseSuggestion } from '../../../lib/bankImport/suggestionEngine';
 import RentAssignmentPanel from './RentAssignmentPanel';
 import IncomeExpenseAssignmentPanel from './IncomeExpenseAssignmentPanel';
 
@@ -54,20 +54,21 @@ export default function TransactionDetailDrawer({
   const isMatched = tx.status === 'MATCHED_AUTO' || tx.status === 'MATCHED_MANUAL';
   const isIgnored = tx.status === 'IGNORED';
 
-  const suggestedTenantId = (() => {
-    if (tx.status !== 'SUGGESTED' || !tx.matched_by?.startsWith('suggestion:')) return undefined;
-    if (tx.matched_by.startsWith('suggestion:hausgeld:')) return undefined;
-    const parts = tx.matched_by.replace('suggestion:', '').split(':');
-    return parts[0];
-  })();
-
-  const suggestedNk = tx.status === 'SUGGESTED' && tx.matched_by?.endsWith(':nk');
-
-  const expenseSuggestion = tx.status === 'SUGGESTED' && tx.matched_by
-    ? parseExpenseSuggestion(tx.matched_by)
+  const parsed = tx.status === 'SUGGESTED' && tx.matched_by
+    ? parseSuggestion(tx.matched_by)
     : null;
 
-  const initialAction: Action = suggestedTenantId ? 'rent' : expenseSuggestion ? 'expense' : 'none';
+  const suggestedTenantId = parsed?.type === 'tenant' ? parsed.tenantId : undefined;
+  const suggestedNk = parsed?.type === 'tenant' && parsed.isNk;
+
+  const initialAction: Action = (() => {
+    if (!parsed) return 'none';
+    if (parsed.type === 'tenant') return 'rent';
+    if (parsed.type === 'hausgeld' || parsed.type === 'existing_expense') return 'expense';
+    if (parsed.type === 'existing_income') return 'income';
+    return 'none';
+  })();
+
   const [action, setAction] = useState<Action>(initialAction);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -322,6 +323,7 @@ export default function TransactionDetailDrawer({
               tx={tx}
               userId={userId}
               targetType="income_entry"
+              suggestedExistingEntryId={parsed?.type === 'existing_income' ? parsed.existingEntryId : undefined}
               onComplete={handleComplete}
               onCancel={() => setAction('none')}
             />
@@ -332,8 +334,9 @@ export default function TransactionDetailDrawer({
               tx={tx}
               userId={userId}
               targetType="expense"
-              suggestedPropertyId={expenseSuggestion?.propertyId}
-              suggestedCategory={expenseSuggestion?.category}
+              suggestedPropertyId={parsed?.type === 'hausgeld' ? parsed.propertyId : undefined}
+              suggestedCategory={parsed?.type === 'hausgeld' ? parsed.category : undefined}
+              suggestedExistingEntryId={parsed?.type === 'existing_expense' ? parsed.existingEntryId : undefined}
               onComplete={handleComplete}
               onCancel={() => setAction('none')}
             />

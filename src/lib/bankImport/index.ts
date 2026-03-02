@@ -37,6 +37,15 @@ export {
 export {
   suggestTenantMatch,
   suggestExpenseMatch,
+  suggestIncomeMatch,
   parseExpenseSuggestion,
+  parseSuggestion,
   runSuggestionsForUnmatched,
+} from './suggestionEngine';
+
+export type {
+  MatchSuggestion,
+  ExpenseMatchSuggestion,
+  IncomeMatchSuggestion,
+  ParsedSuggestion,
 } from './suggestionEngine';

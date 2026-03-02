@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import { suggestTenantMatch, suggestExpenseMatch } from './suggestionEngine';
+import { suggestTenantMatch, suggestExpenseMatch, suggestIncomeMatch } from './suggestionEngine';
 import type {
   AllocationInput,
   BankTransaction,
@@ -115,20 +115,29 @@ export async function undoAllocation(
   if (fullTx) {
     const isCredit = fullTx.direction === 'credit' || fullTx.amount > 0;
     if (isCredit) {
-      const suggestion = await suggestTenantMatch(userId, fullTx as BankTransaction);
-      if (suggestion && suggestion.confidence >= 0.6) {
+      const tenantSugg = await suggestTenantMatch(userId, fullTx as BankTransaction);
+      if (tenantSugg && tenantSugg.confidence >= 0.6) {
         restoredStatus = 'SUGGESTED';
-        restoredMatchedBy = suggestion.suggestedPaymentType === 'nebenkosten'
-          ? `suggestion:${suggestion.tenantId}:nk`
-          : `suggestion:${suggestion.tenantId}`;
-        restoredConfidence = suggestion.confidence;
+        restoredMatchedBy = tenantSugg.suggestedPaymentType === 'nebenkosten'
+          ? `suggestion:${tenantSugg.tenantId}:nk`
+          : `suggestion:${tenantSugg.tenantId}`;
+        restoredConfidence = tenantSugg.confidence;
+      } else {
+        const incomeSugg = await suggestIncomeMatch(userId, fullTx as BankTransaction);
+        if (incomeSugg && incomeSugg.confidence >= 0.6) {
+          restoredStatus = 'SUGGESTED';
+          restoredMatchedBy = `suggestion:income:${incomeSugg.entryId}`;
+          restoredConfidence = incomeSugg.confidence;
+        }
       }
     } else {
-      const suggestion = await suggestExpenseMatch(userId, fullTx as BankTransaction);
-      if (suggestion && suggestion.confidence >= 0.6) {
+      const expSugg = await suggestExpenseMatch(userId, fullTx as BankTransaction);
+      if (expSugg && expSugg.confidence >= 0.6) {
         restoredStatus = 'SUGGESTED';
-        restoredMatchedBy = `suggestion:hausgeld:${suggestion.propertyId}:${suggestion.unitId}`;
-        restoredConfidence = suggestion.confidence;
+        restoredMatchedBy = expSugg.type === 'hausgeld'
+          ? `suggestion:hausgeld:${expSugg.propertyId}:${expSugg.unitId}`
+          : `suggestion:expense:${expSugg.existingEntryId}`;
+        restoredConfidence = expSugg.confidence;
       }
     }
   }

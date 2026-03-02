@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { AlertCircle, Loader, ChevronDown, Plus, Check, Search } from 'lucide-react';
+import { AlertCircle, Loader, ChevronDown, Plus, Check, Search, Sparkles } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '../../ui/Button';
 import { allocateBankTransaction } from '../../../lib/bankImport';
@@ -26,6 +26,7 @@ interface IncomeExpenseAssignmentPanelProps {
   targetType: 'income_entry' | 'expense';
   suggestedPropertyId?: string;
   suggestedCategory?: string;
+  suggestedExistingEntryId?: string;
   onComplete: () => void;
   onCancel: () => void;
 }
@@ -59,11 +60,14 @@ export default function IncomeExpenseAssignmentPanel({
   targetType,
   suggestedPropertyId,
   suggestedCategory,
+  suggestedExistingEntryId,
   onComplete,
   onCancel,
 }: IncomeExpenseAssignmentPanelProps) {
-  const hasSuggestion = !!(suggestedPropertyId || suggestedCategory);
-  const [tab, setTab] = useState<'existing' | 'new'>(hasSuggestion ? 'new' : 'existing');
+  const hasNewSuggestion = !!(suggestedPropertyId || suggestedCategory);
+  const hasExistingSuggestion = !!suggestedExistingEntryId;
+  const defaultTab = hasNewSuggestion ? 'new' : 'existing';
+  const [tab, setTab] = useState<'existing' | 'new'>(defaultTab);
   const [properties, setProperties] = useState<Property[]>([]);
   const [propertyId, setPropertyId] = useState(suggestedPropertyId || '');
   const [category, setCategory] = useState(suggestedCategory || '');
@@ -73,7 +77,7 @@ export default function IncomeExpenseAssignmentPanel({
 
   const [existingEntries, setExistingEntries] = useState<ExistingEntry[]>([]);
   const [existingLoading, setExistingLoading] = useState(false);
-  const [selectedExistingId, setSelectedExistingId] = useState('');
+  const [selectedExistingId, setSelectedExistingId] = useState(suggestedExistingEntryId || '');
   const [existingSearch, setExistingSearch] = useState('');
 
   const isIncome = targetType === 'income_entry';
@@ -124,15 +128,25 @@ export default function IncomeExpenseAssignmentPanel({
   }
 
   const filteredExisting = useMemo(() => {
-    if (!existingSearch.trim()) return existingEntries;
-    const q = existingSearch.toLowerCase();
-    return existingEntries.filter(
-      (e) =>
-        e.description.toLowerCase().includes(q) ||
-        e.category.toLowerCase().includes(q) ||
-        (e.property_name || '').toLowerCase().includes(q),
-    );
-  }, [existingEntries, existingSearch]);
+    let entries = existingEntries;
+    if (existingSearch.trim()) {
+      const q = existingSearch.toLowerCase();
+      entries = entries.filter(
+        (e) =>
+          e.description.toLowerCase().includes(q) ||
+          e.category.toLowerCase().includes(q) ||
+          (e.property_name || '').toLowerCase().includes(q),
+      );
+    }
+    if (hasExistingSuggestion) {
+      const idx = entries.findIndex(e => e.id === suggestedExistingEntryId);
+      if (idx > 0) {
+        const [suggested] = entries.splice(idx, 1);
+        entries = [suggested, ...entries];
+      }
+    }
+    return entries;
+  }, [existingEntries, existingSearch, hasExistingSuggestion, suggestedExistingEntryId]);
 
   async function handleSaveNew() {
     if (!category) {
@@ -289,42 +303,52 @@ export default function IncomeExpenseAssignmentPanel({
             </div>
           ) : (
             <div className="max-h-[240px] overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
-              {filteredExisting.map((e) => (
-                <button
-                  key={e.id}
-                  onClick={() => setSelectedExistingId(e.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
-                    selectedExistingId === e.id
-                      ? 'bg-blue-50 border-l-2 border-l-[#3c8af7]'
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-dark truncate">
-                      {e.description || e.category}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-gray-400">{e.category}</span>
-                      {e.property_name && (
-                        <span className="text-[10px] text-gray-400">
-                          {e.property_name}
-                        </span>
-                      )}
-                      {e.date && (
-                        <span className="text-[10px] text-gray-400">
-                          {new Date(e.date).toLocaleDateString('de-DE')}
-                        </span>
-                      )}
+              {filteredExisting.map((e) => {
+                const isSuggested = hasExistingSuggestion && e.id === suggestedExistingEntryId;
+                return (
+                  <button
+                    key={e.id}
+                    onClick={() => setSelectedExistingId(e.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                      selectedExistingId === e.id
+                        ? 'bg-blue-50 border-l-2 border-l-[#3c8af7]'
+                        : isSuggested
+                        ? 'bg-blue-50/40'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-medium text-dark truncate">
+                          {e.description || e.category}
+                        </p>
+                        {isSuggested && (
+                          <Sparkles className="w-3 h-3 text-[#3c8af7] flex-shrink-0" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-gray-400">{e.category}</span>
+                        {e.property_name && (
+                          <span className="text-[10px] text-gray-400">
+                            {e.property_name}
+                          </span>
+                        )}
+                        {e.date && (
+                          <span className="text-[10px] text-gray-400">
+                            {new Date(e.date).toLocaleDateString('de-DE')}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-xs font-semibold text-dark tabular-nums flex-shrink-0">
-                    {Number(e.amount).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR
-                  </span>
-                  {selectedExistingId === e.id && (
-                    <Check className="w-4 h-4 text-[#3c8af7] flex-shrink-0" />
-                  )}
-                </button>
-              ))}
+                    <span className="text-xs font-semibold text-dark tabular-nums flex-shrink-0">
+                      {Number(e.amount).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR
+                    </span>
+                    {selectedExistingId === e.id && (
+                      <Check className="w-4 h-4 text-[#3c8af7] flex-shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
 
