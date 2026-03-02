@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { TrendingUp, Calendar, CheckCircle2, Trash2, Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle, Receipt } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { TrendingUp, Calendar, CheckCircle2, Trash2, Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle, Receipt, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
@@ -32,6 +32,15 @@ interface ManualIncome {
   };
 }
 
+interface ContractUnitInfo {
+  label: string | null;
+  unit_number: string;
+  unit_type: string;
+  rent_included: boolean;
+  separate_rent: number;
+  separate_additional_costs: number;
+}
+
 interface RentalContract {
   id: string;
   total_rent: number;
@@ -48,6 +57,7 @@ interface RentalContract {
   properties?: {
     name: string;
   };
+  units?: ContractUnitInfo[];
 }
 
 interface NebenkostenPayment {
@@ -247,7 +257,7 @@ export default function IncomeView() {
 
       const contractsWithRelations = await Promise.all(
         (contractsRes.data || []).map(async (contract: any) => {
-          const [tenantRes, propertyRes] = await Promise.all([
+          const [tenantRes, propertyRes, unitsRes] = await Promise.all([
             supabase
               .from("tenants")
               .select("first_name, last_name")
@@ -258,12 +268,42 @@ export default function IncomeView() {
               .select("name")
               .eq("id", contract.property_id)
               .maybeSingle(),
+            supabase
+              .from("rental_contract_units")
+              .select("label, rent_included, separate_rent, separate_additional_costs, unit_id")
+              .eq("contract_id", contract.id),
           ]);
+
+          let unitDetails: ContractUnitInfo[] = [];
+          const rcuRows = unitsRes.data || [];
+          if (rcuRows.length > 0) {
+            const unitIds = rcuRows.map((r: any) => r.unit_id).filter(Boolean);
+            const unitMap: Record<string, any> = {};
+            if (unitIds.length > 0) {
+              const { data: unitData } = await supabase
+                .from("property_units")
+                .select("id, unit_number, unit_type")
+                .in("id", unitIds);
+              (unitData || []).forEach((u: any) => { unitMap[u.id] = u; });
+            }
+            unitDetails = rcuRows.map((r: any) => {
+              const unit = unitMap[r.unit_id];
+              return {
+                label: r.label,
+                unit_number: unit?.unit_number || "",
+                unit_type: unit?.unit_type || "apartment",
+                rent_included: r.rent_included ?? true,
+                separate_rent: parseFloat(r.separate_rent) || 0,
+                separate_additional_costs: parseFloat(r.separate_additional_costs) || 0,
+              };
+            });
+          }
 
           return {
             ...contract,
             tenants: tenantRes.data,
             properties: propertyRes.data,
+            units: unitDetails,
           };
         })
       );
@@ -555,6 +595,83 @@ export default function IncomeView() {
         return status;
     }
   };
+
+  function RentBreakdownTooltip({ contract }: { contract: RentalContract }) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (!open) return;
+      function handleClickOutside(e: MouseEvent) {
+        if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      }
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [open]);
+
+    const baseRent = parseFloat(contract.base_rent.toString());
+    const additionalCosts = parseFloat(contract.additional_costs.toString());
+    const separateUnits = (contract.units || []).filter(u => !u.rent_included && (u.separate_rent > 0 || u.separate_additional_costs > 0));
+    const hasSeparateUnits = separateUnits.length > 0;
+
+    if (!hasSeparateUnits && Math.abs(baseRent + additionalCosts - parseFloat(contract.total_rent.toString())) < 0.01) {
+      return null;
+    }
+
+    const unitTypeLabels: Record<string, string> = {
+      parking: "Stellplatz",
+      garage: "Garage",
+      storage: "Abstellraum",
+      commercial: "Gewerbe",
+      apartment: "Wohnung",
+      basement: "Keller",
+      other: "Sonstige",
+    };
+
+    return (
+      <div className="relative inline-block" ref={ref}>
+        <button
+          onClick={() => setOpen(!open)}
+          className="ml-1.5 text-gray-400 hover:text-gray-600 transition-colors align-middle"
+          title="Zusammensetzung anzeigen"
+        >
+          <Info className="w-4 h-4" />
+        </button>
+        {open && (
+          <div className="absolute right-0 bottom-full mb-2 z-50 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-left">
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Zusammensetzung</div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Kaltmiete</span>
+                <span className="font-medium text-gray-900">{baseRent.toFixed(2)} &euro;</span>
+              </div>
+              {additionalCosts > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Nebenkosten</span>
+                  <span className="font-medium text-gray-900">{additionalCosts.toFixed(2)} &euro;</span>
+                </div>
+              )}
+              {separateUnits.map((unit, idx) => {
+                const unitLabel = unit.label || unitTypeLabels[unit.unit_type] || unit.unit_number;
+                const unitTotal = unit.separate_rent + unit.separate_additional_costs;
+                return (
+                  <div key={idx} className="flex justify-between">
+                    <span className="text-gray-600">{unitLabel}</span>
+                    <span className="font-medium text-gray-900">{unitTotal.toFixed(2)} &euro;</span>
+                  </div>
+                );
+              })}
+              <div className="border-t border-gray-100 pt-2 flex justify-between font-semibold">
+                <span className="text-gray-700">Gesamt</span>
+                <span className="text-gray-900">{parseFloat(contract.total_rent.toString()).toFixed(2)} &euro;</span>
+              </div>
+            </div>
+            <div className="absolute bottom-0 right-4 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-200"></div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="text-center py-12 text-gray-400">Lädt...</div>;
@@ -949,7 +1066,10 @@ export default function IncomeView() {
                       {parseFloat(contract.additional_costs.toString()).toFixed(2)} €
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark">
-                      {parseFloat(contract.total_rent.toString()).toFixed(2)} €
+                      <span className="inline-flex items-center">
+                        {parseFloat(contract.total_rent.toString()).toFixed(2)} €
+                        <RentBreakdownTooltip contract={contract} />
+                      </span>
                     </td>
                   </tr>
                 ))}
