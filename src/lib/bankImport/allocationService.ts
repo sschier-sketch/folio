@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import { suggestTenantMatch } from './suggestionEngine';
+import { suggestTenantMatch, suggestExpenseMatch } from './suggestionEngine';
 import type {
   AllocationInput,
   BankTransaction,
@@ -112,14 +112,24 @@ export async function undoAllocation(
   let restoredMatchedBy: string | null = null;
   let restoredConfidence: number | null = null;
 
-  if (fullTx && fullTx.direction === 'credit') {
-    const suggestion = await suggestTenantMatch(userId, fullTx as BankTransaction);
-    if (suggestion && suggestion.confidence >= 0.6) {
-      restoredStatus = 'SUGGESTED';
-      restoredMatchedBy = suggestion.suggestedPaymentType === 'nebenkosten'
-        ? `suggestion:${suggestion.tenantId}:nk`
-        : `suggestion:${suggestion.tenantId}`;
-      restoredConfidence = suggestion.confidence;
+  if (fullTx) {
+    const isCredit = fullTx.direction === 'credit' || fullTx.amount > 0;
+    if (isCredit) {
+      const suggestion = await suggestTenantMatch(userId, fullTx as BankTransaction);
+      if (suggestion && suggestion.confidence >= 0.6) {
+        restoredStatus = 'SUGGESTED';
+        restoredMatchedBy = suggestion.suggestedPaymentType === 'nebenkosten'
+          ? `suggestion:${suggestion.tenantId}:nk`
+          : `suggestion:${suggestion.tenantId}`;
+        restoredConfidence = suggestion.confidence;
+      }
+    } else {
+      const suggestion = await suggestExpenseMatch(userId, fullTx as BankTransaction);
+      if (suggestion && suggestion.confidence >= 0.6) {
+        restoredStatus = 'SUGGESTED';
+        restoredMatchedBy = `suggestion:hausgeld:${suggestion.propertyId}:${suggestion.unitId}`;
+        restoredConfidence = suggestion.confidence;
+      }
     }
   }
 

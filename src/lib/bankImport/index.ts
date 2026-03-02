@@ -36,5 +36,7 @@ export {
 
 export {
   suggestTenantMatch,
+  suggestExpenseMatch,
+  parseExpenseSuggestion,
   runSuggestionsForUnmatched,
 } from './suggestionEngine';

@@ -20,6 +20,7 @@ import {
   getAllocationsForTransaction,
 } from '../../../lib/bankImport';
 import type { BankTransaction, BankTransactionAllocation } from '../../../lib/bankImport/types';
+import { parseExpenseSuggestion } from '../../../lib/bankImport/suggestionEngine';
 import RentAssignmentPanel from './RentAssignmentPanel';
 import IncomeExpenseAssignmentPanel from './IncomeExpenseAssignmentPanel';
 
@@ -55,13 +56,19 @@ export default function TransactionDetailDrawer({
 
   const suggestedTenantId = (() => {
     if (tx.status !== 'SUGGESTED' || !tx.matched_by?.startsWith('suggestion:')) return undefined;
+    if (tx.matched_by.startsWith('suggestion:hausgeld:')) return undefined;
     const parts = tx.matched_by.replace('suggestion:', '').split(':');
     return parts[0];
   })();
 
   const suggestedNk = tx.status === 'SUGGESTED' && tx.matched_by?.endsWith(':nk');
 
-  const [action, setAction] = useState<Action>(suggestedTenantId ? 'rent' : 'none');
+  const expenseSuggestion = tx.status === 'SUGGESTED' && tx.matched_by
+    ? parseExpenseSuggestion(tx.matched_by)
+    : null;
+
+  const initialAction: Action = suggestedTenantId ? 'rent' : expenseSuggestion ? 'expense' : 'none';
+  const [action, setAction] = useState<Action>(initialAction);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [allocations, setAllocations] = useState<BankTransactionAllocation[]>([]);
@@ -325,6 +332,8 @@ export default function TransactionDetailDrawer({
               tx={tx}
               userId={userId}
               targetType="expense"
+              suggestedPropertyId={expenseSuggestion?.propertyId}
+              suggestedCategory={expenseSuggestion?.category}
               onComplete={handleComplete}
               onCancel={() => setAction('none')}
             />

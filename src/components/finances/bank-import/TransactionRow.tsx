@@ -49,10 +49,7 @@ export default function TransactionRow({
   const isMatched = tx.status === 'MATCHED_AUTO' || tx.status === 'MATCHED_MANUAL';
   const isIgnored = tx.status === 'IGNORED';
 
-  const suggestion =
-    tx.status === 'SUGGESTED' && tx.matched_by?.startsWith('suggestion:')
-      ? tx.matched_by
-      : null;
+  const suggestion = tx.status === 'SUGGESTED' && tx.matched_by ? tx.matched_by : null;
 
   return (
     <div

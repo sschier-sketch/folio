@@ -24,6 +24,8 @@ interface IncomeExpenseAssignmentPanelProps {
   tx: BankTransaction;
   userId: string;
   targetType: 'income_entry' | 'expense';
+  suggestedPropertyId?: string;
+  suggestedCategory?: string;
   onComplete: () => void;
   onCancel: () => void;
 }
@@ -55,13 +57,16 @@ export default function IncomeExpenseAssignmentPanel({
   tx,
   userId,
   targetType,
+  suggestedPropertyId,
+  suggestedCategory,
   onComplete,
   onCancel,
 }: IncomeExpenseAssignmentPanelProps) {
-  const [tab, setTab] = useState<'existing' | 'new'>('existing');
+  const hasSuggestion = !!(suggestedPropertyId || suggestedCategory);
+  const [tab, setTab] = useState<'existing' | 'new'>(hasSuggestion ? 'new' : 'existing');
   const [properties, setProperties] = useState<Property[]>([]);
-  const [propertyId, setPropertyId] = useState('');
-  const [category, setCategory] = useState('');
+  const [propertyId, setPropertyId] = useState(suggestedPropertyId || '');
+  const [category, setCategory] = useState(suggestedCategory || '');
   const [description, setDescription] = useState(tx.usage_text || tx.counterparty_name || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');

@@ -1,13 +1,23 @@
 import { supabase } from '../supabase';
 import type { BankTransaction } from './types';
 
-interface MatchSuggestion {
+export interface MatchSuggestion {
   tenantId: string;
   tenantName: string;
   propertyId: string;
   confidence: number;
   reason: string;
   suggestedPaymentType?: 'rent' | 'nebenkosten';
+}
+
+export interface ExpenseMatchSuggestion {
+  propertyId: string;
+  propertyName: string;
+  unitId: string;
+  unitNumber: string;
+  category: string;
+  confidence: number;
+  reason: string;
 }
 
 const NK_KEYWORDS = [
@@ -98,36 +108,160 @@ export async function suggestTenantMatch(
   return null;
 }
 
+export async function suggestExpenseMatch(
+  userId: string,
+  tx: BankTransaction
+): Promise<ExpenseMatchSuggestion | null> {
+  const txAmount = Math.abs(tx.amount);
+  if (txAmount <= 0) return null;
+
+  const { data: userProperties } = await supabase
+    .from('properties')
+    .select('id, name')
+    .eq('user_id', userId);
+
+  if (!userProperties || userProperties.length === 0) return null;
+
+  const propMap = new Map(userProperties.map(p => [p.id, p.name]));
+  const propIds = userProperties.map(p => p.id);
+
+  const { data: units } = await supabase
+    .from('property_units')
+    .select('id, unit_number, unit_type, housegeld_monthly_cents, property_id')
+    .in('property_id', propIds)
+    .gt('housegeld_monthly_cents', 0);
+
+  if (!units || units.length === 0) return null;
+
+  const txCents = Math.round(txAmount * 100);
+  let best: ExpenseMatchSuggestion | null = null;
+
+  for (const u of units) {
+    const hausgeldCents = u.housegeld_monthly_cents;
+    if (!hausgeldCents || hausgeldCents <= 0) continue;
+
+    const propName = propMap.get(u.property_id);
+    if (!propName) continue;
+
+    if (txCents === hausgeldCents) {
+      const confidence = 0.8;
+      const reason = `Betrag entspricht Hausgeld ${(hausgeldCents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR für ${propName} (${u.unit_number})`;
+
+      if (confidence > (best?.confidence || 0)) {
+        best = {
+          propertyId: u.property_id,
+          propertyName: propName,
+          unitId: u.id,
+          unitNumber: u.unit_number,
+          category: 'Hausverwaltung',
+          confidence,
+          reason,
+        };
+      }
+    }
+  }
+
+  if (!best) {
+    const propertyTotals = new Map<string, { cents: number; name: string; unitIds: string[]; unitNumbers: string[] }>();
+
+    for (const u of units) {
+      const propName = propMap.get(u.property_id);
+      if (!propName) continue;
+
+      const existing = propertyTotals.get(u.property_id);
+      if (existing) {
+        existing.cents += u.housegeld_monthly_cents;
+        existing.unitIds.push(u.id);
+        existing.unitNumbers.push(u.unit_number);
+      } else {
+        propertyTotals.set(u.property_id, {
+          cents: u.housegeld_monthly_cents,
+          name: propName,
+          unitIds: [u.id],
+          unitNumbers: [u.unit_number],
+        });
+      }
+    }
+
+    for (const [propertyId, info] of propertyTotals) {
+      if (info.unitIds.length <= 1) continue;
+
+      if (txCents === info.cents) {
+        best = {
+          propertyId,
+          propertyName: info.name,
+          unitId: info.unitIds[0],
+          unitNumber: info.unitNumbers.join(', '),
+          category: 'Hausverwaltung',
+          confidence: 0.75,
+          reason: `Betrag entspricht Gesamt-Hausgeld ${(info.cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR für ${info.name}`,
+        };
+        break;
+      }
+    }
+  }
+
+  return best;
+}
+
+export function parseExpenseSuggestion(matchedBy: string): { propertyId: string; unitId: string; category: string } | null {
+  if (!matchedBy.startsWith('suggestion:hausgeld:')) return null;
+  const parts = matchedBy.split(':');
+  if (parts.length < 4) return null;
+  return {
+    propertyId: parts[2],
+    unitId: parts[3],
+    category: 'Hausverwaltung',
+  };
+}
+
 export async function runSuggestionsForUnmatched(userId: string): Promise<number> {
   const { data: unmatched } = await supabase
     .from('bank_transactions')
     .select('*')
     .eq('user_id', userId)
     .eq('status', 'UNMATCHED')
-    .eq('direction', 'credit')
-    .limit(200);
+    .limit(400);
 
   if (!unmatched || unmatched.length === 0) return 0;
 
   let count = 0;
 
   for (const tx of unmatched) {
-    const suggestion = await suggestTenantMatch(userId, tx);
+    const isCredit = tx.direction === 'credit' || tx.amount > 0;
 
-    if (suggestion && suggestion.confidence >= 0.6) {
-      const matchedBy = suggestion.suggestedPaymentType === 'nebenkosten'
-        ? `suggestion:${suggestion.tenantId}:nk`
-        : `suggestion:${suggestion.tenantId}`;
-      await supabase
-        .from('bank_transactions')
-        .update({
-          status: 'SUGGESTED',
-          confidence: suggestion.confidence,
-          matched_by: matchedBy,
-        })
-        .eq('id', tx.id)
-        .eq('user_id', userId);
-      count++;
+    if (isCredit) {
+      const suggestion = await suggestTenantMatch(userId, tx);
+      if (suggestion && suggestion.confidence >= 0.6) {
+        const matchedBy = suggestion.suggestedPaymentType === 'nebenkosten'
+          ? `suggestion:${suggestion.tenantId}:nk`
+          : `suggestion:${suggestion.tenantId}`;
+        await supabase
+          .from('bank_transactions')
+          .update({
+            status: 'SUGGESTED',
+            confidence: suggestion.confidence,
+            matched_by: matchedBy,
+          })
+          .eq('id', tx.id)
+          .eq('user_id', userId);
+        count++;
+      }
+    } else {
+      const suggestion = await suggestExpenseMatch(userId, tx);
+      if (suggestion && suggestion.confidence >= 0.6) {
+        const matchedBy = `suggestion:hausgeld:${suggestion.propertyId}:${suggestion.unitId}`;
+        await supabase
+          .from('bank_transactions')
+          .update({
+            status: 'SUGGESTED',
+            confidence: suggestion.confidence,
+            matched_by: matchedBy,
+          })
+          .eq('id', tx.id)
+          .eq('user_id', userId);
+        count++;
+      }
     }
   }
 
