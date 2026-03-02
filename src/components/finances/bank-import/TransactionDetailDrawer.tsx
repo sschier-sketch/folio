@@ -48,11 +48,6 @@ export default function TransactionDetailDrawer({
   onClose,
   onRefresh,
 }: TransactionDetailDrawerProps) {
-  const [action, setAction] = useState<Action>('none');
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState('');
-  const [allocations, setAllocations] = useState<BankTransactionAllocation[]>([]);
-
   const isCredit = tx.direction === 'credit' || tx.amount > 0;
   const isOpen = tx.status === 'UNMATCHED' || tx.status === 'SUGGESTED';
   const isMatched = tx.status === 'MATCHED_AUTO' || tx.status === 'MATCHED_MANUAL';
@@ -62,6 +57,11 @@ export default function TransactionDetailDrawer({
     tx.status === 'SUGGESTED' && tx.matched_by?.startsWith('suggestion:')
       ? tx.matched_by.replace('suggestion:', '')
       : undefined;
+
+  const [action, setAction] = useState<Action>(suggestedTenantId ? 'rent' : 'none');
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
+  const [allocations, setAllocations] = useState<BankTransactionAllocation[]>([]);
 
   useEffect(() => {
     if (isMatched) loadAllocations();

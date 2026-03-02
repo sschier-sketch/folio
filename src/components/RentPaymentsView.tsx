@@ -493,7 +493,7 @@ export default function RentPaymentsView() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg p-6">
-          <div className="text-sm text-gray-400 mb-1">Ausstehend</div>
+          <div className="text-sm text-gray-400 mb-1">Offen</div>
           <div className="text-2xl font-bold text-orange-600">
             {formatCurrency(totalUnpaid)}
           </div>
@@ -572,7 +572,7 @@ export default function RentPaymentsView() {
               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             >
               <option value="all">Alle</option>
-              <option value="unpaid">Ausstehend</option>
+              <option value="unpaid">Offen</option>
               <option value="paid">Bezahlt</option>
             </select>
           </div>
@@ -699,7 +699,7 @@ export default function RentPaymentsView() {
                   ) : isOverdue(payment) ? (
                     <StatusBadge type="error" label="Überfällig" />
                   ) : (
-                    <StatusBadge type="warning" label="Ausstehend" />
+                    <StatusBadge type="warning" label="Offen" />
                   )}
                   {hasBankAlloc && (
                     <button

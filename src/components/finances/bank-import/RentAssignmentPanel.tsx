@@ -71,15 +71,39 @@ export default function RentAssignmentPanel({
 
   async function loadOpenRentPayments(tenantId: string) {
     setLoading(true);
-    const { data } = await supabase
-      .from('rent_payments')
-      .select('id, due_date, amount, paid_amount, payment_status, description, contract_id')
-      .eq('tenant_id', tenantId)
-      .eq('user_id', userId)
-      .in('payment_status', ['unpaid', 'partial'])
-      .order('due_date', { ascending: true });
 
-    const payments = data || [];
+    const { data: contractIds } = await supabase
+      .from('rental_contracts')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('user_id', userId);
+
+    const cIds = (contractIds || []).map((c) => c.id);
+
+    let payments: RentPayment[] = [];
+
+    if (cIds.length > 0) {
+      const { data: byContract } = await supabase
+        .from('rent_payments')
+        .select('id, due_date, amount, paid_amount, payment_status, description, contract_id')
+        .eq('user_id', userId)
+        .in('contract_id', cIds)
+        .in('payment_status', ['unpaid', 'partial'])
+        .order('due_date', { ascending: true });
+      if (byContract) payments = byContract;
+    }
+
+    if (payments.length === 0) {
+      const { data: byTenant } = await supabase
+        .from('rent_payments')
+        .select('id, due_date, amount, paid_amount, payment_status, description, contract_id')
+        .eq('tenant_id', tenantId)
+        .eq('user_id', userId)
+        .in('payment_status', ['unpaid', 'partial'])
+        .order('due_date', { ascending: true });
+      if (byTenant) payments = byTenant;
+    }
+
     setRentPayments(payments);
 
     if (mode === 'auto') {

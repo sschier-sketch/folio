@@ -301,7 +301,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
         full_ownership: "Volleigentum", units_only: "Nur Einheiten",
         fixed_term: "Befristet", unlimited: "Unbefristet",
         active: "Aktiv", inactive: "Inaktiv", completed: "Abgeschlossen",
-        pending: "Ausstehend", paid: "Bezahlt", overdue: "Überfällig",
+        pending: "Offen", paid: "Bezahlt", overdue: "Überfällig",
         open: "Offen", closed: "Geschlossen", in_progress: "In Bearbeitung",
         cold: "Kalt", warm: "Warm",
         true: "Ja", false: "Nein",

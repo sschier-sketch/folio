@@ -447,7 +447,7 @@ export default function IndexRentView() {
                       ? "Fehler"
                       : lastRun.status === "no_contracts"
                         ? "Keine Verträge"
-                        : "Ausstehend"}
+                        : "Offen"}
                 </span>
               </div>
               {lastRun.error_message && (
@@ -1044,7 +1044,7 @@ function TimingBanner({ timing }: { timing: DeliveryTiming }) {
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; classes: string }> = {
     pending: {
-      label: "Ausstehend",
+      label: "Offen",
       classes: "bg-yellow-100 text-yellow-700",
     },
     calculated: {
