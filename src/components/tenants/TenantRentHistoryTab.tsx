@@ -1045,9 +1045,9 @@ export default function TenantRentHistoryTab({
               </div>
             </div>
 
-            {editableUnits.length > 1 && (
+            {editableUnits.length > 0 && (
               <div className="mt-8 pt-6 border-t border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-700 mb-4">Miete pro Einheit</h4>
+                <h4 className="text-sm font-semibold text-gray-700 mb-4">Zugeordnete Einheiten &amp; Miete</h4>
                 <p className="text-xs text-gray-500 mb-4">
                   Legen Sie fest, ob die Miete jeder Einheit in der Hauptmiete enthalten ist oder separat berechnet wird.
                 </p>
@@ -1199,7 +1199,7 @@ export default function TenantRentHistoryTab({
               </div>
             )}
 
-            {contractUnits.length > 1 && (
+            {contractUnits.length > 0 && (
               <div className="mt-6 pt-6 border-t border-gray-100">
                 <h4 className="text-sm font-semibold text-dark mb-4">Zugeordnete Einheiten</h4>
                 <div className="space-y-3">
