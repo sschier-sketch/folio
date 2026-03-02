@@ -10,10 +10,17 @@ interface Property {
   name: string;
 }
 
+interface ExpenseCategory {
+  id: string;
+  name: string;
+  tax_category: string;
+}
+
 interface ExistingEntry {
   id: string;
   description: string;
   category: string;
+  category_name?: string;
   amount: number;
   status: string;
   date: string;
@@ -31,29 +38,6 @@ interface IncomeExpenseAssignmentPanelProps {
   onCancel: () => void;
 }
 
-const INCOME_CATEGORIES = [
-  'Mieteinnahmen',
-  'Nebenkosten-Nachzahlung',
-  'Kaution',
-  'Sonstige Einnahmen',
-  'Förderung',
-  'Versicherungsleistung',
-];
-
-const EXPENSE_CATEGORIES = [
-  'Instandhaltung',
-  'Versicherung',
-  'Hausverwaltung',
-  'Grundsteuer',
-  'Bankgebühren',
-  'Rechtskosten',
-  'Sonstige Ausgaben',
-  'Heizkosten',
-  'Wasser/Abwasser',
-  'Strom',
-  'Müllentsorgung',
-];
-
 export default function IncomeExpenseAssignmentPanel({
   tx,
   userId,
@@ -69,8 +53,9 @@ export default function IncomeExpenseAssignmentPanel({
   const defaultTab = hasNewSuggestion ? 'new' : 'existing';
   const [tab, setTab] = useState<'existing' | 'new'>(defaultTab);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [dbCategories, setDbCategories] = useState<ExpenseCategory[]>([]);
   const [propertyId, setPropertyId] = useState(suggestedPropertyId || '');
-  const [category, setCategory] = useState(suggestedCategory || '');
+  const [categoryId, setCategoryId] = useState('');
   const [description, setDescription] = useState(tx.usage_text || tx.counterparty_name || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -81,11 +66,11 @@ export default function IncomeExpenseAssignmentPanel({
   const [existingSearch, setExistingSearch] = useState('');
 
   const isIncome = targetType === 'income_entry';
-  const categories = isIncome ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
   const txAmount = Math.abs(tx.amount);
 
   useEffect(() => {
     loadProperties();
+    loadCategories();
     loadExistingEntries();
   }, [userId]);
 
@@ -98,6 +83,20 @@ export default function IncomeExpenseAssignmentPanel({
     if (data) setProperties(data);
   }
 
+  async function loadCategories() {
+    const { data } = await supabase
+      .from('expense_categories')
+      .select('id, name, tax_category')
+      .order('name');
+    if (data) {
+      setDbCategories(data);
+      if (suggestedCategory) {
+        const match = data.find(c => c.name === suggestedCategory);
+        if (match) setCategoryId(match.id);
+      }
+    }
+  }
+
   async function loadExistingEntries() {
     setExistingLoading(true);
     const table = isIncome ? 'income_entries' : 'expenses';
@@ -105,7 +104,7 @@ export default function IncomeExpenseAssignmentPanel({
 
     const { data } = await supabase
       .from(table)
-      .select(`id, description, category, amount, status, ${dateCol}, property:properties(name)`)
+      .select(`id, description, category, category_id, amount, status, ${dateCol}, property:properties(name)`)
       .eq('user_id', userId)
       .eq('status', 'open')
       .order(dateCol, { ascending: false })
@@ -117,6 +116,7 @@ export default function IncomeExpenseAssignmentPanel({
           id: e.id,
           description: e.description || '',
           category: e.category || '',
+          category_name: undefined,
           amount: Number(e.amount),
           status: e.status,
           date: e[dateCol] || '',
@@ -127,8 +127,13 @@ export default function IncomeExpenseAssignmentPanel({
     setExistingLoading(false);
   }
 
+  const selectedCategoryName = useMemo(() => {
+    if (!categoryId) return '';
+    return dbCategories.find(c => c.id === categoryId)?.name || '';
+  }, [categoryId, dbCategories]);
+
   const filteredExisting = useMemo(() => {
-    let entries = existingEntries;
+    let entries = [...existingEntries];
     if (existingSearch.trim()) {
       const q = existingSearch.toLowerCase();
       entries = entries.filter(
@@ -149,7 +154,7 @@ export default function IncomeExpenseAssignmentPanel({
   }, [existingEntries, existingSearch, hasExistingSuggestion, suggestedExistingEntryId]);
 
   async function handleSaveNew() {
-    if (!category) {
+    if (!categoryId) {
       setError('Bitte Kategorie wählen.');
       return;
     }
@@ -162,7 +167,8 @@ export default function IncomeExpenseAssignmentPanel({
       const record: Record<string, unknown> = {
         user_id: userId,
         amount: txAmount,
-        category,
+        category: selectedCategoryName,
+        category_id: categoryId,
         description: description || (isIncome ? 'Bank-Eingang' : 'Bank-Ausgang'),
         status: 'paid',
         source_bank_transaction_id: tx.id,
@@ -370,14 +376,14 @@ export default function IncomeExpenseAssignmentPanel({
               </label>
               <div className="relative">
                 <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
                   className="w-full h-9 pl-3 pr-8 text-sm border border-gray-300 rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#3c8af7]/30 focus:border-[#3c8af7]"
                 >
                   <option value="">-- Kategorie wählen --</option>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
+                  {dbCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
                     </option>
                   ))}
                 </select>
@@ -458,7 +464,7 @@ export default function IncomeExpenseAssignmentPanel({
             variant="primary"
             size="sm"
             onClick={handleSaveNew}
-            disabled={saving || !category}
+            disabled={saving || !categoryId}
           >
             {saving ? (
               <Loader className="w-3.5 h-3.5 animate-spin" />

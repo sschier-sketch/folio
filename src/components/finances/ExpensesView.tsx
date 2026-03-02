@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
-import { TrendingDown, Trash2, Building, Tag, Upload, X, Filter, Edit, FileText, CheckCircle, Clock, AlertCircle, Settings2 } from "lucide-react";
+import { TrendingDown, Trash2, Building, Tag, Upload, X, Edit, FileText, CheckCircle, Clock, AlertCircle, Settings2, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
-import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
+import TableActionsDropdown from "../common/TableActionsDropdown";
 import { Button } from "../ui/Button";
 import {
   generateHausgeldRows,
@@ -81,6 +81,7 @@ export default function ExpensesView() {
   const [timePeriod, setTimePeriod] = useState<"current" | "last" | "all">("current");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [hausgeldCollapsed, setHausgeldCollapsed] = useState(false);
 
   const [formData, setFormData] = useState({
     property_id: "",
@@ -350,8 +351,8 @@ export default function ExpensesView() {
     }
   }
 
-  const displayRows = useMemo<(DisplayRow & { is_superseded?: boolean })[]>(() => {
-    const rows: (DisplayRow & { is_superseded?: boolean })[] = expenses.map((e) => {
+  const { manualRows, hausgeldRows } = useMemo(() => {
+    const manual: (DisplayRow & { is_superseded?: boolean })[] = expenses.map((e) => {
       const superseded = isExpenseSupersededBySystemHausgeld(e, units);
       return {
         id: e.id,
@@ -389,24 +390,24 @@ export default function ExpensesView() {
       rangeEnd = new Date(currentYear, 11, 31);
     }
 
-    const hausgeldRows = generateHausgeldRows(units, rangeStart, rangeEnd, {
+    const system = generateHausgeldRows(units, rangeStart, rangeEnd, {
       propertyId: selectedProperty || undefined,
       unitId: selectedUnit || undefined,
     });
-    rows.push(...hausgeldRows);
 
-    rows.sort((a, b) => b.expense_date.localeCompare(a.expense_date));
-    return rows;
+    manual.sort((a, b) => b.expense_date.localeCompare(a.expense_date));
+    system.sort((a, b) => b.expense_date.localeCompare(a.expense_date));
+
+    return { manualRows: manual, hausgeldRows: system };
   }, [expenses, units, selectedProperty, selectedUnit, timePeriod, startDate, endDate]);
 
-  const totalExpenses = displayRows
+  const totalManual = manualRows
     .filter((e) => !e.is_superseded)
     .reduce((sum, e) => sum + e.amount, 0);
-  const paidExpenses = displayRows
-    .filter((e) => e.status === "paid" && !e.is_superseded)
-    .reduce((sum, e) => sum + e.amount, 0);
-  const openExpenses = displayRows
-    .filter((e) => e.status === "open" && !e.is_system && !e.is_superseded)
+  const totalHausgeld = hausgeldRows.reduce((sum, e) => sum + e.amount, 0);
+  const totalExpenses = totalManual + totalHausgeld;
+  const openExpenses = manualRows
+    .filter((e) => e.status === "open" && !e.is_superseded)
     .reduce((sum, e) => sum + e.amount, 0);
 
   const getCategoryName = (categoryId: string) => {
@@ -417,12 +418,6 @@ export default function ExpensesView() {
   const getPropertyName = (propertyId: string) => {
     const property = properties.find((p) => p.id === propertyId);
     return property?.name || "Unbekannt";
-  };
-
-  const getTenantName = (tenantId: string | null) => {
-    if (!tenantId) return "-";
-    const tenant = tenants.find((t) => t.id === tenantId);
-    return tenant?.name || "Unbekannt";
   };
 
   const getStatusColor = (status: string) => {
@@ -443,27 +438,12 @@ export default function ExpensesView() {
       case "paid":
         return "Bezahlt";
       case "pending":
+      case "open":
         return "Offen";
       case "overdue":
         return "Überfällig";
-      case "open":
-        return "Offen";
       default:
         return status;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "paid":
-        return <CheckCircle className="w-4 h-4" />;
-      case "pending":
-      case "open":
-        return <Clock className="w-4 h-4" />;
-      case "overdue":
-        return <AlertCircle className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
     }
   };
 
@@ -629,25 +609,35 @@ export default function ExpensesView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
             <TrendingDown className="w-6 h-6 text-[#1e1e24]" strokeWidth={1.5} />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
-            {totalExpenses.toFixed(2)} €
+            {totalExpenses.toFixed(2)} &euro;
           </div>
           <div className="text-sm text-gray-500">Gesamt-Ausgaben</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
           <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
-            <CheckCircle className="w-6 h-6 text-[#1e1e24]" strokeWidth={1.5} />
+            <TrendingDown className="w-6 h-6 text-[#1e1e24]" strokeWidth={1.5} />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
-            {paidExpenses.toFixed(2)} €
+            {totalManual.toFixed(2)} &euro;
           </div>
-          <div className="text-sm text-gray-500">Bezahlt</div>
+          <div className="text-sm text-gray-500">Manuelle Ausgaben</div>
+        </div>
+
+        <div className="bg-white rounded-lg p-6">
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <Settings2 className="w-6 h-6 text-[#1e1e24]" strokeWidth={1.5} />
+          </div>
+          <div className="text-2xl font-bold text-dark mb-1">
+            {totalHausgeld.toFixed(2)} &euro;
+          </div>
+          <div className="text-sm text-gray-500">Hausgeld</div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
@@ -655,12 +645,13 @@ export default function ExpensesView() {
             <Clock className="w-6 h-6 text-[#1e1e24]" strokeWidth={1.5} />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
-            {openExpenses.toFixed(2)} €
+            {openExpenses.toFixed(2)} &euro;
           </div>
           <div className="text-sm text-gray-500">Offen</div>
         </div>
       </div>
 
+      {/* Manual Expenses */}
       <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">Ausgaben</h3>
@@ -672,7 +663,7 @@ export default function ExpensesView() {
           </Button>
         </div>
 
-        {displayRows.length === 0 ? (
+        {manualRows.length === 0 ? (
           <div className="p-12 text-center">
             <TrendingDown className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-400 mb-4">Keine Ausgaben erfasst</p>
@@ -712,20 +703,14 @@ export default function ExpensesView() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {displayRows.map((row) => (
-                  <tr key={row.id} className={`hover:bg-gray-50 transition-colors ${row.is_system ? "bg-slate-50/60" : ""} ${row.is_superseded ? "opacity-50" : ""}`}>
+                {manualRows.map((row) => (
+                  <tr key={row.id} className={`hover:bg-gray-50 transition-colors ${row.is_superseded ? "opacity-50" : ""}`}>
                     <td className="py-4 px-6 text-sm text-gray-700 whitespace-nowrap">
                       {new Date(row.expense_date).toLocaleDateString("de-DE")}
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
                         <span className={`text-sm font-medium ${row.is_superseded ? "line-through text-gray-400" : "text-dark"}`}>{row.description}</span>
-                        {row.is_system && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-200 text-slate-600 uppercase tracking-wide">
-                            <Settings2 className="w-3 h-3" />
-                            System
-                          </span>
-                        )}
                         {row.is_superseded && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 uppercase tracking-wide">
                             Ersetzt durch Einheit-Hausgeld
@@ -741,7 +726,7 @@ export default function ExpensesView() {
                     <td className="py-4 px-6 text-sm text-gray-700">
                       <div className="flex items-center gap-2">
                         <Tag className="w-4 h-4 text-gray-400" />
-                        {row.is_system ? row.category_name : getCategoryName(row.category_id)}
+                        {getCategoryName(row.category_id)}
                       </div>
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-700">
@@ -762,30 +747,26 @@ export default function ExpensesView() {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <div className="flex items-center justify-center">
-                        {row.is_system ? (
-                          <span className="text-xs text-gray-400 italic">In Einheit bearbeiten</span>
-                        ) : (
-                          <TableActionsDropdown
-                            actions={[
-                              ...(row.document_id ? [{
-                                label: 'Beleg herunterladen',
-                                onClick: () => handleDownloadDocument(row.document_id!)
-                              }] : []),
-                              {
-                                label: 'Bearbeiten',
-                                onClick: () => {
-                                  const orig = expenses.find((e) => e.id === row.id);
-                                  if (orig) handleEditExpense(orig);
-                                }
-                              },
-                              {
-                                label: 'Löschen',
-                                onClick: () => handleDeleteExpense(row.id),
-                                variant: 'danger' as const
+                        <TableActionsDropdown
+                          actions={[
+                            ...(row.document_id ? [{
+                              label: 'Beleg herunterladen',
+                              onClick: () => handleDownloadDocument(row.document_id!)
+                            }] : []),
+                            {
+                              label: 'Bearbeiten',
+                              onClick: () => {
+                                const orig = expenses.find((e) => e.id === row.id);
+                                if (orig) handleEditExpense(orig);
                               }
-                            ]}
-                          />
-                        )}
+                            },
+                            {
+                              label: 'Löschen',
+                              onClick: () => handleDeleteExpense(row.id),
+                              variant: 'danger' as const
+                            }
+                          ]}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -795,6 +776,78 @@ export default function ExpensesView() {
           </div>
         )}
       </div>
+
+      {/* Hausgeld (system-generated) */}
+      {hausgeldRows.length > 0 && (
+        <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
+          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h3 className="text-lg font-semibold text-dark">Hausgeld</h3>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-200 text-slate-600 uppercase tracking-wide">
+                <Settings2 className="w-3 h-3" />
+                Automatisch
+              </span>
+              <span className="text-sm text-gray-500">
+                {hausgeldRows.length} Einträge &middot; {totalHausgeld.toFixed(2)} &euro;
+              </span>
+            </div>
+            <button
+              onClick={() => setHausgeldCollapsed(!hausgeldCollapsed)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              {hausgeldCollapsed ? (
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              ) : (
+                <ChevronUp className="w-4 h-4 text-gray-500" />
+              )}
+            </button>
+          </div>
+
+          {!hausgeldCollapsed && (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Datum
+                    </th>
+                    <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Beschreibung
+                    </th>
+                    <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Objekt
+                    </th>
+                    <th className="text-left py-3 px-6 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Betrag
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {hausgeldRows.map((row) => (
+                    <tr key={row.id} className="bg-slate-50/60">
+                      <td className="py-3 px-6 text-sm text-gray-700 whitespace-nowrap">
+                        {new Date(row.expense_date).toLocaleDateString("de-DE")}
+                      </td>
+                      <td className="py-3 px-6 text-sm text-gray-700">
+                        {row.description}
+                      </td>
+                      <td className="py-3 px-6 text-sm text-gray-700">
+                        <div className="flex items-center gap-2">
+                          <Building className="w-4 h-4 text-gray-400" />
+                          {getPropertyName(row.property_id)}
+                        </div>
+                      </td>
+                      <td className="py-3 px-6 text-sm font-medium text-dark whitespace-nowrap">
+                        {row.amount.toFixed(2)} &euro;
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -870,7 +923,7 @@ export default function ExpensesView() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Betrag (€) *
+                  Betrag (&euro;) *
                 </label>
                 <input
                   type="number"
