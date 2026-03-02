@@ -22,6 +22,8 @@ import {
 interface MonthlyData {
   month: string;
   rentIncome: number;
+  baseRentIncome: number;
+  operatingCostIncome: number;
   manualIncome: number;
   income: number;
   expenses: number;
@@ -266,14 +268,21 @@ export default function CashflowView() {
         const firstDayOfMonth = new Date(year, month, 1);
         const lastDayOfMonth = new Date(year, month + 1, 0);
 
-        const monthRentIncome = contracts
-          .filter((contract) => {
-            if (!contract.start_date) return false;
-            const contractStart = new Date(contract.start_date);
-            const contractEnd = contract.end_date ? new Date(contract.end_date) : new Date(2099, 11, 31);
-            return contractStart <= lastDayOfMonth && contractEnd >= firstDayOfMonth;
-          })
+        const activeContracts = contracts.filter((contract) => {
+          if (!contract.start_date) return false;
+          const contractStart = new Date(contract.start_date);
+          const contractEnd = contract.end_date ? new Date(contract.end_date) : new Date(2099, 11, 31);
+          return contractStart <= lastDayOfMonth && contractEnd >= firstDayOfMonth;
+        });
+
+        const monthRentIncome = activeContracts
           .reduce((sum, contract) => sum + parseFloat(contract.total_rent?.toString() || "0"), 0);
+
+        const monthBaseRentIncome = activeContracts
+          .reduce((sum, contract) => sum + parseFloat(contract.base_rent?.toString() || contract.total_rent?.toString() || "0"), 0);
+
+        const monthOperatingCostIncome = activeContracts
+          .reduce((sum, contract) => sum + parseFloat(contract.additional_costs?.toString() || "0"), 0);
 
         const monthManualIncome = manualIncomes
           .filter((i) => {
@@ -319,6 +328,8 @@ export default function CashflowView() {
         data.push({
           month: monthNames[month],
           rentIncome: monthRentIncome,
+          baseRentIncome: monthBaseRentIncome,
+          operatingCostIncome: monthOperatingCostIncome,
           manualIncome: monthManualIncome,
           income: monthIncome,
           expenses: monthExpenses,
@@ -436,7 +447,7 @@ export default function CashflowView() {
           value={totalIncome}
           label="Einnahmen gesamt"
           average={averageIncome}
-          tooltip={"Mieteinnahmen + sonstige Einnahmen (z.B. Nebenkosten-Nachzahlungen, Stellplatzmieten)"}
+          tooltip={"Kaltmiete + Nebenkosten-Vorauszahlungen + sonstige Einnahmen"}
         />
         <SummaryTile
           icon={<TrendingDown className="w-6 h-6" />}
@@ -575,13 +586,19 @@ export default function CashflowView() {
                           <td className="px-4 py-2.5 font-medium text-emerald-700" colSpan={2}>Einnahmen</td>
                         </tr>
                         <tr className="border-t border-gray-100">
-                          <td className="px-4 py-2 pl-8 text-gray-600">Mieteinnahmen</td>
-                          <td className="px-4 py-2 text-right font-medium text-emerald-600">{formatEur(data.rentIncome)}</td>
+                          <td className="px-4 py-2 pl-8 text-gray-600">Kaltmiete</td>
+                          <td className="px-4 py-2 text-right font-medium text-emerald-600">{formatEur(data.baseRentIncome)}</td>
                         </tr>
                         <tr className="border-t border-gray-100">
-                          <td className="px-4 py-2 pl-8 text-gray-600">Sonstige Einnahmen</td>
-                          <td className="px-4 py-2 text-right font-medium text-emerald-600">{formatEur(data.manualIncome)}</td>
+                          <td className="px-4 py-2 pl-8 text-gray-600">Nebenkosten-Vorauszahlungen</td>
+                          <td className="px-4 py-2 text-right font-medium text-emerald-600">{formatEur(data.operatingCostIncome)}</td>
                         </tr>
+                        {data.manualIncome > 0 && (
+                          <tr className="border-t border-gray-100">
+                            <td className="px-4 py-2 pl-8 text-gray-600">Sonstige Einnahmen</td>
+                            <td className="px-4 py-2 text-right font-medium text-emerald-600">{formatEur(data.manualIncome)}</td>
+                          </tr>
+                        )}
                         <tr className="border-t border-gray-100 bg-emerald-50/30">
                           <td className="px-4 py-2 pl-8 font-medium text-emerald-700">Summe Einnahmen</td>
                           <td className="px-4 py-2 text-right font-semibold text-emerald-700">{formatEur(data.income)}</td>
