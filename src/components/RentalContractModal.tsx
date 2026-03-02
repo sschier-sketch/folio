@@ -82,6 +82,8 @@ export default function RentalContractModal({
     vat_applicable: false,
     graduated_rent_date: "",
     generate_historic_payments: true,
+    rent_start_mode: "contract_start" as "contract_start" | "now" | "custom",
+    rent_start_date: "",
     notes: "",
   });
   const [tenants, setTenants] = useState<Tenant[]>([
@@ -125,6 +127,10 @@ export default function RentalContractModal({
         vat_applicable: contractWithAll.vat_applicable || false,
         graduated_rent_date: contractWithAll.graduated_rent_date || "",
         generate_historic_payments: contractWithAll.generate_historic_payments ?? true,
+        rent_start_mode: (contractWithAll as Record<string, unknown>).rent_start_date
+          ? "custom"
+          : (contractWithAll.generate_historic_payments ?? true) ? "contract_start" : "now",
+        rent_start_date: ((contractWithAll as Record<string, unknown>).rent_start_date as string) || "",
         notes: contractWithAll.notes,
       });
       if (contractWithDeposit.tenants && contractWithDeposit.tenants.length > 0) {
@@ -230,7 +236,8 @@ export default function RentalContractModal({
         is_sublet: formData.is_sublet,
         vat_applicable: formData.vat_applicable,
         graduated_rent_date: formData.rent_increase_type === "graduated" ? formData.graduated_rent_date : null,
-        generate_historic_payments: formData.generate_historic_payments,
+        generate_historic_payments: formData.rent_start_mode === "contract_start",
+        rent_start_date: formData.rent_start_mode === "custom" ? formData.rent_start_date || null : null,
         notes: formData.notes,
       };
       let contractId: string;
@@ -710,28 +717,67 @@ export default function RentalContractModal({
                 </select>{" "}
               </div>{" "}
               <div className="col-span-2 bg-blue-50 p-4 rounded-lg">
-                {" "}
-                <label className="flex items-start gap-3 cursor-pointer">
-                  {" "}
-                  <input
-                    type="checkbox"
-                    checked={formData.generate_historic_payments}
-                    onChange={(e) =>
-                      setFormData({ ...formData, generate_historic_payments: e.target.checked })
-                    }
-                    className="w-4 h-4 text-primary-blue border-gray-300 rounded focus:ring-2 focus:ring-primary-blue mt-0.5"
-                  />{" "}
-                  <div className="flex-1">
-                    <span className="text-sm font-medium text-gray-700">
-                      Mietzahlungen rückwirkend seit Vertragsbeginn erstellen
-                    </span>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Wenn deaktiviert, werden Mietzahlungen nur ab dem aktuellen Monat erstellt.
-                      Ideal für bestehende Mietverhältnisse, um nicht hunderte historische Zahlungen nachtragen zu müssen.
-                    </p>
-                  </div>
-                </label>{" "}
-              </div>{" "}
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mietzahlungen berechnen ab
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="rcm_rent_start_mode"
+                      checked={formData.rent_start_mode === "contract_start"}
+                      onChange={() =>
+                        setFormData({ ...formData, rent_start_mode: "contract_start", generate_historic_payments: true })
+                      }
+                      className="w-4 h-4 mt-0.5 text-primary-blue border-gray-300 focus:ring-2 focus:ring-primary-blue"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Ab Vertragsbeginn</span>
+                      <p className="text-xs text-gray-500">Mietzahlungen rückwirkend ab Mietbeginn erstellen.</p>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="rcm_rent_start_mode"
+                      checked={formData.rent_start_mode === "now"}
+                      onChange={() =>
+                        setFormData({ ...formData, rent_start_mode: "now", generate_historic_payments: false, rent_start_date: "" })
+                      }
+                      className="w-4 h-4 mt-0.5 text-primary-blue border-gray-300 focus:ring-2 focus:ring-primary-blue"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Ab jetzt</span>
+                      <p className="text-xs text-gray-500">Mietzahlungen erst ab dem aktuellen Monat erstellen. Ideal für bestehende Mietverhältnisse.</p>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="rcm_rent_start_mode"
+                      checked={formData.rent_start_mode === "custom"}
+                      onChange={() =>
+                        setFormData({ ...formData, rent_start_mode: "custom", generate_historic_payments: false })
+                      }
+                      className="w-4 h-4 mt-0.5 text-primary-blue border-gray-300 focus:ring-2 focus:ring-primary-blue"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Ab Wunschdatum</span>
+                      <p className="text-xs text-gray-500">Beliebiges Datum in der Vergangenheit oder Zukunft wählen.</p>
+                    </div>
+                  </label>
+                  {formData.rent_start_mode === "custom" && (
+                    <div className="ml-6 mt-1">
+                      <input
+                        type="date"
+                        value={formData.rent_start_date}
+                        onChange={(e) => setFormData({ ...formData, rent_start_date: e.target.value })}
+                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>{" "}
           </div>{" "}
           <div className="space-y-4">

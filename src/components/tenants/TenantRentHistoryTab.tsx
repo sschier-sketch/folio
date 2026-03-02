@@ -117,6 +117,7 @@ export default function TenantRentHistoryTab({
     vpi_old_value: "",
     vpi_new_month: "",
     vpi_new_value: "",
+    generate_rent_payments: false,
   });
   const [editingPeriodId, setEditingPeriodId] = useState<string | null>(null);
   const [editPeriodData, setEditPeriodData] = useState({
@@ -556,6 +557,7 @@ export default function TenantRentHistoryTab({
       vpi_old_value: prefill?.vpiOldValue?.toString() || "",
       vpi_new_month: "",
       vpi_new_value: "",
+      generate_rent_payments: false,
     });
     setShowAddPeriod(true);
   }
@@ -568,12 +570,16 @@ export default function TenantRentHistoryTab({
     }
 
     try {
+      const coldRent = parseFloat(newPeriod.cold_rent) || 0;
+      const utilities = parseFloat(newPeriod.utilities) || 0;
+      const totalRent = coldRent + utilities;
+
       const result = await createRentPeriod({
         contractId: contract.id,
         userId: user.id,
         effectiveDate: newPeriod.effective_date,
-        coldRent: parseFloat(newPeriod.cold_rent) || 0,
-        utilities: parseFloat(newPeriod.utilities) || 0,
+        coldRent,
+        utilities,
         reason: newPeriod.reason,
         status: newPeriod.status,
         notes: newPeriod.notes,
@@ -587,6 +593,39 @@ export default function TenantRentHistoryTab({
       if (!result) {
         alert("Fehler beim Speichern der Mietperiode.");
         return;
+      }
+
+      if (newPeriod.generate_rent_payments) {
+        const startDate = new Date(newPeriod.effective_date + "T00:00:00");
+        const now = new Date();
+        const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        let cursor = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+
+        while (cursor <= endMonth) {
+          const dueDate = cursor.toISOString().split("T")[0];
+
+          const { data: existing } = await supabase
+            .from("rent_payments")
+            .select("id")
+            .eq("contract_id", contract.id)
+            .eq("due_date", dueDate)
+            .limit(1);
+
+          if (!existing || existing.length === 0) {
+            await supabase.from("rent_payments").insert({
+              contract_id: contract.id,
+              property_id: (contract as Record<string, unknown>).property_id || null,
+              user_id: user.id,
+              due_date: dueDate,
+              amount: totalRent,
+              paid: false,
+              payment_status: "unpaid",
+              notes: "Mietperiode: " + (newPeriod.reason === "increase" ? "Mieterhöhung" : newPeriod.reason === "index" ? "Indexmiete" : "Manuell"),
+            });
+          }
+
+          cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+        }
       }
 
       setShowAddPeriod(false);
@@ -1653,6 +1692,25 @@ export default function TenantRentHistoryTab({
                   )}
                 </div>
               )}
+
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newPeriod.generate_rent_payments}
+                    onChange={(e) => setNewPeriod({ ...newPeriod, generate_rent_payments: e.target.checked })}
+                    className="w-4 h-4 mt-0.5 text-primary-blue border-gray-300 rounded focus:ring-2 focus:ring-primary-blue"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Offene Mietzahlungen automatisch erstellen
+                    </span>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Erstellt für jeden Monat ab dem Gültigkeitsdatum bis zum nächsten Monat offene Mietzahlungen unter Mieteingänge.
+                    </p>
+                  </div>
+                </label>
+              </div>
 
               <div className="flex justify-end gap-3 mt-4">
                 <Button onClick={() => setShowAddPeriod(false)} variant="cancel">Abbrechen</Button>

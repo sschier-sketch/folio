@@ -124,6 +124,8 @@ export default function TenantModal({
     vat_applicable: false,
     auto_create_rent_increase_tickets: false,
     generate_historic_payments: true,
+    rent_start_mode: "contract_start" as "contract_start" | "now" | "custom",
+    rent_start_date: "",
   });
 
   const [depositData, setDepositData] = useState({
@@ -649,7 +651,8 @@ export default function TenantModal({
                 is_unlimited: tenantData.is_unlimited,
                 contract_type: tenantData.is_unlimited ? "unlimited" : "limited",
                 status: "active",
-                generate_historic_payments: rentData.generate_historic_payments,
+                generate_historic_payments: rentData.rent_start_mode === "contract_start",
+                rent_start_date: rentData.rent_start_mode === "custom" ? rentData.rent_start_date || null : null,
               },
             ])
             .select()
@@ -1641,24 +1644,66 @@ export default function TenantModal({
         </div>
 
         <div className="pt-2 border-t border-gray-200">
-          <label className="flex items-start gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={!rentData.generate_historic_payments}
-              onChange={(e) =>
-                setRentData({ ...rentData, generate_historic_payments: !e.target.checked })
-              }
-              className="w-4 h-4 mt-0.5 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
-            />
-            <div>
-              <span className="text-sm font-medium text-gray-700">
-                Mietzahlungen erst ab jetzt berechnen
-              </span>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Wenn aktiviert, werden Mietzahlungen erst ab dem aktuellen Monat erstellt statt rückwirkend ab Mietbeginn. Ideal für bestehende Mietverhältnisse, die erst jetzt in Rentably erfasst werden.
-              </p>
-            </div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Mietzahlungen berechnen ab
           </label>
+          <div className="space-y-2">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="rent_start_mode"
+                checked={rentData.rent_start_mode === "contract_start"}
+                onChange={() =>
+                  setRentData({ ...rentData, rent_start_mode: "contract_start", generate_historic_payments: true })
+                }
+                className="w-4 h-4 mt-0.5 text-[#3c8af7] border-gray-300 focus:ring-2 focus:ring-[#3c8af7]"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-700">Ab Vertragsbeginn</span>
+                <p className="text-xs text-gray-400">Mietzahlungen rückwirkend ab Mietbeginn erstellen.</p>
+              </div>
+            </label>
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="rent_start_mode"
+                checked={rentData.rent_start_mode === "now"}
+                onChange={() =>
+                  setRentData({ ...rentData, rent_start_mode: "now", generate_historic_payments: false, rent_start_date: "" })
+                }
+                className="w-4 h-4 mt-0.5 text-[#3c8af7] border-gray-300 focus:ring-2 focus:ring-[#3c8af7]"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-700">Ab jetzt</span>
+                <p className="text-xs text-gray-400">Mietzahlungen erst ab dem aktuellen Monat erstellen. Ideal für bestehende Mietverhältnisse.</p>
+              </div>
+            </label>
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="rent_start_mode"
+                checked={rentData.rent_start_mode === "custom"}
+                onChange={() =>
+                  setRentData({ ...rentData, rent_start_mode: "custom", generate_historic_payments: false })
+                }
+                className="w-4 h-4 mt-0.5 text-[#3c8af7] border-gray-300 focus:ring-2 focus:ring-[#3c8af7]"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-700">Ab Wunschdatum</span>
+                <p className="text-xs text-gray-400">Beliebiges Datum in der Vergangenheit oder Zukunft wählen.</p>
+              </div>
+            </label>
+            {rentData.rent_start_mode === "custom" && (
+              <div className="ml-6 mt-1">
+                <input
+                  type="date"
+                  value={rentData.rent_start_date}
+                  onChange={(e) => setRentData({ ...rentData, rent_start_date: e.target.value })}
+                  className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#3c8af7] focus:border-[#3c8af7] outline-none"
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
