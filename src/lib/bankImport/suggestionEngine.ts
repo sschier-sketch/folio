@@ -7,7 +7,14 @@ interface MatchSuggestion {
   propertyId: string;
   confidence: number;
   reason: string;
+  suggestedPaymentType?: 'rent' | 'nebenkosten';
 }
+
+const NK_KEYWORDS = [
+  'nebenkosten', 'betriebskosten', 'nebenkostenabrechnung',
+  'betriebskostenabrechnung', 'nachzahlung nk', 'nachzahlung bk',
+  'bka', ' nk ', ' bk ',
+];
 
 export async function suggestTenantMatch(
   userId: string,
@@ -79,6 +86,12 @@ export async function suggestTenantMatch(
   }
 
   if (best && best.confidence >= 0.4) {
+    const usageLower = ` ${(tx.usage_text || '').toLowerCase()} `;
+    const isNk = NK_KEYWORDS.some(kw => usageLower.includes(kw));
+    if (isNk) {
+      best.suggestedPaymentType = 'nebenkosten';
+      best.reason += ' (Nebenkosten erkannt)';
+    }
     return best;
   }
 
@@ -102,12 +115,15 @@ export async function runSuggestionsForUnmatched(userId: string): Promise<number
     const suggestion = await suggestTenantMatch(userId, tx);
 
     if (suggestion && suggestion.confidence >= 0.6) {
+      const matchedBy = suggestion.suggestedPaymentType === 'nebenkosten'
+        ? `suggestion:${suggestion.tenantId}:nk`
+        : `suggestion:${suggestion.tenantId}`;
       await supabase
         .from('bank_transactions')
         .update({
           status: 'SUGGESTED',
           confidence: suggestion.confidence,
-          matched_by: `suggestion:${suggestion.tenantId}`,
+          matched_by: matchedBy,
         })
         .eq('id', tx.id)
         .eq('user_id', userId);

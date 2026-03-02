@@ -53,10 +53,13 @@ export default function TransactionDetailDrawer({
   const isMatched = tx.status === 'MATCHED_AUTO' || tx.status === 'MATCHED_MANUAL';
   const isIgnored = tx.status === 'IGNORED';
 
-  const suggestedTenantId =
-    tx.status === 'SUGGESTED' && tx.matched_by?.startsWith('suggestion:')
-      ? tx.matched_by.replace('suggestion:', '')
-      : undefined;
+  const suggestedTenantId = (() => {
+    if (tx.status !== 'SUGGESTED' || !tx.matched_by?.startsWith('suggestion:')) return undefined;
+    const parts = tx.matched_by.replace('suggestion:', '').split(':');
+    return parts[0];
+  })();
+
+  const suggestedNk = tx.status === 'SUGGESTED' && tx.matched_by?.endsWith(':nk');
 
   const [action, setAction] = useState<Action>(suggestedTenantId ? 'rent' : 'none');
   const [processing, setProcessing] = useState(false);
@@ -201,9 +204,9 @@ export default function TransactionDetailDrawer({
                     key={a.id}
                     className="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5"
                   >
-                    <span className="text-gray-600 capitalize">
+                    <span className="text-gray-600">
                       {a.target_type === 'rent_payment'
-                        ? 'Miete'
+                        ? 'Miete/NK'
                         : a.target_type === 'income_entry'
                         ? 'Einnahme'
                         : 'Ausgabe'}
@@ -241,9 +244,9 @@ export default function TransactionDetailDrawer({
                     <Home className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-dark">Mietzahlung</p>
+                    <p className="text-sm font-medium text-dark">Miete / Nebenkosten</p>
                     <p className="text-[10px] text-gray-400">
-                      Auf offene Mietforderungen anrechnen
+                      Auf offene Miet- oder Nebenkostenforderungen anrechnen
                     </p>
                   </div>
                 </button>
@@ -301,6 +304,7 @@ export default function TransactionDetailDrawer({
               tx={tx}
               userId={userId}
               suggestedTenantId={suggestedTenantId}
+              suggestedNk={suggestedNk}
               onComplete={handleComplete}
               onCancel={() => setAction('none')}
             />

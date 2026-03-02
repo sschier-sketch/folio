@@ -11,6 +11,7 @@ interface RentPayment {
   amount: number;
   paid_amount: number;
   payment_status: string;
+  payment_type?: string;
   description?: string;
   contract_id?: string;
 }
@@ -28,6 +29,7 @@ interface RentAssignmentPanelProps {
   tx: BankTransaction;
   userId: string;
   suggestedTenantId?: string;
+  suggestedNk?: boolean;
   onComplete: () => void;
   onCancel: () => void;
 }
@@ -36,6 +38,7 @@ export default function RentAssignmentPanel({
   tx,
   userId,
   suggestedTenantId,
+  suggestedNk,
   onComplete,
   onCancel,
 }: RentAssignmentPanelProps) {
@@ -85,7 +88,7 @@ export default function RentAssignmentPanel({
     if (cIds.length > 0) {
       const { data: byContract } = await supabase
         .from('rent_payments')
-        .select('id, due_date, amount, paid_amount, payment_status, description, contract_id')
+        .select('id, due_date, amount, paid_amount, payment_status, payment_type, description, contract_id')
         .eq('user_id', userId)
         .in('contract_id', cIds)
         .in('payment_status', ['unpaid', 'partial'])
@@ -93,15 +96,19 @@ export default function RentAssignmentPanel({
       if (byContract) payments = byContract;
     }
 
-    if (payments.length === 0) {
-      const { data: byTenant } = await supabase
-        .from('rent_payments')
-        .select('id, due_date, amount, paid_amount, payment_status, description, contract_id')
-        .eq('tenant_id', tenantId)
-        .eq('user_id', userId)
-        .in('payment_status', ['unpaid', 'partial'])
-        .order('due_date', { ascending: true });
-      if (byTenant) payments = byTenant;
+    const { data: byTenant } = await supabase
+      .from('rent_payments')
+      .select('id, due_date, amount, paid_amount, payment_status, payment_type, description, contract_id')
+      .eq('tenant_id', tenantId)
+      .eq('user_id', userId)
+      .in('payment_status', ['unpaid', 'partial'])
+      .order('due_date', { ascending: true });
+
+    if (byTenant) {
+      const existingIds = new Set(payments.map(p => p.id));
+      for (const p of byTenant) {
+        if (!existingIds.has(p.id)) payments.push(p);
+      }
     }
 
     setRentPayments(payments);
@@ -118,7 +125,15 @@ export default function RentAssignmentPanel({
     let remaining = txAmount;
     const newAllocations: Record<string, number> = {};
 
-    for (const rp of payments) {
+    const sorted = suggestedNk
+      ? [...payments].sort((a, b) => {
+          const aIsNk = a.payment_type === 'nebenkosten' ? 0 : 1;
+          const bIsNk = b.payment_type === 'nebenkosten' ? 0 : 1;
+          return aIsNk - bIsNk;
+        })
+      : payments;
+
+    for (const rp of sorted) {
       if (remaining <= 0) break;
       const open = Number(rp.amount) - Number(rp.paid_amount || 0);
       if (open <= 0) continue;
@@ -318,6 +333,7 @@ export default function RentAssignmentPanel({
             <thead>
               <tr className="bg-gray-50">
                 <th className="px-3 py-2 text-left font-medium text-gray-500">Faellig</th>
+                <th className="px-3 py-2 text-left font-medium text-gray-500">Art</th>
                 <th className="px-3 py-2 text-right font-medium text-gray-500">Soll</th>
                 <th className="px-3 py-2 text-right font-medium text-gray-500">Bezahlt</th>
                 <th className="px-3 py-2 text-right font-medium text-gray-500">Offen</th>
@@ -336,10 +352,22 @@ export default function RentAssignmentPanel({
                     }`}
                   >
                     <td className="px-3 py-2 text-gray-700">
-                      {new Date(rp.due_date).toLocaleDateString('de-DE', {
-                        month: 'short',
-                        year: 'numeric',
-                      })}
+                      <div>
+                        {new Date(rp.due_date).toLocaleDateString('de-DE', {
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </div>
+                      {rp.payment_type === 'nebenkosten' && rp.description && (
+                        <div className="text-[10px] text-amber-600 truncate max-w-[100px]">{rp.description}</div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      {rp.payment_type === 'nebenkosten' ? (
+                        <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800">NK</span>
+                      ) : (
+                        <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700">Miete</span>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-right text-gray-700 tabular-nums">
                       {Number(rp.amount).toLocaleString('de-DE', {
