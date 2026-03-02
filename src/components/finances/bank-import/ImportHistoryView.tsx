@@ -186,7 +186,6 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
         const isExpanded = expandedId === file.id;
         const isDeleted = file.status === 'deleted' || file.status === 'rolled_back';
         const canRollback = !isDeleted && file.status === 'completed';
-        const fileExpired = !file.storage_path && file.status !== 'deleted';
 
         return (
           <div
@@ -220,11 +219,6 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
                   <span className="text-[10px] font-medium text-gray-500 bg-gray-100 rounded px-1.5 py-0.5 flex-shrink-0">
                     {SOURCE_LABELS[file.source_type] || file.source_type}
                   </span>
-                  {fileExpired && !isDeleted && (
-                    <span className="text-[10px] font-medium text-amber-600 bg-amber-50 rounded px-1.5 py-0.5 flex-shrink-0">
-                      Datei abgelaufen
-                    </span>
-                  )}
                 </div>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {formatDate(file.uploaded_at)}

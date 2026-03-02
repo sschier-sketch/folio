@@ -7,6 +7,7 @@ export type {
   BankTransactionAllocation,
   AllocationInput,
   CsvColumnMapping,
+  DuplicateInfo,
   ImportResult,
   RollbackResult,
 } from './types';

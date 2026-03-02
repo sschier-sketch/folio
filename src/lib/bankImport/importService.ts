@@ -6,6 +6,7 @@ import type {
   RawBankTransaction,
   CsvColumnMapping,
   ImportResult,
+  DuplicateInfo,
   BankImportFile,
   RollbackResult,
 } from './types';
@@ -90,9 +91,12 @@ async function insertTransactions(
 ): Promise<ImportResult> {
   let importedRows = 0;
   let duplicateRows = 0;
+  const duplicates: DuplicateInfo[] = [];
   const errors: string[] = [];
+  const seenFingerprints = new Set<string>();
 
-  for (const tx of rawTransactions) {
+  for (let i = 0; i < rawTransactions.length; i++) {
+    const tx = rawTransactions[i];
     try {
       const fp = await computeFingerprint(
         userId,
@@ -103,6 +107,19 @@ async function insertTransactions(
         tx.bankReference || tx.endToEndId
       );
 
+      if (seenFingerprints.has(fp)) {
+        duplicateRows++;
+        duplicates.push({
+          rowIndex: i + 1,
+          bookingDate: tx.bookingDate,
+          amount: tx.amount,
+          counterpartyName: tx.counterpartyName,
+          usageText: tx.usageText,
+          reason: 'batch',
+        });
+        continue;
+      }
+
       const { data: existing } = await supabase
         .from('bank_transactions')
         .select('id')
@@ -111,8 +128,18 @@ async function insertTransactions(
 
       if (existing) {
         duplicateRows++;
+        duplicates.push({
+          rowIndex: i + 1,
+          bookingDate: tx.bookingDate,
+          amount: tx.amount,
+          counterpartyName: tx.counterpartyName,
+          usageText: tx.usageText,
+          reason: 'db',
+        });
         continue;
       }
+
+      seenFingerprints.add(fp);
 
       const { error: insertError } = await supabase
         .from('bank_transactions')
@@ -140,15 +167,24 @@ async function insertTransactions(
       if (insertError) {
         if (insertError.code === '23505') {
           duplicateRows++;
+          duplicates.push({
+            rowIndex: i + 1,
+            bookingDate: tx.bookingDate,
+            amount: tx.amount,
+            counterpartyName: tx.counterpartyName,
+            usageText: tx.usageText,
+            reason: 'db',
+          });
         } else {
-          errors.push(`Row ${importedRows + duplicateRows + 1}: ${insertError.message}`);
+          errors.push(`Zeile ${i + 1}: ${insertError.message}`);
         }
         continue;
       }
 
+      seenFingerprints.add(fp);
       importedRows++;
     } catch (err) {
-      errors.push(`Row ${importedRows + duplicateRows + 1}: ${err instanceof Error ? err.message : String(err)}`);
+      errors.push(`Zeile ${i + 1}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
@@ -169,6 +205,7 @@ async function insertTransactions(
     totalRows: rawTransactions.length,
     importedRows,
     duplicateRows,
+    duplicates,
     errors,
   };
 }

@@ -117,10 +117,20 @@ export interface CsvColumnMapping {
   encoding?: string;
 }
 
+export interface DuplicateInfo {
+  rowIndex: number;
+  bookingDate: string;
+  amount: number;
+  counterpartyName?: string;
+  usageText?: string;
+  reason: 'db' | 'batch';
+}
+
 export interface ImportResult {
   importFileId: string;
   totalRows: number;
   importedRows: number;
   duplicateRows: number;
+  duplicates: DuplicateInfo[];
   errors: string[];
 }
