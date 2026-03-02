@@ -1054,12 +1054,34 @@ export default function TenantRentHistoryTab({
                 <div className="space-y-4">
                   {editableUnits.map((eu, idx) => (
                     <div key={eu.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-center gap-2 mb-3">
-                        <ParkingSquare className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm font-semibold text-dark">{eu.unit_number}</span>
-                        <span className="text-xs text-gray-400">
-                          ({eu.unit_type === "parking" ? "Stellplatz" : eu.unit_type === "storage" ? "Lager" : "Wohneinheit"})
-                        </span>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <ParkingSquare className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm font-semibold text-dark">{eu.unit_number}</span>
+                          <span className="text-xs text-gray-400">
+                            ({eu.unit_type === "parking" ? "Stellplatz" : eu.unit_type === "storage" ? "Lager" : "Wohneinheit"})
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!confirm(`Zuordnung "${eu.unit_number}" von diesem Mietvertrag entfernen?`)) return;
+                            const { error } = await supabase
+                              .from("rental_contract_units")
+                              .delete()
+                              .eq("id", eu.id);
+                            if (error) {
+                              alert("Fehler beim Entfernen: " + error.message);
+                            } else {
+                              setEditableUnits((prev) => prev.filter((_, i) => i !== idx));
+                              setContractUnits((prev) => prev.filter((c) => c.id !== eu.id));
+                            }
+                          }}
+                          className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          title="Zuordnung entfernen"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
                       <div className="space-y-3">
                         <div>
@@ -1216,23 +1238,43 @@ export default function TenantRentHistoryTab({
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        {cu.rent_included ? (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            In Hauptmiete enthalten
-                          </span>
-                        ) : (
-                          <div>
-                            <div className="text-sm font-semibold text-dark">
-                              {cu.separate_rent.toFixed(2)} EUR
-                            </div>
-                            {cu.separate_additional_costs > 0 && (
-                              <div className="text-xs text-gray-400">
-                                + {cu.separate_additional_costs.toFixed(2)} EUR NK
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          {cu.rent_included ? (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              In Hauptmiete enthalten
+                            </span>
+                          ) : (
+                            <div>
+                              <div className="text-sm font-semibold text-dark">
+                                {cu.separate_rent.toFixed(2)} EUR
                               </div>
-                            )}
-                          </div>
-                        )}
+                              {cu.separate_additional_costs > 0 && (
+                                <div className="text-xs text-gray-400">
+                                  + {cu.separate_additional_costs.toFixed(2)} EUR NK
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Zuordnung "${cu.unit_number}" von diesem Mietvertrag entfernen?`)) return;
+                            const { error } = await supabase
+                              .from("rental_contract_units")
+                              .delete()
+                              .eq("id", cu.id);
+                            if (error) {
+                              alert("Fehler beim Entfernen: " + error.message);
+                            } else {
+                              loadData();
+                            }
+                          }}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          title="Zuordnung entfernen"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   ))}
