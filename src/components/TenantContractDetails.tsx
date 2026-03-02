@@ -55,10 +55,8 @@ export default function TenantContractDetails({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (tabFromUrl) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [tabFromUrl]);
+    setActiveTab(tabFromUrl || "overview");
+  }, [tenantId, tabFromUrl]);
 
   useEffect(() => {
     if (user && tenantId) {

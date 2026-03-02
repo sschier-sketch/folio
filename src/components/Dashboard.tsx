@@ -81,6 +81,7 @@ export default function Dashboard() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedPropertyTab, setSelectedPropertyTab] = useState<string | null>(null);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [viewResetKey, setViewResetKey] = useState(0);
   const [showUpdatesModal, setShowUpdatesModal] = useState(false);
   const [hasNewUpdates, setHasNewUpdates] = useState(false);
   const [copiedPortalUrl, setCopiedPortalUrl] = useState(false);
@@ -432,13 +433,11 @@ export default function Dashboard() {
                     key={item.id}
                     onClick={() => {
                       if (isLocked) return;
-                      if (item.id === "properties") {
-                        setSelectedPropertyId(null);
-                        setSelectedPropertyTab(null);
-                      }
-                      if (item.id === "tenants") {
-                        setSelectedTenantId(null);
-                      }
+                      setSelectedPropertyId(null);
+                      setSelectedPropertyTab(null);
+                      setSelectedTenantId(null);
+                      setSelectedTicketId(null);
+                      setViewResetKey(k => k + 1);
                       setCurrentView(item.id as View);
                       setShowMobileMenu(false);
                     }}
@@ -536,13 +535,11 @@ export default function Dashboard() {
                     key={item.id}
                     onClick={() => {
                       if (isLocked) return;
-                      if (item.id === "properties") {
-                        setSelectedPropertyId(null);
-                        setSelectedPropertyTab(null);
-                      }
-                      if (item.id === "tenants") {
-                        setSelectedTenantId(null);
-                      }
+                      setSelectedPropertyId(null);
+                      setSelectedPropertyTab(null);
+                      setSelectedTenantId(null);
+                      setSelectedTicketId(null);
+                      setViewResetKey(k => k + 1);
                       setCurrentView(item.id as View);
                     }}
                     className={`w-full px-4 py-3 rounded transition-colors text-left ${isLocked ? "opacity-50 cursor-not-allowed" : ""} ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
@@ -622,22 +619,22 @@ export default function Dashboard() {
           </aside>{" "}
           <main className="flex-1 min-w-0">
             {" "}
-            {currentView === "home" && <DashboardHome onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} onChangeView={(view) => setCurrentView(view as View)} />}{" "}
-            {currentView === "properties" && <PropertiesView selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
-            {currentView === "tenants" && <TenantsView selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} onNavigateToTemplates={() => setCurrentView("templates")} />}{" "}
-            {currentView === "payments" && <RentPaymentsView />}{" "}
-            {currentView === "messages" && <MessagesView />}{" "}
-            {currentView === "mieterportal" && <MieterportalView />}{" "}
-            {currentView === "financial" && <FinancesView />}{" "}
-            {currentView === "documents" && <DocumentsView onNavigateToTemplates={() => setCurrentView("templates")} />}{" "}
-            {currentView === "templates" && <TemplatesView />}{" "}
-            {currentView === "billing" && <BillingView />}{" "}
-            {currentView === "tickets" && <TicketsView initialTicketId={selectedTicketId} />}{" "}
-            {currentView === "settings-profile" && <ProfileSettingsView />}{" "}
-            {currentView === "settings-billing" && <BillingSettingsView />}{" "}
-            {currentView === "feedback" && <FeedbackListView />}{" "}
-            {currentView === "service" && <ServiceView />}{" "}
-            {currentView === "referral" && <ReferralProgramView />}{" "}
+            {currentView === "home" && <DashboardHome key={viewResetKey} onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} onChangeView={(view) => setCurrentView(view as View)} />}{" "}
+            {currentView === "properties" && <PropertiesView key={viewResetKey} selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
+            {currentView === "tenants" && <TenantsView key={viewResetKey} selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} onNavigateToTemplates={() => setCurrentView("templates")} />}{" "}
+            {currentView === "payments" && <RentPaymentsView key={viewResetKey} />}{" "}
+            {currentView === "messages" && <MessagesView key={viewResetKey} />}{" "}
+            {currentView === "mieterportal" && <MieterportalView key={viewResetKey} />}{" "}
+            {currentView === "financial" && <FinancesView key={viewResetKey} />}{" "}
+            {currentView === "documents" && <DocumentsView key={viewResetKey} onNavigateToTemplates={() => setCurrentView("templates")} />}{" "}
+            {currentView === "templates" && <TemplatesView key={viewResetKey} />}{" "}
+            {currentView === "billing" && <BillingView key={viewResetKey} />}{" "}
+            {currentView === "tickets" && <TicketsView key={viewResetKey} initialTicketId={selectedTicketId} />}{" "}
+            {currentView === "settings-profile" && <ProfileSettingsView key={viewResetKey} />}{" "}
+            {currentView === "settings-billing" && <BillingSettingsView key={viewResetKey} />}{" "}
+            {currentView === "feedback" && <FeedbackListView key={viewResetKey} />}{" "}
+            {currentView === "service" && <ServiceView key={viewResetKey} />}{" "}
+            {currentView === "referral" && <ReferralProgramView key={viewResetKey} />}{" "}
           </main>{" "}
           </div>
         </div>{" "}

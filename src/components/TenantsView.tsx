@@ -70,9 +70,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
   });
 
   useEffect(() => {
-    if (externalSelectedTenantId) {
-      setSelectedTenantId(externalSelectedTenantId);
-    }
+    setSelectedTenantId(externalSelectedTenantId || null);
   }, [externalSelectedTenantId]);
 
   useEffect(() => {
