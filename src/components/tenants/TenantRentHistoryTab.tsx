@@ -6,7 +6,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import Badge from "../common/Badge";
 import { addMonths, differenceInDays, formatDateDE, parseISODate } from "../../lib/dateUtils";
 import { Button } from '../ui/Button';
-import { createRentPeriod, deletePlannedPeriod, getLatestVpiValues } from "../../lib/rentPeriods";
+import { createRentPeriod, deletePlannedPeriod, getLatestVpiValues, getSeparateUnitRentTotal } from "../../lib/rentPeriods";
 
 function InfoTooltip({ text }: { text: string }) {
   const [show, setShow] = useState(false);
@@ -451,7 +451,10 @@ export default function TenantRentHistoryTab({
         utilitiesAdvance = (parseFloat(editData.operating_costs) || 0) + (parseFloat(editData.heating_costs) || 0);
       }
 
-      const totalRent = monthlyRent + utilitiesAdvance;
+      const separateUnitTotal = editableUnits
+        .filter((eu) => !eu.rent_included)
+        .reduce((sum, eu) => sum + (parseFloat(eu.separate_rent) || 0) + (parseFloat(eu.separate_additional_costs) || 0), 0);
+      const totalRent = monthlyRent + utilitiesAdvance + separateUnitTotal;
 
       const oldMonthlyRent = contract.monthly_rent || 0;
       const oldUtilities = contract.utilities_advance || contract.additional_costs || 0;
@@ -479,6 +482,17 @@ export default function TenantRentHistoryTab({
         total_rent: totalRent,
       };
 
+      for (const eu of editableUnits) {
+        await supabase
+          .from("rental_contract_units")
+          .update({
+            rent_included: eu.rent_included,
+            separate_rent: eu.rent_included ? 0 : parseFloat(eu.separate_rent) || 0,
+            separate_additional_costs: eu.rent_included ? 0 : parseFloat(eu.separate_additional_costs) || 0,
+          })
+          .eq("id", eu.id);
+      }
+
       const { error } = await supabase
         .from("rental_contracts")
         .update(contractUpdate)
@@ -495,17 +509,6 @@ export default function TenantRentHistoryTab({
             utilities: utilitiesAdvance,
           })
           .eq("id", currentPeriod.id);
-      }
-
-      for (const eu of editableUnits) {
-        await supabase
-          .from("rental_contract_units")
-          .update({
-            rent_included: eu.rent_included,
-            separate_rent: eu.rent_included ? 0 : parseFloat(eu.separate_rent) || 0,
-            separate_additional_costs: eu.rent_included ? 0 : parseFloat(eu.separate_additional_costs) || 0,
-          })
-          .eq("id", eu.id);
       }
 
       setIsEditing(false);
@@ -545,7 +548,8 @@ export default function TenantRentHistoryTab({
     try {
       const coldRent = parseFloat(newPeriod.cold_rent) || 0;
       const utilities = parseFloat(newPeriod.utilities) || 0;
-      const totalRent = coldRent + utilities;
+      const separateTotal = await getSeparateUnitRentTotal(contract.id);
+      const totalRent = coldRent + utilities + separateTotal;
 
       const result = await createRentPeriod({
         contractId: contract.id,
@@ -659,6 +663,7 @@ export default function TenantRentHistoryTab({
           h.effective_date <= today
         );
         if (!laterActive) {
+          const separateTotal = await getSeparateUnitRentTotal(contract.id);
           await supabase
             .from("rental_contracts")
             .update({
@@ -667,7 +672,7 @@ export default function TenantRentHistoryTab({
               cold_rent: newColdRent,
               additional_costs: newUtilities,
               utilities_advance: newUtilities,
-              total_rent: newColdRent + newUtilities,
+              total_rent: newColdRent + newUtilities + separateTotal,
             })
             .eq("id", contract.id);
         }

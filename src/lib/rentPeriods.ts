@@ -159,6 +159,18 @@ export async function getLatestVpiValues(contractId: string): Promise<{
   };
 }
 
+export async function getSeparateUnitRentTotal(contractId: string): Promise<number> {
+  const { data } = await supabase
+    .from("rental_contract_units")
+    .select("rent_included, separate_rent, separate_additional_costs")
+    .eq("contract_id", contractId);
+
+  if (!data) return 0;
+  return data
+    .filter((u) => !u.rent_included)
+    .reduce((sum, u) => sum + (u.separate_rent || 0) + (u.separate_additional_costs || 0), 0);
+}
+
 export interface CreateRentPeriodParams {
   contractId: string;
   userId: string;
@@ -200,6 +212,7 @@ export async function createRentPeriod(params: CreateRentPeriodParams): Promise<
   if (params.syncToContract && params.status === "active") {
     const today = new Date().toISOString().split("T")[0];
     if (params.effectiveDate <= today) {
+      const separateTotal = await getSeparateUnitRentTotal(params.contractId);
       await supabase
         .from("rental_contracts")
         .update({
@@ -208,7 +221,7 @@ export async function createRentPeriod(params: CreateRentPeriodParams): Promise<
           cold_rent: params.coldRent,
           additional_costs: params.utilities,
           utilities_advance: params.utilities,
-          total_rent: params.coldRent + params.utilities,
+          total_rent: params.coldRent + params.utilities + separateTotal,
         })
         .eq("id", params.contractId);
     }
