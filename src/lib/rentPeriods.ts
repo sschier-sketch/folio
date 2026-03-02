@@ -206,6 +206,8 @@ export async function createRentPeriod(params: CreateRentPeriodParams): Promise<
           monthly_rent: params.coldRent,
           base_rent: params.coldRent,
           cold_rent: params.coldRent,
+          additional_costs: params.utilities,
+          utilities_advance: params.utilities,
           total_rent: params.coldRent + params.utilities,
         })
         .eq("id", params.contractId);
