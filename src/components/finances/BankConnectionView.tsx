@@ -115,7 +115,7 @@ export default function BankConnectionView() {
       </div>
 
       {(mainTab === 'inbox' || mainTab === 'history') && (
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-3">
+        <div className="bg-white rounded-lg px-4 py-3">
           <div className="flex items-center gap-3 flex-wrap">
             <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <span className="text-xs font-medium text-gray-500">Zeitraum:</span>
@@ -175,7 +175,7 @@ export default function BankConnectionView() {
 
       {mainTab === 'import' && (
         <>
-          <div className="bg-white rounded-lg p-5 border border-gray-200">
+          <div className="bg-white rounded-lg p-5">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 bg-[#3c8af7]/10 rounded-full flex items-center justify-center">
                 <Upload className="w-5 h-5 text-[#3c8af7]" />
@@ -229,7 +229,7 @@ export default function BankConnectionView() {
       )}
 
       {mainTab === 'history' && (
-        <div className="bg-white rounded-lg p-5 border border-gray-200">
+        <div className="bg-white rounded-lg p-5">
           <ImportHistoryView
             key={historyKey}
             onRollbackComplete={handleRollbackComplete}

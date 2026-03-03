@@ -236,7 +236,7 @@ export default function CsvImportFlow() {
 
     return (
       <div className="space-y-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
+        <div className="bg-white rounded-lg p-6 text-center">
           <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-dark mb-1">Import abgeschlossen</h3>
           <p className="text-sm text-gray-500 mb-4">{fileName}</p>
@@ -363,7 +363,7 @@ export default function CsvImportFlow() {
   if (step === 'mapping') {
     return (
       <div className="space-y-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded-lg p-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-[#3c8af7]" />
@@ -387,11 +387,11 @@ export default function CsvImportFlow() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded-lg p-4">
           <CsvSettingsPanel settings={settings} onChange={handleSettingsChange} />
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded-lg p-4">
           <CsvColumnMapper
             headers={headers}
             columnAssignments={columnAssignments}
@@ -402,7 +402,7 @@ export default function CsvImportFlow() {
         </div>
 
         {headers.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg p-4">
             <div className="text-sm font-medium text-gray-700 mb-2">
               Vorschau
             </div>
@@ -433,10 +433,7 @@ export default function CsvImportFlow() {
                 Importiere...
               </>
             ) : (
-              <>
-                <Upload className="w-4 h-4" />
-                Import starten
-              </>
+              'Import starten'
             )}
           </Button>
         </div>
@@ -473,7 +470,6 @@ export default function CsvImportFlow() {
           onChange={handleFileSelect}
         />
         <span className="inline-flex items-center gap-2 h-[42px] px-5 rounded-xl text-sm font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] cursor-pointer transition-colors">
-          <Upload className="w-4 h-4" />
           Datei auswählen
         </span>
       </label>

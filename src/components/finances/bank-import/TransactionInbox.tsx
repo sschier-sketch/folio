@@ -174,7 +174,7 @@ export default function TransactionInbox({ dateFrom, dateTo }: TransactionInboxP
         />
         <div className="flex items-center gap-2">
           <Button
-            variant="outlined"
+            variant="primary"
             size="sm"
             onClick={handleRunAutoMatch}
             disabled={runningAutoMatch}
@@ -217,7 +217,7 @@ export default function TransactionInbox({ dateFrom, dateTo }: TransactionInboxP
         )}
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader className="w-5 h-5 text-gray-400 animate-spin" />

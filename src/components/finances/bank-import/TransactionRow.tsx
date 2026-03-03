@@ -1,5 +1,6 @@
-import { ArrowDownLeft, ArrowUpRight, Eye, Ban, Undo2, Sparkles } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Sparkles } from 'lucide-react';
 import type { BankTransaction } from '../../../lib/bankImport/types';
+import TableActionsDropdown from '../../common/TableActionsDropdown';
 
 interface TransactionRowProps {
   tx: BankTransaction;
@@ -102,46 +103,15 @@ export default function TransactionRow({
         </div>
       </div>
 
-      <div
-        className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {isOpen && (
-          <>
-            <button
-              onClick={() => onSelect(tx)}
-              className="p-1.5 rounded-lg hover:bg-blue-100 text-[#3c8af7] transition-colors"
-              title="Zuordnen"
-            >
-              <Eye className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onQuickIgnore(tx)}
-              className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 transition-colors"
-              title="Ignorieren"
-            >
-              <Ban className="w-3.5 h-3.5" />
-            </button>
-          </>
-        )}
-        {isMatched && (
-          <button
-            onClick={() => onQuickUndo(tx)}
-            className="p-1.5 rounded-lg hover:bg-amber-100 text-amber-600 transition-colors"
-            title="Zuordnung aufheben"
-          >
-            <Undo2 className="w-3.5 h-3.5" />
-          </button>
-        )}
-        {isIgnored && (
-          <button
-            onClick={() => onUnignore(tx)}
-            className="p-1.5 rounded-lg hover:bg-blue-100 text-[#3c8af7] transition-colors"
-            title="Wieder aktivieren"
-          >
-            <Undo2 className="w-3.5 h-3.5" />
-          </button>
-        )}
+      <div onClick={(e) => e.stopPropagation()}>
+        <TableActionsDropdown
+          actions={[
+            { label: 'Zuordnen', onClick: () => onSelect(tx), hidden: !isOpen },
+            { label: 'Ignorieren', onClick: () => onQuickIgnore(tx), hidden: !isOpen },
+            { label: 'Zuordnung aufheben', onClick: () => onQuickUndo(tx), hidden: !isMatched },
+            { label: 'Wieder aktivieren', onClick: () => onUnignore(tx), hidden: !isIgnored },
+          ]}
+        />
       </div>
     </div>
   );

@@ -69,7 +69,7 @@ export default function CamtImportFlow() {
     const dbDuplicates = importResult.duplicates.filter(d => d.reason === 'db');
 
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
+      <div className="bg-white rounded-lg p-6 text-center">
         <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
         <h3 className="text-lg font-semibold text-dark mb-1">Import abgeschlossen</h3>
         <p className="text-sm text-gray-500 mb-4">{fileName}</p>
@@ -191,7 +191,7 @@ export default function CamtImportFlow() {
 
   if (importing) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+      <div className="bg-white rounded-lg p-8 text-center">
         <Loader className="w-10 h-10 text-[#3c8af7] mx-auto mb-3 animate-spin" />
         <p className="text-sm font-medium text-dark mb-1">
           Importiere {fileName}...
@@ -232,7 +232,6 @@ export default function CamtImportFlow() {
           onChange={handleFileSelect}
         />
         <span className="inline-flex items-center gap-2 h-[42px] px-5 rounded-xl text-sm font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] cursor-pointer transition-colors">
-          <Upload className="w-4 h-4" />
           XML-Datei auswählen
         </span>
       </label>
