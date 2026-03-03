@@ -326,7 +326,7 @@ export function AdminTicketsView() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
       <div className="lg:col-span-1 bg-white rounded overflow-hidden flex flex-col">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-3">
@@ -446,23 +446,23 @@ export function AdminTicketsView() {
       <div className="lg:col-span-2 bg-white rounded overflow-hidden flex flex-col">
         {selectedTicket ? (
           <>
-            <div className="p-6 border-b">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h2 className="text-xl font-bold text-dark">
+            <div className="px-6 py-4 border-b">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className="text-lg font-bold text-dark truncate">
                       {selectedTicket.subject}
                     </h2>
                     {getStatusBadge(selectedTicket.status)}
                   </div>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-xs text-gray-400">
                     Ticket #{selectedTicket.ticket_number}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 flex-shrink-0 ml-4">
                   <button
                     onClick={handleToggleNotify}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg border transition-colors ${
                       selectedTicket.notify_admin_on_reply
                         ? "bg-primary-blue/10 border-primary-blue/30 text-primary-blue"
                         : "border-gray-200 text-gray-400 hover:bg-gray-50"
@@ -477,7 +477,7 @@ export function AdminTicketsView() {
                   <select
                     value={selectedTicket.status}
                     onChange={(e) => handleChangeStatus(e.target.value)}
-                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    className="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   >
                     <option value="open">Offen</option>
                     <option value="answered">Beantwortet</option>
@@ -485,32 +485,24 @@ export function AdminTicketsView() {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-300">Von:</p>
-                  <p className="font-medium text-dark">
-                    {selectedTicket.contact_name}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-300">E-Mail:</p>
-                  <p className="font-medium text-dark">
-                    {selectedTicket.contact_email}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-300">Erstellt:</p>
-                  <p className="font-medium text-dark">
-                    {new Date(selectedTicket.created_at).toLocaleString("de-DE")}
-                  </p>
-                </div>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-gray-400">
+                <span>
+                  <span className="text-gray-300">Von:</span>{" "}
+                  <span className="font-medium text-dark">{selectedTicket.contact_name}</span>
+                </span>
+                <span>
+                  <span className="text-gray-300">E-Mail:</span>{" "}
+                  <span className="font-medium text-dark">{selectedTicket.contact_email}</span>
+                </span>
+                <span>
+                  <span className="text-gray-300">Erstellt:</span>{" "}
+                  <span className="font-medium text-dark">{new Date(selectedTicket.created_at).toLocaleString("de-DE")}</span>
+                </span>
                 {selectedTicket.answered_at && (
-                  <div>
-                    <p className="text-gray-300">Beantwortet:</p>
-                    <p className="font-medium text-dark">
-                      {new Date(selectedTicket.answered_at).toLocaleString("de-DE")}
-                    </p>
-                  </div>
+                  <span>
+                    <span className="text-gray-300">Beantwortet:</span>{" "}
+                    <span className="font-medium text-dark">{new Date(selectedTicket.answered_at).toLocaleString("de-DE")}</span>
+                  </span>
                 )}
               </div>
             </div>
@@ -542,9 +534,9 @@ export function AdminTicketsView() {
                       </span>
                     </div>
                     <div
-                      className={`inline-block max-w-[80%] p-3 rounded-lg ${msg.sender_type === "admin" ? "bg-primary-blue text-white" : "bg-gray-50 text-dark"}`}
+                      className={`inline-block max-w-[85%] px-4 py-3 rounded-lg ${msg.sender_type === "admin" ? "bg-primary-blue text-white" : "bg-gray-50 text-dark"}`}
                     >
-                      <p className="whitespace-pre-wrap">{msg.message}</p>
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.message}</p>
                     </div>
                   </div>
                 </div>
@@ -552,18 +544,18 @@ export function AdminTicketsView() {
             </div>
 
             {selectedTicket.status !== "closed" && (
-              <div className="p-6 border-t">
+              <div className="px-6 py-4 border-t">
                 <textarea
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
                   placeholder="Antwort eingeben..."
-                  rows={4}
+                  rows={3}
                   className="w-full px-4 py-2 border border-gray-200 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-primary-blue resize-none text-sm"
                 />
                 {signature && (
-                  <div className="px-4 py-3 bg-gray-50 border border-t-0 border-gray-200 rounded-b-lg mb-3">
-                    <p className="text-[11px] text-gray-300 uppercase tracking-wide font-medium mb-1.5">Signatur</p>
-                    <p className="text-sm text-gray-400 whitespace-pre-wrap leading-relaxed">{signature}</p>
+                  <div className="px-3 py-2 bg-gray-50 border border-t-0 border-gray-200 rounded-b-lg mb-3">
+                    <p className="text-[10px] text-gray-300 uppercase tracking-wide font-medium mb-1">Signatur</p>
+                    <p className="text-xs text-gray-400 whitespace-pre-wrap leading-relaxed">{signature}</p>
                   </div>
                 )}
                 {!signature && <div className="mb-3" />}
