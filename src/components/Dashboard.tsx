@@ -86,6 +86,7 @@ export default function Dashboard() {
   const [hasNewUpdates, setHasNewUpdates] = useState(false);
   const [copiedPortalUrl, setCopiedPortalUrl] = useState(false);
   const [unreadMailCount, setUnreadMailCount] = useState(0);
+  const [defaultCommissionRate, setDefaultCommissionRate] = useState(25);
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
@@ -127,6 +128,19 @@ export default function Dashboard() {
     const interval = setInterval(loadUnreadCount, 30000);
     return () => clearInterval(interval);
   }, [user]);
+
+  useEffect(() => {
+    supabase
+      .from("system_settings")
+      .select("default_affiliate_commission_rate")
+      .eq("id", 1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.default_affiliate_commission_rate != null) {
+          setDefaultCommissionRate(Math.round(Number(data.default_affiliate_commission_rate) * 100));
+        }
+      });
+  }, []);
 
   const handleNavigateToTenant = (tenantId: string) => {
     setSelectedTenantId(tenantId);
@@ -511,7 +525,7 @@ export default function Dashboard() {
               </div>{" "}
               <p className="text-gray-600 text-sm mb-3">
                 {" "}
-                {t("referral.description")}{" "}
+                {t("referral.description").replace("{rate}", String(defaultCommissionRate))}{" "}
               </p>{" "}
               <div className="flex items-center gap-2 text-sm font-medium text-blue-600">
                 {" "}
@@ -608,7 +622,7 @@ export default function Dashboard() {
               </div>{" "}
               <p className="text-gray-600 text-sm mb-3">
                 {" "}
-                {t("referral.description")}{" "}
+                {t("referral.description").replace("{rate}", String(defaultCommissionRate))}{" "}
               </p>{" "}
               <div className="flex items-center gap-2 text-sm font-medium text-blue-600">
                 {" "}
