@@ -96,11 +96,8 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
         setSelectedProperty(property);
         setShowDetails(true);
       }
-    } else if (!externalSelectedPropertyId) {
-      setShowDetails(false);
-      setSelectedProperty(null);
     }
-  }, [externalSelectedPropertyId, properties]);
+  }, [externalSelectedPropertyId, properties.length]);
 
   const loadProperties = async () => {
     if (!user) return;
