@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { TrendingUp, Lock, Calendar, Info, Percent, ParkingSquare, Plus, Clock, Trash2, Send, CheckCircle, Pencil, X } from "lucide-react";
+import { TrendingUp, Lock, Calendar, Info, Percent, Home, Plus, Clock, Trash2, Send, CheckCircle, Pencil, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -1069,7 +1069,7 @@ export default function TenantRentHistoryTab({
                     <div key={eu.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <ParkingSquare className="w-4 h-4 text-gray-500" />
+                          <Home className="w-4 h-4 text-gray-500" />
                           <span className="text-sm font-semibold text-dark">{eu.unit_number}</span>
                           <span className="text-xs text-gray-400">
                             ({eu.unit_type === "parking" ? "Stellplatz" : eu.unit_type === "storage" ? "Lager" : "Wohneinheit"})
@@ -1242,7 +1242,7 @@ export default function TenantRentHistoryTab({
                     <div key={cu.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-100">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-[#EEF4FF] rounded-full flex items-center justify-center border border-[#DDE7FF]">
-                          <ParkingSquare className="w-4 h-4 text-[#1e1e24]" />
+                          <Home className="w-4 h-4 text-[#1e1e24]" />
                         </div>
                         <div>
                           <div className="text-sm font-semibold text-dark">{cu.unit_number}</div>
@@ -1925,7 +1925,7 @@ export default function TenantRentHistoryTab({
                                 </span>
                               )}
                               {isCurrentEntry && (
-                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium border border-emerald-200">
+                                <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
                                   Aktuell
                                 </span>
                               )}

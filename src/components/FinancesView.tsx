@@ -162,9 +162,7 @@ export default function FinancesView() {
                   ) : tab.id === "bank" ? (
                     <>
                       <Badge variant="pro" size="sm">Pro</Badge>
-                      <span className="px-2 py-0.5 text-[10px] rounded-full font-semibold bg-amber-100 text-amber-700 tracking-wide uppercase">
-                        Beta
-                      </span>
+                      <Badge variant="danger" size="sm">Beta</Badge>
                     </>
                   ) : tab.premium ? (
                     <Badge variant="pro" size="sm">Pro</Badge>
