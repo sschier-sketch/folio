@@ -1,16 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  FileText,
-  Wand2,
-  Download,
-  FolderOpen,
-  FileSignature,
-  AlertTriangle,
-  ScrollText,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { FileText, Wand2, Download, FolderOpen, Ligature as FileSignature, AlertTriangle, ScrollText, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
