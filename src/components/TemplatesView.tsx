@@ -32,6 +32,7 @@ import MietkautionWizard from "./wizard-templates/MietkautionWizard";
 import SchoenheitsreparaturenWizard from "./wizard-templates/SchoenheitsreparaturenWizard";
 import MeldebestaetigungWizard from "./wizard-templates/MeldebestaetigungWizard";
 import WohnungsgeberbestaetigungWizard from "./wizard-templates/WohnungsgeberbestaetigungWizard";
+import MieterhoehungsverlangenWizard from "./wizard-templates/MieterhoehungsverlangenWizard";
 import type { WizardTemplate } from "./wizard-templates/types";
 
 interface Template {
@@ -216,6 +217,8 @@ export default function TemplatesView() {
     return <MeldebestaetigungWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
   if (activeWizard === "wohnungsgeberbestaetigung")
     return <WohnungsgeberbestaetigungWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
+  if (activeWizard === "mieterhoehungsverlangen")
+    return <MieterhoehungsverlangenWizard onBack={closeWizard} freshStart={wizardFreshStart} />;
 
   if (loading) {
     return (

@@ -534,6 +534,59 @@ export const WOHNUNGSGEBER_STEPS: { key: WohnungsgeberStep; label: string }[] = 
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface VergleichswohnungEntry {
+  strasse: string;
+  hausnummer: string;
+  plz: string;
+  stadt: string;
+  mieteProQm: string;
+  wohnflaeche: string;
+}
+
+export interface MieterhoehungSachverhalt {
+  versanddatum: string;
+  aktuelleKaltmiete: string;
+  neueKaltmiete: string;
+  wohnflaeche: string;
+  ortsueblicheVergleichsmiete: string;
+  begruendungMietspiegel: boolean;
+  mietspiegelQualitaet: '' | 'einfach' | 'mittel' | 'gut';
+  mietspiegelNeuerBetragProQm: string;
+  begruendungVergleichswohnungen: boolean;
+  vergleichswohnungen: VergleichswohnungEntry[];
+  begruendungGutachten: boolean;
+  gutachterAnrede: '' | 'Herr' | 'Frau';
+  gutachterName: string;
+  gutachterBerichtsdatum: string;
+  ersteMieterhoehung: boolean | null;
+  letzteMieterhoehungDatum: string;
+  modernisierung: boolean | null;
+  modernisierungDatum: string;
+  ruecksendeFrist: string;
+}
+
+export interface MieterhoehungWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  greeting: GreetingData;
+  sachverhalt: MieterhoehungSachverhalt;
+}
+
+export type MieterhoehungStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const MIETERHOEHUNG_STEPS: { key: MieterhoehungStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'sachverhalt', label: 'Begründung' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;
