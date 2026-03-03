@@ -806,8 +806,8 @@ export default function IncomeView() {
         </div>
 
         <div className="bg-white rounded-lg p-6">
-          <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-4 border border-amber-200">
-            <Receipt className="w-6 h-6 text-amber-700" strokeWidth={1.5} />
+          <div className="w-12 h-12 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-4 border border-[#DDE7FF]">
+            <Receipt className="w-6 h-6 text-[#1e1e24]" strokeWidth={1.5} />
           </div>
           <div className="text-2xl font-bold text-dark mb-1">
             {totalNebenkostenIncome.toFixed(2)} €
