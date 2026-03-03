@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { TrendingUp, Calendar, CheckCircle2, Trash2, Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle, Receipt, Info } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, Trash2, CreditCard as Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle, Receipt, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
