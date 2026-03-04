@@ -15,6 +15,9 @@ import type {
 import { MIETERHOEHUNG_STEPS } from './types';
 import StepVermieter, { isVermieterValid } from './StepVermieter';
 import StepMieter, { isMieterValid } from './StepMieter';
+import StepMieterhoehungDaten, {
+  isMieterhoehungDatenValid,
+} from './StepMieterhoehungDaten';
 import StepMieterhoehungSachverhalt, {
   isMieterhoehungSachverhaltValid,
 } from './StepMieterhoehungSachverhalt';
@@ -54,6 +57,18 @@ function emptyWizardData(): MieterhoehungWizardData {
     greeting: {
       hasPersonalGreeting: false,
       greetingText: '',
+    },
+    mieterhoehung: {
+      baujahr: '',
+      wohnflaeche: '',
+      aktuelleKaltmiete: '',
+      aktuelleWarmmiete: '',
+      mieterhoehungProQm: '',
+      vorauszahlungBetriebskosten: '',
+      kabelanschluss: '',
+      vorauszahlungHeizung: '',
+      sonstigeGebuehren: '',
+      mieterhoehungDatum: '',
     },
     sachverhalt: {
       versanddatum: new Date().toISOString().split('T')[0],
@@ -205,6 +220,8 @@ export default function MieterhoehungsverlangenWizard({ onBack, freshStart }: Pr
         return isVermieterValid(data.landlord);
       case 'mieter':
         return isMieterValid(data.tenants);
+      case 'mieterhoehung':
+        return isMieterhoehungDatenValid(data.mieterhoehung);
       case 'sachverhalt':
         return isMieterhoehungSachverhaltValid(data.sachverhalt);
       default:
@@ -481,6 +498,13 @@ export default function MieterhoehungsverlangenWizard({ onBack, freshStart }: Pr
               <StepMieter
                 tenants={data.tenants}
                 onChange={(tenants: TenantEntry[]) => setData({ ...data, tenants })}
+              />
+            )}
+
+            {step === 'mieterhoehung' && (
+              <StepMieterhoehungDaten
+                data={data.mieterhoehung}
+                onChange={(mieterhoehung) => setData({ ...data, mieterhoehung })}
               />
             )}
 

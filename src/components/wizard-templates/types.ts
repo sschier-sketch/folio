@@ -543,6 +543,19 @@ export interface VergleichswohnungEntry {
   wohnflaeche: string;
 }
 
+export interface MieterhoehungMieterhoehung {
+  baujahr: string;
+  wohnflaeche: string;
+  aktuelleKaltmiete: string;
+  aktuelleWarmmiete: string;
+  mieterhoehungProQm: string;
+  vorauszahlungBetriebskosten: string;
+  kabelanschluss: string;
+  vorauszahlungHeizung: string;
+  sonstigeGebuehren: string;
+  mieterhoehungDatum: string;
+}
+
 export interface MieterhoehungSachverhalt {
   versanddatum: string;
   aktuelleKaltmiete: string;
@@ -569,12 +582,14 @@ export interface MieterhoehungWizardData {
   landlord: LandlordData;
   tenants: TenantEntry[];
   greeting: GreetingData;
+  mieterhoehung: MieterhoehungMieterhoehung;
   sachverhalt: MieterhoehungSachverhalt;
 }
 
 export type MieterhoehungStep =
   | 'vermieter'
   | 'mieter'
+  | 'mieterhoehung'
   | 'sachverhalt'
   | 'ergebnis'
   | 'versand';
@@ -582,6 +597,7 @@ export type MieterhoehungStep =
 export const MIETERHOEHUNG_STEPS: { key: MieterhoehungStep; label: string }[] = [
   { key: 'vermieter', label: 'Vermieter' },
   { key: 'mieter', label: 'Mieter' },
+  { key: 'mieterhoehung', label: 'Mieterhöhung' },
   { key: 'sachverhalt', label: 'Begründung' },
   { key: 'ergebnis', label: 'Ergebnis' },
   { key: 'versand', label: 'Digital versenden' },

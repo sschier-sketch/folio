@@ -3,6 +3,7 @@ import type {
   LandlordData,
   TenantEntry,
   GreetingData,
+  MieterhoehungMieterhoehung,
   MieterhoehungSachverhalt,
 } from '../components/wizard-templates/types';
 
@@ -10,6 +11,7 @@ interface MieterhoehungPdfInput {
   landlord: LandlordData;
   tenants: TenantEntry[];
   greeting: GreetingData;
+  mieterhoehung: MieterhoehungMieterhoehung;
   sachverhalt: MieterhoehungSachverhalt;
 }
 
@@ -40,8 +42,17 @@ function buildTenantNames(tenants: TenantEntry[]): string {
     .join(', ');
 }
 
+function parseNum(val: string): number {
+  if (!val) return 0;
+  return parseFloat(val.replace(',', '.')) || 0;
+}
+
+function formatEuroPdf(val: number): string {
+  return val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' EUR';
+}
+
 export function generateMieterhoehungsverlangPdf(input: MieterhoehungPdfInput): Blob {
-  const { landlord, tenants, greeting, sachverhalt } = input;
+  const { landlord, tenants, greeting, mieterhoehung, sachverhalt } = input;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
   const PAGE_W = 210;
@@ -128,6 +139,54 @@ export function generateMieterhoehungsverlangPdf(input: MieterhoehungPdfInput): 
   writeLines(
     'hiermit verlange ich die Zustimmung zur Erhöhung der Nettokaltmiete für die oben bezeichnete Wohnung auf die ortsübliche Vergleichsmiete gemäß § 558 BGB.',
   );
+
+  y += 4;
+  const wohnflaeche = parseNum(mieterhoehung.wohnflaeche);
+  const aktKalt = parseNum(mieterhoehung.aktuelleKaltmiete);
+  const mProQm = parseNum(mieterhoehung.mieterhoehungProQm);
+  const neueKalt = aktKalt + mProQm * wohnflaeche;
+  const vBK = parseNum(mieterhoehung.vorauszahlungBetriebskosten);
+  const kabel = parseNum(mieterhoehung.kabelanschluss);
+  const vHeizung = parseNum(mieterhoehung.vorauszahlungHeizung);
+  const sonstige = parseNum(mieterhoehung.sonstigeGebuehren);
+  const neueWarm = neueKalt + vBK + kabel + vHeizung + sonstige;
+
+  doc.setFont('helvetica', 'bold');
+  writeLines('Mieterhöhung im Detail:');
+  doc.setFont('helvetica', 'normal');
+  y += 2;
+
+  if (mieterhoehung.baujahr) {
+    writeLines(`Baujahr des Mietobjektes: ${mieterhoehung.baujahr}`);
+  }
+  if (wohnflaeche > 0) {
+    writeLines(`Wohnfläche: ${mieterhoehung.wohnflaeche} m²`);
+  }
+  writeLines(`Aktuelle Kaltmiete: ${formatEuroPdf(aktKalt)}`);
+  writeLines(`Aktuelle Warmmiete: ${formatEuroPdf(parseNum(mieterhoehung.aktuelleWarmmiete))}`);
+  if (mProQm > 0) {
+    writeLines(`Mieterhöhung pro m²: ${formatEuroPdf(mProQm)}`);
+  }
+  y += 2;
+  doc.setFont('helvetica', 'bold');
+  writeLines(`Neue Kaltmiete: ${formatEuroPdf(neueKalt)}`);
+  doc.setFont('helvetica', 'normal');
+  y += 2;
+
+  if (vBK > 0) writeLines(`Vorauszahlung Betriebskosten (ohne Heizung/Warmwasser): ${formatEuroPdf(vBK)}`);
+  if (kabel > 0) writeLines(`Kabelanschluss: ${formatEuroPdf(kabel)}`);
+  if (vHeizung > 0) writeLines(`Vorauszahlung Heizung und Warmwasser: ${formatEuroPdf(vHeizung)}`);
+  if (sonstige > 0) writeLines(`Sonstige Gebühren (Garage, Stellplatz, Keller): ${formatEuroPdf(sonstige)}`);
+
+  y += 2;
+  doc.setFont('helvetica', 'bold');
+  writeLines(`Neue Warmmiete: ${formatEuroPdf(neueWarm)}`);
+  doc.setFont('helvetica', 'normal');
+
+  if (mieterhoehung.mieterhoehungDatum) {
+    y += 2;
+    writeLines(`Die Mieterhöhung tritt zum ${formatDate(mieterhoehung.mieterhoehungDatum)} in Kraft.`);
+  }
 
   y += 4;
   doc.setFont('helvetica', 'bold');
