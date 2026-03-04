@@ -268,6 +268,9 @@ export default function TemplatesView() {
                 >
                   <Icon className="w-3.5 h-3.5" />
                   {tab.label}
+                  {tab.id !== "downloads" && (
+                    <Badge variant="pro" size="sm">Pro</Badge>
+                  )}
                   {activeTab === tab.id && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
                   )}
