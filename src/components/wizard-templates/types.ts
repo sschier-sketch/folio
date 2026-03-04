@@ -603,6 +603,37 @@ export const MIETERHOEHUNG_STEPS: { key: MieterhoehungStep; label: string }[] = 
   { key: 'versand', label: 'Digital versenden' },
 ];
 
+export interface MietschuldenfreiheitSachverhalt {
+  hatMietschulden: 'ja' | 'nein' | '';
+  hatZahlungsvereinbarung: 'ja' | 'nein' | '';
+  schuldenBetrag: string;
+  zahlungsvereinbarungText: string;
+  hatBemerkungen: 'ja' | 'nein' | '';
+  bemerkungen: string;
+  versanddatum: string;
+}
+
+export interface MietschuldenfreiheitWizardData {
+  landlord: LandlordData;
+  tenants: TenantEntry[];
+  sachverhalt: MietschuldenfreiheitSachverhalt;
+}
+
+export type MietschuldenfreiheitStep =
+  | 'vermieter'
+  | 'mieter'
+  | 'sachverhalt'
+  | 'ergebnis'
+  | 'versand';
+
+export const MIETSCHULDENFREIHEIT_STEPS: { key: MietschuldenfreiheitStep; label: string }[] = [
+  { key: 'vermieter', label: 'Vermieter' },
+  { key: 'mieter', label: 'Mieter' },
+  { key: 'sachverhalt', label: 'Sachverhalt' },
+  { key: 'ergebnis', label: 'Ergebnis' },
+  { key: 'versand', label: 'Digital versenden' },
+];
+
 export interface WizardTemplate {
   id: string;
   category: string;
