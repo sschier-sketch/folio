@@ -137,7 +137,7 @@ export function AdminTicketsView() {
         .from("ticket_messages")
         .select("*")
         .eq("ticket_id", ticketId)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false });
       if (error) throw error;
       setMessages(data || []);
     } catch (err) {
@@ -326,8 +326,8 @@ export function AdminTicketsView() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
-      <div className="lg:col-span-1 bg-white rounded overflow-hidden flex flex-col">
+    <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4 h-full">
+      <div className="bg-white rounded overflow-hidden flex flex-col">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-dark">Kontakt-Tickets</h2>
@@ -443,7 +443,7 @@ export function AdminTicketsView() {
         )}
       </div>
 
-      <div className="lg:col-span-2 bg-white rounded overflow-hidden flex flex-col">
+      <div className="bg-white rounded overflow-hidden flex flex-col">
         {selectedTicket ? (
           <>
             <div className="px-6 py-4 border-b">

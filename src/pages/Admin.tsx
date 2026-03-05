@@ -365,7 +365,7 @@ export function Admin() {
 
   return (
     <>
-      <AdminLayout activeTab={activeTab} onTabChange={setActiveTab}>
+      <AdminLayout activeTab={activeTab} onTabChange={setActiveTab} fullHeight={activeTab === "tickets"}>
         {activeTab === "overview" && (
           <div>
             <AdminAnalyticsChart />
