@@ -249,6 +249,115 @@ describe("REGRESSION: canWrite and canWriteProperty consistency", () => {
   });
 });
 
+describe("REGRESSION: Settings dropdown visibility matches permission checks", () => {
+  function canSeeSettingsBilling(perms: { isOwner: boolean; canManageBilling: boolean }): boolean {
+    return perms.isOwner || perms.canManageBilling;
+  }
+  function canSeeSettingsUsers(perms: { isOwner: boolean; canManageUsers: boolean }): boolean {
+    return perms.isOwner || perms.canManageUsers;
+  }
+
+  it("owner sees both settings entries", () => {
+    const perms = resolvePermissions({ role: "owner", account_owner_id: null });
+    expect(canSeeSettingsBilling(perms)).toBe(true);
+    expect(canSeeSettingsUsers(perms)).toBe(true);
+  });
+
+  it("member without billing+users sees neither settings entry", () => {
+    const perms = resolvePermissions({
+      role: "member",
+      account_owner_id: OWNER_ID,
+      is_active_member: true,
+      can_manage_billing: false,
+      can_manage_users: false,
+    });
+    expect(canSeeSettingsBilling(perms)).toBe(false);
+    expect(canSeeSettingsUsers(perms)).toBe(false);
+  });
+
+  it("member with billing sees billing, not users", () => {
+    const perms = resolvePermissions({
+      role: "member",
+      account_owner_id: OWNER_ID,
+      is_active_member: true,
+      can_manage_billing: true,
+      can_manage_users: false,
+    });
+    expect(canSeeSettingsBilling(perms)).toBe(true);
+    expect(canSeeSettingsUsers(perms)).toBe(false);
+  });
+
+  it("member with users sees users, not billing", () => {
+    const perms = resolvePermissions({
+      role: "member",
+      account_owner_id: OWNER_ID,
+      is_active_member: true,
+      can_manage_billing: false,
+      can_manage_users: true,
+    });
+    expect(canSeeSettingsBilling(perms)).toBe(false);
+    expect(canSeeSettingsUsers(perms)).toBe(true);
+  });
+
+  it("settings visibility and SectionGuard access are consistent for billing", () => {
+    const perms = resolvePermissions({
+      role: "member",
+      account_owner_id: OWNER_ID,
+      is_active_member: true,
+      can_manage_billing: false,
+    });
+    expect(canSeeSettingsBilling(perms)).toBe(false);
+    expect(canAccessSection(perms, "billing")).toBe(false);
+  });
+
+  it("settings visibility and SectionGuard access are consistent for users", () => {
+    const perms = resolvePermissions({
+      role: "member",
+      account_owner_id: OWNER_ID,
+      is_active_member: true,
+      can_manage_users: false,
+    });
+    expect(canSeeSettingsUsers(perms)).toBe(false);
+    expect(canAccessSection(perms, "users")).toBe(false);
+  });
+});
+
+describe("REGRESSION: All 7 guarded views block all permission combinations consistently", () => {
+  const PERMISSION_FLAGS = [
+    { section: "finances" as const, flag: "can_view_finances" as const },
+    { section: "statements" as const, flag: "can_view_statements" as const },
+    { section: "rent_payments" as const, flag: "can_view_rent_payments" as const },
+    { section: "leases" as const, flag: "can_view_leases" as const },
+    { section: "messages" as const, flag: "can_view_messages" as const },
+    { section: "billing" as const, flag: "can_manage_billing" as const },
+    { section: "users" as const, flag: "can_manage_users" as const },
+  ];
+
+  for (const { section, flag } of PERMISSION_FLAGS) {
+    it(`section "${section}" is blocked when ${flag}=false`, () => {
+      const row: UserSettingsRow = {
+        role: "member",
+        account_owner_id: OWNER_ID,
+        is_active_member: true,
+        [flag]: false,
+      };
+      const perms = resolvePermissions(row);
+      expect(canAccessSection(perms, section)).toBe(false);
+    });
+
+    it(`section "${section}" is allowed when ${flag}=true`, () => {
+      const row: UserSettingsRow = {
+        role: "member",
+        account_owner_id: OWNER_ID,
+        is_active_member: true,
+        [flag]: true,
+      };
+      const perms = resolvePermissions(row);
+      expect(canAccessSection(perms, section)).toBe(true);
+    });
+  }
+});
+
 describe("REGRESSION: Direct URL access to blocked sections", () => {
   it("member without finance permission is blocked by canAccessSection on all finance routes", () => {
     const perms = resolvePermissions({
