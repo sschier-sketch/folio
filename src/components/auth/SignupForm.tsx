@@ -57,6 +57,31 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       return;
     }
 
+    try {
+      const { data: checkResult } = await supabase.rpc("check_email_registration_allowed", {
+        p_email: email,
+      });
+      if (checkResult && !checkResult.allowed) {
+        if (checkResult.reason === "pending_invitation") {
+          setMessage({
+            type: "error",
+            text: "Fuer diese E-Mail-Adresse liegt bereits eine Einladung als Benutzer eines bestehenden Accounts vor. Bitte nehmen Sie die Einladung an oder verwenden Sie eine andere E-Mail-Adresse.",
+          });
+        } else if (checkResult.reason === "active_member") {
+          setMessage({
+            type: "error",
+            text: "Diese E-Mail-Adresse ist bereits als Benutzer einem bestehenden Account zugeordnet. Um ein eigenes Konto zu erstellen, muss die Zuordnung zuerst aufgehoben werden oder eine andere E-Mail-Adresse verwendet werden.",
+          });
+        } else {
+          setMessage({ type: "error", text: "Registrierung mit dieser E-Mail-Adresse ist nicht moeglich." });
+        }
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // If the check fails, let the signup proceed (DB trigger is the safety net)
+    }
+
     const refCode = affiliateCode || getReferralCode() || null;
     const metadata = getReferralMetadata();
 
@@ -77,7 +102,19 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
 
       if (error) {
         sessionStorage.removeItem("auth_event_type");
-        setMessage({ type: "error", text: error.message });
+        if (error.message?.includes("registration_blocked:pending_invitation")) {
+          setMessage({
+            type: "error",
+            text: "Fuer diese E-Mail-Adresse liegt bereits eine Einladung als Benutzer eines bestehenden Accounts vor. Bitte nehmen Sie die Einladung an oder verwenden Sie eine andere E-Mail-Adresse.",
+          });
+        } else if (error.message?.includes("registration_blocked:active_member")) {
+          setMessage({
+            type: "error",
+            text: "Diese E-Mail-Adresse ist bereits als Benutzer einem bestehenden Account zugeordnet. Um ein eigenes Konto zu erstellen, muss die Zuordnung zuerst aufgehoben werden oder eine andere E-Mail-Adresse verwendet werden.",
+          });
+        } else {
+          setMessage({ type: "error", text: error.message });
+        }
       } else if (authData.user) {
         await trackSignupSuccess();
         try {
