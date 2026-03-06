@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, Download, Gauge, Edit2, Activity, ChevronDown, History } from "lucide-react";
+import { Search, Filter, Download, Gauge, CreditCard as Edit2, Activity, ChevronDown, History } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { usePermissions } from "../../hooks/usePermissions";
