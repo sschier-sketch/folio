@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Clock, Mail, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import { Button } from "../ui/Button";
 
 interface ReminderHistory {
@@ -27,16 +28,17 @@ interface ReminderHistory {
 
 export default function DunningHistory() {
   const { user } = useAuth();
+  const { dataOwnerId, loading: permLoading } = usePermissions();
   const [history, setHistory] = useState<ReminderHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReminder, setSelectedReminder] = useState<ReminderHistory | null>(null);
 
   useEffect(() => {
-    loadHistory();
-  }, [user]);
+    if (user && !permLoading && dataOwnerId) loadHistory();
+  }, [user, permLoading, dataOwnerId]);
 
   const loadHistory = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     try {
       const { data, error } = await supabase
@@ -52,7 +54,7 @@ export default function DunningHistory() {
             )
           )
         `)
-        .eq("user_id", user.id)
+        .eq("user_id", dataOwnerId)
         .order("sent_at", { ascending: false })
         .limit(50);
 

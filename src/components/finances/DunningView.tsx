@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Bell, AlertTriangle, Send, CheckCircle, TrendingUp, Mail, FileText, Clock } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
-import DunningTemplates from "./DunningTemplates";
-import DunningHistory from "./DunningHistory";
+import { usePermissions } from "../../hooks/usePermissions";
 
 interface RentPayment {
   id: string;
@@ -28,6 +27,7 @@ interface RentPayment {
 interface DunningViewProps {
   payments: RentPayment[];
   onReloadPayments: () => void;
+  readOnly?: boolean;
 }
 
 interface DunningStats {
@@ -43,8 +43,9 @@ interface DunningReminderHistory {
   status: string;
 }
 
-export default function DunningView({ payments, onReloadPayments }: DunningViewProps) {
+export default function DunningView({ payments, onReloadPayments, readOnly = false }: DunningViewProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const activeTab = "overview";
   const [stats, setStats] = useState<DunningStats>({
     openItems: 0,
@@ -161,28 +162,28 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
       let { data: template } = await supabase
         .from("dunning_email_templates")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", dataOwnerId!)
         .eq("dunning_level", level)
         .maybeSingle();
 
       if (!template) {
         const defaults = [
           {
-            user_id: user.id,
+            user_id: dataOwnerId!,
             dunning_level: 1,
             subject: "Freundliche Erinnerung: Mietzahlung",
             message: `Sehr geehrte/r [TENANT_NAME],\n\nwir möchten Sie freundlich daran erinnern, dass die Miete für [PROPERTY_NAME] in Höhe von [AMOUNT] zum [DUE_DATE] fällig war.\n\nMöglicherweise haben Sie die Überweisung vergessen. Bitte überweisen Sie den Betrag zeitnah.\n\nMit freundlichen Grüßen`,
             is_active: true,
           },
           {
-            user_id: user.id,
+            user_id: dataOwnerId!,
             dunning_level: 2,
             subject: "Zahlungsaufforderung: Ausstehende Miete",
             message: `Sehr geehrte/r [TENANT_NAME],\n\ntrotz freundlicher Erinnerung ist die Miete für [PROPERTY_NAME] in Höhe von [AMOUNT] noch nicht eingegangen.\n\nWir fordern Sie hiermit formell auf, den Betrag innerhalb von 7 Tagen zu überweisen. Andernfalls müssen wir weitere Schritte einleiten.\n\nMit freundlichen Grüßen`,
             is_active: true,
           },
           {
-            user_id: user.id,
+            user_id: dataOwnerId!,
             dunning_level: 3,
             subject: "MAHNUNG: Überfällige Mietzahlung",
             message: `Sehr geehrte/r [TENANT_NAME],\n\ntrotz mehrfacher Erinnerung ist die Miete für [PROPERTY_NAME] in Höhe von [AMOUNT] noch nicht eingegangen.\n\nWir mahnen Sie hiermit offiziell und fordern Sie auf, den ausstehenden Betrag zzgl. Mahngebühren in Höhe von 5,00 € (Gesamt: [TOTAL_AMOUNT]) innerhalb von 5 Tagen zu überweisen.\n\nBei weiterer Nichtzahlung behalten wir uns rechtliche Schritte vor.\n\nMit freundlichen Grüßen`,
@@ -197,7 +198,7 @@ export default function DunningView({ payments, onReloadPayments }: DunningViewP
         const { data: retry } = await supabase
           .from("dunning_email_templates")
           .select("*")
-          .eq("user_id", user.id)
+          .eq("user_id", dataOwnerId!)
           .eq("dunning_level", level)
           .maybeSingle();
 
@@ -297,7 +298,7 @@ ${message}
       const { data: reminderData, error: reminderError } = await supabase
         .from("rent_payment_reminders")
         .insert({
-          user_id: user.id,
+          user_id: dataOwnerId,
           rent_payment_id: payment.id,
           dunning_level: level,
           recipient_email: tenantEmail,
@@ -514,26 +515,28 @@ ${message}
                           </>
                         )}
                       </div>
-                      <button
-                        onClick={() => handleSendReminder(payment, payment.suggestedLevel)}
-                        disabled={sendingReminder === payment.id}
-                        className={`text-sm font-medium hover:underline flex items-center gap-2 ${
-                          payment.suggestedLevel === 3 ? 'text-red-600' :
-                          payment.suggestedLevel === 2 ? 'text-amber-600' :
-                          'text-primary-blue'
-                        } disabled:opacity-50`}
-                      >
-                        <Mail className="w-4 h-4" />
-                        {sendingReminder === payment.id ? (
-                          'Wird gesendet...'
-                        ) : payment.suggestedLevel === 3 ? (
-                          'Mahnung versenden'
-                        ) : payment.suggestedLevel === 2 ? (
-                          'Zahlungsaufforderung senden'
-                        ) : (
-                          'Freundliche Erinnerung senden'
-                        )}
-                      </button>
+                      {!readOnly && (
+                        <button
+                          onClick={() => handleSendReminder(payment, payment.suggestedLevel)}
+                          disabled={sendingReminder === payment.id}
+                          className={`text-sm font-medium hover:underline flex items-center gap-2 ${
+                            payment.suggestedLevel === 3 ? 'text-red-600' :
+                            payment.suggestedLevel === 2 ? 'text-amber-600' :
+                            'text-primary-blue'
+                          } disabled:opacity-50`}
+                        >
+                          <Mail className="w-4 h-4" />
+                          {sendingReminder === payment.id ? (
+                            'Wird gesendet...'
+                          ) : payment.suggestedLevel === 3 ? (
+                            'Mahnung versenden'
+                          ) : payment.suggestedLevel === 2 ? (
+                            'Zahlungsaufforderung senden'
+                          ) : (
+                            'Freundliche Erinnerung senden'
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

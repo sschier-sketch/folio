@@ -53,7 +53,7 @@ interface RentPayment {
 }
 export default function RentPaymentsView() {
   const { user } = useAuth();
-  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, canWrite, loading: permLoading } = usePermissions();
   const { isPremium } = useSubscription();
   const [activeTab, setActiveTab] = useState<"payments" | "dunning" | "dunning-templates" | "dunning-history">("payments");
   const [payments, setPayments] = useState<RentPayment[]>([]);
@@ -203,8 +203,9 @@ export default function RentPaymentsView() {
         }
       }
 
-      setPayments(filteredPayments);
-      await loadAllocations(filteredPayments.map(p => p.id));
+      const scopedPayments = filterByPropertyId(filteredPayments);
+      setPayments(scopedPayments);
+      await loadAllocations(scopedPayments.map(p => p.id));
     } catch (error) {
       console.error("Error loading payments:", error);
     }
@@ -239,7 +240,7 @@ export default function RentPaymentsView() {
   };
 
   const handleUndoAllocation = async (paymentId: string) => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     const allocs = allocationMap[paymentId];
     if (!allocs || allocs.length === 0) return;
 
@@ -247,7 +248,7 @@ export default function RentPaymentsView() {
     try {
       const txIds = [...new Set(allocs.map(a => a.bank_transaction_id))];
       for (const txId of txIds) {
-        await undoAllocation(user.id, txId);
+        await undoAllocation(dataOwnerId, txId);
       }
       setConfirmUndoId(null);
       loadPayments();
@@ -455,7 +456,7 @@ export default function RentPaymentsView() {
   });
 
   const handleSaveNebenkosten = async () => {
-    if (!user || !nkForm.amount || !nkForm.due_date || !nkForm.description) {
+    if (!user || !dataOwnerId || !nkForm.amount || !nkForm.due_date || !nkForm.description) {
       alert("Bitte Betrag, Fälligkeitsdatum und Beschreibung ausfüllen.");
       return;
     }
@@ -482,7 +483,7 @@ export default function RentPaymentsView() {
       }
 
       const { error } = await supabase.from('rent_payments').insert({
-        user_id: user.id,
+        user_id: dataOwnerId,
         contract_id: contractId,
         property_id: propertyId,
         tenant_id: tenantId,
@@ -525,24 +526,26 @@ export default function RentPaymentsView() {
             Verwalten Sie ausstehende und bezahlte Mieten und Nebenkosten
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => {
-            setNkForm({
-              property_id: "",
-              contract_id: "",
-              tenant_id: "",
-              amount: "",
-              due_date: new Date().toISOString().split("T")[0],
-              description: "",
-              notes: "",
-            });
-            setShowNebenkostenModal(true);
-          }}
-        >
-          <Plus className="w-4 h-4 mr-1.5" />
-          Nebenkosten erfassen
-        </Button>
+        {canWrite && (
+          <Button
+            variant="primary"
+            onClick={() => {
+              setNkForm({
+                property_id: "",
+                contract_id: "",
+                tenant_id: "",
+                amount: "",
+                due_date: new Date().toISOString().split("T")[0],
+                description: "",
+                notes: "",
+              });
+              setShowNebenkostenModal(true);
+            }}
+          >
+            <Plus className="w-4 h-4 mr-1.5" />
+            Nebenkosten erfassen
+          </Button>
+        )}
       </div>
 
       <div className="bg-white rounded-lg mb-6">
@@ -896,30 +899,32 @@ export default function RentPaymentsView() {
                       onClick: () => setShowAllocationDetail(payment.id),
                       hidden: !hasBankAlloc
                     },
-                    {
-                      label: 'Zuordnung aufheben',
-                      onClick: () => setConfirmUndoId(payment.id),
-                      variant: 'danger' as const,
-                      hidden: !hasBankAlloc
-                    },
-                    {
-                      label: 'Als unbezahlt markieren',
-                      onClick: () => handleMarkAsUnpaid(payment.id),
-                      hidden: payment.payment_status !== 'paid'
-                    },
-                    {
-                      label: 'Als bezahlt markieren',
-                      onClick: () => handleMarkAsPaid(payment.id),
-                      hidden: payment.payment_status === 'paid'
-                    },
-                    {
-                      label: 'Teilzahlung erfassen',
-                      onClick: () => {
-                        setSelectedPayment(payment);
-                        setShowPartialPaymentModal(true);
+                    ...(canWrite ? [
+                      {
+                        label: 'Zuordnung aufheben',
+                        onClick: () => setConfirmUndoId(payment.id),
+                        variant: 'danger' as const,
+                        hidden: !hasBankAlloc
                       },
-                      hidden: payment.payment_status === 'paid'
-                    }
+                      {
+                        label: 'Als unbezahlt markieren',
+                        onClick: () => handleMarkAsUnpaid(payment.id),
+                        hidden: payment.payment_status !== 'paid'
+                      },
+                      {
+                        label: 'Als bezahlt markieren',
+                        onClick: () => handleMarkAsPaid(payment.id),
+                        hidden: payment.payment_status === 'paid'
+                      },
+                      {
+                        label: 'Teilzahlung erfassen',
+                        onClick: () => {
+                          setSelectedPayment(payment);
+                          setShowPartialPaymentModal(true);
+                        },
+                        hidden: payment.payment_status === 'paid'
+                      }
+                    ] : [])
                   ]}
                 />
               );
@@ -977,7 +982,7 @@ export default function RentPaymentsView() {
         </div>
       )}
 
-      {showPartialPaymentModal && selectedPayment && (
+      {showPartialPaymentModal && selectedPayment && canWrite && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-md">
             <div className="bg-gray-50 px-6 py-4 flex justify-between items-center rounded-t-lg">
@@ -1097,10 +1102,10 @@ export default function RentPaymentsView() {
         </div>
       )}
 
-      {showAllocationDetail && user && (
+      {showAllocationDetail && user && dataOwnerId && (
         <AllocationDetailModal
           rentPaymentId={showAllocationDetail}
-          userId={user.id}
+          userId={dataOwnerId}
           onClose={() => setShowAllocationDetail(null)}
           onUndone={() => {
             setShowAllocationDetail(null);
@@ -1109,7 +1114,7 @@ export default function RentPaymentsView() {
         />
       )}
 
-      {confirmUndoId && (
+      {confirmUndoId && canWrite && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmUndoId(null)} />
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
@@ -1134,7 +1139,7 @@ export default function RentPaymentsView() {
         </div>
       )}
 
-      {showNebenkostenModal && (
+      {showNebenkostenModal && canWrite && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-lg">
             <div className="bg-gray-50 px-6 py-4 flex justify-between items-center rounded-t-lg">
@@ -1235,13 +1240,13 @@ export default function RentPaymentsView() {
         </div>
       ) : activeTab === "dunning" ? (
         isPremium ? (
-          <DunningView payments={payments} onReloadPayments={loadPayments} />
+          <DunningView payments={payments} onReloadPayments={loadPayments} readOnly={!canWrite} />
         ) : (
           <PremiumUpgradePrompt featureKey="rent_payments_dunning" />
         )
       ) : activeTab === "dunning-templates" ? (
         isPremium ? (
-          <DunningTemplates />
+          <DunningTemplates readOnly={!canWrite} />
         ) : (
           <PremiumUpgradePrompt featureKey="rent_payments_dunning" />
         )

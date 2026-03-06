@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Mail, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import { Button } from "../ui/Button";
 
 interface EmailTemplate {
@@ -12,25 +13,26 @@ interface EmailTemplate {
   is_active: boolean;
 }
 
-export default function DunningTemplates() {
+export default function DunningTemplates({ readOnly = false }: { readOnly?: boolean }) {
   const { user } = useAuth();
+  const { dataOwnerId, loading: permLoading } = usePermissions();
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<number | null>(null);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
 
   useEffect(() => {
-    loadTemplates();
-  }, [user]);
+    if (user && !permLoading && dataOwnerId) loadTemplates();
+  }, [user, permLoading, dataOwnerId]);
 
   const loadTemplates = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     try {
       const { data, error } = await supabase
         .from("dunning_email_templates")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", dataOwnerId)
         .order("dunning_level", { ascending: true });
 
       if (error) throw error;
@@ -48,11 +50,11 @@ export default function DunningTemplates() {
   };
 
   const createDefaultTemplates = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     const defaultTemplates = [
       {
-        user_id: user.id,
+        user_id: dataOwnerId,
         dunning_level: 1,
         subject: "Freundliche Erinnerung: Mietzahlung",
         message: `Sehr geehrte/r [TENANT_NAME],
@@ -65,7 +67,7 @@ Mit freundlichen Grüßen`,
         is_active: true
       },
       {
-        user_id: user.id,
+        user_id: dataOwnerId,
         dunning_level: 2,
         subject: "Zahlungsaufforderung: Ausstehende Miete",
         message: `Sehr geehrte/r [TENANT_NAME],
@@ -78,7 +80,7 @@ Mit freundlichen Grüßen`,
         is_active: true
       },
       {
-        user_id: user.id,
+        user_id: dataOwnerId,
         dunning_level: 3,
         subject: "MAHNUNG: Überfällige Mietzahlung",
         message: `Sehr geehrte/r [TENANT_NAME],
@@ -256,38 +258,40 @@ Mit freundlichen Grüßen`
                 <Mail className={`w-6 h-6 ${levelInfo.icon}`} />
                 <h3 className="text-lg font-semibold text-dark">{levelInfo.title}</h3>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => handleResetTemplate(template.dunning_level)}
-                  variant="cancel"
-                >
-                  Zurücksetzen
-                </Button>
-                {isEditing ? (
-                  <>
-                    <Button
-                      onClick={() => setEditingTemplate(null)}
-                      variant="cancel"
-                    >
-                      Abbrechen
-                    </Button>
-                    <Button
-                      onClick={() => handleSaveTemplate(currentTemplate)}
-                      disabled={saving === template.dunning_level}
-                      variant="primary"
-                    >
-                      {saving === template.dunning_level ? "Speichert..." : "Speichern"}
-                    </Button>
-                  </>
-                ) : (
+              {!readOnly && (
+                <div className="flex items-center gap-2">
                   <Button
-                    onClick={() => setEditingTemplate({ ...template })}
-                    variant="outlined"
+                    onClick={() => handleResetTemplate(template.dunning_level)}
+                    variant="cancel"
                   >
-                    Bearbeiten
+                    Zurücksetzen
                   </Button>
-                )}
-              </div>
+                  {isEditing ? (
+                    <>
+                      <Button
+                        onClick={() => setEditingTemplate(null)}
+                        variant="cancel"
+                      >
+                        Abbrechen
+                      </Button>
+                      <Button
+                        onClick={() => handleSaveTemplate(currentTemplate)}
+                        disabled={saving === template.dunning_level}
+                        variant="primary"
+                      >
+                        {saving === template.dunning_level ? "Speichert..." : "Speichern"}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={() => setEditingTemplate({ ...template })}
+                      variant="outlined"
+                    >
+                      Bearbeiten
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-4">
