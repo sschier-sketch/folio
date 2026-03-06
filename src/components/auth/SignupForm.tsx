@@ -77,18 +77,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
         setMessage({ type: "error", text: error.message });
       } else if (authData.user) {
         await trackSignupSuccess();
-        fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-auth-event`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: authData.user.id,
-              eventType: "signup",
-              userAgent: navigator.userAgent,
-            }),
-          }
-        ).catch(() => {});
+        sessionStorage.setItem("auth_event_type", "signup");
         try {
           const welcomeRes = await fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome-email`,

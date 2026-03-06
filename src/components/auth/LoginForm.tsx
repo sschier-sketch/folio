@@ -42,18 +42,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           }
         }
 
-        fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-auth-event`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: data.user.id,
-              eventType: "login",
-              userAgent: navigator.userAgent,
-            }),
-          }
-        ).catch(() => {});
         setMessage({ type: "success", text: "Erfolgreich angemeldet!" });
         onSuccess?.();
       }

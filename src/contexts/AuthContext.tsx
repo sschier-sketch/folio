@@ -37,6 +37,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      if (event === "SIGNED_IN" && session?.user && session.access_token) {
+        const alreadyLogged = sessionStorage.getItem("auth_event_logged");
+        if (alreadyLogged === session.user.id) return;
+        sessionStorage.setItem("auth_event_logged", session.user.id);
+
+        const eventType = sessionStorage.getItem("auth_event_type") || "login";
+        sessionStorage.removeItem("auth_event_type");
+
+        (() => {
+          fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-auth-event`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${session.access_token}`,
+                "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+              },
+              body: JSON.stringify({
+                userId: session.user.id,
+                eventType,
+                userAgent: navigator.userAgent,
+              }),
+            }
+          ).catch(() => {});
+        })();
+      }
+
+      if (event === "SIGNED_OUT") {
+        sessionStorage.removeItem("auth_event_logged");
+        sessionStorage.removeItem("auth_event_type");
+      }
     });
 
     return () => subscription.unsubscribe();
