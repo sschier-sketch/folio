@@ -171,9 +171,10 @@ function DuplicateDetailPanel({
 
 interface ImportHistoryViewProps {
   onRollbackComplete?: () => void;
+  readOnly?: boolean;
 }
 
-export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryViewProps) {
+export default function ImportHistoryView({ onRollbackComplete, readOnly = false }: ImportHistoryViewProps) {
   const { user } = useAuth();
   const [imports, setImports] = useState<BankImportFile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -457,7 +458,7 @@ export default function ImportHistoryView({ onRollbackComplete }: ImportHistoryV
                   </div>
                 )}
 
-                {canRollback && (
+                {canRollback && !readOnly && (
                   <div className="pt-2 border-t border-gray-100">
                     {confirmDeleteId === file.id ? (
                       <div className="space-y-3">

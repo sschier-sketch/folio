@@ -69,7 +69,7 @@ interface DisplayRow {
 
 export default function ExpensesView() {
   const { user } = useAuth();
-  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, canWrite, loading: permLoading } = usePermissions();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -657,24 +657,28 @@ export default function ExpensesView() {
       <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">Ausgaben</h3>
-          <Button
-            onClick={() => setShowAddModal(true)}
-            variant="primary"
-          >
-            Ausgabe hinzufügen
-          </Button>
+          {canWrite && (
+            <Button
+              onClick={() => setShowAddModal(true)}
+              variant="primary"
+            >
+              Ausgabe hinzufügen
+            </Button>
+          )}
         </div>
 
         {manualRows.length === 0 ? (
           <div className="p-12 text-center">
             <TrendingDown className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-400 mb-4">Keine Ausgaben erfasst</p>
-            <Button
-              onClick={() => setShowAddModal(true)}
-              variant="primary"
-            >
-              Erste Ausgabe hinzufügen
-            </Button>
+            <p className="text-gray-400 mb-4">{canWrite ? "Keine Ausgaben erfasst" : "Keine Ausgaben vorhanden"}</p>
+            {canWrite && (
+              <Button
+                onClick={() => setShowAddModal(true)}
+                variant="primary"
+              >
+                Erste Ausgabe hinzufügen
+              </Button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -755,10 +759,10 @@ export default function ExpensesView() {
                               label: 'Beleg herunterladen',
                               onClick: () => handleDownloadDocument(row.document_id!)
                             }] : []),
-                            {
+                            ...(canWrite ? [{
                               label: 'Bearbeiten',
                               onClick: () => {
-                                const orig = expenses.find((e) => e.id === row.id);
+                                const orig = expenses.find((e: Expense) => e.id === row.id);
                                 if (orig) handleEditExpense(orig);
                               }
                             },
@@ -766,7 +770,7 @@ export default function ExpensesView() {
                               label: 'Löschen',
                               onClick: () => handleDeleteExpense(row.id),
                               variant: 'danger' as const
-                            }
+                            }] : [])
                           ]}
                         />
                       </div>

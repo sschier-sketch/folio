@@ -89,7 +89,7 @@ interface Unit {
 
 export default function IncomeView() {
   const { user } = useAuth();
-  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, canWrite, loading: permLoading } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [manualIncomes, setManualIncomes] = useState<ManualIncome[]>([]);
   const [nebenkostenPayments, setNebenkostenPayments] = useState<NebenkostenPayment[]>([]);
@@ -827,39 +827,41 @@ export default function IncomeView() {
       <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-dark">Sonstige Einnahmen</h3>
-          <Button
-            onClick={() => {
-              setEditingIncome(null);
-              setExistingDocument(null);
-              setUploadedFile(null);
-              setFormData({
-                property_id: "",
-                unit_id: "",
-                category_id: "",
-                amount: "",
-                entry_date: new Date().toISOString().split("T")[0],
-                due_date: "",
-                description: "",
-                recipient: "",
-                notes: "",
-                status: "open",
-                vat_rate: "19",
-                is_apportionable: false,
-                is_labor_cost: false,
-                ignore_in_operating_costs: false,
-                is_cashflow_relevant: true,
-              });
-              setShowAddModal(true);
-            }}
-            variant="primary"
-          >
-            Einnahme hinzufügen
-          </Button>
+          {canWrite && (
+            <Button
+              onClick={() => {
+                setEditingIncome(null);
+                setExistingDocument(null);
+                setUploadedFile(null);
+                setFormData({
+                  property_id: "",
+                  unit_id: "",
+                  category_id: "",
+                  amount: "",
+                  entry_date: new Date().toISOString().split("T")[0],
+                  due_date: "",
+                  description: "",
+                  recipient: "",
+                  notes: "",
+                  status: "open",
+                  vat_rate: "19",
+                  is_apportionable: false,
+                  is_labor_cost: false,
+                  ignore_in_operating_costs: false,
+                  is_cashflow_relevant: true,
+                });
+                setShowAddModal(true);
+              }}
+              variant="primary"
+            >
+              Einnahme hinzufügen
+            </Button>
+          )}
         </div>
 
         {manualIncomes.length === 0 ? (
           <div className="p-8 text-center text-gray-400">
-            Keine manuellen Einnahmen erfasst.
+            {canWrite ? "Keine manuellen Einnahmen erfasst." : "Keine manuellen Einnahmen vorhanden."}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -918,7 +920,7 @@ export default function IncomeView() {
                               label: 'Beleg herunterladen',
                               onClick: () => handleDownloadDocument(income.document_id!)
                             }] : []),
-                            {
+                            ...(canWrite ? [{
                               label: 'Bearbeiten',
                               onClick: () => handleEditIncome(income)
                             },
@@ -926,7 +928,7 @@ export default function IncomeView() {
                               label: 'Löschen',
                               onClick: () => handleDeleteIncome(income.id),
                               variant: 'danger' as const
-                            }
+                            }] : [])
                           ]}
                         />
                       </div>

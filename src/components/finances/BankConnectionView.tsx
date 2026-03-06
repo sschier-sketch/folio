@@ -9,6 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
 import CsvImportFlow from './bank-import/CsvImportFlow';
 import CamtImportFlow from './bank-import/CamtImportFlow';
@@ -25,7 +26,8 @@ function getYearRange(year: number) {
 
 export default function BankConnectionView() {
   const { user } = useAuth();
-  const [mainTab, setMainTab] = useState<MainTab>('inbox');
+  const { dataOwnerId, canWrite, loading: permLoading } = usePermissions();
+  const [mainTab, setMainTab] = useState<MainTab>(canWrite ? 'inbox' : 'history');
   const [importTab, setImportTab] = useState<ImportTab>('csv');
   const [inboxCount, setInboxCount] = useState(0);
   const [historyKey, setHistoryKey] = useState(0);
@@ -53,15 +55,15 @@ export default function BankConnectionView() {
   }
 
   useEffect(() => {
-    if (user) loadInboxCount();
-  }, [user]);
+    if (user && !permLoading && dataOwnerId) loadInboxCount();
+  }, [user, permLoading, dataOwnerId]);
 
   async function loadInboxCount() {
-    if (!user) return;
+    if (!dataOwnerId) return;
     const { count } = await supabase
       .from('bank_transactions')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .in('status', ['UNMATCHED', 'SUGGESTED']);
     setInboxCount(count || 0);
   }
@@ -72,13 +74,13 @@ export default function BankConnectionView() {
   }, []);
 
   const mainTabs = [
-    {
+    ...(canWrite ? [{
       id: 'inbox' as MainTab,
       label: 'Zuordnungs-Inbox',
       icon: InboxIcon,
       badge: inboxCount > 0 ? inboxCount : undefined,
     },
-    { id: 'import' as MainTab, label: 'Import', icon: Upload },
+    { id: 'import' as MainTab, label: 'Import', icon: Upload }] : []),
     { id: 'history' as MainTab, label: 'Import-Historie', icon: History },
   ];
 
@@ -169,11 +171,11 @@ export default function BankConnectionView() {
         </div>
       )}
 
-      {mainTab === 'inbox' && (
+      {mainTab === 'inbox' && canWrite && (
         <TransactionInbox dateFrom={dateFrom} dateTo={dateTo} />
       )}
 
-      {mainTab === 'import' && (
+      {mainTab === 'import' && canWrite && (
         <>
           <div className="bg-white rounded-lg p-5">
             <div className="flex items-center gap-3 mb-5">
@@ -233,6 +235,7 @@ export default function BankConnectionView() {
           <ImportHistoryView
             key={historyKey}
             onRollbackComplete={handleRollbackComplete}
+            readOnly={!canWrite}
           />
         </div>
       )}

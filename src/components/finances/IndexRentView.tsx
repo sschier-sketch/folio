@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import { Button } from "../ui/Button";
 import { createRentPeriod } from "../../lib/rentPeriods";
 import { computeDeliveryTiming, formatDateDE, type DeliveryTiming } from "../../lib/indexRentTiming";
@@ -108,6 +109,7 @@ const formatDate = (date?: string) => {
 
 export default function IndexRentView() {
   const { user } = useAuth();
+  const { dataOwnerId, filterByPropertyId, canWrite, loading: permLoading } = usePermissions();
   const [calculations, setCalculations] = useState<IndexRentCalculation[]>([]);
   const [lastRun, setLastRun] = useState<CalculationRun | null>(null);
   const [loading, setLoading] = useState(true);
@@ -118,11 +120,11 @@ export default function IndexRentView() {
   const [markAppliedTarget, setMarkAppliedTarget] = useState<IndexRentCalculation | null>(null);
 
   useEffect(() => {
-    if (user) {
+    if (user && !permLoading && dataOwnerId) {
       loadCalculations();
       loadLastRun();
     }
-  }, [user]);
+  }, [user, permLoading, dataOwnerId]);
 
   const loadCalculations = async () => {
     try {
@@ -146,11 +148,14 @@ export default function IndexRentView() {
             properties:property_id (id, name, address)
           )
         `)
-        .eq("user_id", user?.id)
+        .eq("user_id", dataOwnerId!)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setCalculations(data || []);
+      const scoped = filterByPropertyId(
+        (data || []).map((c: any) => ({ ...c, property_id: c.rental_contract?.property_id }))
+      );
+      setCalculations(scoped);
     } catch (error) {
       console.error("Error loading calculations:", error);
     } finally {
@@ -173,7 +178,7 @@ export default function IndexRentView() {
         const { count: userContractsCount } = await supabase
           .from("rental_contracts")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", user?.id)
+          .eq("user_id", dataOwnerId!)
           .eq("rent_increase_type", "index")
           .or(
             `contract_end.is.null,contract_end.gte.${new Date().toISOString().split("T")[0]}`
@@ -182,7 +187,7 @@ export default function IndexRentView() {
         const { data: userCalculations } = await supabase
           .from("index_rent_calculations")
           .select("id")
-          .eq("user_id", user?.id)
+          .eq("user_id", dataOwnerId!)
           .gte("created_at", globalRun.run_date);
 
         setLastRun({
@@ -372,13 +377,15 @@ export default function IndexRentView() {
             (täglich um 3:00 Uhr)
           </p>
         </div>
-        <Button
-          onClick={processCalculations}
-          disabled={processing}
-          variant="primary"
-        >
-          {processing ? "Prüfe..." : "Jetzt prüfen"}
-        </Button>
+        {canWrite && (
+          <Button
+            onClick={processCalculations}
+            disabled={processing}
+            variant="primary"
+          >
+            {processing ? "Prüfe..." : "Jetzt prüfen"}
+          </Button>
+        )}
       </div>
 
       {lastRun && (
@@ -559,6 +566,7 @@ export default function IndexRentView() {
               onDismiss={dismissCalculation}
               onRestore={undismissCalculation}
               onStartWizard={(wc) => setWizardCalc(wc)}
+              readOnly={!canWrite}
             />
           ))}
         </div>
@@ -666,12 +674,14 @@ function CalculationCard({
   onDismiss,
   onRestore,
   onStartWizard,
+  readOnly = false,
 }: {
   calc: IndexRentCalculation;
   onApply: (id: string) => void;
   onDismiss: (id: string) => void;
   onRestore: (id: string) => void;
   onStartWizard: (wc: WizardCalc) => void;
+  readOnly?: boolean;
 }) {
   const tenantName =
     calc.rental_contract?.tenants?.name || "Unbekannter Mieter";
@@ -808,7 +818,7 @@ function CalculationCard({
             )}
           </div>
           <div className="flex items-center gap-2">
-            {isOpen && (
+            {isOpen && !readOnly && (
               <>
                 <Button
                   onClick={() => onDismiss(calc.id)}
@@ -855,7 +865,7 @@ function CalculationCard({
                 )}
               </>
             )}
-            {calc.status === "dismissed" && (
+            {calc.status === "dismissed" && !readOnly && (
               <Button
                 onClick={() => onRestore(calc.id)}
                 variant="secondary"

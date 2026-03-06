@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useSubscription } from "../hooks/useSubscription";
 import { useAuth } from "../contexts/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import IncomeView from "./finances/IncomeView";
 import ExpensesView from "./finances/ExpensesView";
 import CashflowView from "./finances/CashflowView";
@@ -43,6 +44,7 @@ const EXPORTABLE_TABS: Tab[] = ["income", "expenses", "cashflow"];
 
 export default function FinancesView() {
   const { user } = useAuth();
+  const { dataOwnerId, canWrite } = usePermissions();
   const { isPremium } = useSubscription();
   const [activeTab, setActiveTab] = useState<Tab>("income");
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -60,27 +62,27 @@ export default function FinancesView() {
   const canExport = EXPORTABLE_TABS.includes(activeTab) && (activeTab !== "cashflow" || isPremium);
 
   async function handleExport(format: "csv" | "excel") {
-    if (!user || exporting) return;
+    if (!user || !dataOwnerId || exporting) return;
     setExporting(true);
     setShowExportMenu(false);
 
     try {
       if (activeTab === "income") {
-        const data = await loadIncomeExportData(user.id);
+        const data = await loadIncomeExportData(dataOwnerId);
         if (data.length === 0) {
           alert("Keine Einnahmen zum Exportieren vorhanden.");
           return;
         }
         format === "csv" ? exportIncomeToCSV(data) : exportIncomeToExcel(data);
       } else if (activeTab === "expenses") {
-        const data = await loadExpenseExportData(user.id);
+        const data = await loadExpenseExportData(dataOwnerId);
         if (data.length === 0) {
           alert("Keine Ausgaben zum Exportieren vorhanden.");
           return;
         }
         format === "csv" ? exportExpensesToCSV(data) : exportExpensesToExcel(data);
       } else if (activeTab === "cashflow") {
-        const data = await loadCashflowExportData(user.id);
+        const data = await loadCashflowExportData(dataOwnerId);
         format === "csv" ? exportCashflowToCSV(data) : exportCashflowToExcel(data);
       }
     } catch (error) {
