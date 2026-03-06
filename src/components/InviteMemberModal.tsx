@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, UserPlus, ChevronDown, ChevronUp, Building2 } from "lucide-react";
+import { X, UserPlus, Building2 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
+import { Button } from "./ui/Button";
 
 interface Property {
   id: string;
@@ -10,30 +11,35 @@ interface Property {
   address: string;
 }
 
-interface InviteMemberModalProps {
-  onClose: () => void;
-  onInvite: (payload: {
-    email: string;
-    role: string;
-    is_read_only: boolean;
-    can_manage_billing: boolean;
-    can_manage_users: boolean;
-    can_manage_properties: boolean;
-    can_manage_tenants: boolean;
-    can_manage_finances: boolean;
-    can_view_analytics: boolean;
-    can_view_finances: boolean;
-    can_view_statements: boolean;
-    can_view_rent_payments: boolean;
-    can_view_leases: boolean;
-    can_view_messages: boolean;
-    property_scope: string;
-    property_access: string;
-    property_ids: string[];
-  }) => Promise<void>;
+interface InvitePayload {
+  email: string;
+  role: string;
+  is_read_only: boolean;
+  can_manage_billing: boolean;
+  can_manage_users: boolean;
+  can_manage_properties: boolean;
+  can_manage_tenants: boolean;
+  can_manage_finances: boolean;
+  can_view_analytics: boolean;
+  can_view_finances: boolean;
+  can_view_statements: boolean;
+  can_view_rent_payments: boolean;
+  can_view_leases: boolean;
+  can_view_messages: boolean;
+  property_scope: string;
+  property_access: string;
+  property_ids: string[];
 }
 
-export default function InviteMemberModal({ onClose, onInvite }: InviteMemberModalProps) {
+interface InviteMemberModalProps {
+  onClose: () => void;
+  onInvite: (payload: InvitePayload) => Promise<void>;
+}
+
+export default function InviteMemberModal({
+  onClose,
+  onInvite,
+}: InviteMemberModalProps) {
   const { language } = useLanguage();
   const { user } = useAuth();
   const de = language === "de";
@@ -43,10 +49,6 @@ export default function InviteMemberModal({ onClose, onInvite }: InviteMemberMod
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [canManageBilling, setCanManageBilling] = useState(false);
   const [canManageUsers, setCanManageUsers] = useState(false);
-  const [canManageProperties, setCanManageProperties] = useState(true);
-  const [canManageTenants, setCanManageTenants] = useState(true);
-  const [canManageFinances, setCanManageFinances] = useState(true);
-  const [canViewAnalytics, setCanViewAnalytics] = useState(true);
   const [canViewFinances, setCanViewFinances] = useState(true);
   const [canViewStatements, setCanViewStatements] = useState(true);
   const [canViewRentPayments, setCanViewRentPayments] = useState(true);
@@ -56,7 +58,6 @@ export default function InviteMemberModal({ onClose, onInvite }: InviteMemberMod
   const [propertyAccess, setPropertyAccess] = useState("write");
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,21 +85,21 @@ export default function InviteMemberModal({ onClose, onInvite }: InviteMemberMod
       setCanManageBilling(false);
       setPropertyAccess("write");
       setPropertyScope("all");
-      setCanManageProperties(true);
-      setCanManageTenants(true);
-      setCanManageFinances(true);
-      setCanViewAnalytics(true);
       setCanViewFinances(true);
       setCanViewStatements(true);
       setCanViewRentPayments(true);
       setCanViewLeases(true);
       setCanViewMessages(true);
+    } else {
+      setIsReadOnly(false);
     }
   }, [role]);
 
   const handleSubmit = async () => {
     if (!email.trim()) {
-      setError(de ? "Bitte E-Mail-Adresse eingeben" : "Please enter an email address");
+      setError(
+        de ? "Bitte E-Mail-Adresse eingeben" : "Please enter an email address"
+      );
       return;
     }
     setSaving(true);
@@ -110,22 +111,27 @@ export default function InviteMemberModal({ onClose, onInvite }: InviteMemberMod
         is_read_only: isReadOnly,
         can_manage_billing: canManageBilling,
         can_manage_users: canManageUsers,
-        can_manage_properties: canManageProperties,
-        can_manage_tenants: canManageTenants,
-        can_manage_finances: canManageFinances,
-        can_view_analytics: canViewAnalytics,
+        can_manage_properties: !isReadOnly,
+        can_manage_tenants: !isReadOnly,
+        can_manage_finances: !isReadOnly,
+        can_view_analytics: true,
         can_view_finances: canViewFinances,
         can_view_statements: canViewStatements,
         can_view_rent_payments: canViewRentPayments,
         can_view_leases: canViewLeases,
         can_view_messages: canViewMessages,
         property_scope: propertyScope,
-        property_access: propertyAccess,
-        property_ids: selectedPropertyIds,
+        property_access: isReadOnly ? "read" : propertyAccess,
+        property_ids: propertyScope === "selected" ? selectedPropertyIds : [],
       });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : de ? "Einladung fehlgeschlagen" : "Invitation failed");
-    } finally {
+      setError(
+        err instanceof Error
+          ? err.message
+          : de
+            ? "Einladung fehlgeschlagen"
+            : "Invitation failed"
+      );
       setSaving(false);
     }
   };
@@ -136,29 +142,58 @@ export default function InviteMemberModal({ onClose, onInvite }: InviteMemberMod
     );
   };
 
+  const toggleClass =
+    "relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2";
+  const toggleKnob =
+    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out";
+
+  const Toggle = ({
+    checked,
+    onChange,
+    disabled,
+  }: {
+    checked: boolean;
+    onChange: (v: boolean) => void;
+    disabled?: boolean;
+  }) => (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => !disabled && onChange(!checked)}
+      className={`${toggleClass} ${checked ? "bg-[#3c8af7]" : "bg-gray-200"} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      <span
+        className={`${toggleKnob} ${checked ? "translate-x-4" : "translate-x-0"}`}
+      />
+    </button>
+  );
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-gray-400" />
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-md w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10">
+          <h2 className="text-2xl font-bold text-dark">
             {de ? "Benutzer einladen" : "Invite User"}
           </h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
-            <X className="w-5 h-5" />
+          <button
+            onClick={onClose}
+            className="text-gray-300 hover:text-gray-400 transition-colors"
+          >
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="px-6 py-5 space-y-5">
+        <div className="p-6 space-y-6">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-gray-400 mb-2">
               {de ? "E-Mail-Adresse" : "Email Address"} *
             </label>
             <input
@@ -166,168 +201,292 @@ export default function InviteMemberModal({ onClose, onInvite }: InviteMemberMod
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={de ? "benutzer@beispiel.de" : "user@example.com"}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-gray-400 mb-2">
               {de ? "Rolle" : "Role"}
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
             >
-              <option value="admin">{de ? "Administrator" : "Administrator"}</option>
+              <option value="admin">
+                {de ? "Administrator" : "Administrator"}
+              </option>
               <option value="member">{de ? "Mitglied" : "Member"}</option>
-              <option value="viewer">{de ? "Betrachter (Nur Lesen)" : "Viewer (Read Only)"}</option>
+              <option value="viewer">
+                {de ? "Betrachter (Nur Lesen)" : "Viewer (Read Only)"}
+              </option>
             </select>
-            <p className="mt-1 text-xs text-gray-500">
-              {role === "admin" && (de ? "Voller Zugriff, kann auch Benutzer verwalten" : "Full access, can also manage users")}
-              {role === "member" && (de ? "Kann Immobilien, Mieter und Finanzen verwalten" : "Can manage properties, tenants and finances")}
-              {role === "viewer" && (de ? "Kann alle Daten einsehen, aber nichts ändern" : "Can view all data but cannot make changes")}
+            <p className="text-sm text-gray-300 mt-1">
+              {role === "admin" &&
+                (de
+                  ? "Voller Zugriff, kann auch Benutzer verwalten"
+                  : "Full access, can also manage users")}
+              {role === "member" &&
+                (de
+                  ? "Kann Immobilien, Mieter und Finanzen verwalten"
+                  : "Can manage properties, tenants and finances")}
+              {role === "viewer" &&
+                (de
+                  ? "Kann alle Daten einsehen, aber nichts ändern"
+                  : "Can view all data but cannot make changes")}
             </p>
           </div>
 
-          {role !== "viewer" && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                {de ? "Immobilienzugriff" : "Property Access"}
-              </label>
-              <div className="flex gap-3">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="scope" checked={propertyScope === "all"} onChange={() => setPropertyScope("all")} className="accent-blue-600" />
-                  <span className="text-sm text-gray-700">{de ? "Alle Immobilien" : "All properties"}</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="scope" checked={propertyScope === "selected"} onChange={() => setPropertyScope("selected")} className="accent-blue-600" />
-                  <span className="text-sm text-gray-700">{de ? "Bestimmte Immobilien" : "Selected properties"}</span>
-                </label>
+          {/* Permissions Section */}
+          <div className="border-t border-gray-100 pt-6">
+            <h3 className="text-sm font-semibold text-dark mb-4">
+              {de ? "Rechte" : "Permissions"}
+            </h3>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">
+                    {de
+                      ? "Nur Leserechte für gesamten Account"
+                      : "Read-only access for entire account"}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {de
+                      ? "Benutzer kann alle Daten sehen, aber nichts ändern"
+                      : "User can view all data but cannot make changes"}
+                  </p>
+                </div>
+                <Toggle
+                  checked={isReadOnly}
+                  onChange={setIsReadOnly}
+                  disabled={role === "viewer"}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">
+                    {de ? "Tarif/Billing verwalten" : "Manage Billing"}
+                  </p>
+                </div>
+                <Toggle
+                  checked={canManageBilling}
+                  onChange={setCanManageBilling}
+                  disabled={role === "viewer"}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">
+                    {de ? "Benutzer verwalten" : "Manage Users"}
+                  </p>
+                </div>
+                <Toggle
+                  checked={canManageUsers}
+                  onChange={setCanManageUsers}
+                  disabled={role === "viewer"}
+                />
               </div>
             </div>
-          )}
+          </div>
 
-          {propertyScope === "selected" && role !== "viewer" && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                {de ? "Immobilien auswählen" : "Select Properties"}
-              </label>
-              {properties.length === 0 ? (
-                <p className="text-sm text-gray-500">
-                  {de ? "Keine Immobilien vorhanden" : "No properties available"}
-                </p>
-              ) : (
-                <div className="border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
-                  {properties.map((p) => (
-                    <label
-                      key={p.id}
-                      className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedPropertyIds.includes(p.id)}
-                        onChange={() => toggleProperty(p.id)}
-                        className="accent-blue-600"
-                      />
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Building2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-sm text-gray-900 truncate">{p.name}</p>
-                          <p className="text-xs text-gray-500 truncate">{p.address}</p>
-                        </div>
-                      </div>
-                    </label>
-                  ))}
+          {/* Section Access */}
+          <div className="border-t border-gray-100 pt-6">
+            <h3 className="text-sm font-semibold text-dark mb-4">
+              {de ? "Zugriff auf Bereiche" : "Section Access"}
+            </h3>
+
+            <div className="space-y-4">
+              {[
+                {
+                  label: de ? "Bereich Finanzen sehen" : "View Finances",
+                  value: canViewFinances,
+                  setter: setCanViewFinances,
+                },
+                {
+                  label: de
+                    ? "Bereich Abrechnungen sehen"
+                    : "View Statements",
+                  value: canViewStatements,
+                  setter: setCanViewStatements,
+                },
+                {
+                  label: de
+                    ? "Bereich Mieteingänge sehen"
+                    : "View Rent Payments",
+                  value: canViewRentPayments,
+                  setter: setCanViewRentPayments,
+                },
+                {
+                  label: de
+                    ? "Bereich Mietverhältnisse sehen"
+                    : "View Leases",
+                  value: canViewLeases,
+                  setter: setCanViewLeases,
+                },
+                {
+                  label: de
+                    ? "Bereich Nachrichten sehen"
+                    : "View Messages",
+                  value: canViewMessages,
+                  setter: setCanViewMessages,
+                },
+              ].map(({ label, value, setter }) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between"
+                >
+                  <p className="text-sm font-medium text-gray-700">{label}</p>
+                  <Toggle checked={value} onChange={setter} />
                 </div>
-              )}
+              ))}
             </div>
-          )}
+          </div>
 
-          {role === "member" && (
-            <>
-              <button
-                type="button"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                {de ? "Erweiterte Berechtigungen" : "Advanced Permissions"}
-              </button>
+          {/* Property Access */}
+          <div className="border-t border-gray-100 pt-6">
+            <h3 className="text-sm font-semibold text-dark mb-4">
+              {de ? "Immobilienfreigabe" : "Property Access"}
+            </h3>
 
-              {showAdvanced && (
-                <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <label className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">{de ? "Nur Lesezugriff" : "Read Only"}</span>
-                    <input type="checkbox" checked={isReadOnly} onChange={(e) => setIsReadOnly(e.target.checked)} className="accent-blue-600" />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  {de ? "Zugriff auf Immobilien" : "Property Scope"}
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="scope"
+                      checked={propertyScope === "all"}
+                      onChange={() => setPropertyScope("all")}
+                      className="w-4 h-4 text-primary-blue focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      {de ? "Alle Immobilien" : "All properties"}
+                    </span>
                   </label>
-                  <div className="border-t border-gray-200 pt-3">
-                    <p className="text-xs font-medium text-gray-500 mb-2">{de ? "Zugriff auf Bereiche" : "Section Access"}</p>
-                    {[
-                      { key: "finances", label: de ? "Finanzen anzeigen" : "View Finances", value: canViewFinances, setter: setCanViewFinances },
-                      { key: "statements", label: de ? "Abrechnungen anzeigen" : "View Statements", value: canViewStatements, setter: setCanViewStatements },
-                      { key: "rent", label: de ? "Mieteingänge anzeigen" : "View Rent Payments", value: canViewRentPayments, setter: setCanViewRentPayments },
-                      { key: "leases", label: de ? "Mietverträge anzeigen" : "View Leases", value: canViewLeases, setter: setCanViewLeases },
-                      { key: "messages", label: de ? "Nachrichten anzeigen" : "View Messages", value: canViewMessages, setter: setCanViewMessages },
-                    ].map(({ key, label, value, setter }) => (
-                      <label key={key} className="flex items-center justify-between py-1">
-                        <span className="text-sm text-gray-700">{label}</span>
-                        <input type="checkbox" checked={value} onChange={(e) => setter(e.target.checked)} className="accent-blue-600" />
-                      </label>
-                    ))}
-                  </div>
-                  <div className="border-t border-gray-200 pt-3">
-                    <p className="text-xs font-medium text-gray-500 mb-2">{de ? "Verwaltungsrechte" : "Management Rights"}</p>
-                    {[
-                      { key: "billing", label: de ? "Tarif verwalten" : "Manage Billing", value: canManageBilling, setter: setCanManageBilling },
-                      { key: "users", label: de ? "Benutzer verwalten" : "Manage Users", value: canManageUsers, setter: setCanManageUsers },
-                    ].map(({ key, label, value, setter }) => (
-                      <label key={key} className="flex items-center justify-between py-1">
-                        <span className="text-sm text-gray-700">{label}</span>
-                        <input type="checkbox" checked={value} onChange={(e) => setter(e.target.checked)} className="accent-blue-600" />
-                      </label>
-                    ))}
-                  </div>
-                  {!isReadOnly && (
-                    <div className="border-t border-gray-200 pt-3">
-                      <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                        {de ? "Schreibzugriff auf Immobilien" : "Write Access to Properties"}
-                      </label>
-                      <select
-                        value={propertyAccess}
-                        onChange={(e) => setPropertyAccess(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
-                      >
-                        <option value="write">{de ? "Lesen & Schreiben" : "Read & Write"}</option>
-                        <option value="read">{de ? "Nur Lesen" : "Read Only"}</option>
-                      </select>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="scope"
+                      checked={propertyScope === "selected"}
+                      onChange={() => setPropertyScope("selected")}
+                      className="w-4 h-4 text-primary-blue focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      {de ? "Bestimmte Immobilien" : "Selected properties"}
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {propertyScope === "selected" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    {de ? "Immobilien auswählen" : "Select Properties"}
+                  </label>
+                  {properties.length === 0 ? (
+                    <p className="text-sm text-gray-400">
+                      {de
+                        ? "Keine Immobilien vorhanden"
+                        : "No properties available"}
+                    </p>
+                  ) : (
+                    <div className="border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
+                      {properties.map((p) => (
+                        <label
+                          key={p.id}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedPropertyIds.includes(p.id)}
+                            onChange={() => toggleProperty(p.id)}
+                            className="w-4 h-4 text-[#3c8af7] border-gray-300 rounded focus:ring-2 focus:ring-[#3c8af7]"
+                          />
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Building2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm text-gray-700 truncate">
+                                {p.name}
+                              </p>
+                              <p className="text-xs text-gray-400 truncate">
+                                {p.address}
+                              </p>
+                            </div>
+                          </div>
+                        </label>
+                      ))}
                     </div>
                   )}
                 </div>
               )}
-            </>
-          )}
-        </div>
 
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
-          <button
-            onClick={onClose}
-            className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            {de ? "Abbrechen" : "Cancel"}
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={saving || !email.trim()}
-            className="px-4 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {saving ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <UserPlus className="w-4 h-4" />
-            )}
-            {de ? "Einladung senden" : "Send Invitation"}
-          </button>
+              {!isReadOnly && role !== "viewer" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    {de
+                      ? "Rechte innerhalb der Immobilien"
+                      : "Access Level within Properties"}
+                  </label>
+                  <select
+                    value={propertyAccess}
+                    onChange={(e) => setPropertyAccess(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                  >
+                    <option value="write">
+                      {de ? "Lesen & Schreiben" : "Read & Write"}
+                    </option>
+                    <option value="read">
+                      {de ? "Nur Lesen" : "Read Only"}
+                    </option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {isReadOnly && role !== "viewer" && (
+            <div
+              style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }}
+              className="border rounded-lg p-4"
+            >
+              <p className="text-sm text-blue-900">
+                {de
+                  ? "Hinweis: Bei aktiviertem Nur-Lesen-Modus kann der Benutzer keine Daten anlegen, bearbeiten oder löschen."
+                  : "Note: With read-only mode enabled, the user cannot create, edit or delete any data."}
+              </p>
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <Button variant="cancel" onClick={onClose} fullWidth>
+              {de ? "Abbrechen" : "Cancel"}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSubmit}
+              disabled={saving || !email.trim()}
+              fullWidth
+            >
+              {saving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  {de ? "Wird gesendet..." : "Sending..."}
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  {de ? "Einladung senden" : "Send Invitation"}
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

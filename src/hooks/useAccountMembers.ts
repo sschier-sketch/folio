@@ -40,6 +40,15 @@ export interface AccountInvitation {
   is_read_only: boolean;
   can_manage_billing: boolean;
   can_manage_users: boolean;
+  can_manage_properties: boolean;
+  can_manage_tenants: boolean;
+  can_manage_finances: boolean;
+  can_view_analytics: boolean;
+  can_view_finances: boolean;
+  can_view_statements: boolean;
+  can_view_rent_payments: boolean;
+  can_view_leases: boolean;
+  can_view_messages: boolean;
   property_scope: string;
   property_access: string;
   created_at: string;
@@ -175,6 +184,15 @@ export function useAccountMembers() {
           is_read_only: invitation.is_read_only,
           can_manage_billing: invitation.can_manage_billing,
           can_manage_users: invitation.can_manage_users,
+          can_manage_properties: invitation.can_manage_properties,
+          can_manage_tenants: invitation.can_manage_tenants,
+          can_manage_finances: invitation.can_manage_finances,
+          can_view_analytics: invitation.can_view_analytics,
+          can_view_finances: invitation.can_view_finances,
+          can_view_statements: invitation.can_view_statements,
+          can_view_rent_payments: invitation.can_view_rent_payments,
+          can_view_leases: invitation.can_view_leases,
+          can_view_messages: invitation.can_view_messages,
           property_scope: invitation.property_scope,
           property_access: invitation.property_access,
         }),
