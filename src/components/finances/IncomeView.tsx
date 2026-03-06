@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { TrendingUp, Calendar, CheckCircle2, Trash2, CreditCard as Edit, Upload, FileText, X, CheckCircle, Clock, AlertCircle, Receipt, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 import { Button } from "../ui/Button";
 
@@ -88,6 +89,7 @@ interface Unit {
 
 export default function IncomeView() {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [manualIncomes, setManualIncomes] = useState<ManualIncome[]>([]);
   const [nebenkostenPayments, setNebenkostenPayments] = useState<NebenkostenPayment[]>([]);
@@ -123,22 +125,23 @@ export default function IncomeView() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && !permLoading && dataOwnerId) {
       loadProperties();
       loadData();
     }
-  }, [user, timePeriod, selectedProperty, selectedUnit, startDate, endDate]);
+  }, [user, permLoading, dataOwnerId, timePeriod, selectedProperty, selectedUnit, startDate, endDate]);
 
   async function loadProperties() {
+    if (!dataOwnerId) return;
     try {
       const [propertiesRes, unitsRes, categoriesRes] = await Promise.all([
-        supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
-        supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", user!.id).order("unit_number"),
+        supabase.from("properties").select("id, name").eq("user_id", dataOwnerId).order("name"),
+        supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", dataOwnerId).order("unit_number"),
         supabase.from("expense_categories").select("*").order("name"),
       ]);
 
-      if (propertiesRes.data) setProperties(propertiesRes.data);
-      if (unitsRes.data) setUnits(unitsRes.data);
+      setProperties(filterPropertiesByScope(propertiesRes.data || []));
+      if (unitsRes.data) setUnits(filterByPropertyId(unitsRes.data));
       if (categoriesRes.data) setCategories(categoriesRes.data);
     } catch (error) {
       console.error("Error loading properties:", error);
@@ -168,7 +171,7 @@ export default function IncomeView() {
       let manualQuery = supabase
         .from("income_entries")
         .select("id, property_id, category_id, description, amount, entry_date, status, recipient, due_date, is_cashflow_relevant, vat_rate, is_apportionable, is_labor_cost, ignore_in_operating_costs, notes, document_id, properties(name)")
-        .eq("user_id", user!.id)
+        .eq("user_id", dataOwnerId!)
         .order("entry_date", { ascending: false });
 
       if (selectedProperty) {
@@ -195,7 +198,7 @@ export default function IncomeView() {
           tenant_id,
           property_id
         `)
-        .eq("user_id", user!.id)
+        .eq("user_id", dataOwnerId!)
         .eq("status", "active")
         .order("start_date", { ascending: false });
 
@@ -206,7 +209,7 @@ export default function IncomeView() {
       let nkQuery = supabase
         .from("rent_payments")
         .select("id, property_id, tenant_id, due_date, amount, paid_amount, payment_status, description, notes, created_at")
-        .eq("user_id", user!.id)
+        .eq("user_id", dataOwnerId!)
         .eq("payment_type", "nebenkosten")
         .order("due_date", { ascending: false });
 

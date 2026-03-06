@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import {
   getMonthlyHausgeldEur,
   isExpenseSupersededBySystemHausgeld,
@@ -111,6 +112,7 @@ function SummaryTile({
 
 export default function CashflowView() {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -123,11 +125,11 @@ export default function CashflowView() {
   const [expandedMonths, setExpandedMonths] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    if (user) {
+    if (user && !permLoading && dataOwnerId) {
       loadProperties();
       loadCashflowData();
     }
-  }, [user, timePeriod, selectedProperty, selectedUnit, startDate, endDate]);
+  }, [user, permLoading, dataOwnerId, timePeriod, selectedProperty, selectedUnit, startDate, endDate]);
 
   function toggleMonth(index: number) {
     setExpandedMonths((prev) => {
@@ -142,14 +144,15 @@ export default function CashflowView() {
   }
 
   async function loadProperties() {
+    if (!dataOwnerId) return;
     try {
       const [propertiesRes, unitsRes] = await Promise.all([
-        supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
-        supabase.from("property_units").select(HAUSGELD_UNIT_FIELDS).eq("user_id", user!.id).order("unit_number"),
+        supabase.from("properties").select("id, name").eq("user_id", dataOwnerId).order("name"),
+        supabase.from("property_units").select(HAUSGELD_UNIT_FIELDS).eq("user_id", dataOwnerId).order("unit_number"),
       ]);
 
-      if (propertiesRes.data) setProperties(propertiesRes.data);
-      if (unitsRes.data) setUnits(unitsRes.data);
+      setProperties(filterPropertiesByScope(propertiesRes.data || []));
+      if (unitsRes.data) setUnits(filterByPropertyId(unitsRes.data));
     } catch (error) {
       console.error("Error loading properties:", error);
     }
@@ -183,7 +186,7 @@ export default function CashflowView() {
       let contractsQuery = supabase
         .from("rental_contracts")
         .select("*")
-        .eq("user_id", user!.id)
+        .eq("user_id", dataOwnerId!)
         .eq("status", "active");
 
       if (selectedProperty) {
@@ -196,7 +199,7 @@ export default function CashflowView() {
       let manualIncomeQuery = supabase
         .from("income_entries")
         .select("*")
-        .eq("user_id", user!.id)
+        .eq("user_id", dataOwnerId!)
         .eq("is_cashflow_relevant", true)
         .gte("entry_date", filterStartDate)
         .lte("entry_date", filterEndDate);
@@ -211,7 +214,7 @@ export default function CashflowView() {
       let expensesQuery = supabase
         .from("expenses")
         .select("*")
-        .eq("user_id", user!.id)
+        .eq("user_id", dataOwnerId!)
         .eq("is_cashflow_relevant", true)
         .gte("expense_date", filterStartDate)
         .lte("expense_date", filterEndDate);
@@ -226,7 +229,7 @@ export default function CashflowView() {
       let loansQuery = supabase
         .from("loans")
         .select("*")
-        .eq("user_id", user!.id);
+        .eq("user_id", dataOwnerId!);
 
       if (selectedProperty) {
         loansQuery = loansQuery.eq("property_id", selectedProperty);
@@ -235,7 +238,7 @@ export default function CashflowView() {
       const unitsQuery = supabase
         .from("property_units")
         .select(HAUSGELD_UNIT_FIELDS)
-        .eq("user_id", user!.id);
+        .eq("user_id", dataOwnerId!);
 
       const [contractsRes, manualIncomeRes, expensesRes, loansRes, unitsRes] = await Promise.all([
         contractsQuery,

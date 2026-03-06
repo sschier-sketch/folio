@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import { getDocumentTypeLabel, getDocumentTypeColor, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
@@ -62,6 +63,7 @@ interface HistoryEntry {
 
 export default function DocumentDetails({ documentId, onBack, onUpdate }: DocumentDetailsProps) {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
   const { isPro } = useSubscription();
   const [document, setDocument] = useState<Document | null>(null);
   const [associations, setAssociations] = useState<Association[]>([]);
@@ -86,13 +88,13 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    if (user && documentId) {
+    if (user && documentId && !permLoading && dataOwnerId) {
       loadDocument();
       loadAssociations();
       loadHistory();
       loadReferences();
     }
-  }, [user, documentId]);
+  }, [user, documentId, permLoading, dataOwnerId]);
 
   async function loadDocument() {
     try {
@@ -228,21 +230,21 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   }
 
   async function loadReferences() {
+    if (!dataOwnerId) return;
     try {
       const [propsRes, unitsRes, tenantsRes] = await Promise.all([
-        supabase.from("properties").select("id, name").order("name"),
-        supabase.from("property_units").select("id, unit_number, property_id").order("unit_number"),
-        supabase.from("tenants").select("id, first_name, last_name").eq("is_active", true).order("last_name"),
+        supabase.from("properties").select("id, name").eq("user_id", dataOwnerId).order("name"),
+        supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", dataOwnerId).order("unit_number"),
+        supabase.from("tenants").select("id, first_name, last_name, property_id").eq("user_id", dataOwnerId).eq("is_active", true).order("last_name"),
       ]);
 
-      if (propsRes.data) setProperties(propsRes.data);
-      if (unitsRes.data) setUnits(unitsRes.data);
-      if (tenantsRes.data) {
-        setTenants(tenantsRes.data.map((t) => ({
-          id: t.id,
-          name: `${t.first_name} ${t.last_name}`,
-        })));
-      }
+      setProperties(filterPropertiesByScope(propsRes.data || []));
+      setUnits(filterByPropertyId(unitsRes.data || []));
+      const scopedTenants = filterByPropertyId(tenantsRes.data || []);
+      setTenants(scopedTenants.map((t: any) => ({
+        id: t.id,
+        name: `${t.first_name} ${t.last_name}`,
+      })));
     } catch (error) {
       console.error("Error loading references:", error);
     }

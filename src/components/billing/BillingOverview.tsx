@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Calendar, Building, TrendingUp, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { Button } from "../ui/Button";
 
 interface BillingPeriod {
@@ -21,6 +22,7 @@ interface Property {
 
 export default function BillingOverview() {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, loading: permLoading } = usePermissions();
   const [billingPeriods, setBillingPeriods] = useState<BillingPeriod[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -34,23 +36,25 @@ export default function BillingOverview() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && !permLoading && dataOwnerId) {
       loadData();
     }
-  }, [user]);
+  }, [user, permLoading, dataOwnerId]);
 
   async function loadData() {
+    if (!dataOwnerId) return;
     try {
       const [periodsRes, propsRes] = await Promise.all([
         supabase
           .from("billing_periods")
           .select("*")
+          .eq("user_id", dataOwnerId)
           .order("created_at", { ascending: false }),
-        supabase.from("properties").select("id, name").order("name"),
+        supabase.from("properties").select("id, name").eq("user_id", dataOwnerId).order("name"),
       ]);
 
       if (periodsRes.data) setBillingPeriods(periodsRes.data);
-      if (propsRes.data) setProperties(propsRes.data);
+      setProperties(filterPropertiesByScope(propsRes.data || []));
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {

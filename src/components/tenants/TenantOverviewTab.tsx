@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { Button } from '../ui/Button';
 
 interface TenantOverviewTabProps {
@@ -83,6 +84,7 @@ export default function TenantOverviewTab({
   tenantId,
 }: TenantOverviewTabProps) {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, loading: permLoading } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [property, setProperty] = useState<Property | null>(null);
@@ -96,10 +98,10 @@ export default function TenantOverviewTab({
   const [editPartners, setEditPartners] = useState<EditablePartner[]>([]);
 
   useEffect(() => {
-    if (user && tenantId) {
+    if (user && tenantId && !permLoading && dataOwnerId) {
       loadData();
     }
-  }, [user, tenantId]);
+  }, [user, tenantId, permLoading, dataOwnerId]);
 
   useEffect(() => {
     if (formData?.property_id) {
@@ -131,7 +133,7 @@ export default function TenantOverviewTab({
 
       const [tenantRes, propertiesRes] = await Promise.all([
         supabase.from("tenants").select("*").eq("id", tenantId).single(),
-        supabase.from("properties").select("id, name, address").order("name"),
+        supabase.from("properties").select("id, name, address").eq("user_id", dataOwnerId!).order("name"),
       ]);
 
       if (tenantRes.data) {
@@ -198,7 +200,7 @@ export default function TenantOverviewTab({
         }
       }
 
-      if (propertiesRes.data) setProperties(propertiesRes.data);
+      setProperties(filterPropertiesByScope(propertiesRes.data || []));
 
       const { data: partners } = await supabase
         .from("tenant_contract_partners")

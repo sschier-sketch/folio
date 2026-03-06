@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Users, Building, Calendar, DollarSign, Eye } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import TenantContractDetails from "./TenantContractDetails";
 import TenantModal from "./TenantModal";
 import EndContractModal from "./tenants/EndContractModal";
@@ -53,6 +54,7 @@ interface TenantsViewProps {
 
 export default function TenantsView({ selectedTenantId: externalSelectedTenantId, onClearSelection, onNavigateToTemplates }: TenantsViewProps = {}) {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
   const [tenants, setTenants] = useState<TenantWithDetails[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,11 +76,11 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
   }, [externalSelectedTenantId]);
 
   useEffect(() => {
-    if (user) loadData();
-  }, [user]);
+    if (user && !permLoading && dataOwnerId) loadData();
+  }, [user, permLoading, dataOwnerId]);
 
   async function loadData() {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     try {
       setLoading(true);
 
@@ -89,14 +91,16 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
             *,
             properties(id, name)
           `)
+          .eq("user_id", dataOwnerId)
           .eq("is_active", true)
           .order("name"),
-        supabase.from("properties").select("id, name").eq("user_id", user.id).order("name"),
+        supabase.from("properties").select("id, name").eq("user_id", dataOwnerId).order("name"),
       ]);
 
-      if (tenantsRes.data) {
+      const scopedTenants = filterByPropertyId(tenantsRes.data || []);
+      if (scopedTenants.length > 0) {
         const tenantsWithContracts = await Promise.all(
-          tenantsRes.data.map(async (tenant) => {
+          scopedTenants.map(async (tenant) => {
             const { data: contracts } = await supabase
               .from("rental_contracts")
               .select("*")
@@ -145,9 +149,11 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
         );
 
         setTenants(tenantsWithContracts);
+      } else {
+        setTenants([]);
       }
 
-      if (propertiesRes.data) setProperties(propertiesRes.data);
+      setProperties(filterPropertiesByScope(propertiesRes.data || []));
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {

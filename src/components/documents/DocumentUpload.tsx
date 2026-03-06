@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Upload, X, FileText, Lock, Check, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import Badge from "../common/Badge";
@@ -26,6 +27,7 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
   const { isPro } = useSubscription();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [documentType, setDocumentType] = useState("other");
@@ -70,15 +72,16 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   }
 
   async function loadReferences() {
+    if (!dataOwnerId) return;
     try {
       const [propsRes, unitsRes, tenantsRes] = await Promise.all([
-        supabase.from("properties").select("id, name").order("name"),
-        supabase.from("property_units").select("id, unit_number, property_id").order("unit_number"),
-        supabase.from("tenants").select("id, first_name, last_name").eq("is_active", true).order("last_name"),
+        supabase.from("properties").select("id, name").eq("user_id", dataOwnerId).order("name"),
+        supabase.from("property_units").select("id, unit_number, property_id").eq("user_id", dataOwnerId).order("unit_number"),
+        supabase.from("tenants").select("id, first_name, last_name").eq("user_id", dataOwnerId).eq("is_active", true).order("last_name"),
       ]);
 
-      if (propsRes.data) setProperties(propsRes.data);
-      if (unitsRes.data) setUnits(unitsRes.data);
+      setProperties(filterPropertiesByScope(propsRes.data || []));
+      if (unitsRes.data) setUnits(filterByPropertyId(unitsRes.data));
       if (tenantsRes.data) {
         const tenantsList = tenantsRes.data.map((t) => ({
           id: t.id,
