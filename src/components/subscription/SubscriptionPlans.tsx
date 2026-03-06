@@ -3,6 +3,7 @@ import { Check, CreditCard, Info, Loader2, AlertTriangle, Lock } from 'lucide-re
 import { useSubscription } from '../../hooks/useSubscription';
 import { useTrialStatus } from '../../hooks/useTrialStatus';
 import { useAuth } from '../../hooks/useAuth';
+import { usePermissions } from '../../hooks/usePermissions';
 import { PLANS, type BillingInterval, getPlanByStripePriceId, getStripePriceId, calculateYearlySavings } from '../../config/plans';
 import { createCheckoutSession, createPortalSession } from '../../lib/stripe-api';
 import { supabase } from '../../lib/supabase';
@@ -15,6 +16,8 @@ interface SubscriptionPlansProps {
 export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPlansProps) {
   const { user } = useAuth();
   const { subscription, loading: subscriptionLoading, isPro, isCancelledButActive, cancelDate } = useSubscription();
+  const permissions = usePermissions();
+  const canBilling = permissions.isOwner || permissions.canManageBilling;
   const trialStatus = useTrialStatus(user?.id);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('year');
   const [loading, setLoading] = useState<string | null>(null);
@@ -80,6 +83,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
   const currentInterval = currentPlan?.interval || 'month';
 
   const handleUpgrade = async (interval: BillingInterval) => {
+    if (!canBilling) return;
     const priceId = getStripePriceId('pro', interval);
     if (!priceId) return;
 
@@ -95,6 +99,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
   };
 
   const handleDowngrade = async () => {
+    if (!canBilling) return;
     setLoading('downgrade');
     setShowDowngradeModal(false);
     try {
@@ -135,6 +140,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
   };
 
   const handleManageSubscription = async () => {
+    if (!canBilling) return;
     setLoading('portal');
     try {
       const url = await createPortalSession();
@@ -147,6 +153,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
   };
 
   const handleChangeBillingInterval = async (newInterval: BillingInterval) => {
+    if (!canBilling) return;
     if (currentPlanId !== 'pro') return;
 
     const newPriceId = getStripePriceId('pro', newInterval);
@@ -225,7 +232,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               </div>
             </div>
 
-            {isActive && currentPlanId === 'pro' && !isCancelledButActive && (
+            {isActive && currentPlanId === 'pro' && !isCancelledButActive && canBilling && (
               <Button
                 onClick={handleManageSubscription}
                 disabled={loading === 'portal'}
@@ -254,20 +261,22 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                   <strong>{cancelDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</strong>{' '}
                   vollen Zugriff auf alle Pro-Features. Danach wechseln Sie automatisch in den Basic-Tarif.
                 </p>
-                <Button
-                  onClick={handleManageSubscription}
-                  disabled={loading === 'portal'}
-                  variant="warning"
-                >
-                  {loading === 'portal' ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Wird geladen...
-                    </>
-                  ) : (
-                    'Kündigung widerrufen'
-                  )}
-                </Button>
+                {canBilling && (
+                  <Button
+                    onClick={handleManageSubscription}
+                    disabled={loading === 'portal'}
+                    variant="warning"
+                  >
+                    {loading === 'portal' ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Wird geladen...
+                      </>
+                    ) : (
+                      'Kündigung widerrufen'
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -280,12 +289,14 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
                   <strong>Zahlung ausstehend:</strong> Ihr Abonnement ist momentan nicht aktiv.
                   Bitte überprüfen Sie Ihre Zahlungsinformationen.
                 </p>
-                <button
-                  onClick={handleManageSubscription}
-                  className="mt-2 text-sm text-yellow-900 underline hover:no-underline"
-                >
-                  Zahlungsmethode aktualisieren
-                </button>
+                {canBilling && (
+                  <button
+                    onClick={handleManageSubscription}
+                    className="mt-2 text-sm text-yellow-900 underline hover:no-underline"
+                  >
+                    Zahlungsmethode aktualisieren
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -387,7 +398,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               >
                 Wechsel zum {cancelDate?.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} vorgemerkt
               </button>
-            ) : (
+            ) : canBilling ? (
               <Button
                 onClick={() => setShowDowngradeModal(true)}
                 disabled={!!loading}
@@ -396,7 +407,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               >
                 Zu Basic wechseln
               </Button>
-            )}
+            ) : null}
           </div>
         )}
 
@@ -473,22 +484,24 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               ))}
             </ul>
 
-            <div>
-              <Button
-                onClick={() => handleUpgrade(billingInterval)}
-                disabled={!!loading}
-                variant="primary"
-              >
-                {loading === getStripePriceId('pro', billingInterval) ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Wird geladen...
-                  </>
-                ) : (
-                  'Kostenpflichtig buchen'
-                )}
-              </Button>
-            </div>
+            {canBilling && (
+              <div>
+                <Button
+                  onClick={() => handleUpgrade(billingInterval)}
+                  disabled={!!loading}
+                  variant="primary"
+                >
+                  {loading === getStripePriceId('pro', billingInterval) ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Wird geladen...
+                    </>
+                  ) : (
+                    'Kostenpflichtig buchen'
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
@@ -563,7 +576,7 @@ export function SubscriptionPlans({ showCurrentPlanCard = true }: SubscriptionPl
               ))}
             </ul>
 
-            {currentInterval !== billingInterval && (
+            {currentInterval !== billingInterval && canBilling && (
               <Button
                 onClick={() => handleChangeBillingInterval(billingInterval)}
                 disabled={!!loading}

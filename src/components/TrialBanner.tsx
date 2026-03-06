@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTrialStatus } from '../hooks/useTrialStatus';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
+import { usePermissions } from '../hooks/usePermissions';
 import { supabase } from '../lib/supabase';
 import { Button } from './ui/Button';
 
@@ -28,6 +29,8 @@ const defaultTexts: TrialTexts = {
 export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
   const { user } = useAuth();
   const { isPro } = useSubscription();
+  const permissions = usePermissions();
+  const canBilling = permissions.isOwner || permissions.canManageBilling;
   const trialStatus = useTrialStatus(user?.id);
   const [texts, setTexts] = useState<TrialTexts>(defaultTexts);
 
@@ -82,14 +85,16 @@ export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => onUpgradeClick?.()}
-            variant="pro"
-          >
-            {texts.buttonText}
-          </Button>
-        </div>
+        {canBilling && (
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => onUpgradeClick?.()}
+              variant="pro"
+            >
+              {texts.buttonText}
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
@@ -102,12 +107,14 @@ export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
           <p className="text-white/90 text-sm mb-3">
             {texts.expiredDescription}
           </p>
-          <Button
-            onClick={() => onUpgradeClick?.()}
-            variant="warning"
-          >
-            {texts.buttonText}
-          </Button>
+          {canBilling && (
+            <Button
+              onClick={() => onUpgradeClick?.()}
+              variant="warning"
+            >
+              {texts.buttonText}
+            </Button>
+          )}
         </div>
       </div>
     );

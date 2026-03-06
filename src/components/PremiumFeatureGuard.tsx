@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Lock, Check } from "lucide-react";
 import { useSubscription } from "../hooks/useSubscription";
+import { usePermissions } from "../hooks/usePermissions";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/Button";
 
@@ -16,6 +17,8 @@ export function PremiumFeatureGuard({
   inline = false,
 }: PremiumFeatureGuardProps) {
   const { isPro, loading } = useSubscription();
+  const permissions = usePermissions();
+  const canBilling = permissions.isOwner || permissions.canManageBilling;
   const navigate = useNavigate();
 
   if (loading) {
@@ -45,13 +48,15 @@ export function PremiumFeatureGuard({
               <span className="font-bold text-dark">Pro Feature</span>
             </div>
             <p className="text-sm text-gray-400 mb-3">{featureName}</p>
-            <Button
-              onClick={() => navigate("/dashboard?view=settings-billing")}
-              variant="pro"
-              fullWidth
-            >
-              Jetzt upgraden
-            </Button>
+            {canBilling && (
+              <Button
+                onClick={() => navigate("/dashboard?view=settings-billing")}
+                variant="pro"
+                fullWidth
+              >
+                Jetzt upgraden
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -91,12 +96,14 @@ export function PremiumFeatureGuard({
           </li>
         </ul>
       </div>
-      <Button
-        onClick={() => navigate("/dashboard?view=settings-billing")}
-        variant="pro"
-      >
-        Jetzt upgraden
-      </Button>
+      {canBilling && (
+        <Button
+          onClick={() => navigate("/dashboard?view=settings-billing")}
+          variant="pro"
+        >
+          Jetzt upgraden
+        </Button>
+      )}
     </div>
   );
 }

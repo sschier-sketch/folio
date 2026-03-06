@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Lock, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { usePermissions } from "../hooks/usePermissions";
 import { Button } from "./ui/Button";
 
 interface PremiumUpgradePromptProps {
@@ -24,6 +25,8 @@ export function PremiumUpgradePrompt({
   features: fallbackFeatures,
 }: PremiumUpgradePromptProps) {
   const navigate = useNavigate();
+  const permissions = usePermissions();
+  const canBilling = permissions.isOwner || permissions.canManageBilling;
   const [content, setContent] = useState<ProFeatureText>({
     title: fallbackTitle || "Pro Feature",
     description: fallbackDescription || "Dieses Feature ist nur im Pro-Plan verfügbar.",
@@ -88,12 +91,14 @@ export function PremiumUpgradePrompt({
         </ul>
       </div>
 
-      <Button
-        onClick={() => navigate("/dashboard?view=settings-billing")}
-        variant="pro"
-      >
-        Jetzt upgraden
-      </Button>
+      {canBilling && (
+        <Button
+          onClick={() => navigate("/dashboard?view=settings-billing")}
+          variant="pro"
+        >
+          Jetzt upgraden
+        </Button>
+      )}
     </div>
   );
 }
