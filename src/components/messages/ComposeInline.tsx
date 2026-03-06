@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Users, AtSign, Upload, File as FileIcon, Globe, Info, Building2, DoorOpen, ChevronRight, ArrowLeft, X, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import { sanitizeFileName } from '../../lib/utils';
 import { Button } from '../ui/Button';
 
@@ -45,6 +46,7 @@ const ALL_TENANTS = '__all__';
 
 export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeInlineProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -123,11 +125,11 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
   }, [tenants, isAllUnits]);
 
   async function loadSignature() {
-    if (!user) return;
+    if (!dataOwnerId) return;
     const { data } = await supabase
       .from('user_mail_settings')
       .select('signature')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .maybeSingle();
     if (data?.signature) {
       setSignature(data.signature);
@@ -136,32 +138,32 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
   }
 
   async function loadProperties() {
-    if (!user) return;
+    if (!dataOwnerId) return;
     const { data } = await supabase
       .from('properties')
       .select('id, name, address')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .order('name');
     setProperties(data || []);
   }
 
   async function loadUnits(propertyId: string) {
-    if (!user) return;
+    if (!dataOwnerId) return;
     const { data } = await supabase
       .from('property_units')
       .select('id, unit_number, unit_type')
       .eq('property_id', propertyId)
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .order('unit_number');
     setUnits(data || []);
   }
 
   async function loadTenants(propertyId: string, unitId: string) {
-    if (!user) return;
+    if (!dataOwnerId) return;
     let query = supabase
       .from('tenants')
       .select('id, first_name, last_name, email, property_id, unit_id')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .eq('property_id', propertyId)
       .eq('is_active', true)
       .order('last_name');
@@ -171,22 +173,22 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
   }
 
   async function loadAllTenants() {
-    if (!user) return;
+    if (!dataOwnerId) return;
     const { data } = await supabase
       .from('tenants')
       .select('id, first_name, last_name, email, property_id, unit_id')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .eq('is_active', true)
       .order('last_name');
     setTenants(data || []);
   }
 
   async function loadTemplates() {
-    if (!user) return;
+    if (!dataOwnerId) return;
     const { data } = await supabase
       .from('user_mail_templates')
       .select('id, name, category, subject, content')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .order('name');
     setTemplates(data || []);
   }
@@ -199,10 +201,10 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
   }
 
   async function uploadAttachment(): Promise<{ filePath: string } | null> {
-    if (!attachedFile || !user) return null;
+    if (!attachedFile || !dataOwnerId) return null;
     const sanitized = sanitizeFileName(attachedFile.name);
     const fileName = `${Date.now()}_${sanitized}`;
-    const filePath = `${user.id}/mail-attachments/${fileName}`;
+    const filePath = `${dataOwnerId}/mail-attachments/${fileName}`;
     const { error: uploadError } = await supabase.storage
       .from('documents')
       .upload(filePath, attachedFile, { cacheControl: '3600', upsert: false });
@@ -219,7 +221,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
     emailText: string,
     attachment: { filePath: string } | null,
   ) {
-    if (!user || !tenant.email) return;
+    if (!user || !dataOwnerId || !tenant.email) return;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const rName = `${tenant.first_name} ${tenant.last_name}`.trim();
@@ -234,7 +236,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
         to: tenant.email,
         subject: subject.trim(),
         text: emailText,
-        userId: user.id,
+        userId: dataOwnerId,
         useUserAlias: true,
         storeAsMessage: true,
         recipientName: rName,
@@ -254,7 +256,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
     }
 
     await supabase.from('tenant_communications').insert({
-      user_id: user.id,
+      user_id: dataOwnerId,
       tenant_id: tenant.id,
       communication_type: 'message',
       subject: subject.trim(),
@@ -264,7 +266,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
   }
 
   async function handleSend() {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     setError('');
 
     if (recipientType === 'manual') {
@@ -311,7 +313,7 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
             to: manualEmail.trim(),
             subject: subject.trim(),
             text: emailText,
-            userId: user.id,
+            userId: dataOwnerId,
             useUserAlias: true,
             storeAsMessage: true,
             recipientName: manualName.trim() || manualEmail.trim(),

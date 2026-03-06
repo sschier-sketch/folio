@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Send, ArrowLeft, User, UserPlus, Flag, Trash2, RotateCcw, FileSignature, Paperclip, Download, FileText, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import AssignSenderModal from './AssignSenderModal';
 import type { MailThread, MailMessage, MailAttachment, TicketPriority, TicketCategory } from './types';
 import { Button } from '../ui/Button';
@@ -27,6 +28,7 @@ interface ThreadDetailProps {
   onMessageSent: () => void;
   onTrash: () => void;
   onRestore?: () => void;
+  readOnly?: boolean;
 }
 
 function formatDateTime(dateStr: string): string {
@@ -79,8 +81,9 @@ async function downloadAttachment(att: MailAttachment) {
   document.body.removeChild(link);
 }
 
-export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent, onTrash, onRestore }: ThreadDetailProps) {
+export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent, onTrash, onRestore, readOnly = false }: ThreadDetailProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const [messages, setMessages] = useState<MailMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState('');
@@ -123,11 +126,11 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
   }
 
   async function loadMailSettings() {
-    if (!user) return;
+    if (!dataOwnerId) return;
     const { data } = await supabase
       .from('user_mail_settings')
       .select('signature, signature_default_on')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .maybeSingle();
     if (data) {
       setSignature(data.signature || '');
@@ -145,7 +148,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
   }
 
   async function handleSendReply() {
-    if (!replyText.trim() || !user) return;
+    if (!replyText.trim() || !user || !dataOwnerId || readOnly) return;
     setSending(true);
 
     try {
@@ -167,7 +170,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
           to: recipientEmail,
           subject: `Re: ${thread.subject || ''}`.trim(),
           text: fullText,
-          userId: user.id,
+          userId: dataOwnerId,
           useUserAlias: true,
           storeAsMessage: true,
           threadId: thread.id,
@@ -183,7 +186,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
       if (response.ok && !result.error) {
         if (thread.tenant_id) {
           await supabase.from('tenant_communications').insert({
-            user_id: user.id,
+            user_id: dataOwnerId,
             tenant_id: thread.tenant_id,
             communication_type: 'message',
             subject: thread.subject || 'Antwort',
@@ -258,22 +261,24 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {thread.folder === 'unknown' && (
-              <Button variant="warning" onClick={() => setShowAssign(true)}>
-                Zuordnen
-              </Button>
-            )}
-            {onRestore ? (
-              <Button variant="primary" onClick={onRestore}>
-                Wiederherstellen
-              </Button>
-            ) : (
-              <Button variant="danger" onClick={onTrash}>
-                Löschen
-              </Button>
-            )}
-          </div>
+          {!readOnly && (
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {thread.folder === 'unknown' && (
+                <Button variant="warning" onClick={() => setShowAssign(true)}>
+                  Zuordnen
+                </Button>
+              )}
+              {onRestore ? (
+                <Button variant="primary" onClick={onRestore}>
+                  Wiederherstellen
+                </Button>
+              ) : (
+                <Button variant="danger" onClick={onTrash}>
+                  Löschen
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -345,7 +350,7 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
         })}
       </div>
 
-      {thread.folder !== 'trash' && (
+      {thread.folder !== 'trash' && !readOnly && (
         <div className="px-5 py-3 border-t border-gray-200 bg-white flex-shrink-0">
           <div className="flex gap-3">
             <textarea

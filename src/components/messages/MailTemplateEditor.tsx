@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Eye, Pencil, AlertCircle, Users, Briefcase, Building2, FileText, ChevronDown, Calendar } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import { Button } from '../ui/Button';
 
 interface MailTemplate {
@@ -16,6 +17,7 @@ interface MailTemplateEditorProps {
   template: MailTemplate | null;
   onBack: () => void;
   onSaved: () => void;
+  readOnly?: boolean;
 }
 
 interface PlaceholderItem {
@@ -93,8 +95,9 @@ const PLACEHOLDER_GROUPS: PlaceholderGroup[] = [
   },
 ];
 
-export default function MailTemplateEditor({ template, onBack, onSaved }: MailTemplateEditorProps) {
+export default function MailTemplateEditor({ template, onBack, onSaved, readOnly = false }: MailTemplateEditorProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const [tab, setTab] = useState<'edit' | 'preview'>('edit');
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Sonstiges');
@@ -165,7 +168,7 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
   }
 
   async function handleSave() {
-    if (!user) return;
+    if (!user || !dataOwnerId || readOnly) return;
     if (!name.trim()) {
       setError('Bitte geben Sie einen Namen für die Vorlage ein.');
       return;
@@ -179,7 +182,7 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
     setError('');
 
     const payload = {
-      user_id: user.id,
+      user_id: dataOwnerId,
       name: name.trim(),
       category,
       subject: subject.trim(),
@@ -268,7 +271,8 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="z.B. Zahlungserinnerung"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                disabled={readOnly}
               />
             </div>
             <div>
@@ -276,7 +280,8 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                disabled={readOnly}
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -292,7 +297,8 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Betreff der Nachricht"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+              disabled={readOnly}
             />
           </div>
 
@@ -317,7 +323,8 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
                   onChange={(e) => setContent(e.target.value)}
                   rows={14}
                   placeholder={"Schreiben Sie hier Ihre Vorlage...\n\nVerwenden Sie Platzhalter wie {{mieter_name}} für dynamische Inhalte."}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-y leading-relaxed"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-y leading-relaxed disabled:bg-gray-50 disabled:text-gray-500"
+                  disabled={readOnly}
                 />
                 <p className="mt-1.5 text-xs text-gray-400">
                   Diese Vorlage kann für E-Mails verwendet werden.
@@ -387,11 +394,13 @@ export default function MailTemplateEditor({ template, onBack, onSaved }: MailTe
 
       <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
         <Button variant="secondary" onClick={onBack}>
-          Abbrechen
+          {readOnly ? 'Zurück' : 'Abbrechen'}
         </Button>
-        <Button variant="primary" onClick={handleSave} disabled={saving}>
-          {saving ? 'Speichern...' : 'Speichern'}
-        </Button>
+        {!readOnly && (
+          <Button variant="primary" onClick={handleSave} disabled={saving}>
+            {saving ? 'Speichern...' : 'Speichern'}
+          </Button>
+        )}
       </div>
     </div>
   );

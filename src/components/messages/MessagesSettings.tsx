@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react';
 import { Save, Check, AlertCircle, User, FileSignature, AtSign, ToggleLeft, ToggleRight, Info } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import { Button } from '../ui/Button';
 
 interface MessagesSettingsProps {
   onSettingsChanged?: () => void;
   currentAlias?: string;
   onAliasUpdated?: (newAlias: string) => void;
+  readOnly?: boolean;
 }
 
-export default function MessagesSettings({ onSettingsChanged, currentAlias, onAliasUpdated }: MessagesSettingsProps) {
+export default function MessagesSettings({ onSettingsChanged, currentAlias, onAliasUpdated, readOnly = false }: MessagesSettingsProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const [senderName, setSenderName] = useState('');
   const [signature, setSignature] = useState('');
   const [signatureDefaultOn, setSignatureDefaultOn] = useState(true);
@@ -31,12 +34,12 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
   }, [currentAlias]);
 
   async function loadSettings() {
-    if (!user) return;
+    if (!dataOwnerId) return;
     setLoading(true);
     const { data } = await supabase
       .from('user_mail_settings')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .maybeSingle();
 
     if (data) {
@@ -48,7 +51,7 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
   }
 
   async function handleSave() {
-    if (!user) return;
+    if (!dataOwnerId || readOnly) return;
     setSaving(true);
     setError('');
     setSuccess('');
@@ -56,7 +59,7 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
     const { error: upsertError } = await supabase
       .from('user_mail_settings')
       .upsert({
-        user_id: user.id,
+        user_id: dataOwnerId,
         sender_name: senderName.trim(),
         signature: signature.trim(),
         signature_default_on: signatureDefaultOn,
@@ -87,6 +90,7 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
   }
 
   async function handleSaveAlias() {
+    if (readOnly) return;
     const cleaned = alias.toLowerCase().trim();
     const validationError = validateAlias(cleaned);
     if (validationError) {
@@ -197,8 +201,9 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
                 type="text"
                 value={alias}
                 onChange={(e) => { setAlias(e.target.value.toLowerCase()); setError(''); }}
-                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                 placeholder="mein-alias"
+                disabled={readOnly}
               />
               <span className="px-4 py-2.5 bg-gray-50 border border-l-0 border-gray-200 rounded-r-lg text-sm text-gray-500 font-medium whitespace-nowrap">
                 @rentab.ly
@@ -208,7 +213,7 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
               Unter dieser Adresse empfangen und senden Sie E-Mails.
             </p>
           </div>
-          {alias.trim() !== currentAlias && alias.trim().length >= 3 && (
+          {!readOnly && alias.trim() !== currentAlias && alias.trim().length >= 3 && (
             <Button variant="primary" onClick={handleSaveAlias} disabled={savingAlias}>
               {savingAlias ? 'Speichern...' : 'Adresse speichern'}
             </Button>
@@ -228,7 +233,8 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
               value={senderName}
               onChange={(e) => setSenderName(e.target.value)}
               placeholder="z.B. Max Mustermann oder Hausverwaltung Mustermann"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+              disabled={readOnly}
             />
             <p className="mt-1.5 text-xs text-gray-400">
               Wird als Absender in ausgehenden E-Mails angezeigt.
@@ -245,7 +251,8 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
               onChange={(e) => setSignature(e.target.value)}
               rows={6}
               placeholder={"Mit freundlichen Grüßen\nMax Mustermann\nHausverwaltung Mustermann\nTel: +49 123 456789"}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none font-mono leading-relaxed"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none font-mono leading-relaxed disabled:bg-gray-50 disabled:text-gray-500"
+              disabled={readOnly}
             />
             <p className="mt-1.5 text-xs text-gray-400">
               Wird automatisch am Ende jeder neuen E-Mail eingefügt.
@@ -255,8 +262,9 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
           <div>
             <button
               type="button"
-              onClick={() => setSignatureDefaultOn(!signatureDefaultOn)}
-              className="flex items-center gap-3 w-full text-left group"
+              onClick={() => { if (!readOnly) setSignatureDefaultOn(!signatureDefaultOn); }}
+              disabled={readOnly}
+              className="flex items-center gap-3 w-full text-left group disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {signatureDefaultOn ? (
                 <ToggleRight className="w-8 h-8 text-blue-600 flex-shrink-0" />
@@ -285,11 +293,13 @@ export default function MessagesSettings({ onSettingsChanged, currentAlias, onAl
             </div>
           )}
 
-          <div className="pt-2">
-            <Button variant="primary" onClick={handleSave} disabled={saving}>
-              {saving ? 'Speichern...' : 'Einstellungen speichern'}
-            </Button>
-          </div>
+          {!readOnly && (
+            <div className="pt-2">
+              <Button variant="primary" onClick={handleSave} disabled={saving}>
+                {saving ? 'Speichern...' : 'Einstellungen speichern'}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

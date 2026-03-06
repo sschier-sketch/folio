@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Search, UserPlus, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import type { MailThread } from './types';
 import { Button } from '../ui/Button';
 
@@ -22,6 +23,7 @@ interface AssignSenderModalProps {
 
 export default function AssignSenderModal({ isOpen, onClose, thread, onAssigned }: AssignSenderModalProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [assigning, setAssigning] = useState(false);
@@ -32,11 +34,11 @@ export default function AssignSenderModal({ isOpen, onClose, thread, onAssigned 
   }, [isOpen, user]);
 
   async function loadTenants() {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     const { data } = await supabase
       .from('tenants')
       .select('id, first_name, last_name, email, properties(name)')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .eq('is_deleted', false)
       .order('last_name');
 
