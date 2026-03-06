@@ -52,6 +52,7 @@ import BillingView from "./BillingView";
 import TicketsView from "./TicketsView";
 import MessagesView from "./messages/MessagesView";
 import ServiceView from "./ServiceView";
+import UsersManagementView from "./UsersManagementView";
 import Footer from "./Footer";
 import SystemUpdatesModal from "./SystemUpdatesModal";
 import Badge from "./common/Badge";
@@ -71,7 +72,8 @@ type View =
   | "settings-billing"
   | "feedback"
   | "service"
-  | "referral";
+  | "referral"
+  | "users";
 export default function Dashboard() {
   const [currentView, setCurrentView] = useState<View>("home");
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
@@ -103,7 +105,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const view = searchParams.get('view');
-    if (view && ['home', 'properties', 'tenants', 'mieterportal', 'messages', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'service', 'referral'].includes(view)) {
+    if (view && ['home', 'properties', 'tenants', 'mieterportal', 'messages', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'service', 'referral', 'users'].includes(view)) {
       setCurrentView(view as View);
       const preserved: Record<string, string> = {};
       const tab = searchParams.get('tab');
@@ -336,6 +338,19 @@ export default function Dashboard() {
                       <CreditCard className="w-4 h-4" />{" "}
                       <span className="text-sm">
                         {t("settings.billing")}
+                      </span>{" "}
+                    </button>{" "}
+                    <button
+                      onClick={() => {
+                        setCurrentView("users");
+                        setShowSettingsDropdown(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-gray-400 hover:bg-gray-50 transition-colors"
+                    >
+                      {" "}
+                      <UserCog className="w-4 h-4" />{" "}
+                      <span className="text-sm">
+                        {language === "de" ? "Benutzerverwaltung" : "User Management"}
                       </span>{" "}
                     </button>{" "}
                     <div className="border-t my-2"></div>{" "}
@@ -649,6 +664,7 @@ export default function Dashboard() {
             {currentView === "feedback" && <FeedbackListView key={viewResetKey} />}{" "}
             {currentView === "service" && <ServiceView key={viewResetKey} />}{" "}
             {currentView === "referral" && <ReferralProgramView key={viewResetKey} />}{" "}
+            {currentView === "users" && <UsersManagementView key={viewResetKey} />}{" "}
           </main>{" "}
           </div>
         </div>{" "}
