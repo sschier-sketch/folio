@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, FileSignature, X } from 'lucide-react';
+import { Calendar, Ligature as FileSignature, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { usePermissions } from '../../hooks/usePermissions';
