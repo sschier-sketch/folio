@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Calendar, FileSignature, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { usePermissions } from '../../hooks/usePermissions';
 import { Button } from '../ui/Button';
 
 interface Props {
@@ -25,13 +26,14 @@ export default function EndContractModal({
   onNavigateToWizard,
 }: Props) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const [step, setStep] = useState<'choice' | 'date'>('choice');
   const [moveOutDate, setMoveOutDate] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   async function handleEndContract() {
-    if (!moveOutDate || !user) return;
+    if (!moveOutDate || !user || !dataOwnerId) return;
     setSaving(true);
     setError('');
 

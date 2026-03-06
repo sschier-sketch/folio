@@ -223,7 +223,7 @@ export default function TenantCommunicationTab({
           if (attachedFile && documentId) {
             const { data: { publicUrl } } = supabase.storage
               .from("documents")
-              .getPublicUrl(`${user.id}/${Date.now()}_${attachedFile.name}`);
+              .getPublicUrl(`${dataOwnerId}/${Date.now()}_${attachedFile.name}`);
 
             emailContent += `\n\nAnhang: ${attachedFile.name}`;
           }
@@ -275,7 +275,7 @@ export default function TenantCommunicationTab({
         .update({
           is_deleted: true,
           deleted_at: new Date().toISOString(),
-          deleted_by: user.id,
+          deleted_by: dataOwnerId,
         })
         .eq("id", commId);
 
@@ -429,9 +429,11 @@ export default function TenantCommunicationTab({
                 Alle Nachrichten von Ihnen oder dem Mieter zentral verwaltet
               </p>
             </div>
-            <Button onClick={() => setShowNewEntry(true)} variant="primary">
-              Nachricht versenden
-            </Button>
+            {!readOnly && (
+              <Button onClick={() => setShowNewEntry(true)} variant="primary">
+                Nachricht versenden
+              </Button>
+            )}
           </div>
 
           {loading ? (
@@ -446,9 +448,11 @@ export default function TenantCommunicationTab({
                 Erfassen Sie Nachrichten, versendete Dokumente oder interne
                 Notizen
               </p>
-              <Button onClick={() => setShowNewEntry(true)} variant="primary">
-                Ersten Eintrag erstellen
-              </Button>
+              {!readOnly && (
+                <Button onClick={() => setShowNewEntry(true)} variant="primary">
+                  Ersten Eintrag erstellen
+                </Button>
+              )}
             </div>
           ) : (
             <div className="p-6">
@@ -500,7 +504,7 @@ export default function TenantCommunicationTab({
                               Gelöscht
                             </span>
                           )}
-                          {!comm.is_ticket && !comm.is_deleted && (
+                          {!comm.is_ticket && !comm.is_deleted && !readOnly && (
                             <button
                               onClick={() => handleDeleteCommunication(comm.id)}
                               className="ml-auto p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"

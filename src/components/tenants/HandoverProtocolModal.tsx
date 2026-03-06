@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { Button } from '../ui/Button';
 
 interface HandoverProtocolModalProps {
@@ -69,6 +70,7 @@ export default function HandoverProtocolModal({
   onSave,
 }: HandoverProtocolModalProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -137,12 +139,12 @@ export default function HandoverProtocolModal({
         supabase
           .from("properties")
           .select("id, name, street, house_number, postal_code, city")
-          .eq("user_id", user!.id)
+          .eq("user_id", dataOwnerId!)
           .order("name"),
         supabase
           .from("account_profiles")
           .select("first_name, last_name, company_name")
-          .eq("user_id", user!.id)
+          .eq("user_id", dataOwnerId!)
           .maybeSingle(),
       ]);
 
@@ -434,7 +436,7 @@ export default function HandoverProtocolModal({
   const handleSubmit = async (e: React.FormEvent, asDraft: boolean = false) => {
     e.preventDefault();
 
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     if (!asDraft && !keys.allKeysReceived && !keys.missingKeysNote.trim()) {
       alert("Bitte geben Sie eine Notiz ein, wenn Schlüssel fehlen.");
@@ -450,7 +452,7 @@ export default function HandoverProtocolModal({
         if (photo.file) {
           const fileExt = photo.file.name.split(".").pop();
           const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-          const filePath = `${user.id}/handover/${fileName}`;
+          const filePath = `${dataOwnerId}/handover/${fileName}`;
 
           const { error: uploadError } = await supabase.storage
             .from("documents")
@@ -469,7 +471,7 @@ export default function HandoverProtocolModal({
 
       const { error } = await supabase.from("handover_protocols").insert([
         {
-          user_id: user.id,
+          user_id: dataOwnerId,
           contract_id: contractId,
           property_id: contextData.propertyId || null,
           unit_id: contextData.unitId || null,
