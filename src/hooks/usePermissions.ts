@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./useAuth";
 
@@ -46,14 +46,35 @@ const DEFAULT_OWNER_PERMISSIONS: UserPermissions = {
   propertyAccess: "write",
 };
 
+export type SectionKey =
+  | "finances"
+  | "statements"
+  | "rent_payments"
+  | "leases"
+  | "messages"
+  | "billing"
+  | "users";
+
+const SECTION_PERMISSION_MAP: Record<SectionKey, keyof UserPermissions> = {
+  finances: "canViewFinances",
+  statements: "canViewStatements",
+  rent_payments: "canViewRentPayments",
+  leases: "canViewLeases",
+  messages: "canViewMessages",
+  billing: "canManageBilling",
+  users: "canManageUsers",
+};
+
 export function usePermissions() {
   const { user } = useAuth();
   const [permissions, setPermissions] = useState<UserPermissions>(DEFAULT_OWNER_PERMISSIONS);
+  const [allowedPropertyIds, setAllowedPropertyIds] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       setPermissions(DEFAULT_OWNER_PERMISSIONS);
+      setAllowedPropertyIds(null);
       setLoading(false);
       return;
     }
@@ -74,8 +95,9 @@ export function usePermissions() {
 
         if (!data || !data.account_owner_id) {
           setPermissions(DEFAULT_OWNER_PERMISSIONS);
+          setAllowedPropertyIds(null);
         } else {
-          setPermissions({
+          const perms: UserPermissions = {
             role: data.role || "member",
             isOwner: false,
             isMember: true,
@@ -95,11 +117,25 @@ export function usePermissions() {
             canViewMessages: data.can_view_messages ?? false,
             propertyScope: data.property_scope || "all",
             propertyAccess: data.property_access || "write",
-          });
+          };
+          setPermissions(perms);
+
+          if (perms.propertyScope === "selected") {
+            const { data: propAssignments } = await supabase
+              .from("account_member_properties")
+              .select("property_id")
+              .eq("member_user_id", user.id);
+            setAllowedPropertyIds(
+              (propAssignments || []).map((a) => a.property_id)
+            );
+          } else {
+            setAllowedPropertyIds(null);
+          }
         }
       } catch (err) {
         console.error("Error loading permissions:", err);
         setPermissions(DEFAULT_OWNER_PERMISSIONS);
+        setAllowedPropertyIds(null);
       } finally {
         setLoading(false);
       }
@@ -110,9 +146,75 @@ export function usePermissions() {
 
   const canWrite = !permissions.isReadOnly && permissions.propertyAccess === "write";
 
+  const dataOwnerId = permissions.isMember && permissions.accountOwnerId
+    ? permissions.accountOwnerId
+    : user?.id || null;
+
+  const canAccessSection = useCallback(
+    (section: SectionKey): boolean => {
+      if (permissions.isOwner) return true;
+      if (!permissions.isActiveMember) return false;
+      if (section === "billing") return permissions.canManageBilling;
+      if (section === "users") return permissions.canManageUsers;
+      return permissions[SECTION_PERMISSION_MAP[section]] as boolean;
+    },
+    [permissions]
+  );
+
+  const canAccessProperty = useCallback(
+    (propertyId: string): boolean => {
+      if (permissions.isOwner) return true;
+      if (!permissions.isActiveMember) return false;
+      if (permissions.propertyScope === "all") return true;
+      if (!allowedPropertyIds) return false;
+      return allowedPropertyIds.includes(propertyId);
+    },
+    [permissions, allowedPropertyIds]
+  );
+
+  const filterPropertiesByScope = useCallback(
+    <T extends { id: string }>(properties: T[]): T[] => {
+      if (permissions.isOwner || permissions.propertyScope === "all") return properties;
+      if (!allowedPropertyIds) return [];
+      return properties.filter((p) => allowedPropertyIds.includes(p.id));
+    },
+    [permissions, allowedPropertyIds]
+  );
+
+  const filterByPropertyId = useCallback(
+    <T extends { property_id: string }>(items: T[]): T[] => {
+      if (permissions.isOwner || permissions.propertyScope === "all") return items;
+      if (!allowedPropertyIds) return [];
+      return items.filter((item) => allowedPropertyIds.includes(item.property_id));
+    },
+    [permissions, allowedPropertyIds]
+  );
+
+  const canWriteProperty = useCallback(
+    (propertyId?: string): boolean => {
+      if (permissions.isOwner) return true;
+      if (!permissions.isActiveMember) return false;
+      if (permissions.isReadOnly) return false;
+      if (permissions.propertyAccess !== "write") return false;
+      if (propertyId && permissions.propertyScope === "selected") {
+        if (!allowedPropertyIds) return false;
+        return allowedPropertyIds.includes(propertyId);
+      }
+      return true;
+    },
+    [permissions, allowedPropertyIds]
+  );
+
   return {
     ...permissions,
     loading,
     canWrite,
+    dataOwnerId,
+    allowedPropertyIds,
+    canAccessSection,
+    canAccessProperty,
+    filterPropertiesByScope,
+    filterByPropertyId,
+    canWriteProperty,
   };
 }

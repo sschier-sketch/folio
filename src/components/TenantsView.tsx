@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Users, Building, Calendar, DollarSign, Eye } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import TenantContractDetails from "./TenantContractDetails";
 import TenantModal from "./TenantModal";
 import EndContractModal from "./tenants/EndContractModal";
@@ -53,6 +54,7 @@ interface TenantsViewProps {
 
 export default function TenantsView({ selectedTenantId: externalSelectedTenantId, onClearSelection, onNavigateToTemplates }: TenantsViewProps = {}) {
   const { user } = useAuth();
+  const { dataOwnerId, filterByPropertyId, canWrite, loading: permLoading } = usePermissions();
   const [tenants, setTenants] = useState<TenantWithDetails[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,12 +76,13 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
   }, [externalSelectedTenantId]);
 
   useEffect(() => {
-    if (user) {
+    if (user && !permLoading) {
       loadData();
     }
-  }, [user]);
+  }, [user, dataOwnerId, permLoading]);
 
   async function loadData() {
+    if (!dataOwnerId) return;
     try {
       setLoading(true);
 
@@ -92,7 +95,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
           `)
           .eq("is_active", true)
           .order("name"),
-        supabase.from("properties").select("id, name").order("name"),
+        supabase.from("properties").select("id, name").eq("user_id", dataOwnerId).order("name"),
       ]);
 
       if (tenantsRes.data) {
@@ -145,7 +148,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
           })
         );
 
-        setTenants(tenantsWithContracts);
+        setTenants(filterByPropertyId(tenantsWithContracts));
       }
 
       if (propertiesRes.data) setProperties(propertiesRes.data);

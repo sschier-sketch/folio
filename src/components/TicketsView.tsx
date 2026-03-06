@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import TicketModal from "./TicketModal";
 import TicketDetails from "./TicketDetails";
 import { PremiumFeatureGuard } from "./PremiumFeatureGuard";
@@ -43,6 +44,7 @@ interface TicketsViewProps {
 
 export default function TicketsView({ initialTicketId }: TicketsViewProps) {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, canWrite, loading: permLoading } = usePermissions();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -53,8 +55,9 @@ export default function TicketsView({ initialTicketId }: TicketsViewProps) {
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   useEffect(() => {
+    if (!user || permLoading || !dataOwnerId) return;
     loadData();
-  }, [user]);
+  }, [user, dataOwnerId, permLoading]);
 
   useEffect(() => {
     if (initialTicketId && tickets.length > 0) {
@@ -66,23 +69,23 @@ export default function TicketsView({ initialTicketId }: TicketsViewProps) {
     }
   }, [initialTicketId, tickets]);
   const loadData = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     try {
       const [ticketsRes, propertiesRes, tenantsRes] = await Promise.all([
         supabase
           .from("tickets")
           .select("*, properties(name), tenants(first_name, last_name)")
-          .eq("user_id", user.id)
+          .eq("user_id", dataOwnerId)
           .order("status", { ascending: true })
           .order("created_at", { ascending: false }),
-        supabase.from("properties").select("id, name").eq("user_id", user.id),
+        supabase.from("properties").select("id, name").eq("user_id", dataOwnerId),
         supabase
           .from("tenants")
           .select("id, first_name, last_name")
-          .eq("user_id", user.id),
+          .eq("user_id", dataOwnerId),
       ]);
       setTickets(ticketsRes.data || []);
-      setProperties(propertiesRes.data || []);
+      setProperties(filterPropertiesByScope(propertiesRes.data || []));
       setTenants(tenantsRes.data || []);
     } catch (error) {
       console.error("Error loading data:", error);

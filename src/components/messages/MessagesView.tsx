@@ -3,6 +3,7 @@ import { Plus, Mail, RefreshCw, Eye, Inbox, Trash2, Settings, FileText } from 'l
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscription } from '../../hooks/useSubscription';
+import { usePermissions } from '../../hooks/usePermissions';
 import { PremiumUpgradePrompt } from '../PremiumUpgradePrompt';
 import FolderList from './FolderList';
 import type { SidebarView } from './FolderList';
@@ -32,6 +33,7 @@ interface MailTemplate {
 export default function MessagesView() {
   const { user } = useAuth();
   const { isPro } = useSubscription();
+  const { dataOwnerId, loading: permLoading } = usePermissions();
   const [mailbox, setMailbox] = useState<UserMailbox | null>(null);
   const [threads, setThreads] = useState<MailThread[]>([]);
   const [activeTab, setActiveTab] = useState<MessagesTab>('overview');
@@ -47,30 +49,30 @@ export default function MessagesView() {
   const [templateListKey, setTemplateListKey] = useState(0);
 
   const loadMailbox = useCallback(async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     const { data } = await supabase
       .from('user_mailboxes')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .maybeSingle();
     if (data) setMailbox(data);
-  }, [user]);
+  }, [user, dataOwnerId]);
 
   const loadThreads = useCallback(async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     setLoading(true);
     const { data } = await supabase
       .from('mail_threads')
       .select('*, tenants(first_name, last_name, email)')
-      .eq('user_id', user.id)
+      .eq('user_id', dataOwnerId)
       .eq('folder', activeFolder)
       .order('last_message_at', { ascending: false });
     setThreads((data as MailThread[]) || []);
     setLoading(false);
-  }, [user, activeFolder]);
+  }, [user, dataOwnerId, activeFolder]);
 
   const loadCounts = useCallback(async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     const folders: Folder[] = ['inbox', 'sent', 'unknown', 'trash'];
     const counts: Record<Folder, number> = { inbox: 0, sent: 0, unknown: 0, trash: 0 };
     const unreads: Record<Folder, number> = { inbox: 0, sent: 0, unknown: 0, trash: 0 };
@@ -78,20 +80,20 @@ export default function MessagesView() {
       const { count: total } = await supabase
         .from('mail_threads')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .eq('user_id', dataOwnerId)
         .eq('folder', folder);
       counts[folder] = total || 0;
       const { count: unread } = await supabase
         .from('mail_threads')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .eq('user_id', dataOwnerId)
         .eq('folder', folder)
         .eq('status', 'unread');
       unreads[folder] = unread || 0;
     }
     setFolderCounts(counts);
     setUnreadCounts(unreads);
-  }, [user]);
+  }, [user, dataOwnerId]);
 
   useEffect(() => { loadMailbox(); }, [loadMailbox]);
   useEffect(() => { loadThreads(); }, [loadThreads]);

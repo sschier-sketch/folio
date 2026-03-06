@@ -35,6 +35,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useSubscription } from "../hooks/useSubscription";
 import { useTrialStatus } from "../hooks/useTrialStatus";
+import { usePermissions } from "../hooks/usePermissions";
 import PropertiesView from "./PropertiesView";
 import TenantsView from "./TenantsView";
 import MieterportalView from "./MieterportalView";
@@ -53,6 +54,7 @@ import TicketsView from "./TicketsView";
 import MessagesView from "./messages/MessagesView";
 import ServiceView from "./ServiceView";
 import UsersManagementView from "./UsersManagementView";
+import { SectionGuard } from "./SectionGuard";
 import Footer from "./Footer";
 import SystemUpdatesModal from "./SystemUpdatesModal";
 import Badge from "./common/Badge";
@@ -93,6 +95,7 @@ export default function Dashboard() {
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
   const { isPremium } = useSubscription();
+  const permissions = usePermissions();
   const trialStatus = useTrialStatus(user?.id);
   const trialConfirmedRef = useRef(false);
   if (!trialStatus.isLoading && trialStatus.hasActiveTrial) {
@@ -164,6 +167,19 @@ export default function Dashboard() {
 
   const handleOpenPortal = () => {
     window.open("/mieterportal", "_blank");
+  };
+
+  const isNavHidden = (id: string): boolean => {
+    if (permissions.isOwner || permissions.loading) return false;
+    if (!permissions.isActiveMember && permissions.isMember) return true;
+    switch (id) {
+      case "payments": return !permissions.canViewRentPayments;
+      case "financial": return !permissions.canViewFinances;
+      case "billing": return !permissions.canViewStatements;
+      case "tenants": return !permissions.canViewLeases;
+      case "messages": return !permissions.canViewMessages;
+      default: return false;
+    }
   };
 
   const navigation = [
@@ -327,6 +343,7 @@ export default function Dashboard() {
                         {t("settings.profile")}
                       </span>{" "}
                     </button>{" "}
+                    {(permissions.isOwner || permissions.canManageBilling) && (
                     <button
                       onClick={() => {
                         setCurrentView("settings-billing");
@@ -339,7 +356,9 @@ export default function Dashboard() {
                       <span className="text-sm">
                         {t("settings.billing")}
                       </span>{" "}
-                    </button>{" "}
+                    </button>
+                    )}{" "}
+                    {(permissions.isOwner || permissions.canManageUsers) && (
                     <button
                       onClick={() => {
                         setCurrentView("users");
@@ -352,7 +371,8 @@ export default function Dashboard() {
                       <span className="text-sm">
                         {language === "de" ? "Benutzerverwaltung" : "User Management"}
                       </span>{" "}
-                    </button>{" "}
+                    </button>
+                    )}{" "}
                     <div className="border-t my-2"></div>{" "}
                     <button
                       onClick={() => {
@@ -456,6 +476,7 @@ export default function Dashboard() {
             <nav className="bg-white rounded p-2">
               {" "}
               {navigation.map((item) => {
+                if (isNavHidden(item.id)) return null;
                 const isLocked = (item.id === "mieterportal" || item.id === "messages") && !isPremium;
                 return (
                   <button
@@ -558,6 +579,7 @@ export default function Dashboard() {
             <nav className="bg-white rounded p-2">
               {" "}
               {navigation.map((item) => {
+                if (isNavHidden(item.id)) return null;
                 const isLocked = (item.id === "mieterportal" || item.id === "messages") && !isPremium;
                 return (
                   <button
@@ -650,21 +672,21 @@ export default function Dashboard() {
             {" "}
             {currentView === "home" && <DashboardHome key={viewResetKey} onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} onChangeView={(view) => setCurrentView(view as View)} />}{" "}
             {currentView === "properties" && <PropertiesView key={viewResetKey} selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
-            {currentView === "tenants" && <TenantsView key={viewResetKey} selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} onNavigateToTemplates={() => setCurrentView("templates")} />}{" "}
-            {currentView === "payments" && <RentPaymentsView key={viewResetKey} />}{" "}
-            {currentView === "messages" && <MessagesView key={viewResetKey} />}{" "}
+            {currentView === "tenants" && <SectionGuard section="leases"><TenantsView key={viewResetKey} selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} onNavigateToTemplates={() => setCurrentView("templates")} /></SectionGuard>}{" "}
+            {currentView === "payments" && <SectionGuard section="rent_payments"><RentPaymentsView key={viewResetKey} /></SectionGuard>}{" "}
+            {currentView === "messages" && <SectionGuard section="messages"><MessagesView key={viewResetKey} /></SectionGuard>}{" "}
             {currentView === "mieterportal" && <MieterportalView key={viewResetKey} />}{" "}
-            {currentView === "financial" && <FinancesView key={viewResetKey} />}{" "}
+            {currentView === "financial" && <SectionGuard section="finances"><FinancesView key={viewResetKey} /></SectionGuard>}{" "}
             {currentView === "documents" && <DocumentsView key={viewResetKey} onNavigateToTemplates={() => setCurrentView("templates")} />}{" "}
             {currentView === "templates" && <TemplatesView key={viewResetKey} />}{" "}
-            {currentView === "billing" && <BillingView key={viewResetKey} />}{" "}
+            {currentView === "billing" && <SectionGuard section="statements"><BillingView key={viewResetKey} /></SectionGuard>}{" "}
             {currentView === "tickets" && <TicketsView key={viewResetKey} initialTicketId={selectedTicketId} />}{" "}
             {currentView === "settings-profile" && <ProfileSettingsView key={viewResetKey} />}{" "}
-            {currentView === "settings-billing" && <BillingSettingsView key={viewResetKey} />}{" "}
+            {currentView === "settings-billing" && <SectionGuard section="billing"><BillingSettingsView key={viewResetKey} /></SectionGuard>}{" "}
             {currentView === "feedback" && <FeedbackListView key={viewResetKey} />}{" "}
             {currentView === "service" && <ServiceView key={viewResetKey} />}{" "}
             {currentView === "referral" && <ReferralProgramView key={viewResetKey} />}{" "}
-            {currentView === "users" && <UsersManagementView key={viewResetKey} />}{" "}
+            {currentView === "users" && <SectionGuard section="users"><UsersManagementView key={viewResetKey} /></SectionGuard>}{" "}
           </main>{" "}
           </div>
         </div>{" "}
