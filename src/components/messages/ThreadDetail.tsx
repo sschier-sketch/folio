@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, ArrowLeft, User, UserPlus, Flag, Trash2, RotateCcw, FileSignature, Paperclip, Download, FileText, Image as ImageIcon } from 'lucide-react';
+import { Send, ArrowLeft, User, UserPlus, Flag, Trash2, RotateCcw, Ligature as FileSignature, Paperclip, Download, FileText, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';

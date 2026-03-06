@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Check, AlertCircle, User, FileSignature, AtSign, ToggleLeft, ToggleRight, Info } from 'lucide-react';
+import { Save, Check, AlertCircle, User, Ligature as FileSignature, AtSign, ToggleLeft, ToggleRight, Info } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
