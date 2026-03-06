@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { FileText, Upload, X, Calendar } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import DocumentDetails from "../documents/DocumentDetails";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
@@ -11,6 +12,7 @@ import { Button } from '../ui/Button';
 
 interface TenantContractTabProps {
   tenantId: string;
+  readOnly?: boolean;
 }
 
 interface Document {
@@ -33,8 +35,10 @@ interface UploadFile {
 
 export default function TenantContractTab({
   tenantId,
+  readOnly = false,
 }: TenantContractTabProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -185,7 +189,7 @@ export default function TenantContractTab({
   };
 
   async function handleUpload() {
-    if (!user || uploadFiles.length === 0 || !contractId) return;
+    if (!user || !dataOwnerId || uploadFiles.length === 0 || !contractId) return;
 
     setIsUploading(true);
     const results: { id: string; success: boolean }[] = [];
@@ -200,7 +204,7 @@ export default function TenantContractTab({
 
         const fileExt = uploadFile.file.name.split(".").pop();
         const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `${user.id}/${fileName}`;
+        const filePath = `${dataOwnerId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("documents")
@@ -212,7 +216,7 @@ export default function TenantContractTab({
           .from("documents")
           .insert([
             {
-              user_id: user.id,
+              user_id: dataOwnerId,
               file_name: uploadFile.file.name,
               file_path: filePath,
               file_type: uploadFile.file.type || 'application/octet-stream',
@@ -232,7 +236,7 @@ export default function TenantContractTab({
           document_id: docData.id,
           association_type: "tenant",
           association_id: tenantId,
-          created_by: user.id,
+          created_by: dataOwnerId,
         });
 
         if (assocError) throw assocError;
@@ -380,18 +384,22 @@ export default function TenantContractTab({
               Hier werden alle Dokumente angezeigt, die diesem Mietverhältnis zugeordnet sind
             </p>
           </div>
-          <Button onClick={() => setShowUploadModal(true)} variant="primary">
-            Dokument hochladen
-          </Button>
+          {!readOnly && (
+            <Button onClick={() => setShowUploadModal(true)} variant="primary">
+              Dokument hochladen
+            </Button>
+          )}
         </div>
 
         {documents.length === 0 ? (
           <div className="p-12 text-center">
             <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-400 mb-4">Keine Dokumente vorhanden</p>
-            <Button onClick={() => setShowUploadModal(true)} variant="primary">
-              Erstes Dokument hochladen
-            </Button>
+            {!readOnly && (
+              <Button onClick={() => setShowUploadModal(true)} variant="primary">
+                Erstes Dokument hochladen
+              </Button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -464,11 +472,11 @@ export default function TenantContractTab({
                               label: "Herunterladen",
                               onClick: () => handleDownload(doc.file_path, doc.file_name),
                             },
-                            {
+                            ...(readOnly ? [] : [{
                               label: "Löschen",
                               onClick: () => handleDelete(doc.id, doc.file_path),
-                              variant: "danger",
-                            },
+                              variant: "danger" as const,
+                            }]),
                           ]}
                         />
                       </div>
@@ -481,7 +489,7 @@ export default function TenantContractTab({
         )}
       </div>
 
-      {showUploadModal && (
+      {showUploadModal && !readOnly && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">

@@ -54,7 +54,7 @@ interface TenantsViewProps {
 
 export default function TenantsView({ selectedTenantId: externalSelectedTenantId, onClearSelection, onNavigateToTemplates }: TenantsViewProps = {}) {
   const { user } = useAuth();
-  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, canWrite, loading: permLoading } = usePermissions();
   const [tenants, setTenants] = useState<TenantWithDetails[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -358,12 +358,14 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
               )}
             </div>
           )}
-          <Button
-            onClick={() => setShowTenantModal(true)}
-            variant="primary"
-          >
-            Mietverhältnis anlegen
-          </Button>
+          {canWrite && (
+            <Button
+              onClick={() => setShowTenantModal(true)}
+              variant="primary"
+            >
+              Mietverhältnis anlegen
+            </Button>
+          )}
         </div>
       </div>
 
@@ -377,12 +379,14 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
             Fügen Sie Ihr erstes Mietverhältnis hinzu, um mit der Verwaltung zu
             beginnen.
           </p>
-          <Button
-            onClick={() => setShowTenantModal(true)}
-            variant="primary"
-          >
-            Erstes Mietverhältnis hinzufügen
-          </Button>
+          {canWrite && (
+            <Button
+              onClick={() => setShowTenantModal(true)}
+              variant="primary"
+            >
+              Erstes Mietverhältnis hinzufügen
+            </Button>
+          )}
         </div>
       ) : (
         <>
@@ -547,7 +551,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
                                   label: 'Details anzeigen',
                                   onClick: () => setSelectedTenantId(tenant.id)
                                 },
-                                ...(tenantStatus === 'active' || tenantStatus === 'ending_soon' ? [{
+                                ...((canWrite && (tenantStatus === 'active' || tenantStatus === 'ending_soon')) ? [{
                                   label: 'Mietverhältnis beenden',
                                   onClick: () => setEndContractTarget({
                                     tenantId: tenant.id,
@@ -570,7 +574,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
         </>
       )}
 
-      {showTenantModal && (
+      {showTenantModal && canWrite && (
         <TenantModal
           tenant={null}
           properties={properties}
@@ -582,7 +586,7 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
         />
       )}
 
-      {endContractTarget && (
+      {endContractTarget && canWrite && (
         <EndContractModal
           tenantId={endContractTarget.tenantId}
           tenantName={endContractTarget.tenantName}

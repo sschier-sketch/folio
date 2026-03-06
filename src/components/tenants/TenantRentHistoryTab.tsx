@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { TrendingUp, Lock, Calendar, Info, Percent, Home, Plus, Clock, Trash2, Send, CheckCircle, Pencil, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import Badge from "../common/Badge";
 import { addMonths, differenceInDays, formatDateDE, parseISODate } from "../../lib/dateUtils";
@@ -33,6 +34,7 @@ function InfoTooltip({ text }: { text: string }) {
 
 interface TenantRentHistoryTabProps {
   tenantId: string;
+  readOnly?: boolean;
 }
 
 interface RentHistory {
@@ -97,8 +99,10 @@ interface EditableContractUnit {
 
 export default function TenantRentHistoryTab({
   tenantId,
+  readOnly = false,
 }: TenantRentHistoryTabProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState<Contract | null>(null);
@@ -547,7 +551,7 @@ export default function TenantRentHistoryTab({
   }
 
   async function handleSaveNewPeriod() {
-    if (!contract || !user) return;
+    if (!contract || !user || !dataOwnerId) return;
     if (!newPeriod.effective_date || !newPeriod.cold_rent) {
       alert("Bitte Gültig-ab-Datum und Kaltmiete angeben.");
       return;
@@ -561,7 +565,7 @@ export default function TenantRentHistoryTab({
 
       const result = await createRentPeriod({
         contractId: contract.id,
-        userId: user.id,
+        userId: dataOwnerId!,
         effectiveDate: newPeriod.effective_date,
         coldRent,
         utilities,
@@ -600,7 +604,7 @@ export default function TenantRentHistoryTab({
             await supabase.from("rent_payments").insert({
               contract_id: contract.id,
               property_id: (contract as Record<string, unknown>).property_id || null,
-              user_id: user.id,
+              user_id: dataOwnerId,
               due_date: dueDate,
               amount: totalRent,
               paid: false,
@@ -1616,22 +1620,24 @@ export default function TenantRentHistoryTab({
                       )}
                       {item.notes && <div className="text-xs text-amber-500 mt-1">{item.notes}</div>}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => startEditPeriod(item)}
-                        className="text-amber-400 hover:text-amber-600 transition-colors p-1"
-                        title="Bearbeiten"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeletePlanned(item.id)}
-                        className="text-amber-400 hover:text-red-500 transition-colors p-1"
-                        title="Geplante Periode löschen"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {!readOnly && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => startEditPeriod(item)}
+                          className="text-amber-400 hover:text-amber-600 transition-colors p-1"
+                          title="Bearbeiten"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeletePlanned(item.id)}
+                          className="text-amber-400 hover:text-red-500 transition-colors p-1"
+                          title="Geplante Periode löschen"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1655,10 +1661,12 @@ export default function TenantRentHistoryTab({
                   Änderungen werden automatisch protokolliert bei Mietanpassungen, Staffelmieten oder Indexmieten
                 </p>
               </div>
-              <Button onClick={handleOpenAddPeriod} variant="secondary">
-                <Plus className="w-4 h-4 mr-1.5" />
-                Mietperiode
-              </Button>
+              {!readOnly && (
+                <Button onClick={handleOpenAddPeriod} variant="secondary">
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Mietperiode
+                </Button>
+              )}
             </div>
           </div>
 
@@ -1957,13 +1965,15 @@ export default function TenantRentHistoryTab({
                                 {rentDiff > 0 ? "+" : ""}{rentDiff.toFixed(2)} €
                               </div>
                             )}
-                            <button
-                              onClick={() => startEditPeriod(item)}
-                              className="text-gray-300 hover:text-gray-600 transition-colors p-1 opacity-0 group-hover:opacity-100"
-                              title="Bearbeiten"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                            </button>
+                            {!readOnly && (
+                              <button
+                                onClick={() => startEditPeriod(item)}
+                                className="text-gray-300 hover:text-gray-600 transition-colors p-1 opacity-0 group-hover:opacity-100"
+                                title="Bearbeiten"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       )}

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, Check, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import { Button } from "./ui/Button";
 
 interface Tenant {
@@ -82,6 +83,7 @@ export default function TenantModal({
   preselectedUnitId,
 }: TenantModalProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [units, setUnits] = useState<{ id: string; unit_number: string }[]>([]);
@@ -343,7 +345,7 @@ export default function TenantModal({
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     if (!tenantData.first_name || !tenantData.last_name) {
       alert("Bitte geben Sie Vor- und Nachname ein");
@@ -411,7 +413,7 @@ export default function TenantModal({
           move_out_date: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
           household_size: tenantData.household_size,
           is_active: tenantData.is_active,
-          user_id: user.id,
+          user_id: dataOwnerId,
         };
 
         const { error: tenantError } = await supabase
@@ -493,7 +495,7 @@ export default function TenantModal({
             if (rentChanged && monthlyRent > 0) {
               await supabase.from("rent_history").insert([{
                 contract_id: existingContract.id,
-                user_id: user.id,
+                user_id: dataOwnerId,
                 effective_date: new Date().toISOString().split("T")[0],
                 cold_rent: monthlyRent,
                 utilities: utilitiesAdvance,
@@ -515,7 +517,7 @@ export default function TenantModal({
                 await supabase.from("rental_contract_units").insert({
                   contract_id: existingContract.id,
                   unit_id: tenantData.unit_id,
-                  user_id: user.id,
+                  user_id: dataOwnerId,
                 });
               }
             }
@@ -526,7 +528,7 @@ export default function TenantModal({
                 {
                   ...contractUpdateData,
                   tenant_id: tenant.id,
-                  user_id: user.id,
+                  user_id: dataOwnerId,
                 },
               ])
               .select()
@@ -544,7 +546,7 @@ export default function TenantModal({
             if (monthlyRent > 0) {
               await supabase.from("rent_history").insert([{
                 contract_id: newContract.id,
-                user_id: user.id,
+                user_id: dataOwnerId,
                 effective_date: tenantData.move_in_date || new Date().toISOString().split("T")[0],
                 cold_rent: monthlyRent,
                 utilities: utilitiesAdvance,
@@ -558,7 +560,7 @@ export default function TenantModal({
               await supabase.from("rental_contract_units").insert({
                 contract_id: newContract.id,
                 unit_id: tenantData.unit_id,
-                user_id: user.id,
+                user_id: dataOwnerId,
               });
             }
           }
@@ -587,7 +589,7 @@ export default function TenantModal({
               move_out_date: tenantData.is_unlimited ? null : (tenantData.move_out_date || null),
               household_size: tenantData.household_size,
               is_active: tenantData.is_active,
-              user_id: user.id,
+              user_id: dataOwnerId,
             },
           ])
           .select()
@@ -620,7 +622,7 @@ export default function TenantModal({
                 tenant_id: newTenant.id,
                 property_id: tenantData.property_id,
                 unit_id: tenantData.unit_id || null,
-                user_id: user.id,
+                user_id: dataOwnerId,
                 rent_type: rentData.rent_type,
                 flat_rate_amount: rentData.rent_type === "flat_rate" ? parseFloat(rentData.flat_rate_amount) || 0 : 0,
                 cold_rent: rentData.rent_type !== "flat_rate" ? parseFloat(rentData.cold_rent) || 0 : 0,
@@ -670,7 +672,7 @@ export default function TenantModal({
           if (monthlyRent > 0) {
             await supabase.from("rent_history").insert([{
               contract_id: newContract.id,
-              user_id: user.id,
+              user_id: dataOwnerId,
               effective_date: tenantData.move_in_date || new Date().toISOString().split("T")[0],
               cold_rent: monthlyRent,
               utilities: utilitiesAdvance,
@@ -684,7 +686,7 @@ export default function TenantModal({
             await supabase.from("rental_contract_units").insert({
               contract_id: newContract.id,
               unit_id: tenantData.unit_id,
-              user_id: user.id,
+              user_id: dataOwnerId,
             });
           }
         }
@@ -716,7 +718,7 @@ export default function TenantModal({
 
           const partnerRow = {
             tenant_id: savedTenantId,
-            user_id: user.id,
+            user_id: dataOwnerId,
             salutation: partner.salutation || null,
             first_name: partner.first_name,
             last_name: partner.last_name,

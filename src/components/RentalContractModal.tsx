@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import { parseNumberInput } from "../lib/utils";
 import { Button } from "./ui/Button";
 interface Tenant {
@@ -57,6 +58,7 @@ export default function RentalContractModal({
   onSave,
 }: RentalContractModalProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [units, setUnits] = useState<PropertyUnit[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(false);
@@ -184,7 +186,7 @@ export default function RentalContractModal({
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     if (tenants.some((t) => !t.first_name || !t.last_name)) {
       alert("Bitte füllen Sie Vor- und Nachname für alle Mieter aus");
       return;
@@ -199,7 +201,7 @@ export default function RentalContractModal({
       const contractData = {
         property_id: formData.property_id,
         unit_id: formData.unit_id || null,
-        user_id: user.id,
+        user_id: dataOwnerId,
         base_rent: Number(formData.base_rent),
         additional_costs: Number(formData.additional_costs),
         total_rent: totalRent,
@@ -271,7 +273,7 @@ export default function RentalContractModal({
       if (!contract && hasDepositReceived) {
         await supabase.from("deposit_history").insert({
           contract_id: contractId,
-          user_id: user.id,
+          user_id: dataOwnerId,
           transaction_date: formData.contract_start,
           amount: depositAmount,
           transaction_type: "payment",
@@ -282,7 +284,7 @@ export default function RentalContractModal({
       for (const tenant of tenants) {
         const tenantData = {
           contract_id: contractId,
-          user_id: user.id,
+          user_id: dataOwnerId,
           first_name: tenant.first_name,
           last_name: tenant.last_name,
           email: tenant.email || null,

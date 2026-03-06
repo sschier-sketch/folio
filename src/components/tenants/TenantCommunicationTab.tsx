@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { MessageSquare, FileText, Calendar, Lock, Wrench, X, Upload, File as FileIcon, Trash2, Mail } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumFeatureGuard } from "../PremiumFeatureGuard";
 import { sanitizeFileName } from "../../lib/utils";
@@ -10,6 +11,7 @@ import { Button } from '../ui/Button';
 
 interface TenantCommunicationTabProps {
   tenantId: string;
+  readOnly?: boolean;
 }
 
 interface Communication {
@@ -31,8 +33,10 @@ interface Communication {
 
 export default function TenantCommunicationTab({
   tenantId,
+  readOnly = false,
 }: TenantCommunicationTabProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [communications, setCommunications] = useState<Communication[]>([]);
@@ -139,7 +143,7 @@ export default function TenantCommunicationTab({
   }
 
   async function handleSaveEntry() {
-    if (!user || !newEntryForm.subject.trim() || !tenant) return;
+    if (!user || !dataOwnerId || !newEntryForm.subject.trim() || !tenant) return;
 
     try {
       setLoading(true);
@@ -149,7 +153,7 @@ export default function TenantCommunicationTab({
       if (attachedFile) {
         const sanitizedFileName = sanitizeFileName(attachedFile.name);
         const fileName = `${Date.now()}_${sanitizedFileName}`;
-        const filePath = `${user.id}/${fileName}`;
+        const filePath = `${dataOwnerId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("documents")
@@ -164,7 +168,7 @@ export default function TenantCommunicationTab({
           .from("documents")
           .insert([
             {
-              user_id: user.id,
+              user_id: dataOwnerId,
               file_name: attachedFile.name,
               file_path: filePath,
               file_size: attachedFile.size,
@@ -188,7 +192,7 @@ export default function TenantCommunicationTab({
               document_id: document.id,
               association_type: "tenant",
               association_id: tenantId,
-              created_by: user.id,
+              created_by: dataOwnerId,
             },
           ]);
         }
@@ -198,7 +202,7 @@ export default function TenantCommunicationTab({
         .from("tenant_communications")
         .insert([
           {
-            user_id: user.id,
+            user_id: dataOwnerId,
             tenant_id: tenantId,
             communication_type: newEntryForm.type,
             subject: newEntryForm.subject,

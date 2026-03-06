@@ -7,6 +7,7 @@ import { Button } from '../ui/Button';
 
 interface TenantOverviewTabProps {
   tenantId: string;
+  readOnly?: boolean;
 }
 
 interface Tenant {
@@ -68,6 +69,7 @@ interface EditablePartner {
 
 export default function TenantOverviewTab({
   tenantId,
+  readOnly = false,
 }: TenantOverviewTabProps) {
   const { user } = useAuth();
   const { dataOwnerId, filterPropertiesByScope, loading: permLoading } = usePermissions();
@@ -260,7 +262,7 @@ export default function TenantOverviewTab({
                 tenant_id: tenant.id,
                 property_id: formData.property_id,
                 unit_id: formData.unit_id || null,
-                user_id: user.id,
+                user_id: dataOwnerId,
                 rent_type: "flat_rate",
                 flat_rate_amount: 0,
                 cold_rent: 0,
@@ -320,7 +322,7 @@ export default function TenantOverviewTab({
 
           const partnerRow = {
             tenant_id: tenant.id,
-            user_id: user.id,
+            user_id: dataOwnerId,
             salutation: partner.salutation || null,
             first_name: partner.first_name,
             last_name: partner.last_name,
@@ -415,49 +417,51 @@ export default function TenantOverviewTab({
           <h3 className="text-lg font-semibold text-dark">
             Mieterdaten
           </h3>
-          <div className="flex gap-2">
-            {!isEditing ? (
-              <>
-                <Button onClick={() => {
-                  setIsEditing(true);
-                  setEditPartners(
-                    contractPartners.map((p) => ({
-                      id: p.id,
-                      salutation: p.salutation || "",
-                      first_name: p.first_name,
-                      last_name: p.last_name,
-                      email: p.email || "",
-                      phone: p.phone || "",
-                      street: p.street || "",
-                      house_number: p.house_number || "",
-                      zip_code: p.zip_code || "",
-                      city: p.city || "",
-                      move_in_date: p.move_in_date || "",
-                      use_main_move_in: p.move_in_date === tenant?.move_in_date,
-                    }))
-                  );
-                }} variant="cancel">
-                  Bearbeiten
-                </Button>
-                <Button onClick={handleDelete} variant="cancel">
-                  Löschen
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button onClick={() => {
-                    setIsEditing(false);
-                    setFormData(tenant);
-                    setEditPartners([]);
+          {!readOnly && (
+            <div className="flex gap-2">
+              {!isEditing ? (
+                <>
+                  <Button onClick={() => {
+                    setIsEditing(true);
+                    setEditPartners(
+                      contractPartners.map((p) => ({
+                        id: p.id,
+                        salutation: p.salutation || "",
+                        first_name: p.first_name,
+                        last_name: p.last_name,
+                        email: p.email || "",
+                        phone: p.phone || "",
+                        street: p.street || "",
+                        house_number: p.house_number || "",
+                        zip_code: p.zip_code || "",
+                        city: p.city || "",
+                        move_in_date: p.move_in_date || "",
+                        use_main_move_in: p.move_in_date === tenant?.move_in_date,
+                      }))
+                    );
                   }} variant="cancel">
-                  Abbrechen
-                </Button>
-                <Button onClick={handleSave} variant="primary">
-                  Speichern
-                </Button>
-              </>
-            )}
-          </div>
+                    Bearbeiten
+                  </Button>
+                  <Button onClick={handleDelete} variant="cancel">
+                    Löschen
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button onClick={() => {
+                      setIsEditing(false);
+                      setFormData(tenant);
+                      setEditPartners([]);
+                    }} variant="cancel">
+                    Abbrechen
+                  </Button>
+                  <Button onClick={handleSave} variant="primary">
+                    Speichern
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

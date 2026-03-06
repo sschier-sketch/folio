@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { Wallet, Calendar, Edit, Save, X } from "lucide-react";
+import { Wallet, Calendar, CreditCard as Edit, Save, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 import { Button } from '../ui/Button';
 
 interface TenantDepositTabProps {
   tenantId: string;
+  readOnly?: boolean;
 }
 
 interface DepositHistory {
@@ -30,8 +32,10 @@ interface Contract {
 
 export default function TenantDepositTab({
   tenantId,
+  readOnly = false,
 }: TenantDepositTabProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState<Contract | null>(null);
@@ -94,7 +98,7 @@ export default function TenantDepositTab({
   }
 
   async function handleSaveDeposit() {
-    if (!contract || !user) return;
+    if (!contract || !user || !dataOwnerId) return;
 
     try {
       const newAmount = parseFloat(editData.deposit_amount) || 0;
@@ -124,7 +128,7 @@ export default function TenantDepositTab({
 
         await supabase.from("deposit_history").insert({
           contract_id: contract.id,
-          user_id: user.id,
+          user_id: dataOwnerId,
           transaction_date: txDate,
           amount: newAmount,
           transaction_type: "payment",
@@ -142,7 +146,7 @@ export default function TenantDepositTab({
   }
 
   async function handleSaveTransaction() {
-    if (!contract || !user) return;
+    if (!contract || !user || !dataOwnerId) return;
 
     if (!transactionData.amount || parseFloat(transactionData.amount) <= 0) {
       alert("Bitte geben Sie einen gültigen Betrag ein");
@@ -178,7 +182,7 @@ export default function TenantDepositTab({
       const { error } = await supabase.from("deposit_history").insert([
         {
           contract_id: contract.id,
-          user_id: user.id,
+          user_id: dataOwnerId,
           transaction_date: transactionData.transaction_date,
           amount: transactionAmount,
           transaction_type: transactionData.transaction_type,
@@ -286,22 +290,24 @@ export default function TenantDepositTab({
           <h3 className="text-lg font-semibold text-dark">
             Kautionsinformationen
           </h3>
-          {!isEditing ? (
-            <Button onClick={() => setIsEditing(true)} variant="secondary">
-              Bearbeiten
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button onClick={() => {
-                  setIsEditing(false);
-                  loadData();
-                }} variant="cancel">
-                Abbrechen
+          {!readOnly && (
+            !isEditing ? (
+              <Button onClick={() => setIsEditing(true)} variant="secondary">
+                Bearbeiten
               </Button>
-              <Button onClick={handleSaveDeposit} variant="primary">
-                Speichern
-              </Button>
-            </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button onClick={() => {
+                    setIsEditing(false);
+                    loadData();
+                  }} variant="cancel">
+                  Abbrechen
+                </Button>
+                <Button onClick={handleSaveDeposit} variant="primary">
+                  Speichern
+                </Button>
+              </div>
+            )
           )}
         </div>
 
@@ -425,9 +431,11 @@ export default function TenantDepositTab({
             <h3 className="text-lg font-semibold text-dark">
               Kautionshistorie
             </h3>
-            <Button onClick={() => setShowTransactionModal(true)} variant="primary">
-              Transaktion erfassen
-            </Button>
+            {!readOnly && (
+              <Button onClick={() => setShowTransactionModal(true)} variant="primary">
+                Transaktion erfassen
+              </Button>
+            )}
           </div>
 
           {history.length === 0 ? (
@@ -534,7 +542,7 @@ export default function TenantDepositTab({
         </div>
       </div>
 
-      {showTransactionModal && (
+      {showTransactionModal && !readOnly && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-md">
             <div className="border-b px-6 py-4 flex justify-between items-center">

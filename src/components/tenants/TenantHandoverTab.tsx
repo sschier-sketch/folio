@@ -28,6 +28,7 @@ import { Button } from '../ui/Button';
 
 interface TenantHandoverTabProps {
   tenantId: string;
+  readOnly?: boolean;
 }
 
 interface HandoverProtocol {
@@ -56,6 +57,7 @@ interface HandoverProtocol {
 
 export default function TenantHandoverTab({
   tenantId,
+  readOnly = false,
 }: TenantHandoverTabProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
@@ -275,9 +277,11 @@ export default function TenantHandoverTab({
                 Dokumentation von Ein- und Auszügen
               </p>
             </div>
-            <Button onClick={() => setShowModal(true)} disabled={!contractId} variant="primary">
-              Neues Protokoll
-            </Button>
+            {!readOnly && (
+              <Button onClick={() => setShowModal(true)} disabled={!contractId} variant="primary">
+                Neues Protokoll
+              </Button>
+            )}
           </div>
 
           {loading ? (
@@ -292,9 +296,11 @@ export default function TenantHandoverTab({
                 Erstellen Sie Protokolle für Ein- und Auszüge mit Zählerständen,
                 Checklisten und Fotos
               </p>
-              <Button onClick={() => setShowModal(true)} disabled={!contractId} variant="primary">
-                Erstes Protokoll erstellen
-              </Button>
+              {!readOnly && (
+                <Button onClick={() => setShowModal(true)} disabled={!contractId} variant="primary">
+                  Erstes Protokoll erstellen
+                </Button>
+              )}
               {!contractId && (
                 <p className="text-xs text-red-500 mt-2">
                   Für diesen Mieter existiert kein Mietvertrag
@@ -340,7 +346,7 @@ export default function TenantHandoverTab({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {protocol.status === "draft" && (
+                      {protocol.status === "draft" && !readOnly && (
                         <>
                           <Button onClick={() => handleFinalizeProtocol(protocol.id)} variant="primary">
                             Finalisieren
@@ -710,7 +716,7 @@ export default function TenantHandoverTab({
           </div>
         </div>
 
-        {showModal && contractId && (
+        {showModal && contractId && !readOnly && (
           <HandoverProtocolModal
             contractId={contractId}
             tenantId={tenantId}

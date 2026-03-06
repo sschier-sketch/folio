@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../hooks/useAuth";
+import { usePermissions } from "../hooks/usePermissions";
 import { useSubscription } from "../hooks/useSubscription";
 import TenantOverviewTab from "./tenants/TenantOverviewTab";
 import TenantContractTab from "./tenants/TenantContractTab";
@@ -47,6 +48,7 @@ export default function TenantContractDetails({
   onBack,
 }: TenantContractDetailsProps) {
   const { user } = useAuth();
+  const { canWrite } = usePermissions();
   const { isPremium } = useSubscription();
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') as Tab | null;
@@ -165,19 +167,19 @@ export default function TenantContractDetails({
       </div>
 
       <div>
-        {activeTab === "overview" && <TenantOverviewTab tenantId={tenantId} />}
+        {activeTab === "overview" && <TenantOverviewTab tenantId={tenantId} readOnly={!canWrite} />}
         {activeTab === "contract" && (
           isPremium ? (
-            <TenantContractTab tenantId={tenantId} />
+            <TenantContractTab tenantId={tenantId} readOnly={!canWrite} />
           ) : (
             <PremiumUpgradePrompt featureKey="tenant_details_contract" />
           )
         )}
-        {activeTab === "rent" && <TenantRentHistoryTab tenantId={tenantId} />}
-        {activeTab === "deposit" && <TenantDepositTab tenantId={tenantId} />}
+        {activeTab === "rent" && <TenantRentHistoryTab tenantId={tenantId} readOnly={!canWrite} />}
+        {activeTab === "deposit" && <TenantDepositTab tenantId={tenantId} readOnly={!canWrite} />}
         {activeTab === "handover" && (
           isPremium ? (
-            <TenantHandoverTab tenantId={tenantId} />
+            <TenantHandoverTab tenantId={tenantId} readOnly={!canWrite} />
           ) : (
             <PremiumUpgradePrompt featureKey="tenant_details_handover" />
           )
