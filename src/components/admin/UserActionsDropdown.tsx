@@ -11,6 +11,7 @@ import {
   Ban,
   Trash2,
   Mail,
+  FileText,
 } from 'lucide-react';
 
 interface UserActionsDropdownProps {
@@ -29,6 +30,7 @@ interface UserActionsDropdownProps {
   onUnban: (userId: string, email: string) => void;
   onDelete: (userId: string, email: string) => void;
   onEditEmail: (userId: string, email: string) => void;
+  onViewDetails?: (userId: string) => void;
 }
 
 interface ActionItem {
@@ -56,6 +58,7 @@ export default function UserActionsDropdown({
   onUnban,
   onDelete,
   onEditEmail,
+  onViewDetails,
 }: UserActionsDropdownProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -110,6 +113,13 @@ export default function UserActionsDropdown({
   }, [open, updatePosition]);
 
   const actions: ActionItem[] = [
+    {
+      label: 'Details',
+      description: 'Stammdaten und Login-Verlauf anzeigen',
+      icon: <FileText className="w-4 h-4" />,
+      onClick: () => onViewDetails?.(userId),
+      hidden: !onViewDetails,
+    },
     {
       label: 'Als Nutzer anmelden',
       description: 'Im Kontext dieses Nutzers einloggen',

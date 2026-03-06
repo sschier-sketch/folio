@@ -6,14 +6,10 @@ import {
   DollarSign,
   TrendingUp,
   UserCheck,
-  Ban,
-  ShieldCheck,
   Mail,
   Settings,
   Clock,
-  Check,
   X,
-  Pencil,
   Loader2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
@@ -41,6 +37,7 @@ import AdminAnalyticsChart from "../components/admin/AdminAnalyticsChart";
 import DeleteUserModal from "../components/admin/DeleteUserModal";
 import RefundWizard from "../components/admin/RefundWizard";
 import AdminLayout from "../components/admin/AdminLayout";
+import AdminUserDetailView from "../components/admin/AdminUserDetailView";
 import UserActionsDropdown from "../components/admin/UserActionsDropdown";
 import { BaseTable, StatusBadge } from "../components/common/BaseTable";
 import type { AdminTabKey } from "../config/adminMenu";
@@ -93,6 +90,12 @@ export function Admin() {
   const [refundTarget, setRefundTarget] = useState<{ id: string; email: string } | null>(null);
   const [editEmailTarget, setEditEmailTarget] = useState<{ id: string; email: string } | null>(null);
   const [userFilter, setUserFilter] = useState<UserFilter>('all');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  function openUserDetail(userId: string) {
+    setSelectedUserId(userId);
+    setActiveTab("user_detail");
+  }
 
   async function reloadUsers() {
     try {
@@ -461,27 +464,16 @@ export function Admin() {
             <BaseTable
               columns={[
                 {
-                  key: "status",
-                  header: "Status",
-                  render: (user: UserData) => (
-                    <div className="flex items-center gap-2">
-                      {user.is_admin ? (
-                        <StatusBadge type="error" label="Admin" icon={<ShieldCheck className="w-3 h-3" />} />
-                      ) : (
-                        <StatusBadge type="info" label="Eigentuemer" icon={<UserCheck className="w-3 h-3" />} />
-                      )}
-                      {user.banned && (
-                        <StatusBadge type="neutral" label="Gesperrt" icon={<Ban className="w-3 h-3" />} />
-                      )}
-                    </div>
-                  )
-                },
-                {
                   key: "customer_number",
                   header: "Kundennr.",
                   sortable: true,
                   render: (user: UserData) => (
-                    <span className="text-xs font-mono text-gray-500">{user.customer_number || "-"}</span>
+                    <button
+                      onClick={() => openUserDetail(user.id)}
+                      className="text-xs font-mono text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      {user.customer_number || "-"}
+                    </button>
                   )
                 },
                 {
@@ -497,7 +489,7 @@ export function Admin() {
                   header: "Vorname",
                   sortable: true,
                   render: (user: UserData) => (
-                    <span className="text-sm text-gray-400">{user.first_name || "-"}</span>
+                    <span className="text-sm text-gray-500">{user.first_name || "-"}</span>
                   )
                 },
                 {
@@ -505,15 +497,16 @@ export function Admin() {
                   header: "Nachname",
                   sortable: true,
                   render: (user: UserData) => (
-                    <span className="text-sm text-gray-400">{user.last_name || "-"}</span>
+                    <span className="text-sm text-gray-500">{user.last_name || "-"}</span>
                   )
                 },
                 {
-                  key: "company_name",
-                  header: "Firma",
+                  key: "properties_count",
+                  header: "Objekte",
                   sortable: true,
+                  align: "center" as const,
                   render: (user: UserData) => (
-                    <span className="text-sm text-gray-400">{user.company_name || "-"}</span>
+                    <span className="text-sm text-gray-500">{user.properties_count ?? 0}</span>
                   )
                 },
                 {
@@ -521,9 +514,8 @@ export function Admin() {
                   header: "Registriert",
                   sortable: true,
                   render: (user: UserData) => (
-                    <span className="text-sm text-gray-400">
-                      {new Date(user.created_at).toLocaleDateString("de-DE")}{" "}
-                      <span className="text-gray-300">{new Date(user.created_at).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</span>
+                    <span className="text-sm text-gray-500 whitespace-nowrap">
+                      {new Date(user.created_at).toLocaleDateString("de-DE")}
                     </span>
                   )
                 },
@@ -532,23 +524,8 @@ export function Admin() {
                   header: "Letzter Login",
                   sortable: true,
                   render: (user: UserData) => (
-                    <span className="text-sm text-gray-400">
+                    <span className="text-sm text-gray-500 whitespace-nowrap">
                       {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString("de-DE") : "-"}
-                    </span>
-                  )
-                },
-                {
-                  key: "newsletter_opt_in",
-                  header: "Marketing",
-                  sortable: true,
-                  align: "center" as const,
-                  render: (user: UserData) => user.newsletter_opt_in ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <Check className="w-3 h-3" /> Ja
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200">
-                      <X className="w-3 h-3" /> Nein
                     </span>
                   )
                 },
@@ -601,6 +578,7 @@ export function Admin() {
                       onUnban={handleUnbanUser}
                       onDelete={(id, email) => setDeleteTarget({ id, email })}
                       onEditEmail={(id, email) => setEditEmailTarget({ id, email })}
+                      onViewDetails={openUserDetail}
                     />
                   )
                 }
@@ -611,6 +589,23 @@ export function Admin() {
             />
           </div>
         )}
+
+        {activeTab === "user_detail" && selectedUserId && (() => {
+          const u = users.find(x => x.id === selectedUserId);
+          if (!u) return null;
+          return (
+            <AdminUserDetailView
+              userId={u.id}
+              userEmail={u.email}
+              userCreatedAt={u.created_at}
+              lastSignInAt={u.last_sign_in_at}
+              subscriptionPlan={u.subscription_plan}
+              isAdmin={u.is_admin}
+              onBack={() => setActiveTab("users")}
+              onImpersonate={handleImpersonate}
+            />
+          );
+        })()}
 
         {activeTab === "tickets" && <AdminTicketsView />}
         {activeTab === "templates" && <AdminEmailTemplatesView />}

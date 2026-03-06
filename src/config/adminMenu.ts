@@ -24,6 +24,7 @@ import {
 export type AdminTabKey =
   | "overview"
   | "users"
+  | "user_detail"
   | "tickets"
   | "templates"
   | "email_logs"
@@ -124,6 +125,9 @@ export const adminMenuGroups: AdminMenuGroup[] = [
 ];
 
 export function getMenuItemByKey(key: AdminTabKey): AdminMenuItem | undefined {
+  if (key === "user_detail") {
+    return { key: "user_detail", label: "Benutzerdetails", icon: Users };
+  }
   for (const group of adminMenuGroups) {
     const item = group.items.find((i) => i.key === key);
     if (item) return item;
