@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Trash2, Home, X, FileText, Link2, Info } from "lucide-react";
+import { CreditCard as Edit, Trash2, Home, X, FileText, Link2, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -11,6 +11,7 @@ import { Button } from '../ui/Button';
 
 interface PropertyUnitsTabProps {
   propertyId: string;
+  readOnly?: boolean;
 }
 
 interface PropertyUnit {
@@ -49,7 +50,7 @@ interface PropertyUnit {
   outstanding_rent?: number;
 }
 
-export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) {
+export default function PropertyUnitsTab({ propertyId, readOnly = false }: PropertyUnitsTabProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [units, setUnits] = useState<PropertyUnit[]>([]);
@@ -418,22 +419,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
               Verwalten Sie die Einheiten dieser Immobilie
             </p>
           </div>
-          <Button
-            onClick={() => {
-              setEditingUnit(null);
-              resetForm();
-              setShowModal(true);
-            }}
-            variant="primary"
-          >
-            Einheit hinzufügen
-          </Button>
-        </div>
-
-        {units.length === 0 ? (
-          <div className="p-12 text-center">
-            <Home className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-400 mb-4">Noch keine Einheiten angelegt</p>
+          {!readOnly && (
             <Button
               onClick={() => {
                 setEditingUnit(null);
@@ -442,8 +428,27 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
               }}
               variant="primary"
             >
-              Erste Einheit hinzufügen
+              Einheit hinzufügen
             </Button>
+          )}
+        </div>
+
+        {units.length === 0 ? (
+          <div className="p-12 text-center">
+            <Home className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-400 mb-4">Noch keine Einheiten angelegt</p>
+            {!readOnly && (
+              <Button
+                onClick={() => {
+                  setEditingUnit(null);
+                  resetForm();
+                  setShowModal(true);
+                }}
+                variant="primary"
+              >
+                Erste Einheit hinzufügen
+              </Button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -539,21 +544,21 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                       <div className="flex items-center justify-center">
                         <TableActionsDropdown
                           actions={[
-                            ...(unit.status !== "rented" && unit.status !== "self_occupied" ? [{
+                            ...(!readOnly && unit.status !== "rented" && unit.status !== "self_occupied" ? [{
                               label: 'Neues Mietverhältnis anlegen',
                               onClick: () => {
                                 setSelectedUnitForTenant(unit);
                                 setShowTenantModal(true);
                               }
                             }] : []),
-                            ...(unit.status !== "rented" && unit.status !== "self_occupied" ? [{
+                            ...(!readOnly && unit.status !== "rented" && unit.status !== "self_occupied" ? [{
                               label: 'Bestehendes Mietverhältnis zuordnen',
                               onClick: () => {
                                 setSelectedUnitForLease(unit);
                                 setShowAssignLeaseModal(true);
                               }
                             }] : []),
-                            {
+                            ...(!readOnly ? [{
                               label: 'Bearbeiten',
                               onClick: () => openEditModal(unit)
                             },
@@ -561,7 +566,7 @@ export default function PropertyUnitsTab({ propertyId }: PropertyUnitsTabProps) 
                               label: 'Löschen',
                               onClick: () => handleDeleteUnit(unit),
                               variant: 'danger' as const
-                            }
+                            }] : [])
                           ]}
                         />
                       </div>

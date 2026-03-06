@@ -6,9 +6,10 @@ import { Button } from '../ui/Button';
 
 interface PropertyEquipmentTabProps {
   propertyId: string;
+  readOnly?: boolean;
 }
 
-export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTabProps) {
+export default function PropertyEquipmentTab({ propertyId, readOnly = false }: PropertyEquipmentTabProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -498,11 +499,13 @@ export default function PropertyEquipmentTab({ propertyId }: PropertyEquipmentTa
         </p>
       </div>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={saving} variant="primary">
-          {saving ? "Speichert..." : "Speichern"}
-        </Button>
-      </div>
+      {!readOnly && (
+        <div className="flex justify-end">
+          <Button type="submit" disabled={saving} variant="primary">
+            {saving ? "Speichert..." : "Speichern"}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }

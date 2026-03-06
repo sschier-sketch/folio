@@ -49,6 +49,7 @@ interface PropertyDetailsProps {
   onNavigateToTenant?: (tenantId: string) => void;
   initialTab?: Tab;
   onUpdate?: () => void;
+  readOnly?: boolean;
 }
 
 type Tab =
@@ -62,7 +63,7 @@ type Tab =
   | "maintenance"
   | "metrics";
 
-export default function PropertyDetails({ property, onBack, onNavigateToTenant, initialTab, onUpdate }: PropertyDetailsProps) {
+export default function PropertyDetails({ property, onBack, onNavigateToTenant, initialTab, onUpdate, readOnly = false }: PropertyDetailsProps) {
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') as Tab | null;
   const [activeTab, setActiveTab] = useState<Tab>(initialTab || tabFromUrl || "overview");
@@ -218,29 +219,31 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
               )}
             </div>
 
-            <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-              <label style={{ backgroundColor: "#faf8f8" }} className="cursor-pointer p-2 rounded-full hover:bg-[#bdbfcb] transition-colors">
-                <Camera className="w-5 h-5 text-gray-700" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                  disabled={uploading}
-                />
-              </label>
+            {!readOnly && (
+              <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <label style={{ backgroundColor: "#faf8f8" }} className="cursor-pointer p-2 rounded-full hover:bg-[#bdbfcb] transition-colors">
+                  <Camera className="w-5 h-5 text-gray-700" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </label>
 
-              {photoUrl && (
-                <button
-                  onClick={handlePhotoDelete}
-                  style={{ backgroundColor: "#faf8f8" }}
-                  className="p-2 rounded-full hover:bg-[#bdbfcb] transition-colors"
-                  disabled={uploading}
-                >
-                  <Trash2 className="w-5 h-5 text-red-600" />
-                </button>
-              )}
-            </div>
+                {photoUrl && (
+                  <button
+                    onClick={handlePhotoDelete}
+                    style={{ backgroundColor: "#faf8f8" }}
+                    className="p-2 rounded-full hover:bg-[#bdbfcb] transition-colors"
+                    disabled={uploading}
+                  >
+                    <Trash2 className="w-5 h-5 text-red-600" />
+                  </button>
+                )}
+              </div>
+            )}
 
             {uploading && (
               <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -300,15 +303,15 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
       </div>
 
       <div>
-        {activeTab === "overview" && <PropertyOverviewTab property={currentProperty} onNavigateToTenant={onNavigateToTenant} onUpdate={handlePropertyUpdate} />}
-        {activeTab === "units" && <PropertyUnitsTab propertyId={currentProperty.id} />}
-        {activeTab === "equipment" && <PropertyEquipmentTab propertyId={currentProperty.id} />}
-        {activeTab === "photos" && <PropertyPhotosTab propertyId={currentProperty.id} />}
+        {activeTab === "overview" && <PropertyOverviewTab property={currentProperty} onNavigateToTenant={onNavigateToTenant} onUpdate={handlePropertyUpdate} readOnly={readOnly} />}
+        {activeTab === "units" && <PropertyUnitsTab propertyId={currentProperty.id} readOnly={readOnly} />}
+        {activeTab === "equipment" && <PropertyEquipmentTab propertyId={currentProperty.id} readOnly={readOnly} />}
+        {activeTab === "photos" && <PropertyPhotosTab propertyId={currentProperty.id} readOnly={readOnly} />}
         {activeTab === "documents" && <PropertyDocumentsTab propertyId={currentProperty.id} />}
         {activeTab === "history" && <PropertyHistoryTab propertyId={currentProperty.id} />}
-        {activeTab === "contacts" && <PropertyContactsTab propertyId={currentProperty.id} />}
+        {activeTab === "contacts" && <PropertyContactsTab propertyId={currentProperty.id} readOnly={readOnly} />}
         {activeTab === "maintenance" && (
-          <PropertyMaintenanceTab propertyId={currentProperty.id} />
+          <PropertyMaintenanceTab propertyId={currentProperty.id} readOnly={readOnly} />
         )}
         {activeTab === "metrics" && <PropertyMetricsTab propertyId={currentProperty.id} />}
       </div>

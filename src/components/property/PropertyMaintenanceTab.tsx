@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, Edit2, Calendar, Euro, FileText, Receipt, Bell } from "lucide-react";
+import { Wrench, CheckCircle2, Clock, AlertCircle, Trash2, CreditCard as Edit2, Calendar, Euro, FileText, Receipt, Bell } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -8,6 +8,7 @@ import { Button } from '../ui/Button';
 
 interface PropertyMaintenanceTabProps {
   propertyId: string;
+  readOnly?: boolean;
 }
 
 interface MaintenanceTask {
@@ -31,7 +32,7 @@ interface MaintenanceTask {
   };
 }
 
-export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenanceTabProps) {
+export default function PropertyMaintenanceTab({ propertyId, readOnly = false }: PropertyMaintenanceTabProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
@@ -273,9 +274,11 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
             {tasks.length} Aufgabe{tasks.length !== 1 ? "n" : ""} gesamt
           </p>
         </div>
-        <Button onClick={openAddModal} variant="primary">
-          Aufgabe hinzufügen
-        </Button>
+        {!readOnly && (
+          <Button onClick={openAddModal} variant="primary">
+            Aufgabe hinzufügen
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200 w-fit">
@@ -305,11 +308,13 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
           <Wrench className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-400 mb-2">Keine Aufgaben gefunden</p>
           <p className="text-sm text-gray-400 mb-4">
-            Erstellen Sie Wartungsaufgaben und behalten Sie alle Instandhaltungsarbeiten im Blick
+            {readOnly ? "Keine Wartungsaufgaben vorhanden" : "Erstellen Sie Wartungsaufgaben und behalten Sie alle Instandhaltungsarbeiten im Blick"}
           </p>
-          <Button onClick={openAddModal} variant="primary">
-            Erste Aufgabe hinzufügen
-          </Button>
+          {!readOnly && (
+            <Button onClick={openAddModal} variant="primary">
+              Erste Aufgabe hinzufügen
+            </Button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
@@ -376,22 +381,24 @@ export default function PropertyMaintenanceTab({ propertyId }: PropertyMaintenan
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1 ml-2">
-                  <button
-                    onClick={() => openEditModal(task)}
-                    className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                    title="Bearbeiten"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(task.id)}
-                    className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                    title="Löschen"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {!readOnly && (
+                  <div className="flex items-center gap-1 ml-2">
+                    <button
+                      onClick={() => openEditModal(task)}
+                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                      title="Bearbeiten"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(task.id)}
+                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                      title="Löschen"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

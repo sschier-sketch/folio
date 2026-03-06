@@ -3,6 +3,7 @@ import { Plus, Building2, Pencil, Trash2, TrendingUp, AlertCircle, CheckCircle, 
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
+import { usePermissions } from "../hooks/usePermissions";
 import PropertyModal from "./PropertyModal";
 import PropertyDetails from "./PropertyDetails";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
@@ -67,6 +68,7 @@ const LABEL_COLORS = {
 export default function PropertiesView({ selectedPropertyId: externalSelectedPropertyId, selectedPropertyTab, onClearSelection, onNavigateToTenant }: PropertiesViewProps = {}) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
+  const { dataOwnerId, filterPropertiesByScope, canWriteProperty, canAccessProperty, loading: permLoading } = usePermissions();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -86,11 +88,12 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   });
 
   useEffect(() => {
-    if (user) loadProperties();
-  }, [user]);
+    if (user && !permLoading && dataOwnerId) loadProperties();
+  }, [user, permLoading, dataOwnerId]);
 
   useEffect(() => {
     if (externalSelectedPropertyId && properties.length > 0) {
+      if (!canAccessProperty(externalSelectedPropertyId)) return;
       const property = properties.find(p => p.id === externalSelectedPropertyId);
       if (property) {
         setSelectedProperty(property);
@@ -100,12 +103,12 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   }, [externalSelectedPropertyId, properties.length]);
 
   const loadProperties = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     try {
       const { data, error } = await supabase
         .from("properties")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", dataOwnerId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -146,7 +149,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
         })
       );
 
-      setProperties(propertiesWithUnitsAndLabels);
+      setProperties(filterPropertiesByScope(propertiesWithUnitsAndLabels));
 
       // Extract all unique labels for the filter
       const uniqueLabels = Array.from(
@@ -391,6 +394,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
       <PropertyDetails
         property={selectedProperty}
         initialTab={selectedPropertyTab as any}
+        readOnly={!canWriteProperty(selectedProperty.id)}
         onBack={() => {
           setShowDetails(false);
           setSelectedProperty(null);
@@ -473,15 +477,17 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
               </div>
             </>
           )}
-          <Button
-            onClick={() => {
-              setSelectedProperty(null);
-              setShowModal(true);
-            }}
-            variant="primary"
-          >
-            Immobilie hinzufügen
-          </Button>
+          {canWriteProperty() && (
+            <Button
+              onClick={() => {
+                setSelectedProperty(null);
+                setShowModal(true);
+              }}
+              variant="primary"
+            >
+              Immobilie hinzufügen
+            </Button>
+          )}
         </div>
       </div>
       {properties.length === 0 ? (
@@ -491,17 +497,22 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
             Noch keine Immobilien
           </h3>
           <p className="text-gray-400 mb-6">
-            Fügen Sie Ihre erste Immobilie hinzu, um mit der Verwaltung zu beginnen.
+            {canWriteProperty()
+              ? "Fügen Sie Ihre erste Immobilie hinzu, um mit der Verwaltung zu beginnen."
+              : "Ihnen sind derzeit keine Immobilien zugewiesen."
+            }
           </p>
-          <Button
-            onClick={() => {
-              setSelectedProperty(null);
-              setShowModal(true);
-            }}
-            variant="primary"
-          >
-            Erste Immobilie hinzufügen
-          </Button>
+          {canWriteProperty() && (
+            <Button
+              onClick={() => {
+                setSelectedProperty(null);
+                setShowModal(true);
+              }}
+              variant="primary"
+            >
+              Erste Immobilie hinzufügen
+            </Button>
+          )}
         </div>
       ) : (
         <>
@@ -626,23 +637,25 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                           <Building2 className="w-6 h-6" style={{ color: '#1E1E24' }} />
                         )}
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedProperty(property);
-                            setShowModal(true);
-                          }}
-                          className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(property.id)}
-                          className="p-2 text-gray-300 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {canWriteProperty(property.id) && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedProperty(property);
+                              setShowModal(true);
+                            }}
+                            className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(property.id)}
+                            className="p-2 text-gray-300 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <h3 className="text-lg font-semibold text-dark mb-1">
@@ -839,18 +852,20 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
                             setShowDetails(true);
                           }
                         },
-                        {
-                          label: 'Bearbeiten',
-                          onClick: () => {
-                            setSelectedProperty(property);
-                            setShowModal(true);
+                        ...(canWriteProperty(property.id) ? [
+                          {
+                            label: 'Bearbeiten',
+                            onClick: () => {
+                              setSelectedProperty(property);
+                              setShowModal(true);
+                            }
+                          },
+                          {
+                            label: 'Löschen',
+                            onClick: () => handleDelete(property.id),
+                            variant: 'danger' as const
                           }
-                        },
-                        {
-                          label: 'Löschen',
-                          onClick: () => handleDelete(property.id),
-                          variant: 'danger'
-                        }
+                        ] : [])
                       ]}
                     />
                   ),

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Building2, Calendar, Euro, TrendingUp, Users, Edit2, Trash2, CreditCard, Info, AlertCircle, CheckCircle, Clock, MapPin } from "lucide-react";
+import { CreditCard as Edit, Building2, Calendar, Euro, TrendingUp, Users, CreditCard as Edit2, Trash2, CreditCard, Info, AlertCircle, CheckCircle, Clock, MapPin } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { getMonthlyHausgeldEur } from "../../lib/hausgeldUtils";
@@ -23,6 +23,7 @@ interface PropertyOverviewTabProps {
   };
   onUpdate?: () => void;
   onNavigateToTenant?: (tenantId: string) => void;
+  readOnly?: boolean;
 }
 
 interface PropertyStats {
@@ -78,7 +79,7 @@ interface RentalContract {
   };
 }
 
-export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTenant }: PropertyOverviewTabProps) {
+export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTenant, readOnly = false }: PropertyOverviewTabProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
@@ -408,7 +409,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-dark">Stammdaten</h3>
           {!isEditingMasterData ? (
-            <Button onClick={() => setIsEditingMasterData(true)} variant="secondary">
+            !readOnly && <Button onClick={() => setIsEditingMasterData(true)} variant="secondary">
               Bearbeiten
             </Button>
           ) : (
@@ -827,15 +828,17 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                 Restschuld berechnen
               </Button>
             )}
-            <Button
-              onClick={() => {
-                setSelectedLoan(null);
-                setShowLoanModal(true);
-              }}
-              variant="primary"
-            >
-              Kredit hinzufügen
-            </Button>
+            {!readOnly && (
+              <Button
+                onClick={() => {
+                  setSelectedLoan(null);
+                  setShowLoanModal(true);
+                }}
+                variant="primary"
+              >
+                Kredit hinzufügen
+              </Button>
+            )}
           </div>
         </div>
 
@@ -912,23 +915,25 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
                         </div>
                         <div className="text-sm text-gray-400">monatlich</div>
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedLoan(loan);
-                            setShowLoanModal(true);
-                          }}
-                          className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteLoan(loan.id)}
-                          className="p-2 text-gray-300 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {!readOnly && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedLoan(loan);
+                              setShowLoanModal(true);
+                            }}
+                            className="p-2 text-gray-300 hover:text-primary-blue transition-colors"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteLoan(loan.id)}
+                            className="p-2 text-gray-300 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

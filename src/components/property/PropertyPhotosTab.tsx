@@ -20,11 +20,12 @@ interface PropertyImage {
 
 interface PropertyPhotosTabProps {
   propertyId: string;
+  readOnly?: boolean;
 }
 
 const categories = ["Alle", "Aussen", "Innen", "Treppenhaus", "Technik", "Zustand", "Sonstiges"];
 
-export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps) {
+export default function PropertyPhotosTab({ propertyId, readOnly = false }: PropertyPhotosTabProps) {
   const [images, setImages] = useState<PropertyImage[]>([]);
   const [filteredImages, setFilteredImages] = useState<PropertyImage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -216,19 +217,25 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
             <h2 className="text-2xl font-bold text-dark">Bilder zur Immobilie</h2>
             <p className="text-gray-400 mt-1">Laden Sie Fotos hoch, um Zustand, Ausstattung und Besonderheiten zu dokumentieren.</p>
           </div>
-          <Button onClick={() => setUploadModalOpen(true)} variant="primary">
-            Bilder hochladen
-          </Button>
+          {!readOnly && (
+            <Button onClick={() => setUploadModalOpen(true)} variant="primary">
+              Bilder hochladen
+            </Button>
+          )}
         </div>
 
-        <div
-          onClick={() => setUploadModalOpen(true)}
-          className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-gray-400 transition-colors"
-        >
-          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 font-medium mb-2">Dateien hier ablegen oder auswählen</p>
-          <p className="text-sm text-gray-400">JPG/PNG, max. 10 MB pro Bild</p>
-        </div>
+        {!readOnly ? (
+          <div
+            onClick={() => setUploadModalOpen(true)}
+            className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-gray-400 transition-colors"
+          >
+            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 font-medium mb-2">Dateien hier ablegen oder auswählen</p>
+            <p className="text-sm text-gray-400">JPG/PNG, max. 10 MB pro Bild</p>
+          </div>
+        ) : (
+          <p className="text-gray-400 text-center py-8">Keine Bilder vorhanden</p>
+        )}
 
         <p className="text-xs text-gray-400 mt-4 text-center">
           Empfohlen: Außenansicht, Eingangsbereich, Treppenhaus, typische Einheit
@@ -261,13 +268,15 @@ export default function PropertyPhotosTab({ propertyId }: PropertyPhotosTabProps
           >
             {multiSelectMode ? "Abbrechen" : "Auswählen"}
           </button>
-          <Button onClick={() => setUploadModalOpen(true)} variant="primary">
-            Bilder hochladen
-          </Button>
+          {!readOnly && (
+            <Button onClick={() => setUploadModalOpen(true)} variant="primary">
+              Bilder hochladen
+            </Button>
+          )}
         </div>
       </div>
 
-      {multiSelectMode && selectedImageIds.length > 0 && (
+      {!readOnly && multiSelectMode && selectedImageIds.length > 0 && (
         <div className="mb-6 p-4 rounded-lg flex items-center justify-between bg-blue-50">
           <span className="font-medium">{selectedImageIds.length} Bild(er) ausgewählt</span>
           <div className="flex gap-3">

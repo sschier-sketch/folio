@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, Trash2, Edit2, Phone, Mail, UserCog } from "lucide-react";
+import { Users, Trash2, CreditCard as Edit2, Phone, Mail, UserCog } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -9,6 +9,7 @@ import { Button } from '../ui/Button';
 
 interface PropertyContactsTabProps {
   propertyId: string;
+  readOnly?: boolean;
 }
 
 interface Contact {
@@ -34,7 +35,7 @@ interface ContactGroup {
   contacts: Contact[];
 }
 
-export default function PropertyContactsTab({ propertyId }: PropertyContactsTabProps) {
+export default function PropertyContactsTab({ propertyId, readOnly = false }: PropertyContactsTabProps) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -258,9 +259,11 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
             {contacts.length} Kontakt{contacts.length !== 1 ? "e" : ""} gespeichert
           </p>
         </div>
-        <Button onClick={openAddModal} variant="primary">
-          Kontakt hinzufügen
-        </Button>
+        {!readOnly && (
+          <Button onClick={openAddModal} variant="primary">
+            Kontakt hinzufügen
+          </Button>
+        )}
       </div>
 
       {contacts.length === 0 ? (
@@ -270,9 +273,11 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
           <p className="text-sm text-gray-400 mb-4">
             Speichern Sie Hausmeister, Dienstleister und weitere wichtige Kontakte
           </p>
-          <Button onClick={openAddModal} variant="primary">
-            Ersten Kontakt hinzufügen
-          </Button>
+          {!readOnly && (
+            <Button onClick={openAddModal} variant="primary">
+              Ersten Kontakt hinzufügen
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -303,19 +308,21 @@ export default function PropertyContactsTab({ propertyId }: PropertyContactsTabP
                           <h5 className="font-semibold text-dark">{contact.contact_name}</h5>
                           <p className="text-xs text-gray-500 mt-0.5">{getRoleLabel(contact.contact_role)}</p>
                         </div>
-                        <TableActionsDropdown
-                          actions={[
-                            {
-                              label: 'Bearbeiten',
-                              onClick: () => openEditModal(contact)
-                            },
-                            {
-                              label: 'Löschen',
-                              onClick: () => handleDelete(contact.id),
-                              variant: 'danger' as const
-                            }
-                          ]}
-                        />
+                        {!readOnly && (
+                          <TableActionsDropdown
+                            actions={[
+                              {
+                                label: 'Bearbeiten',
+                                onClick: () => openEditModal(contact)
+                              },
+                              {
+                                label: 'Löschen',
+                                onClick: () => handleDelete(contact.id),
+                                variant: 'danger' as const
+                              }
+                            ]}
+                          />
+                        )}
                       </div>
 
                       <div className="space-y-2 text-sm">
