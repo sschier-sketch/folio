@@ -1,19 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Home,
-  User,
-  Calendar,
-  Mail,
-  Phone,
-  MapPin,
-  Users,
-  Edit,
-  Save,
-  X,
-  Trash2,
-  Plus,
-  UserPlus,
-} from "lucide-react";
+import { Home, User, Calendar, Mail, Phone, MapPin, Users, CreditCard as Edit, Save, X, Trash2, Plus, UserPlus } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { usePermissions } from "../../hooks/usePermissions";
