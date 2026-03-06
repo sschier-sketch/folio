@@ -46,7 +46,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const eventType = sessionStorage.getItem("auth_event_type") || "login";
         sessionStorage.removeItem("auth_event_type");
 
-        (() => {
+        (async () => {
+          let clientIp = "";
+          try {
+            const ipRes = await fetch("https://api.ipify.org?format=json");
+            if (ipRes.ok) {
+              const ipData = await ipRes.json();
+              clientIp = ipData.ip || "";
+            }
+          } catch {}
+
           fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-auth-event`,
             {
@@ -60,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 userId: session.user.id,
                 eventType,
                 userAgent: navigator.userAgent,
+                clientIp,
               }),
             }
           ).catch(() => {});

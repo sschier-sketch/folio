@@ -43,7 +43,7 @@ Deno.serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const body = await req.json();
-    const { userId, eventType, userAgent } = body;
+    const { userId, eventType, userAgent, clientIp } = body;
 
     if (!userId || !eventType) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -53,7 +53,8 @@ Deno.serve(async (req: Request) => {
     }
 
     const forwarded = req.headers.get("x-forwarded-for");
-    const ip = forwarded ? forwarded.split(",")[0].trim() : req.headers.get("x-real-ip") || "";
+    const serverIp = forwarded ? forwarded.split(",")[0].trim() : req.headers.get("x-real-ip") || "";
+    const ip = clientIp || serverIp;
 
     const geo = await resolveGeo(ip);
 
