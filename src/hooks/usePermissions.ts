@@ -93,7 +93,7 @@ export function usePermissions() {
           .eq("user_id", user.id)
           .maybeSingle();
 
-        if (!data || !data.account_owner_id) {
+        if (!data || !data.account_owner_id || data.removed_at) {
           setPermissions(DEFAULT_OWNER_PERMISSIONS);
           setAllowedPropertyIds(null);
         } else {

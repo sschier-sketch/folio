@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
-import { usePermissions } from "../hooks/usePermissions";
 import { getMonthlyHausgeldEur } from "../lib/hausgeldUtils";
 import { useLanguage } from "../contexts/LanguageContext";
 import ProfileCompletionCard from "./profile/ProfileCompletionCard";
@@ -86,7 +85,6 @@ interface DashboardHomeProps {
 
 export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty, onChangeView }: DashboardHomeProps = {}) {
   const { user } = useAuth();
-  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats>({
@@ -117,66 +115,65 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const [profileRefreshTrigger, setProfileRefreshTrigger] = useState(0);
 
   useEffect(() => {
-    if (!user || permLoading || !dataOwnerId) return;
+    if (!user) return;
     loadStats();
     loadUpcomingTasks();
     loadUpcomingRentIncreases();
     loadOpenTickets();
-  }, [user, dataOwnerId, permLoading]);
+  }, [user]);
   const loadStats = async () => {
-    if (!user || !dataOwnerId) return;
+    if (!user) return;
     try {
       const [propertiesRes, tenantsRes, contractsRes, loansRes, paymentsRes, unitsValueRes] =
         await Promise.all([
           supabase
             .from("properties")
             .select("id, current_value, ownership_type")
-            .eq("user_id", dataOwnerId),
+            .eq("user_id", user.id),
           supabase
             .from("tenants")
             .select("id, property_id")
-            .eq("user_id", dataOwnerId)
+            .eq("user_id", user.id)
             .eq("is_active", true),
           supabase
             .from("rental_contracts")
             .select("base_rent, property_id")
-            .eq("user_id", dataOwnerId)
+            .eq("user_id", user.id)
             .eq("status", "active"),
           supabase
             .from("loans")
             .select("monthly_payment, property_id")
-            .eq("user_id", dataOwnerId),
+            .eq("user_id", user.id),
           supabase
             .from("rent_payments")
             .select("amount, paid, due_date, property_id")
-            .eq("user_id", dataOwnerId)
+            .eq("user_id", user.id)
             .eq("paid", false),
           supabase
             .from("property_units")
             .select("id, unit_number, property_id, current_value, housegeld_monthly_cents")
-            .eq("user_id", dataOwnerId),
+            .eq("user_id", user.id),
         ]);
-      const filteredProperties = filterPropertiesByScope(propertiesRes.data || []);
-      const filteredTenants = filterByPropertyId(tenantsRes.data || []);
-      const filteredContracts = filterByPropertyId(contractsRes.data || []);
-      const filteredLoans = filterByPropertyId(loansRes.data || []);
-      const filteredPayments = filterByPropertyId(paymentsRes.data || []);
-      const filteredUnits = filterByPropertyId(unitsValueRes.data || []);
-      const filteredPropertyIds = new Set(filteredProperties.map(p => p.id));
+      const properties = propertiesRes.data || [];
+      const tenants = tenantsRes.data || [];
+      const contracts = contractsRes.data || [];
+      const loans = loansRes.data || [];
+      const payments = paymentsRes.data || [];
+      const units = unitsValueRes.data || [];
 
-      const propertiesCount = filteredProperties.length;
-      const tenantsCount = filteredTenants.length;
+      const propertiesCount = properties.length;
+      const tenantsCount = tenants.length;
       const totalMonthlyRent =
-        filteredContracts.reduce((sum, c) => sum + Number(c.base_rent), 0) ||
+        contracts.reduce((sum, c) => sum + Number(c.base_rent), 0) ||
         0;
       const unitsByProperty = new Map<string, number>();
-      for (const unit of filteredUnits) {
+      for (const unit of units) {
         const prev = unitsByProperty.get(unit.property_id) || 0;
         unitsByProperty.set(unit.property_id, prev + (Number(unit.current_value) || 0));
       }
 
       const totalPropertyValue =
-        filteredProperties.reduce((sum, p) => {
+        properties.reduce((sum, p) => {
           const unitTotal = unitsByProperty.get(p.id) || 0;
           if (p.ownership_type === 'units_only' && unitTotal > 0) {
             return sum + unitTotal;
@@ -190,20 +187,18 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       const { data: historyData } = await supabase
         .from("property_value_history")
         .select("value, recorded_at, property_id")
-        .eq("user_id", dataOwnerId)
+        .eq("user_id", user.id)
         .order("recorded_at", { ascending: false })
         .limit(100);
 
       let valueChange = 0;
       let valueChangePercent = 0;
 
-      const filteredHistory = (historyData || []).filter(
-        (r: any) => !r.property_id || filteredPropertyIds.has(r.property_id)
-      );
+      const history = historyData || [];
 
-      if (filteredHistory.length > 1) {
+      if (history.length > 1) {
         const valuesByDate = new Map<string, number>();
-        filteredHistory.forEach((record: any) => {
+        history.forEach((record: any) => {
           const dateKey = new Date(record.recorded_at).toISOString().split("T")[0];
           const currentSum = valuesByDate.get(dateKey) || 0;
           valuesByDate.set(dateKey, currentSum + Number(record.value));
@@ -223,10 +218,10 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       }
 
       const totalMonthlyLoanPayments =
-        filteredLoans.reduce((sum, l) => sum + Number(l.monthly_payment), 0) ||
+        loans.reduce((sum, l) => sum + Number(l.monthly_payment), 0) ||
         0;
       const totalMonthlyHausgeld = getMonthlyHausgeldEur(
-        filteredUnits.map(u => ({
+        units.map(u => ({
           id: u.id,
           unit_number: u.unit_number || '',
           property_id: u.property_id,
@@ -247,7 +242,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       let unpaidRent = 0;
       let overdueRent = 0;
 
-      filteredPayments.forEach((payment) => {
+      payments.forEach((payment) => {
         const dueDate = new Date(payment.due_date);
         dueDate.setHours(0, 0, 0, 0);
         const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -270,10 +265,10 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       const { data: allUnitsData } = await supabase
         .from("property_units")
         .select("id, status, property_id")
-        .eq("user_id", dataOwnerId);
+        .eq("user_id", user.id);
 
-      const scopedUnits = filterByPropertyId(allUnitsData || []);
-      const rentableUnits = scopedUnits.filter(
+      const allUnits = allUnitsData || [];
+      const rentableUnits = allUnits.filter(
         (u) => u.status !== "self_occupied" && u.status !== "owner_occupied"
       );
       const totalUnits = rentableUnits.length;
@@ -286,12 +281,12 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       const { data: movingOutContracts } = await supabase
         .from("rental_contracts")
         .select("id, property_id")
-        .eq("user_id", dataOwnerId)
+        .eq("user_id", user.id)
         .not("contract_end", "is", null)
         .lte("contract_end", ninetyDaysFromNow.toISOString().split("T")[0])
         .gte("contract_end", new Date().toISOString().split("T")[0]);
 
-      const tenantsMovingOutSoon = filterByPropertyId(movingOutContracts || []).length;
+      const tenantsMovingOutSoon = (movingOutContracts || []).length;
 
       setStats({
         propertiesCount,
@@ -325,7 +320,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
     }).format(value);
   };
   const loadUpcomingTasks = async () => {
-    if (!user || !dataOwnerId) return;
+    if (!user) return;
 
     try {
       const ninetyDaysFromNow = new Date();
@@ -347,7 +342,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             unit_number
           )
         `)
-        .eq("user_id", dataOwnerId)
+        .eq("user_id", user.id)
         .in("status", ["open", "in_progress"])
         .not("due_date", "is", null)
         .lte("due_date", ninetyDaysFromNow.toISOString().split("T")[0])
@@ -355,14 +350,14 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         .limit(10);
 
       if (error) throw error;
-      setUpcomingTasks(filterByPropertyId(data || []).slice(0, 5));
+      setUpcomingTasks((data || []).slice(0, 5));
     } catch (error) {
       console.error("Error loading upcoming tasks:", error);
     }
   };
 
   const loadUpcomingRentIncreases = async () => {
-    if (!user || !dataOwnerId) return;
+    if (!user) return;
 
     try {
       const today = new Date();
@@ -384,15 +379,14 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             last_name
           )
         `)
-        .eq("user_id", dataOwnerId)
+        .eq("user_id", user.id)
         .in("rent_type", ["graduated", "indexed"]);
 
       if (error) throw error;
 
-      const scopedContracts = filterByPropertyId(contracts || []);
       const increases: RentIncrease[] = [];
 
-      scopedContracts.forEach((contract: any) => {
+      (contracts || []).forEach((contract: any) => {
         if (contract.rent_type === "graduated" && contract.graduated_rent_schedule) {
           const schedule = contract.graduated_rent_schedule as any[];
           const upcomingStep = schedule.find((step: any) => {
@@ -440,7 +434,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   };
 
   const loadOpenTickets = async () => {
-    if (!user || !dataOwnerId) return;
+    if (!user) return;
 
     try {
       const { data, error } = await supabase
@@ -449,7 +443,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           id, subject, priority, category, created_at, last_message_at, tenant_id,
           tenants (first_name, last_name)
         `)
-        .eq("user_id", dataOwnerId)
+        .eq("user_id", user.id)
         .not("ticket_id", "is", null)
         .eq("status", "unread")
         .order("last_message_at", { ascending: false })

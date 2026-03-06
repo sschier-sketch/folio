@@ -3,7 +3,6 @@ import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell, A
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
-import { usePermissions } from "../hooks/usePermissions";
 import DunningView from "./finances/DunningView";
 import DunningTemplates from "./finances/DunningTemplates";
 import DunningHistory from "./finances/DunningHistory";
@@ -54,7 +53,6 @@ interface RentPayment {
 export default function RentPaymentsView() {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
-  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, canWrite, loading: permLoading } = usePermissions();
   const [activeTab, setActiveTab] = useState<"payments" | "dunning" | "dunning-templates" | "dunning-history">("payments");
   const [payments, setPayments] = useState<RentPayment[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
@@ -93,32 +91,30 @@ export default function RentPaymentsView() {
   });
   const [savingNk, setSavingNk] = useState(false);
   useEffect(() => {
-    if (!user || permLoading || !dataOwnerId) return;
     loadData();
-  }, [user, dataOwnerId, permLoading]);
+  }, [user]);
   useEffect(() => {
     if (properties.length > 0 && contracts.length > 0) {
       loadPayments();
     }
   }, [filterProperty, filterContract, filterStatus, filterPaymentType, startDate, endDate]);
   const loadData = async () => {
-    if (!user || !dataOwnerId) return;
+    if (!user) return;
     try {
       const [propertiesRes, contractsRes] = await Promise.all([
-        supabase.from("properties").select("id, name").eq("user_id", dataOwnerId),
+        supabase.from("properties").select("id, name").eq("user_id", user.id),
         supabase
           .from("rental_contracts")
           .select(
             ` id, property_id, properties(name), tenants!contract_id(first_name, last_name) `,
           )
-          .eq("user_id", dataOwnerId)
+          .eq("user_id", user.id)
           .eq("status", "active")
           .order("contract_start", { ascending: false }),
       ]);
-      setProperties(filterPropertiesByScope(propertiesRes.data || []));
+      setProperties(propertiesRes.data || []);
 
-      const scopedContracts = filterByPropertyId(contractsRes.data || []);
-      const validContracts = scopedContracts.filter(contract => {
+      const validContracts = (contractsRes.data || []).filter(contract => {
         if (!contract.tenants || contract.tenants.length === 0) return false;
         const tenant = contract.tenants[0];
         if (!tenant.first_name || !tenant.last_name) return false;
@@ -134,7 +130,7 @@ export default function RentPaymentsView() {
     }
   };
   const loadPayments = async () => {
-    if (!user || !dataOwnerId) return;
+    if (!user) return;
     try {
       let query = supabase
         .from("rent_payments")
@@ -149,7 +145,7 @@ export default function RentPaymentsView() {
           )
           `
         )
-        .eq("user_id", dataOwnerId)
+        .eq("user_id", user.id)
         .order("due_date", { ascending: true });
       if (filterProperty !== "all") {
         query = query.eq("property_id", filterProperty);

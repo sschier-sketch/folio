@@ -3,7 +3,6 @@ import { Plus, Building2, Pencil, Trash2, TrendingUp, AlertCircle, CheckCircle, 
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
-import { usePermissions } from "../hooks/usePermissions";
 import PropertyModal from "./PropertyModal";
 import PropertyDetails from "./PropertyDetails";
 import { exportToPDF, exportToCSV, exportToExcel } from "../lib/exportUtils";
@@ -68,7 +67,6 @@ const LABEL_COLORS = {
 export default function PropertiesView({ selectedPropertyId: externalSelectedPropertyId, selectedPropertyTab, onClearSelection, onNavigateToTenant }: PropertiesViewProps = {}) {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
-  const { dataOwnerId, filterPropertiesByScope, canWrite, isOwner, loading: permLoading } = usePermissions();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -88,8 +86,8 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   });
 
   useEffect(() => {
-    if (!permLoading) loadProperties();
-  }, [user, dataOwnerId, permLoading]);
+    if (user) loadProperties();
+  }, [user]);
 
   useEffect(() => {
     if (externalSelectedPropertyId && properties.length > 0) {
@@ -102,12 +100,12 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   }, [externalSelectedPropertyId, properties.length]);
 
   const loadProperties = async () => {
-    if (!user || !dataOwnerId) return;
+    if (!user) return;
     try {
       const { data, error } = await supabase
         .from("properties")
         .select("*")
-        .eq("user_id", dataOwnerId)
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -148,7 +146,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
         })
       );
 
-      setProperties(filterPropertiesByScope(propertiesWithUnitsAndLabels));
+      setProperties(propertiesWithUnitsAndLabels);
 
       // Extract all unique labels for the filter
       const uniqueLabels = Array.from(

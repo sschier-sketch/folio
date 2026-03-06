@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { TrendingDown, Trash2, Building, Tag, Upload, X, CreditCard as Edit, FileText, CheckCircle, Clock, AlertCircle, Settings2, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
-import { usePermissions } from "../../hooks/usePermissions";
 import TableActionsDropdown from "../common/TableActionsDropdown";
 import { Button } from "../ui/Button";
 import {
@@ -69,7 +68,6 @@ interface DisplayRow {
 
 export default function ExpensesView() {
   const { user } = useAuth();
-  const { dataOwnerId, filterPropertiesByScope, canWrite, loading: permLoading } = usePermissions();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -108,10 +106,10 @@ export default function ExpensesView() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
-    if (user && !permLoading && dataOwnerId) {
+    if (user) {
       loadData();
     }
-  }, [user, dataOwnerId, permLoading, selectedProperty, selectedUnit, selectedCategory, timePeriod, startDate, endDate]);
+  }, [user, selectedProperty, selectedUnit, selectedCategory, timePeriod, startDate, endDate]);
 
   async function loadData() {
     try {
@@ -136,7 +134,7 @@ export default function ExpensesView() {
       let expensesQuery = supabase
         .from("expenses")
         .select("*")
-        .eq("user_id", dataOwnerId!)
+        .eq("user_id", user!.id)
         .order("expense_date", { ascending: false });
 
       if (selectedProperty) {
@@ -160,14 +158,14 @@ export default function ExpensesView() {
       const [expensesRes, propertiesRes, categoriesRes, tenantsRes, unitsRes] =
         await Promise.all([
           expensesQuery,
-          supabase.from("properties").select("id, name").eq("user_id", dataOwnerId!).order("name"),
+          supabase.from("properties").select("id, name").eq("user_id", user!.id).order("name"),
           supabase.from("expense_categories").select("*").order("name"),
-          supabase.from("tenants").select("id, name").eq("user_id", dataOwnerId!).order("name"),
-          supabase.from("property_units").select(HAUSGELD_UNIT_FIELDS).eq("user_id", dataOwnerId!).order("unit_number"),
+          supabase.from("tenants").select("id, name").eq("user_id", user!.id).order("name"),
+          supabase.from("property_units").select(HAUSGELD_UNIT_FIELDS).eq("user_id", user!.id).order("unit_number"),
         ]);
 
       if (expensesRes.data) setExpenses(expensesRes.data);
-      if (propertiesRes.data) setProperties(filterPropertiesByScope(propertiesRes.data));
+      if (propertiesRes.data) setProperties(propertiesRes.data);
       if (categoriesRes.data) setCategories(categoriesRes.data);
       if (tenantsRes.data) setTenants(tenantsRes.data);
       if (unitsRes.data) setUnits(unitsRes.data);
