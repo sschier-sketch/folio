@@ -9,38 +9,12 @@ const corsHeaders = {
 
 const DEDUP_SECONDS = 15;
 
-interface GeoData {
-  city?: string;
-  country?: string;
-}
-
-async function resolveGeo(ip: string): Promise<GeoData> {
-  if (
-    !ip ||
-    ip === "127.0.0.1" ||
-    ip === "::1" ||
-    ip.startsWith("192.168.") ||
-    ip.startsWith("10.")
-  ) {
-    return {};
+function extractClientIp(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
   }
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(
-      `http://ip-api.com/json/${ip}?fields=city,country`,
-      { signal: controller.signal },
-    );
-    clearTimeout(timeout);
-    if (!res.ok) return {};
-    const data = await res.json();
-    return {
-      city: data.city || undefined,
-      country: data.country || undefined,
-    };
-  } catch {
-    return {};
-  }
+  return req.headers.get("x-real-ip") || req.headers.get("cf-connecting-ip") || "";
 }
 
 function jsonResponse(body: Record<string, unknown>, status = 200) {
@@ -61,17 +35,13 @@ Deno.serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const body = await req.json();
-    const { userId, eventType, userAgent, clientIp } = body;
+    const { userId, eventType, userAgent } = body;
 
     if (!userId || !eventType) {
       return jsonResponse({ error: "Missing required fields" }, 400);
     }
 
-    const forwarded = req.headers.get("x-forwarded-for");
-    const serverIp = forwarded
-      ? forwarded.split(",")[0].trim()
-      : req.headers.get("x-real-ip") || "";
-    const ip = clientIp || serverIp;
+    const ip = extractClientIp(req);
 
     const { data: recentEntry } = await supabase
       .from("login_history")
@@ -88,17 +58,11 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ success: true, deduplicated: true });
     }
 
-    const geo = ip ? await resolveGeo(ip) : ({} as GeoData);
-
     if (ip) {
       if (eventType === "signup") {
         await supabase
           .from("account_profiles")
-          .update({
-            registration_ip: ip,
-            registration_city: geo.city || null,
-            registration_country: geo.country || null,
-          })
+          .update({ registration_ip: ip, geo_resolved_at: null })
           .eq("user_id", userId);
       } else {
         const { data: profile } = await supabase
@@ -109,11 +73,7 @@ Deno.serve(async (req: Request) => {
         if (profile && !profile.registration_ip) {
           await supabase
             .from("account_profiles")
-            .update({
-              registration_ip: ip,
-              registration_city: geo.city || null,
-              registration_country: geo.country || null,
-            })
+            .update({ registration_ip: ip, geo_resolved_at: null })
             .eq("user_id", userId);
         }
       }
@@ -122,12 +82,10 @@ Deno.serve(async (req: Request) => {
     await supabase.from("login_history").insert({
       user_id: userId,
       ip_address: ip || null,
-      city: geo.city || null,
-      country: geo.country || null,
       user_agent: userAgent || null,
     });
 
-    return jsonResponse({ success: true });
+    return jsonResponse({ success: true, ip: ip || null });
   } catch (err) {
     console.error("log-auth-event error:", err);
     return jsonResponse({ error: "Internal error" }, 500);

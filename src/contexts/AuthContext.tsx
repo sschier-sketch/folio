@@ -18,34 +18,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const DEDUP_WINDOW_MS = 10_000;
 
-async function fetchClientIp(): Promise<string> {
-  const services = [
-    "https://api.ipify.org?format=json",
-    "https://api.seeip.org/jsonip",
-  ];
-  for (const url of services) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 4000);
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeout);
-      if (res.ok) {
-        const data = await res.json();
-        const ip = data.ip || "";
-        if (ip) return ip;
-      }
-    } catch {}
-  }
-  return "";
-}
-
-async function sendAuthEvent(
+function fireAuthEvent(
   session: { access_token: string; user: { id: string } },
   eventType: string,
 ) {
-  const clientIp = await fetchClientIp();
-
-  const res = await fetch(
+  fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-auth-event`,
     {
       method: "POST",
@@ -58,15 +35,11 @@ async function sendAuthEvent(
         userId: session.user.id,
         eventType,
         userAgent: navigator.userAgent,
-        clientIp,
       }),
     },
-  );
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    console.error("log-auth-event failed:", res.status, text);
-  }
+  ).then((res) => {
+    if (!res.ok) res.text().then((t) => console.error("log-auth-event failed:", res.status, t));
+  }).catch((err) => console.error("sendAuthEvent error:", err));
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -103,14 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const eventType = sessionStorage.getItem("auth_event_type") || "login";
         sessionStorage.removeItem("auth_event_type");
 
-        const capturedSession = { access_token: session.access_token, user: { id: session.user.id } };
-        (async () => {
-          try {
-            await sendAuthEvent(capturedSession, eventType);
-          } catch (err) {
-            console.error("sendAuthEvent error:", err);
-          }
-        })();
+        fireAuthEvent({ access_token: session.access_token, user: { id: session.user.id } }, eventType);
       }
 
       if (event === "SIGNED_OUT") {
