@@ -61,6 +61,8 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
     const metadata = getReferralMetadata();
 
     try {
+      sessionStorage.setItem("auth_event_type", "signup");
+
       const { data: authData, error } = await supabase.auth.signUp({
         email,
         password,
@@ -74,10 +76,10 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       });
 
       if (error) {
+        sessionStorage.removeItem("auth_event_type");
         setMessage({ type: "error", text: error.message });
       } else if (authData.user) {
         await trackSignupSuccess();
-        sessionStorage.setItem("auth_event_type", "signup");
         try {
           const welcomeRes = await fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome-email`,

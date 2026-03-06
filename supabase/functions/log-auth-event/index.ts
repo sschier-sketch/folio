@@ -58,15 +58,31 @@ Deno.serve(async (req: Request) => {
 
     const geo = await resolveGeo(ip);
 
-    if (eventType === "signup") {
+    if (eventType === "signup" && ip) {
       await supabase
         .from("account_profiles")
         .update({
-          registration_ip: ip || null,
+          registration_ip: ip,
           registration_city: geo.city || null,
           registration_country: geo.country || null,
         })
         .eq("user_id", userId);
+    } else if (eventType === "login" && ip) {
+      const { data: profile } = await supabase
+        .from("account_profiles")
+        .select("registration_ip")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (profile && !profile.registration_ip) {
+        await supabase
+          .from("account_profiles")
+          .update({
+            registration_ip: ip,
+            registration_city: geo.city || null,
+            registration_country: geo.country || null,
+          })
+          .eq("user_id", userId);
+      }
     }
 
     await supabase.from("login_history").insert({
