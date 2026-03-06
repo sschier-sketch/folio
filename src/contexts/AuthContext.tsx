@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 
@@ -16,6 +16,59 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const DEDUP_WINDOW_MS = 10_000;
+
+async function fetchClientIp(): Promise<string> {
+  const services = [
+    "https://api.ipify.org?format=json",
+    "https://api.seeip.org/jsonip",
+  ];
+  for (const url of services) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        const ip = data.ip || "";
+        if (ip) return ip;
+      }
+    } catch {}
+  }
+  return "";
+}
+
+async function sendAuthEvent(
+  session: { access_token: string; user: { id: string } },
+  eventType: string,
+) {
+  const clientIp = await fetchClientIp();
+
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-auth-event`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({
+        userId: session.user.id,
+        eventType,
+        userAgent: navigator.userAgent,
+        clientIp,
+      }),
+    },
+  );
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.error("log-auth-event failed:", res.status, text);
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -23,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isBanned, setIsBanned] = useState(false);
   const [banReason, setBanReason] = useState<string | null>(null);
   const [checkingBan, setCheckingBan] = useState(false);
+  const loggedRef = useRef<{ userId: string; ts: number } | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -39,45 +93,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
 
       if (event === "SIGNED_IN" && session?.user && session.access_token) {
-        const alreadyLogged = sessionStorage.getItem("auth_event_logged");
-        if (alreadyLogged === session.user.id) return;
-        sessionStorage.setItem("auth_event_logged", session.user.id);
+        const now = Date.now();
+        const prev = loggedRef.current;
+        if (prev && prev.userId === session.user.id && now - prev.ts < DEDUP_WINDOW_MS) {
+          return;
+        }
+        loggedRef.current = { userId: session.user.id, ts: now };
 
         const eventType = sessionStorage.getItem("auth_event_type") || "login";
         sessionStorage.removeItem("auth_event_type");
 
+        const capturedSession = { access_token: session.access_token, user: { id: session.user.id } };
         (async () => {
-          let clientIp = "";
           try {
-            const ipRes = await fetch("https://api.ipify.org?format=json");
-            if (ipRes.ok) {
-              const ipData = await ipRes.json();
-              clientIp = ipData.ip || "";
-            }
-          } catch {}
-
-          fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-auth-event`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${session.access_token}`,
-                "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
-              },
-              body: JSON.stringify({
-                userId: session.user.id,
-                eventType,
-                userAgent: navigator.userAgent,
-                clientIp,
-              }),
-            }
-          ).catch(() => {});
+            await sendAuthEvent(capturedSession, eventType);
+          } catch (err) {
+            console.error("sendAuthEvent error:", err);
+          }
         })();
       }
 
       if (event === "SIGNED_OUT") {
-        sessionStorage.removeItem("auth_event_logged");
+        loggedRef.current = null;
         sessionStorage.removeItem("auth_event_type");
       }
     });
