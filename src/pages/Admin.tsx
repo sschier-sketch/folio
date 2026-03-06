@@ -64,6 +64,7 @@ interface UserData {
   trial_ends_at?: string;
   subscription_ends_at?: string;
   newsletter_opt_in?: boolean;
+  team_members_count?: number;
 }
 
 interface Stats {
@@ -508,6 +509,18 @@ export function Admin() {
                   render: (user: UserData) => (
                     <span className="text-sm text-gray-500">{user.properties_count ?? 0}</span>
                   )
+                },
+                {
+                  key: "team_members_count",
+                  header: "Benutzer",
+                  sortable: true,
+                  align: "center" as const,
+                  render: (user: UserData) => {
+                    const count = user.team_members_count ?? 0;
+                    return count > 0
+                      ? <span className="inline-flex items-center justify-center min-w-[1.5rem] px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">{count}</span>
+                      : <span className="text-sm text-gray-400">-</span>;
+                  }
                 },
                 {
                   key: "created_at",

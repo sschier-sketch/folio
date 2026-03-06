@@ -166,6 +166,13 @@ export function useAccountMembers() {
       .update({ status: "revoked", revoked_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq("id", invitationId);
 
+    await supabase.rpc("log_user_management_action", {
+      p_actor_user_id: user!.id,
+      p_event_type: "invitation_resent",
+      p_description: "Einladung erneut gesendet",
+      p_target_email: invitation.invited_email,
+    }).catch(() => {});
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("Nicht eingeloggt");
 
@@ -219,6 +226,14 @@ export function useAccountMembers() {
       .eq("id", invitationId);
 
     if (error) throw error;
+
+    await supabase.rpc("log_user_management_action", {
+      p_actor_user_id: user!.id,
+      p_event_type: "invitation_revoked",
+      p_description: "Einladung widerrufen",
+      p_target_email: invitation?.invited_email || null,
+    }).catch(() => {});
+
     await loadData();
   };
 

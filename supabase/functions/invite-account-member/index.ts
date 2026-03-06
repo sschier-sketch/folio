@@ -272,6 +272,14 @@ Deno.serve(async (req: Request) => {
       console.error("Email send failed:", errorText);
     }
 
+    await supabaseAdmin.rpc("log_user_management_action", {
+      p_actor_user_id: user.id,
+      p_event_type: "member_invited",
+      p_description: "Benutzer eingeladen",
+      p_target_email: invitedEmail,
+      p_changes: { role: invitation.role, email: invitedEmail },
+    }).catch((err: unknown) => console.error("Audit log failed:", err));
+
     return new Response(
       JSON.stringify({
         success: true,
