@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, ChevronDown } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import { Button } from "../ui/Button";
 
 interface MeterModalProps {
@@ -12,6 +13,7 @@ interface MeterModalProps {
 
 export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProps) {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [properties, setProperties] = useState<any[]>([]);
   const [units, setUnits] = useState<any[]>([]);
@@ -78,17 +80,17 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
   }, [formData.meter_type]);
 
   const loadProperties = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     try {
       const { data, error } = await supabase
         .from("properties")
         .select("id, name")
-        .eq("user_id", user.id)
+        .eq("user_id", dataOwnerId)
         .order("name");
 
       if (error) throw error;
-      setProperties(data || []);
+      setProperties(filterPropertiesByScope(data || []));
     } catch (error) {
       console.error("Error loading properties:", error);
     }
@@ -127,7 +129,7 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     if (!formData.property_id || !formData.meter_number || !formData.meter_type || !formData.unit_of_measurement) {
       alert("Bitte füllen Sie alle Pflichtfelder aus.");
@@ -138,7 +140,7 @@ export default function MeterModal({ meter, onClose, onSuccess }: MeterModalProp
       setLoading(true);
 
       const meterData = {
-        user_id: user.id,
+        user_id: dataOwnerId,
         property_id: formData.property_id || null,
         unit_id: formData.unit_id || null,
         tenant_id: formData.tenant_id || null,

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, Filter, Download, Gauge, Edit2, Activity, ChevronDown, History } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import * as XLSX from "xlsx";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 import { Button } from "../ui/Button";
@@ -29,6 +30,7 @@ interface MetersManagementViewProps {
   onAddReading: (meter: Meter) => void;
   onViewHistory: (meter: Meter) => void;
   refreshTrigger?: number;
+  readOnly?: boolean;
 }
 
 export default function MetersManagementView({
@@ -36,9 +38,11 @@ export default function MetersManagementView({
   onEditMeter,
   onAddReading,
   onViewHistory,
-  refreshTrigger = 0
+  refreshTrigger = 0,
+  readOnly = false,
 }: MetersManagementViewProps) {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
   const [meters, setMeters] = useState<Meter[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,15 +67,15 @@ export default function MetersManagementView({
   ];
 
   useEffect(() => {
-    loadData();
-  }, [user, refreshTrigger]);
+    if (user && !permLoading && dataOwnerId) loadData();
+  }, [user, refreshTrigger, permLoading, dataOwnerId]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filterType, filterProperty, filterPeriod]);
 
   const loadData = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     try {
       setLoading(true);
@@ -85,20 +89,20 @@ export default function MetersManagementView({
             unit:property_units(id, unit_number),
             tenant:tenants(id, first_name, last_name)
           `)
-          .eq("user_id", user.id)
+          .eq("user_id", dataOwnerId)
           .order("created_at", { ascending: false }),
         supabase
           .from("properties")
           .select("id, name")
-          .eq("user_id", user.id)
+          .eq("user_id", dataOwnerId)
           .order("name")
       ]);
 
       if (metersRes.error) throw metersRes.error;
       if (propertiesRes.error) throw propertiesRes.error;
 
-      setMeters(metersRes.data || []);
-      setProperties(propertiesRes.data || []);
+      setMeters(filterByPropertyId(metersRes.data || []));
+      setProperties(filterPropertiesByScope(propertiesRes.data || []));
     } catch (error) {
       console.error("Error loading meters:", error);
     } finally {
@@ -299,12 +303,14 @@ export default function MetersManagementView({
             )}
           </div>
 
-          <Button
-            onClick={onAddMeter}
-            variant="primary"
-          >
-            Neuen Zähler anlegen
-          </Button>
+          {!readOnly && (
+            <Button
+              onClick={onAddMeter}
+              variant="primary"
+            >
+              Neuen Zähler anlegen
+            </Button>
+          )}
         </div>
       </div>
 
@@ -484,18 +490,18 @@ export default function MetersManagementView({
                     <div className="flex justify-center">
                       <TableActionsDropdown
                         actions={[
-                          {
+                          ...(!readOnly ? [{
                             label: 'Stand erfassen',
                             onClick: () => onAddReading(meter)
-                          },
+                          }] : []),
                           {
                             label: 'Verlauf anzeigen',
                             onClick: () => onViewHistory(meter)
                           },
-                          {
+                          ...(!readOnly ? [{
                             label: 'Bearbeiten',
                             onClick: () => onEditMeter(meter)
-                          }
+                          }] : [])
                         ]}
                       />
                     </div>

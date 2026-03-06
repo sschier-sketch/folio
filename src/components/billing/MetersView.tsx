@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { usePermissions } from "../../hooks/usePermissions";
 import MetersManagementView from "./MetersManagementView";
 import MeterModal from "./MeterModal";
 import MeterReadingModal from "./MeterReadingModal";
 import MeterReadingsHistory from "./MeterReadingsHistory";
 
 export default function MetersView() {
+  const { canWrite } = usePermissions();
   const [showMeterModal, setShowMeterModal] = useState(false);
   const [showReadingModal, setShowReadingModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -58,9 +60,10 @@ export default function MetersView() {
         onAddReading={handleAddReading}
         onViewHistory={handleViewHistory}
         refreshTrigger={refreshTrigger}
+        readOnly={!canWrite}
       />
 
-      {showMeterModal && (
+      {showMeterModal && canWrite && (
         <MeterModal
           meter={selectedMeter}
           onClose={handleCloseMeterModal}
@@ -68,7 +71,7 @@ export default function MetersView() {
         />
       )}
 
-      {showReadingModal && selectedMeter && (
+      {showReadingModal && selectedMeter && canWrite && (
         <MeterReadingModal
           meter={selectedMeter}
           onClose={handleCloseReadingModal}

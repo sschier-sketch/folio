@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Search, FileText, Copy, Trash2, Download, Mail } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import { operatingCostService, OperatingCostStatement } from "../../lib/operatingCostService";
 import { supabase } from "../../lib/supabase";
@@ -37,6 +38,7 @@ interface StatementWithProperty extends OperatingCostStatement {
 
 export default function OperatingCostsView() {
   const { user } = useAuth();
+  const { dataOwnerId, filterByPropertyId, filterPropertiesByScope, canWrite, loading: permLoading } = usePermissions();
   const { isPro, loading: subscriptionLoading } = useSubscription();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,20 +54,21 @@ export default function OperatingCostsView() {
   const sendStatementId = searchParams.get('sendStatement');
 
   async function loadProperties() {
+    if (!dataOwnerId) return;
     const { data } = await supabase
       .from("properties")
       .select("id, name")
-      .eq("user_id", user?.id)
+      .eq("user_id", dataOwnerId)
       .order("name");
 
-    if (data) setProperties(data);
+    if (data) setProperties(filterPropertiesByScope(data));
   }
 
   async function loadStatements() {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     setLoading(true);
-    const { data } = await operatingCostService.listStatements(user.id, selectedYear ? {
+    const { data } = await operatingCostService.listStatements(dataOwnerId, selectedYear ? {
       year: selectedYear,
     } : undefined);
 
@@ -112,7 +115,7 @@ export default function OperatingCostsView() {
         })
       );
 
-      setStatements(statementsWithProperties);
+      setStatements(filterByPropertyId(statementsWithProperties));
     }
 
     setLoading(false);
@@ -154,7 +157,7 @@ export default function OperatingCostsView() {
   };
 
   const handleStatementClick = (statement: StatementWithProperty) => {
-    if (statement.status === "draft") {
+    if (statement.status === "draft" && canWrite) {
       navigate(`/abrechnungen/betriebskosten/${statement.id}/kosten`);
     } else {
       navigate(`/abrechnungen/betriebskosten/${statement.id}/versand`);
@@ -182,13 +185,13 @@ export default function OperatingCostsView() {
   };
 
   const handleDuplicateStatement = async (statement: StatementWithProperty) => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     try {
       const newYear = statement.year + 1;
 
       const newStatement = {
-        user_id: user.id,
+        user_id: dataOwnerId,
         property_id: statement.property_id,
         year: newYear,
         status: "draft",
@@ -385,11 +388,11 @@ export default function OperatingCostsView() {
   };
 
   useEffect(() => {
-    if (user && isPro) {
+    if (user && isPro && !permLoading && dataOwnerId) {
       loadProperties();
       loadStatements();
     }
-  }, [user, selectedYear, isPro]);
+  }, [user, selectedYear, isPro, permLoading, dataOwnerId]);
 
   if (subscriptionLoading) {
     return (
@@ -449,12 +452,14 @@ export default function OperatingCostsView() {
             ))}
           </select>
 
-          <Button
-            onClick={() => navigate("/abrechnungen/betriebskosten/neu")}
-            variant="primary"
-          >
-            Neue Abrechnung
-          </Button>
+          {canWrite && (
+            <Button
+              onClick={() => navigate("/abrechnungen/betriebskosten/neu")}
+              variant="primary"
+            >
+              Neue Abrechnung
+            </Button>
+          )}
         </div>
 
         {loading ? (
@@ -469,10 +474,10 @@ export default function OperatingCostsView() {
               {searchQuery
                 ? "Keine Abrechnungen gefunden"
                 : statements.length === 0
-                ? "Noch keine Betriebskostenabrechnungen"
+                ? (canWrite ? "Noch keine Betriebskostenabrechnungen" : "Keine Betriebskostenabrechnungen vorhanden")
                 : "Keine Abrechnungen für dieses Jahr"}
             </p>
-            {!searchQuery && statements.length === 0 && (
+            {!searchQuery && statements.length === 0 && canWrite && (
               <Button
                 onClick={() => navigate("/abrechnungen/betriebskosten/neu")}
                 variant="primary"
@@ -573,23 +578,25 @@ export default function OperatingCostsView() {
                                   onClick: () => handleDownloadAllPdfs(statement),
                                   icon: <Download className="w-4 h-4" />
                                 },
-                                {
+                                ...(canWrite ? [{
                                   label: 'An Mieter senden',
                                   onClick: () => setSearchParams({ tab: 'operating-costs', sendStatement: statement.id }),
                                   icon: <Mail className="w-4 h-4" />
-                                }
+                                }] : [])
                               ] : []),
-                              {
-                                label: 'Duplizieren',
-                                onClick: () => handleDuplicateStatement(statement),
-                                icon: <Copy className="w-4 h-4" />
-                              },
-                              {
-                                label: 'Löschen',
-                                onClick: () => handleDeleteStatement(statement.id),
-                                icon: <Trash2 className="w-4 h-4" />,
-                                variant: 'danger'
-                              }
+                              ...(canWrite ? [
+                                {
+                                  label: 'Duplizieren',
+                                  onClick: () => handleDuplicateStatement(statement),
+                                  icon: <Copy className="w-4 h-4" />
+                                },
+                                {
+                                  label: 'Löschen',
+                                  onClick: () => handleDeleteStatement(statement.id),
+                                  icon: <Trash2 className="w-4 h-4" />,
+                                  variant: 'danger' as const
+                                }
+                              ] : [])
                             ]}
                           />
                         </div>

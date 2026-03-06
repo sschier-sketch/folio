@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import { Button } from '../ui/Button';
 import {
   getAnlageVSummary,
@@ -39,6 +40,7 @@ interface Unit {
 
 export default function AnlageVView() {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, canWrite, loading: permLoading } = usePermissions();
   const [properties, setProperties] = useState<Property[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loadingProps, setLoadingProps] = useState(true);
@@ -64,36 +66,37 @@ export default function AnlageVView() {
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || permLoading || !dataOwnerId) return;
     (async () => {
       setLoadingProps(true);
       const { data: props } = await supabase
         .from('properties')
         .select('id, name, address, property_type')
-        .eq('user_id', user.id)
+        .eq('user_id', dataOwnerId)
         .order('name');
-      setProperties(props || []);
+      const scopedProps = filterPropertiesByScope(props || []);
+      setProperties(scopedProps);
       const { data: unitData } = await supabase
         .from('property_units')
         .select('id, property_id, unit_number')
-        .eq('user_id', user.id)
+        .eq('user_id', dataOwnerId)
         .order('unit_number');
       setUnits(unitData || []);
-      if (props && props.length > 0) setSelectedPropertyId(props[0].id);
+      if (scopedProps.length > 0) setSelectedPropertyId(scopedProps[0].id);
       setLoadingProps(false);
     })();
-  }, [user]);
+  }, [user, permLoading, dataOwnerId]);
 
   const calculate = useCallback(async () => {
-    if (!user || !selectedPropertyId) return;
+    if (!user || !dataOwnerId || !selectedPropertyId) return;
     setLoading(true);
     setError('');
     setSummary(null);
-    const { data, error: err } = await getAnlageVSummary(user.id, year, 'property', selectedPropertyId, ownershipShare);
+    const { data, error: err } = await getAnlageVSummary(dataOwnerId, year, 'property', selectedPropertyId, ownershipShare);
     if (err) setError(err);
     else setSummary(data);
     setLoading(false);
-  }, [user, year, selectedPropertyId, ownershipShare]);
+  }, [user, dataOwnerId, year, selectedPropertyId, ownershipShare]);
 
   useEffect(() => {
     if (selectedPropertyId && user) calculate();
@@ -200,13 +203,14 @@ export default function AnlageVView() {
           loading={loading}
           error={error}
           onOpenAfaSetup={() => setShowAfaSetup(true)}
+          canWrite={canWrite}
         />
       </div>
 
-      {showAfaSetup && user && selectedPropertyId && (
+      {showAfaSetup && user && dataOwnerId && selectedPropertyId && (
         <AfaSetupModal
           propertyId={selectedPropertyId}
-          userId={user.id}
+          userId={dataOwnerId}
           propertyType={selectedProperty?.property_type || null}
           onClose={() => setShowAfaSetup(false)}
           onSaved={handleAfaSaved}
@@ -392,11 +396,12 @@ function SidebarReceipts() {
   );
 }
 
-function MainPanel({ summary, loading, error, onOpenAfaSetup }: {
+function MainPanel({ summary, loading, error, onOpenAfaSetup, canWrite }: {
   summary: AnlageVSummary | null;
   loading: boolean;
   error: string;
   onOpenAfaSetup: () => void;
+  canWrite: boolean;
 }) {
   if (error) {
     return (
@@ -449,7 +454,7 @@ function MainPanel({ summary, loading, error, onOpenAfaSetup }: {
       <HeroCard summary={summary} />
       <IncomeAccordion summary={summary} />
       <ExpenseAccordion summary={summary} />
-      <AfaAccordion summary={summary} onOpenSetup={onOpenAfaSetup} />
+      <AfaAccordion summary={summary} onOpenSetup={onOpenAfaSetup} canWrite={canWrite} />
     </div>
   );
 }
@@ -627,7 +632,7 @@ function ExpenseAccordion({ summary }: { summary: AnlageVSummary }) {
   );
 }
 
-function AfaAccordion({ summary, onOpenSetup }: { summary: AnlageVSummary; onOpenSetup: () => void }) {
+function AfaAccordion({ summary, onOpenSetup, canWrite }: { summary: AnlageVSummary; onOpenSetup: () => void; canWrite: boolean }) {
   const [open, setOpen] = useState(true);
   const { afa, afa_settings: settings } = summary;
   const isConfigured = afa.enabled;
@@ -681,15 +686,17 @@ function AfaAccordion({ summary, onOpenSetup }: { summary: AnlageVSummary; onOpe
               </p>
             </div>
           )}
-          <div className="px-5 py-3 border-t border-gray-100 flex justify-end">
-            <button
-              onClick={(e) => { e.stopPropagation(); onOpenSetup(); }}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-blue hover:underline"
-            >
-              <Settings className="w-3.5 h-3.5" />
-              {isConfigured ? 'AfA bearbeiten' : 'AfA einrichten'}
-            </button>
-          </div>
+          {canWrite && (
+            <div className="px-5 py-3 border-t border-gray-100 flex justify-end">
+              <button
+                onClick={(e) => { e.stopPropagation(); onOpenSetup(); }}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-blue hover:underline"
+              >
+                <Settings className="w-3.5 h-3.5" />
+                {isConfigured ? 'AfA bearbeiten' : 'AfA einrichten'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
