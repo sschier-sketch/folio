@@ -14,33 +14,52 @@ interface GeoResult {
   country?: string;
 }
 
-async function resolveGeo(ip: string): Promise<GeoResult> {
-  if (
+function isPrivateIp(ip: string): boolean {
+  return (
     !ip ||
     ip === "127.0.0.1" ||
     ip === "::1" ||
     ip.startsWith("192.168.") ||
-    ip.startsWith("10.")
-  ) {
-    return {};
-  }
+    ip.startsWith("10.") ||
+    ip.startsWith("172.16.") ||
+    ip.startsWith("172.17.") ||
+    ip.startsWith("172.18.") ||
+    ip.startsWith("172.19.") ||
+    ip.startsWith("172.2") ||
+    ip.startsWith("172.30.") ||
+    ip.startsWith("172.31.")
+  );
+}
+
+async function tryFetch(url: string, timeout = 4000): Promise<GeoResult> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(
-      `http://ip-api.com/json/${ip}?fields=city,country`,
-      { signal: controller.signal },
-    );
-    clearTimeout(timeout);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
     if (!res.ok) return {};
-    const data = await res.json();
-    return {
-      city: data.city || undefined,
-      country: data.country || undefined,
-    };
+    return await res.json();
   } catch {
+    clearTimeout(timer);
     return {};
   }
+}
+
+async function resolveGeo(ip: string): Promise<GeoResult> {
+  if (isPrivateIp(ip)) return {};
+
+  const primary = await tryFetch(
+    `http://ip-api.com/json/${ip}?fields=city,country`,
+  );
+  if (primary.city || primary.country) return primary;
+
+  const fallback = await tryFetch(
+    `https://ipapi.co/${ip}/json/`,
+  );
+  return {
+    city: fallback.city || undefined,
+    country: fallback.country_name || (fallback as Record<string, string>).country || undefined,
+  };
 }
 
 function jsonResponse(body: Record<string, unknown>, status = 200) {
