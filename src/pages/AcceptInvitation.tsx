@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Users, CheckCircle2, AlertCircle, Shield } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -99,7 +99,6 @@ export default function AcceptInvitation() {
         email: invitation.email,
         password,
         options: {
-          emailRedirectTo: undefined,
           data: {
             invitation_token: token,
           },
@@ -109,22 +108,46 @@ export default function AcceptInvitation() {
       if (signUpError) {
         if (signUpError.message.includes("already registered")) {
           setSubmitError(
-            "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an."
+            "Diese E-Mail-Adresse ist bereits registriert."
+          );
+        } else if (signUpError.message.includes("registration_blocked")) {
+          setSubmitError(
+            "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Account-Inhaber."
           );
         } else {
           setSubmitError(signUpError.message);
         }
+        setSubmitting(false);
         return;
       }
 
-      if (authData.user) {
+      if (!authData.user) {
+        setSubmitError("Account konnte nicht erstellt werden. Bitte versuchen Sie es erneut.");
+        setSubmitting(false);
+        return;
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: invitation.email,
+        password,
+      });
+
+      if (signInError) {
         setSuccess(true);
         setTimeout(() => {
-          navigate("/dashboard");
+          navigate("/login");
         }, 2000);
+        return;
       }
-    } catch {
-      setSubmitError("Ein unerwarteter Fehler ist aufgetreten");
+
+      setSuccess(true);
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 2000);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Ein unerwarteter Fehler ist aufgetreten"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -152,12 +175,12 @@ export default function AcceptInvitation() {
             {!status && "Ungültige Einladung"}
           </h1>
           <p className="text-gray-500 mb-6">{error}</p>
-          <Link
-            to="/login"
+          <button
+            onClick={() => navigate("/login")}
             className="inline-flex items-center justify-center px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
           >
             Zum Login
-          </Link>
+          </button>
         </div>
       </div>
     );
@@ -198,7 +221,8 @@ export default function AcceptInvitation() {
             <Shield className="w-5 h-5 text-gray-400 flex-shrink-0" />
             <div>
               <p className="text-sm text-gray-700">
-                <span className="font-medium">Rolle:</span> {invitation?.role_label}
+                <span className="font-medium">Rolle:</span>{" "}
+                {invitation?.role_label || (invitation?.role === "member" ? "Mitglied" : invitation?.role === "admin" ? "Administrator" : invitation?.role === "viewer" ? "Betrachter" : invitation?.role || "Mitglied")}
               </p>
               <p className="text-xs text-gray-500">{invitation?.email}</p>
             </div>
@@ -282,14 +306,6 @@ export default function AcceptInvitation() {
           </button>
         </form>
 
-        <div className="px-8 pb-6 text-center">
-          <p className="text-xs text-gray-400">
-            Bereits ein Konto?{" "}
-            <Link to="/login" className="text-blue-600 hover:underline">
-              Anmelden
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );
