@@ -24,6 +24,7 @@ import {
   testLetterXpressConnection,
   LetterXpressApiError,
 } from "../../lib/letterxpress-api";
+import PostalMailJobsList from "./PostalMailJobsList";
 
 function formatDateTime(iso: string | null, language: string): string {
   if (!iso) return language === "de" ? "Nie" : "Never";
@@ -527,6 +528,9 @@ export default function PostalMailSettingsView() {
           </div>
         </div>
       )}
+
+      {/* Jobs List - only shown when credentials are configured */}
+      {hasCredentials && <PostalMailJobsList />}
     </div>
   );
 }
