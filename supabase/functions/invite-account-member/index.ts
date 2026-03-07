@@ -28,6 +28,15 @@ interface InvitePayload {
   language?: string;
 }
 
+function replaceVariables(content: string, variables: Record<string, string>): string {
+  let result = content;
+  Object.entries(variables).forEach(([key, value]) => {
+    const placeholder = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+    result = result.replace(placeholder, value);
+  });
+  return result;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -109,7 +118,7 @@ Deno.serve(async (req: Request) => {
 
     if (!isPro) {
       return new Response(
-        JSON.stringify({ error: "Benutzerverwaltung ist nur im Pro-Tarif verfügbar" }),
+        JSON.stringify({ error: "Benutzerverwaltung ist nur im Pro-Tarif verfuegbar" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -136,8 +145,8 @@ Deno.serve(async (req: Request) => {
         if (!existingSettings.account_owner_id && existingSettings.role === "owner") {
           return new Response(
             JSON.stringify({
-              error: "Diese E-Mail-Adresse gehört bereits zu einem eigenständigen Rentably-Account. " +
-                "Ein bestehendes Konto kann nicht als Teammitglied hinzugefügt werden.",
+              error: "Diese E-Mail-Adresse gehoert bereits zu einem eigenstaendigen Rentably-Account. " +
+                "Ein bestehendes Konto kann nicht als Teammitglied hinzugefuegt werden.",
             }),
             { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
@@ -164,7 +173,7 @@ Deno.serve(async (req: Request) => {
       if (new Date(existingInvitation.expires_at) > new Date()) {
         return new Response(
           JSON.stringify({
-            error: "Es gibt bereits eine aktive Einladung für diese E-Mail-Adresse",
+            error: "Es gibt bereits eine aktive Einladung fuer diese E-Mail-Adresse",
           }),
           { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -243,45 +252,159 @@ Deno.serve(async (req: Request) => {
 
     let emailSent = false;
     let emailError: string | null = null;
+    let emailLogId: string | null = null;
+
+    const idempotencyKey = `account_invite:${invitation.id}`;
+    const templateVariables: Record<string, string> = {
+      inviter_name: inviterName || "",
+      invitee_email: invitedEmail,
+      invitation_link: invitationLink,
+      role: roleLabels[invitation.role] || invitation.role,
+      expires_in: expiresFormatted,
+    };
 
     try {
-      const emailResponse = await fetch(
-        `${supabaseUrl}/functions/v1/send-email`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            to: invitedEmail,
-            templateKey: "account_invitation",
-            language,
-            variables: {
-              inviter_name: inviterName,
-              invitee_email: invitedEmail,
-              invitation_link: invitationLink,
-              role: roleLabels[invitation.role] || invitation.role,
-              expires_in: expiresFormatted,
-            },
-            userId: accountOwnerId,
-            mailType: "account_invitation",
-            category: "transactional",
-            idempotencyKey: `account_invite:${invitation.id}`,
-          }),
-        }
-      );
+      const { data: existingLog } = await supabaseAdmin
+        .from("email_logs")
+        .select("id, status")
+        .eq("idempotency_key", idempotencyKey)
+        .maybeSingle();
 
-      if (!emailResponse.ok) {
-        const errorText = await emailResponse.text();
-        emailError = `send-email returned ${emailResponse.status}: ${errorText}`;
-        console.error("Email send failed:", emailError);
-      } else {
+      if (existingLog?.status === "sent") {
         emailSent = true;
+        emailLogId = existingLog.id;
+      } else {
+        if (existingLog) {
+          emailLogId = existingLog.id;
+          await supabaseAdmin
+            .from("email_logs")
+            .update({
+              status: "queued",
+              error_code: null,
+              error_message: null,
+              metadata: { templateKey: "account_invitation", retry: true },
+            })
+            .eq("id", emailLogId);
+        } else {
+          const { data: logEntry } = await supabaseAdmin
+            .from("email_logs")
+            .insert({
+              mail_type: "account_invitation",
+              category: "transactional",
+              to_email: invitedEmail,
+              user_id: accountOwnerId,
+              subject: "account_invitation",
+              provider: "resend",
+              status: "queued",
+              idempotency_key: idempotencyKey,
+              metadata: { templateKey: "account_invitation" },
+            })
+            .select("id")
+            .single();
+
+          if (logEntry) emailLogId = logEntry.id;
+        }
+
+        const { data: template } = await supabaseAdmin
+          .from("email_templates")
+          .select("*")
+          .eq("template_key", "account_invitation")
+          .eq("language", language)
+          .maybeSingle();
+
+        if (!template) {
+          const errMsg = `Template not found: account_invitation (language: ${language})`;
+          if (emailLogId) {
+            await supabaseAdmin
+              .from("email_logs")
+              .update({ status: "failed", error_code: "TEMPLATE_NOT_FOUND", error_message: errMsg })
+              .eq("id", emailLogId);
+          }
+          emailError = errMsg;
+        } else {
+          const finalSubject = replaceVariables(template.subject, templateVariables);
+          const finalHtml = replaceVariables(template.body_html, templateVariables);
+          const finalText = replaceVariables(template.body_text || "", templateVariables);
+
+          if (emailLogId) {
+            await supabaseAdmin
+              .from("email_logs")
+              .update({ subject: finalSubject })
+              .eq("id", emailLogId);
+          }
+
+          const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+          if (!RESEND_API_KEY) {
+            if (emailLogId) {
+              await supabaseAdmin
+                .from("email_logs")
+                .update({ status: "failed", error_code: "CONFIG_ERROR", error_message: "RESEND_API_KEY not configured" })
+                .eq("id", emailLogId);
+            }
+            emailError = "RESEND_API_KEY not configured";
+          } else {
+            const DEFAULT_FROM = Deno.env.get("EMAIL_FROM") || "Rentably <hallo@rentab.ly>";
+
+            const resendResponse = await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${RESEND_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                from: DEFAULT_FROM,
+                to: [invitedEmail],
+                subject: finalSubject,
+                html: finalHtml,
+                text: finalText || "",
+              }),
+            });
+
+            const resendData = await resendResponse.json();
+
+            if (!resendResponse.ok) {
+              console.error("Resend API error for invitation email:", resendData);
+              if (emailLogId) {
+                await supabaseAdmin
+                  .from("email_logs")
+                  .update({
+                    status: "failed",
+                    error_code: `RESEND_${resendResponse.status}`,
+                    error_message: resendData.message || "Resend API error",
+                  })
+                  .eq("id", emailLogId);
+              }
+              emailError = resendData.message || "Resend API error";
+            } else {
+              emailSent = true;
+              if (emailLogId) {
+                await supabaseAdmin
+                  .from("email_logs")
+                  .update({
+                    status: "sent",
+                    provider_message_id: resendData.id,
+                    sent_at: new Date().toISOString(),
+                  })
+                  .eq("id", emailLogId);
+              }
+              console.log("Invitation email sent successfully:", { to: invitedEmail, resendId: resendData.id });
+            }
+          }
+        }
       }
     } catch (emailErr) {
       emailError = String(emailErr);
       console.error("Email send threw:", emailErr);
+      if (emailLogId) {
+        await supabaseAdmin
+          .from("email_logs")
+          .update({
+            status: "failed",
+            error_message: emailError,
+          })
+          .eq("id", emailLogId)
+          .catch(() => {});
+      }
     }
 
     try {
