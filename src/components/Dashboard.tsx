@@ -371,6 +371,7 @@ export default function Dashboard() {
                       <span className="text-sm">
                         {language === "de" ? "Benutzerverwaltung" : "User Management"}
                       </span>{" "}
+                      <Badge variant="pro" size="sm">Pro</Badge>
                     </button>
                     )}{" "}
                     <div className="border-t my-2"></div>{" "}
