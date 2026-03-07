@@ -580,7 +580,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-6 items-start">
             {" "}
-            <aside className="hidden lg:block w-64 flex-shrink-0 space-y-4 sticky top-24">
+            <aside className="hidden lg:block w-72 flex-shrink-0 space-y-4 sticky top-24">
             {" "}
             <nav className="bg-white rounded p-2">
               {" "}

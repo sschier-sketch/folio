@@ -19,7 +19,7 @@ import {
 } from "../hooks/useAccountMembers";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
-import { PremiumFeatureGuard } from "./PremiumFeatureGuard";
+import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 import { Button } from "./ui/Button";
 import Badge from "./common/Badge";
 import TableActionsDropdown from "./common/TableActionsDropdown";
@@ -656,11 +656,7 @@ export default function UsersManagementView() {
   );
 
   if (!isPro) {
-    return (
-      <PremiumFeatureGuard featureName={t("settings.users")}>
-        {content}
-      </PremiumFeatureGuard>
-    );
+    return <PremiumUpgradePrompt featureKey="users_management" />;
   }
 
   return content;
