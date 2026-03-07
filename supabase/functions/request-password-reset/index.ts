@@ -113,8 +113,21 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const { data: profile } = await supabase
+      .from('account_profiles')
+      .select('first_name, last_name')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    let userName = normalizedEmail.split('@')[0];
+    if (profile) {
+      const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(' ');
+      if (fullName) userName = fullName;
+    }
+
     const variables: Record<string, string> = {
-      reset_link: resetLink,
+      resetLink,
+      userName,
     };
 
     const finalSubject = replaceVariables(template.subject, variables);
