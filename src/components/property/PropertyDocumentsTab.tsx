@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { FileText, Upload, Eye, Calendar, Download, X, Image, FileCheck, Shield, Home, FileSignature, Receipt, Wrench, Trash2, AlertCircle } from "lucide-react";
+import { FileText, Upload, Eye, Calendar, Download, X, Image, FileCheck, Shield, Home, Ligature as FileSignature, Receipt, Wrench, Trash2, AlertCircle } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
