@@ -224,7 +224,7 @@ export default function PostalMailSettingsView() {
           {language === "de" ? "LetterXpress-Integration" : "LetterXpress Integration"}
         </p>
 
-        <div className="rounded-lg bg-[#f0f4f8] p-5">
+        <div className="rounded-lg bg-[#eff4fe] p-5">
           <div className="flex items-center gap-3 mb-1">
             <svg viewBox="0 0 120 120" className="w-7 h-7 flex-shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="120" height="120" rx="12" fill="#E5194B" />
