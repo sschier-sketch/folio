@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   ArrowLeft, AtSign, Building2, DoorOpen, Users, Upload, File as FileIcon,
-  X, Globe, Info, AlertTriangle, Calendar, Settings, ChevronRight,
+  X, Globe, Info, AlertTriangle, Calendar, ChevronRight,
   Mail as MailIcon, FolderOpen,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -478,11 +478,10 @@ export default function ComposeLetterInline({
                   Für den Briefversand sind noch keine Zugangsdaten hinterlegt. Bitte richten Sie LetterXpress zuerst unter Profil &rarr; Briefversand ein.
                 </p>
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   onClick={onNavigatePostalSettings}
                   className="mt-3"
                 >
-                  <Settings className="w-4 h-4 mr-1.5" />
                   Zu Profil &rarr; Briefversand
                 </Button>
               </div>

@@ -427,8 +427,17 @@ export default function UsersManagementView() {
                   <span className="text-gray-300 font-normal">({allRows.length})</span>
                 </h3>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-hidden">
+                <table className="w-full table-fixed">
+                  <colgroup>
+                    <col />
+                    <col className="w-[100px]" />
+                    <col className="w-[100px]" />
+                    <col className="w-[110px]" />
+                    <col className="w-[120px]" />
+                    <col className="w-[100px]" />
+                    <col className="w-[60px]" />
+                  </colgroup>
                   <thead className="bg-gray-50/80">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -462,12 +471,12 @@ export default function UsersManagementView() {
                           [m.first_name, m.last_name].filter(Boolean).join(" ") || null;
                         return (
                           <tr key={`m-${m.user_id}`} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div>
+                            <td className="px-6 py-4">
+                              <div className="min-w-0">
                                 {name && (
-                                  <p className="text-sm font-medium text-dark">{name}</p>
+                                  <p className="text-sm font-medium text-dark truncate" title={name}>{name}</p>
                                 )}
-                                <p className={`text-sm ${name ? "text-gray-400" : "text-gray-400"}`}>
+                                <p className="text-sm text-gray-400 truncate" title={m.email}>
                                   {m.email}
                                 </p>
                               </div>
@@ -514,8 +523,8 @@ export default function UsersManagementView() {
                       const isExpired = new Date(inv.expires_at) <= new Date();
                       return (
                         <tr key={`inv-${inv.id}`} className="hover:bg-gray-50/50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-400">{inv.invited_email}</span>
+                          <td className="px-6 py-4">
+                            <p className="text-sm text-gray-400 truncate min-w-0" title={inv.invited_email}>{inv.invited_email}</p>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {isExpired ? (
