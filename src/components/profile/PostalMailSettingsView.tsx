@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  Send,
   Eye,
   EyeOff,
   CheckCircle,
@@ -11,6 +10,9 @@ import {
   Shield,
   Clock,
   AlertTriangle,
+  Mail,
+  Leaf,
+  PiggyBank,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useAuth } from "../../contexts/AuthContext";
@@ -196,7 +198,7 @@ export default function PostalMailSettingsView() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded shadow-sm p-6">
+        <div className="bg-white rounded p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-6 bg-gray-100 rounded w-1/3" />
             <div className="h-4 bg-gray-100 rounded w-2/3" />
@@ -214,45 +216,84 @@ export default function PostalMailSettingsView() {
   return (
     <div className="space-y-6">
       {/* Intro Card */}
-      <div className="bg-white rounded shadow-sm p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-            <Send className="w-5 h-5 text-primary-blue" />
+      <div className="bg-white rounded p-6">
+        <h3 className="text-lg font-semibold text-dark mb-1">
+          {language === "de" ? "Postalischer Briefversand" : "Postal Letter Dispatch"}
+        </h3>
+        <p className="text-sm text-gray-400 mb-5">
+          {language === "de" ? "LetterXpress-Integration" : "LetterXpress Integration"}
+        </p>
+
+        <div className="rounded-lg bg-[#f0f4f8] p-5">
+          <div className="flex items-center gap-3 mb-1">
+            <svg viewBox="0 0 120 120" className="w-7 h-7 flex-shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="120" height="120" rx="12" fill="#E5194B" />
+              <path d="M20 95V25h18v52h28V95H20Z" fill="#1A2744" />
+              <path d="M52 25l20 35-20 35h20l20-35-20-35H52Z" fill="#1A2744" />
+              <path d="M82 25h18v70H82l20-35-20-35Z" fill="#1A2744" />
+            </svg>
+            <div>
+              <p className="text-base font-bold text-[#1A2744]">
+                {language === "de" ? "Briefe online versenden" : "Send letters online"}
+              </p>
+              <p className="text-sm font-semibold text-[#E5194B]">
+                {language === "de" ? "Smart, sicher & nachhaltig" : "Smart, secure & sustainable"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-dark">
-              {language === "de" ? "Postalischer Briefversand" : "Postal Letter Dispatch"}
-            </h3>
-            <p className="text-sm text-gray-400">
-              {language === "de" ? "LetterXpress-Integration" : "LetterXpress Integration"}
-            </p>
+
+          <hr className="my-4 border-gray-300" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex items-start gap-2.5">
+              <Mail className="w-4 h-4 text-[#1A2744] mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-[#1A2744]">
+                  {language === "de" ? "Ab 0,81 \u20AC pro Brief" : "From \u20AC0.81 per letter"}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {language === "de" ? "inkl. Porto und zzgl. MwSt." : "incl. postage, plus VAT"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <PiggyBank className="w-4 h-4 text-[#1A2744] mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-[#1A2744]">
+                  {language === "de" ? "Ohne versteckte Kosten" : "No hidden costs"}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {language === "de" ? "keine Vertragslaufzeiten" : "no contract periods"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <Leaf className="w-4 h-4 text-[#1A2744] mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-[#1A2744]">
+                  {language === "de" ? "100 % Recyclingpapier" : "100% recycled paper"}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {language === "de" ? "klimaneutraler Versand" : "carbon-neutral shipping"}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-          <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-blue-800">
-            {language === "de" ? (
-              <>
-                Hier kann der postalische Briefversand über LetterXpress aktiviert werden.
-                Nach Hinterlegung der Zugangsdaten kann rentably Briefe zentral über die LetterXpress API
-                verwalten. Generierte PDFs aus verschiedenen Modulen können später direkt per Brief versendet werden.
-              </>
-            ) : (
-              <>
-                Here you can activate postal letter dispatch via LetterXpress.
-                After saving your credentials, rentably can manage letters centrally through the LetterXpress API.
-                Generated PDFs from various modules can later be sent directly by mail.
-              </>
-            )}
-          </div>
-        </div>
+        <p className="text-sm text-gray-500 mt-4">
+          {language === "de"
+            ? "Nach Hinterlegung der Zugangsdaten kann rentably Briefe zentral \u00fcber die LetterXpress API verwalten. Generierte PDFs aus verschiedenen Modulen k\u00f6nnen direkt per Brief versendet werden."
+            : "After saving your credentials, rentably can manage letters centrally through the LetterXpress API. Generated PDFs from various modules can be sent directly by mail."}
+        </p>
       </div>
 
       {/* Credentials Card */}
-      <div className="bg-white rounded shadow-sm p-6">
+      <div className="bg-white rounded p-6">
         <div className="flex items-center gap-3 mb-6">
-          <Shield className="w-5 h-5 text-primary-blue" />
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+            <Shield className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+          </div>
           <h3 className="text-lg font-semibold text-dark">
             {language === "de" ? "Zugangsdaten" : "Credentials"}
           </h3>
@@ -369,10 +410,10 @@ export default function PostalMailSettingsView() {
 
       {/* Connection Test Result */}
       {testResult && (
-        <div className={`rounded shadow-sm p-4 ${
+        <div className={`rounded p-4 ${
           testResult.success
-            ? "bg-green-50 border border-green-200"
-            : "bg-red-50 border border-red-200"
+            ? "bg-green-50"
+            : "bg-red-50"
         }`}>
           <div className="flex items-start gap-3">
             {testResult.success ? (
@@ -406,9 +447,11 @@ export default function PostalMailSettingsView() {
 
       {/* Balance & Status Card */}
       {hasCredentials && (
-        <div className="bg-white rounded shadow-sm p-6">
+        <div className="bg-white rounded p-6">
           <div className="flex items-center gap-3 mb-6">
-            <Wallet className="w-5 h-5 text-primary-blue" />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+              <Wallet className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+            </div>
             <h3 className="text-lg font-semibold text-dark">
               {language === "de" ? "Guthaben & Status" : "Balance & Status"}
             </h3>
@@ -516,7 +559,7 @@ export default function PostalMailSettingsView() {
 
       {/* Admin-only Test Mode Toggle */}
       {isAdmin && config && (
-        <div className="bg-white rounded shadow-sm p-6 border-l-4 border-amber-400">
+        <div className="bg-white rounded p-6 border-l-4 border-amber-400">
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-5 h-5 text-amber-600" />
             <h3 className="text-lg font-semibold text-dark">

@@ -111,7 +111,7 @@ export default function ProfileCompletionCard({ onStartWizard }: ProfileCompleti
   const progress = (completionData.completedSteps / completionData.totalSteps) * 100;
 
   return (
-    <div style={{ backgroundColor: '#EEF4FF' }} className="rounded-lg p-6 shadow-sm">
+    <div style={{ backgroundColor: '#EEF4FF' }} className="rounded-lg p-6">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>

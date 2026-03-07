@@ -194,7 +194,7 @@ export default function ProfileDocumentsComm() {
         </div>
       )}
 
-      <div className="bg-white rounded shadow-sm p-6">
+      <div className="bg-white rounded p-6">
         <h3 className="text-lg font-semibold text-dark mb-6">
           {language === "de" ? "Absendername für Dokumente" : "Sender Name for Documents"}
         </h3>
@@ -237,7 +237,7 @@ export default function ProfileDocumentsComm() {
         </div>
       </div>
 
-      <div className="bg-white rounded shadow-sm p-6">
+      <div className="bg-white rounded p-6">
         <h3 className="text-lg font-semibold text-dark mb-6">
           {language === "de" ? "Ihre Rentably E-Mail" : "Your Rentably Email"}
         </h3>

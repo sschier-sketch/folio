@@ -482,7 +482,13 @@ export default function ComposeLetterInline({
                   onClick={onNavigatePostalSettings}
                   className="mt-3"
                 >
-                  Zu Profil &rarr; Briefversand
+                  <svg viewBox="0 0 120 120" className="w-4 h-4 flex-shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="120" height="120" rx="12" fill="#E5194B" />
+                    <path d="M20 95V25h18v52h28V95H20Z" fill="#1A2744" />
+                    <path d="M52 25l20 35-20 35h20l20-35-20-35H52Z" fill="#1A2744" />
+                    <path d="M82 25h18v70H82l20-35-20-35Z" fill="#1A2744" />
+                  </svg>
+                  Zugangsdaten hinterlegen
                 </Button>
               </div>
             </div>

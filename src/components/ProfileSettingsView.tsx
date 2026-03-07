@@ -312,7 +312,7 @@ export default function ProfileSettingsView() {
 
       {activeTab === "profile" && (
         <div>
-          <div className="bg-white rounded shadow-sm p-6">
+          <div className="bg-white rounded p-6">
             <h3 className="text-lg font-semibold text-dark mb-6">
               {t("settings.profile")}
             </h3>
@@ -384,13 +384,10 @@ export default function ProfileSettingsView() {
       )}
 
       {activeTab === "bank" && (
-        <div className="bg-white rounded shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <CreditCard className="w-6 h-6 text-primary-blue" />
-            <h3 className="text-lg font-semibold text-dark">
-              {language === "de" ? "Bankverbindung f\u00fcr Mieter" : "Bank Details for Tenants"}
-            </h3>
-          </div>
+        <div className="bg-white rounded p-6">
+          <h3 className="text-lg font-semibold text-dark mb-6">
+            {language === "de" ? "Bankverbindung f\u00fcr Mieter" : "Bank Details for Tenants"}
+          </h3>
 
           {isReadOnly && (
             <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
@@ -480,13 +477,10 @@ export default function ProfileSettingsView() {
       )}
 
       {activeTab === "password" && (
-        <div className="bg-white rounded shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Lock className="w-6 h-6 text-primary-blue" />
-            <h3 className="text-lg font-semibold text-dark">
-              {language === "de" ? "Passwort \u00e4ndern" : "Change Password"}
-            </h3>
-          </div>
+        <div className="bg-white rounded p-6">
+          <h3 className="text-lg font-semibold text-dark mb-6">
+            {language === "de" ? "Passwort \u00e4ndern" : "Change Password"}
+          </h3>
 
           {!showPasswordSection ? (
             <Button
