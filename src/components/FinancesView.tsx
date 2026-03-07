@@ -197,7 +197,13 @@ export default function FinancesView() {
           )
         )}
         {activeTab === "intelligence" && <IntelligenceView />}
-        {activeTab === "bank" && <BankConnectionView />}
+        {activeTab === "bank" && (
+          isPremium ? (
+            <BankConnectionView />
+          ) : (
+            <PremiumUpgradePrompt featureKey="finances_bank" />
+          )
+        )}
       </div>
     </div>
   );

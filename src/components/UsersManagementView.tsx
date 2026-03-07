@@ -2,11 +2,9 @@ import { useState, useEffect } from "react";
 import {
   Users,
   UserPlus,
-  Mail,
   ChevronDown,
   ChevronUp,
   Shield,
-  Building2,
   Crown,
   Calendar,
 } from "lucide-react";
@@ -38,20 +36,14 @@ function getRoleBadgeVariant(role: string): "info" | "danger" | "success" | "gra
   return map[role] || "gray";
 }
 
-function permissionSummary(
-  m: AccountMember | AccountInvitation,
-  de: boolean
-): string {
-  const parts: string[] = [];
-  if ("is_read_only" in m && m.is_read_only) {
-    return de ? "Nur Lesen" : "Read Only";
-  }
-  if (m.can_manage_billing) parts.push(de ? "Billing" : "Billing");
-  if (m.can_manage_users) parts.push(de ? "Benutzer" : "Users");
-  if ("can_view_finances" in m && m.can_view_finances) parts.push(de ? "Finanzen" : "Finances");
-  if ("can_view_messages" in m && m.can_view_messages) parts.push(de ? "Nachrichten" : "Messages");
-  if (parts.length === 0) return de ? "Standard" : "Standard";
-  return parts.join(", ");
+function hasFullAccess(m: AccountMember | AccountInvitation): boolean {
+  if ("is_read_only" in m && m.is_read_only) return false;
+  if (!m.can_manage_billing) return false;
+  if (!m.can_manage_users) return false;
+  const hasFinances = "can_view_finances" in m ? m.can_view_finances : true;
+  const hasMessages = "can_view_messages" in m ? m.can_view_messages : true;
+  if (!hasFinances || !hasMessages) return false;
+  return true;
 }
 
 function propertyScopeLabel(scope: string, de: boolean): string {
@@ -410,8 +402,8 @@ export default function UsersManagementView() {
                   </h3>
                   <p className="text-sm text-gray-400">
                     {de
-                      ? "Laden Sie Mitarbeiter ein, um Immobilien gemeinsam zu verwalten"
-                      : "Invite colleagues to manage properties together"}
+                      ? "Laden Sie weitere Personen ein, um Immobilien gemeinsam zu verwalten"
+                      : "Invite others to manage properties together"}
                   </p>
                 </div>
               </div>
@@ -440,7 +432,7 @@ export default function UsersManagementView() {
                   <thead className="bg-gray-50/80">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {de ? "Name / E-Mail" : "Name / Email"}
+                        {de ? "E-Mail" : "Email"}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         {t("settings.users.status")}
@@ -452,7 +444,6 @@ export default function UsersManagementView() {
                         {de ? "Rechte" : "Permissions"}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <Building2 className="w-3.5 h-3.5 inline mr-1" />
                         {de ? "Immobilien" : "Properties"}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -472,21 +463,13 @@ export default function UsersManagementView() {
                         return (
                           <tr key={`m-${m.user_id}`} className="hover:bg-gray-50/50 transition-colors">
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center gap-3">
-                                <UserAvatar
-                                  name={name}
-                                  email={m.email}
-                                  avatarPath={m.avatar_url}
-                                  size="sm"
-                                />
-                                <div>
-                                  {name && (
-                                    <p className="text-sm font-medium text-dark">{name}</p>
-                                  )}
-                                  <p className={`text-sm ${name ? "text-gray-400" : "font-medium text-dark"}`}>
-                                    {m.email}
-                                  </p>
-                                </div>
+                              <div>
+                                {name && (
+                                  <p className="text-sm font-medium text-dark">{name}</p>
+                                )}
+                                <p className={`text-sm ${name ? "text-gray-400" : "text-gray-400"}`}>
+                                  {m.email}
+                                </p>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -506,7 +489,11 @@ export default function UsersManagementView() {
                               </Badge>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="text-sm text-gray-400">{permissionSummary(m, de)}</span>
+                              {hasFullAccess(m) ? (
+                                <Badge variant="success" size="sm">{de ? "Vollzugriff" : "Full access"}</Badge>
+                              ) : (
+                                <Badge variant="gray" size="sm">{de ? "Teilzugriff" : "Partial access"}</Badge>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className="text-sm text-gray-400">{propertyScopeLabel(m.property_scope, de)}</span>
@@ -528,12 +515,7 @@ export default function UsersManagementView() {
                       return (
                         <tr key={`inv-${inv.id}`} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center">
-                                <Mail className="w-4 h-4 text-amber-500" />
-                              </div>
-                              <span className="text-sm font-medium text-dark">{inv.invited_email}</span>
-                            </div>
+                            <span className="text-sm text-gray-400">{inv.invited_email}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {isExpired ? (
@@ -552,7 +534,11 @@ export default function UsersManagementView() {
                             </Badge>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-400">{permissionSummary(inv, de)}</span>
+                            {hasFullAccess(inv) ? (
+                              <Badge variant="success" size="sm">{de ? "Vollzugriff" : "Full access"}</Badge>
+                            ) : (
+                              <Badge variant="gray" size="sm">{de ? "Teilzugriff" : "Partial access"}</Badge>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="text-sm text-gray-400">{propertyScopeLabel(inv.property_scope, de)}</span>
