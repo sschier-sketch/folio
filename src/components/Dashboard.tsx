@@ -169,7 +169,7 @@ export default function Dashboard() {
     window.open("/mieterportal", "_blank");
   };
 
-  const isNavHidden = (id: string): boolean => {
+  const isNavDisabled = (id: string): boolean => {
     if (permissions.isOwner || permissions.loading) return false;
     if (!permissions.isActiveMember && permissions.isMember) return true;
     switch (id) {
@@ -292,7 +292,7 @@ export default function Dashboard() {
             </div>{" "}
             <div className="flex items-center gap-4">
               {" "}
-              {showTrialIndicator && (
+              {showTrialIndicator && permissions.isOwner && (
                 <button
                   onClick={() => setCurrentView('settings-billing')}
                   className="flex items-center gap-2 px-3.5 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
@@ -476,13 +476,14 @@ export default function Dashboard() {
             <nav className="bg-white rounded p-2">
               {" "}
               {navigation.map((item) => {
-                if (isNavHidden(item.id)) return null;
+                const disabled = isNavDisabled(item.id);
                 const isLocked = (item.id === "mieterportal" || item.id === "messages") && !isPremium;
+                const isInactive = disabled || isLocked;
                 return (
                   <button
                     key={item.id}
                     onClick={() => {
-                      if (isLocked) return;
+                      if (isInactive) return;
                       setSelectedPropertyId(null);
                       setSelectedPropertyTab(null);
                       setSelectedTenantId(null);
@@ -491,7 +492,7 @@ export default function Dashboard() {
                       setCurrentView(item.id as View);
                       setShowMobileMenu(false);
                     }}
-                    className={`w-full px-4 py-3 rounded transition-colors text-left ${isLocked ? "opacity-50 cursor-not-allowed" : ""} ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
+                    className={`w-full px-4 py-3 rounded transition-colors text-left ${isInactive ? "opacity-40 cursor-not-allowed" : ""} ${currentView === item.id && !isInactive ? "bg-primary-blue/5 text-primary-blue" : !isInactive ? "text-gray-400 hover:bg-gray-50" : "text-gray-300"}`}
                   >
                     {" "}
                     <div className="flex items-center justify-between">
@@ -501,7 +502,7 @@ export default function Dashboard() {
                           Demnächst
                         </span>
                       )}
-                      {item.id === "messages" && isPremium && unreadMailCount > 0 && (
+                      {item.id === "messages" && isPremium && !disabled && unreadMailCount > 0 && (
                         <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-blue-600 text-white">
                           {unreadMailCount > 99 ? '99+' : unreadMailCount}
                         </span>
@@ -514,6 +515,7 @@ export default function Dashboard() {
                 );
               })}{" "}
             </nav>{" "}
+            {permissions.isOwner && (
             <div className={`rounded-lg p-4 relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`} style={{ backgroundColor: '#EEF4FF' }}>
               {" "}
               <div className="absolute top-2 right-2">
@@ -541,7 +543,9 @@ export default function Dashboard() {
                 <span>Zur Verwaltung</span>
                 <ChevronDown className="w-4 h-4 -rotate-90" />
               </div>{" "}
-            </div>{" "}
+            </div>
+            )}{" "}
+            {permissions.isOwner && (
             <div
               onClick={() => {
                 setCurrentView("referral");
@@ -568,7 +572,8 @@ export default function Dashboard() {
                 <span>{t("referral.learn_more")}</span>{" "}
                 <ChevronDown className="w-4 h-4 -rotate-90" />{" "}
               </div>{" "}
-            </div>{" "}
+            </div>
+            )}{" "}
           </div>{" "}
         </div>{" "}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -579,13 +584,14 @@ export default function Dashboard() {
             <nav className="bg-white rounded p-2">
               {" "}
               {navigation.map((item) => {
-                if (isNavHidden(item.id)) return null;
+                const disabled = isNavDisabled(item.id);
                 const isLocked = (item.id === "mieterportal" || item.id === "messages") && !isPremium;
+                const isInactive = disabled || isLocked;
                 return (
                   <button
                     key={item.id}
                     onClick={() => {
-                      if (isLocked) return;
+                      if (isInactive) return;
                       setSelectedPropertyId(null);
                       setSelectedPropertyTab(null);
                       setSelectedTenantId(null);
@@ -593,7 +599,7 @@ export default function Dashboard() {
                       setViewResetKey(k => k + 1);
                       setCurrentView(item.id as View);
                     }}
-                    className={`w-full px-4 py-3 rounded transition-colors text-left ${isLocked ? "opacity-50 cursor-not-allowed" : ""} ${currentView === item.id ? "bg-primary-blue/5 text-primary-blue" : "text-gray-400 hover:bg-gray-50"}`}
+                    className={`w-full px-4 py-3 rounded transition-colors text-left ${isInactive ? "opacity-40 cursor-not-allowed" : ""} ${currentView === item.id && !isInactive ? "bg-primary-blue/5 text-primary-blue" : !isInactive ? "text-gray-400 hover:bg-gray-50" : "text-gray-300"}`}
                   >
                     {" "}
                     <div className="flex items-center justify-between">
@@ -603,7 +609,7 @@ export default function Dashboard() {
                           Demnächst
                         </span>
                       )}
-                      {item.id === "messages" && isPremium && unreadMailCount > 0 && (
+                      {item.id === "messages" && isPremium && !disabled && unreadMailCount > 0 && (
                         <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-blue-600 text-white">
                           {unreadMailCount > 99 ? '99+' : unreadMailCount}
                         </span>
@@ -616,6 +622,7 @@ export default function Dashboard() {
                 );
               })}{" "}
             </nav>{" "}
+            {permissions.isOwner && (
             <div className={`rounded-lg p-4 relative ${!isPremium ? "opacity-50 cursor-not-allowed" : ""}`} style={{ backgroundColor: '#EEF4FF' }}>
               {" "}
               <div className="absolute top-2 right-2">
@@ -642,7 +649,9 @@ export default function Dashboard() {
                 <span>Zur Verwaltung</span>
                 <ChevronDown className="w-4 h-4 -rotate-90" />
               </div>{" "}
-            </div>{" "}
+            </div>
+            )}{" "}
+            {permissions.isOwner && (
             <div
               onClick={() => setCurrentView("referral")}
               className="rounded-lg p-4 cursor-pointer hover:shadow-sm transition-shadow"
@@ -666,7 +675,8 @@ export default function Dashboard() {
                 <span>{t("referral.learn_more")}</span>{" "}
                 <ChevronDown className="w-4 h-4 -rotate-90" />{" "}
               </div>{" "}
-            </div>{" "}
+            </div>
+            )}{" "}
           </aside>{" "}
           <main className="flex-1 min-w-0">
             {" "}
