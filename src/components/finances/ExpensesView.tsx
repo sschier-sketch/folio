@@ -180,6 +180,7 @@ export default function ExpensesView() {
 
   async function handleAddExpense() {
     if (!user || !formData.property_id || !formData.category_id) return;
+    if (!canWrite) return;
 
     try {
       let documentId = null;
@@ -315,6 +316,7 @@ export default function ExpensesView() {
   }
 
   async function handleDeleteExpense(id: string) {
+    if (!canWrite) return;
     if (!confirm("Ausgabe wirklich löschen?")) return;
 
     const { error } = await supabase.from("expenses").delete().eq("id", id);

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { CreditCard as Edit, Building2, Calendar, Euro, TrendingUp, Users, CreditCard as Edit2, Trash2, CreditCard, Info, AlertCircle, CheckCircle, Clock, MapPin } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { getMonthlyHausgeldEur } from "../../lib/hausgeldUtils";
 import { useSubscription } from "../../hooks/useSubscription";
 import LoanModal from "../LoanModal";
@@ -81,6 +82,7 @@ interface RentalContract {
 
 export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTenant, readOnly = false }: PropertyOverviewTabProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<PropertyStats>({
@@ -119,9 +121,10 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
     if (user) {
       loadData();
     }
-  }, [user, property.id]);
+  }, [user, property.id, dataOwnerId]);
 
   async function loadData() {
+    if (!dataOwnerId) return;
     try {
       setLoading(true);
 
@@ -134,7 +137,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           .from("loans")
           .select("*")
           .eq("property_id", property.id)
-          .eq("user_id", user.id)
+          .eq("user_id", dataOwnerId)
           .order("created_at", { ascending: false }),
         supabase
           .from("rental_contracts")
@@ -143,7 +146,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
             property_units(id, unit_number)
           `)
           .eq("property_id", property.id)
-          .eq("user_id", user.id)
+          .eq("user_id", dataOwnerId)
           .order("created_at", { ascending: false }),
       ]);
 
@@ -208,6 +211,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
   }
 
   async function handleDeleteLoan(id: string) {
+    if (readOnly) return;
     if (!confirm("Möchten Sie diesen Kredit wirklich löschen?")) return;
 
     try {
@@ -220,7 +224,7 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
   }
 
   async function handleSaveMasterData() {
-    if (!user) return;
+    if (!user || readOnly) return;
 
     try {
       const { error } = await supabase

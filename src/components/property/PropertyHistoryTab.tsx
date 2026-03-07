@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 
@@ -42,6 +43,7 @@ const PAGE_SIZE = 50;
 
 export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabProps) {
   const { user } = useAuth();
+  const { dataOwnerId } = usePermissions();
   const { isPremium } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -50,6 +52,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
   const [entityFilter, setEntityFilter] = useState<string>("all");
 
   const loadHistory = useCallback(async (offset = 0, append = false) => {
+    if (!dataOwnerId) return;
     try {
       if (offset === 0) setLoading(true);
       else setLoadingMore(true);
@@ -58,6 +61,7 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
         .from("property_history")
         .select("*")
         .eq("property_id", propertyId)
+        .eq("user_id", dataOwnerId)
         .order("created_at", { ascending: false })
         .range(offset, offset + PAGE_SIZE - 1);
 
@@ -82,11 +86,11 @@ export default function PropertyHistoryTab({ propertyId }: PropertyHistoryTabPro
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [propertyId, entityFilter]);
+  }, [propertyId, entityFilter, dataOwnerId]);
 
   useEffect(() => {
-    if (user) loadHistory();
-  }, [user, loadHistory]);
+    if (user && dataOwnerId) loadHistory();
+  }, [user, dataOwnerId, loadHistory]);
 
   function getEventIcon(eventType: string) {
     if (eventType.startsWith("property_")) return <Home className="w-5 h-5 text-primary-blue" />;

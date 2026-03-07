@@ -335,6 +335,7 @@ export default function IncomeView() {
   const totalIncome = totalManualIncome + totalRentIncome;
 
   async function handleSaveIncome() {
+    if (!canWrite) return;
     if (!user || !formData.property_id || !formData.amount || !formData.description || !formData.category_id) {
       alert("Bitte füllen Sie alle Pflichtfelder aus.");
       return;
@@ -472,6 +473,7 @@ export default function IncomeView() {
   }
 
   async function handleDeleteIncome(id: string) {
+    if (!canWrite) return;
     if (!confirm("Möchten Sie diese Einnahme wirklich löschen?")) return;
 
     try {

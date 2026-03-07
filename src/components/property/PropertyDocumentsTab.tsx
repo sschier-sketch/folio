@@ -9,6 +9,7 @@ import { Button } from '../ui/Button';
 
 interface PropertyDocumentsTabProps {
   propertyId: string;
+  readOnly?: boolean;
 }
 
 interface Document {
@@ -43,7 +44,7 @@ interface UploadFile {
   error?: string;
 }
 
-export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTabProps) {
+export default function PropertyDocumentsTab({ propertyId, readOnly = false }: PropertyDocumentsTabProps) {
   const { user } = useAuth();
   const { isPremium: isPro } = useSubscription();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -173,6 +174,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
   }
 
   async function handleDelete(documentId: string) {
+    if (readOnly) return;
     if (!confirm("Möchten Sie dieses Dokument wirklich löschen?")) return;
 
     try {
@@ -314,7 +316,7 @@ export default function PropertyDocumentsTab({ propertyId }: PropertyDocumentsTa
   };
 
   const handleUpload = async () => {
-    if (uploadFiles.length === 0) return;
+    if (readOnly || uploadFiles.length === 0) return;
 
     setIsUploading(true);
 

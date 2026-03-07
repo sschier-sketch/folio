@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import { getMonthlyHausgeldEur, HAUSGELD_UNIT_FIELDS } from "../lib/hausgeldUtils";
 import { PremiumFeatureGuard } from "./PremiumFeatureGuard";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
@@ -49,6 +50,7 @@ interface LoanFinancials {
 }
 export default function FinancialAnalysisView() {
   const { user } = useAuth();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [financialData, setFinancialData] = useState<FinancialData>({
     totalRevenue: 0,
@@ -68,46 +70,46 @@ export default function FinancialAnalysisView() {
   const [projections, setProjections] = useState<ProjectionData[]>([]);
   const [viewMode, setViewMode] = useState<"current" | "projection">("current");
   useEffect(() => {
-    loadFinancialData();
-  }, [user]);
+    if (!permLoading && dataOwnerId) loadFinancialData();
+  }, [user, permLoading, dataOwnerId]);
   useEffect(() => {
     if (financialData.monthlyRent > 0) {
       calculateProjections();
     }
   }, [financialData, projectionYears, rentIncrease, expenseIncrease]);
   const loadFinancialData = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
     try {
       const [contractsRes, paymentsRes, loansRes, propertiesRes, unitsRes] =
         await Promise.all([
           supabase
             .from("rental_contracts")
             .select("property_id, base_rent, additional_costs, status, contract_start, contract_end")
-            .eq("user_id", user.id)
+            .eq("user_id", dataOwnerId)
             .eq("status", "active"),
           supabase
             .from("rent_payments")
             .select("amount, paid_date")
-            .eq("user_id", user.id)
+            .eq("user_id", dataOwnerId)
             .eq("paid", true),
           supabase
             .from("loans")
             .select(
               "id, property_id, lender_name, monthly_payment, remaining_balance, interest_rate",
             )
-            .eq("user_id", user.id),
+            .eq("user_id", dataOwnerId),
           supabase
             .from("properties")
             .select("id, name, street, city")
-            .eq("user_id", user.id),
+            .eq("user_id", dataOwnerId),
           supabase
             .from("property_units")
             .select(HAUSGELD_UNIT_FIELDS)
-            .eq("user_id", user.id),
+            .eq("user_id", dataOwnerId),
         ]);
-      const properties = propertiesRes.data || [];
-      const contracts = contractsRes.data || [];
-      const loans = loansRes.data || [];
+      const properties = filterPropertiesByScope(propertiesRes.data || []);
+      const contracts = filterByPropertyId(contractsRes.data || []);
+      const loans = filterByPropertyId(loansRes.data || []);
       const propertyMap = new Map(properties.map((p) => [p.id, p]));
       const today = new Date();
       const propertyFinancialsData: PropertyFinancials[] = properties.map(
@@ -157,7 +159,7 @@ export default function FinancialAnalysisView() {
         (sum, l) => sum + l.monthlyPayment,
         0,
       );
-      const monthlyHausgeld = getMonthlyHausgeldEur(unitsRes.data || []);
+      const monthlyHausgeld = getMonthlyHausgeldEur(filterByPropertyId(unitsRes.data || []));
       const monthlyExpenses = loanPayments + monthlyHausgeld;
       const totalExpenses = monthlyExpenses * 12;
       const netIncome = monthlyRent * 12 - totalExpenses;

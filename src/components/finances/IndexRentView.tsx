@@ -204,6 +204,7 @@ export default function IndexRentView() {
   };
 
   const processCalculations = async () => {
+    if (!canWrite) return;
     setProcessing(true);
     setResult(null);
     try {
@@ -262,6 +263,7 @@ export default function IndexRentView() {
   };
 
   const confirmMarkAsApplied = async (calculationId: string, appliedDate: string, contractId: string, currentRent: number, utilities: number) => {
+    if (!canWrite) return;
     try {
       const { error } = await supabase
         .from("index_rent_calculations")
@@ -296,6 +298,7 @@ export default function IndexRentView() {
   };
 
   const dismissCalculation = async (calculationId: string) => {
+    if (!canWrite) return;
     try {
       const { error } = await supabase
         .from("index_rent_calculations")
@@ -313,6 +316,7 @@ export default function IndexRentView() {
   };
 
   const undismissCalculation = async (calculationId: string) => {
+    if (!canWrite) return;
     try {
       const { error } = await supabase
         .from("index_rent_calculations")

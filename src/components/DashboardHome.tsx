@@ -88,7 +88,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, canViewFinances, canViewRentPayments, loading: permLoading } = usePermissions();
   const [stats, setStats] = useState<Stats>({
     propertiesCount: 0,
     tenantsCount: 0,
@@ -564,6 +564,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             </div>
           )}{" "}
         </div>{" "}
+        {canViewRentPayments && (
         <div className="bg-white rounded-lg p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
@@ -596,7 +597,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               )}
             </div>
           )}{" "}
-        </div>{" "}
+        </div>
+        )}
+        {canViewFinances && (
         <div className="bg-white rounded-lg p-6">
           {" "}
           <div className="flex items-center justify-between mb-4">
@@ -636,10 +639,12 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               )}
             </div>{" "}
           </div>{" "}
-        </div>{" "}
+        </div>
+        )}{" "}
       </div>{" "}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {" "}
+        {canViewFinances && (
         <div className="bg-white rounded-lg p-6">
           {" "}
           <h3 className="text-lg font-semibold text-dark mb-4">
@@ -713,8 +718,9 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               </div>{" "}
             </div>{" "}
           </div>{" "}
-        </div>{" "}
-        <div className="lg:col-span-2 bg-white rounded-xl p-6">
+        </div>
+        )}
+        <div className={`${canViewFinances ? 'lg:col-span-2' : 'lg:col-span-3'} bg-white rounded-xl p-6`}>
           {" "}
           <h3 className="text-lg font-semibold mb-4 text-dark">
             {t("dashboard.quickstart")}

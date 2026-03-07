@@ -95,6 +95,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
   };
 
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (readOnly) return;
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -150,6 +151,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
   };
 
   const handlePhotoDelete = async () => {
+    if (readOnly) return;
     if (!photoUrl || !confirm('Möchten Sie das Foto wirklich löschen?')) return;
 
     setUploading(true);
@@ -307,13 +309,13 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
         {activeTab === "units" && <PropertyUnitsTab propertyId={currentProperty.id} readOnly={readOnly} />}
         {activeTab === "equipment" && <PropertyEquipmentTab propertyId={currentProperty.id} readOnly={readOnly} />}
         {activeTab === "photos" && <PropertyPhotosTab propertyId={currentProperty.id} readOnly={readOnly} />}
-        {activeTab === "documents" && <PropertyDocumentsTab propertyId={currentProperty.id} />}
+        {activeTab === "documents" && <PropertyDocumentsTab propertyId={currentProperty.id} readOnly={readOnly} />}
         {activeTab === "history" && <PropertyHistoryTab propertyId={currentProperty.id} />}
         {activeTab === "contacts" && <PropertyContactsTab propertyId={currentProperty.id} readOnly={readOnly} />}
         {activeTab === "maintenance" && (
           <PropertyMaintenanceTab propertyId={currentProperty.id} readOnly={readOnly} />
         )}
-        {activeTab === "metrics" && <PropertyMetricsTab propertyId={currentProperty.id} />}
+        {activeTab === "metrics" && <PropertyMetricsTab propertyId={currentProperty.id} readOnly={readOnly} />}
       </div>
     </div>
   );

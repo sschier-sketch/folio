@@ -169,11 +169,12 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
 
   const handleAddLabel = async (propertyId: string, labelText: string, color: string) => {
     if (!user || !labelText.trim()) return;
+    if (!canWriteProperty(propertyId)) return;
 
     try {
       const { error } = await supabase.from("property_labels").insert({
         property_id: propertyId,
-        user_id: user.id,
+        user_id: dataOwnerId,
         label: labelText.trim(),
         color: color,
       });
@@ -190,6 +191,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   };
 
   const handleRemoveLabel = async (labelId: string) => {
+    if (!canWriteProperty()) return;
     try {
       const { error } = await supabase
         .from("property_labels")
@@ -205,6 +207,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   };
 
   const handleDelete = async (id: string) => {
+    if (!canWriteProperty(id)) return;
     if (!confirm("Möchten Sie diese Immobilie wirklich löschen?")) return;
     try {
       const { error } = await supabase.from("properties").delete().eq("id", id);

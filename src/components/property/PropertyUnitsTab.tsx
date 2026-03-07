@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { CreditCard as Edit, Trash2, Home, X, FileText, Link2, Info } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import { parseNumberInput } from "../../lib/utils";
 import TenantModal from "../TenantModal";
@@ -52,6 +53,7 @@ interface PropertyUnit {
 
 export default function PropertyUnitsTab({ propertyId, readOnly = false }: PropertyUnitsTabProps) {
   const { user } = useAuth();
+  const { dataOwnerId, canWrite } = usePermissions();
   const { isPremium } = useSubscription();
   const [units, setUnits] = useState<PropertyUnit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,12 +248,13 @@ export default function PropertyUnitsTab({ propertyId, readOnly = false }: Prope
 
   async function handleSaveUnit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
+    if (readOnly || !canWrite) return;
 
     try {
       const unitData: any = {
         property_id: propertyId,
-        user_id: user.id,
+        user_id: dataOwnerId,
         unit_number: formData.unit_number,
         unit_type: formData.unit_type,
         floor: null,
@@ -302,6 +305,7 @@ export default function PropertyUnitsTab({ propertyId, readOnly = false }: Prope
   }
 
   async function handleDeleteUnit(unit: PropertyUnit) {
+    if (readOnly || !canWrite) return;
     if (!confirm(`Möchten Sie die Einheit ${unit.unit_number} wirklich löschen?`))
       return;
 

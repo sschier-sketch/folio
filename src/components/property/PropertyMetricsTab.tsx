@@ -9,6 +9,7 @@ import { Button } from '../ui/Button';
 
 interface PropertyMetricsTabProps {
   propertyId: string;
+  readOnly?: boolean;
 }
 
 interface PropertyData {
