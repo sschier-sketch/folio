@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "./useAuth";
+import { useAuth } from "../contexts/AuthContext";
 
 export interface AdminPermissions {
   isAdmin: boolean;
@@ -24,14 +24,9 @@ export function useAdmin() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Wait for auth to finish loading
-    if (authLoading) {
-      console.log("useAdmin: Waiting for auth to finish loading");
-      return;
-    }
+    if (authLoading) return;
 
     if (!user) {
-      console.log("useAdmin: No user found, setting admin to false");
       setPermissions({
         isAdmin: false,
         isSuperAdmin: false,
@@ -46,27 +41,15 @@ export function useAdmin() {
 
     async function loadAdminStatus() {
       try {
-        console.log("Loading admin status for user:", user.id);
         const { data, error } = await supabase
           .from("admin_users")
           .select("*")
-          .eq("user_id", user.id)
+          .eq("user_id", user!.id)
           .maybeSingle();
-
-        console.log("Admin status response:", { data, error });
 
         if (error) {
           console.error("Error loading admin status:", error);
-          setPermissions({
-            isAdmin: false,
-            isSuperAdmin: false,
-            canManageTemplates: false,
-            canViewAllUsers: false,
-            canImpersonate: false,
-            canManageSubscriptions: false,
-          });
         } else if (data) {
-          console.log("User is admin, setting permissions:", data);
           setPermissions({
             isAdmin: true,
             isSuperAdmin: data.is_super_admin || false,
@@ -75,34 +58,16 @@ export function useAdmin() {
             canImpersonate: data.can_impersonate || false,
             canManageSubscriptions: data.can_manage_subscriptions || false,
           });
-        } else {
-          console.log("No admin record found for user");
-          setPermissions({
-            isAdmin: false,
-            isSuperAdmin: false,
-            canManageTemplates: false,
-            canViewAllUsers: false,
-            canImpersonate: false,
-            canManageSubscriptions: false,
-          });
         }
       } catch (err) {
-        console.error("Unexpected error loading admin status:", err);
-        setPermissions({
-          isAdmin: false,
-          isSuperAdmin: false,
-          canManageTemplates: false,
-          canViewAllUsers: false,
-          canImpersonate: false,
-          canManageSubscriptions: false,
-        });
+        console.error("Error loading admin status:", err);
       } finally {
         setLoading(false);
       }
     }
 
     loadAdminStatus();
-  }, [user, authLoading]);
+  }, [user?.id, authLoading]);
 
   return { ...permissions, loading };
 }

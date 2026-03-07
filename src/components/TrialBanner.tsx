@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTrialStatus } from '../hooks/useTrialStatus';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePermissions } from '../hooks/usePermissions';
 import { supabase } from '../lib/supabase';
@@ -57,6 +57,10 @@ export default function TrialBanner({ onUpgradeClick }: TrialBannerProps) {
   }, []);
 
   if (!user || trialStatus.isLoading) {
+    return null;
+  }
+
+  if (permissions.isMember) {
     return null;
   }
 

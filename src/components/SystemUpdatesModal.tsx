@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Bell, Calendar } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import { Button } from "./ui/Button";
 

@@ -10,7 +10,7 @@ import {
   Home,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../contexts/AuthContext";
 import { usePermissions } from "../hooks/usePermissions";
 import { useSubscription } from "../hooks/useSubscription";
 import TenantOverviewTab from "./tenants/TenantOverviewTab";

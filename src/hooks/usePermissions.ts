@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "./useAuth";
+import { useAuth } from "../contexts/AuthContext";
 import {
   DEFAULT_OWNER_PERMISSIONS,
   SECTION_PERMISSION_MAP,
@@ -33,28 +33,30 @@ export function usePermissions() {
 
     const loadPermissions = async () => {
       try {
-        const { data } = await supabase
-          .from("user_settings")
-          .select(
-            "role, account_owner_id, is_active_member, is_read_only, " +
-            "can_manage_billing, can_manage_users, can_manage_properties, " +
-            "can_manage_tenants, can_manage_finances, can_view_analytics, " +
-            "can_view_finances, can_view_statements, can_view_rent_payments, " +
-            "can_view_leases, can_view_messages, property_scope, property_access, removed_at"
-          )
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const [settingsRes, propAssignmentsRes] = await Promise.all([
+          supabase
+            .from("user_settings")
+            .select(
+              "role, account_owner_id, is_active_member, is_read_only, " +
+              "can_manage_billing, can_manage_users, can_manage_properties, " +
+              "can_manage_tenants, can_manage_finances, can_view_analytics, " +
+              "can_view_finances, can_view_statements, can_view_rent_payments, " +
+              "can_view_leases, can_view_messages, property_scope, property_access, removed_at"
+            )
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase
+            .from("account_member_properties")
+            .select("property_id")
+            .eq("member_user_id", user.id),
+        ]);
 
-        const perms = resolvePermissions(data);
+        const perms = resolvePermissions(settingsRes.data);
         setPermissions(perms);
 
         if (perms.isMember && perms.propertyScope === "selected") {
-          const { data: propAssignments } = await supabase
-            .from("account_member_properties")
-            .select("property_id")
-            .eq("member_user_id", user.id);
           setAllowedPropertyIds(
-            (propAssignments || []).map((a) => a.property_id)
+            (propAssignmentsRes.data || []).map((a: { property_id: string }) => a.property_id)
           );
         } else {
           setAllowedPropertyIds(null);

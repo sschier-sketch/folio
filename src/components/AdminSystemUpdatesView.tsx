@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Bell, Plus, Calendar } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../contexts/AuthContext";
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 import { Button } from './ui/Button';
 

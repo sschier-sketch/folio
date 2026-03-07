@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "./useAuth";
+import { useAuth } from "../contexts/AuthContext";
 import { getProductByPriceId } from "../stripe-config";
 
 export interface Subscription {
@@ -42,7 +42,7 @@ export function useSubscription() {
       try {
         const [stripeResult, billingResult] = await Promise.all([
           supabase.rpc("get_my_stripe_subscription").maybeSingle(),
-          supabase.from("billing_info").select("subscription_plan, subscription_status, trial_started_at, trial_ends_at, stripe_customer_id, subscription_ends_at").eq("user_id", user.id).maybeSingle(),
+          supabase.rpc("get_effective_billing_info").maybeSingle(),
         ]);
 
         if (billingResult.data) {
@@ -81,14 +81,13 @@ export function useSubscription() {
     fetchSubscription();
 
     const channel = supabase
-      .channel('billing_subscription_changes')
+      .channel(`billing_subscription_changes_${user.id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'billing_info',
-          filter: `user_id=eq.${user.id}`,
         },
         () => {
           fetchSubscription();
