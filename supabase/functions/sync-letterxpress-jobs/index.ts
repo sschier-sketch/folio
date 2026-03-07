@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import https from "node:https";
 
 const LETTERXPRESS_BASE_URL = "https://api.letterxpress.de/v3";
 const RATE_LIMIT_DELAY_MS = 600;
@@ -57,6 +58,47 @@ async function getDecryptedCredentials(
   };
 }
 
+function rawHttpsRequest(
+  method: string,
+  url: string,
+  jsonBody: string
+): Promise<{ statusCode: number; body: string }> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const options = {
+      hostname: parsed.hostname,
+      port: 443,
+      path: parsed.pathname + parsed.search,
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(jsonBody),
+      },
+    };
+
+    const timer = setTimeout(() => {
+      req.destroy(new Error("LX_TIMEOUT: 30s exceeded"));
+    }, 30000);
+
+    const req = https.request(options, (res) => {
+      let data = "";
+      res.on("data", (chunk: string) => { data += chunk; });
+      res.on("end", () => {
+        clearTimeout(timer);
+        resolve({ statusCode: res.statusCode ?? 0, body: data });
+      });
+    });
+
+    req.on("error", (err: Error) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+
+    req.write(jsonBody);
+    req.end();
+  });
+}
+
 async function fetchPrintjobs(
   creds: AccountCredentials,
   filter?: string
@@ -72,20 +114,12 @@ async function fetchPrintjobs(
     mode: creds.is_test_mode ? "test" : "live",
   };
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
-
   try {
-    const request = new Request(url, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ auth }),
-    });
-    const response = await fetch(request, { signal: controller.signal });
+    const { statusCode, body } = await rawHttpsRequest("GET", url, JSON.stringify({ auth }));
+    const data = JSON.parse(body);
 
-    const data = await response.json();
-
-    if (response.status !== 200 || data?.status !== 200) {
+    if (statusCode !== 200 || data?.status !== 200) {
+      console.error(`LX API error: HTTP ${statusCode}, response: ${body.substring(0, 300)}`);
       return null;
     }
 
@@ -93,10 +127,9 @@ async function fetchPrintjobs(
       printjobs: data.data?.printjobs || [],
       pagination: data.data?.pagination || null,
     };
-  } catch {
+  } catch (err: any) {
+    console.error(`LX fetch error: ${err.message}`);
     return null;
-  } finally {
-    clearTimeout(timeout);
   }
 }
 
