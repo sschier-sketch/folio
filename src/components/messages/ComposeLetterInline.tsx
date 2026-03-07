@@ -11,6 +11,7 @@ import {
   getLetterXpressConfig,
   createLetterXpressJob,
   preparePdfForDispatch,
+  setAccessToken,
 } from '../../lib/letterxpress-api';
 import type { LxConfig } from '../../lib/letterxpress-api';
 import { Button } from '../ui/Button';
@@ -51,8 +52,13 @@ export default function ComposeLetterInline({
   onNavigatePostalSettings,
   onSwitchToEmail,
 }: ComposeLetterInlineProps) {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { dataOwnerId } = usePermissions();
+
+  useEffect(() => {
+    setAccessToken(session?.access_token ?? null);
+    return () => setAccessToken(null);
+  }, [session?.access_token]);
 
   const [lxConfig, setLxConfig] = useState<LxConfig | null>(null);
   const [configLoading, setConfigLoading] = useState(true);

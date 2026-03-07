@@ -13,6 +13,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { usePermissions } from "../../hooks/usePermissions";
 import { useAdmin } from "../../hooks/useAdmin";
 import { supabase } from "../../lib/supabase";
@@ -22,6 +23,7 @@ import {
   getLetterXpressConfig,
   saveLetterXpressConfig,
   testLetterXpressConnection,
+  setAccessToken,
   LetterXpressApiError,
 } from "../../lib/letterxpress-api";
 import PostalMailJobsList from "./PostalMailJobsList";
@@ -48,9 +50,15 @@ function maskApiKey(hasKey: boolean, language: string): string {
 
 export default function PostalMailSettingsView() {
   const { language } = useLanguage();
+  const { session } = useAuth();
   const { dataOwnerId, canWrite, isOwner, isMember } = usePermissions();
   const { isAdmin } = useAdmin();
   const isReadOnly = isMember && !canWrite;
+
+  useEffect(() => {
+    setAccessToken(session?.access_token ?? null);
+    return () => setAccessToken(null);
+  }, [session?.access_token]);
 
   const [config, setConfig] = useState<LxConfig | null>(null);
   const [loading, setLoading] = useState(true);

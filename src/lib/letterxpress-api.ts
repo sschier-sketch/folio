@@ -117,7 +117,17 @@ export class LetterXpressApiError extends Error {
   }
 }
 
+let _externalAccessToken: string | null = null;
+
+export function setAccessToken(token: string | null) {
+  _externalAccessToken = token;
+}
+
 async function getAccessToken(): Promise<string> {
+  if (_externalAccessToken) {
+    return _externalAccessToken;
+  }
+
   let {
     data: { session },
   } = await supabase.auth.getSession();
@@ -156,6 +166,7 @@ async function callAction<T = unknown>(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
     },
   };
 

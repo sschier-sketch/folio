@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { RefreshCw, Info, XCircle, ChevronLeft, ChevronRight, Filter, Clock, Mail, CheckCircle, Pause, File as FileEdit, AlertTriangle, Loader2 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { usePermissions } from "../../hooks/usePermissions";
 import { supabase } from "../../lib/supabase";
-import { cancelLetterXpressJob, syncLetterXpressJobs, LetterXpressApiError } from "../../lib/letterxpress-api";
+import { cancelLetterXpressJob, syncLetterXpressJobs, setAccessToken, LetterXpressApiError } from "../../lib/letterxpress-api";
 import { Button } from "../ui/Button";
 import PostalMailJobDetail from "./PostalMailJobDetail";
 
@@ -103,7 +104,13 @@ function statusConfig(
 export default function PostalMailJobsList() {
   const { language } = useLanguage();
   const de = language === "de";
+  const { session } = useAuth();
   const { dataOwnerId, isOwner } = usePermissions();
+
+  useEffect(() => {
+    setAccessToken(session?.access_token ?? null);
+    return () => setAccessToken(null);
+  }, [session?.access_token]);
 
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [totalCount, setTotalCount] = useState(0);
