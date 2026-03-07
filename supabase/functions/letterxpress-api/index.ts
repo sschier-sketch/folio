@@ -167,13 +167,12 @@ async function lxRequest(
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const useMethod = method === "GET" ? "POST" : method;
-    const response = await fetch(url, {
-      method: useMethod,
+    const request = new Request(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-      signal: controller.signal,
     });
+    const response = await fetch(request, { signal: controller.signal });
 
     const responseData = await response.json();
 

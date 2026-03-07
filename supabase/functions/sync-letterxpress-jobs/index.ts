@@ -76,12 +76,12 @@ async function fetchPrintjobs(
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const response = await fetch(url, {
-      method: "POST",
+    const request = new Request(url, {
+      method: "GET",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ auth }),
-      signal: controller.signal,
     });
+    const response = await fetch(request, { signal: controller.signal });
 
     const data = await response.json();
 
