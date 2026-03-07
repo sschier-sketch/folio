@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
 import https from "node:https";
+import { Buffer } from "node:buffer";
 
 const LETTERXPRESS_BASE_URL = "https://api.letterxpress.de/v3";
 const RATE_LIMIT_DELAY_MS = 600;
