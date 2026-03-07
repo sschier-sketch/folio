@@ -3,15 +3,9 @@ import {
   Users,
   UserPlus,
   Mail,
-  RotateCcw,
-  XCircle,
-  UserX,
-  UserCheck,
-  Trash2,
   ChevronDown,
   ChevronUp,
   Shield,
-  Pencil,
   Building2,
   Crown,
   Calendar,
@@ -28,8 +22,11 @@ import { supabase } from "../lib/supabase";
 import { PremiumFeatureGuard } from "./PremiumFeatureGuard";
 import { Button } from "./ui/Button";
 import Badge from "./common/Badge";
+import TableActionsDropdown from "./common/TableActionsDropdown";
+import type { ActionItem } from "./common/TableActionsDropdown";
 import InviteMemberModal from "./InviteMemberModal";
 import EditMemberModal from "./EditMemberModal";
+import type { EditTarget } from "./EditMemberModal";
 
 function getRoleBadgeVariant(role: string): "info" | "danger" | "success" | "gray" {
   const map: Record<string, "info" | "danger" | "success" | "gray"> = {
@@ -84,11 +81,12 @@ export default function UsersManagementView() {
     reactivateMember,
     removeMember,
     updateMemberPermissions,
+    updateInvitationPermissions,
   } = useAccountMembers();
 
   const [ownerProfile, setOwnerProfile] = useState<OwnerProfile | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [editingMember, setEditingMember] = useState<AccountMember | null>(null);
+  const [editingTarget, setEditingTarget] = useState<{ target: EditTarget; type: "member" | "invitation" } | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -155,13 +153,104 @@ export default function UsersManagementView() {
     ? [ownerProfile.first_name, ownerProfile.last_name].filter(Boolean).join(" ") || null
     : null;
 
-  const ownerDisplayName = ownerName || ownerProfile?.company_name || user?.email || "";
-
   const memberCreatedAt = user?.created_at
     ? formatDate(user.created_at)
     : null;
 
   const totalTeamSize = 1 + activeMembers.length + pendingInvitations.length;
+
+  function getMemberActions(m: AccountMember): ActionItem[] {
+    return [
+      {
+        label: de ? "Rechte bearbeiten" : "Edit permissions",
+        onClick: () => setEditingTarget({ target: m, type: "member" }),
+      },
+      {
+        label: de ? "Deaktivieren" : "Deactivate",
+        onClick: () =>
+          handleAction(
+            () => deactivateMember(m.user_id),
+            `deact-${m.user_id}`,
+            de ? "Benutzer deaktiviert" : "User deactivated"
+          ),
+        hidden: !m.is_active_member,
+      },
+      {
+        label: de ? "Reaktivieren" : "Reactivate",
+        onClick: () =>
+          handleAction(
+            () => reactivateMember(m.user_id),
+            `react-${m.user_id}`,
+            de ? "Benutzer reaktiviert" : "User reactivated"
+          ),
+        hidden: m.is_active_member,
+      },
+      {
+        label: de ? "Entfernen" : "Remove",
+        variant: "danger",
+        onClick: () => {
+          const msg = de
+            ? `Möchten Sie ${m.email} wirklich aus dem Account entfernen?`
+            : `Are you sure you want to remove ${m.email}?`;
+          if (confirm(msg)) {
+            handleAction(
+              () => removeMember(m.user_id),
+              `rm-${m.user_id}`,
+              de ? "Benutzer entfernt" : "User removed"
+            );
+          }
+        },
+      },
+    ];
+  }
+
+  function getInvitationActions(inv: AccountInvitation): ActionItem[] {
+    return [
+      {
+        label: de ? "Rechte bearbeiten" : "Edit permissions",
+        onClick: () => setEditingTarget({ target: inv, type: "invitation" }),
+      },
+      {
+        label: de ? "Erneut senden" : "Resend invitation",
+        onClick: () =>
+          handleAction(
+            () => resendInvitation(inv.id),
+            `resend-${inv.id}`,
+            de ? "Einladung erneut gesendet" : "Invitation resent"
+          ),
+      },
+      {
+        label: de ? "Widerrufen" : "Revoke",
+        variant: "danger",
+        onClick: () =>
+          handleAction(
+            () => revokeInvitation(inv.id),
+            `revoke-${inv.id}`,
+            de ? "Einladung widerrufen" : "Invitation revoked"
+          ),
+      },
+    ];
+  }
+
+  const handleEditSave = async (permissions: Record<string, unknown>) => {
+    if (!editingTarget) return;
+
+    if (editingTarget.type === "member") {
+      const m = editingTarget.target as AccountMember;
+      await updateMemberPermissions(m.user_id, permissions);
+    } else {
+      const inv = editingTarget.target as AccountInvitation;
+      const mapped: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(permissions)) {
+        mapped[key.replace(/^p_/, "")] = value;
+      }
+      await updateInvitationPermissions(inv.id, mapped);
+    }
+
+    setEditingTarget(null);
+    setSuccess(de ? "Berechtigungen aktualisiert" : "Permissions updated");
+    setTimeout(() => setSuccess(null), 4000);
+  };
 
   const content = (
     <div>
@@ -374,64 +463,8 @@ export default function UsersManagementView() {
                               <span className="text-sm text-gray-400">{m.joined_at ? formatDate(m.joined_at) : "-"}</span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <button
-                                  onClick={() => setEditingMember(m)}
-                                  className="p-1.5 text-gray-400 hover:text-primary-blue hover:bg-gray-50 rounded-lg transition-colors"
-                                  title={de ? "Bearbeiten" : "Edit"}
-                                >
-                                  <Pencil className="w-4 h-4" />
-                                </button>
-                                {m.is_active_member ? (
-                                  <button
-                                    onClick={() =>
-                                      handleAction(
-                                        () => deactivateMember(m.user_id),
-                                        `deact-${m.user_id}`,
-                                        de ? "Benutzer deaktiviert" : "User deactivated"
-                                      )
-                                    }
-                                    disabled={actionLoading === `deact-${m.user_id}`}
-                                    className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
-                                    title={de ? "Deaktivieren" : "Deactivate"}
-                                  >
-                                    <UserX className="w-4 h-4" />
-                                  </button>
-                                ) : (
-                                  <button
-                                    onClick={() =>
-                                      handleAction(
-                                        () => reactivateMember(m.user_id),
-                                        `react-${m.user_id}`,
-                                        de ? "Benutzer reaktiviert" : "User reactivated"
-                                      )
-                                    }
-                                    disabled={actionLoading === `react-${m.user_id}`}
-                                    className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
-                                    title={de ? "Reaktivieren" : "Reactivate"}
-                                  >
-                                    <UserCheck className="w-4 h-4" />
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => {
-                                    const msg = de
-                                      ? `Möchten Sie ${m.email} wirklich aus dem Account entfernen?`
-                                      : `Are you sure you want to remove ${m.email}?`;
-                                    if (confirm(msg)) {
-                                      handleAction(
-                                        () => removeMember(m.user_id),
-                                        `rm-${m.user_id}`,
-                                        de ? "Benutzer entfernt" : "User removed"
-                                      );
-                                    }
-                                  }}
-                                  disabled={actionLoading === `rm-${m.user_id}`}
-                                  className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                                  title={de ? "Entfernen" : "Remove"}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                              <div className="flex justify-end">
+                                <TableActionsDropdown actions={getMemberActions(m)} />
                               </div>
                             </td>
                           </tr>
@@ -476,35 +509,8 @@ export default function UsersManagementView() {
                             <span className="text-sm text-gray-400">{formatDate(inv.created_at)}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <button
-                                onClick={() =>
-                                  handleAction(
-                                    () => resendInvitation(inv.id),
-                                    `resend-${inv.id}`,
-                                    de ? "Einladung erneut gesendet" : "Invitation resent"
-                                  )
-                                }
-                                disabled={actionLoading === `resend-${inv.id}`}
-                                className="p-1.5 text-gray-400 hover:text-primary-blue hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
-                                title={de ? "Erneut senden" : "Resend"}
-                              >
-                                <RotateCcw className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleAction(
-                                    () => revokeInvitation(inv.id),
-                                    `revoke-${inv.id}`,
-                                    de ? "Einladung widerrufen" : "Invitation revoked"
-                                  )
-                                }
-                                disabled={actionLoading === `revoke-${inv.id}`}
-                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                                title={de ? "Widerrufen" : "Revoke"}
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </button>
+                            <div className="flex justify-end">
+                              <TableActionsDropdown actions={getInvitationActions(inv)} />
                             </div>
                           </td>
                         </tr>
@@ -639,16 +645,11 @@ export default function UsersManagementView() {
         />
       )}
 
-      {editingMember && (
+      {editingTarget && (
         <EditMemberModal
-          member={editingMember}
-          onClose={() => setEditingMember(null)}
-          onSave={async (permissions) => {
-            await updateMemberPermissions(editingMember.user_id, permissions);
-            setEditingMember(null);
-            setSuccess(de ? "Berechtigungen aktualisiert" : "Permissions updated");
-            setTimeout(() => setSuccess(null), 4000);
-          }}
+          member={editingTarget.target}
+          onClose={() => setEditingTarget(null)}
+          onSave={handleEditSave}
         />
       )}
     </div>

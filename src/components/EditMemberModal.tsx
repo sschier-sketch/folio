@@ -4,7 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { Button } from "./ui/Button";
-import type { AccountMember } from "../hooks/useAccountMembers";
+import type { AccountMember, AccountInvitation } from "../hooks/useAccountMembers";
 
 interface Property {
   id: string;
@@ -12,8 +12,10 @@ interface Property {
   address: string;
 }
 
+export type EditTarget = AccountMember | AccountInvitation;
+
 interface EditMemberModalProps {
-  member: AccountMember;
+  member: EditTarget;
   onClose: () => void;
   onSave: (permissions: Record<string, unknown>) => Promise<void>;
 }
@@ -43,7 +45,9 @@ export default function EditMemberModal({ member, onClose, onSave }: EditMemberM
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const displayName = [member.first_name, member.last_name].filter(Boolean).join(" ") || member.email;
+  const displayName = "first_name" in member
+    ? ([member.first_name, member.last_name].filter(Boolean).join(" ") || member.email)
+    : member.invited_email;
 
   useEffect(() => {
     if (!user) return;

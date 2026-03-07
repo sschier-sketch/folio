@@ -42,10 +42,10 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
@@ -241,14 +241,17 @@ Deno.serve(async (req: Request) => {
 
     const language = payload.language || "de";
 
+    let emailSent = false;
+    let emailError: string | null = null;
+
     try {
       const emailResponse = await fetch(
-        `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
+        `${supabaseUrl}/functions/v1/send-email`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            Authorization: `Bearer ${supabaseServiceKey}`,
           },
           body: JSON.stringify({
             to: invitedEmail,
@@ -271,9 +274,13 @@ Deno.serve(async (req: Request) => {
 
       if (!emailResponse.ok) {
         const errorText = await emailResponse.text();
-        console.error("Email send failed:", errorText);
+        emailError = `send-email returned ${emailResponse.status}: ${errorText}`;
+        console.error("Email send failed:", emailError);
+      } else {
+        emailSent = true;
       }
     } catch (emailErr) {
+      emailError = String(emailErr);
       console.error("Email send threw:", emailErr);
     }
 
@@ -292,6 +299,8 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: true,
+        emailSent,
+        emailError,
         invitation: {
           id: invitation.id,
           email: invitation.invited_email,

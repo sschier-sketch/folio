@@ -216,6 +216,8 @@ export function useAccountMembers() {
   };
 
   const revokeInvitation = async (invitationId: string) => {
+    const inv = invitations.find((i) => i.id === invitationId);
+
     const { error } = await supabase
       .from("account_invitations")
       .update({
@@ -231,7 +233,7 @@ export function useAccountMembers() {
       p_actor_user_id: user!.id,
       p_event_type: "invitation_revoked",
       p_description: "Einladung widerrufen",
-      p_target_email: invitation?.invited_email || null,
+      p_target_email: inv?.invited_email || null,
     }).catch(() => {});
 
     await loadData();
@@ -273,6 +275,21 @@ export function useAccountMembers() {
     await loadData();
   };
 
+  const updateInvitationPermissions = async (
+    invitationId: string,
+    permissions: Record<string, unknown>
+  ) => {
+    const { error } = await supabase
+      .from("account_invitations")
+      .update({
+        ...permissions,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", invitationId);
+    if (error) throw error;
+    await loadData();
+  };
+
   return {
     members,
     invitations,
@@ -285,6 +302,7 @@ export function useAccountMembers() {
     reactivateMember,
     removeMember,
     updateMemberPermissions,
+    updateInvitationPermissions,
     refresh: loadData,
   };
 }
