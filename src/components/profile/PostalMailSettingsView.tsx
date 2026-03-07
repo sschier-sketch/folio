@@ -157,9 +157,13 @@ export default function PostalMailSettingsView() {
       const msg = err instanceof LetterXpressApiError
         ? err.message
         : (language === "de" ? "Verbindungstest fehlgeschlagen." : "Connection test failed.");
+      const debug = err instanceof LetterXpressApiError && err.details
+        ? (typeof err.details === "string" ? err.details : JSON.stringify(err.details))
+        : null;
       setTestResult({
         success: false,
         message: msg,
+        debug,
         balance: null,
       });
     } finally {
@@ -365,26 +369,38 @@ export default function PostalMailSettingsView() {
 
       {/* Connection Test Result */}
       {testResult && (
-        <div className={`rounded shadow-sm p-4 flex items-start gap-3 ${
+        <div className={`rounded shadow-sm p-4 ${
           testResult.success
             ? "bg-green-50 border border-green-200"
             : "bg-red-50 border border-red-200"
         }`}>
-          {testResult.success ? (
-            <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-          ) : (
-            <XCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-          )}
-          <div>
-            <p className={`text-sm font-medium ${testResult.success ? "text-green-700" : "text-red-700"}`}>
-              {testResult.success
-                ? (language === "de" ? "Verbindung erfolgreich" : "Connection successful")
-                : (language === "de" ? "Verbindung fehlgeschlagen" : "Connection failed")}
-            </p>
-            <p className={`text-sm mt-1 ${testResult.success ? "text-green-600" : "text-red-600"}`}>
-              {testResult.message}
-            </p>
+          <div className="flex items-start gap-3">
+            {testResult.success ? (
+              <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+            ) : (
+              <XCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-medium ${testResult.success ? "text-green-700" : "text-red-700"}`}>
+                {testResult.success
+                  ? (language === "de" ? "Verbindung erfolgreich" : "Connection successful")
+                  : (language === "de" ? "Verbindung fehlgeschlagen" : "Connection failed")}
+              </p>
+              <p className={`text-sm mt-1 ${testResult.success ? "text-green-600" : "text-red-600"}`}>
+                {testResult.message}
+              </p>
+            </div>
           </div>
+          {!testResult.success && testResult.debug && (
+            <details className="mt-3 ml-8">
+              <summary className="text-xs text-red-500 cursor-pointer hover:text-red-700">
+                {language === "de" ? "Technische Details anzeigen" : "Show technical details"}
+              </summary>
+              <pre className="mt-2 p-3 bg-red-100 rounded text-xs text-red-800 overflow-x-auto whitespace-pre-wrap break-all font-mono">
+                {testResult.debug}
+              </pre>
+            </details>
+          )}
         </div>
       )}
 

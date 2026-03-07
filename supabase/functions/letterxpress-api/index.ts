@@ -163,18 +163,54 @@ async function lxRequest(
     ...body,
   };
 
+  const jsonBody = JSON.stringify(payload);
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const request = new Request(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const response = await fetch(request, { signal: controller.signal });
+    let response: Response;
 
-    const responseData = await response.json();
+    if (method === "GET" || method === "DELETE") {
+      try {
+        const request = new Request(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: jsonBody,
+        });
+        response = await fetch(request, { signal: controller.signal });
+      } catch (reqErr: any) {
+        console.error(`${method} with body failed (${reqErr.message}), retrying as POST`);
+        response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: jsonBody,
+          signal: controller.signal,
+        });
+      }
+    } else {
+      response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: jsonBody,
+        signal: controller.signal,
+      });
+    }
+
+    let responseData: any;
+    const responseText = await response.text();
+    try {
+      responseData = JSON.parse(responseText);
+    } catch {
+      return {
+        data: {
+          error: `LetterXpress returned non-JSON (HTTP ${response.status})`,
+          code: "LX_INVALID_RESPONSE",
+          details: responseText.substring(0, 500),
+        },
+        status: response.status,
+      };
+    }
 
     if (
       response.status === 401 ||
@@ -182,8 +218,9 @@ async function lxRequest(
     ) {
       return {
         data: {
-          error: "LetterXpress authentication failed",
+          error: "LetterXpress Authentifizierung fehlgeschlagen. Bitte Benutzername und API Key pruefen.",
           code: "LX_AUTH_FAILED",
+          details: responseData,
         },
         status: 401,
       };
@@ -193,15 +230,15 @@ async function lxRequest(
   } catch (err: any) {
     if (err.name === "AbortError") {
       return {
-        data: { error: "LetterXpress API timeout", code: "LX_TIMEOUT" },
+        data: { error: "LetterXpress API Timeout (30s)", code: "LX_TIMEOUT" },
         status: 504,
       };
     }
     return {
       data: {
-        error: "LetterXpress API communication error",
+        error: `LetterXpress Verbindungsfehler: ${err.message}`,
         code: "LX_NETWORK_ERROR",
-        details: err.message,
+        details: `${err.name}: ${err.message}`,
       },
       status: 502,
     };
@@ -222,17 +259,34 @@ async function handleTestConnection(
   const { data, status } = await lxRequest("GET", "/balance", creds);
 
   const testStatus = status === 200 && data?.status === 200 ? "success" : "error";
-  const testMessage =
-    testStatus === "success"
-      ? `Verbindung erfolgreich. Guthaben: ${data.data?.balance ?? "?"} ${data.data?.currency ?? "EUR"}`
-      : data?.error || data?.message || "Verbindung fehlgeschlagen";
+
+  let testMessage: string;
+  let debugDetails: string | null = null;
+
+  if (testStatus === "success") {
+    testMessage = `Verbindung erfolgreich. Guthaben: ${data.data?.balance ?? "?"} ${data.data?.currency ?? "EUR"}`;
+  } else {
+    testMessage = data?.error || data?.message || "Verbindung fehlgeschlagen";
+    debugDetails = JSON.stringify({
+      http_status: status,
+      lx_status: data?.status,
+      lx_message: data?.message,
+      lx_error: data?.error,
+      lx_code: data?.code,
+      lx_details: data?.details,
+    });
+  }
+
+  const storedMessage = debugDetails
+    ? `${testMessage} | Debug: ${debugDetails}`
+    : testMessage;
 
   await supabase
     .from("letterxpress_accounts")
     .update({
       last_connection_test_at: new Date().toISOString(),
       last_connection_test_status: testStatus,
-      last_connection_test_message: testMessage,
+      last_connection_test_message: storedMessage,
       ...(testStatus === "success" && data?.data
         ? {
             last_balance: data.data.balance,
@@ -247,6 +301,7 @@ async function handleTestConnection(
   return corsResponse({
     success: testStatus === "success",
     message: testMessage,
+    debug: debugDetails,
     balance:
       testStatus === "success"
         ? { amount: data.data?.balance, currency: data.data?.currency }

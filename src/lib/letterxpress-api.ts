@@ -27,6 +27,7 @@ export interface LxBalance {
 export interface LxTestResult {
   success: boolean;
   message: string;
+  debug?: string | null;
   balance: LxBalance | null;
 }
 
@@ -177,22 +178,24 @@ async function callAction<T = unknown>(
   const response = await fetch(url, fetchOptions);
 
   let data: any;
+  const responseText = await response.text();
   try {
-    data = await response.json();
+    data = JSON.parse(responseText);
   } catch {
     throw new LetterXpressApiError(
-      "Invalid response from server",
+      `Server-Antwort ungueltig (HTTP ${response.status}): ${responseText.substring(0, 200)}`,
       "PARSE_ERROR",
-      response.status
+      response.status,
+      responseText.substring(0, 500)
     );
   }
 
   if (!response.ok) {
     throw new LetterXpressApiError(
-      data?.error || "Request failed",
+      data?.error || `Anfrage fehlgeschlagen (HTTP ${response.status})`,
       data?.code || "UNKNOWN_ERROR",
       response.status,
-      data?.details
+      data?.details || data?.debug
     );
   }
 
