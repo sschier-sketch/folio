@@ -198,7 +198,7 @@ export default function ExpensesView() {
         const { data: docData, error: docError } = await supabase
           .from('documents')
           .insert({
-            user_id: user.id,
+            user_id: dataOwnerId!,
             file_name: uploadedFile.name,
             file_path: uploadData.path,
             file_type: uploadedFile.type,
@@ -233,7 +233,7 @@ export default function ExpensesView() {
       }
 
       const expensePayload = {
-        user_id: user.id,
+        user_id: dataOwnerId!,
         property_id: formData.property_id,
         unit_id: formData.unit_id || null,
         tenant_id: formData.tenant_id || null,

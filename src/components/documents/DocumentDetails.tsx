@@ -63,7 +63,7 @@ interface HistoryEntry {
 
 export default function DocumentDetails({ documentId, onBack, onUpdate }: DocumentDetailsProps) {
   const { user } = useAuth();
-  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, loading: permLoading } = usePermissions();
+  const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, canWrite, loading: permLoading } = usePermissions();
   const { isPro } = useSubscription();
   const [document, setDocument] = useState<Document | null>(null);
   const [associations, setAssociations] = useState<Association[]>([]);
@@ -251,7 +251,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   }
 
   async function handleSave() {
-    if (!document) return;
+    if (!document || !canWrite) return;
 
     try {
       const { error } = await supabase
@@ -276,7 +276,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   }
 
   async function handleArchive() {
-    if (!document) return;
+    if (!document || !canWrite) return;
 
     if (!confirm("Möchten Sie dieses Dokument wirklich archivieren?")) {
       return;
@@ -299,7 +299,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   }
 
   async function handleDelete() {
-    if (!document) return;
+    if (!document || !canWrite) return;
 
     if (
       !confirm(
@@ -349,6 +349,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   }
 
   async function handleAddAssociation() {
+    if (!canWrite) return;
     if (!newAssociation.id) {
       alert("Bitte wählen Sie ein Objekt aus");
       return;
@@ -375,6 +376,7 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
   }
 
   async function handleRemoveAssociation(associationId: string) {
+    if (!canWrite) return;
     try {
       const { error } = await supabase
         .from("document_associations")
@@ -467,21 +469,25 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
             Download
           </Button>
 
-          {!isEditing && (
+          {canWrite && !isEditing && (
             <Button variant="cancel" onClick={() => setIsEditing(true)}>
               Bearbeiten
             </Button>
           )}
 
-          <DocumentFeatureGuard feature="document-archive">
-            <Button variant="cancel" onClick={handleArchive}>
-              Archivieren
-            </Button>
-          </DocumentFeatureGuard>
+          {canWrite && (
+            <DocumentFeatureGuard feature="document-archive">
+              <Button variant="cancel" onClick={handleArchive}>
+                Archivieren
+              </Button>
+            </DocumentFeatureGuard>
+          )}
 
-          <Button variant="cancel" onClick={handleDelete}>
-            Löschen
-          </Button>
+          {canWrite && (
+            <Button variant="cancel" onClick={handleDelete}>
+              Löschen
+            </Button>
+          )}
         </div>
       </div>
 
@@ -623,13 +629,15 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                 <LinkIcon className="w-5 h-5" />
                 Zuordnungen
               </h2>
-              <Button
-                onClick={() => setShowAddAssociation(true)}
-                variant="primary"
-              >
-                <Plus className="w-4 h-4" />
-                Hinzufügen
-              </Button>
+              {canWrite && (
+                <Button
+                  onClick={() => setShowAddAssociation(true)}
+                  variant="primary"
+                >
+                  <Plus className="w-4 h-4" />
+                  Hinzufügen
+                </Button>
+              )}
             </div>
 
             {showAddAssociation && (
@@ -746,12 +754,14 @@ export default function DocumentDetails({ documentId, onBack, onUpdate }: Docume
                           </div>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleRemoveAssociation(assoc.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                      {canWrite && (
+                        <button
+                          onClick={() => handleRemoveAssociation(assoc.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   );
                 })}

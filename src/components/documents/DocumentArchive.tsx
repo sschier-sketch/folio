@@ -3,6 +3,7 @@ import { Archive, RotateCcw, Eye, Calendar, FileText, Lock, Trash2 } from "lucid
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
+import { usePermissions } from "../../hooks/usePermissions";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import TableActionsDropdown, { ActionItem } from "../common/TableActionsDropdown";
 import { getDocumentTypeLabel, getDocumentTypeColor } from "../../lib/documentTypes";
@@ -25,21 +26,24 @@ interface DocumentArchiveProps {
 export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProps) {
   const { user } = useAuth();
   const { isPro } = useSubscription();
+  const { dataOwnerId, canWrite, loading: permLoading } = usePermissions();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (user && !permLoading && dataOwnerId) {
       loadArchivedDocuments();
     }
-  }, [user]);
+  }, [user, permLoading, dataOwnerId]);
 
   async function loadArchivedDocuments() {
+    if (!dataOwnerId) return;
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from("documents")
         .select("*")
+        .eq("user_id", dataOwnerId)
         .eq("is_archived", true)
         .order("created_at", { ascending: false });
 
@@ -56,6 +60,7 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
   }
 
   async function handleRestore(documentId: string) {
+    if (!canWrite) return;
     if (!isPro) {
       alert("Das Wiederherstellen von archivierten Dokumenten ist ein Pro Feature.");
       return;
@@ -81,6 +86,7 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
   }
 
   async function handleDelete(documentId: string, filePath: string) {
+    if (!canWrite) return;
     if (!isPro) {
       alert("Das endgültige Löschen von archivierten Dokumenten ist ein Pro Feature.");
       return;
@@ -223,13 +229,13 @@ export default function DocumentArchive({ onDocumentClick }: DocumentArchiveProp
                             {
                               label: isPro ? "Wiederherstellen" : "Wiederherstellen (Pro)",
                               onClick: () => handleRestore(doc.id),
-                              hidden: !isPro,
+                              hidden: !isPro || !canWrite,
                             },
                             {
                               label: isPro ? "Endgültig löschen" : "Endgültig löschen (Pro)",
                               onClick: () => handleDelete(doc.id, doc.file_path),
                               variant: "danger",
-                              hidden: !isPro,
+                              hidden: !isPro || !canWrite,
                             },
                           ]}
                         />

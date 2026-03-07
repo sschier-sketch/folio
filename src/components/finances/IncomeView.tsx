@@ -229,9 +229,9 @@ export default function IncomeView() {
       if (contractsRes.error) throw contractsRes.error;
       if (nkRes.error) throw nkRes.error;
 
-      setManualIncomes(manualRes.data || []);
+      setManualIncomes(filterByPropertyId(manualRes.data || []));
 
-      const nkData: NebenkostenPayment[] = nkRes.data || [];
+      const nkData: NebenkostenPayment[] = filterByPropertyId(nkRes.data || []);
       const tenantIds = [...new Set(nkData.filter(n => n.tenant_id).map(n => n.tenant_id!))];
       const propertyIds = [...new Set(nkData.map(n => n.property_id))];
 
@@ -258,8 +258,9 @@ export default function IncomeView() {
         property_name: propMap[n.property_id] || "-",
       })));
 
+      const scopedContracts = filterByPropertyId(contractsRes.data || []);
       const contractsWithRelations = await Promise.all(
-        (contractsRes.data || []).map(async (contract: any) => {
+        scopedContracts.map(async (contract: any) => {
           const [tenantRes, propertyRes, unitsRes] = await Promise.all([
             supabase
               .from("tenants")
@@ -357,7 +358,7 @@ export default function IncomeView() {
         const { data: docData, error: docError } = await supabase
           .from('documents')
           .insert({
-            user_id: user.id,
+            user_id: dataOwnerId!,
             file_name: uploadedFile.name,
             file_path: uploadData.path,
             file_type: uploadedFile.type,
@@ -392,7 +393,7 @@ export default function IncomeView() {
       }
 
       const insertData: any = {
-        user_id: user.id,
+        user_id: dataOwnerId!,
         property_id: formData.property_id,
         unit_id: formData.unit_id || null,
         category_id: formData.category_id,

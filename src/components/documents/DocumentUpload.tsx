@@ -60,6 +60,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
       const { data: documents } = await supabase
         .from("documents")
         .select("file_size")
+        .eq("user_id", dataOwnerId || user?.id)
         .eq("is_archived", false);
 
       if (documents) {
@@ -195,7 +196,7 @@ export default function DocumentUpload({ onSuccess }: DocumentUploadProps) {
       const { data: docData, error: docError } = await supabase
         .from("documents")
         .insert({
-          user_id: user.id,
+          user_id: dataOwnerId!,
           file_name: uploadFile.file.name,
           file_path: fileName,
           file_size: uploadFile.file.size,

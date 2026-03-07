@@ -3,6 +3,7 @@ import { FileText, Wand2, Download, FolderOpen, Ligature as FileSignature, Alert
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
+import { usePermissions } from "../hooks/usePermissions";
 import Badge from "./common/Badge";
 import { Button } from "./ui/Button";
 import ScrollableTabNav from "./common/ScrollableTabNav";
@@ -67,6 +68,7 @@ const TABS: { id: Tab; label: string; icon: typeof FileText }[] = [
 export default function TemplatesView() {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
+  const { canWrite } = usePermissions();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [wizardTemplates, setWizardTemplates] = useState<WizardTemplate[]>([]);
   const [drafts, setDrafts] = useState<DraftInfo[]>([]);
@@ -240,7 +242,7 @@ export default function TemplatesView() {
 
   const showWizards = filteredWizards.length > 0;
   const showDownloads = filteredDownloads.length > 0;
-  const showDrafts = drafts.length > 0 && activeTab === "alle";
+  const showDrafts = drafts.length > 0 && activeTab === "alle" && canWrite;
 
   return (
     <div className="space-y-6">
@@ -372,16 +374,16 @@ export default function TemplatesView() {
                   </p>
                   <Button
                     onClick={() =>
-                      isPremium
+                      isPremium && canWrite
                         ? startWizard(tpl.id, true)
                         : undefined
                     }
-                    disabled={!isPremium}
+                    disabled={!isPremium || !canWrite}
                     variant="primary"
                     size="sm"
                     className="self-start"
                   >
-                    Dokument erstellen
+                    {!canWrite ? "Nur Lesezugriff" : "Dokument erstellen"}
                   </Button>
                 </div>
               );

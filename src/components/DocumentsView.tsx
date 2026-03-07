@@ -8,6 +8,7 @@ import DocumentDetails from "./documents/DocumentDetails";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
 import { useSubscription } from "../hooks/useSubscription";
+import { usePermissions } from "../hooks/usePermissions";
 import { PremiumUpgradePrompt } from "./PremiumUpgradePrompt";
 import { Button } from './ui/Button';
 
@@ -19,6 +20,7 @@ interface DocumentsViewProps {
 
 export default function DocumentsView({ onNavigateToTemplates }: DocumentsViewProps = {}) {
   const { isPro } = useSubscription();
+  const { canWrite } = usePermissions();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -63,12 +65,14 @@ export default function DocumentsView({ onNavigateToTemplates }: DocumentsViewPr
             Zentrales Dokumentenmanagement für alle Immobilien und Mietverhältnisse
           </p>
         </div>
-        <Button
-          onClick={() => setActiveTab("upload")}
-          variant="primary"
-        >
-          Dokument hochladen
-        </Button>
+        {canWrite && (
+          <Button
+            onClick={() => setActiveTab("upload")}
+            variant="primary"
+          >
+            Dokument hochladen
+          </Button>
+        )}
       </div>
 
       <div className="bg-white rounded-lg mb-6">

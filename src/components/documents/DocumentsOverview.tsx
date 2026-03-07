@@ -3,6 +3,7 @@ import { FileText, FolderCheck, HardDrive, Upload, Clock, TrendingUp, Wand2 } fr
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
+import { usePermissions } from "../../hooks/usePermissions";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 
 interface DocumentsOverviewProps {
@@ -32,6 +33,7 @@ const PRO_STORAGE_LIMIT = 2 * 1024 * 1024 * 1024;
 export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList, onNavigateToTemplates }: DocumentsOverviewProps) {
   const { user } = useAuth();
   const { isPro } = useSubscription();
+  const { dataOwnerId, canWrite, loading: permLoading } = usePermissions();
   const [stats, setStats] = useState<Stats>({
     totalDocuments: 0,
     assignedDocuments: 0,
@@ -43,17 +45,19 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (user && !permLoading && dataOwnerId) {
       loadStats();
       loadRecentActivities();
     }
-  }, [user]);
+  }, [user, permLoading, dataOwnerId]);
 
   async function loadStats() {
+    if (!dataOwnerId) return;
     try {
       const { data: documents } = await supabase
         .from("documents")
         .select("id, file_size, is_archived, upload_date")
+        .eq("user_id", dataOwnerId)
         .eq("is_archived", false);
 
       if (documents) {
@@ -248,33 +252,35 @@ export default function DocumentsOverview({ onNavigateToUpload, onNavigateToList
         <div className="bg-white rounded-lg p-6">
           <h3 className="text-lg font-semibold text-dark mb-4">Schnellaktionen</h3>
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={onNavigateToUpload}
-                className="flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left"
-              >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-                  <Upload className="w-5 h-5" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
-                </div>
-                <div>
-                  <div className="font-medium text-dark">Dokument hochladen</div>
-                  <div className="text-sm text-gray-500">Neue Datei hinzufügen</div>
-                </div>
-              </button>
+            {canWrite && (
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={onNavigateToUpload}
+                  className="flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
+                    <Upload className="w-5 h-5" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <div className="font-medium text-dark">Dokument hochladen</div>
+                    <div className="text-sm text-gray-500">Neue Datei hinzufügen</div>
+                  </div>
+                </button>
 
-              <button
-                onClick={onNavigateToTemplates}
-                className="flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left"
-              >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
-                  <Wand2 className="w-5 h-5" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
-                </div>
-                <div>
-                  <div className="font-medium text-dark">Dokument erstellen</div>
-                  <div className="text-sm text-gray-500">Vorlage verwenden</div>
-                </div>
-              </button>
-            </div>
+                <button
+                  onClick={onNavigateToTemplates}
+                  className="flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}>
+                    <Wand2 className="w-5 h-5" style={{ color: '#1e1e24' }} strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <div className="font-medium text-dark">Dokument erstellen</div>
+                    <div className="text-sm text-gray-500">Vorlage verwenden</div>
+                  </div>
+                </button>
+              </div>
+            )}
 
             <button
               onClick={onNavigateToList}

@@ -3,6 +3,7 @@ import { FileText, Filter, Search, Download, Eye, Calendar, Building, User, Lock
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
+import { usePermissions } from "../../hooks/usePermissions";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import TableActionsDropdown from "../common/TableActionsDropdown";
 import { getDocumentTypeLabel, getDocumentTypeColor, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
@@ -31,6 +32,7 @@ interface DocumentsListProps {
 export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
   const { user } = useAuth();
   const { isPro } = useSubscription();
+  const { dataOwnerId, filterPropertiesByScope, loading: permLoading } = usePermissions();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,30 +51,33 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
   } | null>(null);
 
   useEffect(() => {
-    if (user) {
+    if (user && !permLoading && dataOwnerId) {
       loadDocuments();
       loadProperties();
     }
-  }, [user, filters.archiveStatus]);
+  }, [user, permLoading, dataOwnerId, filters.archiveStatus]);
 
   async function loadProperties() {
+    if (!dataOwnerId) return;
     try {
       const { data } = await supabase
         .from("properties")
         .select("id, name")
+        .eq("user_id", dataOwnerId)
         .order("name");
 
-      if (data) setProperties(data);
+      if (data) setProperties(filterPropertiesByScope(data));
     } catch (error) {
       console.error("Error loading properties:", error);
     }
   }
 
   async function loadDocuments() {
+    if (!dataOwnerId) return;
     try {
       setLoading(true);
 
-      let query = supabase.from("documents").select("*");
+      let query = supabase.from("documents").select("*").eq("user_id", dataOwnerId);
 
       if (filters.archiveStatus === "active") {
         query = query.eq("is_archived", false);
