@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Mail, RefreshCw, Eye, Inbox, Trash2, Settings, FileText } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -34,6 +35,7 @@ export default function MessagesView() {
   const { user } = useAuth();
   const { isPro } = useSubscription();
   const { dataOwnerId, canWrite } = usePermissions();
+  const [, setSearchParams] = useSearchParams();
   const readOnly = !canWrite;
   const [mailbox, setMailbox] = useState<UserMailbox | null>(null);
   const [threads, setThreads] = useState<MailThread[]>([]);
@@ -193,6 +195,10 @@ export default function MessagesView() {
   function handleNavigateTemplates() {
     setActiveTab('templates');
     setShowCompose(false);
+  }
+
+  function handleNavigatePostalSettings() {
+    setSearchParams({ view: 'settings-profile', tab: 'letter' });
   }
 
   const totalUnread = unreadCounts.inbox + unreadCounts.sent + unreadCounts.unknown;
@@ -382,6 +388,7 @@ export default function MessagesView() {
             userAlias={mailbox?.alias_localpart || ''}
             onSent={handleComposeSent}
             onCancel={() => setShowCompose(false)}
+            onNavigatePostalSettings={handleNavigatePostalSettings}
           />
         </div>
       )}

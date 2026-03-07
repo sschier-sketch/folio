@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User, Lock, CreditCard, Eye, EyeOff, Hash, Info, FileText, Send } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -30,13 +31,30 @@ interface BankDetails {
   bank_name: string;
 }
 
+const VALID_TABS: Tab[] = ["profile", "documents", "bank", "password", "letter"];
+
 export default function ProfileSettingsView() {
   const { user } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const { dataOwnerId, canWrite, isMember, loading: permLoading } = usePermissions();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isReadOnly = isMember && !canWrite;
   const profileUserId = dataOwnerId || user?.id;
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
+
+  const tabFromUrl = searchParams.get("tab") as Tab | null;
+  const initialTab = tabFromUrl && VALID_TABS.includes(tabFromUrl) ? tabFromUrl : "profile";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+
+  useEffect(() => {
+    if (tabFromUrl && VALID_TABS.includes(tabFromUrl) && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("tab");
+        return next;
+      }, { replace: true });
+    }
+  }, [tabFromUrl]);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [passwordData, setPasswordData] = useState({

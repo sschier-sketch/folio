@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Users, AtSign, Upload, File as FileIcon, Globe, Info, Building2, DoorOpen, ChevronRight, ArrowLeft, X, FileText } from 'lucide-react';
+import { Users, AtSign, Upload, File as FileIcon, Globe, Info, Building2, DoorOpen, ChevronRight, ArrowLeft, X, FileText, Mail as MailIconLetter } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { sanitizeFileName } from '../../lib/utils';
 import { Button } from '../ui/Button';
+import ComposeLetterInline from './ComposeLetterInline';
 
 interface Property {
   id: string;
@@ -39,12 +40,40 @@ interface ComposeInlineProps {
   userAlias: string;
   onSent: () => void;
   onCancel: () => void;
+  onNavigatePostalSettings?: () => void;
 }
 
 const ALL_PROPERTIES = '__all__';
 const ALL_TENANTS = '__all__';
 
-export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeInlineProps) {
+export default function ComposeInline({ userAlias, onSent, onCancel, onNavigatePostalSettings }: ComposeInlineProps) {
+  const [composeMode, setComposeMode] = useState<'email' | 'letter'>('email');
+
+  if (composeMode === 'letter') {
+    return (
+      <ComposeLetterInline
+        onSent={onSent}
+        onCancel={onCancel}
+        onNavigatePostalSettings={onNavigatePostalSettings || (() => {})}
+        onSwitchToEmail={() => setComposeMode('email')}
+      />
+    );
+  }
+
+  return <ComposeEmailInline
+    userAlias={userAlias}
+    onSent={onSent}
+    onCancel={onCancel}
+    onSwitchToLetter={() => setComposeMode('letter')}
+  />;
+}
+
+function ComposeEmailInline({ userAlias, onSent, onCancel, onSwitchToLetter }: {
+  userAlias: string;
+  onSent: () => void;
+  onCancel: () => void;
+  onSwitchToLetter: () => void;
+}) {
   const { user } = useAuth();
   const { dataOwnerId } = usePermissions();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -443,6 +472,12 @@ export default function ComposeInline({ userAlias, onSent, onCancel }: ComposeIn
             }`}
           >
             <AtSign className="w-4 h-4" /> E-Mail
+          </button>
+          <button
+            onClick={onSwitchToLetter}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100"
+          >
+            <MailIconLetter className="w-4 h-4" /> Brief
           </button>
         </div>
 
