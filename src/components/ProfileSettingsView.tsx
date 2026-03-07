@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, CreditCard, Eye, EyeOff, Hash } from "lucide-react";
+import { Shield, Lock, CreditCard, Eye, EyeOff, Hash, Info } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import { usePermissions } from "../hooks/usePermissions";
 import ProfileManagement from "./profile/ProfileManagement";
 import { Button } from './ui/Button';
 
@@ -25,6 +26,9 @@ interface BankDetails {
 export default function ProfileSettingsView() {
   const { user } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { dataOwnerId, canWrite, isMember, loading: permLoading } = usePermissions();
+  const isReadOnly = isMember && !canWrite;
+  const profileUserId = dataOwnerId || user?.id;
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -54,10 +58,12 @@ export default function ProfileSettingsView() {
   const [savingBankDetails, setSavingBankDetails] = useState(false);
 
   useEffect(() => {
-    loadUserSettings();
-    loadBankDetails();
-    loadCustomerNumber();
-  }, [user]);
+    if (!permLoading && profileUserId) {
+      loadUserSettings();
+      loadBankDetails();
+      loadCustomerNumber();
+    }
+  }, [permLoading, profileUserId]);
 
   const loadUserSettings = async () => {
     if (!user) return;
@@ -77,12 +83,12 @@ export default function ProfileSettingsView() {
   };
 
   const loadBankDetails = async () => {
-    if (!user) return;
+    if (!profileUserId) return;
     try {
       const { data, error } = await supabase
         .from("user_bank_details")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", profileUserId)
         .maybeSingle();
 
       if (error && error.code !== "PGRST116") throw error;
@@ -103,12 +109,12 @@ export default function ProfileSettingsView() {
   };
 
   const loadCustomerNumber = async () => {
-    if (!user) return;
+    if (!profileUserId) return;
     try {
       const { data, error } = await supabase
         .from("account_profiles")
         .select("customer_number")
-        .eq("user_id", user.id)
+        .eq("user_id", profileUserId)
         .maybeSingle();
       if (error) throw error;
       if (data) setCustomerNumber(data.customer_number);
@@ -156,7 +162,7 @@ export default function ProfileSettingsView() {
   };
 
   const handleSaveBankDetails = async () => {
-    if (!user) return;
+    if (!profileUserId || isReadOnly) return;
 
     if (!bankDetails.account_holder || !bankDetails.iban) {
       alert(language === "de" ? "Bitte füllen Sie Kontoinhaber und IBAN aus" : "Please fill in account holder and IBAN");
@@ -169,7 +175,7 @@ export default function ProfileSettingsView() {
         .from("user_bank_details")
         .upsert(
           {
-            user_id: user.id,
+            user_id: profileUserId,
             account_holder: bankDetails.account_holder,
             iban: bankDetails.iban.replace(/\s/g, ""),
             bic: bankDetails.bic || null,
@@ -402,6 +408,17 @@ export default function ProfileSettingsView() {
           </h3>
         </div>
 
+        {isReadOnly && (
+          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-800">
+              {language === "de"
+                ? "Diese Daten werden vom Hauptaccount verwaltet und können hier nur eingesehen werden."
+                : "This data is managed by the main account and can only be viewed here."}
+            </p>
+          </div>
+        )}
+
         <div className="space-y-4 max-w-2xl">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -410,8 +427,9 @@ export default function ProfileSettingsView() {
             <input
               type="text"
               value={bankDetails.account_holder}
-              onChange={(e) => setBankDetails({ ...bankDetails, account_holder: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, account_holder: e.target.value })}
+              disabled={isReadOnly}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
               placeholder={language === "de" ? "Max Mustermann" : "John Doe"}
             />
           </div>
@@ -423,8 +441,9 @@ export default function ProfileSettingsView() {
             <input
               type="text"
               value={bankDetails.iban}
-              onChange={(e) => setBankDetails({ ...bankDetails, iban: e.target.value.toUpperCase() })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, iban: e.target.value.toUpperCase() })}
+              disabled={isReadOnly}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="DE89 3704 0044 0532 0130 00"
             />
           </div>
@@ -436,8 +455,9 @@ export default function ProfileSettingsView() {
             <input
               type="text"
               value={bankDetails.bic}
-              onChange={(e) => setBankDetails({ ...bankDetails, bic: e.target.value.toUpperCase() })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, bic: e.target.value.toUpperCase() })}
+              disabled={isReadOnly}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="COBADEFFXXX"
             />
           </div>
@@ -449,19 +469,22 @@ export default function ProfileSettingsView() {
             <input
               type="text"
               value={bankDetails.bank_name}
-              onChange={(e) => setBankDetails({ ...bankDetails, bank_name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, bank_name: e.target.value })}
+              disabled={isReadOnly}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
               placeholder={language === "de" ? "Commerzbank AG" : "Your Bank"}
             />
           </div>
 
-          <Button
-            onClick={handleSaveBankDetails}
-            disabled={savingBankDetails}
-            variant="primary"
-          >
-            {savingBankDetails ? (language === "de" ? "Wird gespeichert..." : "Saving...") : (language === "de" ? "Bankverbindung speichern" : "Save Bank Details")}
-          </Button>
+          {!isReadOnly && (
+            <Button
+              onClick={handleSaveBankDetails}
+              disabled={savingBankDetails}
+              variant="primary"
+            >
+              {savingBankDetails ? (language === "de" ? "Wird gespeichert..." : "Saving...") : (language === "de" ? "Bankverbindung speichern" : "Save Bank Details")}
+            </Button>
+          )}
 
           <p className="text-sm text-gray-500 mt-2">
             {language === "de"

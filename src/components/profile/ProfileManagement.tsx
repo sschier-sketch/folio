@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, Info, Check } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import { Button } from '../ui/Button';
 
 interface ProfileData {
@@ -22,6 +23,9 @@ interface ProfileData {
 export default function ProfileManagement() {
   const { user } = useAuth();
   const { language } = useLanguage();
+  const { dataOwnerId, canWrite, isMember, loading: permLoading } = usePermissions();
+  const isReadOnly = isMember && !canWrite;
+  const profileUserId = dataOwnerId || user?.id;
   const [emailAlias, setEmailAlias] = useState('');
   const [currentEmailAlias, setCurrentEmailAlias] = useState('');
   const [savingAlias, setSavingAlias] = useState(false);
@@ -50,22 +54,24 @@ export default function ProfileManagement() {
   });
 
   useEffect(() => {
-    loadProfile();
-    loadEmailAlias();
-  }, [user]);
+    if (!permLoading && profileUserId) {
+      loadProfile();
+      loadEmailAlias();
+    }
+  }, [permLoading, profileUserId]);
 
   useEffect(() => {
     checkCompletion();
   }, [formData]);
 
   const loadProfile = async () => {
-    if (!user) return;
+    if (!profileUserId) return;
 
     try {
       const { data: profile } = await supabase
         .from("account_profiles")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", profileUserId)
         .maybeSingle();
 
       if (profile) {
@@ -91,12 +97,12 @@ export default function ProfileManagement() {
   };
 
   const loadEmailAlias = async () => {
-    if (!user) return;
+    if (!profileUserId) return;
     try {
       const { data } = await supabase
         .from('user_mailboxes')
         .select('alias_localpart')
-        .eq('user_id', user.id)
+        .eq('user_id', profileUserId)
         .maybeSingle();
       if (data?.alias_localpart) {
         setEmailAlias(data.alias_localpart);
@@ -121,6 +127,7 @@ export default function ProfileManagement() {
   };
 
   const handleSaveAlias = async () => {
+    if (isReadOnly) return;
     const cleaned = emailAlias.toLowerCase().trim();
     const validationError = validateAlias(cleaned);
     if (validationError) {
@@ -191,6 +198,7 @@ export default function ProfileManagement() {
   };
 
   const handleChange = (field: keyof ProfileData, value: string) => {
+    if (isReadOnly) return;
     if (field === "address_city") {
       if (value === "" || /^[a-zA-ZäöüÄÖÜß\s\-]+$/.test(value)) {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -203,20 +211,19 @@ export default function ProfileManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isReadOnly || !profileUserId) return;
     setSaving(true);
     setMessage(null);
 
     try {
-      if (!user) throw new Error("Nicht angemeldet");
-
       const { data: existingProfile } = await supabase
         .from("account_profiles")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("user_id", profileUserId)
         .maybeSingle();
 
       const profileData = {
-        user_id: user.id,
+        user_id: profileUserId,
         ...formData,
       };
 
@@ -224,7 +231,7 @@ export default function ProfileManagement() {
         const { error } = await supabase
           .from("account_profiles")
           .update(profileData)
-          .eq("user_id", user.id);
+          .eq("user_id", profileUserId);
 
         if (error) throw error;
       } else {
@@ -301,6 +308,16 @@ export default function ProfileManagement() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        {isReadOnly && (
+          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-800">
+              {language === "de"
+                ? "Diese Daten werden vom Hauptaccount verwaltet und können hier nur eingesehen werden."
+                : "This data is managed by the main account and can only be viewed here."}
+            </p>
+          </div>
+        )}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Persönliche Daten</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -312,7 +329,8 @@ export default function ProfileManagement() {
                 type="text"
                 value={formData.first_name}
                 onChange={(e) => handleChange("first_name", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isReadOnly}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                 required
               />
             </div>
@@ -325,7 +343,8 @@ export default function ProfileManagement() {
                 type="text"
                 value={formData.last_name}
                 onChange={(e) => handleChange("last_name", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isReadOnly}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                 required
               />
             </div>
@@ -339,7 +358,8 @@ export default function ProfileManagement() {
               type="text"
               value={formData.company_name}
               onChange={(e) => handleChange("company_name", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isReadOnly}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
             />
           </div>
         </div>
@@ -356,7 +376,8 @@ export default function ProfileManagement() {
                   type="text"
                   value={formData.address_street}
                   onChange={(e) => handleChange("address_street", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isReadOnly}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   required
                 />
               </div>
@@ -368,7 +389,8 @@ export default function ProfileManagement() {
                   type="text"
                   value={formData.address_house_number}
                   onChange={(e) => handleChange("address_house_number", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isReadOnly}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                 />
               </div>
             </div>
@@ -380,7 +402,8 @@ export default function ProfileManagement() {
                   type="text"
                   value={formData.address_zip}
                   onChange={(e) => handleChange("address_zip", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isReadOnly}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   required
                 />
               </div>
@@ -391,7 +414,8 @@ export default function ProfileManagement() {
                   type="text"
                   value={formData.address_city}
                   onChange={(e) => handleChange("address_city", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isReadOnly}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   required
                 />
               </div>
@@ -403,7 +427,8 @@ export default function ProfileManagement() {
                 type="text"
                 value={formData.address_country}
                 onChange={(e) => handleChange("address_country", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isReadOnly}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                 required
               />
             </div>
@@ -414,7 +439,8 @@ export default function ProfileManagement() {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleChange("phone", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isReadOnly}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               />
             </div>
           </div>
@@ -431,7 +457,8 @@ export default function ProfileManagement() {
                 type="text"
                 value={formData.document_sender_name}
                 onChange={(e) => handleChange("document_sender_name", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isReadOnly}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                 required
               />
               <p className="text-sm text-gray-600 mt-1">
@@ -464,8 +491,9 @@ export default function ProfileManagement() {
                 <input
                   type="text"
                   value={emailAlias}
-                  onChange={(e) => { setEmailAlias(e.target.value.toLowerCase()); setAliasError(''); }}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => { if (!isReadOnly) { setEmailAlias(e.target.value.toLowerCase()); setAliasError(''); } }}
+                  disabled={isReadOnly}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   placeholder="mein-alias"
                 />
                 <span className="px-4 py-2 bg-gray-50 border border-l-0 border-gray-300 rounded-r-lg text-sm text-gray-500 font-medium whitespace-nowrap">
@@ -489,7 +517,7 @@ export default function ProfileManagement() {
                   ? "Unter dieser Adresse empfangen und senden Sie E-Mails."
                   : "You send and receive emails under this address."}
               </p>
-              {emailAlias.trim() !== currentEmailAlias && emailAlias.trim().length >= 3 && (
+              {!isReadOnly && emailAlias.trim() !== currentEmailAlias && emailAlias.trim().length >= 3 && (
                 <Button variant="primary" onClick={handleSaveAlias} disabled={savingAlias} className="mt-2">
                   {savingAlias
                     ? (language === "de" ? "Speichern..." : "Saving...")
@@ -505,8 +533,9 @@ export default function ProfileManagement() {
               <textarea
                 value={formData.document_signature}
                 onChange={(e) => handleChange("document_signature", e.target.value)}
+                disabled={isReadOnly}
                 rows={5}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                 required
               />
               <p className="text-sm text-gray-600 mt-1">
@@ -528,15 +557,17 @@ export default function ProfileManagement() {
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={saving}
-            variant="primary"
-          >
-            {saving ? "Speichern..." : "Änderungen speichern"}
-          </Button>
-        </div>
+        {!isReadOnly && (
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={saving}
+              variant="primary"
+            >
+              {saving ? "Speichern..." : "Änderungen speichern"}
+            </Button>
+          </div>
+        )}
       </form>
     </div>
   );
