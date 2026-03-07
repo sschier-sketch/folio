@@ -173,7 +173,7 @@ export default function ProfileDocumentsComm() {
           <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <p className="text-sm text-blue-800">
             {language === "de"
-              ? "Diese Daten werden vom Hauptaccount verwaltet und k\u00f6nnen hier nur eingesehen werden."
+              ? "Diese Daten werden vom Hauptaccount verwaltet und können hier nur eingesehen werden."
               : "This data is managed by the main account and can only be viewed here."}
           </p>
         </div>
@@ -196,7 +196,7 @@ export default function ProfileDocumentsComm() {
 
       <div className="bg-white rounded shadow-sm p-6">
         <h3 className="text-lg font-semibold text-dark mb-6">
-          {language === "de" ? "Absendername f\u00fcr Dokumente" : "Sender Name for Documents"}
+          {language === "de" ? "Absendername für Dokumente" : "Sender Name for Documents"}
         </h3>
         <div className="space-y-4 max-w-2xl">
           <div>
@@ -219,7 +219,7 @@ export default function ProfileDocumentsComm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {language === "de" ? "Signatur f\u00fcr Schreiben" : "Document Signature"} *
+              {language === "de" ? "Signatur für Schreiben" : "Document Signature"} *
             </label>
             <textarea
               value={documentSignature}
@@ -253,10 +253,10 @@ export default function ProfileDocumentsComm() {
                 </button>
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 px-4 py-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <p className="font-semibold mb-1.5">
-                    {language === "de" ? "Ihre pers\u00f6nliche Rentably E-Mail-Adresse" : "Your personal Rentably email address"}
+                    {language === "de" ? "Ihre persönliche Rentably E-Mail-Adresse" : "Your personal Rentably email address"}
                   </p>
                   <ul className="space-y-1 text-gray-300 leading-relaxed">
-                    <li>{language === "de" ? "Wird als Absender f\u00fcr Ihre E-Mails verwendet" : "Used as sender for your emails"}</li>
+                    <li>{language === "de" ? "Wird als Absender für Ihre E-Mails verwendet" : "Used as sender for your emails"}</li>
                     <li>{language === "de" ? "Antworten werden automatisch im Posteingang angezeigt" : "Replies are shown automatically in your inbox"}</li>
                   </ul>
                   <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900" />
@@ -314,7 +314,7 @@ export default function ProfileDocumentsComm() {
           <Button onClick={handleSave} disabled={saving} variant="primary">
             {saving
               ? language === "de" ? "Speichern..." : "Saving..."
-              : language === "de" ? "\u00c4nderungen speichern" : "Save Changes"}
+              : language === "de" ? "Änderungen speichern" : "Save Changes"}
           </Button>
         </div>
       )}

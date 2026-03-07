@@ -43,7 +43,7 @@ function formatDateTime(iso: string | null, language: string): string {
 
 function maskApiKey(hasKey: boolean, language: string): string {
   if (!hasKey) return language === "de" ? "Nicht hinterlegt" : "Not set";
-  return "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";
+  return "••••••••••••••••";
 }
 
 export default function PostalMailSettingsView() {
@@ -222,9 +222,9 @@ export default function PostalMailSettingsView() {
           <div className="text-sm text-blue-800">
             {language === "de" ? (
               <>
-                Hier kann der postalische Briefversand \u00fcber LetterXpress aktiviert werden.
-                Nach Hinterlegung der Zugangsdaten kann rentably Briefe zentral \u00fcber die LetterXpress API
-                verwalten. Generierte PDFs aus verschiedenen Modulen k\u00f6nnen sp\u00e4ter direkt per Brief versendet werden.
+                Hier kann der postalische Briefversand über LetterXpress aktiviert werden.
+                Nach Hinterlegung der Zugangsdaten kann rentably Briefe zentral über die LetterXpress API
+                verwalten. Generierte PDFs aus verschiedenen Modulen können später direkt per Brief versendet werden.
               </>
             ) : (
               <>
@@ -251,7 +251,7 @@ export default function PostalMailSettingsView() {
             <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-blue-800">
               {language === "de"
-                ? "Diese Daten werden vom Hauptaccount verwaltet und k\u00f6nnen hier nur eingesehen werden."
+                ? "Diese Daten werden vom Hauptaccount verwaltet und können hier nur eingesehen werden."
                 : "This data is managed by the main account and can only be viewed here."}
             </p>
           </div>
@@ -300,7 +300,7 @@ export default function PostalMailSettingsView() {
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue pr-12"
                   placeholder={
                     config?.has_api_key
-                      ? (language === "de" ? "Neuen API Key eingeben, um zu \u00e4ndern" : "Enter new API key to change")
+                      ? (language === "de" ? "Neuen API Key eingeben, um zu ändern" : "Enter new API key to change")
                       : (language === "de" ? "Ihr LetterXpress API Key" : "Your LetterXpress API key")
                   }
                 />
@@ -334,7 +334,7 @@ export default function PostalMailSettingsView() {
                 variant="primary"
               >
                 {saving
-                  ? (language === "de" ? "Wird gespeichert\u2026" : "Saving\u2026")
+                  ? (language === "de" ? "Wird gespeichert…" : "Saving…")
                   : (language === "de" ? "Speichern" : "Save")}
               </Button>
 
@@ -346,7 +346,7 @@ export default function PostalMailSettingsView() {
                 >
                   <RefreshCw className={`w-4 h-4 ${testing ? "animate-spin" : ""}`} />
                   {testing
-                    ? (language === "de" ? "Wird getestet\u2026" : "Testing\u2026")
+                    ? (language === "de" ? "Wird getestet…" : "Testing…")
                     : (language === "de" ? "Verbindung testen" : "Test Connection")}
                 </Button>
               )}
@@ -399,7 +399,7 @@ export default function PostalMailSettingsView() {
               <p className="text-2xl font-bold text-dark">
                 {config?.last_balance != null
                   ? `${config.last_balance.toFixed(2)} ${config.last_balance_currency || "EUR"}`
-                  : "\u2013"}
+                  : "–"}
               </p>
               {config?.last_balance_synced_at && (
                 <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
@@ -472,7 +472,7 @@ export default function PostalMailSettingsView() {
               <p className="text-xs text-gray-400 mt-2">
                 {config?.is_test_mode
                   ? (language === "de"
-                    ? "Briefe werden nicht tats\u00e4chlich versendet."
+                    ? "Briefe werden nicht tatsächlich versendet."
                     : "Letters are not actually sent.")
                   : (language === "de"
                     ? "Briefe werden produktiv verarbeitet."
@@ -502,7 +502,7 @@ export default function PostalMailSettingsView() {
 
           <p className="text-sm text-gray-500 mb-4">
             {language === "de"
-              ? "Im Testmodus werden \u00fcbertragene Auftr\u00e4ge nicht produktiv verarbeitet. Unversendete Postbox-Auftr\u00e4ge werden nach 7 Tagen gel\u00f6scht. Diese Einstellung ist nur f\u00fcr Administratoren sichtbar."
+              ? "Im Testmodus werden übertragene Aufträge nicht produktiv verarbeitet. Unversendete Postbox-Aufträge werden nach 7 Tagen gelöscht. Diese Einstellung ist nur für Administratoren sichtbar."
               : "In test mode, submitted jobs are not processed in production. Unsent postbox jobs are deleted after 7 days. This setting is only visible to administrators."}
           </p>
 
