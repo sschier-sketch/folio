@@ -118,9 +118,14 @@ export class LetterXpressApiError extends Error {
 }
 
 async function getAccessToken(): Promise<string> {
-  const {
+  let {
     data: { session },
   } = await supabase.auth.getSession();
+
+  if (!session) {
+    const refreshResult = await supabase.auth.refreshSession();
+    session = refreshResult.data.session;
+  }
 
   if (!session) {
     throw new LetterXpressApiError("Not authenticated", "AUTH_ERROR", 401);
