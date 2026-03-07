@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { usePermissions } from "../hooks/usePermissions";
 import ProfileManagement from "./profile/ProfileManagement";
 import ProfileDocumentsComm from "./profile/ProfileDocumentsComm";
+import PostalMailSettingsView from "./profile/PostalMailSettingsView";
 import ScrollableTabNav from "./common/ScrollableTabNav";
 import Badge from "./common/Badge";
 import { Button } from './ui/Button';
@@ -69,7 +70,7 @@ export default function ProfileSettingsView() {
     { id: "documents" as Tab, label: language === "de" ? "Dokumente & Kommunikation" : "Documents & Communication", icon: FileText, disabled: false },
     { id: "bank" as Tab, label: language === "de" ? "Bankverbindung f\u00fcr Mieter" : "Bank Details for Tenants", icon: CreditCard, disabled: false },
     { id: "password" as Tab, label: language === "de" ? "Passwort" : "Password", icon: Lock, disabled: false },
-    { id: "letter" as Tab, label: language === "de" ? "Briefversand" : "Letter Dispatch", icon: Send, disabled: true, beta: true },
+    { id: "letter" as Tab, label: language === "de" ? "Briefversand" : "Letter Dispatch", icon: Send, disabled: false },
   ];
 
   useEffect(() => {
@@ -559,21 +560,7 @@ export default function ProfileSettingsView() {
       )}
 
       {activeTab === "letter" && (
-        <div className="bg-white rounded shadow-sm p-6">
-          <div className="flex items-center justify-center py-12 text-gray-400">
-            <div className="text-center">
-              <Send className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-semibold text-gray-500 mb-2">
-                {language === "de" ? "Briefversand" : "Letter Dispatch"}
-              </h3>
-              <p className="text-sm text-gray-400">
-                {language === "de"
-                  ? "Diese Funktion befindet sich in Entwicklung und wird bald verf\u00fcgbar sein."
-                  : "This feature is under development and will be available soon."}
-              </p>
-            </div>
-          </div>
-        </div>
+        <PostalMailSettingsView />
       )}
     </div>
   );
