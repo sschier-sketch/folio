@@ -1,7 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
-import https from "node:https";
-import { Buffer } from "node:buffer";
 
 const LETTERXPRESS_BASE_URL = "https://api.letterxpress.de/v3";
 const MAX_PDF_SIZE_BYTES = 50 * 1024 * 1024;
@@ -152,45 +150,28 @@ function buildAuth(creds: LxCredentials) {
   };
 }
 
-function rawHttpsRequest(
+async function lxFetch(
   method: string,
   url: string,
   jsonBody: string
 ): Promise<{ statusCode: number; body: string }> {
-  return new Promise((resolve, reject) => {
-    const parsed = new URL(url);
-    const options = {
-      hostname: parsed.hostname,
-      port: 443,
-      path: parsed.pathname + parsed.search,
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(jsonBody),
-      },
-    };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
 
-    const timer = setTimeout(() => {
-      req.destroy(new Error("LX_TIMEOUT: 30s exceeded"));
-    }, 30000);
+  const fetchMethod = method === "GET" ? "POST" : method;
 
-    const req = https.request(options, (res) => {
-      let data = "";
-      res.on("data", (chunk: string) => { data += chunk; });
-      res.on("end", () => {
-        clearTimeout(timer);
-        resolve({ statusCode: res.statusCode ?? 0, body: data });
-      });
+  try {
+    const res = await fetch(url, {
+      method: fetchMethod,
+      headers: { "Content-Type": "application/json" },
+      body: jsonBody,
+      signal: controller.signal,
     });
-
-    req.on("error", (err: Error) => {
-      clearTimeout(timer);
-      reject(err);
-    });
-
-    req.write(jsonBody);
-    req.end();
-  });
+    const body = await res.text();
+    return { statusCode: res.status, body };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function lxRequest(
@@ -209,7 +190,7 @@ async function lxRequest(
   const jsonBody = JSON.stringify(payload);
 
   try {
-    const { statusCode, body: responseText } = await rawHttpsRequest(method, url, jsonBody);
+    const { statusCode, body: responseText } = await lxFetch(method, url, jsonBody);
 
     let responseData: any;
     try {
@@ -241,7 +222,7 @@ async function lxRequest(
 
     return { data: responseData, status: statusCode };
   } catch (err: any) {
-    if (err.message?.includes("LX_TIMEOUT")) {
+    if (err.name === "AbortError") {
       return {
         data: { error: "LetterXpress API Timeout (30s)", code: "LX_TIMEOUT" },
         status: 504,

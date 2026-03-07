@@ -1,7 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
-import https from "node:https";
-import { Buffer } from "node:buffer";
 
 const LETTERXPRESS_BASE_URL = "https://api.letterxpress.de/v3";
 const RATE_LIMIT_DELAY_MS = 600;
@@ -59,45 +57,25 @@ async function getDecryptedCredentials(
   };
 }
 
-function rawHttpsRequest(
-  method: string,
+async function lxFetch(
   url: string,
   jsonBody: string
 ): Promise<{ statusCode: number; body: string }> {
-  return new Promise((resolve, reject) => {
-    const parsed = new URL(url);
-    const options = {
-      hostname: parsed.hostname,
-      port: 443,
-      path: parsed.pathname + parsed.search,
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(jsonBody),
-      },
-    };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
 
-    const timer = setTimeout(() => {
-      req.destroy(new Error("LX_TIMEOUT: 30s exceeded"));
-    }, 30000);
-
-    const req = https.request(options, (res) => {
-      let data = "";
-      res.on("data", (chunk: string) => { data += chunk; });
-      res.on("end", () => {
-        clearTimeout(timer);
-        resolve({ statusCode: res.statusCode ?? 0, body: data });
-      });
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: jsonBody,
+      signal: controller.signal,
     });
-
-    req.on("error", (err: Error) => {
-      clearTimeout(timer);
-      reject(err);
-    });
-
-    req.write(jsonBody);
-    req.end();
-  });
+    const body = await res.text();
+    return { statusCode: res.status, body };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function fetchPrintjobs(
@@ -116,7 +94,7 @@ async function fetchPrintjobs(
   };
 
   try {
-    const { statusCode, body } = await rawHttpsRequest("GET", url, JSON.stringify({ auth }));
+    const { statusCode, body } = await lxFetch(url, JSON.stringify({ auth }));
     const data = JSON.parse(body);
 
     if (statusCode !== 200 || data?.status !== 200) {
