@@ -45,7 +45,8 @@ export default function EditMemberModal({ member, onClose, onSave }: EditMemberM
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const displayName = "first_name" in member
+  const isMember = "first_name" in member;
+  const displayName = isMember
     ? ([member.first_name, member.last_name].filter(Boolean).join(" ") || member.email)
     : member.invited_email;
 
@@ -60,6 +61,32 @@ export default function EditMemberModal({ member, onClose, onSave }: EditMemberM
         if (data) setProperties(data);
       });
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (member.property_scope !== "selected") return;
+
+    if (isMember) {
+      const m = member as AccountMember;
+      supabase
+        .from("account_member_properties")
+        .select("property_id")
+        .eq("member_user_id", m.user_id)
+        .then(({ data }) => {
+          if (data) setSelectedPropertyIds(data.map((r) => r.property_id));
+        });
+    } else {
+      const inv = member as AccountInvitation;
+      supabase
+        .from("account_invitations")
+        .select("property_ids")
+        .eq("id", inv.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.property_ids) setSelectedPropertyIds(data.property_ids);
+        });
+    }
+  }, [user?.id, member]);
 
   useEffect(() => {
     if (role === "viewer") {
