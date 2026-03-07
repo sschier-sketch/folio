@@ -47,12 +47,6 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const supabaseUser = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     if (authError || !user) {
@@ -120,16 +114,22 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(
-      (u) => u.email?.toLowerCase() === invitedEmail
-    );
+    let existingUserId: string | null = null;
+    try {
+      const { data: usersResult } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+      const match = usersResult?.users?.find(
+        (u) => u.email?.toLowerCase() === invitedEmail
+      );
+      if (match) existingUserId = match.id;
+    } catch (listErr) {
+      console.warn("listUsers failed, continuing without duplicate check:", listErr);
+    }
 
-    if (existingUser) {
+    if (existingUserId) {
       const { data: existingSettings } = await supabaseAdmin
         .from("user_settings")
         .select("account_owner_id, role, removed_at")
-        .eq("user_id", existingUser.id)
+        .eq("user_id", existingUserId)
         .maybeSingle();
 
       if (existingSettings) {
@@ -203,6 +203,7 @@ Deno.serve(async (req: Request) => {
       .single();
 
     if (insertError || !invitation) {
+      console.error("Insert invitation failed:", insertError);
       return new Response(
         JSON.stringify({ error: "Einladung konnte nicht erstellt werden", details: insertError?.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -240,45 +241,53 @@ Deno.serve(async (req: Request) => {
 
     const language = payload.language || "de";
 
-    const emailResponse = await fetch(
-      `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-        },
-        body: JSON.stringify({
-          to: invitedEmail,
-          templateKey: "account_invitation",
-          language,
-          variables: {
-            inviter_name: inviterName,
-            invitee_email: invitedEmail,
-            invitation_link: invitationLink,
-            role: roleLabels[invitation.role] || invitation.role,
-            expires_in: expiresFormatted,
+    try {
+      const emailResponse = await fetch(
+        `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
           },
-          userId: accountOwnerId,
-          mailType: "account_invitation",
-          category: "transactional",
-          idempotencyKey: `account_invite:${invitation.id}`,
-        }),
-      }
-    );
+          body: JSON.stringify({
+            to: invitedEmail,
+            templateKey: "account_invitation",
+            language,
+            variables: {
+              inviter_name: inviterName,
+              invitee_email: invitedEmail,
+              invitation_link: invitationLink,
+              role: roleLabels[invitation.role] || invitation.role,
+              expires_in: expiresFormatted,
+            },
+            userId: accountOwnerId,
+            mailType: "account_invitation",
+            category: "transactional",
+            idempotencyKey: `account_invite:${invitation.id}`,
+          }),
+        }
+      );
 
-    if (!emailResponse.ok) {
-      const errorText = await emailResponse.text();
-      console.error("Email send failed:", errorText);
+      if (!emailResponse.ok) {
+        const errorText = await emailResponse.text();
+        console.error("Email send failed:", errorText);
+      }
+    } catch (emailErr) {
+      console.error("Email send threw:", emailErr);
     }
 
-    await supabaseAdmin.rpc("log_user_management_action", {
-      p_actor_user_id: user.id,
-      p_event_type: "member_invited",
-      p_description: "Benutzer eingeladen",
-      p_target_email: invitedEmail,
-      p_changes: { role: invitation.role, email: invitedEmail },
-    }).catch((err: unknown) => console.error("Audit log failed:", err));
+    try {
+      await supabaseAdmin.rpc("log_user_management_action", {
+        p_actor_user_id: user.id,
+        p_event_type: "member_invited",
+        p_description: "Benutzer eingeladen",
+        p_target_email: invitedEmail,
+        p_changes: { role: invitation.role, email: invitedEmail },
+      });
+    } catch (auditErr) {
+      console.error("Audit log failed:", auditErr);
+    }
 
     return new Response(
       JSON.stringify({
@@ -295,7 +304,7 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("invite-account-member error:", err);
     return new Response(
-      JSON.stringify({ error: "Ein unerwarteter Fehler ist aufgetreten" }),
+      JSON.stringify({ error: "Ein unerwarteter Fehler ist aufgetreten", details: String(err) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
