@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, CreditCard, Eye, EyeOff, Hash, Info } from "lucide-react";
+import { User, Lock, CreditCard, Eye, EyeOff, Hash, Info, FileText, Send } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePermissions } from "../hooks/usePermissions";
 import ProfileManagement from "./profile/ProfileManagement";
+import ProfileDocumentsComm from "./profile/ProfileDocumentsComm";
+import ScrollableTabNav from "./common/ScrollableTabNav";
+import Badge from "./common/Badge";
 import { Button } from './ui/Button';
+import { Shield } from "lucide-react";
+
+type Tab = "profile" | "documents" | "bank" | "password" | "letter";
 
 interface UserSettings {
   role: string;
@@ -29,6 +35,7 @@ export default function ProfileSettingsView() {
   const { dataOwnerId, canWrite, isMember, loading: permLoading } = usePermissions();
   const isReadOnly = isMember && !canWrite;
   const profileUserId = dataOwnerId || user?.id;
+  const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -56,6 +63,14 @@ export default function ProfileSettingsView() {
     bank_name: "",
   });
   const [savingBankDetails, setSavingBankDetails] = useState(false);
+
+  const tabs = [
+    { id: "profile" as Tab, label: language === "de" ? "Profil" : "Profile", icon: User, disabled: false },
+    { id: "documents" as Tab, label: language === "de" ? "Dokumente & Kommunikation" : "Documents & Communication", icon: FileText, disabled: false },
+    { id: "bank" as Tab, label: language === "de" ? "Bankverbindung f\u00fcr Mieter" : "Bank Details for Tenants", icon: CreditCard, disabled: false },
+    { id: "password" as Tab, label: language === "de" ? "Passwort" : "Password", icon: Lock, disabled: false },
+    { id: "letter" as Tab, label: language === "de" ? "Briefversand" : "Letter Dispatch", icon: Send, disabled: true, beta: true },
+  ];
 
   useEffect(() => {
     if (!permLoading && profileUserId) {
@@ -138,7 +153,7 @@ export default function ProfileSettingsView() {
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError(language === "de" ? "Die Passwörter stimmen nicht überein" : "Passwords do not match");
+      setPasswordError(language === "de" ? "Die Passw\u00f6rter stimmen nicht \u00fcberein" : "Passwords do not match");
       return;
     }
 
@@ -150,12 +165,12 @@ export default function ProfileSettingsView() {
 
       if (error) throw error;
 
-      setPasswordSuccess(language === "de" ? "Passwort erfolgreich geändert" : "Password changed successfully");
+      setPasswordSuccess(language === "de" ? "Passwort erfolgreich ge\u00e4ndert" : "Password changed successfully");
       setPasswordData({ newPassword: "", confirmPassword: "" });
       setShowPasswordSection(false);
     } catch (error: any) {
       console.error("Error changing password:", error);
-      setPasswordError(error.message || (language === "de" ? "Fehler beim Ändern des Passworts" : "Error changing password"));
+      setPasswordError(error.message || (language === "de" ? "Fehler beim \u00c4ndern des Passworts" : "Error changing password"));
     } finally {
       setChangingPassword(false);
     }
@@ -165,7 +180,7 @@ export default function ProfileSettingsView() {
     if (!profileUserId || isReadOnly) return;
 
     if (!bankDetails.account_holder || !bankDetails.iban) {
-      alert(language === "de" ? "Bitte füllen Sie Kontoinhaber und IBAN aus" : "Please fill in account holder and IBAN");
+      alert(language === "de" ? "Bitte f\u00fcllen Sie Kontoinhaber und IBAN aus" : "Please fill in account holder and IBAN");
       return;
     }
 
@@ -234,265 +249,332 @@ export default function ProfileSettingsView() {
         </h1>
         <p className="text-gray-400">
           {language === "de"
-            ? "Verwalten Sie Ihre persönlichen Informationen."
-            : "Manage your personal information."}
+            ? "Verwalten Sie Ihre pers\u00f6nlichen Informationen und Einstellungen."
+            : "Manage your personal information and settings."}
         </p>
       </div>
 
-      <div className="bg-white rounded shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-dark mb-6">
-          {t("settings.profile")}
-        </h3>
-        <div className="space-y-4 max-w-2xl">
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              {t("settings.email")}
-            </label>
-            <input
-              type="email"
-              value={user?.email || ""}
-              disabled
-              className="w-full px-4 py-2 rounded-lg bg-gray-50 text-gray-300"
-            />
-            <p className="text-sm text-gray-300 mt-1">
-              {language === "de"
-                ? "Ihre E-Mail-Adresse kann derzeit nicht geändert werden."
-                : "Your email address cannot be changed currently."}
-            </p>
+      <div className="bg-white rounded-lg mb-6">
+        <ScrollableTabNav>
+          <div className="flex">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isBeta = 'beta' in tab && tab.beta;
+              const isDisabled = tab.disabled;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    if (isDisabled) return;
+                    setActiveTab(tab.id);
+                  }}
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                    isDisabled
+                      ? "text-gray-300 cursor-not-allowed"
+                      : activeTab === tab.id
+                      ? "text-primary-blue"
+                      : "text-gray-400 hover:text-dark"
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {tab.label}
+                  {isBeta && (
+                    <Badge variant="info" size="sm">Beta</Badge>
+                  )}
+                  {activeTab === tab.id && !isDisabled && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+                  )}
+                </button>
+              );
+            })}
           </div>
-          {customerNumber && (
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                {language === "de" ? "Kundennummer" : "Customer Number"}
-              </label>
-              <div className="flex items-center gap-2">
-                <Hash className="w-4 h-4 text-gray-300" />
-                <span className="font-mono text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">{customerNumber}</span>
-              </div>
-            </div>
-          )}
-          {userSettings && (
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                {t("settings.users.role")}
-              </label>
-              <div>{getRoleBadge(userSettings.role)}</div>
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              {t("settings.language")}
-            </label>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as "de" | "en")}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-            >
-              <option value="de">Deutsch</option>
-              <option value="en">English</option>
-            </select>
-            <p className="text-sm text-gray-300 mt-1">
-              {language === "de"
-                ? "Änderungen werden sofort wirksam und für alle E-Mails verwendet."
-                : "Changes take effect immediately and are used for all emails."}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-8 pt-8 border-t">
-          <ProfileManagement />
-        </div>
+        </ScrollableTabNav>
       </div>
 
-      <div className="bg-white rounded shadow-sm p-6 mt-6">
-        <div className="flex items-center gap-3 mb-6">
-          <Lock className="w-6 h-6 text-primary-blue" />
-          <h3 className="text-lg font-semibold text-dark">
-            {language === "de" ? "Passwort ändern" : "Change Password"}
-          </h3>
+      {activeTab === "profile" && (
+        <div>
+          <div className="bg-white rounded shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-dark mb-6">
+              {t("settings.profile")}
+            </h3>
+            <div className="space-y-4 max-w-2xl">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  {t("settings.email")}
+                </label>
+                <input
+                  type="email"
+                  value={user?.email || ""}
+                  disabled
+                  className="w-full px-4 py-2 rounded-lg bg-gray-50 text-gray-300"
+                />
+                <p className="text-sm text-gray-300 mt-1">
+                  {language === "de"
+                    ? "Ihre E-Mail-Adresse kann derzeit nicht ge\u00e4ndert werden."
+                    : "Your email address cannot be changed currently."}
+                </p>
+              </div>
+              {customerNumber && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    {language === "de" ? "Kundennummer" : "Customer Number"}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Hash className="w-4 h-4 text-gray-300" />
+                    <span className="font-mono text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">{customerNumber}</span>
+                  </div>
+                </div>
+              )}
+              {userSettings && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    {t("settings.users.role")}
+                  </label>
+                  <div>{getRoleBadge(userSettings.role)}</div>
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  {t("settings.language")}
+                </label>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as "de" | "en")}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                >
+                  <option value="de">Deutsch</option>
+                  <option value="en">English</option>
+                </select>
+                <p className="text-sm text-gray-300 mt-1">
+                  {language === "de"
+                    ? "\u00c4nderungen werden sofort wirksam und f\u00fcr alle E-Mails verwendet."
+                    : "Changes take effect immediately and are used for all emails."}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-8 border-t">
+              <ProfileManagement />
+            </div>
+          </div>
         </div>
+      )}
 
-        {!showPasswordSection ? (
-          <Button
-            onClick={() => setShowPasswordSection(true)}
-            variant="primary"
-          >
-            {language === "de" ? "Passwort ändern" : "Change Password"}
-          </Button>
-        ) : (
+      {activeTab === "documents" && (
+        <ProfileDocumentsComm />
+      )}
+
+      {activeTab === "bank" && (
+        <div className="bg-white rounded shadow-sm p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <CreditCard className="w-6 h-6 text-primary-blue" />
+            <h3 className="text-lg font-semibold text-dark">
+              {language === "de" ? "Bankverbindung f\u00fcr Mieter" : "Bank Details for Tenants"}
+            </h3>
+          </div>
+
+          {isReadOnly && (
+            <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+              <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-blue-800">
+                {language === "de"
+                  ? "Diese Daten werden vom Hauptaccount verwaltet und k\u00f6nnen hier nur eingesehen werden."
+                  : "This data is managed by the main account and can only be viewed here."}
+              </p>
+            </div>
+          )}
+
           <div className="space-y-4 max-w-2xl">
-            {passwordError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                {passwordError}
-              </div>
-            )}
-            {passwordSuccess && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-                {passwordSuccess}
-              </div>
-            )}
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {language === "de" ? "Neues Passwort" : "New Password"}
+                {language === "de" ? "Kontoinhaber" : "Account Holder"} *
               </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder={language === "de" ? "Mindestens 6 Zeichen" : "At least 6 characters"}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
+              <input
+                type="text"
+                value={bankDetails.account_holder}
+                onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, account_holder: e.target.value })}
+                disabled={isReadOnly}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
+                placeholder={language === "de" ? "Max Mustermann" : "John Doe"}
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {language === "de" ? "Passwort bestätigen" : "Confirm Password"}
+                IBAN *
               </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder={language === "de" ? "Passwort wiederholen" : "Repeat password"}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
+              <input
+                type="text"
+                value={bankDetails.iban}
+                onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, iban: e.target.value.toUpperCase() })}
+                disabled={isReadOnly}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
+                placeholder="DE89 3704 0044 0532 0130 00"
+              />
             </div>
 
-            <div className="flex gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                BIC ({language === "de" ? "optional" : "optional"})
+              </label>
+              <input
+                type="text"
+                value={bankDetails.bic}
+                onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, bic: e.target.value.toUpperCase() })}
+                disabled={isReadOnly}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
+                placeholder="COBADEFFXXX"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {language === "de" ? "Bank Name" : "Bank Name"} ({language === "de" ? "optional" : "optional"})
+              </label>
+              <input
+                type="text"
+                value={bankDetails.bank_name}
+                onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, bank_name: e.target.value })}
+                disabled={isReadOnly}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
+                placeholder={language === "de" ? "Commerzbank AG" : "Your Bank"}
+              />
+            </div>
+
+            {!isReadOnly && (
               <Button
-                onClick={handlePasswordChange}
-                disabled={changingPassword}
+                onClick={handleSaveBankDetails}
+                disabled={savingBankDetails}
                 variant="primary"
               >
-                {changingPassword ? (language === "de" ? "Wird gespeichert..." : "Saving...") : (language === "de" ? "Speichern" : "Save")}
+                {savingBankDetails ? (language === "de" ? "Wird gespeichert..." : "Saving...") : (language === "de" ? "Bankverbindung speichern" : "Save Bank Details")}
               </Button>
-              <Button
-                onClick={() => {
-                  setShowPasswordSection(false);
-                  setPasswordData({ newPassword: "", confirmPassword: "" });
-                  setPasswordError("");
-                  setPasswordSuccess("");
-                }}
-                variant="cancel"
-              >
-                {language === "de" ? "Abbrechen" : "Cancel"}
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+            )}
 
-      <div className="bg-white rounded shadow-sm p-6 mt-6">
-        <div className="flex items-center gap-3 mb-6">
-          <CreditCard className="w-6 h-6 text-primary-blue" />
-          <h3 className="text-lg font-semibold text-dark">
-            {language === "de" ? "Bankverbindung" : "Bank Details"}
-          </h3>
-        </div>
-
-        {isReadOnly && (
-          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
-            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-blue-800">
+            <p className="text-sm text-gray-500 mt-2">
               {language === "de"
-                ? "Diese Daten werden vom Hauptaccount verwaltet und können hier nur eingesehen werden."
-                : "This data is managed by the main account and can only be viewed here."}
+                ? "Diese Bankverbindung wird ausschlie\u00dflich f\u00fcr Nachzahlungen bei Betriebskostenabrechnungen verwendet, nicht f\u00fcr Ihr rentably-Abo."
+                : "These bank details are used exclusively for operating cost settlement payments, not for your rentably subscription."}
             </p>
           </div>
-        )}
+        </div>
+      )}
 
-        <div className="space-y-4 max-w-2xl">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {language === "de" ? "Kontoinhaber" : "Account Holder"} *
-            </label>
-            <input
-              type="text"
-              value={bankDetails.account_holder}
-              onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, account_holder: e.target.value })}
-              disabled={isReadOnly}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder={language === "de" ? "Max Mustermann" : "John Doe"}
-            />
+      {activeTab === "password" && (
+        <div className="bg-white rounded shadow-sm p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Lock className="w-6 h-6 text-primary-blue" />
+            <h3 className="text-lg font-semibold text-dark">
+              {language === "de" ? "Passwort \u00e4ndern" : "Change Password"}
+            </h3>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              IBAN *
-            </label>
-            <input
-              type="text"
-              value={bankDetails.iban}
-              onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, iban: e.target.value.toUpperCase() })}
-              disabled={isReadOnly}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="DE89 3704 0044 0532 0130 00"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              BIC ({language === "de" ? "optional" : "optional"})
-            </label>
-            <input
-              type="text"
-              value={bankDetails.bic}
-              onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, bic: e.target.value.toUpperCase() })}
-              disabled={isReadOnly}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="COBADEFFXXX"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {language === "de" ? "Bank Name" : "Bank Name"} ({language === "de" ? "optional" : "optional"})
-            </label>
-            <input
-              type="text"
-              value={bankDetails.bank_name}
-              onChange={(e) => !isReadOnly && setBankDetails({ ...bankDetails, bank_name: e.target.value })}
-              disabled={isReadOnly}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder={language === "de" ? "Commerzbank AG" : "Your Bank"}
-            />
-          </div>
-
-          {!isReadOnly && (
+          {!showPasswordSection ? (
             <Button
-              onClick={handleSaveBankDetails}
-              disabled={savingBankDetails}
+              onClick={() => setShowPasswordSection(true)}
               variant="primary"
             >
-              {savingBankDetails ? (language === "de" ? "Wird gespeichert..." : "Saving...") : (language === "de" ? "Bankverbindung speichern" : "Save Bank Details")}
+              {language === "de" ? "Passwort \u00e4ndern" : "Change Password"}
             </Button>
-          )}
+          ) : (
+            <div className="space-y-4 max-w-2xl">
+              {passwordError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {passwordError}
+                </div>
+              )}
+              {passwordSuccess && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+                  {passwordSuccess}
+                </div>
+              )}
 
-          <p className="text-sm text-gray-500 mt-2">
-            {language === "de"
-              ? "Diese Bankverbindung wird ausschließlich für Nachzahlungen bei Betriebskostenabrechnungen verwendet, nicht für Ihr rentably-Abo."
-              : "These bank details are used exclusively for operating cost settlement payments, not for your rentably subscription."}
-          </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {language === "de" ? "Neues Passwort" : "New Password"}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder={language === "de" ? "Mindestens 10 Zeichen" : "At least 10 characters"}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {language === "de" ? "Passwort best\u00e4tigen" : "Confirm Password"}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                    placeholder={language === "de" ? "Passwort wiederholen" : "Repeat password"}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={handlePasswordChange}
+                  disabled={changingPassword}
+                  variant="primary"
+                >
+                  {changingPassword ? (language === "de" ? "Wird gespeichert..." : "Saving...") : (language === "de" ? "Speichern" : "Save")}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowPasswordSection(false);
+                    setPasswordData({ newPassword: "", confirmPassword: "" });
+                    setPasswordError("");
+                    setPasswordSuccess("");
+                  }}
+                  variant="cancel"
+                >
+                  {language === "de" ? "Abbrechen" : "Cancel"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {activeTab === "letter" && (
+        <div className="bg-white rounded shadow-sm p-6">
+          <div className="flex items-center justify-center py-12 text-gray-400">
+            <div className="text-center">
+              <Send className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-500 mb-2">
+                {language === "de" ? "Briefversand" : "Letter Dispatch"}
+              </h3>
+              <p className="text-sm text-gray-400">
+                {language === "de"
+                  ? "Diese Funktion befindet sich in Entwicklung und wird bald verf\u00fcgbar sein."
+                  : "This feature is under development and will be available soon."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
