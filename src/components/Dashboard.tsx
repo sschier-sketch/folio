@@ -328,7 +328,7 @@ export default function Dashboard() {
                   />{" "}
                 </button>{" "}
                 {showSettingsDropdown && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg py-2 z-50">
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg py-2 z-50">
                     {" "}
                     <button
                       onClick={() => {
@@ -367,8 +367,8 @@ export default function Dashboard() {
                       className="w-full flex items-center gap-3 px-4 py-2 text-gray-400 hover:bg-gray-50 transition-colors"
                     >
                       {" "}
-                      <UserCog className="w-4 h-4" />{" "}
-                      <span className="text-sm">
+                      <UserCog className="w-4 h-4 flex-shrink-0" />{" "}
+                      <span className="text-sm flex-1">
                         {language === "de" ? "Benutzerverwaltung" : "User Management"}
                       </span>{" "}
                       <Badge variant="pro" size="sm">Pro</Badge>
