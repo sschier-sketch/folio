@@ -31,8 +31,15 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { data: existingUser } = await supabase.auth.admin.listUsers();
-    const user = existingUser?.users.find(u => u.email === email);
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const { data: listData } = await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+    const user = listData?.users.find(
+      (u) => u.email?.toLowerCase() === normalizedEmail
+    );
 
     if (!user) {
       return new Response(
@@ -49,7 +56,7 @@ Deno.serve(async (req: Request) => {
     const { data: resetRequest, error: insertError } = await supabase
       .from('password_reset_requests')
       .insert({
-        email,
+        email: normalizedEmail,
       })
       .select()
       .single();
@@ -75,8 +82,9 @@ Deno.serve(async (req: Request) => {
         'Authorization': `Bearer ${supabaseServiceKey}`,
       },
       body: JSON.stringify({
-        to: email,
+        to: normalizedEmail,
         templateKey: 'password_reset',
+        language: 'de',
         variables: {
           reset_link: resetLink,
         },
@@ -90,7 +98,12 @@ Deno.serve(async (req: Request) => {
       }),
     });
 
-    const emailData = await emailResponse.json();
+    let emailData;
+    try {
+      emailData = await emailResponse.json();
+    } catch {
+      emailData = { error: `send-email returned status ${emailResponse.status}` };
+    }
 
     if (!emailResponse.ok) {
       console.error('Failed to send password reset email:', emailData);
