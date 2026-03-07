@@ -88,7 +88,7 @@ export default function PostalMailJobDetail({ job, onClose }: Props) {
 
   const colorLabel = (c: string | null) => {
     if (!c) return "-";
-    return c === "4" ? (de ? "Farbe" : "Color") : (de ? "Schwarz/Wei\u00df" : "B&W");
+    return c === "4" ? (de ? "Farbe" : "Color") : (de ? "Schwarz/Weiß" : "B&W");
   };
 
   const modeLabel = (m: string | null) => {
@@ -142,7 +142,7 @@ export default function PostalMailJobDetail({ job, onClose }: Props) {
               <Row label="Status" value={statusLabel(job.status, de)} />
               <Row label={de ? "Item-Status" : "Item Status"} value={job.item_status ? statusLabel(job.item_status, de) : null} />
               <Row label={de ? "Dateiname" : "Filename"} value={job.filename_original} />
-              <Row label={de ? "Empf\u00e4nger" : "Recipient"} value={job.recipient_address_text} />
+              <Row label={de ? "Empfänger" : "Recipient"} value={job.recipient_address_text} />
               <Row label={de ? "Notiz" : "Notice"} value={job.notice} />
             </div>
           </div>

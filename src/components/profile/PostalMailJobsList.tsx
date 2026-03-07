@@ -163,7 +163,7 @@ export default function PostalMailJobsList() {
       setMessage({
         type: "success",
         text: de
-          ? `${result.synced} Auftr\u00e4ge synchronisiert.`
+          ? `${result.synced} Aufträge synchronisiert.`
           : `${result.synced} jobs synced.`,
       });
       setPage(0);
@@ -186,7 +186,7 @@ export default function PostalMailJobsList() {
 
     const confirm = window.confirm(
       de
-        ? `M\u00f6chten Sie den Auftrag #${job.external_job_id} wirklich stornieren?`
+        ? `Möchten Sie den Auftrag #${job.external_job_id} wirklich stornieren?`
         : `Do you really want to cancel job #${job.external_job_id}?`
     );
     if (!confirm) return;
@@ -255,7 +255,7 @@ export default function PostalMailJobsList() {
           >
             <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
             {syncing
-              ? de ? "Synchronisiere\u2026" : "Syncing\u2026"
+              ? de ? "Synchronisiere…" : "Syncing…"
               : de ? "Jetzt synchronisieren" : "Sync now"}
           </Button>
         </div>
@@ -304,11 +304,11 @@ export default function PostalMailJobsList() {
         <div className="py-16 text-center">
           <Mail className="w-12 h-12 text-gray-200 mx-auto mb-3" />
           <p className="text-gray-400 text-sm">
-            {de ? "Keine Auftr\u00e4ge gefunden." : "No jobs found."}
+            {de ? "Keine Aufträge gefunden." : "No jobs found."}
           </p>
           <p className="text-gray-300 text-xs mt-1">
             {de
-              ? "Auftr\u00e4ge erscheinen hier nach dem ersten Versand oder nach einer Synchronisierung."
+              ? "Aufträge erscheinen hier nach dem ersten Versand oder nach einer Synchronisierung."
               : "Jobs will appear here after the first dispatch or sync."}
           </p>
         </div>
@@ -328,7 +328,7 @@ export default function PostalMailJobsList() {
                     Status
                   </th>
                   <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left hidden lg:table-cell">
-                    {de ? "Empf\u00e4nger" : "Recipient"}
+                    {de ? "Empfänger" : "Recipient"}
                   </th>
                   <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left hidden md:table-cell">
                     {de ? "Dokument" : "Document"}
@@ -373,7 +373,7 @@ export default function PostalMailJobsList() {
                         {job.pages || "-"}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700 font-medium text-right whitespace-nowrap hidden sm:table-cell">
-                        {job.amount != null ? `${Number(job.amount).toFixed(2)} \u20ac` : "-"}
+                        {job.amount != null ? `${Number(job.amount).toFixed(2)} €` : "-"}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -412,8 +412,8 @@ export default function PostalMailJobsList() {
             <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
               <p className="text-xs text-gray-400">
                 {de
-                  ? `${page * PAGE_SIZE + 1}\u2013${Math.min((page + 1) * PAGE_SIZE, totalCount)} von ${totalCount}`
-                  : `${page * PAGE_SIZE + 1}\u2013${Math.min((page + 1) * PAGE_SIZE, totalCount)} of ${totalCount}`}
+                  ? `${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, totalCount)} von ${totalCount}`
+                  : `${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, totalCount)} of ${totalCount}`}
               </p>
               <div className="flex items-center gap-1">
                 <button
