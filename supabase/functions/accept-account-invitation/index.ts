@@ -29,7 +29,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: invitation, error: lookupError } = await supabaseAdmin
       .from("account_invitations")
-      .select("*, account_profiles!account_invitations_account_owner_id_fkey(first_name, last_name, company_name)")
+      .select("*")
       .eq("token", token)
       .maybeSingle();
 
