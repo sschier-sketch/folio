@@ -304,6 +304,10 @@ export default function AcceptInvitation() {
             )}
             Account erstellen & Einladung annehmen
           </button>
+
+          <p className="text-xs text-center text-gray-400 mt-3">
+            Die Anmeldung ist kostenlos und unverbindlich.
+          </p>
         </form>
 
       </div>
