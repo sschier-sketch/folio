@@ -1,0 +1,161 @@
+/*
+  # Fix admin_get_users to exclude sub-users from main list
+
+  ## Problem
+  The `admin_get_users` function returns ALL users from auth.users, including
+  sub-users (team members) who have an `account_owner_id` set in their
+  user_settings. These sub-users should NOT appear in the main admin user list
+  because they belong to another user's account.
+
+  ## Fix
+  1. Add a WHERE clause to exclude users who are active members of another account
+     (users whose user_settings has account_owner_id IS NOT NULL and removed_at IS NULL)
+  2. Add a new RPC `admin_get_account_members` that returns sub-users for a
+     given account owner, for the user detail view
+
+  ## Modified Functions
+  - `admin_get_users()` - Excludes sub-users from results
+  
+  ## New Functions
+  - `admin_get_account_members(uuid)` - Returns team members for a specific owner
+*/
+
+CREATE OR REPLACE FUNCTION public.admin_get_users()
+RETURNS TABLE (
+  id uuid,
+  email text,
+  created_at timestamptz,
+  last_sign_in_at timestamptz,
+  subscription_plan text,
+  subscription_status text,
+  first_name text,
+  last_name text,
+  company_name text,
+  properties_count bigint,
+  tenants_count bigint,
+  is_admin boolean,
+  banned boolean,
+  ban_reason text,
+  customer_number text,
+  trial_ends_at timestamptz,
+  subscription_ends_at timestamptz,
+  newsletter_opt_in boolean,
+  team_members_count bigint
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.admin_users
+    WHERE admin_users.user_id = auth.uid()
+  ) THEN
+    RAISE EXCEPTION 'Access denied. Admin privileges required.';
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    u.id,
+    u.email::text,
+    u.created_at,
+    u.last_sign_in_at,
+    CASE
+      WHEN ss.status::text IN ('active', 'trialing', 'past_due') THEN 'pro'::text
+      WHEN bi.subscription_ends_at IS NOT NULL AND bi.subscription_ends_at > now() THEN 'pro'::text
+      WHEN bi.subscription_plan = 'pro' AND bi.subscription_status = 'active' THEN 'pro'::text
+      ELSE COALESCE(bi.subscription_plan, 'free')::text
+    END AS subscription_plan,
+    CASE
+      WHEN ss.status::text IN ('active', 'trialing', 'past_due') THEN 'active'::text
+      WHEN bi.subscription_ends_at IS NOT NULL AND bi.subscription_ends_at > now() THEN 'active'::text
+      WHEN bi.subscription_plan = 'pro' AND bi.subscription_status = 'active' THEN 'active'::text
+      ELSE COALESCE(bi.subscription_status, 'inactive')::text
+    END AS subscription_status,
+    ap.first_name,
+    ap.last_name,
+    ap.company_name,
+    (SELECT COUNT(*) FROM public.properties WHERE properties.user_id = u.id) AS properties_count,
+    (SELECT COUNT(*) FROM public.tenants WHERE tenants.user_id = u.id) AS tenants_count,
+    EXISTS (SELECT 1 FROM public.admin_users WHERE admin_users.user_id = u.id) AS is_admin,
+    COALESCE(ap.banned, false) AS banned,
+    ap.ban_reason,
+    ap.customer_number,
+    bi.trial_ends_at,
+    COALESCE(
+      bi.subscription_ends_at,
+      CASE WHEN ss.cancel_at_period_end = true AND ss.current_period_end IS NOT NULL
+        THEN to_timestamp(ss.current_period_end)
+        ELSE NULL
+      END
+    ) AS subscription_ends_at,
+    COALESCE(ap.newsletter_opt_in, false) AS newsletter_opt_in,
+    (SELECT COUNT(*) FROM public.user_settings us
+      WHERE us.account_owner_id = u.id
+      AND us.removed_at IS NULL
+      AND us.role != 'owner'
+    ) AS team_members_count
+  FROM auth.users u
+  LEFT JOIN public.billing_info bi ON bi.user_id = u.id
+  LEFT JOIN public.account_profiles ap ON ap.user_id = u.id
+  LEFT JOIN public.stripe_customers sc ON sc.user_id = u.id
+  LEFT JOIN public.stripe_subscriptions ss ON ss.customer_id = sc.customer_id
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.user_settings sub_us
+    WHERE sub_us.user_id = u.id
+    AND sub_us.account_owner_id IS NOT NULL
+    AND sub_us.removed_at IS NULL
+    AND sub_us.role != 'owner'
+  )
+  ORDER BY u.created_at DESC;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.admin_get_account_members(p_owner_id uuid)
+RETURNS TABLE (
+  id uuid,
+  email text,
+  first_name text,
+  last_name text,
+  role text,
+  is_read_only boolean,
+  is_active_member boolean,
+  property_scope text,
+  property_access text,
+  created_at timestamptz,
+  last_sign_in_at timestamptz
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.admin_users
+    WHERE admin_users.user_id = auth.uid()
+  ) THEN
+    RAISE EXCEPTION 'Access denied. Admin privileges required.';
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    u.id,
+    u.email::text,
+    ap.first_name,
+    ap.last_name,
+    us.role,
+    us.is_read_only,
+    us.is_active_member,
+    us.property_scope,
+    us.property_access,
+    u.created_at,
+    u.last_sign_in_at
+  FROM public.user_settings us
+  JOIN auth.users u ON u.id = us.user_id
+  LEFT JOIN public.account_profiles ap ON ap.user_id = us.user_id
+  WHERE us.account_owner_id = p_owner_id
+  AND us.removed_at IS NULL
+  AND us.role != 'owner'
+  ORDER BY u.created_at DESC;
+END;
+$$;

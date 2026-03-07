@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Eye,
   User,
+  Users,
   Building2,
   MapPin,
   Phone,
@@ -17,6 +18,8 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
@@ -50,6 +53,20 @@ interface UserProfile {
   ban_reason: string | null;
 }
 
+interface AccountMember {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  role: string;
+  is_read_only: boolean;
+  is_active_member: boolean;
+  property_scope: string;
+  property_access: string;
+  created_at: string;
+  last_sign_in_at: string | null;
+}
+
 interface AdminUserDetailViewProps {
   userId: string;
   userEmail: string;
@@ -73,6 +90,7 @@ export default function AdminUserDetailView({
 }: AdminUserDetailViewProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loginHistory, setLoginHistory] = useState<LoginEntry[]>([]);
+  const [members, setMembers] = useState<AccountMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [historyPage, setHistoryPage] = useState(0);
   const PAGE_SIZE = 20;
@@ -84,7 +102,7 @@ export default function AdminUserDetailView({
   async function loadData() {
     setLoading(true);
     try {
-      const [profileRes, historyRes] = await Promise.all([
+      const [profileRes, historyRes, membersRes] = await Promise.all([
         supabase
           .from("account_profiles")
           .select(
@@ -98,10 +116,12 @@ export default function AdminUserDetailView({
           .eq("user_id", userId)
           .order("logged_in_at", { ascending: false })
           .range(0, PAGE_SIZE - 1),
+        supabase.rpc("admin_get_account_members", { p_owner_id: userId }),
       ]);
 
       setProfile(profileRes.data);
       setLoginHistory(historyRes.data || []);
+      setMembers((membersRes.data as AccountMember[]) || []);
     } catch (err) {
       console.error("Error loading user detail:", err);
     } finally {
@@ -304,6 +324,70 @@ export default function AdminUserDetailView({
           />
         </Section>
       </div>
+
+      {members.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+              <Users className="w-4 h-4 text-gray-400" />
+              Benutzer im Account
+            </h2>
+            <span className="text-xs text-gray-400">
+              {members.length} {members.length === 1 ? "Benutzer" : "Benutzer"}
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 text-left">
+                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">E-Mail</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">Name</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">Rolle</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">Zugriff</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">Objekte</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">Beigetreten</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">Letzter Login</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {members.map((m) => (
+                  <tr key={m.id} className="hover:bg-gray-50/50">
+                    <td className="px-4 py-2.5 text-gray-700">{m.email}</td>
+                    <td className="px-4 py-2.5 text-gray-500">
+                      {[m.first_name, m.last_name].filter(Boolean).join(" ") || "-"}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        {m.role === "member" ? "Mitglied" : m.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {m.is_read_only ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                          <Lock className="w-3 h-3" /> Nur Lesen
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs text-emerald-600">
+                          <Unlock className="w-3 h-3" /> Schreiben
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-gray-500">
+                      {m.property_scope === "all" ? "Alle" : "Ausgewaehlte"}
+                    </td>
+                    <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap">
+                      {formatDate(m.created_at)}
+                    </td>
+                    <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap">
+                      {m.last_sign_in_at ? formatDate(m.last_sign_in_at) : "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
