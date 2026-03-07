@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { AlertCircle, CheckCircle2, Info, Camera, Trash2 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -47,6 +47,9 @@ export default function ProfileManagement() {
     completedSteps: 0,
     totalSteps: 2,
   });
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!permLoading && profileUserId) {
@@ -82,6 +85,7 @@ export default function ProfileManagement() {
           document_sender_name: profile.document_sender_name || "",
           document_signature: profile.document_signature || "",
         });
+        setAvatarUrl(profile.avatar_url || null);
       }
     } catch (error) {
       console.error("Error loading profile:", error);
@@ -114,6 +118,89 @@ export default function ProfileManagement() {
       totalSteps: 2,
     });
   };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profileUserId || isReadOnly) return;
+
+    if (!file.type.startsWith("image/")) {
+      setMessage({ type: "error", text: language === "de" ? "Bitte nur Bilddateien hochladen" : "Please upload image files only" });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: "error", text: language === "de" ? "Maximale Dateigröße: 5 MB" : "Maximum file size: 5 MB" });
+      return;
+    }
+
+    setAvatarUploading(true);
+    setMessage(null);
+
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${profileUserId}/avatar.${ext}`;
+
+      if (avatarUrl) {
+        await supabase.storage.from("profile-avatars").remove([avatarUrl]);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from("profile-avatars")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase
+        .from("account_profiles")
+        .update({ avatar_url: path })
+        .eq("user_id", profileUserId);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(path);
+      setMessage({ type: "success", text: language === "de" ? "Profilbild hochgeladen" : "Profile image uploaded" });
+    } catch (err) {
+      console.error("Error uploading avatar:", err);
+      setMessage({ type: "error", text: language === "de" ? "Fehler beim Hochladen" : "Upload failed" });
+    } finally {
+      setAvatarUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleAvatarRemove = async () => {
+    if (!profileUserId || !avatarUrl || isReadOnly) return;
+
+    setAvatarUploading(true);
+    setMessage(null);
+
+    try {
+      await supabase.storage.from("profile-avatars").remove([avatarUrl]);
+
+      const { error } = await supabase
+        .from("account_profiles")
+        .update({ avatar_url: null })
+        .eq("user_id", profileUserId);
+
+      if (error) throw error;
+
+      setAvatarUrl(null);
+      setMessage({ type: "success", text: language === "de" ? "Profilbild entfernt" : "Profile image removed" });
+    } catch (err) {
+      console.error("Error removing avatar:", err);
+      setMessage({ type: "error", text: language === "de" ? "Fehler beim Entfernen" : "Remove failed" });
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const avatarPublicUrl = avatarUrl
+    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/profile-avatars/${avatarUrl}?t=${Date.now()}`
+    : null;
+
+  const initials = formData.first_name && formData.last_name
+    ? `${formData.first_name.charAt(0)}${formData.last_name.charAt(0)}`.toUpperCase()
+    : (user?.email || "?").charAt(0).toUpperCase();
 
   const handleChange = (field: keyof ProfileData, value: string) => {
     if (isReadOnly) return;
@@ -236,6 +323,79 @@ export default function ProfileManagement() {
             </p>
           </div>
         )}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            {language === "de" ? "Profilbild" : "Profile Image"}
+          </h3>
+          <div className="flex items-center gap-6">
+            <div className="relative group">
+              {avatarPublicUrl ? (
+                <img
+                  src={avatarPublicUrl}
+                  alt="Avatar"
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
+                <div
+                  className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-semibold text-white"
+                  style={{ backgroundColor: "#3c8af7" }}
+                >
+                  {initials}
+                </div>
+              )}
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={avatarUploading}
+                  className="absolute inset-0 w-20 h-20 rounded-full bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <Camera className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              )}
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 mb-2">
+                {language === "de"
+                  ? "JPG, PNG oder WebP. Max. 5 MB."
+                  : "JPG, PNG or WebP. Max. 5 MB."}
+              </p>
+              {!isReadOnly && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={avatarUploading}
+                  >
+                    {avatarUploading
+                      ? (language === "de" ? "Wird hochgeladen..." : "Uploading...")
+                      : (language === "de" ? "Bild hochladen" : "Upload Image")}
+                  </Button>
+                  {avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={handleAvatarRemove}
+                      disabled={avatarUploading}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+        </div>
+
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Persönliche Daten</h3>
           <div className="grid grid-cols-2 gap-4">

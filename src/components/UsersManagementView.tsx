@@ -59,10 +59,54 @@ function propertyScopeLabel(scope: string, de: boolean): string {
   return de ? "Ausgewählte" : "Selected";
 }
 
+function getAvatarUrl(avatarPath: string | null | undefined): string | null {
+  if (!avatarPath) return null;
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  return `${base}/storage/v1/object/public/profile-avatars/${avatarPath}`;
+}
+
+function UserAvatar({ name, email, avatarPath, size = "md" }: {
+  name: string | null;
+  email: string;
+  avatarPath?: string | null;
+  size?: "sm" | "md" | "lg";
+}) {
+  const url = getAvatarUrl(avatarPath);
+  const initials = name
+    ? name.split(" ").map(p => p.charAt(0).toUpperCase()).slice(0, 2).join("")
+    : (email || "?").charAt(0).toUpperCase();
+
+  const sizeClasses = {
+    sm: "w-8 h-8 text-xs",
+    md: "w-10 h-10 text-sm",
+    lg: "w-12 h-12 text-base",
+  };
+
+  if (url) {
+    return (
+      <img
+        src={url}
+        alt={name || email}
+        className={`${sizeClasses[size]} rounded-full object-cover`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`${sizeClasses[size]} rounded-full flex items-center justify-center font-semibold text-white`}
+      style={{ backgroundColor: "#3c8af7" }}
+    >
+      {initials}
+    </div>
+  );
+}
+
 interface OwnerProfile {
   first_name: string | null;
   last_name: string | null;
   company_name: string | null;
+  avatar_url: string | null;
 }
 
 export default function UsersManagementView() {
@@ -96,7 +140,7 @@ export default function UsersManagementView() {
     if (!user) return;
     supabase
       .from("account_profiles")
-      .select("first_name, last_name, company_name")
+      .select("first_name, last_name, company_name, avatar_url")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -285,13 +329,15 @@ export default function UsersManagementView() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Account Owner Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50/60 to-white">
+          <div className="bg-white rounded-lg">
+            <div className="px-6 py-5 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary-blue/10 flex items-center justify-center">
-                    <Crown className="w-5 h-5 text-primary-blue" />
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}
+                  >
+                    <Crown className="w-6 h-6" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-dark">
@@ -313,9 +359,12 @@ export default function UsersManagementView() {
             <div className="px-6 py-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary-blue flex items-center justify-center text-white font-semibold text-lg">
-                    {(ownerName || user?.email || "?").charAt(0).toUpperCase()}
-                  </div>
+                  <UserAvatar
+                    name={ownerName}
+                    email={user?.email || ""}
+                    avatarPath={ownerProfile?.avatar_url}
+                    size="lg"
+                  />
                   <div>
                     {ownerName && (
                       <p className="text-base font-semibold text-dark">{ownerName}</p>
@@ -346,12 +395,14 @@ export default function UsersManagementView() {
             </div>
           </div>
 
-          {/* Invite Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-lg">
             <div className="px-6 py-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
-                  <UserPlus className="w-4.5 h-4.5 text-emerald-600" />
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}
+                >
+                  <UserPlus className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
                 </div>
                 <div>
                   <h3 className="text-base font-semibold text-dark">
@@ -371,15 +422,13 @@ export default function UsersManagementView() {
                   setShowInviteModal(true);
                 }}
               >
-                <UserPlus className="w-4 h-4" />
                 {t("settings.users.invite")}
               </Button>
             </div>
           </div>
 
-          {/* Members & Invitations Table */}
           {allRows.length > 0 && (
-            <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-lg overflow-hidden">
               <div className="px-6 py-5 border-b border-gray-100">
                 <h3 className="text-base font-semibold text-dark">
                   {de ? "Benutzer & Einladungen" : "Users & Invitations"}{" "}
@@ -424,9 +473,12 @@ export default function UsersManagementView() {
                           <tr key={`m-${m.user_id}`} className="hover:bg-gray-50/50 transition-colors">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-500">
-                                  {(name || m.email).charAt(0).toUpperCase()}
-                                </div>
+                                <UserAvatar
+                                  name={name}
+                                  email={m.email}
+                                  avatarPath={m.avatar_url}
+                                  size="sm"
+                                />
                                 <div>
                                   {name && (
                                     <p className="text-sm font-medium text-dark">{name}</p>
@@ -522,9 +574,8 @@ export default function UsersManagementView() {
             </div>
           )}
 
-          {/* Invitation History */}
           {pastInvitations.length > 0 && (
-            <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-lg overflow-hidden">
               <button
                 onClick={() => setShowHistory(!showHistory)}
                 className="w-full px-6 py-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -599,9 +650,8 @@ export default function UsersManagementView() {
             </div>
           )}
 
-          {/* Removed Members */}
           {removedMembers.length > 0 && (
-            <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-lg overflow-hidden">
               <div className="px-6 py-5 border-b border-gray-100">
                 <h3 className="text-base font-semibold text-gray-400">
                   {de

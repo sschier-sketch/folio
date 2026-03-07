@@ -26,6 +26,7 @@ export interface AccountMember {
   removed_at: string | null;
   joined_at: string;
   last_sign_in: string | null;
+  avatar_url: string | null;
 }
 
 export interface AccountInvitation {

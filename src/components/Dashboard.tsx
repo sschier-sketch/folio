@@ -367,8 +367,8 @@ export default function Dashboard() {
                       className="w-full flex items-center gap-3 px-4 py-2 text-gray-400 hover:bg-gray-50 transition-colors"
                     >
                       {" "}
-                      <UserCog className="w-4 h-4 flex-shrink-0" />{" "}
-                      <span className="text-sm flex-1">
+                      <UserCog className="w-4 h-4" />{" "}
+                      <span className="text-sm">
                         {language === "de" ? "Benutzerverwaltung" : "User Management"}
                       </span>{" "}
                       <Badge variant="pro" size="sm">Pro</Badge>
