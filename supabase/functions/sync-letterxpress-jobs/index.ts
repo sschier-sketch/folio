@@ -39,9 +39,12 @@ async function getDecryptedCredentials(
   supabase: ReturnType<typeof getSupabase>,
   ownerId: string
 ): Promise<AccountCredentials | null> {
-  const { data, error } = await supabase.rpc("get_letterxpress_credentials", {
-    p_owner_id: ownerId,
-  });
+  const { data, error } = await supabase
+    .from("letterxpress_accounts")
+    .select("username, api_key, is_test_mode")
+    .eq("user_id", ownerId)
+    .eq("is_enabled", true)
+    .maybeSingle();
 
   if (error || !data || !data.username || !data.api_key) {
     return null;
@@ -173,7 +176,7 @@ Deno.serve(async (req: Request) => {
       .from("letterxpress_accounts")
       .select("user_id, username, is_test_mode, is_enabled")
       .eq("is_enabled", true)
-      .not("encrypted_api_key", "is", null);
+      .not("api_key", "is", null);
 
     if (accountsError) {
       console.error("Failed to load accounts:", accountsError.message);

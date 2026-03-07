@@ -91,11 +91,25 @@ async function getCredentials(
   supabase: ReturnType<typeof getSupabase>,
   dataOwnerId: string
 ): Promise<{ creds: LxCredentials; error?: never } | { creds?: never; error: Response }> {
-  const { data, error } = await supabase.rpc("get_letterxpress_credentials", {
-    p_owner_id: dataOwnerId,
-  });
+  const { data, error } = await supabase
+    .from("letterxpress_accounts")
+    .select("username, api_key, is_test_mode, is_enabled")
+    .eq("user_id", dataOwnerId)
+    .maybeSingle();
 
   if (error || !data) {
+    return {
+      error: corsResponse(
+        {
+          error: "LetterXpress is not configured for this account",
+          code: "LX_NOT_CONFIGURED",
+        },
+        404
+      ),
+    };
+  }
+
+  if (!data.is_enabled) {
     return {
       error: corsResponse(
         {
@@ -611,30 +625,95 @@ Deno.serve(async (req: Request) => {
       const ownerCheck = await assertIsOwner(supabase, auth.userId, dataOwnerId);
       if (ownerCheck) return ownerCheck;
 
-      const { data, error } = await supabase.rpc("save_letterxpress_config", {
-        p_owner_id: dataOwnerId,
-        p_username: body.username || "",
-        p_api_key: body.api_key || null,
-        p_is_enabled: body.is_enabled ?? false,
-      });
+      const username = body.username || "";
+      const apiKey = body.api_key || null;
+      const isEnabled = body.is_enabled ?? false;
 
-      if (error) {
-        return corsResponse({ error: error.message, code: "LX_SAVE_ERROR" }, 500);
+      const { data: existing } = await supabase
+        .from("letterxpress_accounts")
+        .select("id")
+        .eq("user_id", dataOwnerId)
+        .maybeSingle();
+
+      let result;
+      if (existing) {
+        const updateFields: Record<string, unknown> = {
+          username,
+          is_enabled: isEnabled,
+          updated_at: new Date().toISOString(),
+        };
+        if (apiKey && apiKey !== "") {
+          updateFields.api_key = apiKey;
+        }
+        result = await supabase
+          .from("letterxpress_accounts")
+          .update(updateFields)
+          .eq("user_id", dataOwnerId)
+          .select("id, user_id, username, is_enabled, is_test_mode, api_key")
+          .single();
+      } else {
+        result = await supabase
+          .from("letterxpress_accounts")
+          .insert({
+            user_id: dataOwnerId,
+            username,
+            api_key: apiKey,
+            is_enabled: isEnabled,
+          })
+          .select("id, user_id, username, is_enabled, is_test_mode, api_key")
+          .single();
       }
 
-      return corsResponse({ success: true, config: data });
+      if (result.error) {
+        return corsResponse({ error: result.error.message, code: "LX_SAVE_ERROR" }, 500);
+      }
+
+      return corsResponse({
+        success: true,
+        config: {
+          id: result.data.id,
+          user_id: result.data.user_id,
+          username: result.data.username,
+          has_api_key: !!result.data.api_key,
+          is_enabled: result.data.is_enabled,
+          is_test_mode: result.data.is_test_mode,
+        },
+      });
     }
 
     if (action === "get-config") {
-      const { data, error } = await supabase.rpc("get_letterxpress_config", {
-        p_owner_id: dataOwnerId,
-      });
+      const { data, error } = await supabase
+        .from("letterxpress_accounts")
+        .select("id, user_id, username, api_key, is_enabled, is_test_mode, last_connection_test_at, last_connection_test_status, last_connection_test_message, last_balance, last_balance_currency, last_balance_synced_at, created_at, updated_at")
+        .eq("user_id", dataOwnerId)
+        .maybeSingle();
 
       if (error) {
         return corsResponse({ error: error.message }, 500);
       }
 
-      return corsResponse({ config: data });
+      if (!data) {
+        return corsResponse({ config: null });
+      }
+
+      return corsResponse({
+        config: {
+          id: data.id,
+          user_id: data.user_id,
+          username: data.username,
+          has_api_key: !!data.api_key,
+          is_enabled: data.is_enabled,
+          is_test_mode: data.is_test_mode,
+          last_connection_test_at: data.last_connection_test_at,
+          last_connection_test_status: data.last_connection_test_status,
+          last_connection_test_message: data.last_connection_test_message,
+          last_balance: data.last_balance,
+          last_balance_currency: data.last_balance_currency,
+          last_balance_synced_at: data.last_balance_synced_at,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+        },
+      });
     }
 
     if (action === "test-connection") {
