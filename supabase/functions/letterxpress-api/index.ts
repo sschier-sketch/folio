@@ -573,7 +573,7 @@ async function handleCreateJob(
 
     await supabase.from("letterxpress_jobs").insert({
       user_id: dataOwnerId,
-      external_job_id: 0,
+      external_job_id: null,
       status: "error",
       filename_original: body.filename_original || null,
       last_error_code: String(status),
@@ -879,7 +879,7 @@ Deno.serve(async (req: Request) => {
         .from("letterxpress_jobs")
         .insert({
           user_id: dataOwnerId,
-          external_job_id: 0,
+          external_job_id: null,
           status: "pending",
           filename_original: body.filename_original || null,
           notice: body.notice ? String(body.notice).substring(0, 255) : null,
