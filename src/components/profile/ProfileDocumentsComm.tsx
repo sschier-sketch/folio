@@ -9,8 +9,9 @@ import { Button } from "../ui/Button";
 export default function ProfileDocumentsComm() {
   const { user } = useAuth();
   const { language } = useLanguage();
-  const { dataOwnerId, canWrite, isMember, loading: permLoading } = usePermissions();
+  const { dataOwnerId, canWrite, isMember, canViewMessages, loading: permLoading } = usePermissions();
   const isReadOnly = isMember && !canWrite;
+  const emailDisabled = isMember && !canViewMessages;
   const profileUserId = dataOwnerId || user?.id;
 
   const [emailAlias, setEmailAlias] = useState("");
@@ -237,10 +238,20 @@ export default function ProfileDocumentsComm() {
         </div>
       </div>
 
-      <div className="bg-white rounded p-6">
-        <h3 className="text-lg font-semibold text-dark mb-6">
+      <div className={`bg-white rounded p-6 ${emailDisabled ? "opacity-60" : ""}`}>
+        <h3 className="text-lg font-semibold text-dark mb-4">
           {language === "de" ? "Ihre Rentably E-Mail" : "Your Rentably Email"}
         </h3>
+        {emailDisabled && (
+          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-800">
+              {language === "de"
+                ? "Die E-Mail-Einstellungen werden vom Hauptaccount verwaltet, da der Bereich \"Nachrichten\" für Ihr Konto nicht freigegeben ist."
+                : "Email settings are managed by the main account since the Messages section is not enabled for your account."}
+            </p>
+          </div>
+        )}
         <div className="space-y-4 max-w-2xl">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -268,12 +279,12 @@ export default function ProfileDocumentsComm() {
                 type="text"
                 value={emailAlias}
                 onChange={(e) => {
-                  if (!isReadOnly) {
+                  if (!isReadOnly && !emailDisabled) {
                     setEmailAlias(e.target.value.toLowerCase());
                     setAliasError("");
                   }
                 }}
-                disabled={isReadOnly}
+                disabled={isReadOnly || emailDisabled}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                 placeholder="mein-alias"
               />
@@ -298,7 +309,7 @@ export default function ProfileDocumentsComm() {
                 ? "Unter dieser Adresse empfangen und senden Sie E-Mails."
                 : "You send and receive emails under this address."}
             </p>
-            {!isReadOnly && emailAlias.trim() !== currentEmailAlias && emailAlias.trim().length >= 3 && (
+            {!isReadOnly && !emailDisabled && emailAlias.trim() !== currentEmailAlias && emailAlias.trim().length >= 3 && (
               <Button variant="primary" onClick={handleSaveAlias} disabled={savingAlias} className="mt-2">
                 {savingAlias
                   ? language === "de" ? "Speichern..." : "Saving..."

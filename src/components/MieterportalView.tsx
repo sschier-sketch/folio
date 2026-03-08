@@ -3,6 +3,7 @@ import { Users, Check, X, Send, ExternalLink, LogIn, Building2, Activity, Clock 
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import { usePermissions } from "../hooks/usePermissions";
 import { useNavigate } from "react-router-dom";
 import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "./common/BaseTable";
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
@@ -29,6 +30,7 @@ interface Tenant {
 export default function MieterportalView() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { dataOwnerId, loading: permLoading } = usePermissions();
   const navigate = useNavigate();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,11 +39,11 @@ export default function MieterportalView() {
   const [impersonating, setImpersonating] = useState<string | null>(null);
 
   useEffect(() => {
-    loadTenants();
-  }, [user]);
+    if (!permLoading && dataOwnerId) loadTenants();
+  }, [user, permLoading, dataOwnerId]);
 
   const loadTenants = async () => {
-    if (!user) return;
+    if (!user || !dataOwnerId) return;
 
     try {
       const { data, error } = await supabase
@@ -53,7 +55,7 @@ export default function MieterportalView() {
           rental_contract:rental_contracts!tenants_contract_id_fkey(id, portal_access_enabled)
         `
         )
-        .eq("user_id", user.id)
+        .eq("user_id", dataOwnerId)
         .not("email", "is", null)
         .order("last_name");
 

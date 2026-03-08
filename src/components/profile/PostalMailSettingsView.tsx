@@ -56,6 +56,7 @@ export default function PostalMailSettingsView() {
   const { dataOwnerId, canWrite, isOwner, isMember } = usePermissions();
   const { isAdmin } = useAdmin();
   const isReadOnly = isMember && !canWrite;
+  const isSubUser = isMember && !isOwner;
 
   useEffect(() => {
     setAccessToken(session?.access_token ?? null);
@@ -224,72 +225,87 @@ export default function PostalMailSettingsView() {
           {language === "de" ? "LetterXpress-Integration" : "LetterXpress Integration"}
         </p>
 
-        <div className="rounded-lg bg-[#eff4fe] p-5">
-          <div className="flex items-center gap-3 mb-1">
-            <svg viewBox="0 0 120 120" className="w-7 h-7 flex-shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="120" height="120" rx="12" fill="#E5194B" />
-              <path d="M20 95V25h18v52h28V95H20Z" fill="#1A2744" />
-              <path d="M52 25l20 35-20 35h20l20-35-20-35H52Z" fill="#1A2744" />
-              <path d="M82 25h18v70H82l20-35-20-35Z" fill="#1A2744" />
-            </svg>
-            <div>
-              <p className="text-base font-bold text-[#1A2744]">
-                {language === "de" ? "Briefe online versenden" : "Send letters online"}
-              </p>
-              <p className="text-sm font-semibold text-[#E5194B]">
-                {language === "de" ? "Smart, sicher & nachhaltig" : "Smart, secure & sustainable"}
-              </p>
-            </div>
+        {isSubUser && (
+          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-800">
+              {language === "de"
+                ? "Die LetterXpress-Zugangsdaten werden vom Hauptaccount verwaltet. Hier sehen Sie nur den Versandverlauf."
+                : "LetterXpress credentials are managed by the main account. You can only view the dispatch history here."}
+            </p>
           </div>
+        )}
 
-          <hr className="my-4 border-gray-300" />
+        {!isSubUser && (
+          <>
+            <div className="rounded-lg bg-[#eff4fe] p-5">
+              <div className="flex items-center gap-3 mb-1">
+                <svg viewBox="0 0 120 120" className="w-7 h-7 flex-shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="120" height="120" rx="12" fill="#E5194B" />
+                  <path d="M20 95V25h18v52h28V95H20Z" fill="#1A2744" />
+                  <path d="M52 25l20 35-20 35h20l20-35-20-35H52Z" fill="#1A2744" />
+                  <path d="M82 25h18v70H82l20-35-20-35Z" fill="#1A2744" />
+                </svg>
+                <div>
+                  <p className="text-base font-bold text-[#1A2744]">
+                    {language === "de" ? "Briefe online versenden" : "Send letters online"}
+                  </p>
+                  <p className="text-sm font-semibold text-[#E5194B]">
+                    {language === "de" ? "Smart, sicher & nachhaltig" : "Smart, secure & sustainable"}
+                  </p>
+                </div>
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="flex items-start gap-2.5">
-              <Mail className="w-4 h-4 text-[#1A2744] mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-[#1A2744]">
-                  {language === "de" ? "Ab 0,81 \u20AC pro Brief" : "From \u20AC0.81 per letter"}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {language === "de" ? "inkl. Porto und zzgl. MwSt." : "incl. postage, plus VAT"}
-                </p>
+              <hr className="my-4 border-gray-300" />
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="flex items-start gap-2.5">
+                  <Mail className="w-4 h-4 text-[#1A2744] mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#1A2744]">
+                      {language === "de" ? "Ab 0,81 \u20AC pro Brief" : "From \u20AC0.81 per letter"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {language === "de" ? "inkl. Porto und zzgl. MwSt." : "incl. postage, plus VAT"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <PiggyBank className="w-4 h-4 text-[#1A2744] mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#1A2744]">
+                      {language === "de" ? "Ohne versteckte Kosten" : "No hidden costs"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {language === "de" ? "keine Vertragslaufzeiten" : "no contract periods"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Leaf className="w-4 h-4 text-[#1A2744] mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#1A2744]">
+                      {language === "de" ? "100 % Recyclingpapier" : "100% recycled paper"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {language === "de" ? "klimaneutraler Versand" : "carbon-neutral shipping"}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-2.5">
-              <PiggyBank className="w-4 h-4 text-[#1A2744] mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-[#1A2744]">
-                  {language === "de" ? "Ohne versteckte Kosten" : "No hidden costs"}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {language === "de" ? "keine Vertragslaufzeiten" : "no contract periods"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <Leaf className="w-4 h-4 text-[#1A2744] mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-[#1A2744]">
-                  {language === "de" ? "100 % Recyclingpapier" : "100% recycled paper"}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {language === "de" ? "klimaneutraler Versand" : "carbon-neutral shipping"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <p className="text-sm text-gray-500 mt-4">
-          {language === "de"
-            ? "Nach Hinterlegung der Zugangsdaten kann rentably Briefe zentral \u00fcber die LetterXpress API verwalten. Generierte PDFs aus verschiedenen Modulen k\u00f6nnen direkt per Brief versendet werden."
-            : "After saving your credentials, rentably can manage letters centrally through the LetterXpress API. Generated PDFs from various modules can be sent directly by mail."}
-        </p>
+            <p className="text-sm text-gray-500 mt-4">
+              {language === "de"
+                ? "Nach Hinterlegung der Zugangsdaten kann rentably Briefe zentral \u00fcber die LetterXpress API verwalten. Generierte PDFs aus verschiedenen Modulen k\u00f6nnen direkt per Brief versendet werden."
+                : "After saving your credentials, rentably can manage letters centrally through the LetterXpress API. Generated PDFs from various modules can be sent directly by mail."}
+            </p>
+          </>
+        )}
       </div>
 
-      {/* Credentials Card */}
-      <div className="bg-white rounded p-6">
+      {/* Credentials Card - only for account owner */}
+      {!isSubUser && <div className="bg-white rounded p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
             <Shield className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
@@ -406,10 +422,10 @@ export default function PostalMailSettingsView() {
             </div>
           )}
         </div>
-      </div>
+      </div>}
 
       {/* Connection Test Result */}
-      {testResult && (
+      {!isSubUser && testResult && (
         <div className={`rounded p-4 ${
           testResult.success
             ? "bg-green-50"
@@ -446,7 +462,7 @@ export default function PostalMailSettingsView() {
       )}
 
       {/* Balance & Status Card */}
-      {hasCredentials && (
+      {!isSubUser && hasCredentials && (
         <div className="bg-white rounded p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
@@ -558,7 +574,7 @@ export default function PostalMailSettingsView() {
       )}
 
       {/* Admin-only Test Mode Toggle */}
-      {isAdmin && config && (
+      {!isSubUser && isAdmin && config && (
         <div className="bg-white rounded p-6 border-l-4 border-amber-400">
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-5 h-5 text-amber-600" />
