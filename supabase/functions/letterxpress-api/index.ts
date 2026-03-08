@@ -142,6 +142,16 @@ async function getCredentials(
   };
 }
 
+async function computeBase64Md5(base64String: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(base64String);
+  const hashBuffer = await crypto.subtle.digest("MD5", data);
+  const hashArray = new Uint8Array(hashBuffer);
+  return Array.from(hashArray)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 function buildAuth(creds: LxCredentials) {
   return {
     username: creds.username,
@@ -474,9 +484,6 @@ async function handleCreateJob(
   if (!body?.base64_file) {
     return corsResponse({ error: "base64_file is required" }, 400);
   }
-  if (!body?.base64_file_checksum) {
-    return corsResponse({ error: "base64_file_checksum is required" }, 400);
-  }
 
   const fileSizeBytes = (body.base64_file.length * 3) / 4;
   if (fileSizeBytes > MAX_PDF_SIZE_BYTES) {
@@ -486,20 +493,25 @@ async function handleCreateJob(
     );
   }
 
+  const checksum = await computeBase64Md5(body.base64_file);
+
   const spec = body.specification || {};
+  const hasRegistered = !!body.registered;
+  const shipping = hasRegistered ? "national" : (spec.shipping || "national");
+
   const letterPayload: Record<string, unknown> = {
     base64_file: body.base64_file,
-    base64_file_checksum: body.base64_file_checksum,
+    base64_file_checksum: checksum,
     specification: {
       color: spec.color || "1",
       mode: spec.mode || "simplex",
-      shipping: spec.shipping || "national",
+      shipping,
       ...(spec.c4 !== undefined ? { c4: spec.c4 } : {}),
     },
   };
 
   if (body.filename_original) letterPayload.filename_original = body.filename_original;
-  if (body.registered) letterPayload.registered = body.registered;
+  if (hasRegistered) letterPayload.registered = body.registered;
   if (body.dispatch_date) letterPayload.dispatch_date = body.dispatch_date;
   if (body.notice) letterPayload.notice = String(body.notice).substring(0, 255);
 
@@ -802,9 +814,6 @@ Deno.serve(async (req: Request) => {
       if (!body?.base64_file) {
         return corsResponse({ error: "base64_file is required" }, 400);
       }
-      if (!body?.base64_file_checksum) {
-        return corsResponse({ error: "base64_file_checksum is required" }, 400);
-      }
 
       const fileSizeBytes = (body.base64_file.length * 3) / 4;
       if (fileSizeBytes > MAX_PDF_SIZE_BYTES) {
@@ -813,6 +822,10 @@ Deno.serve(async (req: Request) => {
           400
         );
       }
+
+      const queueChecksum = await computeBase64Md5(body.base64_file);
+      const hasRegistered = !!body.registered;
+      const resolvedShipping = hasRegistered ? "national" : (body.specification?.shipping || "auto");
 
       const { data: inserted, error: insertError } = await supabase
         .from("letterxpress_jobs")
@@ -824,15 +837,18 @@ Deno.serve(async (req: Request) => {
           notice: body.notice ? String(body.notice).substring(0, 255) : null,
           color: body.specification?.color || "1",
           mode: body.specification?.mode || "simplex",
-          shipping: body.specification?.shipping || "auto",
+          shipping: resolvedShipping,
           registered: body.registered || null,
           dispatch_date: body.dispatch_date || null,
           pending_payload: {
             base64_file: body.base64_file,
-            base64_file_checksum: body.base64_file_checksum,
+            base64_file_checksum: queueChecksum,
             filename_original: body.filename_original || null,
-            specification: body.specification || {},
-            registered: body.registered || null,
+            specification: {
+              ...(body.specification || {}),
+              shipping: resolvedShipping,
+            },
+            registered: hasRegistered ? body.registered : null,
             dispatch_date: body.dispatch_date || null,
             notice: body.notice || null,
           },

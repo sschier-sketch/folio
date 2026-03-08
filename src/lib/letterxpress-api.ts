@@ -76,7 +76,7 @@ export type LxJobFilter = "queue" | "hold" | "done" | "canceled" | "draft";
 
 export interface LxCreateJobPayload {
   base64_file: string;
-  base64_file_checksum: string;
+  base64_file_checksum?: string;
   filename_original?: string;
   registered?: "r1" | "r2";
   dispatch_date?: string;
@@ -320,38 +320,19 @@ export async function cancelLetterXpressJob(
 // UTILITY: PDF preparation helpers
 // ============================================================
 
-export async function preparePdfForDispatch(
+export function preparePdfForDispatch(
   pdfBytes: Uint8Array | ArrayBuffer
-): Promise<{ base64_file: string; base64_file_checksum: string }> {
+): { base64_file: string } {
   const bytes =
     pdfBytes instanceof ArrayBuffer ? new Uint8Array(pdfBytes) : pdfBytes;
 
   let binary = "";
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+    binary += String.fromCharCode(...chunk);
   }
   const base64_file = btoa(binary);
 
-  const hashBuffer = await crypto.subtle.digest("MD5", bytes).catch(() => null);
-
-  let base64_file_checksum: string;
-  if (hashBuffer) {
-    const hashArray = new Uint8Array(hashBuffer);
-    base64_file_checksum = Array.from(hashArray)
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-  } else {
-    base64_file_checksum = await computeMd5Fallback(bytes);
-  }
-
-  return { base64_file, base64_file_checksum };
-}
-
-async function computeMd5Fallback(data: Uint8Array): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = new Uint8Array(hashBuffer);
-  return Array.from(hashArray)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
-    .substring(0, 32);
+  return { base64_file };
 }

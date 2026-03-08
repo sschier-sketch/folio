@@ -321,12 +321,6 @@ export default function PostalMailJobsList() {
                   <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left hidden lg:table-cell">
                     {de ? "Notiz" : "Notice"}
                   </th>
-                  <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right hidden sm:table-cell">
-                    {de ? "Seiten" : "Pages"}
-                  </th>
-                  <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right hidden sm:table-cell">
-                    {de ? "Betrag" : "Amount"}
-                  </th>
                   <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                     {de ? "Aktionen" : "Actions"}
                   </th>
@@ -361,12 +355,6 @@ export default function PostalMailJobsList() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-500 max-w-[160px] truncate hidden lg:table-cell" title={job.notice || ""}>
                         {job.notice || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600 text-right hidden sm:table-cell">
-                        {job.pages || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700 font-medium text-right whitespace-nowrap hidden sm:table-cell">
-                        {job.amount != null ? `${Number(job.amount).toFixed(2)} €` : "-"}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>

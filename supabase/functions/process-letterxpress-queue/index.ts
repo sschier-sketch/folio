@@ -43,12 +43,22 @@ async function lxFetch(
   }
 }
 
+async function computeBase64Md5(base64String: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(base64String);
+  const hashBuffer = await crypto.subtle.digest("MD5", data);
+  const hashArray = new Uint8Array(hashBuffer);
+  return Array.from(hashArray)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 interface PendingJob {
   id: string;
   user_id: string;
   pending_payload: {
     base64_file: string;
-    base64_file_checksum: string;
+    base64_file_checksum?: string;
     filename_original: string | null;
     specification: Record<string, unknown>;
     registered: string | null;
@@ -97,19 +107,23 @@ async function processJob(
   const payload = job.pending_payload;
   const spec = payload.specification || {};
 
+  const checksum = payload.base64_file_checksum || await computeBase64Md5(payload.base64_file);
+  const hasRegistered = !!payload.registered;
+  const shipping = hasRegistered ? "national" : ((spec.shipping as string) || "national");
+
   const letterPayload: Record<string, unknown> = {
     base64_file: payload.base64_file,
-    base64_file_checksum: payload.base64_file_checksum,
+    base64_file_checksum: checksum,
     specification: {
       color: spec.color || "1",
       mode: spec.mode || "simplex",
-      shipping: spec.shipping || "national",
+      shipping,
       ...(spec.c4 !== undefined ? { c4: spec.c4 } : {}),
     },
   };
 
   if (payload.filename_original) letterPayload.filename_original = payload.filename_original;
-  if (payload.registered) letterPayload.registered = payload.registered;
+  if (hasRegistered) letterPayload.registered = payload.registered;
   if (payload.dispatch_date) letterPayload.dispatch_date = payload.dispatch_date;
   if (payload.notice) letterPayload.notice = String(payload.notice).substring(0, 255);
 

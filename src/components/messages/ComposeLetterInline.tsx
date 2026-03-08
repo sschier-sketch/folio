@@ -317,11 +317,10 @@ export default function ComposeLetterInline({
 
     try {
       const arrayBuffer = await pdfFile.arrayBuffer();
-      const { base64_file, base64_file_checksum } = await preparePdfForDispatch(arrayBuffer);
+      const { base64_file } = preparePdfForDispatch(arrayBuffer);
 
       const result = await queueLetterXpressJob({
         base64_file,
-        base64_file_checksum,
         filename_original: pdfFile.name,
         ...(registeredType ? { registered: registeredType as 'r1' | 'r2' } : {}),
         ...(dispatchDate ? { dispatch_date: dispatchDate } : {}),
