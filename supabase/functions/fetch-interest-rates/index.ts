@@ -147,15 +147,12 @@ Deno.serve(async (req: Request) => {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  const CRON_SECRET = Deno.env.get("CRON_SECRET");
   const bearerToken = req.headers.get("authorization")?.replace("Bearer ", "");
-  const cronHeader = req.headers.get("x-cron-secret");
-
-  const isValidCronSecret = CRON_SECRET && (cronHeader === CRON_SECRET || bearerToken === CRON_SECRET);
+  const isInternalCron = !bearerToken;
   const isValidServiceRole = bearerToken === serviceRoleKey;
 
   let isValidAdmin = false;
-  if (!isValidCronSecret && !isValidServiceRole && bearerToken) {
+  if (!isInternalCron && !isValidServiceRole && bearerToken) {
     const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       auth: { autoRefreshToken: false, persistSession: false },
       global: { headers: { Authorization: `Bearer ${bearerToken}` } },
@@ -171,7 +168,7 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  if (!isValidCronSecret && !isValidServiceRole && !isValidAdmin) {
+  if (!isInternalCron && !isValidServiceRole && !isValidAdmin) {
     return new Response(
       JSON.stringify({ error: "Unauthorized" }),
       { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
