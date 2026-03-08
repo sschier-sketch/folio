@@ -264,6 +264,32 @@ export function useAccountMembers() {
     await loadData();
   };
 
+  const deleteMember = async (memberUserId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("Nicht eingeloggt");
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account-member`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          Apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ memberUserId }),
+      }
+    );
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Löschen fehlgeschlagen");
+    }
+
+    await loadData();
+    return result;
+  };
+
   const updateMemberPermissions = async (
     memberUserId: string,
     permissions: Record<string, unknown>
@@ -302,6 +328,7 @@ export function useAccountMembers() {
     deactivateMember,
     reactivateMember,
     removeMember,
+    deleteMember,
     updateMemberPermissions,
     updateInvitationPermissions,
     refresh: loadData,

@@ -116,6 +116,7 @@ export default function UsersManagementView() {
     deactivateMember,
     reactivateMember,
     removeMember,
+    deleteMember,
     updateMemberPermissions,
     updateInvitationPermissions,
   } = useAccountMembers();
@@ -222,17 +223,17 @@ export default function UsersManagementView() {
         hidden: m.is_active_member,
       },
       {
-        label: de ? "Entfernen" : "Remove",
+        label: de ? "Löschen" : "Delete",
         variant: "danger",
         onClick: () => {
           const msg = de
-            ? `Möchten Sie ${m.email} wirklich aus dem Account entfernen?`
-            : `Are you sure you want to remove ${m.email}?`;
+            ? `Möchten Sie ${m.email} wirklich dauerhaft löschen? Alle Daten dieses Benutzers werden unwiderruflich entfernt.`
+            : `Are you sure you want to permanently delete ${m.email}? All data for this user will be irreversibly removed.`;
           if (confirm(msg)) {
             handleAction(
-              () => removeMember(m.user_id),
-              `rm-${m.user_id}`,
-              de ? "Benutzer entfernt" : "User removed"
+              () => deleteMember(m.user_id),
+              `del-${m.user_id}`,
+              de ? "Benutzer gelöscht" : "User deleted"
             );
           }
         },
