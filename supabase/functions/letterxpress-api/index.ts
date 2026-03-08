@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { crypto as stdCrypto } from "jsr:@std/crypto@1.0.4";
 
 const LETTERXPRESS_BASE_URL = "https://api.letterxpress.de/v3";
 const MAX_PDF_SIZE_BYTES = 50 * 1024 * 1024;
@@ -145,7 +146,7 @@ async function getCredentials(
 async function computeBase64Md5(base64String: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(base64String);
-  const hashBuffer = await crypto.subtle.digest("MD5", data);
+  const hashBuffer = await stdCrypto.subtle.digest("MD5", data);
   const hashArray = new Uint8Array(hashBuffer);
   return Array.from(hashArray)
     .map((b) => b.toString(16).padStart(2, "0"))
