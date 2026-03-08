@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
-import { FileText, Filter, Search, Download, Eye, Calendar, Building, User, Lock, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { FileText, Filter, Search, Download, Eye, Calendar, Building, User, Lock, ArrowUpDown, ArrowUp, ArrowDown, Mail } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import { usePermissions } from "../../hooks/usePermissions";
 import DocumentFeatureGuard from "./DocumentFeatureGuard";
 import TableActionsDropdown from "../common/TableActionsDropdown";
+import SendAsLetterModal from "./SendAsLetterModal";
 import { getDocumentTypeLabel, getDocumentTypeColor, DOCUMENT_TYPE_GROUPS, DOCUMENT_TYPE_LABELS } from "../../lib/documentTypes";
 
 interface Document {
   id: string;
   file_name: string;
+  file_path: string;
+  file_type: string;
   document_type: string;
   upload_date: string;
   file_size: number;
@@ -49,6 +52,7 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
     key: keyof Document | "associations";
     direction: "asc" | "desc";
   } | null>(null);
+  const [letterDoc, setLetterDoc] = useState<Document | null>(null);
 
   useEffect(() => {
     if (user && !permLoading && dataOwnerId) {
@@ -621,6 +625,12 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
                               onClick: () => onDocumentClick(doc.id),
                               icon: <Eye className="w-4 h-4" />,
                             },
+                            {
+                              label: "Als Brief versenden",
+                              onClick: () => setLetterDoc(doc),
+                              icon: <Mail className="w-4 h-4" />,
+                              hidden: doc.file_type !== "application/pdf",
+                            },
                           ]}
                         />
                       </div>
@@ -636,6 +646,16 @@ export default function DocumentsList({ onDocumentClick }: DocumentsListProps) {
       <div className="text-sm text-gray-500 text-center mt-4">
         {sortedDocuments.length} von {documents.length} Dokument{documents.length !== 1 ? "en" : ""} angezeigt
       </div>
+
+      {letterDoc && (
+        <SendAsLetterModal
+          documentId={letterDoc.id}
+          fileName={letterDoc.file_name}
+          filePath={letterDoc.file_path}
+          onClose={() => setLetterDoc(null)}
+          onSent={() => setLetterDoc(null)}
+        />
+      )}
     </div>
   );
 }
