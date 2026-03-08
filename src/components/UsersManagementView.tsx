@@ -450,7 +450,7 @@ export default function UsersManagementView() {
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '12%' }}>
                         {de ? "Erstellt" : "Created"}
                       </th>
-                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '8%' }}>
+                      <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '8%' }}>
                         {t("settings.users.actions")}
                       </th>
                     </tr>
@@ -502,8 +502,8 @@ export default function UsersManagementView() {
                             <td className="px-3 py-4 whitespace-nowrap">
                               <span className="text-sm text-gray-400">{m.joined_at ? formatDate(m.joined_at) : "-"}</span>
                             </td>
-                            <td className="px-3 py-4 whitespace-nowrap text-right">
-                              <div className="flex justify-end">
+                            <td className="px-3 py-4 whitespace-nowrap text-center">
+                              <div className="flex justify-center">
                                 <TableActionsDropdown actions={getMemberActions(m)} />
                               </div>
                             </td>
@@ -547,8 +547,8 @@ export default function UsersManagementView() {
                           <td className="px-3 py-4 whitespace-nowrap">
                             <span className="text-sm text-gray-400">{formatDate(inv.created_at)}</span>
                           </td>
-                          <td className="px-3 py-4 whitespace-nowrap text-right">
-                            <div className="flex justify-end">
+                          <td className="px-3 py-4 whitespace-nowrap text-center">
+                            <div className="flex justify-center">
                               <TableActionsDropdown actions={getInvitationActions(inv)} />
                             </div>
                           </td>
