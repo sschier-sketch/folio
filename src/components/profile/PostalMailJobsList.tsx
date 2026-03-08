@@ -10,7 +10,7 @@ import PostalMailJobDetail from "./PostalMailJobDetail";
 
 const PAGE_SIZE = 15;
 
-type StatusFilter = "all" | "queue" | "hold" | "done" | "canceled" | "draft";
+type StatusFilter = "all" | "pending" | "processing" | "queue" | "hold" | "done" | "canceled" | "draft";
 
 interface JobRow {
   id: string;
@@ -62,6 +62,18 @@ function statusConfig(
   de: boolean
 ): { label: string; icon: React.ReactNode; badgeClass: string } {
   switch (status) {
+    case "pending":
+      return {
+        label: de ? "Wird vorbereitet" : "Pending",
+        icon: <Loader2 className="w-3.5 h-3.5 animate-spin" />,
+        badgeClass: "bg-amber-100 text-amber-700",
+      };
+    case "processing":
+      return {
+        label: de ? "Wird gesendet" : "Processing",
+        icon: <Loader2 className="w-3.5 h-3.5 animate-spin" />,
+        badgeClass: "bg-blue-100 text-blue-700",
+      };
     case "queue":
       return {
         label: de ? "Warteschlange" : "Queue",
@@ -134,7 +146,9 @@ export default function PostalMailJobsList() {
         .order("created_at", { ascending: false })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-      if (statusFilter !== "all") {
+      if (statusFilter === "pending") {
+        query = query.in("status", ["pending", "processing"]);
+      } else if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
       }
 
@@ -225,6 +239,7 @@ export default function PostalMailJobsList() {
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const filters: { value: StatusFilter; label: string }[] = [
     { value: "all", label: de ? "Alle" : "All" },
+    { value: "pending", label: de ? "Wird vorbereitet" : "Pending" },
     { value: "queue", label: de ? "Warteschlange" : "Queue" },
     { value: "hold", label: de ? "Pausiert" : "On Hold" },
     { value: "done", label: de ? "Verarbeitet" : "Done" },

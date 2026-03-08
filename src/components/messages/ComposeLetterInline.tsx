@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import {
   getLetterXpressConfig,
-  createLetterXpressJob,
+  queueLetterXpressJob,
   preparePdfForDispatch,
   setAccessToken,
 } from '../../lib/letterxpress-api';
@@ -319,7 +319,7 @@ export default function ComposeLetterInline({
       const arrayBuffer = await pdfFile.arrayBuffer();
       const { base64_file, base64_file_checksum } = await preparePdfForDispatch(arrayBuffer);
 
-      const result = await createLetterXpressJob({
+      const result = await queueLetterXpressJob({
         base64_file,
         base64_file_checksum,
         filename_original: pdfFile.name,
@@ -331,6 +331,9 @@ export default function ComposeLetterInline({
           mode: 'simplex',
           shipping: 'auto',
         },
+        ...(hasTenantSelected ? { tenant_id: selectedTenantId } : {}),
+        save_to_tenant_file: saveToTenantFile,
+        publish_to_portal: publishToPortal,
       });
 
       if (!result.success) {
@@ -339,19 +342,7 @@ export default function ComposeLetterInline({
         return;
       }
 
-      const externalJobId = result.job?.id;
-
-      if (hasTenantSelected && externalJobId) {
-        await supabase
-          .from('letterxpress_jobs')
-          .update({
-            tenant_id: selectedTenantId,
-            save_to_tenant_file: saveToTenantFile,
-            publish_to_portal: publishToPortal,
-          })
-          .eq('user_id', dataOwnerId)
-          .eq('external_job_id', externalJobId);
-      }
+      const jobId = result.job_id;
 
       if (saveToTenantFile && selectedTenant) {
         const docId = await saveDocumentForTenant(
@@ -360,12 +351,11 @@ export default function ComposeLetterInline({
           publishToPortal,
         );
 
-        if (docId && externalJobId) {
+        if (docId && jobId) {
           await supabase
             .from('letterxpress_jobs')
             .update({ document_id: docId })
-            .eq('user_id', dataOwnerId)
-            .eq('external_job_id', externalJobId);
+            .eq('id', jobId);
         }
       }
 
@@ -375,7 +365,7 @@ export default function ComposeLetterInline({
           tenant_id: selectedTenantId,
           communication_type: 'letter',
           subject: `Brief: ${pdfFile.name}`,
-          content: `Briefversand via LetterXpress (Auftrag #${externalJobId || '-'})`,
+          content: `Briefversand via LetterXpress (wird verarbeitet)`,
           is_internal: !publishToPortal,
         });
       }
@@ -426,9 +416,9 @@ export default function ComposeLetterInline({
             <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center mb-4 mx-auto">
               <MailIcon className="w-7 h-7 text-green-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Brief erfolgreich übergeben</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Brief in Warteschlange</h3>
             <p className="text-sm text-gray-500">
-              Der Auftrag wurde an LetterXpress übermittelt. Den Status können Sie unter Profil &rarr; Briefversand verfolgen.
+              Der Auftrag wird im Hintergrund an LetterXpress übermittelt. Den Status können Sie unter Profil &rarr; Briefversand verfolgen.
             </p>
           </div>
         </div>
@@ -745,7 +735,7 @@ export default function ComposeLetterInline({
 
       <div className="px-5 py-4 border-t border-gray-200 bg-white flex items-center justify-between gap-3 flex-shrink-0">
         <div className="text-xs text-gray-400 min-w-0 truncate">
-          {sending && <span>Brief wird übermittelt...</span>}
+          {sending && <span>Brief wird in die Warteschlange gestellt...</span>}
         </div>
         <div className="flex gap-3 flex-shrink-0">
           <Button variant="secondary" onClick={onCancel} disabled={sending}>

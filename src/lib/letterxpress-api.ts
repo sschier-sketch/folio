@@ -261,6 +261,18 @@ export async function createLetterXpressJob(
   return callAction("create-job", { body: payload });
 }
 
+export interface LxQueueJobPayload extends LxCreateJobPayload {
+  tenant_id?: string;
+  save_to_tenant_file?: boolean;
+  publish_to_portal?: boolean;
+}
+
+export async function queueLetterXpressJob(
+  payload: LxQueueJobPayload
+): Promise<{ success: boolean; queued: boolean; job_id: string; message: string }> {
+  return callAction("queue-job", { body: payload });
+}
+
 export async function updateLetterXpressJob(
   payload: LxUpdateJobPayload
 ): Promise<{ success: boolean; job: LxJob }> {

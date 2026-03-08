@@ -856,6 +856,82 @@ Deno.serve(async (req: Request) => {
       return handleSyncJobs(supabase, dataOwnerId, credResult.creds, filter);
     }
 
+    if (action === "queue-job") {
+      const credResult = await getCredentials(supabase, dataOwnerId);
+      if (credResult.error) return credResult.error;
+
+      if (!body?.base64_file) {
+        return corsResponse({ error: "base64_file is required" }, 400);
+      }
+      if (!body?.base64_file_checksum) {
+        return corsResponse({ error: "base64_file_checksum is required" }, 400);
+      }
+
+      const fileSizeBytes = (body.base64_file.length * 3) / 4;
+      if (fileSizeBytes > MAX_PDF_SIZE_BYTES) {
+        return corsResponse(
+          { error: `PDF exceeds maximum size of ${MAX_PDF_SIZE_BYTES / 1024 / 1024} MB`, code: "LX_FILE_TOO_LARGE" },
+          400
+        );
+      }
+
+      const { data: inserted, error: insertError } = await supabase
+        .from("letterxpress_jobs")
+        .insert({
+          user_id: dataOwnerId,
+          external_job_id: 0,
+          status: "pending",
+          filename_original: body.filename_original || null,
+          notice: body.notice ? String(body.notice).substring(0, 255) : null,
+          color: body.specification?.color || "1",
+          mode: body.specification?.mode || "simplex",
+          shipping: body.specification?.shipping || "auto",
+          registered: body.registered || null,
+          dispatch_date: body.dispatch_date || null,
+          pending_payload: {
+            base64_file: body.base64_file,
+            base64_file_checksum: body.base64_file_checksum,
+            filename_original: body.filename_original || null,
+            specification: body.specification || {},
+            registered: body.registered || null,
+            dispatch_date: body.dispatch_date || null,
+            notice: body.notice || null,
+          },
+          queued_at: new Date().toISOString(),
+          tenant_id: body.tenant_id || null,
+          save_to_tenant_file: body.save_to_tenant_file ?? false,
+          publish_to_portal: body.publish_to_portal ?? false,
+        })
+        .select("id")
+        .single();
+
+      if (insertError) {
+        return corsResponse({ error: insertError.message, code: "LX_QUEUE_ERROR" }, 500);
+      }
+
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      EdgeRuntime.waitUntil(
+        fetch(`${supabaseUrl}/functions/v1/process-letterxpress-queue`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${serviceKey}`,
+          },
+          body: JSON.stringify({ job_id: inserted.id }),
+        }).catch((err: Error) => {
+          console.error("Failed to trigger queue processor:", err.message);
+        })
+      );
+
+      return corsResponse({
+        success: true,
+        queued: true,
+        job_id: inserted.id,
+        message: "Brief wurde in die Warteschlange gestellt und wird im Hintergrund versendet.",
+      });
+    }
+
     if (action === "create-job") {
       const ownerCheck = await assertIsOwner(supabase, auth.userId, dataOwnerId);
       if (ownerCheck) return ownerCheck;
@@ -893,6 +969,7 @@ Deno.serve(async (req: Request) => {
           "price",
           "list-jobs",
           "sync-jobs",
+          "queue-job",
           "create-job",
           "update-job",
           "cancel-job",
