@@ -428,38 +428,29 @@ export default function UsersManagementView() {
                   <span className="text-gray-300 font-normal">({allRows.length})</span>
                 </h3>
               </div>
-              <div className="overflow-hidden">
-                <table className="w-full table-fixed">
-                  <colgroup>
-                    <col />
-                    <col className="w-[100px]" />
-                    <col className="w-[100px]" />
-                    <col className="w-[110px]" />
-                    <col className="w-[120px]" />
-                    <col className="w-[100px]" />
-                    <col className="w-[60px]" />
-                  </colgroup>
+              <div className="overflow-x-auto">
+                <table className="w-full" style={{ minWidth: '720px' }}>
                   <thead className="bg-gray-50/80">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '30%' }}>
                         {de ? "E-Mail" : "Email"}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '12%' }}>
                         {t("settings.users.status")}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '12%' }}>
                         {t("settings.users.role")}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '13%' }}>
                         {de ? "Rechte" : "Permissions"}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '13%' }}>
                         {de ? "Immobilien" : "Properties"}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '12%' }}>
                         {de ? "Erstellt" : "Created"}
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '8%' }}>
                         {t("settings.users.actions")}
                       </th>
                     </tr>
@@ -472,7 +463,7 @@ export default function UsersManagementView() {
                           [m.first_name, m.last_name].filter(Boolean).join(" ") || null;
                         return (
                           <tr key={`m-${m.user_id}`} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-4">
                               <div className="min-w-0">
                                 {name && (
                                   <p className="text-sm font-medium text-dark truncate" title={name}>{name}</p>
@@ -482,14 +473,14 @@ export default function UsersManagementView() {
                                 </p>
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               {m.is_active_member ? (
                                 <Badge variant="success" size="sm">{t("settings.users.accepted")}</Badge>
                               ) : (
                                 <Badge variant="gray" size="sm">{de ? "Deaktiviert" : "Deactivated"}</Badge>
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               <Badge variant={getRoleBadgeVariant(m.role)} size="sm">
                                 {m.role === "admin"
                                   ? t("settings.users.admin")
@@ -498,20 +489,20 @@ export default function UsersManagementView() {
                                     : t("settings.users.member")}
                               </Badge>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               {hasFullAccess(m) ? (
                                 <Badge variant="success" size="sm">{de ? "Vollzugriff" : "Full access"}</Badge>
                               ) : (
                                 <Badge variant="gray" size="sm">{de ? "Teilzugriff" : "Partial access"}</Badge>
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               <span className="text-sm text-gray-400">{propertyScopeLabel(m.property_scope, de)}</span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               <span className="text-sm text-gray-400">{m.joined_at ? formatDate(m.joined_at) : "-"}</span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <td className="px-3 py-4 whitespace-nowrap text-right">
                               <div className="flex justify-end">
                                 <TableActionsDropdown actions={getMemberActions(m)} />
                               </div>
@@ -524,17 +515,17 @@ export default function UsersManagementView() {
                       const isExpired = new Date(inv.expires_at) <= new Date();
                       return (
                         <tr key={`inv-${inv.id}`} className="hover:bg-gray-50/50 transition-colors">
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-4">
                             <p className="text-sm text-gray-400 truncate min-w-0" title={inv.invited_email}>{inv.invited_email}</p>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 py-4 whitespace-nowrap">
                             {isExpired ? (
                               <Badge variant="gray" size="sm">{de ? "Abgelaufen" : "Expired"}</Badge>
                             ) : (
                               <Badge variant="warning" size="sm">{t("settings.users.pending")}</Badge>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 py-4 whitespace-nowrap">
                             <Badge variant={getRoleBadgeVariant(inv.role)} size="sm">
                               {inv.role === "admin"
                                 ? t("settings.users.admin")
@@ -543,20 +534,20 @@ export default function UsersManagementView() {
                                   : t("settings.users.member")}
                             </Badge>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 py-4 whitespace-nowrap">
                             {hasFullAccess(inv) ? (
                               <Badge variant="success" size="sm">{de ? "Vollzugriff" : "Full access"}</Badge>
                             ) : (
                               <Badge variant="gray" size="sm">{de ? "Teilzugriff" : "Partial access"}</Badge>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 py-4 whitespace-nowrap">
                             <span className="text-sm text-gray-400">{propertyScopeLabel(inv.property_scope, de)}</span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 py-4 whitespace-nowrap">
                             <span className="text-sm text-gray-400">{formatDate(inv.created_at)}</span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <td className="px-3 py-4 whitespace-nowrap text-right">
                             <div className="flex justify-end">
                               <TableActionsDropdown actions={getInvitationActions(inv)} />
                             </div>

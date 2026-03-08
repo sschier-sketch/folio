@@ -68,7 +68,7 @@ export default function TableActionsDropdown({ actions }: TableActionsDropdownPr
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors border"
+        className="w-8 h-8 min-w-[2rem] min-h-[2rem] rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors border flex-shrink-0"
         style={{ backgroundColor: '#EEF4FF', borderColor: '#DDE7FF' }}
         title="Aktionen"
       >
