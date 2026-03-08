@@ -336,6 +336,16 @@ Deno.serve(async (req: Request) => {
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err);
         console.error(`Error processing job ${job.id}:`, errMsg);
+        await supabase
+          .from("letterxpress_jobs")
+          .update({
+            status: "error",
+            last_error_code: "LX_PROCESSING_ERROR",
+            last_error_message: `Verarbeitungsfehler: ${errMsg}`,
+            pending_payload: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", job.id);
         errors++;
       }
     }

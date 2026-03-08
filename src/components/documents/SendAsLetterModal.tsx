@@ -132,11 +132,13 @@ export default function SendAsLetterModal({
     } catch (err: any) {
       console.error('Letter send error:', err);
       const msg = err?.message || 'Fehler beim Briefversand.';
-      setError(
-        msg.includes('LX_')
-          ? 'Fehler beim Briefversand. Bitte prüfen Sie Ihre Zugangsdaten.'
-          : msg
-      );
+      if (msg.includes('LX_INTERNAL_ERROR') || msg.includes('Internal server error')) {
+        setError('Briefversand fehlgeschlagen. Bitte versuchen Sie es erneut oder prüfen Sie Ihr LetterXpress-Guthaben.');
+      } else if (msg.includes('LX_')) {
+        setError('Fehler beim Briefversand. Bitte prüfen Sie Ihre Zugangsdaten.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setSending(false);
     }

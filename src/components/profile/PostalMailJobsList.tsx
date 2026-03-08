@@ -10,7 +10,7 @@ import PostalMailJobDetail from "./PostalMailJobDetail";
 
 const PAGE_SIZE = 15;
 
-type StatusFilter = "all" | "pending" | "processing" | "queue" | "hold" | "done" | "canceled" | "draft";
+type StatusFilter = "all" | "pending" | "processing" | "queue" | "hold" | "done" | "canceled" | "draft" | "error";
 
 interface JobRow {
   id: string;
@@ -96,6 +96,12 @@ function statusConfig(
       return {
         label: de ? "Storniert" : "Canceled",
         icon: <XCircle className="w-3.5 h-3.5" />,
+        badgeClass: "bg-red-100 text-red-700",
+      };
+    case "error":
+      return {
+        label: de ? "Fehlgeschlagen" : "Failed",
+        icon: <AlertTriangle className="w-3.5 h-3.5" />,
         badgeClass: "bg-red-100 text-red-700",
       };
     case "draft":
@@ -218,6 +224,7 @@ export default function PostalMailJobsList() {
     { value: "hold", label: de ? "Pausiert" : "On Hold" },
     { value: "done", label: de ? "Verarbeitet" : "Done" },
     { value: "canceled", label: de ? "Storniert" : "Canceled" },
+    { value: "error", label: de ? "Fehlgeschlagen" : "Failed" },
     { value: "draft", label: de ? "Entwurf" : "Draft" },
   ];
 
@@ -315,9 +322,6 @@ export default function PostalMailJobsList() {
                   <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left hidden lg:table-cell">
                     {de ? "Empfänger" : "Recipient"}
                   </th>
-                  <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left hidden md:table-cell">
-                    {de ? "Dokument" : "Document"}
-                  </th>
                   <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left hidden lg:table-cell">
                     {de ? "Notiz" : "Notice"}
                   </th>
@@ -346,12 +350,14 @@ export default function PostalMailJobsList() {
                           {sc.icon}
                           {sc.label}
                         </span>
+                        {job.status === "error" && job.last_error_message && (
+                          <p className="text-xs text-red-500 mt-1 max-w-[200px] truncate" title={job.last_error_message}>
+                            {job.last_error_message}
+                          </p>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 max-w-[200px] truncate hidden lg:table-cell" title={job.recipient_address_text || ""}>
                         {job.recipient_address_text || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600 max-w-[160px] truncate hidden md:table-cell" title={job.filename_original || ""}>
-                        {job.filename_original || "-"}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-500 max-w-[160px] truncate hidden lg:table-cell" title={job.notice || ""}>
                         {job.notice || "-"}
