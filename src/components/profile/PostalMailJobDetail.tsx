@@ -53,6 +53,8 @@ function fmt(iso: string | null, lang: string): string {
 
 function statusLabel(status: string, de: boolean): string {
   const map: Record<string, [string, string]> = {
+    pending: ["Wird vorbereitet", "Pending"],
+    processing: ["Wird gesendet", "Processing"],
     queue: ["Warteschlange", "Queue"],
     hold: ["Pausiert", "On Hold"],
     done: ["Verarbeitet", "Done"],
@@ -120,7 +122,7 @@ export default function PostalMailJobDetail({ job, onClose }: Props) {
                 {de ? "Auftragsdetails" : "Job Details"}
               </h3>
               <p className="text-xs text-gray-400">
-                Job #{job.external_job_id}
+                {job.external_job_id ? `Job #${job.external_job_id}` : `ID: ${job.id.substring(0, 8)}...`}
               </p>
             </div>
           </div>
@@ -138,7 +140,7 @@ export default function PostalMailJobDetail({ job, onClose }: Props) {
               </h4>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
-              <Row label="LetterXpress Job-ID" value={job.external_job_id} />
+              <Row label="LetterXpress Job-ID" value={job.external_job_id || (de ? "Noch nicht vergeben" : "Not yet assigned")} />
               <Row label="Status" value={statusLabel(job.status, de)} />
               <Row label={de ? "Item-Status" : "Item Status"} value={job.item_status ? statusLabel(job.item_status, de) : null} />
               <Row label={de ? "Dateiname" : "Filename"} value={job.filename_original} />

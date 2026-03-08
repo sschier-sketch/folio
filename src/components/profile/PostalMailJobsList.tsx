@@ -205,10 +205,11 @@ export default function PostalMailJobsList() {
   const handleCancel = async (job: JobRow) => {
     if (!job.is_cancelable || !isOwner) return;
 
+    const jobLabel = job.external_job_id ? `#${job.external_job_id}` : job.filename_original || job.id.substring(0, 8);
     const confirm = window.confirm(
       de
-        ? `Möchten Sie den Auftrag #${job.external_job_id} wirklich stornieren?`
-        : `Do you really want to cancel job #${job.external_job_id}?`
+        ? `Möchten Sie den Auftrag ${jobLabel} wirklich stornieren?`
+        : `Do you really want to cancel job ${jobLabel}?`
     );
     if (!confirm) return;
 
@@ -355,6 +356,9 @@ export default function PostalMailJobsList() {
                   <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left hidden md:table-cell">
                     {de ? "Dokument" : "Document"}
                   </th>
+                  <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left hidden lg:table-cell">
+                    {de ? "Notiz" : "Notice"}
+                  </th>
                   <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right hidden sm:table-cell">
                     {de ? "Seiten" : "Pages"}
                   </th>
@@ -377,7 +381,9 @@ export default function PostalMailJobsList() {
                         {fmt(job.created_at_provider || job.created_at, language)}
                       </td>
                       <td className="px-4 py-3 text-sm font-mono text-gray-700">
-                        #{job.external_job_id}
+                        {job.external_job_id ? `#${job.external_job_id}` : (
+                          <span className="text-gray-400 text-xs font-sans">{de ? "Ausstehend" : "Pending"}</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${sc.badgeClass}`}>
@@ -390,6 +396,9 @@ export default function PostalMailJobsList() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 max-w-[160px] truncate hidden md:table-cell" title={job.filename_original || ""}>
                         {job.filename_original || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 max-w-[160px] truncate hidden lg:table-cell" title={job.notice || ""}>
+                        {job.notice || "-"}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 text-right hidden sm:table-cell">
                         {job.pages || "-"}
