@@ -211,6 +211,37 @@ export async function getLetterXpressConfig(): Promise<LxConfig | null> {
   return result.config;
 }
 
+export async function getLetterXpressConfigFast(
+  dataOwnerId: string
+): Promise<LxConfig | null> {
+  const { data, error } = await supabase
+    .from("letterxpress_accounts")
+    .select(
+      "id, user_id, username, api_key, is_enabled, is_test_mode, last_connection_test_at, last_connection_test_status, last_connection_test_message, last_balance, last_balance_currency, last_balance_synced_at, created_at, updated_at"
+    )
+    .eq("user_id", dataOwnerId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    user_id: data.user_id,
+    username: data.username,
+    has_api_key: !!data.api_key,
+    is_enabled: data.is_enabled,
+    is_test_mode: data.is_test_mode,
+    last_connection_test_at: data.last_connection_test_at,
+    last_connection_test_status: data.last_connection_test_status,
+    last_connection_test_message: data.last_connection_test_message,
+    last_balance: data.last_balance,
+    last_balance_currency: data.last_balance_currency,
+    last_balance_synced_at: data.last_balance_synced_at,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
+  };
+}
+
 export async function saveLetterXpressConfig(payload: {
   username: string;
   api_key?: string;

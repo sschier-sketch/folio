@@ -8,7 +8,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import {
-  getLetterXpressConfig,
+  getLetterXpressConfigFast,
   queueLetterXpressJob,
   preparePdfForDispatch,
   setAccessToken,
@@ -137,7 +137,7 @@ export default function ComposeLetterInline({
     setConfigLoading(true);
     setConfigError('');
     try {
-      const config = await getLetterXpressConfig();
+      const config = await getLetterXpressConfigFast(dataOwnerId);
       setLxConfig(config);
     } catch (err: any) {
       if (err?.code === 'LX_NOT_CONFIGURED') {
@@ -672,7 +672,7 @@ export default function ComposeLetterInline({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Interne Notiz (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notiz für Briefversand Liste (optional)</label>
             <input
               type="text"
               value={notice}

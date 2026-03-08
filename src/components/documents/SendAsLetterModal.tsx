@@ -5,7 +5,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import {
-  getLetterXpressConfig,
+  getLetterXpressConfigFast,
   queueLetterXpressJob,
   preparePdfForDispatch,
   setAccessToken,
@@ -60,7 +60,7 @@ export default function SendAsLetterModal({
     if (!dataOwnerId) return;
     setConfigLoading(true);
     try {
-      const config = await getLetterXpressConfig();
+      const config = await getLetterXpressConfigFast(dataOwnerId);
       setLxConfig(config);
     } catch {
       setLxConfig(null);
