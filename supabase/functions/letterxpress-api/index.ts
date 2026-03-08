@@ -150,88 +150,27 @@ function buildAuth(creds: LxCredentials) {
   };
 }
 
-async function rawTlsRequest(
+async function lxFetch(
   method: string,
   url: string,
   jsonBody: string
 ): Promise<{ statusCode: number; body: string }> {
-  const parsed = new URL(url);
-  const hostname = parsed.hostname;
-  const port = parseInt(parsed.port || "443");
-  const path = parsed.pathname + parsed.search;
-  const encoder = new TextEncoder();
-  const bodyBytes = encoder.encode(jsonBody);
-
-  const httpRequest =
-    `${method} ${path} HTTP/1.1\r\n` +
-    `Host: ${hostname}\r\n` +
-    `Content-Type: application/json\r\n` +
-    `Content-Length: ${bodyBytes.length}\r\n` +
-    `Connection: close\r\n` +
-    `\r\n` +
-    jsonBody;
-
-  const conn = await Deno.connectTls({ hostname, port });
-
-  const timeoutId = setTimeout(() => {
-    try { conn.close(); } catch { /* ignore */ }
-  }, 30000);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120000);
 
   try {
-    await conn.write(encoder.encode(httpRequest));
-
-    const chunks: Uint8Array[] = [];
-    const buf = new Uint8Array(8192);
-    while (true) {
-      const n = await conn.read(buf);
-      if (n === null) break;
-      chunks.push(buf.slice(0, n));
-    }
-
-    clearTimeout(timeoutId);
-
-    let totalLen = 0;
-    for (const c of chunks) totalLen += c.length;
-    const full = new Uint8Array(totalLen);
-    let offset = 0;
-    for (const c of chunks) {
-      full.set(c, offset);
-      offset += c.length;
-    }
-
-    const raw = new TextDecoder().decode(full);
-    const headerEnd = raw.indexOf("\r\n\r\n");
-    if (headerEnd === -1) {
-      return { statusCode: 0, body: raw };
-    }
-
-    const headerSection = raw.substring(0, headerEnd);
-    const statusLine = headerSection.split("\r\n")[0];
-    const statusMatch = statusLine.match(/HTTP\/[\d.]+ (\d+)/);
-    const statusCode = statusMatch ? parseInt(statusMatch[1]) : 0;
-
-    let responseBody = raw.substring(headerEnd + 4);
-
-    if (headerSection.toLowerCase().includes("transfer-encoding: chunked")) {
-      let decoded = "";
-      let remaining = responseBody;
-      while (remaining.length > 0) {
-        const lineEnd = remaining.indexOf("\r\n");
-        if (lineEnd === -1) break;
-        const chunkSize = parseInt(remaining.substring(0, lineEnd), 16);
-        if (chunkSize === 0) break;
-        decoded += remaining.substring(lineEnd + 2, lineEnd + 2 + chunkSize);
-        remaining = remaining.substring(lineEnd + 2 + chunkSize + 2);
-      }
-      responseBody = decoded;
-    }
-
-    return { statusCode, body: responseBody };
+    const response = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: jsonBody,
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    const text = await response.text();
+    return { statusCode: response.status, body: text };
   } catch (err) {
-    clearTimeout(timeoutId);
+    clearTimeout(timeout);
     throw err;
-  } finally {
-    try { conn.close(); } catch { /* ignore */ }
   }
 }
 
@@ -251,7 +190,7 @@ async function lxRequest(
   const jsonBody = JSON.stringify(payload);
 
   try {
-    const { statusCode, body: responseText } = await rawTlsRequest(method, url, jsonBody);
+    const { statusCode, body: responseText } = await lxFetch(method, url, jsonBody);
 
     let responseData: any;
     try {

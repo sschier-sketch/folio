@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { RefreshCw, Info, XCircle, ChevronLeft, ChevronRight, Filter, Clock, Mail, CheckCircle, Pause, File as FileEdit, AlertTriangle, Loader2 } from "lucide-react";
+import { Info, XCircle, ChevronLeft, ChevronRight, Filter, Clock, Mail, CheckCircle, Pause, File as FileEdit, AlertTriangle, Loader2 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { usePermissions } from "../../hooks/usePermissions";
 import { supabase } from "../../lib/supabase";
-import { cancelLetterXpressJob, syncLetterXpressJobs, setAccessToken, LetterXpressApiError } from "../../lib/letterxpress-api";
+import { cancelLetterXpressJob, setAccessToken, LetterXpressApiError } from "../../lib/letterxpress-api";
 import { Button } from "../ui/Button";
 import PostalMailJobDetail from "./PostalMailJobDetail";
 
@@ -127,7 +127,6 @@ export default function PostalMailJobsList() {
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
   const [cancelingId, setCancelingId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -175,32 +174,6 @@ export default function PostalMailJobsList() {
   useEffect(() => {
     loadJobs();
   }, [loadJobs]);
-
-  const handleSync = async () => {
-    setSyncing(true);
-    setMessage(null);
-    try {
-      const result = await syncLetterXpressJobs();
-      setMessage({
-        type: "success",
-        text: de
-          ? `${result.synced} Aufträge synchronisiert.`
-          : `${result.synced} jobs synced.`,
-      });
-      setPage(0);
-      await loadJobs();
-    } catch (err: any) {
-      const msg =
-        err instanceof LetterXpressApiError
-          ? err.message
-          : de
-            ? "Synchronisierung fehlgeschlagen."
-            : "Sync failed.";
-      setMessage({ type: "error", text: msg });
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   const handleCancel = async (job: JobRow) => {
     if (!job.is_cancelable || !isOwner) return;
@@ -270,17 +243,6 @@ export default function PostalMailJobsList() {
             </div>
           </div>
 
-          <Button
-            onClick={handleSync}
-            disabled={syncing}
-            variant="outlined"
-            size="sm"
-          >
-            <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
-            {syncing
-              ? de ? "Synchronisiere…" : "Syncing…"
-              : de ? "Jetzt synchronisieren" : "Sync now"}
-          </Button>
         </div>
 
         <div className="flex items-center gap-2 mt-4 flex-wrap">
