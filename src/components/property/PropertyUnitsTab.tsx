@@ -484,9 +484,6 @@ export default function PropertyUnitsTab({ propertyId, readOnly = false }: Prope
                   <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
                     Miete
                   </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
-                    Überfällige Miete
-                  </th>
                   <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
                     Aktionen
                   </th>
@@ -526,23 +523,21 @@ export default function PropertyUnitsTab({ propertyId, readOnly = false }: Prope
                         {getStatusLabel(unit.status)}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-sm font-medium text-dark">
-                      {unit.rental_contract?.rent_included === true ? (
-                        <span className="text-xs text-gray-400">enthalten</span>
-                      ) : unit.rental_contract?.base_rent != null ? (
-                        `${Number(unit.rental_contract.base_rent).toFixed(2)} €`
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6 text-sm">
+                    <td className="py-4 px-6">
+                      <div className="text-sm font-medium text-dark">
+                        {unit.rental_contract?.rent_included === true ? (
+                          <span className="text-xs text-gray-400">enthalten</span>
+                        ) : unit.rental_contract?.base_rent != null ? (
+                          `${Number(unit.rental_contract.base_rent).toFixed(2)} €`
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </div>
                       {unit.outstanding_rent && unit.outstanding_rent > 0 ? (
-                        <span className="text-red-600 font-semibold">
+                        <div className="text-xs text-red-600 mt-0.5">
                           {unit.outstanding_rent.toFixed(2)} € offen
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                        </div>
+                      ) : null}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <div className="flex items-center justify-center">
