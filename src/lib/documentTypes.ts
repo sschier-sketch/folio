@@ -21,6 +21,25 @@ export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   protocol: "Protokoll",
   correspondence: "Korrespondenz",
   kuendigungsbestaetigung: "Kündigungsbestätigung",
+  zahlungserinnerung: "Zahlungserinnerung",
+  abmahnung_ruhestoerung: "Abmahnung Ruhestörung",
+  abmahnung_bauliche_veraenderungen: "Abmahnung bauliche Veränderungen",
+  betriebskosten_vorauszahlungen: "Betriebskostenvorauszahlung",
+  mieterselbstauskunft: "Mieterselbstauskunft",
+  raeumungsaufforderung: "Räumungsaufforderung",
+  kuendigung_abmahnung: "Kündigung nach Abmahnung",
+  kuendigung_eigenbedarf: "Kündigung Eigenbedarf",
+  kuendigung_zahlungsverzug: "Kündigung Zahlungsverzug",
+  mietkaution_rueckgriff: "Mietkautionsrückgriff",
+  schoenheitsreparaturen: "Schönheitsreparaturen",
+  meldebestaetigung: "Meldebestätigung",
+  wohnungsgeberbestaetigung: "Wohnungsgeberbestätigung",
+  mieterhoehungsverlangen: "Mieterhöhungsverlangen",
+  mietschuldenfreiheit: "Mietschuldenfreiheitsbescheinigung",
+  handover: "Übergabeprotokoll",
+  index_increase_notice: "Indexmieterhöhung",
+  betriebskostenabrechnung: "Betriebskostenabrechnung",
+  brief: "Brief",
   other: "Sonstiges",
 };
 
@@ -47,6 +66,25 @@ export const DOCUMENT_TYPE_COLORS: Record<string, string> = {
   protocol: "bg-gray-100 text-gray-700",
   correspondence: "bg-gray-100 text-gray-700",
   kuendigungsbestaetigung: "bg-red-100 text-red-700",
+  zahlungserinnerung: "bg-orange-100 text-orange-700",
+  abmahnung_ruhestoerung: "bg-red-100 text-red-700",
+  abmahnung_bauliche_veraenderungen: "bg-red-100 text-red-700",
+  betriebskosten_vorauszahlungen: "bg-orange-100 text-orange-700",
+  mieterselbstauskunft: "bg-sky-100 text-sky-700",
+  raeumungsaufforderung: "bg-red-100 text-red-700",
+  kuendigung_abmahnung: "bg-red-100 text-red-700",
+  kuendigung_eigenbedarf: "bg-red-100 text-red-700",
+  kuendigung_zahlungsverzug: "bg-red-100 text-red-700",
+  mietkaution_rueckgriff: "bg-amber-100 text-amber-700",
+  schoenheitsreparaturen: "bg-slate-100 text-slate-700",
+  meldebestaetigung: "bg-teal-100 text-teal-700",
+  wohnungsgeberbestaetigung: "bg-teal-100 text-teal-700",
+  mieterhoehungsverlangen: "bg-amber-100 text-amber-700",
+  mietschuldenfreiheit: "bg-emerald-100 text-emerald-700",
+  handover: "bg-cyan-100 text-cyan-700",
+  index_increase_notice: "bg-amber-100 text-amber-700",
+  betriebskostenabrechnung: "bg-orange-100 text-orange-700",
+  brief: "bg-gray-100 text-gray-700",
   other: "bg-gray-100 text-gray-700",
 };
 
@@ -58,7 +96,15 @@ export interface DocumentTypeGroup {
 export const DOCUMENT_TYPE_GROUPS: DocumentTypeGroup[] = [
   {
     label: "Verträge & Urkunden",
-    types: ["contract", "rental_agreement", "main_contract", "amendment", "addendum", "termination", "kuendigungsbestaetigung", "property_deed"],
+    types: ["contract", "rental_agreement", "main_contract", "amendment", "addendum", "property_deed"],
+  },
+  {
+    label: "Kündigungen & Abmahnungen",
+    types: ["termination", "kuendigungsbestaetigung", "kuendigung_abmahnung", "kuendigung_eigenbedarf", "kuendigung_zahlungsverzug", "abmahnung_ruhestoerung", "abmahnung_bauliche_veraenderungen", "raeumungsaufforderung"],
+  },
+  {
+    label: "Mietverhältnis",
+    types: ["mieterhoehungsverlangen", "index_increase_notice", "zahlungserinnerung", "mietkaution_rueckgriff", "mietschuldenfreiheit", "schoenheitsreparaturen", "mieterselbstauskunft", "handover"],
   },
   {
     label: "Grundrisse & Pläne",
@@ -66,7 +112,7 @@ export const DOCUMENT_TYPE_GROUPS: DocumentTypeGroup[] = [
   },
   {
     label: "Finanzen",
-    types: ["invoice", "bill", "utility_bill", "receipt"],
+    types: ["invoice", "bill", "utility_bill", "betriebskostenabrechnung", "betriebskosten_vorauszahlungen", "receipt"],
   },
   {
     label: "Zertifikate & Versicherungen",
@@ -74,7 +120,7 @@ export const DOCUMENT_TYPE_GROUPS: DocumentTypeGroup[] = [
   },
   {
     label: "Verwaltung",
-    types: ["report", "maintenance", "protocol", "correspondence"],
+    types: ["report", "maintenance", "protocol", "correspondence", "meldebestaetigung", "wohnungsgeberbestaetigung", "brief"],
   },
   {
     label: "Medien & Sonstiges",

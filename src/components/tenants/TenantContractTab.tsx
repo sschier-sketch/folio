@@ -402,23 +402,22 @@ export default function TenantContractTab({
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <table className="w-full table-fixed">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700 w-[40%]">
                     Dokumentname
                   </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 w-[22%]">
                     Typ
                   </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 w-[12%]">
                     Größe
                   </th>
-                  <th className="text-left py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 w-[16%]">
                     Hochgeladen
                   </th>
-                  <th className="text-center py-3 px-6 text-sm font-semibold text-gray-700">
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 w-[10%]">
                     Aktionen
                   </th>
                 </tr>
@@ -431,36 +430,36 @@ export default function TenantContractTab({
                     onClick={() => handleViewDocument(doc.id)}
                   >
                     <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-gray-400" />
-                        <div>
-                          <div className="text-sm font-medium text-dark">{doc.file_name}</div>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-dark truncate" title={doc.file_name}>{doc.file_name}</div>
                           {doc.description && (
-                            <div className="text-xs text-gray-500 mt-0.5">
+                            <div className="text-xs text-gray-500 mt-0.5 truncate" title={doc.description}>
                               {doc.description}
                             </div>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-700">
+                    <td className="py-4 px-4 text-sm text-gray-700">
                       <span
-                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium max-w-full truncate"
+                        className="inline-flex items-center px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium max-w-full truncate"
                         title={getDocumentTypeLabel(doc.document_type)}
                       >
                         {getDocumentTypeLabel(doc.document_type)}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-700">
+                    <td className="py-4 px-4 text-sm text-gray-700 whitespace-nowrap">
                       {formatFileSize(doc.file_size)}
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-700">
+                    <td className="py-4 px-4 text-sm text-gray-700 whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
                         {formatDate(doc.upload_date)}
                       </div>
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-4 px-4">
                       <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
                         <TableActionsDropdown
                           actions={[
@@ -485,7 +484,6 @@ export default function TenantContractTab({
                 ))}
               </tbody>
             </table>
-          </div>
         )}
       </div>
 
