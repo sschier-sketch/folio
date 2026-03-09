@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Check, Minus, Info, Sparkles, Zap } from "lucide-react";
+import { Check, Minus, Info, Sparkles } from "lucide-react";
 import { PLANS, COMPARISON_TABLE, calculateYearlySavings } from "../config/plans";
 import { withRef } from "../lib/referralTracking";
 import { useMemo, useState } from "react";
@@ -53,8 +53,7 @@ function NewFeaturesSection() {
     <section className="pt-16 pb-4 px-6">
       <div className="max-w-[1200px] mx-auto">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-4">
-            <Zap className="w-3.5 h-3.5 text-[#3c8af7]" />
+          <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-4">
             <span className="text-sm font-medium text-[#3c8af7]">Neueste Updates</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
