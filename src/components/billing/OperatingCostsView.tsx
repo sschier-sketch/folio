@@ -506,7 +506,7 @@ export default function OperatingCostsView() {
                     <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[20%]">
                       Status
                     </th>
-                    <th className="pl-4 pr-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center w-[10%]">
+                    <th className="py-3 pr-8 text-xs font-medium text-gray-500 uppercase tracking-wider text-right w-[10%]">
                       Aktionen
                     </th>
                   </tr>
@@ -563,8 +563,8 @@ export default function OperatingCostsView() {
                           )}
                         </div>
                       </td>
-                      <td className="pl-4 pr-6 py-4" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-center">
+                      <td className="py-4 pr-8" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end">
                           <TableActionsDropdown
                             actions={[
                               ...(statement.status === 'ready' || statement.status === 'sent' ? [
