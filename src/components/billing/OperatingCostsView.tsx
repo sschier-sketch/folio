@@ -488,32 +488,28 @@ export default function OperatingCostsView() {
           </div>
         ) : (
           <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
-            <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full table-fixed">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[22%]">
                       Immobilie
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[12%]">
                       Einheit
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[18%]">
                       Mieter
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[8%]">
                       Jahr
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[14%]">
                       Gesamtkosten
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[18%]">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
-                      Letzte Bearbeitung
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center w-[8%]">
                       Aktionen
                     </th>
                   </tr>
@@ -525,50 +521,55 @@ export default function OperatingCostsView() {
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td
-                        className="px-6 py-4 text-sm font-medium text-dark cursor-pointer"
+                        className="px-4 py-4 cursor-pointer"
                         onClick={() => handleStatementClick(statement)}
                       >
-                        {statement.property?.name || "Unbekannte Immobilie"}
+                        <div className="text-sm font-medium text-dark truncate" title={statement.property?.name || "Unbekannte Immobilie"}>
+                          {statement.property?.name || "Unbekannte Immobilie"}
+                        </div>
                       </td>
                       <td
-                        className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
+                        className="px-4 py-4 text-sm text-gray-700 cursor-pointer"
                         onClick={() => handleStatementClick(statement)}
                       >
                         {statement.unit ? statement.unit.unit_number : '-'}
                       </td>
                       <td
-                        className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
+                        className="px-4 py-4 cursor-pointer"
                         onClick={() => handleStatementClick(statement)}
                       >
-                        {statement.tenant
-                          ? `${statement.tenant.first_name} ${statement.tenant.last_name}`
-                          : '-'}
+                        <div className="text-sm text-gray-700 truncate" title={statement.tenant ? `${statement.tenant.first_name} ${statement.tenant.last_name}` : undefined}>
+                          {statement.tenant
+                            ? `${statement.tenant.first_name} ${statement.tenant.last_name}`
+                            : '-'}
+                        </div>
                       </td>
                       <td
-                        className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
+                        className="px-4 py-4 text-sm text-gray-700 cursor-pointer"
                         onClick={() => handleStatementClick(statement)}
                       >
                         {statement.year}
                       </td>
                       <td
-                        className="px-6 py-4 text-sm font-medium text-dark cursor-pointer"
+                        className="px-4 py-4 text-sm font-medium text-dark cursor-pointer whitespace-nowrap"
                         onClick={() => handleStatementClick(statement)}
                       >
                         {Number(statement.total_costs).toFixed(2)} €
                       </td>
                       <td
-                        className="px-6 py-4 cursor-pointer"
+                        className="px-4 py-4 cursor-pointer"
                         onClick={() => handleStatementClick(statement)}
                       >
-                        {getStatusBadge(statement.status)}
+                        <div>
+                          {getStatusBadge(statement.status)}
+                          {statement.updated_at && (
+                            <div className="text-[11px] text-gray-400 mt-1">
+                              {formatDateTime(statement.updated_at)}
+                            </div>
+                          )}
+                        </div>
                       </td>
-                      <td
-                        className="px-6 py-4 text-sm text-gray-700 cursor-pointer"
-                        onClick={() => handleStatementClick(statement)}
-                      >
-                        {statement.updated_at ? formatDateTime(statement.updated_at) : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-center">
                           <TableActionsDropdown
                             actions={[
@@ -605,7 +606,6 @@ export default function OperatingCostsView() {
                   ))}
                 </tbody>
               </table>
-            </div>
           </div>
         )}
       </div>
