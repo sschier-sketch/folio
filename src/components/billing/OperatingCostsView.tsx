@@ -491,25 +491,22 @@ export default function OperatingCostsView() {
               <table className="w-full table-fixed">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[22%]">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[25%]">
                       Immobilie
                     </th>
-                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[12%]">
-                      Einheit
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[20%]">
+                      Einheit / Mieter
                     </th>
-                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[18%]">
-                      Mieter
-                    </th>
-                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[8%]">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[10%]">
                       Jahr
                     </th>
-                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[14%]">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[15%]">
                       Gesamtkosten
                     </th>
-                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[18%]">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[20%]">
                       Status
                     </th>
-                    <th className="py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center w-[8%]">
+                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center w-[10%]">
                       Aktionen
                     </th>
                   </tr>
@@ -529,20 +526,17 @@ export default function OperatingCostsView() {
                         </div>
                       </td>
                       <td
-                        className="px-4 py-4 text-sm text-gray-700 cursor-pointer"
-                        onClick={() => handleStatementClick(statement)}
-                      >
-                        {statement.unit ? statement.unit.unit_number : '-'}
-                      </td>
-                      <td
                         className="px-4 py-4 cursor-pointer"
                         onClick={() => handleStatementClick(statement)}
                       >
-                        <div className="text-sm text-gray-700 truncate" title={statement.tenant ? `${statement.tenant.first_name} ${statement.tenant.last_name}` : undefined}>
-                          {statement.tenant
-                            ? `${statement.tenant.first_name} ${statement.tenant.last_name}`
-                            : '-'}
+                        <div className="text-sm text-gray-700 truncate">
+                          {statement.unit ? statement.unit.unit_number : '-'}
                         </div>
+                        {statement.tenant && (
+                          <div className="text-[11px] text-gray-400 truncate mt-0.5" title={`${statement.tenant.first_name} ${statement.tenant.last_name}`}>
+                            {statement.tenant.first_name} {statement.tenant.last_name}
+                          </div>
+                        )}
                       </td>
                       <td
                         className="px-4 py-4 text-sm text-gray-700 cursor-pointer"
@@ -569,8 +563,8 @@ export default function OperatingCostsView() {
                           )}
                         </div>
                       </td>
-                      <td className="py-4 text-center" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-center">
+                      <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center">
                           <TableActionsDropdown
                             actions={[
                               ...(statement.status === 'ready' || statement.status === 'sent' ? [
