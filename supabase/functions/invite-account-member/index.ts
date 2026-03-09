@@ -162,7 +162,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const { data: existingInvitation } = await supabaseAdmin
-      .from("account_invitations")
+      .from("user_invitations")
       .select("id, status, expires_at")
       .eq("account_owner_id", accountOwnerId)
       .eq("invited_email", invitedEmail)
@@ -180,13 +180,13 @@ Deno.serve(async (req: Request) => {
       }
 
       await supabaseAdmin
-        .from("account_invitations")
+        .from("user_invitations")
         .update({ status: "expired", updated_at: new Date().toISOString() })
         .eq("id", existingInvitation.id);
     }
 
     const { data: invitation, error: insertError } = await supabaseAdmin
-      .from("account_invitations")
+      .from("user_invitations")
       .insert({
         account_owner_id: accountOwnerId,
         invited_email: invitedEmail,
@@ -282,22 +282,22 @@ Deno.serve(async (req: Request) => {
               status: "queued",
               error_code: null,
               error_message: null,
-              metadata: { templateKey: "account_invitation", retry: true },
+              metadata: { templateKey: "user_invitation", retry: true },
             })
             .eq("id", emailLogId);
         } else {
           const { data: logEntry } = await supabaseAdmin
             .from("email_logs")
             .insert({
-              mail_type: "account_invitation",
+              mail_type: "user_invitation",
               category: "transactional",
               to_email: invitedEmail,
               user_id: accountOwnerId,
-              subject: "account_invitation",
+              subject: "user_invitation",
               provider: "resend",
               status: "queued",
               idempotency_key: idempotencyKey,
-              metadata: { templateKey: "account_invitation" },
+              metadata: { templateKey: "user_invitation" },
             })
             .select("id")
             .single();
@@ -308,12 +308,12 @@ Deno.serve(async (req: Request) => {
         const { data: template } = await supabaseAdmin
           .from("email_templates")
           .select("*")
-          .eq("template_key", "account_invitation")
+          .eq("template_key", "user_invitation")
           .eq("language", language)
           .maybeSingle();
 
         if (!template) {
-          const errMsg = `Template not found: account_invitation (language: ${language})`;
+          const errMsg = `Template not found: user_invitation (language: ${language})`;
           if (emailLogId) {
             await supabaseAdmin
               .from("email_logs")

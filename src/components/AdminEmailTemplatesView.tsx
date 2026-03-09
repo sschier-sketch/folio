@@ -36,6 +36,7 @@ const ACTIVE_TEMPLATE_KEYS = new Set([
   "subscription_started",
   "subscription_cancelled",
   "contact_ticket_confirmation",
+  "user_invitation",
 ]);
 
 const CRON_TEMPLATE_KEYS: Record<string, string> = {

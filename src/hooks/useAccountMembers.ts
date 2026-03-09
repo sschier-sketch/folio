@@ -167,12 +167,14 @@ export function useAccountMembers() {
       .update({ status: "revoked", revoked_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq("id", invitationId);
 
-    await supabase.rpc("log_user_management_action", {
-      p_actor_user_id: user!.id,
-      p_event_type: "invitation_resent",
-      p_description: "Einladung erneut gesendet",
-      p_target_email: invitation.invited_email,
-    }).catch(() => {});
+    try {
+      await supabase.rpc("log_user_management_action", {
+        p_actor_user_id: user!.id,
+        p_event_type: "invitation_resent",
+        p_description: "Einladung erneut gesendet",
+        p_target_email: invitation.invited_email,
+      });
+    } catch (_) { /* ignore logging errors */ }
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("Nicht eingeloggt");
