@@ -230,12 +230,14 @@ export function useAccountMembers() {
 
     if (error) throw error;
 
-    await supabase.rpc("log_user_management_action", {
-      p_actor_user_id: user!.id,
-      p_event_type: "invitation_revoked",
-      p_description: "Einladung widerrufen",
-      p_target_email: inv?.invited_email || null,
-    }).catch(() => {});
+    try {
+      await supabase.rpc("log_user_management_action", {
+        p_actor_user_id: user!.id,
+        p_event_type: "invitation_revoked",
+        p_description: "Einladung widerrufen",
+        p_target_email: inv?.invited_email || null,
+      });
+    } catch (_) { /* ignore logging errors */ }
 
     await loadData();
   };
