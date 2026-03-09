@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { Check, Minus, Info, Sparkles } from "lucide-react";
+import { Check, Minus, Info, Sparkles, Zap } from "lucide-react";
 import { PLANS, COMPARISON_TABLE, calculateYearlySavings } from "../config/plans";
 import { withRef } from "../lib/referralTracking";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import TestimonialsSection from "../components/landing/TestimonialsSection";
 import FaqSection from "../components/landing/FaqSection";
 
@@ -27,6 +27,90 @@ function CellValue({ value }: { value: string | boolean }) {
     return <Minus className="w-4 h-4 text-gray-300 mx-auto" />;
   }
   return <span className="text-sm text-gray-700">{value}</span>;
+}
+
+function NewFeaturesSection() {
+  const newFeatures = useMemo(() => {
+    const items: { feature: string; category: string; basicIncluded: boolean; proIncluded: boolean }[] = [];
+    for (const cat of COMPARISON_TABLE) {
+      for (const row of cat.rows) {
+        if (row.isNew) {
+          items.push({
+            feature: row.feature,
+            category: cat.name,
+            basicIncluded: row.basic === true || typeof row.basic === 'string',
+            proIncluded: row.pro === true || typeof row.pro === 'string',
+          });
+        }
+      }
+    }
+    return items;
+  }, []);
+
+  if (newFeatures.length === 0) return null;
+
+  return (
+    <section className="pt-16 pb-4 px-6">
+      <div className="max-w-[1200px] mx-auto">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3c8af7]/5 border border-[#3c8af7]/15 mb-4">
+            <Zap className="w-3.5 h-3.5 text-[#3c8af7]" />
+            <span className="text-sm font-medium text-[#3c8af7]">Neueste Updates</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+            Zuletzt hinzugefügte Funktionen
+          </h2>
+          <p className="text-gray-500 mt-3 max-w-lg mx-auto">
+            rentably wird kontinuierlich weiterentwickelt. Hier sehen Sie die neuesten Funktionen auf einen Blick.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {newFeatures.map((item) => (
+            <div
+              key={item.feature}
+              className="relative bg-white border border-[#3c8af7]/20 rounded-xl p-5 hover:shadow-md transition-shadow"
+            >
+              <span className="absolute top-4 right-4 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#3c8af7]/10 text-[#3c8af7] border border-[#3c8af7]/20">
+                Neu
+              </span>
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                {item.category}
+              </div>
+              <h3 className="text-base font-semibold text-gray-900 mb-3 pr-12">
+                {item.feature}
+              </h3>
+              <div className="flex items-center gap-4 text-sm">
+                {item.proIncluded && (
+                  <span className="flex items-center gap-1.5 text-gray-600">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center bg-[#EEF4FF] border border-[#DDE7FF]">
+                      <Check className="w-3 h-3 text-[#3c8af7]" strokeWidth={2.5} />
+                    </div>
+                    Pro
+                  </span>
+                )}
+                {item.basicIncluded ? (
+                  <span className="flex items-center gap-1.5 text-gray-600">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200">
+                      <Check className="w-3 h-3 text-gray-500" strokeWidth={2.5} />
+                    </div>
+                    Basic
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-gray-400">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center bg-gray-50 border border-gray-100">
+                      <Minus className="w-3 h-3 text-gray-300" strokeWidth={2} />
+                    </div>
+                    Basic
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export default function Pricing() {
@@ -179,6 +263,8 @@ export default function Pricing() {
       </section>
 
       <TestimonialsSection />
+
+      <NewFeaturesSection />
 
       <section className="py-16 px-6">
         <div className="max-w-[1200px] mx-auto">
