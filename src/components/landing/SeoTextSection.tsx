@@ -37,8 +37,9 @@ export default function SeoTextSection() {
             nutzbar ist und keine Begrenzung bei der Anzahl verwalteter Objekte
             kennt. Der Pro-Tarif bietet zusätzliche Funktionen wie
             automatisierte Betriebskostenabrechnungen, Mahnwesen, erweiterte
-            Dokumentenverwaltung und Indexmietberechnungen — zu einem festen
-            monatlichen Preis, unabhängig von der Portfoliogrösse.
+            Dokumentenverwaltung, Indexmietberechnungen, Briefversand via
+            LetterXpress und eine Multi-User-Benutzerverwaltung — zu einem
+            festen monatlichen Preis, unabhängig von der Portfoliogrösse.
           </p>
           <p>
             Alle Daten werden DSGVO-konform auf europäischen Servern in

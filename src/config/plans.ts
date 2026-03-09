@@ -84,6 +84,7 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
   {
     name: 'Immobilien',
     rows: [
+      { feature: 'Benutzerverwaltung (unbegrenzte Multi-User-Konten)', basic: false, pro: true, isNew: true },
       { feature: 'Unbegrenzt Immobilien & Einheiten', basic: true, pro: true },
       { feature: 'Stammdaten & Übersicht', basic: true, pro: true },
       { feature: 'Einheiten verwalten', basic: 'Basis', pro: 'Erweitert' },
@@ -144,6 +145,7 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
   {
     name: 'Kommunikation',
     rows: [
+      { feature: 'Briefversand', basic: true, pro: true, isNew: true },
       { feature: 'Ticketsystem', basic: false, pro: true },
       { feature: 'Nachrichten & E-Mail (@rentab.ly)', basic: false, pro: true },
       { feature: 'Mieterportal', basic: false, pro: true },

@@ -39,7 +39,7 @@ const FEATURES: {
     icon: Building2,
     title: "Immobilienmanagement",
     description:
-      "Stammdaten, Einheiten, Zähler und Kontakte zentral verwalten. Jede Immobilie vollständig dokumentiert.",
+      "Stammdaten, Einheiten, Zähler und Kontakte zentral verwalten. Multi-User-Benutzerverwaltung für die gemeinsame Arbeit im Team.",
     path: "/funktionen/immobilienmanagement",
   },
   {
@@ -53,7 +53,7 @@ const FEATURES: {
     icon: MessageSquare,
     title: "Kommunikation",
     description:
-      "Mieterportal und Ticketsystem für transparente, nachvollziehbare Kommunikation mit Ihren Mietern.",
+      "Mieterportal, Ticketsystem und Briefversand via LetterXpress für transparente, nachvollziehbare Kommunikation mit Ihren Mietern.",
     path: "/funktionen/kommunikation",
   },
   {

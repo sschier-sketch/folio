@@ -22,13 +22,15 @@ import {
   Shield,
   Sparkles,
   Zap,
-  Laptop
+  Laptop,
+  Send,
 } from "lucide-react";
 
 const HERO_CHECKS = [
   "Zentrale E-Mail-Verwaltung für alle Objekte",
   "Fertige Vorlagen für häufige Anliegen",
-  "Komplette Kommunikationshistorie dokumentiert"
+  "Komplette Kommunikationshistorie dokumentiert",
+  "Briefversand direkt aus der Software heraus",
 ];
 
 const FEATURES = [
@@ -61,7 +63,13 @@ const FEATURES = [
     icon: Clock,
     title: "Kommunikationshistorie",
     description: "Lückenlose Dokumentation aller Nachrichten und Vorgänge. Jeder Austausch ist jederzeit abrufbar."
-  }
+  },
+  {
+    icon: Send,
+    title: "Briefversand via LetterXpress",
+    description: "Versenden Sie Schreiben als echten Brief direkt aus rentably heraus. Druck, Kuvertierung und Zustellung werden automatisch erledigt — ohne Gang zur Post.",
+    isNew: true,
+  },
 ];
 
 const OTHER_FEATURES = [
@@ -291,7 +299,12 @@ export default function Kommunikation() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {FEATURES.map((feature, i) => (
               <RevealOnScroll key={feature.title} delay={i * 80}>
-                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow h-full">
+                <div className={`bg-white border rounded-xl p-6 hover:shadow-md transition-shadow h-full relative ${feature.isNew ? 'border-[#3c8af7]/30 ring-1 ring-[#3c8af7]/10' : 'border-gray-200'}`}>
+                  {feature.isNew && (
+                    <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#3c8af7]/10 text-[#3c8af7] border border-[#3c8af7]/20">
+                      Neue Funktion
+                    </span>
+                  )}
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
                     style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
@@ -574,6 +587,13 @@ export default function Kommunikation() {
                 Abrechnungen und Vertr&auml;ge versenden Sie direkt aus dem System heraus &ndash; sicher
                 und nachvollziehbar. So kommunizieren Sie professionell und haben im Fall einer
                 Auseinandersetzung immer den vollst&auml;ndigen Schriftverkehr zur Hand.
+              </p>
+              <p>
+                Neu: Mit der integrierten Briefversand-Funktion &uuml;ber LetterXpress versenden Sie
+                Schreiben als echten Brief &ndash; direkt aus rentably heraus. Druck, Kuvertierung und
+                Zustellung werden vollautomatisch erledigt. So erreichen Sie auch Mieter, die nicht
+                digital erreichbar sind, und dokumentieren den Versand l&uuml;ckenlos in Ihrer
+                Kommunikationshistorie.
               </p>
             </div>
           </RevealOnScroll>

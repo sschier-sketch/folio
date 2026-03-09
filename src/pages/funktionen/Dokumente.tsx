@@ -12,6 +12,7 @@ import {
   Building2,
   Lock,
   Wand2,
+  Send,
   CheckCircle2,
   Home,
   FolderOpen,
@@ -30,7 +31,8 @@ import {
 const HERO_CHECKS = [
   "Alle Dokumente sicher in der Cloud",
   "Automatische Zuordnung zu Immobilien & Mietern",
-  "Schreiben per Assistent erstellen & als PDF exportieren"
+  "Schreiben per Assistent erstellen & als PDF exportieren",
+  "Briefversand per Post direkt aus der Software",
 ];
 
 const FEATURES = [
@@ -68,6 +70,12 @@ const FEATURES = [
     icon: Wand2,
     title: "Dokument-Assistent",
     description: "Erstellen Sie Kündigungen, Abmahnungen, Zahlungserinnerungen und weitere Schreiben mit einem geführten Assistenten. Schritt für Schritt zum fertigen PDF.",
+    isNew: true,
+  },
+  {
+    icon: Send,
+    title: "Briefversand via LetterXpress",
+    description: "Versenden Sie Dokumente als echten Brief direkt aus rentably. Druck, Kuvertierung und Zustellung erfolgen automatisch — ohne Gang zur Post.",
     isNew: true,
   },
 ];
@@ -621,6 +629,12 @@ export default function Dokumente() {
                 Alle Dateien werden verschl&uuml;sselt auf europ&auml;ischen Servern gespeichert und sind
                 DSGVO-konform archiviert. So haben Sie Ihre gesamten Unterlagen jederzeit und von
                 &uuml;berall im Zugriff &ndash; auf dem PC, Tablet oder Smartphone.
+              </p>
+              <p>
+                Neu: Mit der integrierten Briefversand-Funktion &uuml;ber LetterXpress versenden Sie
+                Dokumente als echten Brief &ndash; direkt aus rentably heraus. Druck, Kuvertierung und
+                Zustellung werden vollautomatisch erledigt. Ideal f&uuml;r K&uuml;ndigungen, Abmahnungen
+                oder andere Schreiben, die per Post zugestellt werden m&uuml;ssen.
               </p>
             </div>
           </RevealOnScroll>

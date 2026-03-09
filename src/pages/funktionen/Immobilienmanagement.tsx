@@ -11,6 +11,7 @@ import {
   Camera,
   Wrench,
   Users as UsersIcon,
+  UserPlus,
   CheckCircle2,
   FolderOpen,
   MessagesSquare,
@@ -32,6 +33,7 @@ const HERO_CHECKS = [
   "Unbegrenzt Immobilien & Einheiten verwalten",
   "Alle Objektdaten zentral an einem Ort",
   "Wertentwicklung & Kennzahlen im Blick",
+  "Multi-User: Gemeinsam im Team verwalten",
 ];
 
 const FEATURES = [
@@ -70,6 +72,13 @@ const FEATURES = [
     title: "Kontakte & Dienstleister",
     description:
       "Verknüpfen Sie Hausverwaltungen, Handwerker und andere Ansprechpartner direkt mit Ihren Immobilien.",
+  },
+  {
+    icon: UserPlus,
+    title: "Benutzerverwaltung",
+    description:
+      "Laden Sie Teammitglieder, Partner oder Familienmitglieder ein und verwalten Sie Ihre Immobilien gemeinsam. Unbegrenzt viele Benutzer im selben Konto.",
+    isNew: true,
   },
 ];
 
@@ -207,7 +216,12 @@ export default function Immobilienmanagement() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map((feature, i) => (
               <RevealOnScroll key={feature.title} delay={i * 80}>
-                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow h-full">
+                <div className={`bg-white border rounded-xl p-6 hover:shadow-md transition-shadow h-full relative ${feature.isNew ? 'border-[#3c8af7]/30 ring-1 ring-[#3c8af7]/10' : 'border-gray-200'}`}>
+                  {feature.isNew && (
+                    <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#3c8af7]/10 text-[#3c8af7] border border-[#3c8af7]/20">
+                      Neue Funktion
+                    </span>
+                  )}
                   <div className="w-12 h-12 rounded-full flex items-center justify-center mb-5" style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}>
                     <feature.icon className="w-5 h-5" style={{ color: "#1E1E24" }} strokeWidth={1.5} />
                   </div>
@@ -422,6 +436,13 @@ export default function Immobilienmanagement() {
                 richtigen Bereiche &ndash; von der Zahlungs&uuml;berwachung bis zur Nebenkostenabrechnung.
                 Die L&ouml;sung ist webbasiert, jederzeit erreichbar und alle Daten werden DSGVO-konform
                 auf deutschen Servern gespeichert.
+              </p>
+              <p>
+                Neu: Mit der integrierten Benutzerverwaltung laden Sie Teammitglieder, Partner oder
+                Familienangeh&ouml;rige in Ihr Konto ein und verwalten Ihre Immobilien gemeinsam.
+                Jeder Benutzer erh&auml;lt eigene Zugangsdaten und arbeitet im selben Datenbestand.
+                So k&ouml;nnen Sie Aufgaben verteilen und die Verwaltung Ihres Portfolios als Team
+                erledigen &ndash; ohne separate Konten oder doppelte Datenpflege.
               </p>
             </div>
           </RevealOnScroll>
