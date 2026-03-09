@@ -162,7 +162,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const { data: existingInvitation } = await supabaseAdmin
-      .from("user_invitations")
+      .from("account_invitations")
       .select("id, status, expires_at")
       .eq("account_owner_id", accountOwnerId)
       .eq("invited_email", invitedEmail)
@@ -180,13 +180,13 @@ Deno.serve(async (req: Request) => {
       }
 
       await supabaseAdmin
-        .from("user_invitations")
+        .from("account_invitations")
         .update({ status: "expired", updated_at: new Date().toISOString() })
         .eq("id", existingInvitation.id);
     }
 
     const { data: invitation, error: insertError } = await supabaseAdmin
-      .from("user_invitations")
+      .from("account_invitations")
       .insert({
         account_owner_id: accountOwnerId,
         invited_email: invitedEmail,
