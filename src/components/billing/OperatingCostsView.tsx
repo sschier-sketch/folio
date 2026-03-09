@@ -509,7 +509,7 @@ export default function OperatingCostsView() {
                     <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-[18%]">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center w-[8%]">
+                    <th className="py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center w-[8%]">
                       Aktionen
                     </th>
                   </tr>
@@ -569,7 +569,7 @@ export default function OperatingCostsView() {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      <td className="py-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-center">
                           <TableActionsDropdown
                             actions={[
