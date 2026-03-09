@@ -41,13 +41,14 @@ interface ComposeInlineProps {
   onSent: () => void;
   onCancel: () => void;
   onNavigatePostalSettings?: () => void;
+  initialMode?: 'email' | 'letter';
 }
 
 const ALL_PROPERTIES = '__all__';
 const ALL_TENANTS = '__all__';
 
-export default function ComposeInline({ userAlias, onSent, onCancel, onNavigatePostalSettings }: ComposeInlineProps) {
-  const [composeMode, setComposeMode] = useState<'email' | 'letter'>('email');
+export default function ComposeInline({ userAlias, onSent, onCancel, onNavigatePostalSettings, initialMode }: ComposeInlineProps) {
+  const [composeMode, setComposeMode] = useState<'email' | 'letter'>(initialMode || 'email');
 
   if (composeMode === 'letter') {
     return (

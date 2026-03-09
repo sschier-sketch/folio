@@ -86,6 +86,7 @@ export default function Dashboard() {
   const [selectedPropertyTab, setSelectedPropertyTab] = useState<string | null>(null);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [viewResetKey, setViewResetKey] = useState(0);
+  const [composeLetter, setComposeLetter] = useState(false);
   const [showUpdatesModal, setShowUpdatesModal] = useState(false);
   const [hasNewUpdates, setHasNewUpdates] = useState(false);
   const [copiedPortalUrl, setCopiedPortalUrl] = useState(false);
@@ -133,6 +134,10 @@ export default function Dashboard() {
     const interval = setInterval(loadUnreadCount, 30000);
     return () => clearInterval(interval);
   }, [user]);
+
+  useEffect(() => {
+    if (currentView !== 'messages') setComposeLetter(false);
+  }, [currentView]);
 
   useEffect(() => {
     supabase
@@ -685,10 +690,10 @@ export default function Dashboard() {
             {currentView === "properties" && <PropertiesView key={viewResetKey} selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
             {currentView === "tenants" && <SectionGuard section="leases"><TenantsView key={viewResetKey} selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} onNavigateToTemplates={() => setCurrentView("templates")} /></SectionGuard>}{" "}
             {currentView === "payments" && <SectionGuard section="rent_payments"><RentPaymentsView key={viewResetKey} /></SectionGuard>}{" "}
-            {currentView === "messages" && <SectionGuard section="messages"><MessagesView key={viewResetKey} /></SectionGuard>}{" "}
+            {currentView === "messages" && <SectionGuard section="messages"><MessagesView key={viewResetKey} initialComposeLetter={composeLetter} /></SectionGuard>}{" "}
             {currentView === "mieterportal" && <MieterportalView key={viewResetKey} />}{" "}
             {currentView === "financial" && <SectionGuard section="finances"><FinancesView key={viewResetKey} /></SectionGuard>}{" "}
-            {currentView === "documents" && <DocumentsView key={viewResetKey} onNavigateToTemplates={() => setCurrentView("templates")} />}{" "}
+            {currentView === "documents" && <DocumentsView key={viewResetKey} onNavigateToTemplates={() => setCurrentView("templates")} onNavigateToComposeLetter={() => { setComposeLetter(true); setCurrentView("messages"); }} />}{" "}
             {currentView === "templates" && <TemplatesView key={viewResetKey} />}{" "}
             {currentView === "billing" && <SectionGuard section="statements"><BillingView key={viewResetKey} /></SectionGuard>}{" "}
             {currentView === "tickets" && <TicketsView key={viewResetKey} initialTicketId={selectedTicketId} />}{" "}

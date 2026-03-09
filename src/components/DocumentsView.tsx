@@ -16,9 +16,10 @@ type Tab = "overview" | "list" | "upload" | "archive";
 
 interface DocumentsViewProps {
   onNavigateToTemplates?: () => void;
+  onNavigateToComposeLetter?: () => void;
 }
 
-export default function DocumentsView({ onNavigateToTemplates }: DocumentsViewProps = {}) {
+export default function DocumentsView({ onNavigateToTemplates, onNavigateToComposeLetter }: DocumentsViewProps = {}) {
   const { isPro } = useSubscription();
   const { canWrite } = usePermissions();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -121,6 +122,7 @@ export default function DocumentsView({ onNavigateToTemplates }: DocumentsViewPr
             onNavigateToUpload={() => setActiveTab("upload")}
             onNavigateToList={() => setActiveTab("list")}
             onNavigateToTemplates={() => onNavigateToTemplates?.()}
+            onNavigateToComposeLetter={() => onNavigateToComposeLetter?.()}
           />
         )}
         {activeTab === "list" && (

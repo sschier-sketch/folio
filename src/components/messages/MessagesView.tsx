@@ -31,7 +31,7 @@ interface MailTemplate {
   updated_at: string;
 }
 
-export default function MessagesView() {
+export default function MessagesView({ initialComposeLetter }: { initialComposeLetter?: boolean }) {
   const { user } = useAuth();
   const { isPro } = useSubscription();
   const { dataOwnerId, canWrite } = usePermissions();
@@ -101,6 +101,16 @@ export default function MessagesView() {
   useEffect(() => { loadMailbox(); }, [loadMailbox]);
   useEffect(() => { loadThreads(); }, [loadThreads]);
   useEffect(() => { loadCounts(); }, [loadCounts]);
+
+  useEffect(() => {
+    if (initialComposeLetter) {
+      setShowCompose(true);
+      setActiveTab('inbox');
+      setActiveView('inbox');
+      setActiveFolder('inbox');
+      setSelectedThread(null);
+    }
+  }, [initialComposeLetter]);
 
   function handleFolderChange(folder: Folder) {
     setActiveFolder(folder);
@@ -389,6 +399,7 @@ export default function MessagesView() {
             onSent={handleComposeSent}
             onCancel={() => setShowCompose(false)}
             onNavigatePostalSettings={handleNavigatePostalSettings}
+            initialMode={initialComposeLetter ? 'letter' : undefined}
           />
         </div>
       )}

@@ -150,7 +150,7 @@ export default function SendAsLetterModal({
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
               <Mail className="w-4.5 h-4.5" style={{ color: '#1E1E24' }} />
             </div>
             <h2 className="text-base font-semibold text-gray-900">Als Brief versenden</h2>
@@ -210,7 +210,7 @@ export default function SendAsLetterModal({
               </div>
 
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
                   <Mail className="w-4 h-4" style={{ color: '#1E1E24' }} />
                 </div>
                 <div className="min-w-0">
