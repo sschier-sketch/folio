@@ -538,7 +538,7 @@ export function Admin() {
                   sortable: true,
                   render: (user: UserData) => (
                     <span className="text-sm text-gray-500 whitespace-nowrap">
-                      {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString("de-DE") : "-"}
+                      {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) + " Uhr" : "-"}
                     </span>
                   )
                 },
