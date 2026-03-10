@@ -1,7 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
 import { crypto as stdCrypto } from "jsr:@std/crypto@1.0.4";
-import { request as httpsRequest } from "node:https";
 
 const LETTERXPRESS_BASE_URL = "https://api.letterxpress.de/v3";
 const MAX_PDF_SIZE_BYTES = 50 * 1024 * 1024;
@@ -162,64 +161,16 @@ function buildAuth(creds: LxCredentials) {
   };
 }
 
-function nodeHttpsRequest(
-  method: string,
-  url: string,
-  jsonBody: string
-): Promise<{ statusCode: number; body: string }> {
-  return new Promise((resolve, reject) => {
-    const parsed = new URL(url);
-    const opts = {
-      hostname: parsed.hostname,
-      port: parsed.port || 443,
-      path: parsed.pathname + parsed.search,
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(jsonBody, "utf-8"),
-      },
-    };
-
-    const timer = setTimeout(() => {
-      req.destroy(new Error("Request timeout (120s)"));
-    }, 120000);
-
-    const req = httpsRequest(opts, (res) => {
-      const chunks: Buffer[] = [];
-      res.on("data", (chunk: Buffer) => chunks.push(chunk));
-      res.on("end", () => {
-        clearTimeout(timer);
-        resolve({
-          statusCode: res.statusCode ?? 0,
-          body: Buffer.concat(chunks).toString("utf-8"),
-        });
-      });
-    });
-
-    req.on("error", (err: Error) => {
-      clearTimeout(timer);
-      reject(err);
-    });
-
-    req.write(jsonBody);
-    req.end();
-  });
-}
-
 async function lxFetch(
   method: string,
   url: string,
   jsonBody: string
 ): Promise<{ statusCode: number; body: string }> {
-  if (method === "GET" || method === "HEAD") {
-    return nodeHttpsRequest(method, url, jsonBody);
-  }
-
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);
   try {
     const response = await fetch(url, {
-      method,
+      method: method === "GET" ? "POST" : method,
       headers: { "Content-Type": "application/json" },
       body: jsonBody,
       signal: controller.signal,
