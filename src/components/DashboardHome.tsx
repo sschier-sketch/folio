@@ -126,7 +126,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const loadStats = async () => {
     if (!user || !dataOwnerId) return;
     try {
-      const [propertiesRes, tenantsRes, contractsRes, loansRes, paymentsRes, unitsValueRes] =
+      const [propertiesRes, tenantsRes, contractsRes, loansRes, paymentsRes, unitsValueRes, separateUnitsRes] =
         await Promise.all([
           supabase
             .from("properties")
@@ -139,7 +139,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             .eq("is_active", true),
           supabase
             .from("rental_contracts")
-            .select("base_rent, property_id")
+            .select("id, base_rent, property_id")
             .eq("user_id", dataOwnerId)
             .eq("status", "active"),
           supabase
@@ -155,6 +155,11 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
             .from("property_units")
             .select("id, unit_number, property_id, current_value, housegeld_monthly_cents")
             .eq("user_id", dataOwnerId),
+          supabase
+            .from("rental_contract_units")
+            .select("contract_id, rent_included, separate_rent, separate_additional_costs")
+            .eq("user_id", dataOwnerId)
+            .eq("rent_included", false),
         ]);
       const properties = filterPropertiesByScope(propertiesRes.data || []);
       const tenants = filterByPropertyId(tenantsRes.data || []);
@@ -162,11 +167,21 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       const loans = filterByPropertyId(loansRes.data || []);
       const payments = filterByPropertyId(paymentsRes.data || []);
       const units = filterByPropertyId(unitsValueRes.data || []);
+      const separateUnits = separateUnitsRes.data || [];
+
+      const separateRentByContract = new Map<string, number>();
+      for (const su of separateUnits) {
+        const amount = (Number(su.separate_rent) || 0) + (Number(su.separate_additional_costs) || 0);
+        if (amount > 0) {
+          const prev = separateRentByContract.get(su.contract_id) || 0;
+          separateRentByContract.set(su.contract_id, prev + amount);
+        }
+      }
 
       const propertiesCount = properties.length;
       const tenantsCount = tenants.length;
       const totalMonthlyRent =
-        contracts.reduce((sum, c) => sum + Number(c.base_rent), 0) ||
+        contracts.reduce((sum, c) => sum + Number(c.base_rent) + (separateRentByContract.get(c.id) || 0), 0) ||
         0;
       const unitsByProperty = new Map<string, number>();
       for (const unit of units) {

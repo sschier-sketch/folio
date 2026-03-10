@@ -240,12 +240,19 @@ export default function CashflowView() {
         .select(HAUSGELD_UNIT_FIELDS)
         .eq("user_id", dataOwnerId!);
 
-      const [contractsRes, manualIncomeRes, expensesRes, loansRes, unitsRes] = await Promise.all([
+      const separateUnitsQuery = supabase
+        .from("rental_contract_units")
+        .select("contract_id, rent_included, separate_rent, separate_additional_costs")
+        .eq("user_id", dataOwnerId!)
+        .eq("rent_included", false);
+
+      const [contractsRes, manualIncomeRes, expensesRes, loansRes, unitsRes, separateUnitsRes] = await Promise.all([
         contractsQuery,
         manualIncomeQuery,
         expensesQuery,
         loansQuery,
         unitsQuery,
+        separateUnitsQuery,
       ]);
 
       const contracts = contractsRes.data || [];
@@ -253,6 +260,15 @@ export default function CashflowView() {
       const expenses = expensesRes.data || [];
       const loans = loansRes.data || [];
       const freshUnits: Unit[] = unitsRes.data || [];
+
+      const separateRentByContract = new Map<string, number>();
+      for (const su of separateUnitsRes.data || []) {
+        const amount = (parseFloat(su.separate_rent?.toString() || "0")) + (parseFloat(su.separate_additional_costs?.toString() || "0"));
+        if (amount > 0) {
+          const prev = separateRentByContract.get(su.contract_id) || 0;
+          separateRentByContract.set(su.contract_id, prev + amount);
+        }
+      }
 
       const monthNames = [
         "Jan", "Feb", "Mär", "Apr", "Mai", "Jun",
@@ -279,10 +295,10 @@ export default function CashflowView() {
         });
 
         const monthRentIncome = activeContracts
-          .reduce((sum, contract) => sum + parseFloat(contract.total_rent?.toString() || "0"), 0);
+          .reduce((sum, contract) => sum + parseFloat(contract.total_rent?.toString() || "0") + (separateRentByContract.get(contract.id) || 0), 0);
 
         const monthBaseRentIncome = activeContracts
-          .reduce((sum, contract) => sum + parseFloat(contract.base_rent?.toString() || contract.total_rent?.toString() || "0"), 0);
+          .reduce((sum, contract) => sum + parseFloat(contract.base_rent?.toString() || contract.total_rent?.toString() || "0") + (separateRentByContract.get(contract.id) || 0), 0);
 
         const monthOperatingCostIncome = activeContracts
           .reduce((sum, contract) => sum + parseFloat(contract.additional_costs?.toString() || "0"), 0);

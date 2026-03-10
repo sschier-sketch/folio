@@ -329,7 +329,11 @@ export default function IncomeView() {
 
   const totalManualIncome = manualIncomes.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
   const totalRentIncome = activeStartedContracts.reduce((sum, contract) => {
-    return sum + parseFloat(contract.total_rent.toString());
+    const contractTotal = parseFloat(contract.total_rent.toString());
+    const separateUnitRent = (contract.units || [])
+      .filter(u => !u.rent_included)
+      .reduce((s, u) => s + u.separate_rent + u.separate_additional_costs, 0);
+    return sum + contractTotal + separateUnitRent;
   }, 0);
   const totalNebenkostenIncome = nebenkostenPayments.reduce((sum, p) => sum + p.amount, 0);
   const totalNebenkostenPaid = nebenkostenPayments.reduce((sum, p) => sum + (p.paid_amount || 0), 0);

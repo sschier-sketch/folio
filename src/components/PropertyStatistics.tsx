@@ -32,6 +32,7 @@ interface RentPayment {
   paid_date: string | null;
 }
 interface RentalContract {
+  id: string;
   base_rent: number;
   additional_costs: number;
   total_rent: number;
@@ -53,13 +54,14 @@ export default function PropertyStatistics({
   const [rentPayments, setRentPayments] = useState<RentPayment[]>([]);
   const [contracts, setContracts] = useState<RentalContract[]>([]);
   const [propertyUnits, setPropertyUnits] = useState<HausgeldUnit[]>([]);
+  const [separateRentByContract, setSeparateRentByContract] = useState<Map<string, number>>(new Map());
   useEffect(() => {
     loadData();
   }, [property.id, user]);
   const loadData = async () => {
     if (!user) return;
     try {
-      const [loansRes, paymentsRes, contractsRes, unitsRes] = await Promise.all([
+      const [loansRes, paymentsRes, contractsRes, unitsRes, separateUnitsRes] = await Promise.all([
         supabase
           .from("loans")
           .select("*")
@@ -73,7 +75,7 @@ export default function PropertyStatistics({
           .eq("paid", true),
         supabase
           .from("rental_contracts")
-          .select("base_rent, additional_costs, total_rent, status, contract_start, contract_end")
+          .select("id, base_rent, additional_costs, total_rent, status, contract_start, contract_end")
           .eq("property_id", property.id)
           .eq("user_id", user.id)
           .eq("status", "active"),
@@ -81,11 +83,25 @@ export default function PropertyStatistics({
           .from("property_units")
           .select(HAUSGELD_UNIT_FIELDS)
           .eq("property_id", property.id),
+        supabase
+          .from("rental_contract_units")
+          .select("contract_id, rent_included, separate_rent, separate_additional_costs")
+          .eq("user_id", user.id)
+          .eq("rent_included", false),
       ]);
       setLoans(loansRes.data || []);
       setRentPayments(paymentsRes.data || []);
       setContracts(contractsRes.data || []);
       setPropertyUnits(unitsRes.data || []);
+      const sepMap = new Map<string, number>();
+      for (const su of separateUnitsRes.data || []) {
+        const amount = (Number(su.separate_rent) || 0) + (Number(su.separate_additional_costs) || 0);
+        if (amount > 0) {
+          const prev = sepMap.get(su.contract_id) || 0;
+          sepMap.set(su.contract_id, prev + amount);
+        }
+      }
+      setSeparateRentByContract(sepMap);
     } catch (error) {
       console.error("Error loading statistics data:", error);
     } finally {
@@ -132,7 +148,7 @@ export default function PropertyStatistics({
     return startDate <= today && (!endDate || endDate >= today);
   });
   const monthlyRent = activeStartedContracts.reduce(
-    (sum, c) => sum + Number(c.base_rent || 0),
+    (sum, c) => sum + Number(c.base_rent || 0) + (separateRentByContract.get(c.id) || 0),
     0,
   );
   const netEquity =

@@ -176,7 +176,24 @@ export default function PropertyOverviewTab({ property, onUpdate, onNavigateToTe
           return startDate <= today && (!endDate || endDate >= today);
         });
 
-        const totalRent = activeContracts.reduce((sum, c) => sum + (Number(c.base_rent) || 0), 0);
+        const contractIds = activeContracts.map(c => c.id);
+        let separateRentByContract = new Map<string, number>();
+        if (contractIds.length > 0) {
+          const { data: sepUnits } = await supabase
+            .from("rental_contract_units")
+            .select("contract_id, rent_included, separate_rent, separate_additional_costs")
+            .in("contract_id", contractIds)
+            .eq("rent_included", false);
+          for (const su of sepUnits || []) {
+            const amount = (Number(su.separate_rent) || 0) + (Number(su.separate_additional_costs) || 0);
+            if (amount > 0) {
+              const prev = separateRentByContract.get(su.contract_id) || 0;
+              separateRentByContract.set(su.contract_id, prev + amount);
+            }
+          }
+        }
+
+        const totalRent = activeContracts.reduce((sum, c) => sum + (Number(c.base_rent) || 0) + (separateRentByContract.get(c.id) || 0), 0);
         const occupancyRate = totalUnits > 0 ? (rentedUnits / totalUnits) * 100 : 0;
 
         setStats({

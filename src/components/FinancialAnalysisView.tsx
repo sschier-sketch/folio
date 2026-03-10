@@ -80,11 +80,11 @@ export default function FinancialAnalysisView() {
   const loadFinancialData = async () => {
     if (!user || !dataOwnerId) return;
     try {
-      const [contractsRes, paymentsRes, loansRes, propertiesRes, unitsRes] =
+      const [contractsRes, paymentsRes, loansRes, propertiesRes, unitsRes, separateUnitsRes] =
         await Promise.all([
           supabase
             .from("rental_contracts")
-            .select("property_id, base_rent, additional_costs, status, contract_start, contract_end")
+            .select("id, property_id, base_rent, additional_costs, status, contract_start, contract_end")
             .eq("user_id", dataOwnerId)
             .eq("status", "active"),
           supabase
@@ -106,11 +106,26 @@ export default function FinancialAnalysisView() {
             .from("property_units")
             .select(HAUSGELD_UNIT_FIELDS)
             .eq("user_id", dataOwnerId),
+          supabase
+            .from("rental_contract_units")
+            .select("contract_id, rent_included, separate_rent, separate_additional_costs")
+            .eq("user_id", dataOwnerId)
+            .eq("rent_included", false),
         ]);
       const properties = filterPropertiesByScope(propertiesRes.data || []);
       const contracts = filterByPropertyId(contractsRes.data || []);
       const loans = filterByPropertyId(loansRes.data || []);
       const propertyMap = new Map(properties.map((p) => [p.id, p]));
+
+      const separateRentByContract = new Map<string, number>();
+      for (const su of separateUnitsRes.data || []) {
+        const amount = (Number(su.separate_rent) || 0) + (Number(su.separate_additional_costs) || 0);
+        if (amount > 0) {
+          const prev = separateRentByContract.get(su.contract_id) || 0;
+          separateRentByContract.set(su.contract_id, prev + amount);
+        }
+      }
+
       const today = new Date();
       const propertyFinancialsData: PropertyFinancials[] = properties.map(
         (property) => {
@@ -124,7 +139,7 @@ export default function FinancialAnalysisView() {
           });
           const monthlyRent = activeStartedContracts.reduce(
             (sum, c) =>
-              sum + Number(c.base_rent || 0),
+              sum + Number(c.base_rent || 0) + (separateRentByContract.get(c.id) || 0),
             0,
           );
           return {

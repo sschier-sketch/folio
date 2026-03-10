@@ -107,10 +107,10 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
       const daysInPeriod = Math.ceil((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24));
       const monthsInPeriod = daysInPeriod / 30;
 
-      const [propertyRes, unitsRes, contractsRes, expensesRes, loansRes] = await Promise.all([
+      const [propertyRes, unitsRes, contractsRes, expensesRes, loansRes, separateUnitsRes] = await Promise.all([
         supabase.from("properties").select("*").eq("id", propertyId).eq("user_id", user.id).single(),
         supabase.from("property_units").select("id, unit_number, status, area_sqm, purchase_price, current_value, housegeld_monthly_cents").eq("property_id", propertyId),
-        supabase.from("rental_contracts").select("base_rent, contract_start, contract_end, property_id, unit_id").eq("user_id", user.id),
+        supabase.from("rental_contracts").select("id, base_rent, contract_start, contract_end, property_id, unit_id").eq("user_id", user.id),
         supabase
           .from("expenses")
           .select("amount")
@@ -119,10 +119,20 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           .gte("expense_date", dateFrom)
           .lte("expense_date", dateTo),
         supabase.from("loans").select("monthly_payment").eq("property_id", propertyId).eq("user_id", user.id),
+        supabase.from("rental_contract_units").select("contract_id, rent_included, separate_rent, separate_additional_costs").eq("user_id", user.id).eq("rent_included", false),
       ]);
 
       if (propertyRes.data) {
         setProperty(propertyRes.data);
+
+        const separateRentByContract = new Map<string, number>();
+        for (const su of separateUnitsRes.data || []) {
+          const amount = (Number(su.separate_rent) || 0) + (Number(su.separate_additional_costs) || 0);
+          if (amount > 0) {
+            const prev = separateRentByContract.get(su.contract_id) || 0;
+            separateRentByContract.set(su.contract_id, prev + amount);
+          }
+        }
 
         const units = unitsRes.data || [];
         const totalUnits = units.length;
@@ -157,7 +167,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           vacancyRate = 100;
         }
 
-        const monthlyRent = activeStartedContracts.reduce((sum, c) => sum + Number(c.base_rent || 0), 0);
+        const monthlyRent = activeStartedContracts.reduce((sum, c) => sum + Number(c.base_rent || 0) + (separateRentByContract.get(c.id) || 0), 0);
 
         const totalExpensesInPeriod =
           expensesRes.data?.reduce((sum, e) => sum + Number(e.amount || 0), 0) || 0;
@@ -218,7 +228,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
         const unitMap = new Map(units.map(u => [u.id, u.unit_number || u.id.slice(0, 6)]));
         const rentByUnit: RentDetail[] = activeStartedContracts.map(c => ({
           unitNumber: c.unit_id ? (unitMap.get(c.unit_id) || 'Unbekannt') : 'Gesamtobjekt',
-          rent: Number(c.base_rent || 0),
+          rent: Number(c.base_rent || 0) + (separateRentByContract.get(c.id) || 0),
         }));
         setRentDetails(rentByUnit);
 
@@ -242,7 +252,7 @@ export default function PropertyMetricsTab({ propertyId }: PropertyMetricsTabPro
           if (overlapStart > overlapEnd) return sum;
           const overlapDays = Math.ceil((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24));
           const overlapMonths = overlapDays / 30;
-          return sum + Number(c.base_rent || 0) * overlapMonths;
+          return sum + (Number(c.base_rent || 0) + (separateRentByContract.get(c.id) || 0)) * overlapMonths;
         }, 0);
 
         const totalCostsInPeriod = totalExpensesInPeriod
