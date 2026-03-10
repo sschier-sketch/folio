@@ -169,14 +169,19 @@ async function lxFetch(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);
 
+  const isGetOrHead = method === "GET" || method === "HEAD";
+
   try {
-    const request = new Request(url, {
+    const opts: RequestInit & { duplex?: string } = {
       method,
       headers: { "Content-Type": "application/json" },
       body: jsonBody,
       signal: controller.signal,
-    });
-    const response = await fetch(request);
+    };
+    if (isGetOrHead) {
+      (opts as any).duplex = "half";
+    }
+    const response = await fetch(url, opts);
     clearTimeout(timeout);
     const text = await response.text();
     return { statusCode: response.status, body: text };
