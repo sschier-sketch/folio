@@ -44,12 +44,14 @@ interface RentPayment {
   contract_id?: string | null;
   property_id?: string | null;
   tenant_id?: string | null;
+  unit_id?: string | null;
   property: { name: string; address: string } | null;
   rental_contract: {
     tenants: Array<{ first_name: string; last_name: string; email: string }>;
     rent_due_day: number;
     unit?: { unit_number: string } | null;
   } | null;
+  payment_unit?: { unit_number: string } | null;
 }
 export default function RentPaymentsView() {
   const { user } = useAuth();
@@ -140,6 +142,7 @@ export default function RentPaymentsView() {
           `
           *,
           property:properties(name, address),
+          payment_unit:property_units!rent_payments_unit_id_fkey(unit_number),
           rental_contract:rental_contracts(
             rent_due_day,
             unit:property_units(unit_number),
@@ -175,6 +178,10 @@ export default function RentPaymentsView() {
 
       const filteredPayments = (data || []).filter(payment => {
         if (payment.payment_type === 'nebenkosten') return true;
+        if (payment.unit_id) {
+          if (payment.rental_contract?.tenants?.length > 0) return true;
+          return false;
+        }
         if (!payment.rental_contract) return false;
         if (!payment.rental_contract.tenants || payment.rental_contract.tenants.length === 0) return false;
         const tenant = payment.rental_contract.tenants[0];
@@ -832,6 +839,9 @@ export default function RentPaymentsView() {
                   </div>
                 )}
                 {payment.payment_type === 'nebenkosten' && payment.description && (
+                  <div className="text-xs text-gray-400 mt-0.5">{payment.description}</div>
+                )}
+                {payment.unit_id && payment.description && payment.payment_type === 'rent' && (
                   <div className="text-xs text-gray-400 mt-0.5">{payment.description}</div>
                 )}
               </div>

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { withRef } from "../lib/referralTracking";
 import { Check, Minus, Info, Sparkles } from "lucide-react";
 import { PLANS, COMPARISON_TABLE, calculateYearlySavings } from "../config/plans";
 
@@ -193,7 +194,7 @@ export default function Pricing() {
               ))}
             </ul>
             <button
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate(withRef("/signup"))}
               className="h-[46px] w-full rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
             >
               Kostenlos registrieren
@@ -234,7 +235,7 @@ export default function Pricing() {
               ))}
             </ul>
             <button
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate(withRef("/signup"))}
               className="h-[46px] w-full rounded-xl text-sm font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
             >
               30 Tage kostenlos testen

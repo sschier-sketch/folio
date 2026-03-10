@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { withRef } from "../../lib/referralTracking";
 
 import { RefLink } from "../common/RefLink";
 import { CheckCircle2, Home, Users, BarChart3, FileText } from "lucide-react";
@@ -143,7 +144,7 @@ export default function HeroSection() {
             </ul>
             <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
               <button
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate(withRef("/signup"))}
                 className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
               >
                 Kostenlos starten

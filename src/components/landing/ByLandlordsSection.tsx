@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { withRef } from "../../lib/referralTracking";
 
 import { CheckCircle2 } from "lucide-react";
 import { RevealOnScroll } from "../common/RevealOnScroll";
@@ -37,7 +38,7 @@ export default function ByLandlordsSection() {
               ))}
             </ul>
             <button
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate(withRef("/signup"))}
               className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
             >
               Kostenlos starten

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { withRef } from "../../lib/referralTracking";
 
 import { RefLink } from "../../components/common/RefLink";
 import { RevealOnScroll } from "../../components/common/RevealOnScroll";
@@ -368,7 +369,7 @@ function StepCard({
 
 export default function Nebenkostenabrechnung() {
   const navigate = useNavigate();
-  const goToSignup = () => navigate("/signup");
+  const goToSignup = () => navigate(withRef("/signup"));
 
   return (
     <div>

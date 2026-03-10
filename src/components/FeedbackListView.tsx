@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ThumbsUp, ThumbsDown, Filter } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Filter, Bell, BellOff } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -15,6 +15,7 @@ interface Feedback {
   upvotes: number;
   downvotes: number;
   net_votes: number;
+  notify_on_status_change: boolean;
   user_vote?: "up" | "down" | null;
 }
 type FilterType = "all" | "top" | "new" | "mine";
@@ -27,6 +28,7 @@ export default function FeedbackListView() {
   const [newFeedback, setNewFeedback] = useState("");
   const [willingToPay, setWillingToPay] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
+  const [notifyOnChange, setNotifyOnChange] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   useEffect(() => {
@@ -113,12 +115,14 @@ export default function FeedbackListView() {
           feedback_text: newFeedback.trim(),
           willing_to_pay: willingToPay,
           payment_amount: willingToPay && paymentAmount ? paymentAmount : null,
+          notify_on_status_change: notifyOnChange,
           status: "pending",
         });
       if (error) throw error;
       setNewFeedback("");
       setWillingToPay(false);
       setPaymentAmount("");
+      setNotifyOnChange(true);
       setSuccessMessage(t("settings.feedback.success"));
       await loadFeedback();
       setTimeout(() => setSuccessMessage(""), 5000);
@@ -128,6 +132,24 @@ export default function FeedbackListView() {
       setSubmitting(false);
     }
   };
+  const handleToggleNotify = async (feedbackId: string, currentValue: boolean) => {
+    if (!user) return;
+    try {
+      await supabase
+        .from("user_feedback")
+        .update({ notify_on_status_change: !currentValue })
+        .eq("id", feedbackId)
+        .eq("user_id", user.id);
+      setFeedbackList((prev) =>
+        prev.map((f) =>
+          f.id === feedbackId ? { ...f, notify_on_status_change: !currentValue } : f
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling notification:", error);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(language === "de" ? "de-DE" : "en-US", {
@@ -213,6 +235,19 @@ export default function FeedbackListView() {
               />
             )}
           </div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={notifyOnChange}
+              onChange={(e) => setNotifyOnChange(e.target.checked)}
+              className="w-5 h-5 text-primary-blue rounded focus:ring-2 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-400">
+              {language === "de"
+                ? "Über Umsetzungsstatus informiert bleiben"
+                : "Keep me informed about status changes"}
+            </span>
+          </label>
           <Button
             type="submit"
             disabled={submitting || !newFeedback.trim()}
@@ -306,6 +341,30 @@ export default function FeedbackListView() {
                   <p className="text-dark text-lg leading-relaxed whitespace-pre-wrap">
                     {feedback.feedback_text}
                   </p>
+                  {feedback.user_id === user?.id && (
+                    <button
+                      onClick={() => handleToggleNotify(feedback.id, feedback.notify_on_status_change)}
+                      className={`mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors ${
+                        feedback.notify_on_status_change
+                          ? "text-primary-blue"
+                          : "text-gray-400 hover:text-gray-600"
+                      }`}
+                      title={feedback.notify_on_status_change
+                        ? (language === "de" ? "Benachrichtigung bei Statusänderung aktiv" : "Notification on status change active")
+                        : (language === "de" ? "Benachrichtigung bei Statusänderung aktivieren" : "Enable notification on status change")
+                      }
+                    >
+                      {feedback.notify_on_status_change ? (
+                        <Bell className="w-3.5 h-3.5" />
+                      ) : (
+                        <BellOff className="w-3.5 h-3.5" />
+                      )}
+                      {feedback.notify_on_status_change
+                        ? (language === "de" ? "Benachrichtigung aktiv" : "Notification active")
+                        : (language === "de" ? "Benachrichtigung aktivieren" : "Enable notification")
+                      }
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
