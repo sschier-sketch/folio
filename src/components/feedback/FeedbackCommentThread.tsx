@@ -217,15 +217,21 @@ export function FeedbackCommentThread({
                 <>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 mb-1">
-                      {comment.is_admin_comment && (
+                      {comment.is_admin_comment ? (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold uppercase">
                           <Shield className="w-2.5 h-2.5" />
                           Team
                         </span>
+                      ) : (
+                        <span className="text-xs font-medium text-gray-700">
+                          {comment.user_name || "Nutzer"}
+                        </span>
                       )}
-                      <span className="text-xs font-medium text-gray-700">
-                        {comment.user_name || "Nutzer"}
-                      </span>
+                      {isAdmin && comment.is_admin_comment && (
+                        <span className="text-xs font-medium text-gray-700">
+                          {comment.user_name || "Admin"}
+                        </span>
+                      )}
                       <span className="text-xs text-gray-400">
                         {new Date(comment.created_at).toLocaleDateString("de-DE", {
                           day: "numeric",

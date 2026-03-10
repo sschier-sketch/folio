@@ -6,8 +6,6 @@ import {
   Bell,
   BellOff,
   MessageCircle,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -370,17 +368,21 @@ export default function FeedbackListView() {
                           <span className="text-sm text-gray-300">
                             {formatDate(feedback.created_at)}
                           </span>
-                          {feedback.comment_count > 0 && (
-                            <button
-                              onClick={() =>
-                                setExpandedId(isExpanded ? null : feedback.id)
-                              }
-                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100 transition-colors"
-                            >
-                              <MessageCircle className="w-3 h-3" />
-                              {feedback.comment_count}
-                            </button>
-                          )}
+                          <button
+                            onClick={() =>
+                              setExpandedId(isExpanded ? null : feedback.id)
+                            }
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                              isExpanded
+                                ? "bg-primary-blue text-white"
+                                : feedback.comment_count > 0
+                                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                  : "bg-gray-50 text-gray-400 hover:bg-gray-100"
+                            }`}
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            {feedback.comment_count}
+                          </button>
                         </div>
                       </div>
                       <p className="text-dark text-lg leading-relaxed whitespace-pre-wrap">
@@ -424,19 +426,6 @@ export default function FeedbackListView() {
                                 : "Enable notification"}
                           </button>
                         )}
-                        <button
-                          onClick={() =>
-                            setExpandedId(isExpanded ? null : feedback.id)
-                          }
-                          className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-primary-blue transition-colors"
-                        >
-                          {isExpanded ? (
-                            <ChevronUp className="w-3.5 h-3.5" />
-                          ) : (
-                            <ChevronDown className="w-3.5 h-3.5" />
-                          )}
-                          {language === "de" ? "Kommentare" : "Comments"}
-                        </button>
                       </div>
                     </div>
                   </div>
