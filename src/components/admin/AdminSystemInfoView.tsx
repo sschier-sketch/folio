@@ -11,6 +11,7 @@ import {
   getSystemSettings,
   updateSystemSettings,
 } from "../../lib/systemSettings";
+import RegistrationHealthView from "./RegistrationHealthView";
 
 export default function AdminSystemInfoView() {
   const [loading, setLoading] = useState(true);
@@ -292,6 +293,8 @@ export default function AdminSystemInfoView() {
         </div>
       </div>
 
+      <RegistrationHealthView />
+
       <div className="mt-6 bg-white rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold text-dark mb-4 flex items-center gap-2">
           <Monitor className="w-5 h-5" />
@@ -315,6 +318,17 @@ export default function AdminSystemInfoView() {
               <p className="text-gray-600">
                 Die E-Mail enthaelt die E-Mail-Adresse des neuen Nutzers sowie den
                 Zeitpunkt der Registrierung (Berliner Zeit).
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5"></div>
+            <div>
+              <p className="font-medium text-dark">Registrierungsfehler-Alerting</p>
+              <p className="text-gray-600">
+                Bei jedem Registrierungsfehler (nicht bei bewussten Blocks wie Einladungs-Duplikaten)
+                wird automatisch eine kritische E-Mail an die hinterlegte Adresse gesendet.
+                Fehler werden dauerhaft in der Datenbank protokolliert.
               </p>
             </div>
           </div>

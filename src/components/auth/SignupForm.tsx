@@ -9,6 +9,37 @@ interface SignupFormProps {
   onSuccess?: () => void;
 }
 
+function logRegistrationError(params: {
+  email?: string;
+  step: string;
+  error_message: string;
+  error_code?: string;
+  error_details?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-registration-error`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...params,
+          source: "frontend",
+          metadata: {
+            ...params.metadata,
+            user_agent: navigator.userAgent,
+            url: window.location.href,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+      }
+    ).catch(() => {});
+  } catch {
+    // Never block signup flow
+  }
+}
+
 export function SignupForm({ onSuccess }: SignupFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -102,12 +133,26 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
 
       if (error) {
         sessionStorage.removeItem("auth_event_type");
-        if (error.message?.includes("registration_blocked:pending_invitation")) {
+        const isBlockedInvitation = error.message?.includes("registration_blocked:pending_invitation");
+        const isBlockedMember = error.message?.includes("registration_blocked:active_member");
+
+        if (!isBlockedInvitation && !isBlockedMember) {
+          logRegistrationError({
+            email,
+            step: "auth_signup",
+            error_message: error.message || "Unknown auth error",
+            error_code: error.status?.toString(),
+            error_details: JSON.stringify({ name: error.name, status: error.status }),
+            metadata: { has_referral: !!refCode },
+          });
+        }
+
+        if (isBlockedInvitation) {
           setMessage({
             type: "error",
             text: "Fuer diese E-Mail-Adresse liegt bereits eine Einladung als Benutzer eines bestehenden Accounts vor. Bitte nehmen Sie die Einladung an oder verwenden Sie eine andere E-Mail-Adresse.",
           });
-        } else if (error.message?.includes("registration_blocked:active_member")) {
+        } else if (isBlockedMember) {
           setMessage({
             type: "error",
             text: "Diese E-Mail-Adresse ist bereits als Benutzer einem bestehenden Account zugeordnet. Um ein eigenes Konto zu erstellen, muss die Zuordnung zuerst aufgehoben werden oder eine andere E-Mail-Adresse verwendet werden.",
@@ -187,6 +232,12 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
         onSuccess?.();
       }
     } catch (error) {
+      logRegistrationError({
+        email,
+        step: "signup_unexpected",
+        error_message: error instanceof Error ? error.message : String(error),
+        error_details: error instanceof Error ? error.stack : undefined,
+      });
       setMessage({ type: "error", text: "Ein unerwarteter Fehler ist aufgetreten" });
     } finally {
       setLoading(false);
