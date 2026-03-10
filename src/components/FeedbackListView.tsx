@@ -1,9 +1,20 @@
 import { useState, useEffect } from "react";
-import { ThumbsUp, ThumbsDown, Filter, Bell, BellOff } from "lucide-react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  Filter,
+  Bell,
+  BellOff,
+  MessageCircle,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Button } from './ui/Button';
+import { Button } from "./ui/Button";
+import { FeedbackCommentThread } from "./feedback/FeedbackCommentThread";
+
 interface Feedback {
   id: string;
   user_id: string;
@@ -16,9 +27,12 @@ interface Feedback {
   downvotes: number;
   net_votes: number;
   notify_on_status_change: boolean;
+  comment_count: number;
   user_vote?: "up" | "down" | null;
 }
+
 type FilterType = "all" | "top" | "new" | "mine";
+
 export default function FeedbackListView() {
   const { user } = useAuth();
   const { t, language } = useLanguage();
@@ -31,9 +45,12 @@ export default function FeedbackListView() {
   const [notifyOnChange, setNotifyOnChange] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   useEffect(() => {
     loadFeedback();
   }, [filter, user]);
+
   const loadFeedback = async () => {
     if (!user) return;
     try {
@@ -50,11 +67,13 @@ export default function FeedbackListView() {
       }
       const { data: feedbackData, error: feedbackError } = await query;
       if (feedbackError) throw feedbackError;
+
       const { data: votesData, error: votesError } = await supabase
         .from("feedback_votes")
         .select("feedback_id, vote_type")
         .eq("user_id", user.id);
       if (votesError) throw votesError;
+
       const votesMap = new Map(
         votesData?.map((v) => [v.feedback_id, v.vote_type]) || [],
       );
@@ -70,6 +89,7 @@ export default function FeedbackListView() {
       setLoading(false);
     }
   };
+
   const handleVote = async (feedbackId: string, voteType: "up" | "down") => {
     if (!user) return;
     try {
@@ -89,35 +109,32 @@ export default function FeedbackListView() {
           .eq("feedback_id", feedbackId)
           .eq("user_id", user.id);
       } else {
-        await supabase
-          .from("feedback_votes")
-          .insert({
-            feedback_id: feedbackId,
-            user_id: user.id,
-            vote_type: voteType,
-          });
+        await supabase.from("feedback_votes").insert({
+          feedback_id: feedbackId,
+          user_id: user.id,
+          vote_type: voteType,
+        });
       }
       await loadFeedback();
     } catch (error) {
       console.error("Error voting:", error);
     }
   };
+
   const handleSubmitFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newFeedback.trim()) return;
     setSubmitting(true);
     setSuccessMessage("");
     try {
-      const { error } = await supabase
-        .from("user_feedback")
-        .insert({
-          user_id: user.id,
-          feedback_text: newFeedback.trim(),
-          willing_to_pay: willingToPay,
-          payment_amount: willingToPay && paymentAmount ? paymentAmount : null,
-          notify_on_status_change: notifyOnChange,
-          status: "pending",
-        });
+      const { error } = await supabase.from("user_feedback").insert({
+        user_id: user.id,
+        feedback_text: newFeedback.trim(),
+        willing_to_pay: willingToPay,
+        payment_amount: willingToPay && paymentAmount ? paymentAmount : null,
+        notify_on_status_change: notifyOnChange,
+        status: "pending",
+      });
       if (error) throw error;
       setNewFeedback("");
       setWillingToPay(false);
@@ -132,7 +149,11 @@ export default function FeedbackListView() {
       setSubmitting(false);
     }
   };
-  const handleToggleNotify = async (feedbackId: string, currentValue: boolean) => {
+
+  const handleToggleNotify = async (
+    feedbackId: string,
+    currentValue: boolean,
+  ) => {
     if (!user) return;
     try {
       await supabase
@@ -142,8 +163,10 @@ export default function FeedbackListView() {
         .eq("user_id", user.id);
       setFeedbackList((prev) =>
         prev.map((f) =>
-          f.id === feedbackId ? { ...f, notify_on_status_change: !currentValue } : f
-        )
+          f.id === feedbackId
+            ? { ...f, notify_on_status_change: !currentValue }
+            : f,
+        ),
       );
     } catch (error) {
       console.error("Error toggling notification:", error);
@@ -158,6 +181,7 @@ export default function FeedbackListView() {
       day: "numeric",
     });
   };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "implemented":
@@ -170,9 +194,11 @@ export default function FeedbackListView() {
         return "text-gray-400 bg-gray-50";
     }
   };
+
   const getStatusText = (status: string) => {
     return t(`settings.feedback.status.${status}`);
   };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -180,6 +206,7 @@ export default function FeedbackListView() {
       </div>
     );
   }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -190,6 +217,7 @@ export default function FeedbackListView() {
           <p className="text-gray-400">{t("feedback.description")}</p>
         </div>
       </div>
+
       <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
         <h2 className="text-xl font-semibold text-dark mb-4">
           {t("feedback.submit")}
@@ -244,8 +272,8 @@ export default function FeedbackListView() {
             />
             <span className="text-sm font-medium text-gray-400">
               {language === "de"
-                ? "Über Umsetzungsstatus informiert bleiben"
-                : "Keep me informed about status changes"}
+                ? "Über Umsetzungsstatus und Kommentare informiert bleiben"
+                : "Keep me informed about status changes and comments"}
             </span>
           </label>
           <Button
@@ -262,6 +290,7 @@ export default function FeedbackListView() {
           </Button>
         </form>
       </div>
+
       <div className="flex gap-3 mb-6">
         <button
           onClick={() => setFilter("all")}
@@ -288,6 +317,7 @@ export default function FeedbackListView() {
           {t("feedback.filter.mine")}
         </button>
       </div>
+
       {feedbackList.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-12 text-center">
           <h3 className="text-xl font-semibold text-dark mb-2">
@@ -297,78 +327,141 @@ export default function FeedbackListView() {
         </div>
       ) : (
         <div className="space-y-4">
-          {feedbackList.map((feedback) => (
-            <div
-              key={feedback.id}
-              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex gap-4">
-                <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => handleVote(feedback.id, "up")}
-                    className={`p-2 rounded-lg transition-colors ${feedback.user_vote === "up" ? "bg-emerald-100 text-emerald-600" : "bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600"}`}
-                  >
-                    <ThumbsUp className="w-5 h-5" />
-                  </button>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-dark">
-                      {feedback.upvotes - feedback.downvotes}
-                    </div>
-                    <div className="text-xs text-gray-300">
-                      {t("feedback.votes")}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleVote(feedback.id, "down")}
-                    className={`p-2 rounded-lg transition-colors ${feedback.user_vote === "down" ? "bg-red-100 text-red-600" : "bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600"}`}
-                  >
-                    <ThumbsDown className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(feedback.status)}`}
+          {feedbackList.map((feedback) => {
+            const isExpanded = expandedId === feedback.id;
+
+            return (
+              <div
+                key={feedback.id}
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="p-6">
+                  <div className="flex gap-4">
+                    <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => handleVote(feedback.id, "up")}
+                        className={`p-2 rounded-lg transition-colors ${feedback.user_vote === "up" ? "bg-emerald-100 text-emerald-600" : "bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600"}`}
                       >
-                        {getStatusText(feedback.status)}
-                      </span>
-                      <span className="text-sm text-gray-300">
-                        {formatDate(feedback.created_at)}
-                      </span>
+                        <ThumbsUp className="w-5 h-5" />
+                      </button>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-dark">
+                          {feedback.upvotes - feedback.downvotes}
+                        </div>
+                        <div className="text-xs text-gray-300">
+                          {t("feedback.votes")}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleVote(feedback.id, "down")}
+                        className={`p-2 rounded-lg transition-colors ${feedback.user_vote === "down" ? "bg-red-100 text-red-600" : "bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600"}`}
+                      >
+                        <ThumbsDown className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(feedback.status)}`}
+                          >
+                            {getStatusText(feedback.status)}
+                          </span>
+                          <span className="text-sm text-gray-300">
+                            {formatDate(feedback.created_at)}
+                          </span>
+                          {feedback.comment_count > 0 && (
+                            <button
+                              onClick={() =>
+                                setExpandedId(isExpanded ? null : feedback.id)
+                              }
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100 transition-colors"
+                            >
+                              <MessageCircle className="w-3 h-3" />
+                              {feedback.comment_count}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-dark text-lg leading-relaxed whitespace-pre-wrap">
+                        {feedback.feedback_text}
+                      </p>
+                      <div className="flex items-center gap-3 mt-3">
+                        {feedback.user_id === user?.id && (
+                          <button
+                            onClick={() =>
+                              handleToggleNotify(
+                                feedback.id,
+                                feedback.notify_on_status_change,
+                              )
+                            }
+                            className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
+                              feedback.notify_on_status_change
+                                ? "text-primary-blue"
+                                : "text-gray-400 hover:text-gray-600"
+                            }`}
+                            title={
+                              feedback.notify_on_status_change
+                                ? language === "de"
+                                  ? "Benachrichtigung bei Statusänderung aktiv"
+                                  : "Notification on status change active"
+                                : language === "de"
+                                  ? "Benachrichtigung bei Statusänderung aktivieren"
+                                  : "Enable notification on status change"
+                            }
+                          >
+                            {feedback.notify_on_status_change ? (
+                              <Bell className="w-3.5 h-3.5" />
+                            ) : (
+                              <BellOff className="w-3.5 h-3.5" />
+                            )}
+                            {feedback.notify_on_status_change
+                              ? language === "de"
+                                ? "Benachrichtigung aktiv"
+                                : "Notification active"
+                              : language === "de"
+                                ? "Benachrichtigung aktivieren"
+                                : "Enable notification"}
+                          </button>
+                        )}
+                        <button
+                          onClick={() =>
+                            setExpandedId(isExpanded ? null : feedback.id)
+                          }
+                          className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-primary-blue transition-colors"
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          )}
+                          {language === "de" ? "Kommentare" : "Comments"}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <p className="text-dark text-lg leading-relaxed whitespace-pre-wrap">
-                    {feedback.feedback_text}
-                  </p>
-                  {feedback.user_id === user?.id && (
-                    <button
-                      onClick={() => handleToggleNotify(feedback.id, feedback.notify_on_status_change)}
-                      className={`mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors ${
-                        feedback.notify_on_status_change
-                          ? "text-primary-blue"
-                          : "text-gray-400 hover:text-gray-600"
-                      }`}
-                      title={feedback.notify_on_status_change
-                        ? (language === "de" ? "Benachrichtigung bei Statusänderung aktiv" : "Notification on status change active")
-                        : (language === "de" ? "Benachrichtigung bei Statusänderung aktivieren" : "Enable notification on status change")
-                      }
-                    >
-                      {feedback.notify_on_status_change ? (
-                        <Bell className="w-3.5 h-3.5" />
-                      ) : (
-                        <BellOff className="w-3.5 h-3.5" />
-                      )}
-                      {feedback.notify_on_status_change
-                        ? (language === "de" ? "Benachrichtigung aktiv" : "Notification active")
-                        : (language === "de" ? "Benachrichtigung aktivieren" : "Enable notification")
-                      }
-                    </button>
-                  )}
                 </div>
+
+                {isExpanded && (
+                  <div className="px-6 pb-6 ml-[68px]">
+                    <FeedbackCommentThread
+                      feedbackId={feedback.id}
+                      isAdmin={false}
+                      onCommentCountChange={(count) => {
+                        setFeedbackList((prev) =>
+                          prev.map((f) =>
+                            f.id === feedback.id
+                              ? { ...f, comment_count: count }
+                              : f,
+                          ),
+                        );
+                      }}
+                    />
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

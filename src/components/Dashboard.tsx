@@ -58,6 +58,7 @@ import { SectionGuard } from "./SectionGuard";
 import Footer from "./Footer";
 import SystemUpdatesModal from "./SystemUpdatesModal";
 import Badge from "./common/Badge";
+import { SubUserProGate } from "./SubUserProGate";
 type View =
   | "home"
   | "properties"
@@ -95,7 +96,7 @@ export default function Dashboard() {
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const { isAdmin } = useAdmin();
-  const { isPremium } = useSubscription();
+  const { isPremium, loading: subLoading } = useSubscription();
   const permissions = usePermissions();
   const trialStatus = useTrialStatus(user?.id);
   const trialConfirmedRef = useRef(false);
@@ -686,6 +687,10 @@ export default function Dashboard() {
           </aside>{" "}
           <main className="flex-1 min-w-0">
             {" "}
+            {permissions.isMember && !isPremium && !permissions.loading && !subLoading && currentView !== "settings-billing" ? (
+              <SubUserProGate><></></SubUserProGate>
+            ) : (
+            <>
             {currentView === "home" && <DashboardHome key={viewResetKey} onNavigateToTenant={handleNavigateToTenant} onNavigateToProperty={handleNavigateToProperty} onChangeView={(view) => setCurrentView(view as View)} />}{" "}
             {currentView === "properties" && <PropertiesView key={viewResetKey} selectedPropertyId={selectedPropertyId} selectedPropertyTab={selectedPropertyTab} onClearSelection={() => { setSelectedPropertyId(null); setSelectedPropertyTab(null); }} onNavigateToTenant={handleNavigateToTenant} />}{" "}
             {currentView === "tenants" && <SectionGuard section="leases"><TenantsView key={viewResetKey} selectedTenantId={selectedTenantId} onClearSelection={() => setSelectedTenantId(null)} onNavigateToTemplates={() => setCurrentView("templates")} /></SectionGuard>}{" "}
@@ -703,6 +708,8 @@ export default function Dashboard() {
             {currentView === "service" && <ServiceView key={viewResetKey} />}{" "}
             {currentView === "referral" && <ReferralProgramView key={viewResetKey} />}{" "}
             {currentView === "users" && <SectionGuard section="users"><UsersManagementView key={viewResetKey} /></SectionGuard>}{" "}
+            </>
+            )}
           </main>{" "}
           </div>
         </div>{" "}
