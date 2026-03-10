@@ -169,15 +169,14 @@ async function lxFetch(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);
 
-  const hasBody = method !== "GET" && method !== "HEAD";
-
   try {
-    const response = await fetch(url, {
+    const request = new Request(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      ...(hasBody ? { body: jsonBody } : {}),
+      body: jsonBody,
       signal: controller.signal,
     });
+    const response = await fetch(request);
     clearTimeout(timeout);
     const text = await response.text();
     return { statusCode: response.status, body: text };
@@ -261,7 +260,7 @@ async function handleTestConnection(
   dataOwnerId: string,
   creds: LxCredentials
 ): Promise<Response> {
-  const { data, status } = await lxRequest("POST", "/balance", creds);
+  const { data, status } = await lxRequest("GET", "/balance", creds);
 
   const testStatus = status === 200 && data?.status === 200 ? "success" : "error";
 
