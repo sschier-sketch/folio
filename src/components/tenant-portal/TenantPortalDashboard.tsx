@@ -19,11 +19,13 @@ interface TenantData {
 interface TenantPortalDashboardProps {
   tenantId: string;
   onNavigateToTab: (tab: string) => void;
+  meterReadingsEnabled?: boolean;
 }
 
 export default function TenantPortalDashboard({
   tenantId,
   onNavigateToTab,
+  meterReadingsEnabled = true,
 }: TenantPortalDashboardProps) {
   const [tenantData, setTenantData] = useState<TenantData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -372,15 +374,19 @@ export default function TenantPortalDashboard({
 
           <button
             onClick={() => onNavigateToTab("meters")}
-            className="group relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:bg-gradient-to-br hover:from-blue-100 hover:to-blue-200 transition-all"
+            className={`group relative overflow-hidden flex items-center gap-4 p-5 rounded-lg transition-all ${
+              meterReadingsEnabled
+                ? "bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200"
+                : "bg-gray-50 opacity-60 cursor-not-allowed"
+            }`}
           >
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-              <Gauge className="w-7 h-7" style={{ color: '#1e1e24' }} />
+            <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${meterReadingsEnabled ? 'group-hover:scale-110' : ''} transition-transform`} style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+              <Gauge className="w-7 h-7" style={{ color: meterReadingsEnabled ? '#1e1e24' : '#9ca3af' }} />
             </div>
             <div className="flex-1 text-left">
-              <h3 className="font-bold text-dark text-lg mb-1">Zählerstand melden</h3>
+              <h3 className={`font-bold text-lg mb-1 ${meterReadingsEnabled ? 'text-dark' : 'text-gray-400'}`}>Zählerstand melden</h3>
               <p className="text-sm text-gray-600">
-                Aktuellen Stand übermitteln
+                {meterReadingsEnabled ? "Aktuellen Stand übermitteln" : "Diese Funktion ist für Sie nicht verfügbar"}
               </p>
             </div>
           </button>

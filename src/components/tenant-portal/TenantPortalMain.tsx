@@ -118,6 +118,8 @@ export default function TenantPortalMain({
   const handleNavigateToTab = (tab: string) => {
     if (tab === "tickets" || tab === "messages") {
       setActiveTab("communication");
+    } else if (tab === "meters" && !contractSettings.portal_meter_readings_enabled) {
+      setActiveTab("meters");
     } else {
       setActiveTab(tab as TabType);
     }
@@ -176,6 +178,7 @@ export default function TenantPortalMain({
               <TenantPortalDashboard
                 tenantId={tenantId}
                 onNavigateToTab={handleNavigateToTab}
+                meterReadingsEnabled={contractSettings.portal_meter_readings_enabled}
               />
             )}
             {activeTab === "documents" && (
@@ -192,12 +195,24 @@ export default function TenantPortalMain({
                 userId={tenantData.user_id}
               />
             )}
-            {activeTab === "meters" && contractSettings.portal_meter_readings_enabled && (
-              <TenantPortalMeters
-                tenantId={tenantId}
-                propertyId={tenantData.property_id}
-                unitId={tenantData.unit_id}
-              />
+            {activeTab === "meters" && (
+              contractSettings.portal_meter_readings_enabled ? (
+                <TenantPortalMeters
+                  tenantId={tenantId}
+                  propertyId={tenantData.property_id}
+                  unitId={tenantData.unit_id}
+                />
+              ) : (
+                <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                  <Gauge className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-dark mb-2">
+                    Nicht verfügbar
+                  </h3>
+                  <p className="text-gray-400">
+                    Diese Funktion ist für Sie nicht verfügbar. Bitte wenden Sie sich an Ihren Vermieter.
+                  </p>
+                </div>
+              )
             )}
             {activeTab === "profile" && (
               <TenantPortalProfile
