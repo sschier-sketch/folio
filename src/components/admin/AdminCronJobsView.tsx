@@ -182,6 +182,10 @@ const TRIGGERABLE_JOBS: Record<string, { fnName: string; label: string }> = {
     fnName: "fetch-interest-rates",
     label: "Zinsdaten jetzt aktualisieren",
   },
+  "signup-healthcheck": {
+    fnName: "signup-healthcheck",
+    label: "Healthcheck jetzt ausfuehren",
+  },
 };
 
 export default function AdminCronJobsView() {
