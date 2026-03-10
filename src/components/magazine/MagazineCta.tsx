@@ -13,7 +13,7 @@ export default function MagazineCta({
   headline = "Bereit, Ihre Immobilien digital zu verwalten?",
   subline = "Verwalten Sie Ihre Immobilien, Mieter, Finanzen und Dokumente an einem Ort. Einfach, sicher und effizient.",
   primaryLabel = "Kostenlos testen",
-  primaryTo = "/registrieren",
+  primaryTo = "/signup",
   secondaryLabel = "Preise ansehen",
   secondaryTo = "/preise",
 }: Props) {

@@ -161,16 +161,97 @@ function buildAuth(creds: LxCredentials) {
   };
 }
 
+function decodeChunkedBody(raw: string): string {
+  const parts: string[] = [];
+  let rest = raw;
+  while (rest.length > 0) {
+    const lineEnd = rest.indexOf("\r\n");
+    if (lineEnd === -1) break;
+    const sizeHex = rest.substring(0, lineEnd).trim();
+    const size = parseInt(sizeHex, 16);
+    if (isNaN(size) || size === 0) break;
+    const chunk = rest.substring(lineEnd + 2, lineEnd + 2 + size);
+    parts.push(chunk);
+    rest = rest.substring(lineEnd + 2 + size + 2);
+  }
+  return parts.join("");
+}
+
+async function rawTlsRequest(
+  method: string,
+  url: string,
+  jsonBody: string
+): Promise<{ statusCode: number; body: string }> {
+  const parsed = new URL(url);
+  const host = parsed.hostname;
+  const path = parsed.pathname + parsed.search;
+  const bodyBytes = new TextEncoder().encode(jsonBody);
+
+  const conn = await Deno.connectTls({ hostname: host, port: 443 });
+
+  const requestText =
+    `${method} ${path} HTTP/1.1\r\n` +
+    `Host: ${host}\r\n` +
+    `Content-Type: application/json\r\n` +
+    `Content-Length: ${bodyBytes.length}\r\n` +
+    `Connection: close\r\n\r\n`;
+
+  const headerBytes = new TextEncoder().encode(requestText);
+  const fullRequest = new Uint8Array(headerBytes.length + bodyBytes.length);
+  fullRequest.set(headerBytes, 0);
+  fullRequest.set(bodyBytes, headerBytes.length);
+
+  await conn.write(fullRequest);
+
+  const chunks: Uint8Array[] = [];
+  const buf = new Uint8Array(16384);
+  while (true) {
+    const n = await conn.read(buf);
+    if (n === null) break;
+    chunks.push(buf.slice(0, n));
+  }
+  conn.close();
+
+  const totalLen = chunks.reduce((s, c) => s + c.length, 0);
+  const fullResponse = new Uint8Array(totalLen);
+  let offset = 0;
+  for (const c of chunks) {
+    fullResponse.set(c, offset);
+    offset += c.length;
+  }
+
+  const responseText = new TextDecoder().decode(fullResponse);
+  const headerEnd = responseText.indexOf("\r\n\r\n");
+  if (headerEnd === -1) {
+    return { statusCode: 0, body: responseText };
+  }
+
+  const headerSection = responseText.substring(0, headerEnd);
+  const statusLine = headerSection.substring(0, headerSection.indexOf("\r\n"));
+  const statusCode = parseInt(statusLine.split(" ")[1] || "0", 10);
+  let responseBody = responseText.substring(headerEnd + 4);
+
+  if (headerSection.toLowerCase().includes("transfer-encoding: chunked")) {
+    responseBody = decodeChunkedBody(responseBody);
+  }
+
+  return { statusCode, body: responseBody };
+}
+
 async function lxFetch(
   method: string,
   url: string,
   jsonBody: string
 ): Promise<{ statusCode: number; body: string }> {
+  if (method === "GET" || method === "HEAD" || method === "DELETE") {
+    return rawTlsRequest(method, url, jsonBody);
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);
   try {
     const response = await fetch(url, {
-      method: method === "GET" ? "POST" : method,
+      method,
       headers: { "Content-Type": "application/json" },
       body: jsonBody,
       signal: controller.signal,

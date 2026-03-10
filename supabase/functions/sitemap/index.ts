@@ -173,7 +173,7 @@ async function buildSitemapEntries(
     if (cmsPages) {
       for (const page of cmsPages) {
         addEntry({
-          loc: `${BASE_URL}/s/${page.slug}`,
+          loc: `${BASE_URL}/${page.slug}`,
           lastmod: toDateStr(page.updated_at),
           changefreq: "monthly",
           priority: "0.5",
