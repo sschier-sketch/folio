@@ -169,11 +169,13 @@ async function lxFetch(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);
 
+  const hasBody = method !== "GET" && method !== "HEAD";
+
   try {
     const response = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: jsonBody,
+      ...(hasBody ? { body: jsonBody } : {}),
       signal: controller.signal,
     });
     clearTimeout(timeout);
@@ -259,7 +261,7 @@ async function handleTestConnection(
   dataOwnerId: string,
   creds: LxCredentials
 ): Promise<Response> {
-  const { data, status } = await lxRequest("GET", "/balance", creds);
+  const { data, status } = await lxRequest("POST", "/balance", creds);
 
   const testStatus = status === 200 && data?.status === 200 ? "success" : "error";
 
@@ -317,7 +319,7 @@ async function handleGetBalance(
   dataOwnerId: string,
   creds: LxCredentials
 ): Promise<Response> {
-  const { data, status } = await lxRequest("GET", "/balance", creds);
+  const { data, status } = await lxRequest("POST", "/balance", creds);
 
   if (status !== 200 || data?.status !== 200) {
     return corsResponse(
@@ -354,7 +356,7 @@ async function handleGetPriceQuote(
     );
   }
 
-  const { data, status } = await lxRequest("GET", "/price", creds, {
+  const { data, status } = await lxRequest("POST", "/price", creds, {
     letter: {
       specification: {
         pages: spec.pages,
@@ -382,7 +384,7 @@ async function handleListJobs(
   filter?: string
 ): Promise<Response> {
   const path = filter ? `/printjobs?filter=${encodeURIComponent(filter)}` : "/printjobs";
-  const { data, status } = await lxRequest("GET", path, creds);
+  const { data, status } = await lxRequest("POST", path, creds);
 
   if (status !== 200 || data?.status !== 200) {
     return corsResponse(
@@ -404,7 +406,7 @@ async function handleSyncJobs(
   filter?: string
 ): Promise<Response> {
   const path = filter ? `/printjobs?filter=${encodeURIComponent(filter)}` : "/printjobs";
-  const { data, status } = await lxRequest("GET", path, creds);
+  const { data, status } = await lxRequest("POST", path, creds);
 
   if (status !== 200 || data?.status !== 200) {
     return corsResponse(
