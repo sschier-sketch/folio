@@ -319,7 +319,7 @@ async function handleGetBalance(
   dataOwnerId: string,
   creds: LxCredentials
 ): Promise<Response> {
-  const { data, status } = await lxRequest("POST", "/balance", creds);
+  const { data, status } = await lxRequest("GET", "/balance", creds);
 
   if (status !== 200 || data?.status !== 200) {
     return corsResponse(
@@ -356,7 +356,7 @@ async function handleGetPriceQuote(
     );
   }
 
-  const { data, status } = await lxRequest("POST", "/price", creds, {
+  const { data, status } = await lxRequest("GET", "/price", creds, {
     letter: {
       specification: {
         pages: spec.pages,
@@ -384,7 +384,7 @@ async function handleListJobs(
   filter?: string
 ): Promise<Response> {
   const path = filter ? `/printjobs?filter=${encodeURIComponent(filter)}` : "/printjobs";
-  const { data, status } = await lxRequest("POST", path, creds);
+  const { data, status } = await lxRequest("GET", path, creds);
 
   if (status !== 200 || data?.status !== 200) {
     return corsResponse(
@@ -406,7 +406,7 @@ async function handleSyncJobs(
   filter?: string
 ): Promise<Response> {
   const path = filter ? `/printjobs?filter=${encodeURIComponent(filter)}` : "/printjobs";
-  const { data, status } = await lxRequest("POST", path, creds);
+  const { data, status } = await lxRequest("GET", path, creds);
 
   if (status !== 200 || data?.status !== 200) {
     return corsResponse(
