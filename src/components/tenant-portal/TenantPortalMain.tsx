@@ -22,6 +22,11 @@ interface TenantData {
   property_id: string;
   unit_id: string | null;
   user_id: string;
+  contract_id: string | null;
+}
+
+interface ContractSettings {
+  portal_meter_readings_enabled: boolean;
 }
 
 interface TenantPortalMainProps {
@@ -42,6 +47,9 @@ export default function TenantPortalMain({
 }: TenantPortalMainProps) {
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   const [tenantData, setTenantData] = useState<TenantData | null>(null);
+  const [contractSettings, setContractSettings] = useState<ContractSettings>({
+    portal_meter_readings_enabled: true,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,6 +67,20 @@ export default function TenantPortalMain({
       if (error) throw error;
       if (data) {
         setTenantData(data);
+
+        if (data.contract_id) {
+          const { data: contract } = await supabase
+            .from("rental_contracts")
+            .select("portal_meter_readings_enabled")
+            .eq("id", data.contract_id)
+            .maybeSingle();
+
+          if (contract) {
+            setContractSettings({
+              portal_meter_readings_enabled: contract.portal_meter_readings_enabled ?? true,
+            });
+          }
+        }
       }
     } catch (error) {
       console.error("Error loading tenant data:", error);
@@ -127,12 +149,16 @@ export default function TenantPortalMain({
             <nav className="bg-white rounded-lg shadow-sm p-2 space-y-1">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
+                const isDisabled = tab.id === "meters" && !contractSettings.portal_meter_readings_enabled;
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as TabType)}
+                    onClick={() => !isDisabled && setActiveTab(tab.id as TabType)}
+                    disabled={isDisabled}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-sm ${
-                      activeTab === tab.id
+                      isDisabled
+                        ? "text-gray-300 cursor-not-allowed"
+                        : activeTab === tab.id
                         ? "bg-primary-blue/10 text-primary-blue"
                         : "text-gray-600 hover:bg-gray-50"
                     }`}
@@ -166,7 +192,7 @@ export default function TenantPortalMain({
                 userId={tenantData.user_id}
               />
             )}
-            {activeTab === "meters" && (
+            {activeTab === "meters" && contractSettings.portal_meter_readings_enabled && (
               <TenantPortalMeters
                 tenantId={tenantId}
                 propertyId={tenantData.property_id}

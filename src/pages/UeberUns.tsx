@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { withRef } from "../lib/referralTracking";
+
 import { RevealOnScroll } from "../components/common/RevealOnScroll";
 import TestimonialsSection from "../components/landing/TestimonialsSection";
 import FaqSection from "../components/landing/FaqSection";
@@ -190,7 +190,7 @@ export default function UeberUns() {
               inklusive.
             </p>
             <button
-              onClick={() => navigate(withRef("/signup"))}
+              onClick={() => navigate("/signup")}
               className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors inline-flex items-center gap-2"
             >
               Jetzt kostenlos starten

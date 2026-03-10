@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Bell, AlertTriangle, Send, CheckCircle, TrendingUp, Mail, FileText, Clock } from "lucide-react";
+import { Bell, AlertTriangle, Send, CheckCircle, TrendingUp, Mail, FileText, Clock, X, Eye } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { usePermissions } from "../../hooks/usePermissions";
+import { Button } from "../ui/Button";
 
 interface RentPayment {
   id: string;
@@ -54,6 +55,14 @@ export default function DunningView({ payments, onReloadPayments, readOnly = fal
   });
   const [remindersHistory, setRemindersHistory] = useState<Record<string, DunningReminderHistory[]>>({});
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [previewModal, setPreviewModal] = useState<{
+    payment: RentPayment;
+    level: number;
+    subject: string;
+    message: string;
+    recipientEmail: string;
+    tenantName: string;
+  } | null>(null);
   const [dunningDaysLevel1, setDunningDaysLevel1] = useState(7);
   const [dunningDaysLevel2, setDunningDaysLevel2] = useState(14);
   const [dunningDaysLevel3, setDunningDaysLevel3] = useState(28);
@@ -150,7 +159,7 @@ export default function DunningView({ payments, onReloadPayments, readOnly = fal
     }
   };
 
-  const handleSendReminder = async (payment: RentPayment, level: number) => {
+  const handlePrepareReminder = async (payment: RentPayment, level: number) => {
     if (!user || !payment.rental_contract?.tenants[0]?.email) {
       alert("Keine E-Mail-Adresse für den Mieter hinterlegt");
       return;
@@ -211,7 +220,7 @@ export default function DunningView({ payments, onReloadPayments, readOnly = fal
         return;
       }
 
-      const tenant = payment.rental_contract.tenants[0];
+      const tenant = payment.rental_contract!.tenants[0];
       const tenantEmail = tenant.email;
       const tenantName = `${tenant.first_name} ${tenant.last_name}`;
       const propertyName = payment.property?.name || "Ihre Immobilie";
@@ -225,24 +234,40 @@ export default function DunningView({ payments, onReloadPayments, readOnly = fal
       const paymentTypeLabel = payment.payment_type === 'nebenkosten' ? 'Nebenkostennachzahlung' : 'Miete';
       const descriptionText = payment.description || paymentTypeLabel;
 
-      let subject = template.subject
-        .replace(/\[TENANT_NAME\]/g, tenantName)
-        .replace(/\[PROPERTY_NAME\]/g, propertyNameFull)
-        .replace(/\[AMOUNT\]/g, formatCurrency(outstandingAmount))
-        .replace(/\[DUE_DATE\]/g, formatDate(payment.due_date))
-        .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount))
-        .replace(/\[DESCRIPTION\]/g, descriptionText)
-        .replace(/\[PAYMENT_TYPE\]/g, paymentTypeLabel);
+      const replacePlaceholders = (text: string) =>
+        text
+          .replace(/\[TENANT_NAME\]/g, tenantName)
+          .replace(/\[PROPERTY_NAME\]/g, propertyNameFull)
+          .replace(/\[AMOUNT\]/g, formatCurrency(outstandingAmount))
+          .replace(/\[DUE_DATE\]/g, formatDate(payment.due_date))
+          .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount))
+          .replace(/\[DESCRIPTION\]/g, descriptionText)
+          .replace(/\[PAYMENT_TYPE\]/g, paymentTypeLabel);
 
-      let message = template.message
-        .replace(/\[TENANT_NAME\]/g, tenantName)
-        .replace(/\[PROPERTY_NAME\]/g, propertyNameFull)
-        .replace(/\[AMOUNT\]/g, formatCurrency(outstandingAmount))
-        .replace(/\[DUE_DATE\]/g, formatDate(payment.due_date))
-        .replace(/\[TOTAL_AMOUNT\]/g, formatCurrency(totalAmount))
-        .replace(/\[DESCRIPTION\]/g, descriptionText)
-        .replace(/\[PAYMENT_TYPE\]/g, paymentTypeLabel);
+      setPreviewModal({
+        payment,
+        level,
+        subject: replacePlaceholders(template.subject),
+        message: replacePlaceholders(template.message),
+        recipientEmail: tenantEmail,
+        tenantName,
+      });
+    } catch (error) {
+      console.error("Error preparing reminder:", error);
+      alert("Fehler beim Vorbereiten der Erinnerung");
+    } finally {
+      setSendingReminder(null);
+    }
+  };
 
+  const handleConfirmSend = async () => {
+    if (!previewModal || !user) return;
+
+    const { payment, level, subject, message, recipientEmail } = previewModal;
+    setSendingReminder(payment.id);
+    setPreviewModal(null);
+
+    try {
       const htmlBody = `<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -267,7 +292,7 @@ ${message}
 </div>
 <table width="100%">
 <tr><td style="border-top:1px solid #ddd;padding:20px 0"></td></tr></table>
-<p style="color:#666;font-size:12px;text-align:center;margin:0">© 2026 <a href="https://rentab.ly">rentab.ly</a></p>
+<p style="color:#666;font-size:12px;text-align:center;margin:0">&copy; 2026 <a href="https://rentab.ly">rentab.ly</a></p>
 </td></tr></table>
 </td></tr></table>
 </body>
@@ -283,7 +308,7 @@ ${message}
           'Authorization': `Bearer ${supabaseAnonKey}`,
         },
         body: JSON.stringify({
-          to: tenantEmail,
+          to: recipientEmail,
           subject,
           html: htmlBody,
           text: message
@@ -295,21 +320,17 @@ ${message}
         throw new Error(`Email konnte nicht versendet werden: ${errorData.error || 'Unbekannter Fehler'}`);
       }
 
-      const { data: reminderData, error: reminderError } = await supabase
+      await supabase
         .from("rent_payment_reminders")
         .insert({
           user_id: dataOwnerId,
           rent_payment_id: payment.id,
           dunning_level: level,
-          recipient_email: tenantEmail,
+          recipient_email: recipientEmail,
           subject,
           message,
           status: 'sent'
-        })
-        .select()
-        .single();
-
-      if (reminderError) throw reminderError;
+        });
 
       await supabase
         .from("rent_payments")
@@ -517,7 +538,7 @@ ${message}
                       </div>
                       {!readOnly && (
                         <button
-                          onClick={() => handleSendReminder(payment, payment.suggestedLevel)}
+                          onClick={() => handlePrepareReminder(payment, payment.suggestedLevel)}
                           disabled={sendingReminder === payment.id}
                           className={`text-sm font-medium hover:underline flex items-center gap-2 ${
                             payment.suggestedLevel === 3 ? 'text-red-600' :
@@ -642,6 +663,92 @@ ${message}
         </p>
       </div>
         </>
+      )}
+
+      {previewModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                  <Eye className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-dark">
+                    E-Mail-Entwurf prüfen
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Bitte prüfen und ggf. anpassen, bevor die E-Mail versendet wird
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPreviewModal(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-3">
+                <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span className="font-medium">An:</span>
+                <span>{previewModal.tenantName} ({previewModal.recipientEmail})</span>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-dark mb-2">
+                  Betreff
+                </label>
+                <input
+                  type="text"
+                  value={previewModal.subject}
+                  onChange={(e) => setPreviewModal({ ...previewModal, subject: e.target.value })}
+                  className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-dark mb-2">
+                  Nachricht
+                </label>
+                <textarea
+                  value={previewModal.message}
+                  onChange={(e) => setPreviewModal({ ...previewModal, message: e.target.value })}
+                  rows={12}
+                  className="w-full px-4 py-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue resize-y leading-relaxed"
+                />
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-amber-800">
+                    Mit Klick auf &quot;Jetzt versenden&quot; wird diese {previewModal.level === 3 ? 'Mahnung' : 'Erinnerung'} per E-Mail
+                    an <strong>{previewModal.recipientEmail}</strong> gesendet.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-xl">
+              <Button
+                onClick={() => setPreviewModal(null)}
+                variant="outlined"
+              >
+                Abbrechen
+              </Button>
+              <Button
+                onClick={handleConfirmSend}
+                variant="primary"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Jetzt versenden
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

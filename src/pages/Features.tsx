@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { withRef } from "../lib/referralTracking";
+
 import { RefLink } from "../components/common/RefLink";
 import { RevealOnScroll } from "../components/common/RevealOnScroll";
 import {
@@ -382,7 +382,7 @@ function FeatureVisual({ type }: { type: string }) {
 
 export default function Features() {
   const navigate = useNavigate();
-  const goToSignup = () => navigate(withRef("/signup"));
+  const goToSignup = () => navigate("/signup");
 
   return (
     <div>

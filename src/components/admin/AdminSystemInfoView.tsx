@@ -21,6 +21,7 @@ export default function AdminSystemInfoView() {
   } | null>(null);
 
   const [notifyOnNewRegistration, setNotifyOnNewRegistration] = useState(false);
+  const [notifyOnNewFeedback, setNotifyOnNewFeedback] = useState(false);
   const [notificationEmail, setNotificationEmail] = useState("hello@rentab.ly");
   const [emailError, setEmailError] = useState<string | null>(null);
 
@@ -34,6 +35,7 @@ export default function AdminSystemInfoView() {
       const settings = await getSystemSettings(true);
       if (settings) {
         setNotifyOnNewRegistration(settings.notify_on_new_registration);
+        setNotifyOnNewFeedback(settings.notify_on_new_feedback ?? true);
         setNotificationEmail(settings.notification_email || "hello@rentab.ly");
       }
     } catch (error) {
@@ -59,7 +61,7 @@ export default function AdminSystemInfoView() {
   };
 
   const handleSave = async () => {
-    if (notifyOnNewRegistration && !validateEmail(notificationEmail)) {
+    if ((notifyOnNewRegistration || notifyOnNewFeedback) && !validateEmail(notificationEmail)) {
       return;
     }
 
@@ -69,6 +71,7 @@ export default function AdminSystemInfoView() {
     try {
       const result = await updateSystemSettings({
         notify_on_new_registration: notifyOnNewRegistration,
+        notify_on_new_feedback: notifyOnNewFeedback,
         notification_email: notificationEmail.trim(),
       });
 
@@ -176,7 +179,38 @@ export default function AdminSystemInfoView() {
             </div>
           </div>
 
-          {notifyOnNewRegistration && (
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex-1">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notifyOnNewFeedback}
+                  onChange={(e) => setNotifyOnNewFeedback(e.target.checked)}
+                  className="mt-0.5 w-5 h-5 text-primary-blue rounded focus:ring-2 focus:ring-primary-blue"
+                />
+                <div>
+                  <span className="text-sm font-semibold text-dark block">
+                    Benachrichtigung bei neuem Featurewunsch
+                  </span>
+                  <span className="text-xs text-gray-600 block mt-1">
+                    Bei jedem neuen Featurewunsch wird automatisch eine
+                    E-Mail an die unten angegebene Adresse gesendet.
+                  </span>
+                </div>
+              </label>
+            </div>
+            <div
+              className={`ml-4 px-3 py-1 rounded-full text-xs font-semibold ${
+                notifyOnNewFeedback
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {notifyOnNewFeedback ? "Aktiv" : "Inaktiv"}
+            </div>
+          </div>
+
+          {(notifyOnNewRegistration || notifyOnNewFeedback) && (
             <>
               <div>
                 <label

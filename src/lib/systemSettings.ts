@@ -8,6 +8,7 @@ export interface SystemSettings {
   default_affiliate_commission_rate: number;
   signup_custom_tracking_script: string | null;
   notify_on_new_registration: boolean;
+  notify_on_new_feedback: boolean;
   notification_email: string;
   updated_at: string;
   global_head_html: string | null;

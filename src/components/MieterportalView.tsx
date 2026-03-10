@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, Check, X, Send, ExternalLink, LogIn, Building2, Activity, Clock } from "lucide-react";
+import { Users, Check, X, Send, ExternalLink, LogIn, Building2, Activity, Clock, Settings, Gauge } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -24,6 +24,7 @@ interface Tenant {
   rental_contract: {
     id: string;
     portal_access_enabled: boolean;
+    portal_meter_readings_enabled: boolean;
   }[];
 }
 
@@ -37,6 +38,8 @@ export default function MieterportalView() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [sendingInvite, setSendingInvite] = useState(false);
   const [impersonating, setImpersonating] = useState<string | null>(null);
+  const [settingsTenant, setSettingsTenant] = useState<Tenant | null>(null);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
     if (!permLoading && dataOwnerId) loadTenants();
@@ -52,7 +55,7 @@ export default function MieterportalView() {
           `
           *,
           property:properties(name),
-          rental_contract:rental_contracts!tenants_contract_id_fkey(id, portal_access_enabled)
+          rental_contract:rental_contracts!tenants_contract_id_fkey(id, portal_access_enabled, portal_meter_readings_enabled)
         `
         )
         .eq("user_id", dataOwnerId)
@@ -156,6 +159,32 @@ export default function MieterportalView() {
       alert("Fehler beim Erstellen des Anmeldelinks");
     } finally {
       setImpersonating(null);
+    }
+  };
+
+  const handleToggleMeterReadings = async (contractId: string, currentValue: boolean) => {
+    setSavingSettings(true);
+    try {
+      const { error } = await supabase
+        .from("rental_contracts")
+        .update({ portal_meter_readings_enabled: !currentValue })
+        .eq("id", contractId);
+
+      if (error) throw error;
+
+      loadTenants();
+      setSettingsTenant((prev) => {
+        if (!prev) return null;
+        const updatedContracts = (Array.isArray(prev.rental_contract) ? prev.rental_contract : [prev.rental_contract]).map((c) =>
+          c.id === contractId ? { ...c, portal_meter_readings_enabled: !currentValue } : c
+        );
+        return { ...prev, rental_contract: updatedContracts };
+      });
+    } catch (error) {
+      console.error("Error toggling meter readings:", error);
+      alert("Fehler beim Speichern der Einstellung");
+    } finally {
+      setSavingSettings(false);
     }
   };
 
@@ -275,7 +304,9 @@ export default function MieterportalView() {
                       hidden: !contract?.portal_access_enabled
                     },
                     {
-                      label: 'Aktivierungslink senden',
+                      label: tenant.portal_invited_at && !tenant.portal_activated_at
+                        ? 'Einladungslink erneut senden'
+                        : 'Aktivierungslink senden',
                       onClick: () => handleSendActivationLink(tenant),
                       hidden: !contract?.portal_access_enabled || !!tenant.portal_activated_at
                     },
@@ -289,6 +320,11 @@ export default function MieterportalView() {
                       label: 'Zugang aktivieren',
                       onClick: () => handleTogglePortalAccess(tenant.id, contract?.id || "", false),
                       hidden: contract?.portal_access_enabled
+                    },
+                    {
+                      label: 'Einstellungen',
+                      onClick: () => setSettingsTenant(tenant),
+                      hidden: !contract?.portal_access_enabled
                     }
                   ]}
                 />
@@ -329,6 +365,80 @@ export default function MieterportalView() {
           <p><strong>Optional:</strong> Versenden Sie eine E-Mail-Einladung</p>
         </div>
       </div>
+
+      {settingsTenant && (() => {
+        const contract = Array.isArray(settingsTenant.rental_contract)
+          ? settingsTenant.rental_contract[0]
+          : settingsTenant.rental_contract;
+
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+              <div className="flex items-center justify-between px-6 py-4 border-b">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center border border-[#DDE7FF]">
+                    <Settings className="w-5 h-5 text-[#1e1e24]" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-dark">
+                      Portal-Einstellungen
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {settingsTenant.first_name} {settingsTenant.last_name}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSettingsTenant(null)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-start gap-3 flex-1">
+                    <Gauge className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="text-sm font-semibold text-dark block">
+                        Zählerstandsmeldung
+                      </span>
+                      <span className="text-xs text-gray-500 block mt-0.5">
+                        Mieter kann Zählerstände über das Portal melden
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => contract && handleToggleMeterReadings(contract.id, contract.portal_meter_readings_enabled)}
+                    disabled={savingSettings || !contract}
+                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                      contract?.portal_meter_readings_enabled
+                        ? 'bg-primary-blue'
+                        : 'bg-gray-300'
+                    } ${savingSettings ? 'opacity-50' : ''}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        contract?.portal_meter_readings_enabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end px-6 py-4 border-t bg-gray-50 rounded-b-xl">
+                <Button
+                  onClick={() => setSettingsTenant(null)}
+                  variant="outlined"
+                >
+                  Schliessen
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

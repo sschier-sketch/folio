@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { withRef } from "../../lib/referralTracking";
+
 import { RevealOnScroll } from "../common/RevealOnScroll";
 
 export default function CtaSection() {
@@ -18,7 +18,7 @@ export default function CtaSection() {
             alle Pro-Funktionen inklusive.
           </p>
           <button
-            onClick={() => navigate(withRef("/signup"))}
+            onClick={() => navigate("/signup")}
             className="h-12 px-8 rounded-lg text-base font-semibold bg-[#3c8af7] text-white hover:bg-[#3579de] transition-colors"
           >
             Jetzt kostenlos starten
