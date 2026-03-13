@@ -9,7 +9,7 @@ const corsHeaders = {
 };
 
 const BANKSAPI_BASE_URL = "https://banksapi.io";
-const BANKSAPI_AUTH_URL = "https://auth.banksapi.de/oauth/token";
+const BANKSAPI_AUTH_URL = "https://banksapi.io/auth/oauth2/token";
 const OVERLAP_DAYS = 14;
 
 function getCanonicalCallbackUrl(): string {
@@ -90,20 +90,21 @@ async function getAccessToken(admin: Admin): Promise<string> {
 
   const { data: settings } = await admin
     .from("system_settings")
-    .select("banksapi_client_id, banksapi_client_secret_encrypted")
+    .select("banksapi_basic_authorization, banksapi_client_id, banksapi_client_secret_encrypted")
     .eq("id", 1)
     .maybeSingle();
 
-  if (
-    !settings?.banksapi_client_id ||
-    !settings?.banksapi_client_secret_encrypted
-  ) {
+  let basicAuth: string;
+
+  if (settings?.banksapi_basic_authorization) {
+    basicAuth = settings.banksapi_basic_authorization.replace(/^Basic\s+/i, "");
+  } else if (settings?.banksapi_client_id && settings?.banksapi_client_secret_encrypted) {
+    basicAuth = btoa(
+      `${settings.banksapi_client_id}:${settings.banksapi_client_secret_encrypted}`
+    );
+  } else {
     throw new Error("BanksAPI credentials not configured");
   }
-
-  const basicAuth = btoa(
-    `${settings.banksapi_client_id}:${settings.banksapi_client_secret_encrypted}`
-  );
 
   const tokenRes = await fetch(BANKSAPI_AUTH_URL, {
     method: "POST",

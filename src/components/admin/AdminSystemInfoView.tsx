@@ -38,6 +38,10 @@ export default function AdminSystemInfoView() {
   const [emailError, setEmailError] = useState<string | null>(null);
 
   const [banksapiEnabled, setBanksapiEnabled] = useState(false);
+  const [banksapiBasicAuth, setBanksapiBasicAuth] = useState("");
+  const [banksapiBasicAuthMasked, setBanksapiBasicAuthMasked] = useState(true);
+  const [banksapiHasBasicAuth, setBanksapiHasBasicAuth] = useState(false);
+  const [banksapiShowLegacy, setBanksapiShowLegacy] = useState(false);
   const [banksapiClientId, setBanksapiClientId] = useState("");
   const [banksapiClientSecret, setBanksapiClientSecret] = useState("");
   const [banksapiSecretMasked, setBanksapiSecretMasked] = useState(true);
@@ -83,9 +87,10 @@ export default function AdminSystemInfoView() {
 
       const { data: secretCheck } = await supabase
         .from("system_settings")
-        .select("banksapi_client_secret_encrypted")
+        .select("banksapi_basic_authorization, banksapi_client_secret_encrypted")
         .eq("id", 1)
         .maybeSingle();
+      setBanksapiHasBasicAuth(!!secretCheck?.banksapi_basic_authorization);
       setBanksapiHasSecret(!!secretCheck?.banksapi_client_secret_encrypted);
     } catch (error) {
       console.error("Error loading settings:", error);
@@ -155,6 +160,10 @@ export default function AdminSystemInfoView() {
         banksapi_client_id: banksapiClientId.trim() || null,
       };
 
+      if (banksapiBasicAuth.trim()) {
+        updates.banksapi_basic_authorization = banksapiBasicAuth.trim();
+      }
+
       if (banksapiClientSecret.trim()) {
         updates.banksapi_client_secret_encrypted = banksapiClientSecret.trim();
       }
@@ -168,7 +177,11 @@ export default function AdminSystemInfoView() {
         setBanksapiMessage({ type: "error", text: error.message });
       } else {
         setBanksapiMessage({ type: "success", text: "BanksAPI-Einstellungen gespeichert!" });
+        setBanksapiBasicAuth("");
         setBanksapiClientSecret("");
+        if (updates.banksapi_basic_authorization) {
+          setBanksapiHasBasicAuth(true);
+        }
         if (updates.banksapi_client_secret_encrypted) {
           setBanksapiHasSecret(true);
         }
@@ -444,47 +457,30 @@ export default function AdminSystemInfoView() {
 
           <div>
             <label
-              htmlFor="banksapi-client-id"
+              htmlFor="banksapi-basic-auth"
               className="block text-sm font-semibold text-dark mb-2"
             >
-              Client ID
-            </label>
-            <input
-              id="banksapi-client-id"
-              type="text"
-              value={banksapiClientId}
-              onChange={(e) => setBanksapiClientId(e.target.value)}
-              placeholder="Ihre BanksAPI Client ID"
-              className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-colors font-mono"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="banksapi-client-secret"
-              className="block text-sm font-semibold text-dark mb-2"
-            >
-              Client Secret
+              BANKSapi Authorization
             </label>
             <div className="relative">
               <input
-                id="banksapi-client-secret"
-                type={banksapiSecretMasked ? "password" : "text"}
-                value={banksapiClientSecret}
-                onChange={(e) => setBanksapiClientSecret(e.target.value)}
+                id="banksapi-basic-auth"
+                type={banksapiBasicAuthMasked ? "password" : "text"}
+                value={banksapiBasicAuth}
+                onChange={(e) => setBanksapiBasicAuth(e.target.value)}
                 placeholder={
-                  banksapiHasSecret
-                    ? "Secret hinterlegt - neuen Wert eingeben zum Ueberschreiben"
-                    : "Ihre BanksAPI Client Secret"
+                  banksapiHasBasicAuth
+                    ? "Credential hinterlegt - neuen Wert eingeben zum Ueberschreiben"
+                    : "Basic Authorization Credential von BANKSapi einfuegen"
                 }
                 className="w-full px-4 py-2.5 pr-12 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-colors font-mono"
               />
               <button
                 type="button"
-                onClick={() => setBanksapiSecretMasked(!banksapiSecretMasked)}
+                onClick={() => setBanksapiBasicAuthMasked(!banksapiBasicAuthMasked)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
               >
-                {banksapiSecretMasked ? (
+                {banksapiBasicAuthMasked ? (
                   <Eye className="w-4 h-4" />
                 ) : (
                   <EyeOff className="w-4 h-4" />
@@ -492,14 +488,15 @@ export default function AdminSystemInfoView() {
               </button>
             </div>
             <div className="flex items-center gap-2 mt-1.5">
-              {banksapiHasSecret ? (
+              {banksapiHasBasicAuth ? (
                 <p className="text-xs text-emerald-600 flex items-center gap-1">
                   <Shield className="w-3.5 h-3.5" />
-                  Secret ist hinterlegt (write-only, wird nie im Frontend angezeigt)
+                  Credential ist hinterlegt (write-only, wird nie im Frontend angezeigt)
                 </p>
               ) : (
                 <p className="text-xs text-gray-400">
-                  Das Secret wird verschluesselt gespeichert und nur serverseitig verwendet
+                  Das Credential von BANKSapi einfuegen (z.B. "Basic abc123..." oder nur den kodierten Wert).
+                  Wird ausschliesslich serverseitig verwendet.
                 </p>
               )}
             </div>
@@ -510,17 +507,88 @@ export default function AdminSystemInfoView() {
             <div className="text-sm text-blue-800">
               <p className="font-semibold mb-1">BanksAPI PSD2-Integration</p>
               <p>
-                Die Zugangsdaten erhalten Sie von BanksAPI (banksapi.io).
-                Das Client Secret wird ausschliesslich serverseitig in Edge Functions
-                verwendet und nie an den Browser uebertragen. Der taeglich automatische
-                Sync laeuft via Cron-Job (banksapi-daily-sync) taeglich um 07:00 UTC.
+                Fuegen Sie das von BANKSapi bereitgestellte Basic Authorization Credential ein.
+                Es wird ausschliesslich serverseitig in Edge Functions fuer den OAuth2
+                Token-Request verwendet und nie an den Browser uebertragen. Der taeglich
+                automatische Sync laeuft via Cron-Job um 07:00 UTC.
               </p>
             </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <button
+              type="button"
+              onClick={() => setBanksapiShowLegacy(!banksapiShowLegacy)}
+              className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1"
+            >
+              {banksapiShowLegacy ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+              {banksapiShowLegacy ? "Legacy-Felder ausblenden" : "Legacy-Felder anzeigen (Client ID / Secret)"}
+            </button>
+
+            {banksapiShowLegacy && (
+              <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-xs text-amber-600 font-medium">
+                  Diese Felder werden nur als Fallback verwendet, wenn kein Basic Authorization Credential hinterlegt ist.
+                </p>
+                <div>
+                  <label
+                    htmlFor="banksapi-client-id"
+                    className="block text-xs font-semibold text-gray-500 mb-1.5"
+                  >
+                    Client ID (Legacy)
+                  </label>
+                  <input
+                    id="banksapi-client-id"
+                    type="text"
+                    value={banksapiClientId}
+                    onChange={(e) => setBanksapiClientId(e.target.value)}
+                    placeholder="Client ID"
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-colors font-mono"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="banksapi-client-secret"
+                    className="block text-xs font-semibold text-gray-500 mb-1.5"
+                  >
+                    Client Secret (Legacy)
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="banksapi-client-secret"
+                      type={banksapiSecretMasked ? "password" : "text"}
+                      value={banksapiClientSecret}
+                      onChange={(e) => setBanksapiClientSecret(e.target.value)}
+                      placeholder={
+                        banksapiHasSecret
+                          ? "Secret hinterlegt - neuen Wert eingeben zum Ueberschreiben"
+                          : "Client Secret"
+                      }
+                      className="w-full px-3 py-2 pr-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-colors font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setBanksapiSecretMasked(!banksapiSecretMasked)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                      {banksapiSecretMasked ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  {banksapiHasSecret && (
+                    <p className="text-xs text-emerald-600 flex items-center gap-1 mt-1">
+                      <Shield className="w-3 h-3" />
+                      Secret ist hinterlegt
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t">
             <Button
               onClick={() => {
+                setBanksapiBasicAuth("");
                 setBanksapiClientSecret("");
                 loadSettings();
               }}
