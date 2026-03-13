@@ -431,7 +431,23 @@ async function banksapiFetch(
     headers["Content-Type"] = "application/json";
   }
 
-  return fetch(url, { ...options, headers, redirect: "manual" });
+  const res = await fetch(url, { ...options, headers, redirect: "manual" });
+
+  if (res.status === 451) return res;
+
+  if ((res.status === 302 || res.status === 307) && res.headers.get("Location")) {
+    const location = res.headers.get("Location")!;
+    const isBanksapiInternal = location.startsWith(BANKSAPI_BASE_URL);
+    if (isBanksapiInternal) {
+      return fetch(location, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      });
+    }
+    return res;
+  }
+
+  return res;
 }
 
 function getCustomerId(userId: string): string {
@@ -580,10 +596,19 @@ async function persistBankAccess(
   data: Record<string, unknown>
 ): Promise<Response> {
   const bankAccessId = String(data.id || "");
-  const bankName =
+  let bankName =
     (data.bankName as string) ||
     ((data.bank as Record<string, unknown>)?.name as string) ||
     "";
+  if (!bankName) {
+    const products = (data.bankprodukte || data.bankProducts) as Array<Record<string, unknown>> | undefined;
+    if (products && products.length > 0) {
+      const inst = (products[0].kreditinstitut as string) || (products[0].bankName as string) || "";
+      if (inst) {
+        bankName = inst.split(",")[0].trim();
+      }
+    }
+  }
   const providerId = String(data.providerId || "");
 
   const { data: existingConn } = await admin
@@ -693,6 +718,23 @@ async function syncBankProducts(
     const products = bankAccessData?.bankprodukte ||
       bankAccessData?.bankProducts ||
       (Array.isArray(bankAccessData) ? bankAccessData : []);
+
+    if (products.length > 0) {
+      const { data: connCheck } = await admin
+        .from("banksapi_connections")
+        .select("bank_name")
+        .eq("id", connectionId)
+        .maybeSingle();
+      if (connCheck && !connCheck.bank_name) {
+        const inst = (products[0].kreditinstitut as string) || (products[0].bankName as string) || "";
+        if (inst) {
+          await admin
+            .from("banksapi_connections")
+            .update({ bank_name: inst.split(",")[0].trim() })
+            .eq("id", connectionId);
+        }
+      }
+    }
 
     for (const product of products) {
       const productId = String(product.id || product.bankProductId || "");
@@ -1216,7 +1258,10 @@ async function handleRefreshBankAccess(
     userId
   );
 
-  if (res.status === 451) {
+  const isScaRedirect = res.status === 451 ||
+    ((res.status === 302 || res.status === 307) && res.headers.get("Location") && !res.headers.get("Location")!.startsWith(BANKSAPI_BASE_URL));
+
+  if (isScaRedirect) {
     const location = res.headers.get("Location") || "";
     const encodedCallback = encodeURIComponent(callbackUrl);
     const separator = location.includes("?") ? "&" : "?";
@@ -1399,10 +1444,30 @@ async function fetchRemoteTransactions(
   }
 
   const data = await res.json();
-  const list = Array.isArray(data)
-    ? data
-    : data?.kontoumsaetze || data?.transactions || [];
-  return list as Record<string, unknown>[];
+  let list: Record<string, unknown>[];
+  if (Array.isArray(data)) {
+    list = data;
+  } else if (data?.kontoumsaetze && Array.isArray(data.kontoumsaetze)) {
+    list = data.kontoumsaetze;
+  } else if (data?.transactions && Array.isArray(data.transactions)) {
+    list = data.transactions;
+  } else if (typeof data === "object" && data !== null) {
+    list = [];
+    for (const [key, value] of Object.entries(data)) {
+      if (key === "relations" || key === "paging") continue;
+      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+        list.push({ _remoteKey: key, ...(value as Record<string, unknown>) });
+      }
+    }
+  } else {
+    list = [];
+  }
+
+  if (list.length > 0) {
+    console.info(`[kontoumsaetze] Fetched ${list.length} transactions. Sample keys: ${Object.keys(list[0]).join(", ")}`);
+  }
+
+  return list;
 }
 
 function parseRemoteTx(tx: Record<string, unknown>) {
@@ -1551,6 +1616,7 @@ async function importTransactionsForProduct(
     const BATCH_SIZE = 50;
     const pendingInserts: Record<string, unknown>[] = [];
     let processedCount = 0;
+    const anomalySamples: Record<string, unknown>[] = [];
 
     const flushBatch = async () => {
       if (pendingInserts.length === 0) return;
@@ -1561,8 +1627,11 @@ async function importTransactionsForProduct(
         .select("id");
 
       if (batchErr) {
-        console.error("Batch upsert error:", batchErr.message);
+        console.error("Batch upsert error:", batchErr.message, batchErr.details, batchErr.hint);
         result.anomalies += batch.length;
+        if (anomalySamples.length < 3) {
+          anomalySamples.push({ reason: "upsert_error", error: batchErr.message, details: batchErr.details, batchSize: batch.length });
+        }
       } else {
         const actualInserted = inserted?.length || 0;
         const dupes = batch.length - actualInserted;
@@ -1577,6 +1646,9 @@ async function importTransactionsForProduct(
 
       if (!parsed.effectiveDate) {
         result.anomalies++;
+        if (anomalySamples.length < 3) {
+          anomalySamples.push({ reason: "no_date", keys: Object.keys(rawTx) });
+        }
         if (progressCallback && processedCount % 20 === 0) {
           await progressCallback(processedCount, result.imported, result.duplicates, remoteTxs.length);
         }
@@ -1585,6 +1657,9 @@ async function importTransactionsForProduct(
 
       if (parsed.amount === null || isNaN(parsed.amount)) {
         result.anomalies++;
+        if (anomalySamples.length < 3) {
+          anomalySamples.push({ reason: "no_amount", keys: Object.keys(rawTx) });
+        }
         continue;
       }
 
@@ -1662,6 +1737,8 @@ async function importTransactionsForProduct(
 
     await flushBatch();
 
+    console.info(`[import-summary] product=${product.bank_product_id} effectiveStart=${effectiveStart} seen=${result.totalSeen} imported=${result.imported} duplicates=${result.duplicates} filteredByDate=${result.filteredByDate} anomalies=${result.anomalies}`);
+
     if (progressCallback) {
       await progressCallback(remoteTxs.length, result.imported, result.duplicates, remoteTxs.length);
     }
@@ -1677,6 +1754,7 @@ async function importTransactionsForProduct(
         raw_meta: {
           filtered_by_date: result.filteredByDate,
           anomalies: result.anomalies,
+          anomaly_samples: anomalySamples,
           effective_start: effectiveStart,
           overlap_days: OVERLAP_DAYS,
         },
@@ -1978,7 +2056,10 @@ async function handleRefreshAndImport(
     return errorResponse(`Bankverbindung fehlgeschlagen: ${msg}`, 502);
   }
 
-  if (refreshRes.status === 451) {
+  const isScaRedirect2 = refreshRes.status === 451 ||
+    ((refreshRes.status === 302 || refreshRes.status === 307) && refreshRes.headers.get("Location") && !refreshRes.headers.get("Location")!.startsWith(BANKSAPI_BASE_URL));
+
+  if (isScaRedirect2) {
     const location = refreshRes.headers.get("Location") || "";
     const encodedCallback = encodeURIComponent(callbackUrl);
     const separator = location.includes("?") ? "&" : "?";
@@ -2180,7 +2261,10 @@ async function handleCronSync(admin: Admin): Promise<Response> {
         conn.user_id
       );
 
-      if (refreshRes.status === 451) {
+      const cronIsScaRedirect = refreshRes.status === 451 ||
+        ((refreshRes.status === 302 || refreshRes.status === 307) && refreshRes.headers.get("Location") && !refreshRes.headers.get("Location")!.startsWith(BANKSAPI_BASE_URL));
+
+      if (cronIsScaRedirect) {
         await admin
           .from("banksapi_connections")
           .update({ status: "requires_sca" })
@@ -2213,12 +2297,12 @@ async function handleCronSync(admin: Admin): Promise<Response> {
         refreshOk = false;
       }
 
-      if (refreshOk) {
-        await admin
-          .from("banksapi_connections")
-          .update({ status: "connected", error_message: null })
-          .eq("id", conn.id);
+      await admin
+        .from("banksapi_connections")
+        .update({ status: "connected", error_message: refreshOk ? null : undefined })
+        .eq("id", conn.id);
 
+      if (refreshOk) {
         await syncBankProducts(
           admin,
           conn.user_id,
@@ -2252,6 +2336,11 @@ async function handleCronSync(admin: Admin): Promise<Response> {
         conn.banksapi_customer_id,
         "cron"
       );
+
+      await admin
+        .from("banksapi_connections")
+        .update({ status: "connected", last_sync_at: new Date().toISOString() })
+        .eq("id", conn.id);
 
       results.push({
         connectionId: conn.id,

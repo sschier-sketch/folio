@@ -221,7 +221,7 @@ export default function BanksApiImportFlow() {
       const res = await apiFetch('create-bank-access', token, {
         method: 'POST',
         body: JSON.stringify({ origin: window.location.origin }),
-      });
+      }, 30000);
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown' }));
@@ -254,7 +254,7 @@ export default function BanksApiImportFlow() {
       const res = await apiFetch(`refresh/${connectionId}`, token, {
         method: 'POST',
         body: JSON.stringify({ origin: window.location.origin }),
-      });
+      }, 30000);
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown' }));
@@ -270,6 +270,14 @@ export default function BanksApiImportFlow() {
 
       await loadConnections();
     } catch (err) {
+      const isNetworkErr =
+        (err instanceof DOMException && err.name === 'AbortError') ||
+        (err instanceof TypeError && (err.message === 'Load failed' || err.message === 'Failed to fetch'));
+
+      if (isNetworkErr) {
+        await loadConnections();
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Aktualisierung fehlgeschlagen');
     } finally {
       setActionLoading(false);
@@ -407,7 +415,7 @@ export default function BanksApiImportFlow() {
       const res = await apiFetch(`consent-renewal/${connectionId}`, token, {
         method: 'POST',
         body: JSON.stringify({ origin: window.location.origin }),
-      });
+      }, 30000);
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown' }));
@@ -438,7 +446,7 @@ export default function BanksApiImportFlow() {
     try {
       const res = await apiFetch(`disconnect/${connectionId}`, token, {
         method: 'POST',
-      });
+      }, 15000);
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown' }));
