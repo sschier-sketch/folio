@@ -407,6 +407,183 @@ async function syncBankProducts(
   }
 }
 
+async function fetchAndStoreIssues(
+  admin: Admin,
+  connectionId: string,
+  bankAccessId: string,
+  customerId: string
+): Promise<void> {
+  try {
+    const res = await banksapiFetch(
+      admin,
+      `/customer/v2/bankzugaenge/${bankAccessId}/issues`,
+      { method: "GET", headers: { "X-Tenant-Id": customerId } }
+    );
+
+    if (!res.ok) {
+      if (res.status === 404) return;
+      console.error("Issues API error:", res.status);
+      return;
+    }
+
+    const data = await res.json();
+    const issues = Array.isArray(data) ? data : data?.issues || [];
+
+    if (issues.length === 0) {
+      await admin
+        .from("banksapi_connections")
+        .update({ last_issue_message: null, last_issue_code: null })
+        .eq("id", connectionId);
+      return;
+    }
+
+    const mostSevere = issues[0];
+    const code =
+      (mostSevere.code as string) ||
+      (mostSevere.type as string) ||
+      "unknown";
+    const message =
+      (mostSevere.message as string) ||
+      (mostSevere.description as string) ||
+      (mostSevere.titel as string) ||
+      "Unbekanntes Problem";
+
+    await admin
+      .from("banksapi_connections")
+      .update({ last_issue_message: message, last_issue_code: code })
+      .eq("id", connectionId);
+
+    const relations = mostSevere.relations || mostSevere.relationen || {};
+    if (relations.start_sca || relations.startSca) {
+      await admin
+        .from("banksapi_connections")
+        .update({ status: "requires_sca" })
+        .eq("id", connectionId);
+    }
+  } catch (err) {
+    console.error("Error fetching issues:", err);
+  }
+}
+
+async function evaluateBankAccessState(
+  admin: Admin,
+  connectionId: string,
+  bankAccessId: string,
+  customerId: string
+): Promise<void> {
+  try {
+    const res = await banksapiFetch(
+      admin,
+      `/customer/v2/bankzugaenge/${bankAccessId}`,
+      { method: "GET", headers: { "X-Tenant-Id": customerId } }
+    );
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    const relations = data.relations || data.relationen || {};
+
+    if (relations.start_sca || relations.startSca) {
+      await admin
+        .from("banksapi_connections")
+        .update({
+          status: "requires_sca",
+          last_issue_message:
+            "Bankfreigabe ist abgelaufen. Bitte erneuern Sie die Freigabe.",
+          last_issue_code: "consent_expired",
+        })
+        .eq("id", connectionId);
+    }
+
+    const consentExpiresRaw =
+      data.consentExpires || data.consent_expires || data.consentGueltigBis;
+    if (consentExpiresRaw) {
+      await admin
+        .from("banksapi_connections")
+        .update({ consent_expires_at: consentExpiresRaw })
+        .eq("id", connectionId);
+    }
+  } catch (err) {
+    console.error("Error evaluating bank access state:", err);
+  }
+}
+
+async function handleConsentRenewal(
+  admin: Admin,
+  userId: string,
+  connectionId: string,
+  body: { callbackUrl?: string; customerIpAddress?: string }
+): Promise<Response> {
+  const { data: conn } = await admin
+    .from("banksapi_connections")
+    .select("bank_access_id, banksapi_customer_id, status")
+    .eq("id", connectionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!conn?.bank_access_id) {
+    return errorResponse("Connection not found", 404);
+  }
+
+  const callbackUrl =
+    body.callbackUrl || "https://rentab.ly/banksapi/callback";
+  const reqHeaders: Record<string, string> = {
+    "X-Tenant-Id": conn.banksapi_customer_id,
+  };
+  if (body.customerIpAddress) {
+    reqHeaders["Customer-IP-Address"] = body.customerIpAddress;
+  }
+
+  const res = await banksapiFetch(
+    admin,
+    `/customer/v2/bankzugaenge/${conn.bank_access_id}/consent`,
+    {
+      method: "POST",
+      headers: reqHeaders,
+      body: JSON.stringify({ callbackUrl }),
+    }
+  );
+
+  if (res.status === 451 || res.status === 307 || res.status === 302) {
+    const location =
+      res.headers.get("Location") || res.headers.get("location") || "";
+    await admin
+      .from("banksapi_connections")
+      .update({ status: "requires_sca" })
+      .eq("id", connectionId);
+
+    return jsonResponse({
+      action: "redirect",
+      redirectUrl: location,
+      status: "requires_sca",
+    });
+  }
+
+  if (!res.ok) {
+    const errBody = await res.text();
+    console.error("Consent renewal error:", res.status, errBody);
+    return errorResponse(
+      `Freigabe-Erneuerung fehlgeschlagen: ${res.status}`,
+      502
+    );
+  }
+
+  await admin
+    .from("banksapi_connections")
+    .update({
+      status: "connected",
+      error_message: null,
+      last_issue_message: null,
+      last_issue_code: null,
+      consent_expires_at: new Date(
+        Date.now() + 180 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+    })
+    .eq("id", connectionId);
+
+  return jsonResponse({ status: "connected", message: "Freigabe erneuert" });
+}
+
 async function handleCompleteCallback(
   admin: Admin,
   body: { userId: string; baReentry: string }
@@ -445,14 +622,35 @@ async function handleGetConnections(
   const { data: connections, error } = await admin
     .from("banksapi_connections")
     .select(
-      "id, bank_access_id, bank_name, provider_id, status, error_message, last_sync_at, created_at, updated_at"
+      "id, bank_access_id, bank_name, provider_id, status, error_message, last_sync_at, last_attempted_sync_at, last_issue_message, last_issue_code, consent_expires_at, created_at, updated_at"
     )
     .eq("user_id", userId)
     .neq("status", "disconnected")
     .order("created_at", { ascending: false });
 
   if (error) return errorResponse(error.message, 500);
-  return jsonResponse({ connections: connections || [] });
+
+  const enriched = [];
+  for (const conn of connections || []) {
+    const { count: selectedCount } = await admin
+      .from("banksapi_bank_products")
+      .select("id", { count: "exact", head: true })
+      .eq("connection_id", conn.id)
+      .eq("selected_for_import", true);
+
+    const { count: totalCount } = await admin
+      .from("banksapi_bank_products")
+      .select("id", { count: "exact", head: true })
+      .eq("connection_id", conn.id);
+
+    enriched.push({
+      ...conn,
+      selected_accounts: selectedCount || 0,
+      total_accounts: totalCount || 0,
+    });
+  }
+
+  return jsonResponse({ connections: enriched });
 }
 
 async function handleGetProducts(
@@ -1140,9 +1338,10 @@ async function handleRefreshAndImport(
     return errorResponse("Connection not found", 404);
   }
 
+  const now = new Date().toISOString();
   await admin
     .from("banksapi_connections")
-    .update({ status: "syncing" })
+    .update({ status: "syncing", last_attempted_sync_at: now })
     .eq("id", connectionId);
 
   const callbackUrl =
@@ -1176,7 +1375,7 @@ async function handleRefreshAndImport(
       connection_id: connectionId,
       bank_access_id: conn.bank_access_id,
       trigger_type: "manual",
-      started_at: new Date().toISOString(),
+      started_at: now,
       finished_at: new Date().toISOString(),
       status: "requires_sca",
       error_message: "SCA redirect required",
@@ -1215,6 +1414,20 @@ async function handleRefreshAndImport(
   await syncBankProducts(
     admin,
     userId,
+    connectionId,
+    conn.bank_access_id,
+    conn.banksapi_customer_id
+  );
+
+  await fetchAndStoreIssues(
+    admin,
+    connectionId,
+    conn.bank_access_id,
+    conn.banksapi_customer_id
+  );
+
+  await evaluateBankAccessState(
+    admin,
     connectionId,
     conn.bank_access_id,
     conn.banksapi_customer_id
@@ -1293,9 +1506,10 @@ async function handleCronSync(admin: Admin): Promise<Response> {
         continue;
       }
 
+      const cronNow = new Date().toISOString();
       await admin
         .from("banksapi_connections")
-        .update({ status: "syncing" })
+        .update({ status: "syncing", last_attempted_sync_at: cronNow })
         .eq("id", conn.id);
 
       let refreshOk = true;
@@ -1320,7 +1534,7 @@ async function handleCronSync(admin: Admin): Promise<Response> {
           connection_id: conn.id,
           bank_access_id: conn.bank_access_id,
           trigger_type: "cron",
-          started_at: new Date().toISOString(),
+          started_at: cronNow,
           finished_at: new Date().toISOString(),
           status: "requires_sca",
           error_message: "SCA consent expired, user must re-authorize",
@@ -1356,6 +1570,20 @@ async function handleCronSync(admin: Admin): Promise<Response> {
           conn.banksapi_customer_id
         );
       }
+
+      await fetchAndStoreIssues(
+        admin,
+        conn.id,
+        conn.bank_access_id,
+        conn.banksapi_customer_id
+      );
+
+      await evaluateBankAccessState(
+        admin,
+        conn.id,
+        conn.bank_access_id,
+        conn.banksapi_customer_id
+      );
 
       const importResult = await importTransactionsForConnection(
         admin,
@@ -1569,6 +1797,15 @@ Deno.serve(async (req: Request) => {
         return handleGetImportLogs(admin, user.id, connId);
       }
 
+      case "consent-renewal": {
+        if (req.method !== "POST")
+          return errorResponse("Method not allowed", 405);
+        const connId = pathParts[1];
+        if (!connId) return errorResponse("connectionId required", 400);
+        const body = await req.json().catch(() => ({}));
+        return handleConsentRenewal(admin, user.id, connId, body);
+      }
+
       case "disconnect": {
         if (req.method !== "POST" && req.method !== "DELETE")
           return errorResponse("Method not allowed", 405);
@@ -1577,8 +1814,24 @@ Deno.serve(async (req: Request) => {
         return handleDeleteConnection(admin, user.id, connId);
       }
 
+      case "admin-stats": {
+        if (req.method !== "GET")
+          return errorResponse("Method not allowed", 405);
+        const { data: isAdmin } = await admin
+          .from("admin_users")
+          .select("user_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (!isAdmin) return errorResponse("Forbidden", 403);
+        const { data: stats, error: statsErr } = await admin.rpc(
+          "admin_get_banksapi_stats"
+        );
+        if (statsErr) return errorResponse(statsErr.message, 500);
+        return jsonResponse(stats);
+      }
+
       case "status": {
-        return jsonResponse({ enabled: true, version: "2.0.0" });
+        return jsonResponse({ enabled: true, version: "2.1.0" });
       }
 
       default:

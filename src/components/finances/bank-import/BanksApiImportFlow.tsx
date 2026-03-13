@@ -31,6 +31,12 @@ export interface BanksApiConnection {
   status: 'connected' | 'requires_sca' | 'syncing' | 'error' | 'disconnected';
   error_message: string | null;
   last_sync_at: string | null;
+  last_attempted_sync_at: string | null;
+  last_issue_message: string | null;
+  last_issue_code: string | null;
+  consent_expires_at: string | null;
+  selected_accounts: number;
+  total_accounts: number;
   created_at: string;
   updated_at: string;
 }
@@ -154,7 +160,7 @@ export default function BanksApiImportFlow() {
 
   useEffect(() => {
     const activeIds = connections
-      .filter(c => c.status === 'connected' || c.status === 'syncing')
+      .filter(c => c.status !== 'disconnected')
       .map(c => c.id);
     if (activeIds.length > 0) {
       loadImportLogs(activeIds);
@@ -297,6 +303,38 @@ export default function BanksApiImportFlow() {
       setError(err instanceof Error ? err.message : 'Aktualisierung fehlgeschlagen');
     } finally {
       setRefreshingConnectionId(null);
+    }
+  }
+
+  async function handleConsentRenewal(connectionId: string) {
+    if (!token) return;
+    setError('');
+    setActionLoading(true);
+
+    try {
+      const callbackUrl = `${SUPABASE_URL}/functions/v1/banksapi-callback`;
+      const res = await apiFetch(`consent-renewal/${connectionId}`, token, {
+        method: 'POST',
+        body: JSON.stringify({ callbackUrl }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown' }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.action === 'redirect' && data.redirectUrl) {
+        setFlowState('redirecting');
+        window.location.href = data.redirectUrl;
+        return;
+      }
+
+      await loadConnections();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bankfreigabe konnte nicht erneuert werden');
+    } finally {
+      setActionLoading(false);
     }
   }
 
@@ -447,6 +485,7 @@ export default function BanksApiImportFlow() {
             onDisconnect={() => handleDisconnect(conn.id)}
             onManageAccounts={() => handleOpenAccountSelection(conn)}
             onRefreshAndImport={() => handleRefreshAndImport(conn.id)}
+            onConsentRenewal={() => handleConsentRenewal(conn.id)}
           />
         ))}
 

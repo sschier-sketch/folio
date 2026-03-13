@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Monitor,
   AlertCircle,
@@ -9,6 +9,12 @@ import {
   Eye,
   EyeOff,
   Shield,
+  RefreshCw,
+  Users,
+  CreditCard,
+  AlertTriangle,
+  Activity,
+  Loader,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import {
@@ -42,9 +48,26 @@ export default function AdminSystemInfoView() {
     text: string;
   } | null>(null);
 
+  const [banksapiStats, setBanksapiStats] = useState<Record<string, unknown> | null>(null);
+  const [banksapiStatsLoading, setBanksapiStatsLoading] = useState(false);
+
+  const loadBanksapiStats = useCallback(async () => {
+    setBanksapiStatsLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("admin_get_banksapi_stats");
+      if (error) throw error;
+      setBanksapiStats(data);
+    } catch (err) {
+      console.error("Failed to load BanksAPI stats:", err);
+    } finally {
+      setBanksapiStatsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadSettings();
-  }, []);
+    loadBanksapiStats();
+  }, [loadBanksapiStats]);
 
   const loadSettings = async () => {
     setLoading(true);
@@ -490,8 +513,7 @@ export default function AdminSystemInfoView() {
                 Die Zugangsdaten erhalten Sie von BanksAPI (banksapi.io).
                 Das Client Secret wird ausschliesslich serverseitig in Edge Functions
                 verwendet und nie an den Browser uebertragen. Der taeglich automatische
-                Sync ist als Cron-Platzhalter registriert und wird in einem spaeteren
-                Update aktiviert.
+                Sync laeuft via Cron-Job (banksapi-daily-sync) taeglich um 07:00 UTC.
               </p>
             </div>
           </div>
@@ -520,6 +542,14 @@ export default function AdminSystemInfoView() {
           </div>
         </div>
       </div>
+
+      {banksapiEnabled && (
+        <BanksApiDiagnosticsSection
+          stats={banksapiStats}
+          loading={banksapiStatsLoading}
+          onRefresh={loadBanksapiStats}
+        />
+      )}
 
       <RegistrationHealthView />
 
@@ -561,6 +591,194 @@ export default function AdminSystemInfoView() {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function formatDt(iso: string | null | undefined): string {
+  if (!iso) return "–";
+  return new Date(iso).toLocaleString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function BanksApiDiagnosticsSection({
+  stats,
+  loading,
+  onRefresh,
+}: {
+  stats: Record<string, unknown> | null;
+  loading: boolean;
+  onRefresh: () => void;
+}) {
+  const conns = (stats?.connections || {}) as Record<string, number>;
+  const products = (stats?.products || {}) as Record<string, number>;
+  const imp = (stats?.import_24h || {}) as Record<string, number>;
+  const lastCron = (stats?.last_cron || {}) as Record<string, unknown>;
+  const connList = (stats?.connection_list || []) as Array<Record<string, unknown>>;
+
+  const statCards = [
+    { label: "Aktive Verbindungen", value: conns.total_active ?? 0, icon: Activity, color: "text-emerald-600 bg-emerald-50" },
+    { label: "Freigabe noetig", value: conns.requires_sca ?? 0, icon: AlertTriangle, color: conns.requires_sca ? "text-amber-600 bg-amber-50" : "text-gray-500 bg-gray-50" },
+    { label: "Fehler", value: conns.with_errors ?? 0, icon: AlertCircle, color: conns.with_errors ? "text-red-600 bg-red-50" : "text-gray-500 bg-gray-50" },
+    { label: "Ausgewaehlte Konten", value: products.selected_accounts ?? 0, icon: CreditCard, color: "text-blue-600 bg-blue-50" },
+    { label: "Import-Laeufe (24h)", value: imp.runs_24h ?? 0, icon: RefreshCw, color: "text-teal-600 bg-teal-50" },
+    { label: "Importiert (24h)", value: imp.imported_24h ?? 0, icon: CreditCard, color: "text-emerald-600 bg-emerald-50" },
+  ];
+
+  return (
+    <div className="mt-6 bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b bg-gray-50 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center">
+            <Activity className="w-5 h-5 text-teal-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-dark">
+              BanksAPI Diagnostik
+            </h2>
+            <p className="text-sm text-gray-600">
+              Uebersicht aller aktiven Bankverbindungen und Importstatus
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onRefresh}
+          disabled={loading}
+          className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-40"
+          title="Aktualisieren"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+
+      <div className="p-6">
+        {loading && !stats ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader className="w-6 h-6 text-gray-400 animate-spin" />
+          </div>
+        ) : !stats ? (
+          <p className="text-sm text-gray-500 text-center py-4">Keine Daten verfuegbar</p>
+        ) : (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {statCards.map((card) => {
+                const Icon = card.icon;
+                return (
+                  <div key={card.label} className="p-3 rounded-lg border border-gray-100">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${card.color}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <p className="text-2xl font-bold text-dark">{card.value}</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-wide mt-0.5">{card.label}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {lastCron && (lastCron.started_at || lastCron.status) && (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Letzter Cron-Lauf</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                  <div>
+                    <p className="text-[10px] text-gray-400">Gestartet</p>
+                    <p className="font-medium text-dark">{formatDt(lastCron.started_at as string)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400">Status</p>
+                    <p className={`font-medium ${lastCron.status === "failed" ? "text-red-600" : "text-emerald-600"}`}>
+                      {lastCron.status === "failed" ? "Fehlgeschlagen" : "Erfolgreich"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400">Importiert</p>
+                    <p className="font-medium text-dark">{(lastCron.total_new_transactions_imported as number) ?? 0}</p>
+                  </div>
+                  {lastCron.error_message && (
+                    <div className="col-span-2 sm:col-span-4">
+                      <p className="text-[10px] text-gray-400">Fehler</p>
+                      <p className="text-xs text-red-600">{lastCron.error_message as string}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {connList.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">Verbindungen</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-gray-50 text-gray-500">
+                        <th className="text-left px-3 py-2 font-medium">Nutzer</th>
+                        <th className="text-left px-3 py-2 font-medium">Bank</th>
+                        <th className="text-left px-3 py-2 font-medium">Status</th>
+                        <th className="text-left px-3 py-2 font-medium">Konten</th>
+                        <th className="text-left px-3 py-2 font-medium">Letzter Sync</th>
+                        <th className="text-left px-3 py-2 font-medium">Letzter Import</th>
+                        <th className="text-left px-3 py-2 font-medium">Hinweis</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {connList.map((c, i) => {
+                        const st = c.status as string;
+                        const statusColor = st === "connected" ? "text-emerald-600" : st === "requires_sca" ? "text-amber-600" : st === "error" ? "text-red-600" : "text-gray-500";
+                        return (
+                          <tr key={i} className="hover:bg-gray-50">
+                            <td className="px-3 py-2 text-gray-700">{(c.user_email as string) || "–"}</td>
+                            <td className="px-3 py-2 font-medium text-dark">{(c.bank_name as string) || "–"}</td>
+                            <td className={`px-3 py-2 font-medium ${statusColor}`}>
+                              {st === "connected" ? "Verbunden" : st === "requires_sca" ? "SCA noetig" : st === "error" ? "Fehler" : st}
+                            </td>
+                            <td className="px-3 py-2 text-gray-600">
+                              {(c.selected_accounts as number) ?? 0}/{(c.total_accounts as number) ?? 0}
+                            </td>
+                            <td className="px-3 py-2 text-gray-600">{formatDt(c.last_sync_at as string)}</td>
+                            <td className="px-3 py-2 text-gray-600">
+                              {c.last_import_status ? (
+                                <span className={`${(c.last_import_status as string) === "success" ? "text-emerald-600" : "text-red-600"}`}>
+                                  {(c.last_import_imported as number) ?? 0} neu
+                                </span>
+                              ) : "–"}
+                            </td>
+                            <td className="px-3 py-2 text-gray-500 max-w-[200px] truncate">
+                              {(c.last_issue_message as string) || (c.error_message as string) || "–"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {imp.failed_runs_24h > 0 && (
+              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-red-700">
+                  {imp.failed_runs_24h} fehlgeschlagene Import-Laeufe in den letzten 24 Stunden.
+                  Pruefen Sie die Cron-Jobs fuer Details.
+                </p>
+              </div>
+            )}
+
+            {imp.sca_runs_24h > 0 && (
+              <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-amber-700">
+                  {imp.sca_runs_24h} Verbindungen benoetigen eine erneute Bankfreigabe (SCA).
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

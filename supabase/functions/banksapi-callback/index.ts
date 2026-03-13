@@ -32,23 +32,49 @@ Deno.serve(async (req: Request) => {
     const baReentry = url.searchParams.get("baReentry");
 
     if (!baReentry) {
-      return buildRedirectHtml("error", "Fehlender Parameter: baReentry");
+      console.warn("banksapi-callback called without baReentry parameter");
+      return buildRedirectHtml(
+        "error",
+        "Fehlender Parameter. Bitte versuchen Sie es erneut."
+      );
     }
 
     const admin = getSupabaseAdmin();
 
-    const { data: pendingConn } = await admin
+    const { data: pendingConns } = await admin
       .from("banksapi_connections")
-      .select("id, user_id, banksapi_customer_id")
+      .select("id, user_id, banksapi_customer_id, status")
       .eq("status", "requires_sca")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order("updated_at", { ascending: false })
+      .limit(5);
 
-    if (!pendingConn) {
-      console.error("No pending banksapi connection found for callback");
-      return buildRedirectHtml("error", "Keine ausstehende Bankverbindung gefunden");
+    if (!pendingConns || pendingConns.length === 0) {
+      const { data: recentlyConnected } = await admin
+        .from("banksapi_connections")
+        .select("id, status")
+        .eq("status", "connected")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (recentlyConnected) {
+        console.info(
+          "banksapi-callback: No pending connection, but recently connected found - likely duplicate callback"
+        );
+        return buildRedirectHtml(
+          "success",
+          "Bankverbindung bereits erfolgreich hergestellt"
+        );
+      }
+
+      console.error("banksapi-callback: No pending or recently connected connection found");
+      return buildRedirectHtml(
+        "error",
+        "Keine ausstehende Bankverbindung gefunden. Bitte starten Sie den Vorgang erneut."
+      );
     }
+
+    const pendingConn = pendingConns[0];
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -71,18 +97,42 @@ Deno.serve(async (req: Request) => {
 
       if (!completeRes.ok) {
         const errText = await completeRes.text();
-        console.error("complete-callback failed:", completeRes.status, errText);
-        return buildRedirectHtml("error", "Fehler beim Abschliessen der Bankverbindung");
+        console.error(
+          "complete-callback failed:",
+          completeRes.status,
+          errText
+        );
+
+        if (completeRes.status === 409) {
+          return buildRedirectHtml(
+            "success",
+            "Bankverbindung bereits erfolgreich hergestellt"
+          );
+        }
+
+        return buildRedirectHtml(
+          "error",
+          "Fehler beim Abschliessen der Bankverbindung. Bitte versuchen Sie es erneut."
+        );
       }
     } catch (e) {
       console.error("Error calling complete-callback:", e);
-      return buildRedirectHtml("error", "Technischer Fehler bei der Verarbeitung");
+      return buildRedirectHtml(
+        "error",
+        "Technischer Fehler bei der Verarbeitung. Bitte versuchen Sie es spaeter erneut."
+      );
     }
 
-    return buildRedirectHtml("success", "Bankverbindung erfolgreich hergestellt");
+    return buildRedirectHtml(
+      "success",
+      "Bankverbindung erfolgreich hergestellt"
+    );
   } catch (err) {
     console.error("banksapi-callback error:", err);
-    return buildRedirectHtml("error", "Ein Fehler ist aufgetreten");
+    return buildRedirectHtml(
+      "error",
+      "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es spaeter erneut."
+    );
   }
 });
 

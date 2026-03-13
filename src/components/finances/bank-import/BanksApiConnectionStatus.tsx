@@ -9,7 +9,9 @@ import {
   Landmark,
   Clock,
   ArrowDownToLine,
-  Download,
+  ShieldAlert,
+  CreditCard,
+  Info,
 } from 'lucide-react';
 import { Button } from '../../ui/Button';
 import type { BanksApiConnection, BanksApiImportLog } from './BanksApiImportFlow';
@@ -23,6 +25,7 @@ interface Props {
   onDisconnect: () => void;
   onManageAccounts: () => void;
   onRefreshAndImport: () => void;
+  onConsentRenewal: () => void;
 }
 
 const STATUS_CONFIG: Record<
@@ -44,7 +47,7 @@ const STATUS_CONFIG: Record<
     icon: Loader,
   },
   requires_sca: {
-    label: 'Freigabe erforderlich',
+    label: 'Bankfreigabe erforderlich',
     color: 'text-amber-700',
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
@@ -70,6 +73,15 @@ function formatDateTime(iso: string | null): string {
   });
 }
 
+function formatDate(iso: string | null): string {
+  if (!iso) return '–';
+  return new Date(iso).toLocaleDateString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
 function formatImportStatus(status: string): { label: string; color: string } {
   switch (status) {
     case 'success':
@@ -85,6 +97,19 @@ function formatImportStatus(status: string): { label: string; color: string } {
   }
 }
 
+function isConsentExpiringSoon(expiresAt: string | null): boolean {
+  if (!expiresAt) return false;
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  return diff > 0 && diff < 14 * 24 * 60 * 60 * 1000;
+}
+
+function daysUntilExpiry(expiresAt: string | null): number | null {
+  if (!expiresAt) return null;
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  if (diff <= 0) return 0;
+  return Math.ceil(diff / (24 * 60 * 60 * 1000));
+}
+
 export default function BanksApiConnectionStatus({
   connection,
   loading,
@@ -94,9 +119,13 @@ export default function BanksApiConnectionStatus({
   onDisconnect,
   onManageAccounts,
   onRefreshAndImport,
+  onConsentRenewal,
 }: Props) {
   const config = STATUS_CONFIG[connection.status] || STATUS_CONFIG.error;
   const StatusIcon = config.icon;
+  const consentDays = daysUntilExpiry(connection.consent_expires_at);
+  const consentExpiring = isConsentExpiringSoon(connection.consent_expires_at);
+  const consentExpired = consentDays !== null && consentDays === 0;
 
   return (
     <div className={`border rounded-lg overflow-hidden ${config.borderColor}`}>
@@ -109,13 +138,21 @@ export default function BanksApiConnectionStatus({
             <p className="text-sm font-semibold text-dark">
               {connection.bank_name || 'Bankverbindung'}
             </p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <StatusIcon className={`w-3 h-3 ${config.color} ${
-                connection.status === 'syncing' ? 'animate-spin' : ''
-              }`} />
-              <span className={`text-xs font-medium ${config.color}`}>
-                {config.label}
-              </span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-1.5">
+                <StatusIcon className={`w-3 h-3 ${config.color} ${
+                  connection.status === 'syncing' ? 'animate-spin' : ''
+                }`} />
+                <span className={`text-xs font-medium ${config.color}`}>
+                  {config.label}
+                </span>
+              </div>
+              {connection.selected_accounts > 0 && (
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <CreditCard className="w-3 h-3" />
+                  {connection.selected_accounts}/{connection.total_accounts} Konten
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -170,6 +207,12 @@ export default function BanksApiConnectionStatus({
           </div>
         </div>
 
+        {connection.last_attempted_sync_at && connection.last_attempted_sync_at !== connection.last_sync_at && (
+          <p className="text-[10px] text-gray-400 mt-2">
+            Letzter Versuch: {formatDateTime(connection.last_attempted_sync_at)}
+          </p>
+        )}
+
         {lastImportLog && (
           <div className="mt-3 pt-3 border-t border-gray-100">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -211,15 +254,62 @@ export default function BanksApiConnectionStatus({
           </div>
         )}
 
+        {connection.last_issue_message && connection.status !== 'error' && (
+          <div className="mt-3 flex items-start gap-2 p-2.5 bg-amber-50 rounded-lg">
+            <Info className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-amber-700">{connection.last_issue_message}</p>
+          </div>
+        )}
+
+        {(consentExpiring || consentExpired) && connection.status === 'connected' && (
+          <div className="mt-3 flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-xs font-medium text-amber-800">
+                {consentExpired
+                  ? 'Ihre PSD2-Bankfreigabe ist abgelaufen.'
+                  : `Ihre PSD2-Bankfreigabe laeuft in ${consentDays} Tagen ab (${formatDate(connection.consent_expires_at)}).`
+                }
+              </p>
+              <p className="text-[10px] text-amber-600 mt-0.5">
+                Erneuern Sie die Freigabe, um weiterhin automatisch Transaktionen abzurufen.
+              </p>
+              <button
+                onClick={onConsentRenewal}
+                disabled={loading}
+                className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors disabled:opacity-40"
+              >
+                {loading ? (
+                  <Loader className="w-3 h-3 animate-spin" />
+                ) : (
+                  <ShieldAlert className="w-3 h-3" />
+                )}
+                Bankfreigabe erneuern
+              </button>
+            </div>
+          </div>
+        )}
+
         {connection.status === 'requires_sca' && (
-          <div className="mt-3">
-            <Button variant="warning" size="sm" onClick={onRefresh} disabled={loading}>
+          <div className="mt-3 space-y-2">
+            <div className="flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs font-medium text-amber-800">
+                  Die Bankfreigabe muss erneuert werden.
+                </p>
+                <p className="text-[10px] text-amber-600 mt-0.5">
+                  Der automatische Import ist pausiert, bis die Freigabe erteilt wird. Ihre bisherigen Daten bleiben erhalten.
+                </p>
+              </div>
+            </div>
+            <Button variant="warning" size="sm" onClick={onConsentRenewal} disabled={loading}>
               {loading ? (
                 <Loader className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <RefreshCw className="w-3.5 h-3.5" />
+                <ShieldAlert className="w-3.5 h-3.5" />
               )}
-              Erneut freigeben
+              Bankfreigabe erneuern
             </Button>
           </div>
         )}
