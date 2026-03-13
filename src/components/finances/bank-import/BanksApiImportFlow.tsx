@@ -248,6 +248,28 @@ export default function BanksApiImportFlow() {
     }
   }
 
+  async function pollUntilSyncDone(connectionId: string, maxAttempts = 30) {
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise((r) => setTimeout(r, 3000));
+      try {
+        const res = await apiFetch('connections', token);
+        if (!res.ok) continue;
+        const data = await res.json();
+        const updated = (data.connections || []) as BanksApiConnection[];
+        setConnections(updated);
+        const conn = updated.find((c) => c.id === connectionId);
+        if (!conn || conn.status !== 'syncing') {
+          if (conn?.status === 'error' && conn.error_message) {
+            setError(conn.error_message);
+          }
+          await loadImportLogs([connectionId]);
+          return;
+        }
+      } catch (_) { /* retry */ }
+    }
+    setError('Die Synchronisierung dauert ungewoehnlich lange. Bitte laden Sie die Seite neu.');
+  }
+
   async function handleRefreshAndImport(connectionId: string) {
     if (!token) return;
 
@@ -267,7 +289,7 @@ export default function BanksApiImportFlow() {
       const res = await apiFetch(`refresh-and-import/${connectionId}`, token, {
         method: 'POST',
         body: JSON.stringify({ origin: window.location.origin }),
-      });
+      }, 30000);
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown' }));
@@ -279,6 +301,11 @@ export default function BanksApiImportFlow() {
       if (data.action === 'redirect' && data.redirectUrl) {
         setFlowState('redirecting');
         window.location.href = data.redirectUrl;
+        return;
+      }
+
+      if (data.status === 'syncing') {
+        await pollUntilSyncDone(connectionId);
         return;
       }
 
@@ -296,7 +323,18 @@ export default function BanksApiImportFlow() {
       await loadConnections();
       await loadImportLogs([connectionId]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Aktualisierung fehlgeschlagen');
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setError('Die Anfrage hat zu lange gedauert. Die Synchronisierung laeuft im Hintergrund weiter.');
+        await pollUntilSyncDone(connectionId);
+        return;
+      }
+      const msg = err instanceof Error ? err.message : 'Aktualisierung fehlgeschlagen';
+      setError(
+        msg === 'Load failed' || msg === 'Failed to fetch'
+          ? 'Verbindung zum Server unterbrochen. Die Synchronisierung laeuft moeglicherweise im Hintergrund weiter.'
+          : msg
+      );
+      await loadConnections();
     } finally {
       setRefreshingConnectionId(null);
     }
