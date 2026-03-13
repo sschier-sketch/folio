@@ -9,7 +9,7 @@ const corsHeaders = {
 };
 
 const BANKSAPI_BASE_URL = "https://banksapi.io";
-const BANKSAPI_AUTH_URL = "https://banksapi.io/auth/oauth2/token";
+const BANKSAPI_AUTH_URL = "https://auth.banksapi.de/oauth/token";
 const OVERLAP_DAYS = 14;
 
 type Admin = ReturnType<typeof getSupabaseAdmin>;
@@ -322,19 +322,19 @@ async function syncBankProducts(
   try {
     const res = await banksapiFetch(
       admin,
-      `/customer/v2/bankzugaenge/${bankAccessId}/bankprodukte`,
+      `/customer/v2/bankzugaenge/${bankAccessId}`,
       { method: "GET", headers: { "X-Tenant-Id": customerId } }
     );
 
     if (!res.ok) {
-      console.error("Failed to fetch bank products:", res.status);
+      console.error("Failed to fetch bank access for products:", res.status);
       return;
     }
 
-    const productsData = await res.json();
-    const products = Array.isArray(productsData)
-      ? productsData
-      : productsData?.bankprodukte || productsData?.bankProducts || [];
+    const bankAccessData = await res.json();
+    const products = bankAccessData?.bankprodukte ||
+      bankAccessData?.bankProducts ||
+      (Array.isArray(bankAccessData) ? bankAccessData : []);
 
     for (const product of products) {
       const productId = String(product.id || product.bankProductId || "");

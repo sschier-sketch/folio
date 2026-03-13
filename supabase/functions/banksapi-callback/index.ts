@@ -140,7 +140,7 @@ function buildRedirectHtml(
   status: "success" | "error",
   message: string
 ): Response {
-  const redirectUrl = `/dashboard?view=financial&tab=bank&banksapi_status=${status}`;
+  const redirectUrl = `https://rentab.ly/dashboard?view=financial&tab=bank&banksapi_status=${status}`;
 
   const html = `<!DOCTYPE html>
 <html lang="de">
