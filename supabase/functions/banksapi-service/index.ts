@@ -1055,8 +1055,29 @@ async function handleGetConnections(
 
   if (error) return errorResponse(error.message, 500);
 
+  const STUCK_THRESHOLD_MS = 5 * 60 * 1000;
+
   const enriched = [];
   for (const conn of connections || []) {
+    if (conn.status === "syncing" && conn.last_attempted_sync_at) {
+      const syncAge = Date.now() - new Date(conn.last_attempted_sync_at).getTime();
+      if (syncAge > STUCK_THRESHOLD_MS) {
+        console.info(`[connections] Auto-recovering stuck syncing connection ${conn.id} (age=${Math.round(syncAge / 1000)}s)`);
+        await admin
+          .from("banksapi_connections")
+          .update({ status: "connected", error_message: null })
+          .eq("id", conn.id);
+        conn.status = "connected";
+        conn.error_message = null;
+
+        await admin
+          .from("banksapi_sync_progress")
+          .update({ phase: "error", error_message: "Sync timed out", finished_at: new Date().toISOString() })
+          .eq("connection_id", conn.id)
+          .is("finished_at", null);
+      }
+    }
+
     const { count: selectedCount } = await admin
       .from("banksapi_bank_products")
       .select("id", { count: "exact", head: true })

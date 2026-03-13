@@ -285,37 +285,46 @@ export default function BanksApiImportFlow() {
 
   function startProgressPolling(connectionId: string) {
     stopProgressPolling();
+    let nullCount = 0;
     const poll = async () => {
       try {
         const res = await apiFetch(`sync-progress/${connectionId}`, token, {}, 8000);
         if (!res.ok) return;
         const data = await res.json();
         const p = data.progress as SyncProgress | null;
-        if (p) {
+        if (p && p.phase !== 'done' && p.phase !== 'error') {
+          nullCount = 0;
           setSyncProgress(p);
-          if (p.phase === 'done' || p.phase === 'error') {
+        } else if (p && (p.phase === 'done' || p.phase === 'error')) {
+          stopProgressPolling();
+          setRefreshingConnectionId(null);
+          setSyncProgress(null);
+          if (p.phase === 'error' && p.error_message) {
+            setError(p.error_message);
+          } else if (p.phase === 'done') {
+            setImportResult({
+              totalSeen: p.total_transactions,
+              totalImported: p.imported_transactions,
+              totalDuplicates: p.duplicate_transactions,
+              totalFiltered: 0,
+              status: 'success',
+            });
+          }
+          await loadConnections();
+          await loadImportLogs([connectionId]);
+        } else {
+          nullCount++;
+          if (nullCount >= 5) {
             stopProgressPolling();
             setRefreshingConnectionId(null);
             setSyncProgress(null);
-            if (p.phase === 'error' && p.error_message) {
-              setError(p.error_message);
-            } else if (p.phase === 'done') {
-              setImportResult({
-                totalSeen: p.total_transactions,
-                totalImported: p.imported_transactions,
-                totalDuplicates: p.duplicate_transactions,
-                totalFiltered: 0,
-                status: 'success',
-              });
-            }
             await loadConnections();
-            await loadImportLogs([connectionId]);
           }
         }
       } catch (_) { /* retry next interval */ }
     };
     poll();
-    pollRef.current = setInterval(poll, 2000);
+    pollRef.current = setInterval(poll, 2500);
   }
 
   useEffect(() => {
@@ -557,6 +566,20 @@ export default function BanksApiImportFlow() {
 
         {refreshingConnectionId && syncProgress && (
           <SyncProgressBar progress={syncProgress} />
+        )}
+
+        {refreshingConnectionId && !syncProgress && (
+          <div className="border border-[#3c8af7]/20 bg-[#3c8af7]/5 rounded-lg p-4">
+            <div className="flex items-center gap-2">
+              <Loader className="w-4 h-4 text-[#3c8af7] animate-spin flex-shrink-0" />
+              <span className="text-sm font-medium text-gray-800">
+                Bankdaten werden aktualisiert...
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Die Synchronisierung laeuft im Hintergrund. Fortschritt wird gleich angezeigt.
+            </p>
+          </div>
         )}
 
         {importResult && !refreshingConnectionId && (
