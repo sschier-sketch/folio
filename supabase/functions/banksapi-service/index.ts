@@ -120,7 +120,19 @@ async function computeFingerprint(
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function getAccessToken(admin: Admin): Promise<string> {
+function getBasicAuthCredential(settings: Record<string, unknown>): string {
+  if (settings?.banksapi_basic_authorization) {
+    return (settings.banksapi_basic_authorization as string).replace(/^Basic\s+/i, "");
+  }
+  if (settings?.banksapi_client_id && settings?.banksapi_client_secret_encrypted) {
+    return btoa(
+      `${settings.banksapi_client_id}:${settings.banksapi_client_secret_encrypted}`
+    );
+  }
+  throw new Error("BanksAPI credentials not configured");
+}
+
+async function getClientToken(admin: Admin): Promise<{ token: string; tenant: string }> {
   const { data: cached } = await admin
     .from("banksapi_token_cache")
     .select("access_token, expires_at")
@@ -130,7 +142,24 @@ async function getAccessToken(admin: Admin): Promise<string> {
   if (cached?.access_token && cached?.expires_at) {
     const expiresAt = new Date(cached.expires_at).getTime();
     if (Date.now() < expiresAt - 60_000) {
-      return cached.access_token;
+      const { data: creds } = await admin
+        .from("banksapi_user_credentials")
+        .select("tenant_name")
+        .limit(1)
+        .maybeSingle();
+      let tenant = creds?.tenant_name || "";
+      if (!tenant) {
+        const { data: s } = await admin
+          .from("system_settings")
+          .select("banksapi_basic_authorization, banksapi_client_id")
+          .eq("id", 1)
+          .maybeSingle();
+        const decoded = atob(getBasicAuthCredential(s || {}));
+        const clientId = decoded.split(":")[0] || "";
+        const slashIdx = clientId.indexOf("/");
+        if (slashIdx > 0) tenant = clientId.substring(0, slashIdx);
+      }
+      if (tenant) return { token: cached.access_token, tenant };
     }
   }
 
@@ -140,17 +169,7 @@ async function getAccessToken(admin: Admin): Promise<string> {
     .eq("id", 1)
     .maybeSingle();
 
-  let basicAuth: string;
-
-  if (settings?.banksapi_basic_authorization) {
-    basicAuth = settings.banksapi_basic_authorization.replace(/^Basic\s+/i, "");
-  } else if (settings?.banksapi_client_id && settings?.banksapi_client_secret_encrypted) {
-    basicAuth = btoa(
-      `${settings.banksapi_client_id}:${settings.banksapi_client_secret_encrypted}`
-    );
-  } else {
-    throw new Error("BanksAPI credentials not configured");
-  }
+  const basicAuth = getBasicAuthCredential(settings || {});
 
   const tokenStart = Date.now();
   const tokenHeaders: Record<string, string> = {
@@ -166,16 +185,16 @@ async function getAccessToken(admin: Admin): Promise<string> {
 
   if (!tokenRes.ok) {
     const body = await tokenRes.text();
-    console.error("BanksAPI token error:", tokenRes.status, body);
+    console.error("BanksAPI client token error:", tokenRes.status, body);
     await logBanksapiRequest(admin, {
-      action: "token-request",
+      action: "client-token-request",
       method: "POST",
       url: BANKSAPI_AUTH_URL,
       requestHeaders: tokenHeaders,
       requestBody: { grant_type: "client_credentials" },
       responseStatus: tokenRes.status,
       responseBody: body,
-      errorMessage: `Token request failed: ${tokenRes.status} - ${body.substring(0, 500)}`,
+      errorMessage: `Client token request failed: ${tokenRes.status} - ${body.substring(0, 500)}`,
       durationMs: Date.now() - tokenStart,
     });
     throw new Error(`BanksAPI auth failed: ${tokenRes.status} - ${body.substring(0, 200)}`);
@@ -183,6 +202,13 @@ async function getAccessToken(admin: Admin): Promise<string> {
 
   const tokenData = await tokenRes.json();
   const accessToken = tokenData.access_token as string;
+  let tenant = (tokenData.tenant as string) || "";
+  if (!tenant) {
+    const decoded = atob(basicAuth);
+    const clientId = decoded.split(":")[0] || "";
+    const slashIdx = clientId.indexOf("/");
+    if (slashIdx > 0) tenant = clientId.substring(0, slashIdx);
+  }
   const expiresIn = (tokenData.expires_in as number) || 3600;
   const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
 
@@ -193,15 +219,174 @@ async function getAccessToken(admin: Admin): Promise<string> {
     updated_at: new Date().toISOString(),
   });
 
+  return { token: accessToken, tenant };
+}
+
+async function ensureBanksapiUser(admin: Admin, userId: string): Promise<{
+  username: string;
+  password: string;
+  tenantName: string;
+}> {
+  const { data: existing } = await admin
+    .from("banksapi_user_credentials")
+    .select("banksapi_username, banksapi_password_encrypted, tenant_name")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing?.banksapi_username && existing?.banksapi_password_encrypted) {
+    return {
+      username: existing.banksapi_username,
+      password: existing.banksapi_password_encrypted,
+      tenantName: existing.tenant_name || "",
+    };
+  }
+
+  const { token: clientToken, tenant } = await getClientToken(admin);
+
+  const username = `user_${userId.replace(/-/g, "")}`;
+  const password = `Bp${crypto.randomUUID().replace(/-/g, "").substring(0, 24)}!`;
+
+  const createUserUrl = `${BANKSAPI_BASE_URL}/auth/mgmt/v1/tenants/${tenant}/users`;
+  const startTime = Date.now();
+
+  const res = await fetch(createUserUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${clientToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ username, password }),
+  });
+
+  const durationMs = Date.now() - startTime;
+
+  if (!res.ok && res.status !== 409) {
+    const errBody = await res.text();
+    console.error("BanksAPI create user error:", res.status, errBody);
+    await logBanksapiRequest(admin, {
+      userId,
+      action: "create-banksapi-user",
+      method: "POST",
+      url: createUserUrl,
+      requestHeaders: { "Content-Type": "application/json" },
+      requestBody: { username, password: "***" },
+      responseStatus: res.status,
+      responseBody: errBody,
+      errorMessage: `Create user failed: ${res.status} - ${errBody.substring(0, 500)}`,
+      durationMs,
+    });
+    throw new Error(`Failed to create BanksAPI user: ${res.status}`);
+  }
+
+  await logBanksapiRequest(admin, {
+    userId,
+    action: "create-banksapi-user",
+    method: "POST",
+    url: createUserUrl,
+    requestHeaders: { "Content-Type": "application/json" },
+    requestBody: { username, password: "***" },
+    responseStatus: res.status,
+    durationMs,
+  });
+
+  await admin.from("banksapi_user_credentials").upsert({
+    user_id: userId,
+    banksapi_username: username,
+    banksapi_password_encrypted: password,
+    tenant_name: tenant,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "user_id" });
+
+  return { username, password, tenantName: tenant };
+}
+
+async function getUserAccessToken(admin: Admin, userId: string): Promise<string> {
+  const { data: cached } = await admin
+    .from("banksapi_user_token_cache")
+    .select("access_token, expires_at")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (cached?.access_token && cached?.expires_at) {
+    const expiresAt = new Date(cached.expires_at).getTime();
+    if (Date.now() < expiresAt - 60_000) {
+      return cached.access_token;
+    }
+  }
+
+  const { username, password } = await ensureBanksapiUser(admin, userId);
+
+  const { data: settings } = await admin
+    .from("system_settings")
+    .select("banksapi_basic_authorization, banksapi_client_id, banksapi_client_secret_encrypted")
+    .eq("id", 1)
+    .maybeSingle();
+
+  const basicAuth = getBasicAuthCredential(settings || {});
+
+  const tokenStart = Date.now();
+  const tokenHeaders: Record<string, string> = {
+    Authorization: `Basic ${basicAuth}`,
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+
+  const tokenBody = `grant_type=password&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+
+  const tokenRes = await fetch(BANKSAPI_AUTH_URL, {
+    method: "POST",
+    headers: tokenHeaders,
+    body: tokenBody,
+  });
+
+  if (!tokenRes.ok) {
+    const body = await tokenRes.text();
+    console.error("BanksAPI user token error:", tokenRes.status, body);
+    await logBanksapiRequest(admin, {
+      userId,
+      action: "user-token-request",
+      method: "POST",
+      url: BANKSAPI_AUTH_URL,
+      requestHeaders: tokenHeaders,
+      requestBody: { grant_type: "password", username },
+      responseStatus: tokenRes.status,
+      responseBody: body,
+      errorMessage: `User token request failed: ${tokenRes.status} - ${body.substring(0, 500)}`,
+      durationMs: Date.now() - tokenStart,
+    });
+    throw new Error(`BanksAPI user auth failed: ${tokenRes.status} - ${body.substring(0, 200)}`);
+  }
+
+  const tokenData = await tokenRes.json();
+  const accessToken = tokenData.access_token as string;
+  const expiresIn = (tokenData.expires_in as number) || 3600;
+  const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
+
+  if (tokenData.user) {
+    await admin
+      .from("banksapi_user_credentials")
+      .update({ banksapi_user_id: tokenData.user as string })
+      .eq("user_id", userId);
+  }
+
+  await admin.from("banksapi_user_token_cache").upsert({
+    user_id: userId,
+    access_token: accessToken,
+    expires_at: expiresAt,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "user_id" });
+
   return accessToken;
 }
 
 async function banksapiFetch(
   admin: Admin,
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  userId?: string
 ): Promise<Response> {
-  const token = await getAccessToken(admin);
+  const token = userId
+    ? await getUserAccessToken(admin, userId)
+    : (await getClientToken(admin)).token;
   const url = `${BANKSAPI_BASE_URL}${path}`;
 
   const headers: Record<string, string> = {
@@ -239,10 +424,13 @@ async function handleCreateBankAccess(
     incomingReq?.headers.get("CF-Connecting-IP") ||
     "";
 
-  const payload: Record<string, unknown> = { sync: true, callbackUrl };
-  const reqHeaders: Record<string, string> = {
-    "X-Tenant-Id": customerId,
+  const bankAccessUuid = crypto.randomUUID();
+
+  const payload: Record<string, unknown> = {
+    [bankAccessUuid]: {},
   };
+
+  const reqHeaders: Record<string, string> = {};
   if (customerIp) {
     reqHeaders["Customer-IP-Address"] = customerIp;
   }
@@ -261,22 +449,43 @@ async function handleCreateBankAccess(
     method: "POST",
     headers: reqHeaders,
     body: JSON.stringify(payload),
-  });
+  }, userId);
 
   if (res.status === 451) {
     const location = res.headers.get("Location") || "";
+
+    const encodedCallback = encodeURIComponent(callbackUrl);
+    const separator = location.includes("?") ? "&" : "?";
+    const redirectUrl = location
+      ? `${location}${separator}callbackUrl=${encodedCallback}`
+      : "";
+
+    const connId = existing?.id || null;
     if (!existing) {
-      await admin.from("banksapi_connections").insert({
-        user_id: userId,
-        banksapi_customer_id: customerId,
-        bank_access_id: null,
-        bank_name: "",
-        status: "requires_sca",
-      });
+      const { data: newConn } = await admin
+        .from("banksapi_connections")
+        .insert({
+          user_id: userId,
+          banksapi_customer_id: customerId,
+          bank_access_id: bankAccessUuid,
+          bank_name: "",
+          status: "requires_sca",
+        })
+        .select("id")
+        .maybeSingle();
+      if (newConn) {
+        // stored for callback resolution
+      }
+    } else {
+      await admin
+        .from("banksapi_connections")
+        .update({ bank_access_id: bankAccessUuid })
+        .eq("id", existing.id);
     }
+
     return jsonResponse({
       action: "redirect",
-      redirectUrl: location,
+      redirectUrl,
       status: "requires_sca",
     });
   }
@@ -319,7 +528,14 @@ async function handleCreateBankAccess(
     return errorResponse(userMessage, 502);
   }
 
-  const data = await res.json();
+  const raw = await res.json();
+  let data: Record<string, unknown> = raw;
+  if (typeof raw === "object" && raw !== null && !Array.isArray(raw)) {
+    const keys = Object.keys(raw).filter((k) => k !== "relations");
+    if (keys.length > 0 && typeof raw[keys[0]] === "object" && raw[keys[0]] !== null) {
+      data = { id: keys[0], ...(raw[keys[0]] as Record<string, unknown>) };
+    }
+  }
   return await persistBankAccess(admin, userId, customerId, data);
 }
 
@@ -430,7 +646,8 @@ async function syncBankProducts(
     const res = await banksapiFetch(
       admin,
       `/customer/v2/bankzugaenge/${bankAccessId}`,
-      { method: "GET", headers: { "X-Tenant-Id": customerId } }
+      { method: "GET" },
+      userId
     );
 
     if (!res.ok) {
@@ -516,6 +733,7 @@ async function syncBankProducts(
 
 async function fetchAndStoreIssues(
   admin: Admin,
+  userId: string,
   connectionId: string,
   bankAccessId: string,
   customerId: string
@@ -524,7 +742,8 @@ async function fetchAndStoreIssues(
     const res = await banksapiFetch(
       admin,
       `/customer/v2/bankzugaenge/${bankAccessId}/issues`,
-      { method: "GET", headers: { "X-Tenant-Id": customerId } }
+      { method: "GET" },
+      userId
     );
 
     if (!res.ok) {
@@ -574,6 +793,7 @@ async function fetchAndStoreIssues(
 
 async function evaluateBankAccessState(
   admin: Admin,
+  userId: string,
   connectionId: string,
   bankAccessId: string,
   customerId: string
@@ -582,7 +802,8 @@ async function evaluateBankAccessState(
     const res = await banksapiFetch(
       admin,
       `/customer/v2/bankzugaenge/${bankAccessId}`,
-      { method: "GET", headers: { "X-Tenant-Id": customerId } }
+      { method: "GET" },
+      userId
     );
 
     if (!res.ok) return;
@@ -641,9 +862,7 @@ async function handleConsentRenewal(
     "";
 
   const callbackUrl = getCanonicalCallbackUrl();
-  const reqHeaders: Record<string, string> = {
-    "X-Tenant-Id": conn.banksapi_customer_id,
-  };
+  const reqHeaders: Record<string, string> = {};
   if (customerIp) {
     reqHeaders["Customer-IP-Address"] = customerIp;
   }
@@ -657,13 +876,20 @@ async function handleConsentRenewal(
     {
       method: "POST",
       headers: reqHeaders,
-      body: JSON.stringify({ callbackUrl }),
-    }
+    },
+    userId
   );
 
   if (res.status === 451 || res.status === 307 || res.status === 302) {
     const location =
       res.headers.get("Location") || res.headers.get("location") || "";
+
+    const encodedCallback = encodeURIComponent(callbackUrl);
+    const separator = location.includes("?") ? "&" : "?";
+    const redirectUrl = location
+      ? `${location}${separator}callbackUrl=${encodedCallback}`
+      : "";
+
     await admin
       .from("banksapi_connections")
       .update({ status: "requires_sca" })
@@ -671,7 +897,7 @@ async function handleConsentRenewal(
 
     return jsonResponse({
       action: "redirect",
-      redirectUrl: location,
+      redirectUrl,
       status: "requires_sca",
     });
   }
@@ -750,8 +976,7 @@ async function handleCompleteCallback(
 
   const res = await banksapiFetch(admin, `/customer/v2/bankzugaenge`, {
     method: "GET",
-    headers: { "X-Tenant-Id": customerId },
-  });
+  }, userId);
 
   if (!res.ok) {
     const errBody = await res.text();
@@ -759,10 +984,17 @@ async function handleCompleteCallback(
     return errorResponse("Failed to resolve bank access", 502);
   }
 
-  const bankAccesses = await res.json();
-  const accessList = Array.isArray(bankAccesses)
-    ? bankAccesses
-    : bankAccesses?.bankzugaenge || [];
+  const bankAccessesRaw = await res.json();
+  const accessList: Record<string, unknown>[] = [];
+  if (typeof bankAccessesRaw === "object" && bankAccessesRaw !== null && !Array.isArray(bankAccessesRaw)) {
+    for (const [key, value] of Object.entries(bankAccessesRaw)) {
+      if (key !== "relations" && typeof value === "object" && value !== null) {
+        accessList.push({ id: key, ...(value as Record<string, unknown>) });
+      }
+    }
+  } else if (Array.isArray(bankAccessesRaw)) {
+    accessList.push(...bankAccessesRaw);
+  }
 
   if (accessList.length === 0) {
     return errorResponse("No bank accesses found after authorization", 404);
@@ -902,28 +1134,37 @@ async function handleRefreshBankAccess(
 
   const callbackUrl = getCanonicalCallbackUrl();
 
-  const reqHeaders: Record<string, string> = {
-    "X-Tenant-Id": conn.banksapi_customer_id,
-  };
+  const reqHeaders: Record<string, string> = {};
   if (customerIp) {
     reqHeaders["Customer-IP-Address"] = customerIp;
   }
 
-  const apiUrl = `${BANKSAPI_BASE_URL}/customer/v2/bankzugaenge/${conn.bank_access_id}`;
+  const refreshPayload: Record<string, unknown> = {
+    [conn.bank_access_id]: {},
+  };
+
+  const apiUrl = `${BANKSAPI_BASE_URL}/customer/v2/bankzugaenge?refresh=true`;
   const startTime = Date.now();
 
   const res = await banksapiFetch(
     admin,
-    `/customer/v2/bankzugaenge/${conn.bank_access_id}`,
+    `/customer/v2/bankzugaenge?refresh=true`,
     {
-      method: "PUT",
+      method: "POST",
       headers: reqHeaders,
-      body: JSON.stringify({ sync: true, callbackUrl }),
-    }
+      body: JSON.stringify(refreshPayload),
+    },
+    userId
   );
 
   if (res.status === 451) {
     const location = res.headers.get("Location") || "";
+    const encodedCallback = encodeURIComponent(callbackUrl);
+    const separator = location.includes("?") ? "&" : "?";
+    const redirectUrl = location
+      ? `${location}${separator}callbackUrl=${encodedCallback}`
+      : "";
+
     await admin
       .from("banksapi_connections")
       .update({ status: "requires_sca" })
@@ -931,7 +1172,7 @@ async function handleRefreshBankAccess(
 
     return jsonResponse({
       action: "redirect",
-      redirectUrl: location,
+      redirectUrl,
       status: "requires_sca",
     });
   }
@@ -950,10 +1191,10 @@ async function handleRefreshBankAccess(
     await logBanksapiRequest(admin, {
       userId,
       action: "refresh-bank-access",
-      method: "PUT",
+      method: "POST",
       url: apiUrl,
       requestHeaders: reqHeaders,
-      requestBody: { sync: true, callbackUrl },
+      requestBody: refreshPayload,
       responseStatus: res.status,
       responseBody: errBody,
       errorMessage: `Refresh failed: ${res.status} - ${parsedError}`,
@@ -1016,10 +1257,8 @@ async function handleDeleteConnection(
       await banksapiFetch(
         admin,
         `/customer/v2/bankzugaenge/${conn.bank_access_id}`,
-        {
-          method: "DELETE",
-          headers: { "X-Tenant-Id": conn.banksapi_customer_id },
-        }
+        { method: "DELETE" },
+        userId
       );
     } catch (e) {
       console.error("Error deleting remote bank access:", e);
@@ -1081,6 +1320,7 @@ function getEffectiveStartDate(
 
 async function fetchRemoteTransactions(
   admin: Admin,
+  userId: string,
   bankAccessId: string,
   bankProductId: string,
   customerId: string
@@ -1088,7 +1328,8 @@ async function fetchRemoteTransactions(
   const res = await banksapiFetch(
     admin,
     `/customer/v2/bankzugaenge/${bankAccessId}/${bankProductId}/kontoumsaetze`,
-    { method: "GET", headers: { "X-Tenant-Id": customerId } }
+    { method: "GET" },
+    userId
   );
 
   if (!res.ok) {
@@ -1217,6 +1458,7 @@ async function importTransactionsForProduct(
   try {
     const remoteTxs = await fetchRemoteTransactions(
       admin,
+      userId,
       bankAccessId,
       product.bank_product_id,
       customerId
@@ -1553,25 +1795,33 @@ async function handleRefreshAndImport(
     .eq("id", connectionId);
 
   const callbackUrl = getCanonicalCallbackUrl();
-  const reqHeaders: Record<string, string> = {
-    "X-Tenant-Id": conn.banksapi_customer_id,
-  };
+  const reqHeaders: Record<string, string> = {};
   if (customerIp) {
     reqHeaders["Customer-IP-Address"] = customerIp;
   }
 
+  const refreshPayload: Record<string, unknown> = {
+    [conn.bank_access_id]: {},
+  };
+
   const refreshRes = await banksapiFetch(
     admin,
-    `/customer/v2/bankzugaenge/${conn.bank_access_id}`,
+    `/customer/v2/bankzugaenge?refresh=true`,
     {
-      method: "PUT",
+      method: "POST",
       headers: reqHeaders,
-      body: JSON.stringify({ sync: true, callbackUrl }),
-    }
+      body: JSON.stringify(refreshPayload),
+    },
+    userId
   );
 
   if (refreshRes.status === 451) {
     const location = refreshRes.headers.get("Location") || "";
+    const encodedCallback = encodeURIComponent(callbackUrl);
+    const separator = location.includes("?") ? "&" : "?";
+    const redirectUrlWithCallback = location
+      ? `${location}${separator}callbackUrl=${encodedCallback}`
+      : "";
     await admin
       .from("banksapi_connections")
       .update({ status: "requires_sca" })
@@ -1590,7 +1840,7 @@ async function handleRefreshAndImport(
 
     return jsonResponse({
       action: "redirect",
-      redirectUrl: location,
+      redirectUrl: redirectUrlWithCallback,
       status: "requires_sca",
     });
   }
@@ -1608,10 +1858,10 @@ async function handleRefreshAndImport(
     await logBanksapiRequest(admin, {
       userId,
       action: "refresh-and-import",
-      method: "PUT",
-      url: `${BANKSAPI_BASE_URL}/customer/v2/bankzugaenge/${conn.bank_access_id}`,
+      method: "POST",
+      url: `${BANKSAPI_BASE_URL}/customer/v2/bankzugaenge?refresh=true`,
       requestHeaders: reqHeaders,
-      requestBody: { sync: true, callbackUrl },
+      requestBody: refreshPayload,
       responseStatus: refreshRes.status,
       responseBody: errBody,
       errorMessage: `Refresh failed: ${refreshRes.status} - ${parsedError}`,
@@ -1652,6 +1902,7 @@ async function handleRefreshAndImport(
 
   await fetchAndStoreIssues(
     admin,
+    userId,
     connectionId,
     conn.bank_access_id,
     conn.banksapi_customer_id
@@ -1659,6 +1910,7 @@ async function handleRefreshAndImport(
 
   await evaluateBankAccessState(
     admin,
+    userId,
     connectionId,
     conn.bank_access_id,
     conn.banksapi_customer_id
@@ -1744,14 +1996,17 @@ async function handleCronSync(admin: Admin): Promise<Response> {
         .eq("id", conn.id);
 
       let refreshOk = true;
+      const cronRefreshPayload: Record<string, unknown> = {
+        [conn.bank_access_id]: {},
+      };
       const refreshRes = await banksapiFetch(
         admin,
-        `/customer/v2/bankzugaenge/${conn.bank_access_id}`,
+        `/customer/v2/bankzugaenge?refresh=true`,
         {
-          method: "PUT",
-          headers: { "X-Tenant-Id": conn.banksapi_customer_id },
-          body: JSON.stringify({ sync: true }),
-        }
+          method: "POST",
+          body: JSON.stringify(cronRefreshPayload),
+        },
+        conn.user_id
       );
 
       if (refreshRes.status === 451) {
@@ -1804,6 +2059,7 @@ async function handleCronSync(admin: Admin): Promise<Response> {
 
       await fetchAndStoreIssues(
         admin,
+        conn.user_id,
         conn.id,
         conn.bank_access_id,
         conn.banksapi_customer_id
@@ -1811,6 +2067,7 @@ async function handleCronSync(admin: Admin): Promise<Response> {
 
       await evaluateBankAccessState(
         admin,
+        conn.user_id,
         conn.id,
         conn.bank_access_id,
         conn.banksapi_customer_id
