@@ -17,7 +17,7 @@ export interface BankImportFile {
   id: string;
   user_id: string;
   filename: string;
-  source_type: 'csv' | 'camt053' | 'mt940';
+  source_type: 'csv' | 'camt053' | 'mt940' | 'banksapi';
   file_size_bytes?: number;
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'rolled_back' | 'deleted';
   total_rows: number;

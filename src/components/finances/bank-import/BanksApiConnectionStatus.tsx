@@ -8,16 +8,21 @@ import {
   Settings,
   Landmark,
   Clock,
+  ArrowDownToLine,
+  Download,
 } from 'lucide-react';
 import { Button } from '../../ui/Button';
-import type { BanksApiConnection } from './BanksApiImportFlow';
+import type { BanksApiConnection, BanksApiImportLog } from './BanksApiImportFlow';
 
 interface Props {
   connection: BanksApiConnection;
   loading: boolean;
+  refreshing?: boolean;
+  lastImportLog?: BanksApiImportLog | null;
   onRefresh: () => void;
   onDisconnect: () => void;
   onManageAccounts: () => void;
+  onRefreshAndImport: () => void;
 }
 
 const STATUS_CONFIG: Record<
@@ -65,12 +70,30 @@ function formatDateTime(iso: string | null): string {
   });
 }
 
+function formatImportStatus(status: string): { label: string; color: string } {
+  switch (status) {
+    case 'success':
+      return { label: 'Erfolgreich', color: 'text-emerald-600' };
+    case 'partial':
+      return { label: 'Teilweise', color: 'text-amber-600' };
+    case 'failed':
+      return { label: 'Fehlgeschlagen', color: 'text-red-600' };
+    case 'requires_sca':
+      return { label: 'Freigabe noetig', color: 'text-amber-600' };
+    default:
+      return { label: status, color: 'text-gray-500' };
+  }
+}
+
 export default function BanksApiConnectionStatus({
   connection,
   loading,
+  refreshing = false,
+  lastImportLog = null,
   onRefresh,
   onDisconnect,
   onManageAccounts,
+  onRefreshAndImport,
 }: Props) {
   const config = STATUS_CONFIG[connection.status] || STATUS_CONFIG.error;
   const StatusIcon = config.icon;
@@ -147,6 +170,40 @@ export default function BanksApiConnectionStatus({
           </div>
         </div>
 
+        {lastImportLog && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide">Letzter Import</p>
+                <p className="text-xs font-medium text-dark">
+                  {formatDateTime(lastImportLog.finished_at || lastImportLog.started_at)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide">Status</p>
+                <p className={`text-xs font-medium ${formatImportStatus(lastImportLog.status).color}`}>
+                  {formatImportStatus(lastImportLog.status).label}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide">Importiert</p>
+                <p className="text-xs font-medium text-dark">
+                  {lastImportLog.total_new_transactions_imported} neu
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide">Duplikate</p>
+                <p className="text-xs font-medium text-gray-500">
+                  {lastImportLog.total_duplicates_skipped} uebersprungen
+                </p>
+              </div>
+            </div>
+            {lastImportLog.error_message && (
+              <p className="text-xs text-red-600 mt-2">{lastImportLog.error_message}</p>
+            )}
+          </div>
+        )}
+
         {connection.error_message && (
           <div className="mt-3 flex items-start gap-2 p-2.5 bg-red-50 rounded-lg">
             <AlertCircle className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
@@ -164,6 +221,32 @@ export default function BanksApiConnectionStatus({
               )}
               Erneut freigeben
             </Button>
+          </div>
+        )}
+
+        {connection.status === 'connected' && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <button
+              onClick={onRefreshAndImport}
+              disabled={loading || refreshing}
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#3c8af7] bg-[#3c8af7]/5 hover:bg-[#3c8af7]/10 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {refreshing ? (
+                <>
+                  <Loader className="w-3.5 h-3.5 animate-spin" />
+                  Transaktionen werden abgerufen...
+                </>
+              ) : (
+                <>
+                  <ArrowDownToLine className="w-3.5 h-3.5" />
+                  Jetzt aktualisieren
+                </>
+              )}
+            </button>
+            <p className="text-[10px] text-gray-400 mt-1.5">
+              Aktualisiert die Bankdaten und importiert neue Transaktionen.
+              Automatischer Import taeglich um 09:00 Uhr.
+            </p>
           </div>
         )}
       </div>

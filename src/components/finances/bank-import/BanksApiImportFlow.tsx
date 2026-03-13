@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Landmark,
   Loader,
@@ -11,6 +11,9 @@ import {
   Info,
   ShieldCheck,
   ExternalLink,
+  Download,
+  Clock,
+  ArrowDownToLine,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Button } from '../../ui/Button';
@@ -46,6 +49,29 @@ export interface BanksApiBankProduct {
   last_import_at: string | null;
 }
 
+export interface BanksApiImportLog {
+  id: string;
+  connection_id: string;
+  trigger_type: string;
+  started_at: string;
+  finished_at: string | null;
+  status: string;
+  total_remote_transactions_seen: number;
+  total_new_transactions_imported: number;
+  total_duplicates_skipped: number;
+  total_filtered_by_date: number;
+  error_message: string | null;
+}
+
+export interface ImportResult {
+  totalSeen: number;
+  totalImported: number;
+  totalDuplicates: number;
+  totalFiltered: number;
+  status: string;
+  error?: string;
+}
+
 type FlowState = 'idle' | 'connecting' | 'redirecting' | 'connected' | 'account-selection';
 
 async function apiFetch(
@@ -71,8 +97,12 @@ export default function BanksApiImportFlow() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [refreshingConnectionId, setRefreshingConnectionId] = useState<string | null>(null);
   const [selectedConnection, setSelectedConnection] = useState<BanksApiConnection | null>(null);
   const [products, setProducts] = useState<BanksApiBankProduct[]>([]);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [importLogs, setImportLogs] = useState<Record<string, BanksApiImportLog | null>>({});
+  const cooldownRef = useRef<Record<string, number>>({});
 
   const token = session?.access_token || '';
 
@@ -100,9 +130,36 @@ export default function BanksApiImportFlow() {
     }
   }, [token]);
 
+  const loadImportLogs = useCallback(async (connIds: string[]) => {
+    if (!token || connIds.length === 0) return;
+    try {
+      const results: Record<string, BanksApiImportLog | null> = {};
+      for (const connId of connIds) {
+        const res = await apiFetch(`import-logs/${connId}`, token);
+        if (res.ok) {
+          const data = await res.json();
+          const logs = data.logs || [];
+          results[connId] = logs.length > 0 ? logs[0] : null;
+        }
+      }
+      setImportLogs(results);
+    } catch (err) {
+      console.error('Failed to load import logs:', err);
+    }
+  }, [token]);
+
   useEffect(() => {
     loadConnections();
   }, [loadConnections]);
+
+  useEffect(() => {
+    const activeIds = connections
+      .filter(c => c.status === 'connected' || c.status === 'syncing')
+      .map(c => c.id);
+    if (activeIds.length > 0) {
+      loadImportLogs(activeIds);
+    }
+  }, [connections, loadImportLogs]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -188,9 +245,64 @@ export default function BanksApiImportFlow() {
     }
   }
 
+  async function handleRefreshAndImport(connectionId: string) {
+    if (!token) return;
+
+    const now = Date.now();
+    const lastCall = cooldownRef.current[connectionId] || 0;
+    if (now - lastCall < 30000) {
+      setError('Bitte warten Sie mindestens 30 Sekunden zwischen Aktualisierungen.');
+      return;
+    }
+    cooldownRef.current[connectionId] = now;
+
+    setError('');
+    setImportResult(null);
+    setRefreshingConnectionId(connectionId);
+
+    try {
+      const callbackUrl = `${SUPABASE_URL}/functions/v1/banksapi-callback`;
+      const res = await apiFetch(`refresh-and-import/${connectionId}`, token, {
+        method: 'POST',
+        body: JSON.stringify({ callbackUrl }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown' }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (data.action === 'redirect' && data.redirectUrl) {
+        setFlowState('redirecting');
+        window.location.href = data.redirectUrl;
+        return;
+      }
+
+      if (data.import) {
+        setImportResult({
+          totalSeen: data.import.totalSeen || 0,
+          totalImported: data.import.totalImported || 0,
+          totalDuplicates: data.import.totalDuplicates || 0,
+          totalFiltered: data.import.totalFiltered || 0,
+          status: data.import.status || 'success',
+          error: data.import.error,
+        });
+      }
+
+      await loadConnections();
+      await loadImportLogs([connectionId]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Aktualisierung fehlgeschlagen');
+    } finally {
+      setRefreshingConnectionId(null);
+    }
+  }
+
   async function handleDisconnect(connectionId: string) {
     if (!token) return;
-    if (!window.confirm('Möchten Sie diese Bankverbindung wirklich trennen?')) return;
+    if (!window.confirm('Moechten Sie diese Bankverbindung wirklich trennen?')) return;
     setError('');
     setActionLoading(true);
 
@@ -207,6 +319,7 @@ export default function BanksApiImportFlow() {
       setFlowState('idle');
       setSelectedConnection(null);
       setProducts([]);
+      setImportResult(null);
       await loadConnections();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Trennung fehlgeschlagen');
@@ -319,14 +432,21 @@ export default function BanksApiImportFlow() {
           </div>
         )}
 
+        {importResult && (
+          <ImportResultBanner result={importResult} onDismiss={() => setImportResult(null)} />
+        )}
+
         {activeConnections.map((conn) => (
           <BanksApiConnectionStatus
             key={conn.id}
             connection={conn}
-            loading={actionLoading}
+            loading={actionLoading || refreshingConnectionId === conn.id}
+            refreshing={refreshingConnectionId === conn.id}
+            lastImportLog={importLogs[conn.id] || null}
             onRefresh={() => handleRefresh(conn.id)}
             onDisconnect={() => handleDisconnect(conn.id)}
             onManageAccounts={() => handleOpenAccountSelection(conn)}
+            onRefreshAndImport={() => handleRefreshAndImport(conn.id)}
           />
         ))}
 
@@ -427,6 +547,84 @@ export default function BanksApiImportFlow() {
           <li>Autorisieren Sie den Lesezugriff (TAN/Freigabe)</li>
           <li>Waehlen Sie die Konten aus, die importiert werden sollen</li>
         </ol>
+      </div>
+    </div>
+  );
+}
+
+function ImportResultBanner({
+  result,
+  onDismiss,
+}: {
+  result: ImportResult;
+  onDismiss: () => void;
+}) {
+  const isSuccess = result.status === 'success' || result.status === 'partial';
+  const isError = result.status === 'failed';
+
+  return (
+    <div
+      className={`border rounded-lg p-4 ${
+        isError
+          ? 'bg-red-50 border-red-200'
+          : isSuccess && result.totalImported > 0
+          ? 'bg-emerald-50 border-emerald-200'
+          : 'bg-blue-50 border-blue-200'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          {isError ? (
+            <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+          ) : result.totalImported > 0 ? (
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+          ) : (
+            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          )}
+          <div>
+            <p className={`text-sm font-semibold ${
+              isError ? 'text-red-800' : result.totalImported > 0 ? 'text-emerald-800' : 'text-blue-800'
+            }`}>
+              {isError
+                ? 'Import fehlgeschlagen'
+                : result.totalImported > 0
+                ? `${result.totalImported} neue Transaktionen importiert`
+                : 'Keine neuen Transaktionen'}
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+              <span className="text-xs text-gray-500">
+                {result.totalSeen} Transaktionen abgerufen
+              </span>
+              {result.totalDuplicates > 0 && (
+                <span className="text-xs text-gray-500">
+                  {result.totalDuplicates} Duplikate uebersprungen
+                </span>
+              )}
+              {result.totalFiltered > 0 && (
+                <span className="text-xs text-gray-500">
+                  {result.totalFiltered} nach Datum gefiltert
+                </span>
+              )}
+            </div>
+            {result.error && (
+              <p className="text-xs text-red-600 mt-1">{result.error}</p>
+            )}
+            {result.status === 'partial' && (
+              <p className="text-xs text-amber-600 mt-1">
+                Einige Konten konnten nicht vollstaendig importiert werden.
+              </p>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={onDismiss}
+          className="text-gray-400 hover:text-gray-600 p-1 rounded transition-colors flex-shrink-0"
+        >
+          <span className="sr-only">Schliessen</span>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
     </div>
   );
