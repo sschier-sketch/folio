@@ -8,6 +8,8 @@ import {
   History,
   Calendar,
   X,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -33,6 +35,7 @@ export default function BankConnectionView() {
   const [importTab, setImportTab] = useState<ImportTab>('csv');
   const [inboxCount, setInboxCount] = useState(0);
   const [historyKey, setHistoryKey] = useState(0);
+  const [bankApiBanner, setBankApiBanner] = useState<'success' | 'error' | null>(null);
 
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [customFrom, setCustomFrom] = useState('');
@@ -55,6 +58,19 @@ export default function BankConnectionView() {
     dateFrom = customFrom;
     dateTo = customTo;
   }
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const banksapiStatus = params.get('banksapi_status');
+    if (banksapiStatus === 'success' || banksapiStatus === 'error') {
+      setBankApiBanner(banksapiStatus);
+      setMainTab('import');
+      setImportTab('banksapi');
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('banksapi_status');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, []);
 
   useEffect(() => {
     if (user && !permLoading && dataOwnerId) loadInboxCount();
@@ -94,6 +110,46 @@ export default function BankConnectionView() {
 
   return (
     <div className="space-y-6">
+      {bankApiBanner && (
+        <div
+          className={`flex items-center justify-between gap-3 p-4 rounded-lg border ${
+            bankApiBanner === 'success'
+              ? 'bg-emerald-50 border-emerald-200'
+              : 'bg-red-50 border-red-200'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            {bankApiBanner === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            )}
+            <div>
+              <p className={`text-sm font-semibold ${
+                bankApiBanner === 'success' ? 'text-emerald-800' : 'text-red-800'
+              }`}>
+                {bankApiBanner === 'success'
+                  ? 'Bankverbindung erfolgreich hergestellt'
+                  : 'Bankverbindung konnte nicht hergestellt werden'}
+              </p>
+              <p className={`text-xs mt-0.5 ${
+                bankApiBanner === 'success' ? 'text-emerald-600' : 'text-red-600'
+              }`}>
+                {bankApiBanner === 'success'
+                  ? 'Ihr Bankkonto ist nun verbunden. Sie koennen jetzt Konten auswaehlen und Transaktionen importieren.'
+                  : 'Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setBankApiBanner(null)}
+            className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors flex-shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
         {mainTabs.map((tab) => {
           const Icon = tab.icon;
