@@ -105,7 +105,7 @@ export default function BankConnectionView() {
   const importTabs = [
     { id: 'csv' as ImportTab, label: 'CSV Import', icon: FileSpreadsheet },
     { id: 'camt' as ImportTab, label: 'CAMT.053 Import', icon: FileCode },
-    { id: 'banksapi' as ImportTab, label: 'BanksAPI (PSD2)', icon: Landmark },
+    { id: 'banksapi' as ImportTab, label: 'Bankabruf', icon: Landmark },
   ];
 
   return (
