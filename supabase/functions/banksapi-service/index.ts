@@ -12,6 +12,52 @@ const BANKSAPI_BASE_URL = "https://banksapi.io";
 const BANKSAPI_AUTH_URL = "https://banksapi.io/auth/oauth2/token";
 const OVERLAP_DAYS = 14;
 
+function maskSensitiveHeaders(
+  headers: Record<string, string>
+): Record<string, string> {
+  const masked = { ...headers };
+  if (masked["Authorization"]) masked["Authorization"] = "***MASKED***";
+  if (masked["authorization"]) masked["authorization"] = "***MASKED***";
+  return masked;
+}
+
+async function logBanksapiRequest(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  params: {
+    userId?: string;
+    action: string;
+    method: string;
+    url: string;
+    requestHeaders?: Record<string, string>;
+    requestBody?: unknown;
+    responseStatus?: number;
+    responseBody?: string;
+    errorMessage?: string;
+    durationMs?: number;
+  }
+): Promise<void> {
+  try {
+    await admin.from("banksapi_request_logs").insert({
+      user_id: params.userId || null,
+      action: params.action,
+      method: params.method,
+      url: params.url,
+      request_headers: params.requestHeaders
+        ? maskSensitiveHeaders(params.requestHeaders)
+        : {},
+      request_body: params.requestBody ?? null,
+      response_status: params.responseStatus ?? null,
+      response_body: params.responseBody
+        ? params.responseBody.substring(0, 4000)
+        : null,
+      error_message: params.errorMessage ?? null,
+      duration_ms: params.durationMs ?? null,
+    });
+  } catch (e) {
+    console.error("Failed to log BanksAPI request:", e);
+  }
+}
+
 function getCanonicalCallbackUrl(): string {
   return `${Deno.env.get("SUPABASE_URL")}/functions/v1/banksapi-callback`;
 }
@@ -106,19 +152,33 @@ async function getAccessToken(admin: Admin): Promise<string> {
     throw new Error("BanksAPI credentials not configured");
   }
 
+  const tokenStart = Date.now();
+  const tokenHeaders: Record<string, string> = {
+    Authorization: `Basic ${basicAuth}`,
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+
   const tokenRes = await fetch(BANKSAPI_AUTH_URL, {
     method: "POST",
-    headers: {
-      Authorization: `Basic ${basicAuth}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+    headers: tokenHeaders,
     body: "grant_type=client_credentials",
   });
 
   if (!tokenRes.ok) {
     const body = await tokenRes.text();
     console.error("BanksAPI token error:", tokenRes.status, body);
-    throw new Error(`BanksAPI auth failed: ${tokenRes.status}`);
+    await logBanksapiRequest(admin, {
+      action: "token-request",
+      method: "POST",
+      url: BANKSAPI_AUTH_URL,
+      requestHeaders: tokenHeaders,
+      requestBody: { grant_type: "client_credentials" },
+      responseStatus: tokenRes.status,
+      responseBody: body,
+      errorMessage: `Token request failed: ${tokenRes.status} - ${body.substring(0, 500)}`,
+      durationMs: Date.now() - tokenStart,
+    });
+    throw new Error(`BanksAPI auth failed: ${tokenRes.status} - ${body.substring(0, 200)}`);
   }
 
   const tokenData = await tokenRes.json();
@@ -166,17 +226,25 @@ function getCustomerId(userId: string): string {
 async function handleCreateBankAccess(
   admin: Admin,
   userId: string,
-  body: { customerIpAddress?: string }
+  body: { customerIpAddress?: string },
+  incomingReq?: Request
 ): Promise<Response> {
   const customerId = getCustomerId(userId);
   const callbackUrl = getCanonicalCallbackUrl();
+
+  const customerIp =
+    body.customerIpAddress ||
+    incomingReq?.headers.get("X-Forwarded-For")?.split(",")[0]?.trim() ||
+    incomingReq?.headers.get("X-Real-Ip") ||
+    incomingReq?.headers.get("CF-Connecting-IP") ||
+    "";
 
   const payload: Record<string, unknown> = { sync: true, callbackUrl };
   const reqHeaders: Record<string, string> = {
     "X-Tenant-Id": customerId,
   };
-  if (body.customerIpAddress) {
-    reqHeaders["Customer-IP-Address"] = body.customerIpAddress;
+  if (customerIp) {
+    reqHeaders["Customer-IP-Address"] = customerIp;
   }
 
   const { data: existing } = await admin
@@ -185,6 +253,9 @@ async function handleCreateBankAccess(
     .eq("user_id", userId)
     .eq("status", "requires_sca")
     .maybeSingle();
+
+  const apiUrl = `${BANKSAPI_BASE_URL}/customer/v2/bankzugaenge`;
+  const startTime = Date.now();
 
   const res = await banksapiFetch(admin, `/customer/v2/bankzugaenge`, {
     method: "POST",
@@ -212,8 +283,40 @@ async function handleCreateBankAccess(
 
   if (!res.ok) {
     const errBody = await res.text();
+    const durationMs = Date.now() - startTime;
     console.error("BanksAPI createBankAccess error:", res.status, errBody);
-    return errorResponse(`BanksAPI error: ${res.status}`, 502);
+
+    let parsedError = errBody;
+    try {
+      const errJson = JSON.parse(errBody);
+      parsedError = errJson.message || errJson.error || errJson.error_description || errBody;
+    } catch (_) {}
+
+    await logBanksapiRequest(admin, {
+      userId,
+      action: "create-bank-access",
+      method: "POST",
+      url: apiUrl,
+      requestHeaders: reqHeaders,
+      requestBody: payload,
+      responseStatus: res.status,
+      responseBody: errBody,
+      errorMessage: `createBankAccess failed: ${res.status} - ${parsedError}`,
+      durationMs,
+    });
+
+    const userMessage =
+      res.status === 400
+        ? `Anfrage von der Bank abgelehnt (400). ${parsedError}`
+        : res.status === 401
+        ? "Authentifizierung fehlgeschlagen. Bitte Admin kontaktieren."
+        : res.status === 403
+        ? "Zugriff verweigert. Bitte Admin kontaktieren."
+        : res.status === 429
+        ? "Zu viele Anfragen. Bitte warten Sie einen Moment."
+        : `BanksAPI Fehler: ${res.status}`;
+
+    return errorResponse(userMessage, 502);
   }
 
   const data = await res.json();
@@ -516,7 +619,8 @@ async function handleConsentRenewal(
   admin: Admin,
   userId: string,
   connectionId: string,
-  body: { customerIpAddress?: string }
+  body: { customerIpAddress?: string },
+  incomingReq?: Request
 ): Promise<Response> {
   const { data: conn } = await admin
     .from("banksapi_connections")
@@ -529,13 +633,23 @@ async function handleConsentRenewal(
     return errorResponse("Connection not found", 404);
   }
 
+  const customerIp =
+    body.customerIpAddress ||
+    incomingReq?.headers.get("X-Forwarded-For")?.split(",")[0]?.trim() ||
+    incomingReq?.headers.get("X-Real-Ip") ||
+    incomingReq?.headers.get("CF-Connecting-IP") ||
+    "";
+
   const callbackUrl = getCanonicalCallbackUrl();
   const reqHeaders: Record<string, string> = {
     "X-Tenant-Id": conn.banksapi_customer_id,
   };
-  if (body.customerIpAddress) {
-    reqHeaders["Customer-IP-Address"] = body.customerIpAddress;
+  if (customerIp) {
+    reqHeaders["Customer-IP-Address"] = customerIp;
   }
+
+  const apiUrl = `${BANKSAPI_BASE_URL}/customer/v2/bankzugaenge/${conn.bank_access_id}/consent`;
+  const startTime = Date.now();
 
   const res = await banksapiFetch(
     admin,
@@ -564,11 +678,34 @@ async function handleConsentRenewal(
 
   if (!res.ok) {
     const errBody = await res.text();
+    const durationMs = Date.now() - startTime;
     console.error("Consent renewal error:", res.status, errBody);
-    return errorResponse(
-      `Freigabe-Erneuerung fehlgeschlagen: ${res.status}`,
-      502
-    );
+
+    let parsedError = errBody;
+    try {
+      const errJson = JSON.parse(errBody);
+      parsedError = errJson.message || errJson.error || errJson.error_description || errBody;
+    } catch (_) {}
+
+    await logBanksapiRequest(admin, {
+      userId,
+      action: "consent-renewal",
+      method: "POST",
+      url: apiUrl,
+      requestHeaders: reqHeaders,
+      requestBody: { callbackUrl },
+      responseStatus: res.status,
+      responseBody: errBody,
+      errorMessage: `Consent renewal failed: ${res.status} - ${parsedError}`,
+      durationMs,
+    });
+
+    const userMessage =
+      res.status === 400
+        ? `Bankfreigabe abgelehnt (400). ${parsedError}`
+        : `Freigabe-Erneuerung fehlgeschlagen: ${res.status}`;
+
+    return errorResponse(userMessage, 502);
   }
 
   await admin
@@ -742,7 +879,8 @@ async function handleRefreshBankAccess(
   admin: Admin,
   userId: string,
   connectionId: string,
-  body: { customerIpAddress?: string }
+  body: { customerIpAddress?: string },
+  incomingReq?: Request
 ): Promise<Response> {
   const { data: conn } = await admin
     .from("banksapi_connections")
@@ -755,14 +893,24 @@ async function handleRefreshBankAccess(
     return errorResponse("Connection not found", 404);
   }
 
+  const customerIp =
+    body.customerIpAddress ||
+    incomingReq?.headers.get("X-Forwarded-For")?.split(",")[0]?.trim() ||
+    incomingReq?.headers.get("X-Real-Ip") ||
+    incomingReq?.headers.get("CF-Connecting-IP") ||
+    "";
+
   const callbackUrl = getCanonicalCallbackUrl();
 
   const reqHeaders: Record<string, string> = {
     "X-Tenant-Id": conn.banksapi_customer_id,
   };
-  if (body.customerIpAddress) {
-    reqHeaders["Customer-IP-Address"] = body.customerIpAddress;
+  if (customerIp) {
+    reqHeaders["Customer-IP-Address"] = customerIp;
   }
+
+  const apiUrl = `${BANKSAPI_BASE_URL}/customer/v2/bankzugaenge/${conn.bank_access_id}`;
+  const startTime = Date.now();
 
   const res = await banksapiFetch(
     admin,
@@ -790,15 +938,48 @@ async function handleRefreshBankAccess(
 
   if (!res.ok) {
     const errBody = await res.text();
+    const durationMs = Date.now() - startTime;
     console.error("BanksAPI refresh error:", res.status, errBody);
+
+    let parsedError = errBody;
+    try {
+      const errJson = JSON.parse(errBody);
+      parsedError = errJson.message || errJson.error || errJson.error_description || errBody;
+    } catch (_) {}
+
+    await logBanksapiRequest(admin, {
+      userId,
+      action: "refresh-bank-access",
+      method: "PUT",
+      url: apiUrl,
+      requestHeaders: reqHeaders,
+      requestBody: { sync: true, callbackUrl },
+      responseStatus: res.status,
+      responseBody: errBody,
+      errorMessage: `Refresh failed: ${res.status} - ${parsedError}`,
+      durationMs,
+    });
+
     await admin
       .from("banksapi_connections")
       .update({
         status: "error",
-        error_message: `Refresh failed: ${res.status}`,
+        error_message: `Refresh failed: ${res.status} - ${parsedError}`,
       })
       .eq("id", connectionId);
-    return errorResponse(`BanksAPI error: ${res.status}`, 502);
+
+    const userMessage =
+      res.status === 400
+        ? `Aktualisierung von der Bank abgelehnt (400). ${parsedError}`
+        : res.status === 401
+        ? "Authentifizierung fehlgeschlagen. Bitte Admin kontaktieren."
+        : res.status === 403
+        ? "Zugriff verweigert. Bitte Admin kontaktieren."
+        : res.status === 429
+        ? "Zu viele Anfragen. Bitte warten Sie einen Moment."
+        : `BanksAPI Fehler: ${res.status}`;
+
+    return errorResponse(userMessage, 502);
   }
 
   const data = await res.json();
@@ -1344,7 +1525,8 @@ async function handleRefreshAndImport(
   admin: Admin,
   userId: string,
   connectionId: string,
-  body: { customerIpAddress?: string }
+  body: { customerIpAddress?: string },
+  incomingReq?: Request
 ): Promise<Response> {
   const { data: conn } = await admin
     .from("banksapi_connections")
@@ -1357,6 +1539,13 @@ async function handleRefreshAndImport(
     return errorResponse("Connection not found", 404);
   }
 
+  const customerIp =
+    body.customerIpAddress ||
+    incomingReq?.headers.get("X-Forwarded-For")?.split(",")[0]?.trim() ||
+    incomingReq?.headers.get("X-Real-Ip") ||
+    incomingReq?.headers.get("CF-Connecting-IP") ||
+    "";
+
   const now = new Date().toISOString();
   await admin
     .from("banksapi_connections")
@@ -1367,8 +1556,8 @@ async function handleRefreshAndImport(
   const reqHeaders: Record<string, string> = {
     "X-Tenant-Id": conn.banksapi_customer_id,
   };
-  if (body.customerIpAddress) {
-    reqHeaders["Customer-IP-Address"] = body.customerIpAddress;
+  if (customerIp) {
+    reqHeaders["Customer-IP-Address"] = customerIp;
   }
 
   const refreshRes = await banksapiFetch(
@@ -1409,14 +1598,38 @@ async function handleRefreshAndImport(
   if (!refreshRes.ok) {
     const errBody = await refreshRes.text();
     console.error("BanksAPI refresh error:", refreshRes.status, errBody);
+
+    let parsedError = errBody;
+    try {
+      const errJson = JSON.parse(errBody);
+      parsedError = errJson.message || errJson.error || errJson.error_description || errBody;
+    } catch (_) {}
+
+    await logBanksapiRequest(admin, {
+      userId,
+      action: "refresh-and-import",
+      method: "PUT",
+      url: `${BANKSAPI_BASE_URL}/customer/v2/bankzugaenge/${conn.bank_access_id}`,
+      requestHeaders: reqHeaders,
+      requestBody: { sync: true, callbackUrl },
+      responseStatus: refreshRes.status,
+      responseBody: errBody,
+      errorMessage: `Refresh failed: ${refreshRes.status} - ${parsedError}`,
+    });
+
     await admin
       .from("banksapi_connections")
       .update({
         status: "error",
-        error_message: `Refresh failed: ${refreshRes.status}`,
+        error_message: `Refresh failed: ${refreshRes.status} - ${parsedError}`,
       })
       .eq("id", connectionId);
-    return errorResponse(`BanksAPI error: ${refreshRes.status}`, 502);
+
+    const userMessage =
+      refreshRes.status === 400
+        ? `Aktualisierung von der Bank abgelehnt (400). ${parsedError}`
+        : `BanksAPI Fehler: ${refreshRes.status}`;
+    return errorResponse(userMessage, 502);
   }
 
   const refreshData = await refreshRes.json();
@@ -1736,7 +1949,7 @@ Deno.serve(async (req: Request) => {
         if (req.method !== "POST")
           return errorResponse("Method not allowed", 405);
         const body = await req.json();
-        return handleCreateBankAccess(admin, user.id, body);
+        return handleCreateBankAccess(admin, user.id, body, req);
       }
 
       case "connections": {
@@ -1766,7 +1979,7 @@ Deno.serve(async (req: Request) => {
         const connId = pathParts[1];
         if (!connId) return errorResponse("connectionId required", 400);
         const body = await req.json().catch(() => ({}));
-        return handleRefreshBankAccess(admin, user.id, connId, body);
+        return handleRefreshBankAccess(admin, user.id, connId, body, req);
       }
 
       case "refresh-and-import": {
@@ -1775,7 +1988,7 @@ Deno.serve(async (req: Request) => {
         const connId = pathParts[1];
         if (!connId) return errorResponse("connectionId required", 400);
         const body = await req.json().catch(() => ({}));
-        return handleRefreshAndImport(admin, user.id, connId, body);
+        return handleRefreshAndImport(admin, user.id, connId, body, req);
       }
 
       case "import": {
@@ -1821,7 +2034,7 @@ Deno.serve(async (req: Request) => {
         const connId = pathParts[1];
         if (!connId) return errorResponse("connectionId required", 400);
         const body = await req.json().catch(() => ({}));
-        return handleConsentRenewal(admin, user.id, connId, body);
+        return handleConsentRenewal(admin, user.id, connId, body, req);
       }
 
       case "disconnect": {

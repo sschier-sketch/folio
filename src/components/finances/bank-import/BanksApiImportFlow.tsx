@@ -459,9 +459,12 @@ export default function BanksApiImportFlow() {
     return (
       <div className="space-y-4">
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-red-700 font-medium">Fehler bei der Bankverbindung</p>
+              <p className="text-sm text-red-600 mt-0.5">{error}</p>
+            </div>
           </div>
         )}
 
@@ -527,9 +530,12 @@ export default function BanksApiImportFlow() {
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mb-4 max-w-md mx-auto">
-            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mb-4 max-w-md mx-auto">
+            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-red-700 font-medium">Fehler bei der Bankverbindung</p>
+              <p className="text-sm text-red-600 mt-0.5">{error}</p>
+            </div>
           </div>
         )}
 
