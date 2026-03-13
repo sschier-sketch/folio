@@ -30,12 +30,14 @@ Deno.serve(async (req: Request) => {
 
     const url = new URL(req.url);
     const baReentry = url.searchParams.get("baReentry");
+    const callerOrigin = url.searchParams.get("origin") || "https://rentab.ly";
 
     if (!baReentry) {
       console.warn("banksapi-callback called without baReentry parameter");
       return buildRedirectHtml(
         "error",
-        "Fehlender Parameter. Bitte versuchen Sie es erneut."
+        "Fehlender Parameter. Bitte versuchen Sie es erneut.",
+        callerOrigin
       );
     }
 
@@ -67,7 +69,8 @@ Deno.serve(async (req: Request) => {
         );
         return buildRedirectHtml(
           "success",
-          "Bankverbindung bereits erfolgreich hergestellt"
+          "Bankverbindung bereits erfolgreich hergestellt",
+          callerOrigin
         );
       }
 
@@ -76,7 +79,8 @@ Deno.serve(async (req: Request) => {
       );
       return buildRedirectHtml(
         "error",
-        "Keine ausstehende Bankverbindung gefunden. Bitte starten Sie den Vorgang erneut."
+        "Keine ausstehende Bankverbindung gefunden. Bitte starten Sie den Vorgang erneut.",
+        callerOrigin
       );
     }
 
@@ -138,7 +142,8 @@ Deno.serve(async (req: Request) => {
     if (processed) {
       return buildRedirectHtml(
         "success",
-        "Bankverbindung erfolgreich hergestellt"
+        "Bankverbindung erfolgreich hergestellt",
+        callerOrigin
       );
     }
 
@@ -147,7 +152,8 @@ Deno.serve(async (req: Request) => {
     );
     return buildRedirectHtml(
       "error",
-      "Fehler beim Abschliessen der Bankverbindung. Bitte versuchen Sie es erneut."
+      "Fehler beim Abschliessen der Bankverbindung. Bitte versuchen Sie es erneut.",
+      callerOrigin
     );
   } catch (err) {
     console.error("banksapi-callback error:", err);
@@ -160,9 +166,11 @@ Deno.serve(async (req: Request) => {
 
 function buildRedirectHtml(
   status: "success" | "error",
-  message: string
+  message: string,
+  origin = "https://rentab.ly"
 ): Response {
-  const redirectUrl = `https://rentab.ly/dashboard?view=financial&tab=bank&banksapi_status=${status}`;
+  const safeOrigin = origin.startsWith("http") ? origin : "https://rentab.ly";
+  const redirectUrl = `${safeOrigin}/dashboard?view=financial&tab=bank&banksapi_status=${status}`;
 
   const html = `<!DOCTYPE html>
 <html lang="de">

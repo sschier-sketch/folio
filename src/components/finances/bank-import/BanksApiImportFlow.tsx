@@ -192,7 +192,7 @@ export default function BanksApiImportFlow() {
     try {
       const res = await apiFetch('create-bank-access', token, {
         method: 'POST',
-        body: JSON.stringify({}),
+        body: JSON.stringify({ origin: window.location.origin }),
       });
 
       if (!res.ok) {
@@ -225,7 +225,7 @@ export default function BanksApiImportFlow() {
     try {
       const res = await apiFetch(`refresh/${connectionId}`, token, {
         method: 'POST',
-        body: JSON.stringify({}),
+        body: JSON.stringify({ origin: window.location.origin }),
       });
 
       if (!res.ok) {
@@ -266,7 +266,7 @@ export default function BanksApiImportFlow() {
     try {
       const res = await apiFetch(`refresh-and-import/${connectionId}`, token, {
         method: 'POST',
-        body: JSON.stringify({}),
+        body: JSON.stringify({ origin: window.location.origin }),
       });
 
       if (!res.ok) {
@@ -310,7 +310,7 @@ export default function BanksApiImportFlow() {
     try {
       const res = await apiFetch(`consent-renewal/${connectionId}`, token, {
         method: 'POST',
-        body: JSON.stringify({}),
+        body: JSON.stringify({ origin: window.location.origin }),
       });
 
       if (!res.ok) {

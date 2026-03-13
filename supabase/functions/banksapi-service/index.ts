@@ -411,11 +411,13 @@ function getCustomerId(userId: string): string {
 async function handleCreateBankAccess(
   admin: Admin,
   userId: string,
-  body: { customerIpAddress?: string },
+  body: { customerIpAddress?: string; origin?: string },
   incomingReq?: Request
 ): Promise<Response> {
   const customerId = getCustomerId(userId);
-  const callbackUrl = getCanonicalCallbackUrl();
+  const baseCallback = getCanonicalCallbackUrl();
+  const origin = body.origin || "https://rentab.ly";
+  const callbackUrl = `${baseCallback}?origin=${encodeURIComponent(origin)}`;
 
   const customerIp =
     body.customerIpAddress ||
@@ -840,7 +842,7 @@ async function handleConsentRenewal(
   admin: Admin,
   userId: string,
   connectionId: string,
-  body: { customerIpAddress?: string },
+  body: { customerIpAddress?: string; origin?: string },
   incomingReq?: Request
 ): Promise<Response> {
   const { data: conn } = await admin
@@ -861,7 +863,9 @@ async function handleConsentRenewal(
     incomingReq?.headers.get("CF-Connecting-IP") ||
     "";
 
-  const callbackUrl = getCanonicalCallbackUrl();
+  const baseCallback = getCanonicalCallbackUrl();
+  const origin = body.origin || "https://rentab.ly";
+  const callbackUrl = `${baseCallback}?origin=${encodeURIComponent(origin)}`;
   const reqHeaders: Record<string, string> = {};
   if (customerIp) {
     reqHeaders["Customer-IP-Address"] = customerIp;
@@ -1111,7 +1115,7 @@ async function handleRefreshBankAccess(
   admin: Admin,
   userId: string,
   connectionId: string,
-  body: { customerIpAddress?: string },
+  body: { customerIpAddress?: string; origin?: string },
   incomingReq?: Request
 ): Promise<Response> {
   const { data: conn } = await admin
@@ -1132,7 +1136,9 @@ async function handleRefreshBankAccess(
     incomingReq?.headers.get("CF-Connecting-IP") ||
     "";
 
-  const callbackUrl = getCanonicalCallbackUrl();
+  const baseCallback = getCanonicalCallbackUrl();
+  const origin = body.origin || "https://rentab.ly";
+  const callbackUrl = `${baseCallback}?origin=${encodeURIComponent(origin)}`;
 
   const reqHeaders: Record<string, string> = {};
   if (customerIp) {
@@ -1767,7 +1773,7 @@ async function handleRefreshAndImport(
   admin: Admin,
   userId: string,
   connectionId: string,
-  body: { customerIpAddress?: string },
+  body: { customerIpAddress?: string; origin?: string },
   incomingReq?: Request
 ): Promise<Response> {
   const { data: conn } = await admin
@@ -1794,7 +1800,9 @@ async function handleRefreshAndImport(
     .update({ status: "syncing", last_attempted_sync_at: now })
     .eq("id", connectionId);
 
-  const callbackUrl = getCanonicalCallbackUrl();
+  const baseCallback = getCanonicalCallbackUrl();
+  const origin = body.origin || "https://rentab.ly";
+  const callbackUrl = `${baseCallback}?origin=${encodeURIComponent(origin)}`;
   const reqHeaders: Record<string, string> = {};
   if (customerIp) {
     reqHeaders["Customer-IP-Address"] = customerIp;
