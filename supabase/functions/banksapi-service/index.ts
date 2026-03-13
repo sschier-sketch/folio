@@ -1782,7 +1782,8 @@ async function createBanksapiImportFile(
   userId: string,
   connectionId: string,
   productDbId: string,
-  accountName: string
+  accountName: string,
+  triggerType: "manual" | "cron" | "callback_initial_sync" = "manual"
 ): Promise<string> {
   const { data, error } = await admin
     .from("bank_import_files")
@@ -1793,7 +1794,7 @@ async function createBanksapiImportFile(
       status: "pending",
       banksapi_connection_id: connectionId,
       banksapi_product_id: productDbId,
-      trigger_type: "manual",
+      trigger_type: triggerType,
     })
     .select("id")
     .single();
@@ -1978,9 +1979,8 @@ async function importTransactionsForConnection(
 }
 
 // ─── User-facing: manual refresh + import ───────────────────────
-// Returns 202 immediately after validating + refreshing bank access.
-// Heavy work (sync products, import txns) runs via EdgeRuntime.waitUntil.
-// Frontend polls GET /connections to detect completion (status flips from syncing -> connected/error).
+// Runs the full refresh + import synchronously and returns the result.
+// Frontend receives the final import result in the response body.
 
 async function handleRefreshAndImport(
   admin: Admin,
@@ -1994,7 +1994,7 @@ async function handleRefreshAndImport(
 
   const { data: conn } = await admin
     .from("banksapi_connections")
-    .select("bank_access_id, banksapi_customer_id, status")
+    .select("bank_access_id, banksapi_customer_id, status, last_attempted_sync_at")
     .eq("id", connectionId)
     .eq("user_id", userId)
     .maybeSingle();
@@ -2004,7 +2004,12 @@ async function handleRefreshAndImport(
   }
 
   if (conn.status === "syncing") {
-    return jsonResponse({ status: "syncing", message: "Synchronisierung laeuft bereits" });
+    const attemptedAt = conn.last_attempted_sync_at ? new Date(conn.last_attempted_sync_at).getTime() : 0;
+    const stuckMs = Date.now() - attemptedAt;
+    if (stuckMs < 120_000) {
+      return jsonResponse({ status: "syncing", message: "Synchronisierung laeuft bereits" });
+    }
+    console.warn(`[refresh-and-import] Connection stuck in syncing for ${Math.round(stuckMs / 1000)}s – recovering`);
   }
 
   const customerIp =
@@ -2123,59 +2128,70 @@ async function handleRefreshAndImport(
     return errorResponse(userMessage, 502);
   }
 
-  const refreshData = await refreshRes.json();
+  let refreshData: unknown;
+  try {
+    refreshData = await refreshRes.json();
+  } catch (_) {
+    refreshData = null;
+  }
   await admin
     .from("banksapi_connections")
     .update({ error_message: null, raw_response: refreshData })
     .eq("id", connectionId);
 
-  console.info(`[refresh-and-import] Refresh OK (${Date.now() - startTime}ms). Returning 202, background import starts.`);
+  console.info(`[refresh-and-import] Refresh OK (${Date.now() - startTime}ms). Starting synchronous import...`);
 
   const bgBankAccessId = conn.bank_access_id;
   const bgCustomerId = conn.banksapi_customer_id;
 
-  await updateSyncProgress(admin, userId, connectionId, {
-    phase: "refreshing",
-    total_transactions: 0,
-    processed_transactions: 0,
-    imported_transactions: 0,
-    duplicate_transactions: 0,
-    finished_at: null,
-    error_message: null,
-  });
+  try {
+    await updateSyncProgress(admin, userId, connectionId, {
+      phase: "syncing_products",
+      total_transactions: 0,
+      processed_transactions: 0,
+      imported_transactions: 0,
+      duplicate_transactions: 0,
+      finished_at: null,
+      error_message: null,
+    });
 
-  EdgeRuntime.waitUntil((async () => {
-    const bgStart = Date.now();
-    try {
-      await updateSyncProgress(admin, userId, connectionId, { phase: "syncing_products" });
-      console.info(`[refresh-bg] Syncing bank products...`);
-      await syncBankProducts(admin, userId, connectionId, bgBankAccessId, bgCustomerId);
+    console.info(`[refresh-and-import] Syncing bank products...`);
+    await syncBankProducts(admin, userId, connectionId, bgBankAccessId, bgCustomerId);
 
-      console.info(`[refresh-bg] Importing transactions... (+${Date.now() - bgStart}ms)`);
-      const importResult = await importTransactionsForConnection(
-        admin, userId, connectionId, bgBankAccessId, bgCustomerId, "manual"
-      );
+    console.info(`[refresh-and-import] Importing transactions... (+${Date.now() - startTime}ms)`);
+    const importResult = await importTransactionsForConnection(
+      admin, userId, connectionId, bgBankAccessId, bgCustomerId, "manual"
+    );
 
-      console.info(`[refresh-bg] DONE in ${Date.now() - bgStart}ms – imported=${importResult.totalImported} dupes=${importResult.totalDuplicates}`);
+    console.info(`[refresh-and-import] DONE in ${Date.now() - startTime}ms – imported=${importResult.totalImported} dupes=${importResult.totalDuplicates}`);
 
+    EdgeRuntime.waitUntil((async () => {
       await fetchAndStoreIssues(admin, userId, connectionId, bgBankAccessId, bgCustomerId).catch(() => {});
       await evaluateBankAccessState(admin, userId, connectionId, bgBankAccessId, bgCustomerId).catch(() => {});
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      console.error(`[refresh-bg] FATAL after ${Date.now() - bgStart}ms:`, errMsg);
-      await updateSyncProgress(admin, userId, connectionId, {
-        phase: "error",
-        error_message: errMsg,
-        finished_at: new Date().toISOString(),
-      });
-      await admin
-        .from("banksapi_connections")
-        .update({ status: "error", error_message: errMsg })
-        .eq("id", connectionId);
-    }
-  })());
+    })());
 
-  return jsonResponse({ status: "syncing", message: "Synchronisierung gestartet" }, 202);
+    return jsonResponse({
+      status: "completed",
+      totalSeen: importResult.totalSeen,
+      totalImported: importResult.totalImported,
+      totalDuplicates: importResult.totalDuplicates,
+      totalFiltered: importResult.totalFilteredByDate,
+      duration_ms: Date.now() - startTime,
+    });
+  } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error(`[refresh-and-import] FATAL after ${Date.now() - startTime}ms:`, errMsg);
+    await updateSyncProgress(admin, userId, connectionId, {
+      phase: "error",
+      error_message: errMsg,
+      finished_at: new Date().toISOString(),
+    }).catch(() => {});
+    await admin
+      .from("banksapi_connections")
+      .update({ status: "error", error_message: errMsg })
+      .eq("id", connectionId);
+    return errorResponse(`Import fehlgeschlagen: ${errMsg}`, 500);
+  }
 }
 
 // ─── Cron: sync all connections ─────────────────────────────────

@@ -377,7 +377,7 @@ export default function BanksApiImportFlow() {
       const res = await apiFetch(`refresh-and-import/${connectionId}`, token, {
         method: 'POST',
         body: JSON.stringify({ origin: window.location.origin }),
-      }, 25000);
+      }, 60000);
 
       const data = await res.json().catch(() => null);
 
@@ -396,6 +396,22 @@ export default function BanksApiImportFlow() {
         return;
       }
 
+      if (data?.status === 'completed') {
+        setImportResult({
+          totalSeen: data.totalSeen ?? 0,
+          totalImported: data.totalImported ?? 0,
+          totalDuplicates: data.totalDuplicates ?? 0,
+          totalFiltered: data.totalFiltered ?? 0,
+          status: 'success',
+        });
+        syncFinishedRef.current.add(connectionId);
+        setConnections(prev => prev.map(c =>
+          c.id === connectionId
+            ? { ...c, status: 'connected', last_sync_at: new Date().toISOString() }
+            : c
+        ));
+      }
+
       await loadConnections();
       await loadImportLogs([connectionId]);
       setRefreshingConnectionId(null);
@@ -411,6 +427,7 @@ export default function BanksApiImportFlow() {
 
       setError(err instanceof Error ? err.message : 'Aktualisierung fehlgeschlagen');
       setRefreshingConnectionId(null);
+      syncFinishedRef.current.add(connectionId);
       await loadConnections();
     }
   }
