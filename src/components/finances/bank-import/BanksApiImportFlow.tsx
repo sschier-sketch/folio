@@ -78,22 +78,48 @@ export interface ImportResult {
   error?: string;
 }
 
+interface SyncProgress {
+  phase: 'refreshing' | 'syncing_products' | 'importing' | 'done' | 'error';
+  total_transactions: number;
+  processed_transactions: number;
+  imported_transactions: number;
+  duplicate_transactions: number;
+  current_account_name: string | null;
+  current_account_index: number;
+  total_accounts: number;
+  started_at: string;
+  updated_at: string;
+  finished_at: string | null;
+  error_message: string | null;
+}
+
 type FlowState = 'idle' | 'connecting' | 'redirecting' | 'connected' | 'account-selection';
 
 async function apiFetch(
   path: string,
   token: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  timeoutMs?: number
 ): Promise<Response> {
-  return fetch(`${SUPABASE_URL}/functions/v1/banksapi-service/${path}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      Apikey: SUPABASE_ANON_KEY,
-      ...(options.headers as Record<string, string> || {}),
-    },
-  });
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  if (timeoutMs) {
+    timer = setTimeout(() => controller.abort(), timeoutMs);
+  }
+  try {
+    return await fetch(`${SUPABASE_URL}/functions/v1/banksapi-service/${path}`, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Apikey: SUPABASE_ANON_KEY,
+        ...(options.headers as Record<string, string> || {}),
+      },
+    });
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 export default function BanksApiImportFlow() {
@@ -108,7 +134,9 @@ export default function BanksApiImportFlow() {
   const [products, setProducts] = useState<BanksApiBankProduct[]>([]);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importLogs, setImportLogs] = useState<Record<string, BanksApiImportLog | null>>({});
+  const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
   const cooldownRef = useRef<Record<string, number>>({});
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const token = session?.access_token || '';
 
@@ -248,95 +276,116 @@ export default function BanksApiImportFlow() {
     }
   }
 
-  async function pollUntilSyncDone(connectionId: string, maxAttempts = 30) {
-    for (let i = 0; i < maxAttempts; i++) {
-      await new Promise((r) => setTimeout(r, 3000));
-      try {
-        const res = await apiFetch('connections', token);
-        if (!res.ok) continue;
-        const data = await res.json();
-        const updated = (data.connections || []) as BanksApiConnection[];
-        setConnections(updated);
-        const conn = updated.find((c) => c.id === connectionId);
-        if (!conn || conn.status !== 'syncing') {
-          if (conn?.status === 'error' && conn.error_message) {
-            setError(conn.error_message);
-          }
-          await loadImportLogs([connectionId]);
-          return;
-        }
-      } catch (_) { /* retry */ }
+  function stopProgressPolling() {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
     }
-    setError('Die Synchronisierung dauert ungewoehnlich lange. Bitte laden Sie die Seite neu.');
   }
+
+  function startProgressPolling(connectionId: string) {
+    stopProgressPolling();
+    const poll = async () => {
+      try {
+        const res = await apiFetch(`sync-progress/${connectionId}`, token, {}, 8000);
+        if (!res.ok) return;
+        const data = await res.json();
+        const p = data.progress as SyncProgress | null;
+        if (p) {
+          setSyncProgress(p);
+          if (p.phase === 'done' || p.phase === 'error') {
+            stopProgressPolling();
+            setRefreshingConnectionId(null);
+            setSyncProgress(null);
+            if (p.phase === 'error' && p.error_message) {
+              setError(p.error_message);
+            } else if (p.phase === 'done') {
+              setImportResult({
+                totalSeen: p.total_transactions,
+                totalImported: p.imported_transactions,
+                totalDuplicates: p.duplicate_transactions,
+                totalFiltered: 0,
+                status: 'success',
+              });
+            }
+            await loadConnections();
+            await loadImportLogs([connectionId]);
+          }
+        }
+      } catch (_) { /* retry next interval */ }
+    };
+    poll();
+    pollRef.current = setInterval(poll, 2000);
+  }
+
+  useEffect(() => {
+    return () => stopProgressPolling();
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
+    const syncingConn = connections.find(c => c.status === 'syncing');
+    if (syncingConn && !refreshingConnectionId) {
+      setRefreshingConnectionId(syncingConn.id);
+      startProgressPolling(syncingConn.id);
+    }
+  }, [connections, token]);
 
   async function handleRefreshAndImport(connectionId: string) {
     if (!token) return;
 
     const now = Date.now();
     const lastCall = cooldownRef.current[connectionId] || 0;
-    if (now - lastCall < 30000) {
-      setError('Bitte warten Sie mindestens 30 Sekunden zwischen Aktualisierungen.');
+    if (now - lastCall < 15000) {
+      setError('Bitte warten Sie mindestens 15 Sekunden zwischen Aktualisierungen.');
       return;
     }
     cooldownRef.current[connectionId] = now;
 
     setError('');
     setImportResult(null);
+    setSyncProgress(null);
     setRefreshingConnectionId(connectionId);
 
     try {
       const res = await apiFetch(`refresh-and-import/${connectionId}`, token, {
         method: 'POST',
         body: JSON.stringify({ origin: window.location.origin }),
-      }, 30000);
+      }, 25000);
+
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Unknown' }));
-        throw new Error(err.error || `HTTP ${res.status}`);
+        throw new Error(data?.error || `HTTP ${res.status}`);
       }
 
-      const data = await res.json();
-
-      if (data.action === 'redirect' && data.redirectUrl) {
+      if (data?.action === 'redirect' && data.redirectUrl) {
         setFlowState('redirecting');
         window.location.href = data.redirectUrl;
         return;
       }
 
-      if (data.status === 'syncing') {
-        await pollUntilSyncDone(connectionId);
+      if (data?.status === 'syncing') {
+        startProgressPolling(connectionId);
         return;
-      }
-
-      if (data.import) {
-        setImportResult({
-          totalSeen: data.import.totalSeen || 0,
-          totalImported: data.import.totalImported || 0,
-          totalDuplicates: data.import.totalDuplicates || 0,
-          totalFiltered: data.import.totalFiltered || 0,
-          status: data.import.status || 'success',
-          error: data.import.error,
-        });
       }
 
       await loadConnections();
       await loadImportLogs([connectionId]);
+      setRefreshingConnectionId(null);
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        setError('Die Anfrage hat zu lange gedauert. Die Synchronisierung laeuft im Hintergrund weiter.');
-        await pollUntilSyncDone(connectionId);
+      const isNetworkErr =
+        (err instanceof DOMException && err.name === 'AbortError') ||
+        (err instanceof TypeError && (err.message === 'Load failed' || err.message === 'Failed to fetch'));
+
+      if (isNetworkErr) {
+        startProgressPolling(connectionId);
         return;
       }
-      const msg = err instanceof Error ? err.message : 'Aktualisierung fehlgeschlagen';
-      setError(
-        msg === 'Load failed' || msg === 'Failed to fetch'
-          ? 'Verbindung zum Server unterbrochen. Die Synchronisierung laeuft moeglicherweise im Hintergrund weiter.'
-          : msg
-      );
-      await loadConnections();
-    } finally {
+
+      setError(err instanceof Error ? err.message : 'Aktualisierung fehlgeschlagen');
       setRefreshingConnectionId(null);
+      await loadConnections();
     }
   }
 
@@ -506,7 +555,11 @@ export default function BanksApiImportFlow() {
           </div>
         )}
 
-        {importResult && (
+        {refreshingConnectionId && syncProgress && (
+          <SyncProgressBar progress={syncProgress} />
+        )}
+
+        {importResult && !refreshingConnectionId && (
           <ImportResultBanner result={importResult} onDismiss={() => setImportResult(null)} />
         )}
 
@@ -625,6 +678,85 @@ export default function BanksApiImportFlow() {
           <li>Autorisieren Sie den Lesezugriff (TAN/Freigabe)</li>
           <li>Waehlen Sie die Konten aus, die importiert werden sollen</li>
         </ol>
+      </div>
+    </div>
+  );
+}
+
+function SyncProgressBar({ progress }: { progress: SyncProgress }) {
+  const { phase, total_transactions, processed_transactions, imported_transactions, duplicate_transactions, current_account_name, current_account_index, total_accounts, started_at } = progress;
+
+  const pct = total_transactions > 0
+    ? Math.min(Math.round((processed_transactions / total_transactions) * 100), 100)
+    : 0;
+
+  const elapsedSec = (Date.now() - new Date(started_at).getTime()) / 1000;
+  let etaLabel = '';
+  if (phase === 'importing' && processed_transactions > 0 && processed_transactions < total_transactions) {
+    const rate = processed_transactions / elapsedSec;
+    const remaining = (total_transactions - processed_transactions) / rate;
+    if (remaining < 60) {
+      etaLabel = `~${Math.ceil(remaining)} Sek. verbleibend`;
+    } else {
+      etaLabel = `~${Math.ceil(remaining / 60)} Min. verbleibend`;
+    }
+  }
+
+  const phaseLabels: Record<string, string> = {
+    refreshing: 'Bankdaten werden aktualisiert...',
+    syncing_products: 'Konten werden synchronisiert...',
+    importing: 'Transaktionen werden importiert...',
+    done: 'Abgeschlossen',
+    error: 'Fehler',
+  };
+
+  return (
+    <div className="border border-[#3c8af7]/20 bg-[#3c8af7]/5 rounded-lg p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <Loader className="w-4 h-4 text-[#3c8af7] animate-spin flex-shrink-0" />
+        <span className="text-sm font-medium text-gray-800">
+          {phaseLabels[phase] || 'Synchronisierung...'}
+        </span>
+      </div>
+
+      {phase === 'importing' && total_transactions > 0 && (
+        <>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+            <div
+              className="h-full bg-[#3c8af7] rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span className="font-medium text-gray-700">
+              {processed_transactions} / {total_transactions} Transaktionen
+            </span>
+            {etaLabel && <span>{etaLabel}</span>}
+          </div>
+        </>
+      )}
+
+      {phase === 'importing' && total_transactions === 0 && (
+        <p className="text-xs text-gray-500">Transaktionen werden von der Bank abgerufen...</p>
+      )}
+
+      <div className="flex flex-wrap gap-x-4 gap-y-1">
+        {total_accounts > 0 && (
+          <span className="text-xs text-gray-500">
+            Konto {current_account_index}/{total_accounts}
+            {current_account_name ? `: ${current_account_name}` : ''}
+          </span>
+        )}
+        {imported_transactions > 0 && (
+          <span className="text-xs text-emerald-600 font-medium">
+            {imported_transactions} neu importiert
+          </span>
+        )}
+        {duplicate_transactions > 0 && (
+          <span className="text-xs text-gray-400">
+            {duplicate_transactions} Duplikate
+          </span>
+        )}
       </div>
     </div>
   );

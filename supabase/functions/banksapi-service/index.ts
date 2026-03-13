@@ -120,6 +120,38 @@ async function computeFingerprint(
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+async function updateSyncProgress(
+  admin: Admin,
+  userId: string,
+  connectionId: string,
+  update: Record<string, unknown>
+): Promise<void> {
+  try {
+    const { data: existing } = await admin
+      .from("banksapi_sync_progress")
+      .select("id")
+      .eq("connection_id", connectionId)
+      .maybeSingle();
+
+    if (existing) {
+      await admin
+        .from("banksapi_sync_progress")
+        .update({ ...update, updated_at: new Date().toISOString() })
+        .eq("connection_id", connectionId);
+    } else {
+      await admin.from("banksapi_sync_progress").insert({
+        user_id: userId,
+        connection_id: connectionId,
+        ...update,
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+  } catch (e) {
+    console.error("[sync-progress] Failed to update:", e);
+  }
+}
+
 function getBasicAuthCredential(settings: Record<string, unknown>): string {
   if (settings?.banksapi_basic_authorization) {
     return (settings.banksapi_basic_authorization as string).replace(/^Basic\s+/i, "");
@@ -1448,7 +1480,8 @@ async function importTransactionsForProduct(
     import_from_date: string;
     last_import_at: string | null;
   },
-  customerId: string
+  customerId: string,
+  progressCallback?: (processed: number, imported: number, duplicates: number, total: number) => Promise<void>
 ): Promise<ProductImportResult> {
   const result: ProductImportResult = {
     bankProductId: product.bank_product_id,
@@ -1490,11 +1523,42 @@ async function importTransactionsForProduct(
       .update({ status: "processing" })
       .eq("id", importFileId);
 
+    if (progressCallback) {
+      await progressCallback(0, 0, 0, remoteTxs.length);
+    }
+
+    const BATCH_SIZE = 50;
+    const pendingInserts: Record<string, unknown>[] = [];
+    let processedCount = 0;
+
+    const flushBatch = async () => {
+      if (pendingInserts.length === 0) return;
+      const batch = pendingInserts.splice(0);
+      const { data: inserted, error: batchErr } = await admin
+        .from("bank_transactions")
+        .upsert(batch, { onConflict: "fingerprint", ignoreDuplicates: true })
+        .select("id");
+
+      if (batchErr) {
+        console.error("Batch upsert error:", batchErr.message);
+        result.anomalies += batch.length;
+      } else {
+        const actualInserted = inserted?.length || 0;
+        const dupes = batch.length - actualInserted;
+        result.imported += actualInserted;
+        result.duplicates += dupes;
+      }
+    };
+
     for (const rawTx of remoteTxs) {
+      processedCount++;
       const parsed = parseRemoteTx(rawTx);
 
       if (!parsed.effectiveDate) {
         result.anomalies++;
+        if (progressCallback && processedCount % 20 === 0) {
+          await progressCallback(processedCount, result.imported, result.duplicates, remoteTxs.length);
+        }
         continue;
       }
 
@@ -1505,6 +1569,9 @@ async function importTransactionsForProduct(
 
       if (parsed.effectiveDate < effectiveStart) {
         result.filteredByDate++;
+        if (progressCallback && processedCount % 20 === 0) {
+          await progressCallback(processedCount, result.imported, result.duplicates, remoteTxs.length);
+        }
         continue;
       }
 
@@ -1523,69 +1590,59 @@ async function importTransactionsForProduct(
 
       if (seenFingerprints.has(fp)) {
         result.duplicates++;
-        continue;
-      }
-
-      const { data: existing } = await admin
-        .from("bank_transactions")
-        .select("id")
-        .eq("fingerprint", fp)
-        .maybeSingle();
-
-      if (existing) {
-        result.duplicates++;
-        seenFingerprints.add(fp);
+        if (progressCallback && processedCount % 20 === 0) {
+          await progressCallback(processedCount, result.imported, result.duplicates, remoteTxs.length);
+        }
         continue;
       }
 
       seenFingerprints.add(fp);
 
-      const direction =
-        parsed.amount >= 0 ? "credit" : ("debit" as "credit" | "debit");
+      const direction: "credit" | "debit" =
+        parsed.amount >= 0 ? "credit" : "debit";
 
-      const { error: insertErr } = await admin
-        .from("bank_transactions")
-        .insert({
-          user_id: userId,
-          import_file_id: importFileId,
-          transaction_date: parsed.effectiveDate,
-          value_date: parsed.valueDate || null,
-          amount: parsed.amount,
-          currency: parsed.currency,
-          direction,
-          counterparty_name: parsed.counterpartyName || null,
-          counterparty_iban: parsed.counterpartyIban || null,
-          usage_text: parsed.usageText || null,
-          end_to_end_id: parsed.endToEndId || null,
-          mandate_id: parsed.mandateId || null,
-          bank_reference: parsed.bankReference || null,
-          fingerprint: fp,
-          status: "UNMATCHED",
-          description: parsed.usageText || parsed.counterpartyName || "",
-          sender: parsed.counterpartyName || "",
-          raw_data: {
-            source: "banksapi",
-            remote_id: parsed.remoteId,
-            remote_hash: parsed.remoteHash,
-            bank_access_id: bankAccessId,
-            bank_product_id: product.bank_product_id,
-            counterparty_bic: parsed.counterpartyBic,
-            product_iban: product.iban,
-            raw: rawTx,
-          },
-        });
+      pendingInserts.push({
+        user_id: userId,
+        import_file_id: importFileId,
+        transaction_date: parsed.effectiveDate,
+        value_date: parsed.valueDate || null,
+        amount: parsed.amount,
+        currency: parsed.currency,
+        direction,
+        counterparty_name: parsed.counterpartyName || null,
+        counterparty_iban: parsed.counterpartyIban || null,
+        usage_text: parsed.usageText || null,
+        end_to_end_id: parsed.endToEndId || null,
+        mandate_id: parsed.mandateId || null,
+        bank_reference: parsed.bankReference || null,
+        fingerprint: fp,
+        status: "UNMATCHED",
+        description: parsed.usageText || parsed.counterpartyName || "",
+        sender: parsed.counterpartyName || "",
+        raw_data: {
+          source: "banksapi",
+          remote_id: parsed.remoteId,
+          remote_hash: parsed.remoteHash,
+          bank_access_id: bankAccessId,
+          bank_product_id: product.bank_product_id,
+          counterparty_bic: parsed.counterpartyBic,
+          product_iban: product.iban,
+          raw: rawTx,
+        },
+      });
 
-      if (insertErr) {
-        if (insertErr.code === "23505") {
-          result.duplicates++;
-        } else {
-          console.error("Insert tx error:", insertErr.message);
-          result.anomalies++;
+      if (pendingInserts.length >= BATCH_SIZE) {
+        await flushBatch();
+        if (progressCallback) {
+          await progressCallback(processedCount, result.imported, result.duplicates, remoteTxs.length);
         }
-        continue;
       }
+    }
 
-      result.imported++;
+    await flushBatch();
+
+    if (progressCallback) {
+      await progressCallback(remoteTxs.length, result.imported, result.duplicates, remoteTxs.length);
     }
 
     await admin
@@ -1693,6 +1750,11 @@ async function importTransactionsForConnection(
 
     if (!products || products.length === 0) {
       result.status = "success";
+      await updateSyncProgress(admin, userId, connectionId, {
+        phase: "done",
+        total_accounts: 0,
+        finished_at: new Date().toISOString(),
+      });
       if (logId) {
         await admin
           .from("banksapi_import_logs")
@@ -1705,18 +1767,54 @@ async function importTransactionsForConnection(
       return result;
     }
 
+    await updateSyncProgress(admin, userId, connectionId, {
+      phase: "importing",
+      total_accounts: products.length,
+      current_account_index: 0,
+      total_transactions: 0,
+      processed_transactions: 0,
+      imported_transactions: 0,
+      duplicate_transactions: 0,
+    });
+
     let anySuccess = false;
     let anyFailure = false;
+    let cumulativeProcessed = 0;
+    let cumulativeTotal = 0;
 
-    for (const product of products) {
+    for (let i = 0; i < products.length; i++) {
+      const product = products[i];
+
+      await updateSyncProgress(admin, userId, connectionId, {
+        current_account_name: product.account_name,
+        current_account_index: i + 1,
+      });
+
+      const progressCallback = async (processed: number, imported: number, duplicates: number, total: number) => {
+        if (i === 0 && processed === 0) {
+          cumulativeTotal += total;
+        } else if (processed === 0 && total > 0) {
+          cumulativeTotal += total;
+        }
+        await updateSyncProgress(admin, userId, connectionId, {
+          total_transactions: cumulativeTotal,
+          processed_transactions: cumulativeProcessed + processed,
+          imported_transactions: result.totalImported + imported,
+          duplicate_transactions: result.totalDuplicates + duplicates,
+        });
+      };
+
       const productResult = await importTransactionsForProduct(
         admin,
         userId,
         connectionId,
         bankAccessId,
         product,
-        customerId
+        customerId,
+        progressCallback
       );
+
+      cumulativeProcessed += productResult.totalSeen;
 
       result.products.push(productResult);
       result.totalSeen += productResult.totalSeen;
@@ -1736,6 +1834,14 @@ async function importTransactionsForConnection(
       .update({ last_sync_at: new Date().toISOString() })
       .eq("id", connectionId);
 
+    await updateSyncProgress(admin, userId, connectionId, {
+      phase: "done",
+      processed_transactions: cumulativeTotal,
+      imported_transactions: result.totalImported,
+      duplicate_transactions: result.totalDuplicates,
+      finished_at: new Date().toISOString(),
+    });
+
     if (logId) {
       await admin
         .from("banksapi_import_logs")
@@ -1752,6 +1858,11 @@ async function importTransactionsForConnection(
   } catch (err) {
     result.status = "failed";
     result.error = err instanceof Error ? err.message : String(err);
+    await updateSyncProgress(admin, userId, connectionId, {
+      phase: "error",
+      error_message: result.error,
+      finished_at: new Date().toISOString(),
+    });
     if (logId) {
       await admin
         .from("banksapi_import_logs")
@@ -1921,9 +2032,20 @@ async function handleRefreshAndImport(
   const bgBankAccessId = conn.bank_access_id;
   const bgCustomerId = conn.banksapi_customer_id;
 
+  await updateSyncProgress(admin, userId, connectionId, {
+    phase: "refreshing",
+    total_transactions: 0,
+    processed_transactions: 0,
+    imported_transactions: 0,
+    duplicate_transactions: 0,
+    finished_at: null,
+    error_message: null,
+  });
+
   EdgeRuntime.waitUntil((async () => {
     const bgStart = Date.now();
     try {
+      await updateSyncProgress(admin, userId, connectionId, { phase: "syncing_products" });
       console.info(`[refresh-bg] Syncing bank products...`);
       await syncBankProducts(admin, userId, connectionId, bgBankAccessId, bgCustomerId);
 
@@ -1944,6 +2066,11 @@ async function handleRefreshAndImport(
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.error(`[refresh-bg] FATAL after ${Date.now() - bgStart}ms:`, errMsg);
+      await updateSyncProgress(admin, userId, connectionId, {
+        phase: "error",
+        error_message: errMsg,
+        finished_at: new Date().toISOString(),
+      });
       await admin
         .from("banksapi_connections")
         .update({ status: "error", error_message: errMsg })
@@ -2341,8 +2468,22 @@ Deno.serve(async (req: Request) => {
         return jsonResponse(stats);
       }
 
+      case "sync-progress": {
+        if (req.method !== "GET")
+          return errorResponse("Method not allowed", 405);
+        const connId = pathParts[1];
+        if (!connId) return errorResponse("connectionId required", 400);
+        const { data: progress } = await admin
+          .from("banksapi_sync_progress")
+          .select("*")
+          .eq("connection_id", connId)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        return jsonResponse({ progress: progress || null });
+      }
+
       case "status": {
-        return jsonResponse({ enabled: true, version: "2.1.0" });
+        return jsonResponse({ enabled: true, version: "2.2.0" });
       }
 
       default:
