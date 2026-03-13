@@ -213,6 +213,8 @@ export default function BanksApiConnectionStatus({
           </p>
         )}
 
+        <HealthIndicator connection={connection} onRefreshAndImport={onRefreshAndImport} onConsentRenewal={onConsentRenewal} loading={loading} />
+
         {lastImportLog && (
           <div className="mt-3 pt-3 border-t border-gray-100">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -338,6 +340,85 @@ export default function BanksApiConnectionStatus({
               Automatischer Import taeglich um 09:00 Uhr.
             </p>
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HealthIndicator({
+  connection,
+  onRefreshAndImport,
+  onConsentRenewal,
+  loading,
+}: {
+  connection: BanksApiConnection;
+  onRefreshAndImport: () => void;
+  onConsentRenewal: () => void;
+  loading: boolean;
+}) {
+  const hs = connection.last_health_status;
+  if (!hs || hs === 'healthy' || connection.status === 'disconnected') return null;
+  if (connection.status === 'requires_sca') return null;
+
+  const isWarning = hs === 'warning';
+  const isCritical = hs === 'critical';
+  const isSca = hs === 'requires_sca';
+
+  if (!isWarning && !isCritical && !isSca) return null;
+
+  const bgClass = isCritical ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200';
+  const iconClass = isCritical ? 'text-red-500' : 'text-amber-500';
+  const titleClass = isCritical ? 'text-red-800' : 'text-amber-800';
+  const bodyClass = isCritical ? 'text-red-600' : 'text-amber-600';
+
+  const reason = connection.last_health_reason;
+  const failures = connection.consecutive_failure_count || 0;
+
+  let title = '';
+  let description = '';
+  let action: { label: string; handler: () => void } | null = null;
+
+  if (isSca) {
+    title = 'Bankfreigabe erforderlich';
+    description = 'Die automatische Aktualisierung ist pausiert, bis Sie eine neue Bankfreigabe erteilen.';
+    action = { label: 'Bankfreigabe erneuern', handler: onConsentRenewal };
+  } else if (isCritical) {
+    title = 'Synchronisierung unterbrochen';
+    description = reason || 'Die automatische Aktualisierung konnte seit laengerem nicht erfolgreich durchgefuehrt werden.';
+    if (failures >= 5) {
+      description += ` (${failures} aufeinanderfolgende Fehlversuche)`;
+    }
+    action = { label: 'Jetzt erneut versuchen', handler: onRefreshAndImport };
+  } else {
+    title = 'Aktualisierung verzoegert';
+    description = reason || 'Die letzte automatische Aktualisierung liegt laenger zurueck als erwartet.';
+    if (failures >= 2) {
+      description += ` (${failures} Fehlversuche)`;
+    }
+  }
+
+  return (
+    <div className={`mt-3 flex items-start gap-2 p-2.5 border rounded-lg ${bgClass}`}>
+      <AlertTriangle className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${iconClass}`} />
+      <div className="flex-1 min-w-0">
+        <p className={`text-xs font-medium ${titleClass}`}>{title}</p>
+        <p className={`text-[10px] mt-0.5 ${bodyClass}`}>{description}</p>
+        {action && (
+          <button
+            onClick={action.handler}
+            disabled={loading}
+            className={`mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors disabled:opacity-40 ${
+              isCritical
+                ? 'text-red-800 bg-red-100 hover:bg-red-200'
+                : isSca
+                  ? 'text-amber-800 bg-amber-100 hover:bg-amber-200'
+                  : ''
+            }`}
+          >
+            {isSca ? <ShieldAlert className="w-3 h-3" /> : <RefreshCw className="w-3 h-3" />}
+            {action.label}
+          </button>
         )}
       </div>
     </div>
