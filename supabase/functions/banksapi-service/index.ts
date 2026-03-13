@@ -26,10 +26,7 @@ function getSupabaseUser(authHeader: string) {
   );
 }
 
-function jsonResponse(
-  data: unknown,
-  status = 200
-): Response {
+function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -41,7 +38,7 @@ function errorResponse(message: string, status = 400): Response {
 }
 
 async function getAccessToken(
-  admin: ReturnType<typeof createClient>
+  admin: ReturnType<typeof getSupabaseAdmin>
 ): Promise<string> {
   const { data: cached } = await admin
     .from("banksapi_token_cache")
@@ -62,14 +59,16 @@ async function getAccessToken(
     .eq("id", 1)
     .maybeSingle();
 
-  if (!settings?.banksapi_client_id || !settings?.banksapi_client_secret_encrypted) {
+  if (
+    !settings?.banksapi_client_id ||
+    !settings?.banksapi_client_secret_encrypted
+  ) {
     throw new Error("BanksAPI credentials not configured");
   }
 
-  const clientId = settings.banksapi_client_id;
-  const clientSecret = settings.banksapi_client_secret_encrypted;
-
-  const basicAuth = btoa(`${clientId}:${clientSecret}`);
+  const basicAuth = btoa(
+    `${settings.banksapi_client_id}:${settings.banksapi_client_secret_encrypted}`
+  );
 
   const tokenRes = await fetch(BANKSAPI_AUTH_URL, {
     method: "POST",
@@ -102,7 +101,7 @@ async function getAccessToken(
 }
 
 async function banksapiFetch(
-  admin: ReturnType<typeof createClient>,
+  admin: ReturnType<typeof getSupabaseAdmin>,
   path: string,
   options: RequestInit = {}
 ): Promise<Response> {
@@ -112,45 +111,68 @@ async function banksapiFetch(
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     Accept: "application/json",
-    ...(options.headers as Record<string, string> || {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
 
   if (options.body && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
-  return fetch(url, { ...options, headers });
+  return fetch(url, { ...options, headers, redirect: "manual" });
+}
+
+function getCustomerId(userId: string): string {
+  return userId.replace(/-/g, "");
 }
 
 async function handleCreateBankAccess(
-  admin: ReturnType<typeof createClient>,
+  admin: ReturnType<typeof getSupabaseAdmin>,
   userId: string,
-  body: { providerId?: string; callbackUrl?: string }
+  body: { callbackUrl?: string; customerIpAddress?: string }
 ): Promise<Response> {
-  const customerId = userId.replace(/-/g, "");
+  const customerId = getCustomerId(userId);
 
-  const payload: Record<string, unknown> = {};
-  if (body.providerId) {
-    payload.providerId = body.providerId;
-  }
-  if (body.callbackUrl) {
-    payload.callbackUrl = body.callbackUrl;
+  const callbackUrl =
+    body.callbackUrl || "https://rentab.ly/banksapi/callback";
+
+  const payload: Record<string, unknown> = {
+    sync: true,
+    callbackUrl,
+  };
+
+  const reqHeaders: Record<string, string> = {
+    "X-Tenant-Id": customerId,
+  };
+  if (body.customerIpAddress) {
+    reqHeaders["Customer-IP-Address"] = body.customerIpAddress;
   }
 
-  const res = await banksapiFetch(
-    admin,
-    `/customer/v2/bankzugaenge`,
-    {
-      method: "POST",
-      headers: {
-        "X-Tenant-Id": customerId,
-      } as Record<string, string>,
-      body: JSON.stringify(payload),
-    }
-  );
+  const { data: existing } = await admin
+    .from("banksapi_connections")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("status", "requires_sca")
+    .maybeSingle();
+
+  const res = await banksapiFetch(admin, `/customer/v2/bankzugaenge`, {
+    method: "POST",
+    headers: reqHeaders,
+    body: JSON.stringify(payload),
+  });
 
   if (res.status === 451) {
     const location = res.headers.get("Location") || "";
+
+    if (!existing) {
+      await admin.from("banksapi_connections").insert({
+        user_id: userId,
+        banksapi_customer_id: customerId,
+        bank_access_id: null,
+        bank_name: "",
+        status: "requires_sca",
+      });
+    }
+
     return jsonResponse({
       action: "redirect",
       redirectUrl: location,
@@ -165,134 +187,333 @@ async function handleCreateBankAccess(
   }
 
   const data = await res.json();
+  return await persistBankAccess(admin, userId, customerId, data);
+}
 
-  const bankAccessId = data.id || data.bankAccessId;
-  const bankName = data.bankName || data.bank?.name || "";
-  const providerId = data.providerId || body.providerId || "";
+async function persistBankAccess(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  userId: string,
+  customerId: string,
+  data: Record<string, unknown>
+): Promise<Response> {
+  const bankAccessId = String(data.id || "");
+  const bankName =
+    (data.bankName as string) ||
+    (data.bank as Record<string, unknown>)?.name as string ||
+    "";
+  const providerId = String(data.providerId || "");
 
-  const { data: connection, error: insertErr } = await admin
+  const { data: existingConn } = await admin
     .from("banksapi_connections")
-    .insert({
-      user_id: userId,
-      banksapi_customer_id: customerId,
-      bank_access_id: bankAccessId ? String(bankAccessId) : null,
-      provider_id: providerId,
-      bank_name: bankName,
-      status: "connected",
-      raw_response: data,
-    })
     .select("id")
-    .single();
+    .eq("user_id", userId)
+    .eq("bank_access_id", bankAccessId)
+    .maybeSingle();
 
-  if (insertErr) {
-    console.error("Error saving connection:", insertErr);
-    return errorResponse("Failed to save connection", 500);
+  let connectionId: string;
+
+  if (existingConn) {
+    connectionId = existingConn.id;
+    await admin
+      .from("banksapi_connections")
+      .update({
+        status: "connected",
+        error_message: null,
+        bank_name: bankName || undefined,
+        provider_id: providerId || undefined,
+        raw_response: data,
+      })
+      .eq("id", connectionId);
+  } else {
+    const { data: pendingConn } = await admin
+      .from("banksapi_connections")
+      .select("id")
+      .eq("user_id", userId)
+      .is("bank_access_id", null)
+      .eq("status", "requires_sca")
+      .maybeSingle();
+
+    if (pendingConn) {
+      connectionId = pendingConn.id;
+      await admin
+        .from("banksapi_connections")
+        .update({
+          bank_access_id: bankAccessId,
+          banksapi_customer_id: customerId,
+          provider_id: providerId,
+          bank_name: bankName,
+          status: "connected",
+          error_message: null,
+          raw_response: data,
+        })
+        .eq("id", connectionId);
+    } else {
+      const { data: newConn, error: insertErr } = await admin
+        .from("banksapi_connections")
+        .insert({
+          user_id: userId,
+          banksapi_customer_id: customerId,
+          bank_access_id: bankAccessId,
+          provider_id: providerId,
+          bank_name: bankName,
+          status: "connected",
+          raw_response: data,
+        })
+        .select("id")
+        .single();
+
+      if (insertErr) {
+        console.error("Error saving connection:", insertErr);
+        return errorResponse("Failed to save connection", 500);
+      }
+      connectionId = newConn.id;
+    }
   }
 
+  await syncBankProducts(admin, userId, connectionId, bankAccessId, customerId);
+
   return jsonResponse({
-    connectionId: connection.id,
+    connectionId,
     bankAccessId,
     status: "connected",
     bankName,
   });
 }
 
-async function handleGetBankAccessList(
-  admin: ReturnType<typeof createClient>,
-  userId: string
+async function syncBankProducts(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  userId: string,
+  connectionId: string,
+  bankAccessId: string,
+  customerId: string
+): Promise<void> {
+  try {
+    const res = await banksapiFetch(
+      admin,
+      `/customer/v2/bankzugaenge/${bankAccessId}/bankprodukte`,
+      {
+        method: "GET",
+        headers: { "X-Tenant-Id": customerId },
+      }
+    );
+
+    if (!res.ok) {
+      console.error("Failed to fetch bank products:", res.status);
+      return;
+    }
+
+    const productsData = await res.json();
+    const products = Array.isArray(productsData)
+      ? productsData
+      : productsData?.bankprodukte || productsData?.bankProducts || [];
+
+    for (const product of products) {
+      const productId = String(product.id || product.bankProductId || "");
+      if (!productId) continue;
+
+      const iban = (product.iban as string) || null;
+      const accountName =
+        (product.bezeichnung as string) ||
+        (product.description as string) ||
+        (product.name as string) ||
+        "";
+      const accountType =
+        (product.kategorie as string) ||
+        (product.category as string) ||
+        null;
+
+      let balanceCents: number | null = null;
+      let balanceDate: string | null = null;
+      const saldo = product.saldo || product.balance;
+      if (saldo) {
+        const amount =
+          typeof saldo.value === "number"
+            ? saldo.value
+            : typeof saldo === "number"
+            ? saldo
+            : null;
+        if (amount !== null) {
+          balanceCents = Math.round(amount * 100);
+        }
+        balanceDate = saldo.date || saldo.datum || null;
+      }
+
+      const { data: existingProduct } = await admin
+        .from("banksapi_bank_products")
+        .select("id, selected_for_import, import_from_date")
+        .eq("connection_id", connectionId)
+        .eq("bank_product_id", productId)
+        .maybeSingle();
+
+      if (existingProduct) {
+        await admin
+          .from("banksapi_bank_products")
+          .update({
+            iban,
+            account_name: accountName,
+            account_type: accountType,
+            balance_cents: balanceCents,
+            balance_date: balanceDate,
+            raw_response: product,
+          })
+          .eq("id", existingProduct.id);
+      } else {
+        await admin.from("banksapi_bank_products").insert({
+          connection_id: connectionId,
+          user_id: userId,
+          bank_product_id: productId,
+          iban,
+          account_name: accountName,
+          account_type: accountType,
+          balance_cents: balanceCents,
+          balance_date: balanceDate,
+          selected_for_import: false,
+          import_from_date: null,
+          raw_response: product,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error syncing bank products:", err);
+  }
+}
+
+async function handleCompleteCallback(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  body: { userId: string; baReentry: string }
 ): Promise<Response> {
-  const customerId = userId.replace(/-/g, "");
+  const userId = body.userId;
+  const customerId = getCustomerId(userId);
 
   const res = await banksapiFetch(admin, `/customer/v2/bankzugaenge`, {
     method: "GET",
-    headers: { "X-Tenant-Id": customerId } as Record<string, string>,
+    headers: { "X-Tenant-Id": customerId },
   });
 
   if (!res.ok) {
     const errBody = await res.text();
-    console.error("BanksAPI getBankAccessList error:", res.status, errBody);
-    return errorResponse(`BanksAPI error: ${res.status}`, 502);
+    console.error("Failed to list bank accesses after callback:", errBody);
+    return errorResponse("Failed to resolve bank access", 502);
   }
 
-  const data = await res.json();
-  return jsonResponse({ bankAccesses: data });
+  const bankAccesses = await res.json();
+  const accessList = Array.isArray(bankAccesses)
+    ? bankAccesses
+    : bankAccesses?.bankzugaenge || [];
+
+  if (accessList.length === 0) {
+    return errorResponse("No bank accesses found after authorization", 404);
+  }
+
+  const latest = accessList[accessList.length - 1];
+  return await persistBankAccess(admin, userId, customerId, latest);
 }
 
-async function handleGetBankProducts(
-  admin: ReturnType<typeof createClient>,
-  userId: string,
-  bankAccessId: string
+async function handleGetConnections(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  userId: string
 ): Promise<Response> {
-  const customerId = userId.replace(/-/g, "");
+  const { data: connections, error } = await admin
+    .from("banksapi_connections")
+    .select(
+      "id, bank_access_id, bank_name, provider_id, status, error_message, last_sync_at, created_at, updated_at"
+    )
+    .eq("user_id", userId)
+    .neq("status", "disconnected")
+    .order("created_at", { ascending: false });
 
-  const res = await banksapiFetch(
-    admin,
-    `/customer/v2/bankzugaenge/${bankAccessId}/bankprodukte`,
-    {
-      method: "GET",
-      headers: { "X-Tenant-Id": customerId } as Record<string, string>,
-    }
-  );
-
-  if (!res.ok) {
-    const errBody = await res.text();
-    console.error("BanksAPI getBankProducts error:", res.status, errBody);
-    return errorResponse(`BanksAPI error: ${res.status}`, 502);
+  if (error) {
+    return errorResponse(error.message, 500);
   }
 
-  const products = await res.json();
-  return jsonResponse({ products });
+  return jsonResponse({ connections: connections || [] });
 }
 
-async function handleGetTransactions(
-  admin: ReturnType<typeof createClient>,
+async function handleGetProducts(
+  admin: ReturnType<typeof getSupabaseAdmin>,
   userId: string,
-  bankProductId: string,
-  query: URLSearchParams
+  connectionId: string
 ): Promise<Response> {
-  const customerId = userId.replace(/-/g, "");
+  const { data: products, error } = await admin
+    .from("banksapi_bank_products")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("connection_id", connectionId)
+    .order("account_name");
 
-  let path = `/customer/v2/bankzugaenge/bankprodukte/${bankProductId}/kontoumsaetze`;
-  const params = new URLSearchParams();
-  if (query.get("from")) params.set("from", query.get("from")!);
-  if (query.get("to")) params.set("to", query.get("to")!);
-  if (params.toString()) path += `?${params.toString()}`;
-
-  const res = await banksapiFetch(admin, path, {
-    method: "GET",
-    headers: { "X-Tenant-Id": customerId } as Record<string, string>,
-  });
-
-  if (!res.ok) {
-    const errBody = await res.text();
-    console.error("BanksAPI getTransactions error:", res.status, errBody);
-    return errorResponse(`BanksAPI error: ${res.status}`, 502);
+  if (error) {
+    return errorResponse(error.message, 500);
   }
 
-  const data = await res.json();
-  return jsonResponse({ transactions: data });
+  return jsonResponse({ products: products || [] });
+}
+
+async function handleSaveProductSelection(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  userId: string,
+  body: {
+    connectionId: string;
+    selections: Array<{
+      productId: string;
+      selected: boolean;
+      importFromDate: string | null;
+    }>;
+  }
+): Promise<Response> {
+  for (const sel of body.selections) {
+    await admin
+      .from("banksapi_bank_products")
+      .update({
+        selected_for_import: sel.selected,
+        import_from_date: sel.importFromDate || null,
+      })
+      .eq("id", sel.productId)
+      .eq("user_id", userId)
+      .eq("connection_id", body.connectionId);
+  }
+
+  // NOTE: BanksAPI supports PUT /customer/v2/bankzugaenge/{id}/selectedbankproducts
+  // for remote product selection sync. Not implemented in this phase;
+  // selection is stored locally only. Remote sync can be added when
+  // transaction import is implemented.
+
+  return jsonResponse({ status: "saved" });
 }
 
 async function handleRefreshBankAccess(
-  admin: ReturnType<typeof createClient>,
+  admin: ReturnType<typeof getSupabaseAdmin>,
   userId: string,
-  bankAccessId: string,
-  body: { callbackUrl?: string }
+  connectionId: string,
+  body: { callbackUrl?: string; customerIpAddress?: string }
 ): Promise<Response> {
-  const customerId = userId.replace(/-/g, "");
+  const { data: conn } = await admin
+    .from("banksapi_connections")
+    .select("bank_access_id, banksapi_customer_id")
+    .eq("id", connectionId)
+    .eq("user_id", userId)
+    .maybeSingle();
 
-  const payload: Record<string, unknown> = {};
-  if (body.callbackUrl) {
-    payload.callbackUrl = body.callbackUrl;
+  if (!conn?.bank_access_id) {
+    return errorResponse("Connection not found", 404);
+  }
+
+  const callbackUrl =
+    body.callbackUrl || "https://rentab.ly/banksapi/callback";
+
+  const reqHeaders: Record<string, string> = {
+    "X-Tenant-Id": conn.banksapi_customer_id,
+  };
+  if (body.customerIpAddress) {
+    reqHeaders["Customer-IP-Address"] = body.customerIpAddress;
   }
 
   const res = await banksapiFetch(
     admin,
-    `/customer/v2/bankzugaenge/${bankAccessId}`,
+    `/customer/v2/bankzugaenge/${conn.bank_access_id}`,
     {
       method: "PUT",
-      headers: { "X-Tenant-Id": customerId } as Record<string, string>,
-      body: JSON.stringify(payload),
+      headers: reqHeaders,
+      body: JSON.stringify({ sync: true, callbackUrl }),
     }
   );
 
@@ -301,8 +522,7 @@ async function handleRefreshBankAccess(
     await admin
       .from("banksapi_connections")
       .update({ status: "requires_sca" })
-      .eq("user_id", userId)
-      .eq("bank_access_id", bankAccessId);
+      .eq("id", connectionId);
 
     return jsonResponse({
       action: "redirect",
@@ -313,12 +533,15 @@ async function handleRefreshBankAccess(
 
   if (!res.ok) {
     const errBody = await res.text();
-    console.error("BanksAPI refreshBankAccess error:", res.status, errBody);
+    console.error("BanksAPI refresh error:", res.status, errBody);
+    await admin
+      .from("banksapi_connections")
+      .update({ status: "error", error_message: `Refresh failed: ${res.status}` })
+      .eq("id", connectionId);
     return errorResponse(`BanksAPI error: ${res.status}`, 502);
   }
 
   const data = await res.json();
-
   await admin
     .from("banksapi_connections")
     .update({
@@ -326,59 +549,51 @@ async function handleRefreshBankAccess(
       error_message: null,
       raw_response: data,
     })
-    .eq("user_id", userId)
-    .eq("bank_access_id", bankAccessId);
+    .eq("id", connectionId);
 
-  return jsonResponse({ status: "connected", data });
-}
-
-async function handleGetIssues(
-  admin: ReturnType<typeof createClient>,
-  userId: string
-): Promise<Response> {
-  const customerId = userId.replace(/-/g, "");
-
-  const res = await banksapiFetch(admin, `/customer/v2/issues`, {
-    method: "GET",
-    headers: { "X-Tenant-Id": customerId } as Record<string, string>,
-  });
-
-  if (!res.ok) {
-    const errBody = await res.text();
-    console.error("BanksAPI getIssues error:", res.status, errBody);
-    return errorResponse(`BanksAPI error: ${res.status}`, 502);
-  }
-
-  const data = await res.json();
-  return jsonResponse({ issues: data });
-}
-
-async function handleDeleteBankAccess(
-  admin: ReturnType<typeof createClient>,
-  userId: string,
-  bankAccessId: string
-): Promise<Response> {
-  const customerId = userId.replace(/-/g, "");
-
-  const res = await banksapiFetch(
+  await syncBankProducts(
     admin,
-    `/customer/v2/bankzugaenge/${bankAccessId}`,
-    {
-      method: "DELETE",
-      headers: { "X-Tenant-Id": customerId } as Record<string, string>,
-    }
+    userId,
+    connectionId,
+    conn.bank_access_id,
+    conn.banksapi_customer_id
   );
 
-  if (!res.ok && res.status !== 404) {
-    const errBody = await res.text();
-    console.error("BanksAPI deleteBankAccess error:", res.status, errBody);
+  return jsonResponse({ status: "connected" });
+}
+
+async function handleDeleteConnection(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  userId: string,
+  connectionId: string
+): Promise<Response> {
+  const { data: conn } = await admin
+    .from("banksapi_connections")
+    .select("bank_access_id, banksapi_customer_id")
+    .eq("id", connectionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (conn?.bank_access_id) {
+    try {
+      await banksapiFetch(
+        admin,
+        `/customer/v2/bankzugaenge/${conn.bank_access_id}`,
+        {
+          method: "DELETE",
+          headers: { "X-Tenant-Id": conn.banksapi_customer_id },
+        }
+      );
+    } catch (e) {
+      console.error("Error deleting remote bank access:", e);
+    }
   }
 
   await admin
     .from("banksapi_connections")
     .update({ status: "disconnected" })
-    .eq("user_id", userId)
-    .eq("bank_access_id", bankAccessId);
+    .eq("id", connectionId)
+    .eq("user_id", userId);
 
   return jsonResponse({ status: "disconnected" });
 }
@@ -389,6 +604,25 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    const url = new URL(req.url);
+    const pathParts = url.pathname
+      .replace(/^\/banksapi-service\/?/, "")
+      .split("/")
+      .filter(Boolean);
+    const action = pathParts[0] || "";
+
+    const admin = getSupabaseAdmin();
+
+    if (action === "complete-callback") {
+      const internalKey = req.headers.get("X-Internal-Key") || "";
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+      if (internalKey !== serviceKey) {
+        return errorResponse("Forbidden", 403);
+      }
+      const body = await req.json();
+      return handleCompleteCallback(admin, body);
+    }
+
     const authHeader = req.headers.get("Authorization") || "";
     if (!authHeader) {
       return errorResponse("Missing Authorization header", 401);
@@ -402,8 +636,6 @@ Deno.serve(async (req: Request) => {
       return errorResponse("Unauthorized", 401);
     }
 
-    const admin = getSupabaseAdmin();
-
     const { data: settings } = await admin
       .from("system_settings")
       .select("banksapi_enabled")
@@ -414,62 +646,50 @@ Deno.serve(async (req: Request) => {
       return errorResponse("BanksAPI integration is not enabled", 403);
     }
 
-    const url = new URL(req.url);
-    const pathParts = url.pathname
-      .replace(/^\/banksapi-service\/?/, "")
-      .split("/")
-      .filter(Boolean);
-
-    const action = pathParts[0] || "";
-
     switch (action) {
       case "create-bank-access": {
-        if (req.method !== "POST") return errorResponse("Method not allowed", 405);
+        if (req.method !== "POST")
+          return errorResponse("Method not allowed", 405);
         const body = await req.json();
         return handleCreateBankAccess(admin, user.id, body);
       }
 
-      case "bank-accesses": {
-        if (req.method !== "GET") return errorResponse("Method not allowed", 405);
-        return handleGetBankAccessList(admin, user.id);
+      case "connections": {
+        if (req.method !== "GET")
+          return errorResponse("Method not allowed", 405);
+        return handleGetConnections(admin, user.id);
       }
 
-      case "bank-products": {
-        if (req.method !== "GET") return errorResponse("Method not allowed", 405);
-        const bankAccessId = pathParts[1];
-        if (!bankAccessId) return errorResponse("bankAccessId required", 400);
-        return handleGetBankProducts(admin, user.id, bankAccessId);
+      case "products": {
+        if (req.method !== "GET")
+          return errorResponse("Method not allowed", 405);
+        const connId = pathParts[1];
+        if (!connId) return errorResponse("connectionId required", 400);
+        return handleGetProducts(admin, user.id, connId);
       }
 
-      case "transactions": {
-        if (req.method !== "GET") return errorResponse("Method not allowed", 405);
-        const bankProductId = pathParts[1];
-        if (!bankProductId) return errorResponse("bankProductId required", 400);
-        return handleGetTransactions(admin, user.id, bankProductId, url.searchParams);
+      case "save-selection": {
+        if (req.method !== "POST")
+          return errorResponse("Method not allowed", 405);
+        const body = await req.json();
+        return handleSaveProductSelection(admin, user.id, body);
       }
 
       case "refresh": {
-        if (req.method !== "PUT" && req.method !== "POST")
+        if (req.method !== "POST")
           return errorResponse("Method not allowed", 405);
-        const refreshBankAccessId = pathParts[1];
-        if (!refreshBankAccessId) return errorResponse("bankAccessId required", 400);
-        const refreshBody = req.method === "POST" || req.method === "PUT"
-          ? await req.json().catch(() => ({}))
-          : {};
-        return handleRefreshBankAccess(admin, user.id, refreshBankAccessId, refreshBody);
+        const connId = pathParts[1];
+        if (!connId) return errorResponse("connectionId required", 400);
+        const body = await req.json().catch(() => ({}));
+        return handleRefreshBankAccess(admin, user.id, connId, body);
       }
 
-      case "issues": {
-        if (req.method !== "GET") return errorResponse("Method not allowed", 405);
-        return handleGetIssues(admin, user.id);
-      }
-
-      case "delete": {
-        if (req.method !== "DELETE" && req.method !== "POST")
+      case "disconnect": {
+        if (req.method !== "POST" && req.method !== "DELETE")
           return errorResponse("Method not allowed", 405);
-        const deleteBankAccessId = pathParts[1];
-        if (!deleteBankAccessId) return errorResponse("bankAccessId required", 400);
-        return handleDeleteBankAccess(admin, user.id, deleteBankAccessId);
+        const connId = pathParts[1];
+        if (!connId) return errorResponse("connectionId required", 400);
+        return handleDeleteConnection(admin, user.id, connId);
       }
 
       case "status": {
@@ -481,7 +701,8 @@ Deno.serve(async (req: Request) => {
     }
   } catch (err) {
     console.error("banksapi-service error:", err);
-    const message = err instanceof Error ? err.message : "Internal server error";
+    const message =
+      err instanceof Error ? err.message : "Internal server error";
     return errorResponse(message, 500);
   }
 });

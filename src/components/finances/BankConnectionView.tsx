@@ -4,6 +4,7 @@ import {
   Inbox as InboxIcon,
   FileSpreadsheet,
   FileCode,
+  Landmark,
   History,
   Calendar,
   X,
@@ -13,11 +14,12 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { supabase } from '../../lib/supabase';
 import CsvImportFlow from './bank-import/CsvImportFlow';
 import CamtImportFlow from './bank-import/CamtImportFlow';
+import BanksApiImportFlow from './bank-import/BanksApiImportFlow';
 import TransactionInbox from './bank-import/TransactionInbox';
 import ImportHistoryView from './bank-import/ImportHistoryView';
 
 type MainTab = 'inbox' | 'import' | 'history';
-type ImportTab = 'csv' | 'camt';
+type ImportTab = 'csv' | 'camt' | 'banksapi';
 type DatePreset = 'all' | 'current_year' | 'last_year' | 'custom';
 
 function getYearRange(year: number) {
@@ -87,6 +89,7 @@ export default function BankConnectionView() {
   const importTabs = [
     { id: 'csv' as ImportTab, label: 'CSV Import', icon: FileSpreadsheet },
     { id: 'camt' as ImportTab, label: 'CAMT.053 Import', icon: FileCode },
+    { id: 'banksapi' as ImportTab, label: 'BanksAPI (PSD2)', icon: Landmark },
   ];
 
   return (
@@ -187,7 +190,7 @@ export default function BankConnectionView() {
                   Kontoauszug importieren
                 </h3>
                 <p className="text-xs text-gray-400">
-                  Laden Sie Ihre Kontoauszüge als CSV oder CAMT.053 XML hoch
+                  Laden Sie Ihre Kontoauszuege als CSV, CAMT.053 XML hoch oder verbinden Sie Ihr Konto direkt
                 </p>
               </div>
             </div>
@@ -214,19 +217,22 @@ export default function BankConnectionView() {
 
             {importTab === 'csv' && <CsvImportFlow />}
             {importTab === 'camt' && <CamtImportFlow />}
+            {importTab === 'banksapi' && <BanksApiImportFlow />}
           </div>
 
-          <div
-            style={{ backgroundColor: '#eff4fe', borderColor: '#DDE7FF' }}
-            className="border rounded-lg p-4"
-          >
-            <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
-            <p className="text-sm text-blue-900">
-              Importierte Transaktionen werden automatisch auf Duplikate
-              geprüft. Bereits importierte Buchungen werden übersprungen. Ihre
-              Daten werden sicher verarbeitet und nie an Dritte weitergegeben.
-            </p>
-          </div>
+          {importTab !== 'banksapi' && (
+            <div
+              style={{ backgroundColor: '#eff4fe', borderColor: '#DDE7FF' }}
+              className="border rounded-lg p-4"
+            >
+              <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
+              <p className="text-sm text-blue-900">
+                Importierte Transaktionen werden automatisch auf Duplikate
+                geprueft. Bereits importierte Buchungen werden uebersprungen. Ihre
+                Daten werden sicher verarbeitet und nie an Dritte weitergegeben.
+              </p>
+            </div>
+          )}
         </>
       )}
 
