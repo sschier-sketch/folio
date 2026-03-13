@@ -190,11 +190,9 @@ export default function BanksApiImportFlow() {
     setActionLoading(true);
 
     try {
-      const callbackUrl = `${SUPABASE_URL}/functions/v1/banksapi-callback`;
-
       const res = await apiFetch('create-bank-access', token, {
         method: 'POST',
-        body: JSON.stringify({ callbackUrl }),
+        body: JSON.stringify({}),
       });
 
       if (!res.ok) {
@@ -225,10 +223,9 @@ export default function BanksApiImportFlow() {
     setActionLoading(true);
 
     try {
-      const callbackUrl = `${SUPABASE_URL}/functions/v1/banksapi-callback`;
       const res = await apiFetch(`refresh/${connectionId}`, token, {
         method: 'POST',
-        body: JSON.stringify({ callbackUrl }),
+        body: JSON.stringify({}),
       });
 
       if (!res.ok) {
@@ -267,10 +264,9 @@ export default function BanksApiImportFlow() {
     setRefreshingConnectionId(connectionId);
 
     try {
-      const callbackUrl = `${SUPABASE_URL}/functions/v1/banksapi-callback`;
       const res = await apiFetch(`refresh-and-import/${connectionId}`, token, {
         method: 'POST',
-        body: JSON.stringify({ callbackUrl }),
+        body: JSON.stringify({}),
       });
 
       if (!res.ok) {
@@ -312,10 +308,9 @@ export default function BanksApiImportFlow() {
     setActionLoading(true);
 
     try {
-      const callbackUrl = `${SUPABASE_URL}/functions/v1/banksapi-callback`;
       const res = await apiFetch(`consent-renewal/${connectionId}`, token, {
         method: 'POST',
-        body: JSON.stringify({ callbackUrl }),
+        body: JSON.stringify({}),
       });
 
       if (!res.ok) {

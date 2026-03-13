@@ -41,25 +41,29 @@ Deno.serve(async (req: Request) => {
 
     const admin = getSupabaseAdmin();
 
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+
     const { data: pendingConns } = await admin
       .from("banksapi_connections")
       .select("id, user_id, banksapi_customer_id, status")
       .eq("status", "requires_sca")
+      .gte("updated_at", thirtyMinAgo)
       .order("updated_at", { ascending: false })
-      .limit(5);
+      .limit(10);
 
     if (!pendingConns || pendingConns.length === 0) {
       const { data: recentlyConnected } = await admin
         .from("banksapi_connections")
         .select("id, status")
         .eq("status", "connected")
+        .gte("updated_at", thirtyMinAgo)
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (recentlyConnected) {
         console.info(
-          "banksapi-callback: No pending connection, but recently connected found - likely duplicate callback"
+          `banksapi-callback: No pending connection, but recently connected ${recentlyConnected.id} found - likely duplicate callback`
         );
         return buildRedirectHtml(
           "success",
@@ -67,65 +71,83 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      console.error("banksapi-callback: No pending or recently connected connection found");
+      console.error(
+        "banksapi-callback: No pending or recently connected connection found within time window"
+      );
       return buildRedirectHtml(
         "error",
         "Keine ausstehende Bankverbindung gefunden. Bitte starten Sie den Vorgang erneut."
       );
     }
 
-    const pendingConn = pendingConns[0];
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    try {
-      const completeRes = await fetch(
-        `${supabaseUrl}/functions/v1/banksapi-service/complete-callback`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Internal-Key": serviceKey,
-          },
-          body: JSON.stringify({
-            userId: pendingConn.user_id,
-            baReentry,
-          }),
-        }
-      );
+    let processed = false;
+    let lastError = "";
 
-      if (!completeRes.ok) {
-        const errText = await completeRes.text();
-        console.error(
-          "complete-callback failed:",
-          completeRes.status,
-          errText
+    for (const pendingConn of pendingConns) {
+      try {
+        const completeRes = await fetch(
+          `${supabaseUrl}/functions/v1/banksapi-service/complete-callback`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Internal-Key": serviceKey,
+            },
+            body: JSON.stringify({
+              userId: pendingConn.user_id,
+              baReentry,
+              connectionId: pendingConn.id,
+            }),
+          }
         );
+
+        if (completeRes.ok) {
+          console.info(
+            `banksapi-callback: Successfully processed for connection ${pendingConn.id}, user ${pendingConn.user_id}`
+          );
+          processed = true;
+          break;
+        }
+
+        const errText = await completeRes.text();
 
         if (completeRes.status === 409) {
-          return buildRedirectHtml(
-            "success",
-            "Bankverbindung bereits erfolgreich hergestellt"
+          console.info(
+            `banksapi-callback: Connection ${pendingConn.id} already completed (409)`
           );
+          processed = true;
+          break;
         }
 
-        return buildRedirectHtml(
-          "error",
-          "Fehler beim Abschliessen der Bankverbindung. Bitte versuchen Sie es erneut."
+        console.warn(
+          `banksapi-callback: complete-callback failed for connection ${pendingConn.id}: ${completeRes.status} ${errText}`
         );
+        lastError = errText;
+      } catch (e) {
+        console.error(
+          `banksapi-callback: Error processing connection ${pendingConn.id}:`,
+          e
+        );
+        lastError = e instanceof Error ? e.message : String(e);
       }
-    } catch (e) {
-      console.error("Error calling complete-callback:", e);
+    }
+
+    if (processed) {
       return buildRedirectHtml(
-        "error",
-        "Technischer Fehler bei der Verarbeitung. Bitte versuchen Sie es spaeter erneut."
+        "success",
+        "Bankverbindung erfolgreich hergestellt"
       );
     }
 
+    console.error(
+      `banksapi-callback: Failed to process any of ${pendingConns.length} pending connections. Last error: ${lastError}`
+    );
     return buildRedirectHtml(
-      "success",
-      "Bankverbindung erfolgreich hergestellt"
+      "error",
+      "Fehler beim Abschliessen der Bankverbindung. Bitte versuchen Sie es erneut."
     );
   } catch (err) {
     console.error("banksapi-callback error:", err);

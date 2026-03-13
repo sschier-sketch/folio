@@ -12,6 +12,10 @@ const BANKSAPI_BASE_URL = "https://banksapi.io";
 const BANKSAPI_AUTH_URL = "https://auth.banksapi.de/oauth/token";
 const OVERLAP_DAYS = 14;
 
+function getCanonicalCallbackUrl(): string {
+  return `${Deno.env.get("SUPABASE_URL")}/functions/v1/banksapi-callback`;
+}
+
 type Admin = ReturnType<typeof getSupabaseAdmin>;
 
 function getSupabaseAdmin() {
@@ -161,11 +165,10 @@ function getCustomerId(userId: string): string {
 async function handleCreateBankAccess(
   admin: Admin,
   userId: string,
-  body: { callbackUrl?: string; customerIpAddress?: string }
+  body: { customerIpAddress?: string }
 ): Promise<Response> {
   const customerId = getCustomerId(userId);
-  const callbackUrl =
-    body.callbackUrl || "https://rentab.ly/banksapi/callback";
+  const callbackUrl = getCanonicalCallbackUrl();
 
   const payload: Record<string, unknown> = { sync: true, callbackUrl };
   const reqHeaders: Record<string, string> = {
@@ -512,7 +515,7 @@ async function handleConsentRenewal(
   admin: Admin,
   userId: string,
   connectionId: string,
-  body: { callbackUrl?: string; customerIpAddress?: string }
+  body: { customerIpAddress?: string }
 ): Promise<Response> {
   const { data: conn } = await admin
     .from("banksapi_connections")
@@ -525,8 +528,7 @@ async function handleConsentRenewal(
     return errorResponse("Connection not found", 404);
   }
 
-  const callbackUrl =
-    body.callbackUrl || "https://rentab.ly/banksapi/callback";
+  const callbackUrl = getCanonicalCallbackUrl();
   const reqHeaders: Record<string, string> = {
     "X-Tenant-Id": conn.banksapi_customer_id,
   };
@@ -586,10 +588,27 @@ async function handleConsentRenewal(
 
 async function handleCompleteCallback(
   admin: Admin,
-  body: { userId: string; baReentry: string }
+  body: { userId: string; baReentry: string; connectionId?: string }
 ): Promise<Response> {
   const userId = body.userId;
   const customerId = getCustomerId(userId);
+
+  if (body.connectionId) {
+    const { data: conn } = await admin
+      .from("banksapi_connections")
+      .select("id, user_id, status")
+      .eq("id", body.connectionId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!conn) {
+      return errorResponse("Connection not found for this user", 404);
+    }
+
+    if (conn.status === "connected") {
+      return errorResponse("Connection already completed", 409);
+    }
+  }
 
   const res = await banksapiFetch(admin, `/customer/v2/bankzugaenge`, {
     method: "GET",
@@ -722,7 +741,7 @@ async function handleRefreshBankAccess(
   admin: Admin,
   userId: string,
   connectionId: string,
-  body: { callbackUrl?: string; customerIpAddress?: string }
+  body: { customerIpAddress?: string }
 ): Promise<Response> {
   const { data: conn } = await admin
     .from("banksapi_connections")
@@ -735,8 +754,7 @@ async function handleRefreshBankAccess(
     return errorResponse("Connection not found", 404);
   }
 
-  const callbackUrl =
-    body.callbackUrl || "https://rentab.ly/banksapi/callback";
+  const callbackUrl = getCanonicalCallbackUrl();
 
   const reqHeaders: Record<string, string> = {
     "X-Tenant-Id": conn.banksapi_customer_id,
@@ -1325,7 +1343,7 @@ async function handleRefreshAndImport(
   admin: Admin,
   userId: string,
   connectionId: string,
-  body: { callbackUrl?: string; customerIpAddress?: string }
+  body: { customerIpAddress?: string }
 ): Promise<Response> {
   const { data: conn } = await admin
     .from("banksapi_connections")
@@ -1344,8 +1362,7 @@ async function handleRefreshAndImport(
     .update({ status: "syncing", last_attempted_sync_at: now })
     .eq("id", connectionId);
 
-  const callbackUrl =
-    body.callbackUrl || "https://rentab.ly/banksapi/callback";
+  const callbackUrl = getCanonicalCallbackUrl();
   const reqHeaders: Record<string, string> = {
     "X-Tenant-Id": conn.banksapi_customer_id,
   };
