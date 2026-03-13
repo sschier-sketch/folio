@@ -14,6 +14,8 @@ export interface SystemSettings {
   global_head_html: string | null;
   global_head_html_updated_at: string | null;
   monthly_feature_count: number;
+  banksapi_enabled: boolean;
+  banksapi_client_id: string | null;
 }
 
 let cachedSettings: SystemSettings | null = null;
