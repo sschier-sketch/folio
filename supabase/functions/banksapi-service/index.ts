@@ -1930,7 +1930,7 @@ async function importTransactionsForConnection(
 
     await admin
       .from("banksapi_connections")
-      .update({ last_sync_at: new Date().toISOString() })
+      .update({ status: "connected", error_message: null, last_sync_at: new Date().toISOString() })
       .eq("id", connectionId);
 
     await updateSyncProgress(admin, userId, connectionId, {
@@ -2155,11 +2155,6 @@ async function handleRefreshAndImport(
       const importResult = await importTransactionsForConnection(
         admin, userId, connectionId, bgBankAccessId, bgCustomerId, "manual"
       );
-
-      await admin
-        .from("banksapi_connections")
-        .update({ status: "connected", error_message: null, last_sync_at: new Date().toISOString() })
-        .eq("id", connectionId);
 
       console.info(`[refresh-bg] DONE in ${Date.now() - bgStart}ms – imported=${importResult.totalImported} dupes=${importResult.totalDuplicates}`);
 

@@ -8,6 +8,7 @@ import {
   Trash2,
   FileSpreadsheet,
   FileCode,
+  Landmark,
   RefreshCw,
   AlertOctagon,
   ChevronDown,
@@ -23,12 +24,14 @@ const SOURCE_ICON: Record<string, typeof FileSpreadsheet> = {
   csv: FileSpreadsheet,
   camt053: FileCode,
   mt940: FileCode,
+  banksapi: Landmark,
 };
 
 const SOURCE_LABELS: Record<string, string> = {
   csv: 'CSV',
   camt053: 'CAMT.053',
   mt940: 'MT940',
+  banksapi: 'Bankabruf',
 };
 
 interface StatusConfig {

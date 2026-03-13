@@ -320,6 +320,11 @@ export default function BanksApiImportFlow() {
               status: 'success',
             });
           }
+          setConnections(prev => prev.map(c =>
+            c.id === connectionId
+              ? { ...c, status: p.phase === 'done' ? 'connected' : 'error', last_sync_at: new Date().toISOString() }
+              : c
+          ));
           await loadConnections();
           await loadImportLogs([connectionId]);
         } else {
