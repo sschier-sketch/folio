@@ -137,6 +137,7 @@ export default function BanksApiImportFlow() {
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
   const cooldownRef = useRef<Record<string, number>>({});
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const syncFinishedRef = useRef<Set<string>>(new Set());
 
   const token = session?.access_token || '';
 
@@ -305,6 +306,7 @@ export default function BanksApiImportFlow() {
           setSyncProgress(p);
         } else if (p && (p.phase === 'done' || p.phase === 'error')) {
           stopProgressPolling();
+          syncFinishedRef.current.add(connectionId);
           setRefreshingConnectionId(null);
           setSyncProgress(null);
           if (p.phase === 'error' && p.error_message) {
@@ -324,6 +326,7 @@ export default function BanksApiImportFlow() {
           nullCount++;
           if (nullCount >= 5) {
             stopProgressPolling();
+            syncFinishedRef.current.add(connectionId);
             setRefreshingConnectionId(null);
             setSyncProgress(null);
             await loadConnections();
@@ -342,7 +345,7 @@ export default function BanksApiImportFlow() {
   useEffect(() => {
     if (!token) return;
     const syncingConn = connections.find(c => c.status === 'syncing');
-    if (syncingConn && !refreshingConnectionId) {
+    if (syncingConn && !refreshingConnectionId && !syncFinishedRef.current.has(syncingConn.id)) {
       setRefreshingConnectionId(syncingConn.id);
       startProgressPolling(syncingConn.id);
     }
@@ -362,6 +365,7 @@ export default function BanksApiImportFlow() {
     setError('');
     setImportResult(null);
     setSyncProgress(null);
+    syncFinishedRef.current.delete(connectionId);
     setRefreshingConnectionId(connectionId);
 
     try {
