@@ -251,13 +251,13 @@ export default function ReferralProgramView() {
     const defaultBody = [
       greeting,
       "",
-      `${name} empfiehlt Ihnen rentab.ly - die professionelle Lösung für Ihre Immobilienverwaltung.`,
+      `${name} empfiehlt Ihnen rentably - die professionelle Lösung für Ihre Immobilienverwaltung.`,
       "",
-      "Registrieren Sie sich jetzt und erhalten Sie 1 Monat PRO kostenlos!",
+      "Automatisch 30 Tage alle Pro-Funktionen gratis testen!",
       ...(personalMessage ? ["", `Persönliche Nachricht: ${personalMessage}`] : []),
     ].join("\n");
 
-    setPreviewSubject("Entdecke rentab.ly - Deine Immobilienverwaltung");
+    setPreviewSubject("Entdecke rentably - Die professionelle Immobilienverwaltung ab 0€");
     setPreviewBody(defaultBody);
     setShowPreview(true);
   };
@@ -341,17 +341,17 @@ export default function ReferralProgramView() {
           Empfehlungsprogramm
         </h1>
         <p className="text-gray-400 mt-1">
-          Empfehlen Sie rentab.ly und verdienen Sie {Math.round(commissionRate * 100)}% wiederkehrende Provision auf die Abogebuehren geworbener Nutzer
+          Empfehlen Sie rentably und verdienen Sie {Math.round(commissionRate * 100)}% wiederkehrende Provision auf die Abogebühren geworbener Nutzer
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <div className="bg-white rounded-lg p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-9 h-9 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+            <div className="w-9 h-9 bg-[#EEF4FF] rounded-full flex items-center justify-center">
               <Users className="w-4 h-4 text-[#1e1e24]" />
             </div>
-            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
               {Math.round(commissionRate * 100)}% Provision
             </span>
           </div>
@@ -359,7 +359,7 @@ export default function ReferralProgramView() {
             {totalReferrals}
           </div>
           <div className="text-sm text-gray-600">Gesamt Empfehlungen</div>
-          <div className="pt-2 mt-2 border-t border-gray-200 text-xs">
+          <div className="pt-2 mt-2 border-t border-gray-100 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-gray-500">Davon zahlend</span>
               <span className="font-medium text-dark">{payingReferrals}</span>
@@ -367,9 +367,9 @@ export default function ReferralProgramView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <div className="bg-white rounded-lg p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-9 h-9 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+            <div className="w-9 h-9 bg-[#EEF4FF] rounded-full flex items-center justify-center">
               <Banknote className="w-4 h-4 text-[#1e1e24]" />
             </div>
           </div>
@@ -377,7 +377,7 @@ export default function ReferralProgramView() {
             {balance.toFixed(2)} EUR
           </div>
           <div className="text-sm text-gray-600">Aktuelles Guthaben</div>
-          <div className="pt-2 mt-2 border-t border-gray-200 space-y-1 text-xs">
+          <div className="pt-2 mt-2 border-t border-gray-100 space-y-1 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-gray-500">Verdient</span>
               <span className="font-medium text-dark">{totalEarned.toFixed(2)} EUR</span>
@@ -389,9 +389,9 @@ export default function ReferralProgramView() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <div className="bg-white rounded-lg p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-9 h-9 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+            <div className="w-9 h-9 bg-[#EEF4FF] rounded-full flex items-center justify-center">
               <Percent className="w-4 h-4 text-[#1e1e24]" />
             </div>
           </div>
@@ -399,16 +399,16 @@ export default function ReferralProgramView() {
             {Math.round(commissionRate * 100)}%
           </div>
           <div className="text-sm text-gray-600">Ihre Provision</div>
-          <div className="pt-2 mt-2 border-t border-gray-200 text-xs text-gray-500">
+          <div className="pt-2 mt-2 border-t border-gray-100 text-xs text-gray-500">
             Wiederkehrend auf jede Abo-Zahlung Ihrer geworbenen Nutzer
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center">
               <Gift className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <h2 className="text-lg font-semibold text-dark">
@@ -416,9 +416,9 @@ export default function ReferralProgramView() {
             </h2>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-lg p-4 mb-4">
             <p className="text-gray-700 text-xs font-medium mb-1.5">
-              Ihr persoenlicher Empfehlungslink:
+              Ihr persönlicher Empfehlungslink:
             </p>
             <div className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-200 mb-3 min-w-0 overflow-hidden">
               <LinkIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -444,7 +444,7 @@ export default function ReferralProgramView() {
             </Button>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
+          <div className="bg-gray-50 rounded-lg p-3 mb-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <p className="text-gray-500 text-xs mb-0.5">Empfehlungscode:</p>
@@ -528,9 +528,9 @@ export default function ReferralProgramView() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center">
               <Mail className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <h3 className="text-lg font-semibold text-dark">
@@ -601,7 +601,7 @@ export default function ReferralProgramView() {
                 </Button>
               </form>
 
-              <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-600">
                   Im nächsten Schritt sehen Sie eine Vorschau der E-Mail und
                   können den Text vor dem Versand noch anpassen.
@@ -646,7 +646,7 @@ export default function ReferralProgramView() {
                 />
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-xs text-gray-500 mb-2 font-medium">Referral-Link in der E-Mail:</p>
                 <p className="text-xs font-mono text-gray-700 break-all">{referralUrl}</p>
               </div>
@@ -683,9 +683,9 @@ export default function ReferralProgramView() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-[#1e1e24]" />
             </div>
             <h3 className="text-lg font-semibold text-dark">
@@ -695,7 +695,7 @@ export default function ReferralProgramView() {
 
           <div className="space-y-4">
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center text-[#1e1e24] font-semibold text-sm">
+              <div className="flex-shrink-0 w-8 h-8 bg-[#EEF4FF] rounded-full flex items-center justify-center text-[#1e1e24] font-semibold text-sm">
                 1
               </div>
               <div>
@@ -703,14 +703,14 @@ export default function ReferralProgramView() {
                   Teilen Sie Ihren Link
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Teilen Sie Ihren persoenlichen Empfehlungslink mit
+                  Teilen Sie Ihren persönlichen Empfehlungslink mit
                   Freunden und Kollegen.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center text-[#1e1e24] font-semibold text-sm">
+              <div className="flex-shrink-0 w-8 h-8 bg-[#EEF4FF] rounded-full flex items-center justify-center text-[#1e1e24] font-semibold text-sm">
                 2
               </div>
               <div>
@@ -718,14 +718,14 @@ export default function ReferralProgramView() {
                   Nutzer abonnieren PRO
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Wenn geworbene Nutzer ein kostenpflichtiges Abo abschliessen,
+                  Wenn geworbene Nutzer ein kostenpflichtiges Abo abschließen,
                   beginnt Ihre Provision.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center text-[#1e1e24] font-semibold text-sm">
+              <div className="flex-shrink-0 w-8 h-8 bg-[#EEF4FF] rounded-full flex items-center justify-center text-[#1e1e24] font-semibold text-sm">
                 3
               </div>
               <div>
@@ -735,7 +735,7 @@ export default function ReferralProgramView() {
                 <p className="text-sm text-gray-600">
                   <strong>Monatlich:</strong> {Math.round(commissionRate * 100)}% jeder monatlichen Abo-Zahlung
                   <br />
-                  <strong>Jaehrlich:</strong> {Math.round(commissionRate * 100)}% der Jahressumme bei Zahlung
+                  <strong>Jährlich:</strong> {Math.round(commissionRate * 100)}% der Jahressumme bei Zahlung
                 </p>
               </div>
             </div>

@@ -103,6 +103,7 @@ Deno.serve(async (req: Request) => {
 
     const finalSubject = customSubject || template.subject;
 
+    const greeting = recipientName ? `Hallo ${recipientName},` : "Hallo,";
     let bodyContent: string;
     if (customBodyText) {
       bodyContent = customBodyText
@@ -110,16 +111,14 @@ Deno.serve(async (req: Request) => {
         .map((line: string) => `<p style="margin:0 0 12px 0">${line || "&nbsp;"}</p>`)
         .join("");
     } else {
-      const greeting = recipientName ? `Hallo ${recipientName},` : "Hallo,";
-      bodyContent = `<p style="margin:0 0 16px 0">${greeting}</p><p style="margin:0 0 16px 0"><strong>${inviterName}</strong> empfiehlt Ihnen rentab.ly.</p><p style="margin:0">Registrieren Sie sich jetzt und erhalten Sie <strong>1 Monat PRO kostenlos</strong>!</p>`;
+      bodyContent = `<p style="margin:0 0 16px 0">${greeting}</p><p style="margin:0 0 16px 0"><strong>${inviterName}</strong> empfiehlt Ihnen rentably.</p><p style="margin:0">Automatisch 30 Tage alle Pro-Funktionen gratis testen!</p>`;
 
       if (message) {
         bodyContent += `<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:15px;margin:20px 0"><p style="margin:0;color:#856404"><strong>Persönliche Nachricht:</strong></p><p style="margin:10px 0 0 0;color:#856404">${message}</p></div>`;
       }
     }
 
-    const emailHtml = template.body_html
-      .replace(/\{\{body_content\}\}/g, bodyContent)
+    const emailText = customBodyText || template.body_text
       .replace(/\{\{inviter_name\}\}/g, inviterName)
       .replace(/\{\{referrer_name\}\}/g, inviterName)
       .replace(/\{\{referrerName\}\}/g, inviterName)
@@ -128,7 +127,8 @@ Deno.serve(async (req: Request) => {
       .replace(/\{\{referralLink\}\}/g, registrationLink)
       .replace(/\{\{referral_code\}\}/g, settings.referral_code);
 
-    const emailText = (customBodyText || template.body_text)
+    const emailHtml = template.body_html
+      .replace(/\{\{body_content\}\}/g, bodyContent)
       .replace(/\{\{inviter_name\}\}/g, inviterName)
       .replace(/\{\{referrer_name\}\}/g, inviterName)
       .replace(/\{\{referrerName\}\}/g, inviterName)

@@ -99,7 +99,7 @@ const translations = {
     "feedback.submit_first": "Seien Sie der Erste und teilen Sie Ihre Idee!",
     "referral.title": "Empfehlungsprogramm",
     "referral.description":
-      "Empfehlen Sie rentably und verdienen Sie {rate}% Provision",
+      "Empfehlen Sie rentably und verdienen Sie {rate}% wiederkehrende Provision auf die Abogebühren geworbener Nutzer",
     "referral.learn_more": "Mehr erfahren",
     "footer.product": "Produkt",
     "footer.features": "Funktionen",
