@@ -92,10 +92,10 @@ export default function ReferralPayoutSection({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#EEF4FF] border border-[#DDE7FF] rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-[#EEF4FF] rounded-full flex items-center justify-center">
             <Banknote className="w-5 h-5 text-[#1e1e24]" />
           </div>
           <div>

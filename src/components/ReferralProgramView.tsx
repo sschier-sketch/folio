@@ -587,17 +587,7 @@ export default function ReferralProgramView() {
                   variant="primary"
                   fullWidth
                 >
-                  {emailSent ? (
-                    <>
-                      <Check className="w-5 h-5" />
-                      Einladung gesendet!
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="w-5 h-5" />
-                      Vorschau anzeigen
-                    </>
-                  )}
+                  {emailSent ? "Einladung gesendet!" : "Vorschau anzeigen"}
                 </Button>
               </form>
 
@@ -657,7 +647,6 @@ export default function ReferralProgramView() {
                   variant="outlined"
                   className="flex-1"
                 >
-                  <ArrowLeft className="w-4 h-4" />
                   Zurück
                 </Button>
                 <Button
@@ -666,17 +655,7 @@ export default function ReferralProgramView() {
                   variant="primary"
                   className="flex-1"
                 >
-                  {sendingEmail ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Wird gesendet...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Jetzt senden
-                    </>
-                  )}
+                  {sendingEmail ? "Wird gesendet..." : "Jetzt senden"}
                 </Button>
               </div>
             </div>
