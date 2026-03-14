@@ -93,14 +93,14 @@ async function resolveFromAddress(
   if (profile) {
     const displayName = profile.company_name
       || [profile.first_name, profile.last_name].filter(Boolean).join(' ')
-      || 'Rentably';
+      || 'rentably';
     return {
       from: `${displayName} <${aliasEmail}>`,
       replyTo: userRealEmail,
     };
   }
 
-  return { from: `Rentably <${aliasEmail}>`, replyTo: userRealEmail };
+  return { from: `rentably <${aliasEmail}>`, replyTo: userRealEmail };
 }
 
 async function storeOutboundMessage(
@@ -394,7 +394,7 @@ Deno.serve(async (req: Request) => {
       throw new Error('RESEND_API_KEY not configured');
     }
 
-    const DEFAULT_FROM = Deno.env.get('EMAIL_FROM') || 'Rentably <hallo@rentab.ly>';
+    const DEFAULT_FROM = Deno.env.get('EMAIL_FROM') || 'rentably <hallo@rentab.ly>';
     const resolved = await resolveFromAddress(supabase, userId, useUserAlias, DEFAULT_FROM);
     const fromAddress = resolved.from;
 
