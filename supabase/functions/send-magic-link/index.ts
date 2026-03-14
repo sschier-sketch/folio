@@ -45,12 +45,9 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { data: existingUser } = await supabase.auth.admin.listUsers();
-    const userExists = existingUser?.users?.some(
-      (u) => u.email?.toLowerCase() === email.toLowerCase()
-    );
+    const { data: existingUser, error: lookupError } = await supabase.auth.admin.getUserByEmail(email);
 
-    if (!userExists) {
+    if (lookupError || !existingUser?.user) {
       return new Response(
         JSON.stringify({ success: true, message: "If the email exists, a magic link has been sent." }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -113,6 +110,7 @@ Deno.serve(async (req: Request) => {
 
       tpl = fallback;
     }
+
     const variables: Record<string, string> = {
       magic_link: magicLink,
     };
