@@ -572,7 +572,7 @@ export default function Dashboard() {
               </div>{" "}
               <p className="text-gray-600 text-sm mb-3">
                 {" "}
-                {t("referral.description").replace("{rate}", String(defaultCommissionRate))}{" "}
+                Empfehlen Sie rentably und verdienen Sie 25% Provision{" "}
               </p>{" "}
               <div className="flex items-center gap-2 text-sm font-medium text-blue-600">
                 {" "}
@@ -675,7 +675,7 @@ export default function Dashboard() {
               </div>{" "}
               <p className="text-gray-600 text-sm mb-3">
                 {" "}
-                {t("referral.description").replace("{rate}", String(defaultCommissionRate))}{" "}
+                Empfehlen Sie rentably und verdienen Sie 25% Provision{" "}
               </p>{" "}
               <div className="flex items-center gap-2 text-sm font-medium text-blue-600">
                 {" "}
