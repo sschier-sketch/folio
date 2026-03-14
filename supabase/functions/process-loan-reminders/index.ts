@@ -156,7 +156,7 @@ Deno.serve(async (req: Request) => {
           emailBody += `<p><strong>Hinweis:</strong> Sie haben die Moeglichkeit, eine Sondertilgung vorzunehmen. Nutzen Sie diese Chance, um Ihre Restschuld zu reduzieren.</p>`;
         }
 
-        emailBody += `<p>Viele Gruesse,<br>Ihr Rentably Team</p></div>`;
+        emailBody += `<p>Viele Gruesse,<br>Ihr rentably Team</p></div>`;
 
         try {
           const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {

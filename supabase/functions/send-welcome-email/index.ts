@@ -139,7 +139,7 @@ Deno.serve(async (req: Request) => {
 
     console.log("send-welcome-email: calling Resend API for", email);
 
-    const fromAddress = Deno.env.get("EMAIL_FROM") || "Rentably <hallo@rentab.ly>";
+    const fromAddress = Deno.env.get("EMAIL_FROM") || "rentably <hallo@rentab.ly>";
 
     const resendResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",

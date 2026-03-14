@@ -85,7 +85,7 @@ Deno.serve(async (req: Request) => {
     const ownerName =
       [ownerProfile?.first_name, ownerProfile?.last_name].filter(Boolean).join(" ") ||
       ownerProfile?.company_name ||
-      "Rentably Nutzer";
+      "rentably Nutzer";
 
     const roleLabels: Record<string, string> = {
       admin: "Administrator",

@@ -343,7 +343,7 @@ Deno.serve(async (req: Request) => {
             }
             emailError = "RESEND_API_KEY not configured";
           } else {
-            const DEFAULT_FROM = Deno.env.get("EMAIL_FROM") || "Rentably <hallo@rentab.ly>";
+            const DEFAULT_FROM = Deno.env.get("EMAIL_FROM") || "rentably <hallo@rentab.ly>";
 
             const resendResponse = await fetch("https://api.resend.com/emails", {
               method: "POST",

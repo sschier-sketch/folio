@@ -152,7 +152,7 @@ Deno.serve(async (req: Request) => {
     const finalHtml = replaceVariables(resolvedTemplate.body_html, variables);
     const finalText = replaceVariables(resolvedTemplate.body_text || "", variables);
 
-    let fromAddress = "Rentably <hallo@rentab.ly>";
+    let fromAddress = "rentably <hallo@rentab.ly>";
 
     const { data: mailbox } = await supabase
       .from("user_mailboxes")
@@ -174,10 +174,10 @@ Deno.serve(async (req: Request) => {
         fromAddress = `${mailSettings.sender_name.trim()} <${aliasEmail}>`;
       } else if (profile) {
         const displayName =
-          [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "Rentably";
+          [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "rentably";
         fromAddress = `${displayName} <${aliasEmail}>`;
       } else {
-        fromAddress = `Rentably <${aliasEmail}>`;
+        fromAddress = `rentably <${aliasEmail}>`;
       }
     }
 
