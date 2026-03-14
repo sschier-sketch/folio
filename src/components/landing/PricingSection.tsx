@@ -42,7 +42,7 @@ export default function PricingSection() {
               <span className="text-gray-400 text-sm">/ Monat</span>
             </div>
             <ul className="space-y-2.5 mb-8 flex-1">
-              {PLANS.basic.features.slice(0, 4).map((f) => (
+              {PLANS.basic.features.slice(0, 5).map((f) => (
                 <li key={f.text} className="flex items-start gap-2.5">
                   <Check className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-gray-600">{f.text}</span>
@@ -83,7 +83,7 @@ export default function PricingSection() {
                 <Check className="w-4 h-4 text-[#3c8af7] flex-shrink-0 mt-0.5" />
                 <span className="text-sm text-gray-700">Alles aus Basic, plus:</span>
               </li>
-              {PLANS.pro.features.slice(2, 7).map((f) => (
+              {PLANS.pro.features.slice(2, 9).map((f) => (
                 <li key={f.text} className="flex items-start gap-2.5">
                   <Check className="w-4 h-4 text-[#3c8af7] flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-gray-700">{f.text}</span>
