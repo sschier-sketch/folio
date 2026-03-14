@@ -53,6 +53,7 @@ const TRIGGER_TYPE_LABELS: Record<string, { label: string; color: string }> = {
 export default function AdminEmailAutomationsView() {
   const [automations, setAutomations] = useState<Automation[]>([]);
   const [sentCounts, setSentCounts] = useState<Record<string, number>>({});
+  const [lastSentAt, setLastSentAt] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
@@ -70,20 +71,26 @@ export default function AdminEmailAutomationsView() {
           supabase.from("email_automations").select("*").order("name"),
           supabase
             .from("email_logs")
-            .select("mail_type")
+            .select("mail_type, sent_at, created_at")
             .eq("status", "sent"),
         ]);
       if (error) throw error;
 
       const counts: Record<string, number> = {};
+      const latest: Record<string, string> = {};
       if (logsData) {
         for (const log of logsData) {
           if (log.mail_type) {
             counts[log.mail_type] = (counts[log.mail_type] || 0) + 1;
+            const ts = log.sent_at || log.created_at;
+            if (ts && (!latest[log.mail_type] || ts > latest[log.mail_type])) {
+              latest[log.mail_type] = ts;
+            }
           }
         }
       }
       setSentCounts(counts);
+      setLastSentAt(latest);
       setAutomations(automationsData || []);
     } catch (err) {
       console.error("Error loading automations:", err);
@@ -399,11 +406,11 @@ export default function AdminEmailAutomationsView() {
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Letzter Lauf:</span>
+                          <span className="text-gray-400">Zuletzt gesendet:</span>
                           <span className="text-dark">
-                            {automation.last_run_at
+                            {lastSentAt[automation.template_key]
                               ? new Date(
-                                  automation.last_run_at
+                                  lastSentAt[automation.template_key]
                                 ).toLocaleDateString("de-DE", {
                                   day: "2-digit",
                                   month: "2-digit",
