@@ -89,14 +89,14 @@ Deno.serve(async (req: Request) => {
 
     const language = profile?.language || "de";
 
-    const { data: template, error: templateError } = await supabase
+    let { data: tpl } = await supabase
       .from("email_templates")
       .select("subject, body_html, body_text")
       .eq("template_key", "magic_link")
       .eq("language", language)
       .maybeSingle();
 
-    if (templateError || !template) {
+    if (!tpl) {
       const { data: fallback } = await supabase
         .from("email_templates")
         .select("subject, body_html, body_text")
@@ -111,10 +111,8 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      Object.assign(template || {}, fallback);
+      tpl = fallback;
     }
-
-    const tpl = template!;
     const variables: Record<string, string> = {
       magic_link: magicLink,
     };
