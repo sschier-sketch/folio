@@ -45,15 +45,6 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { data: existingUser, error: lookupError } = await supabase.auth.admin.getUserByEmail(email);
-
-    if (lookupError || !existingUser?.user) {
-      return new Response(
-        JSON.stringify({ success: true, message: "If the email exists, a magic link has been sent." }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email,
@@ -62,8 +53,22 @@ Deno.serve(async (req: Request) => {
       },
     });
 
-    if (linkError || !linkData) {
+    if (linkError) {
+      const msg = linkError.message?.toLowerCase() ?? "";
+      if (msg.includes("user not found") || msg.includes("no user found")) {
+        return new Response(
+          JSON.stringify({ success: true, message: "If the email exists, a magic link has been sent." }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       console.error("send-magic-link: generateLink error", linkError);
+      return new Response(
+        JSON.stringify({ error: "Failed to generate magic link" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!linkData) {
       return new Response(
         JSON.stringify({ error: "Failed to generate magic link" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
