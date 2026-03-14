@@ -52,6 +52,7 @@ const TRIGGER_TYPE_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function AdminEmailAutomationsView() {
   const [automations, setAutomations] = useState<Automation[]>([]);
+  const [sentCounts, setSentCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
@@ -64,12 +65,26 @@ export default function AdminEmailAutomationsView() {
   async function loadAutomations() {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("email_automations")
-        .select("*")
-        .order("name");
+      const [{ data: automationsData, error }, { data: logsData }] =
+        await Promise.all([
+          supabase.from("email_automations").select("*").order("name"),
+          supabase
+            .from("email_logs")
+            .select("mail_type")
+            .eq("status", "sent"),
+        ]);
       if (error) throw error;
-      setAutomations(data || []);
+
+      const counts: Record<string, number> = {};
+      if (logsData) {
+        for (const log of logsData) {
+          if (log.mail_type) {
+            counts[log.mail_type] = (counts[log.mail_type] || 0) + 1;
+          }
+        }
+      }
+      setSentCounts(counts);
+      setAutomations(automationsData || []);
     } catch (err) {
       console.error("Error loading automations:", err);
     } finally {
@@ -337,7 +352,7 @@ export default function AdminEmailAutomationsView() {
                   <div className="text-right hidden md:block">
                     <p className="text-xs text-gray-400">Gesendet</p>
                     <p className="text-sm font-semibold text-dark">
-                      {automation.total_sent}
+                      {(sentCounts[automation.template_key] ?? 0).toLocaleString("de-DE")}
                     </p>
                   </div>
                   {isExpanded ? (
