@@ -121,14 +121,20 @@ Deno.serve(async (req: Request) => {
     const emailHtml = template.body_html
       .replace(/\{\{body_content\}\}/g, bodyContent)
       .replace(/\{\{inviter_name\}\}/g, inviterName)
-      .replace(/\{\{registration_link\}\}/g, registrationLink)
-      .replace(/\{\{referral_code\}\}/g, settings.referral_code)
+      .replace(/\{\{referrer_name\}\}/g, inviterName)
       .replace(/\{\{referrerName\}\}/g, inviterName)
-      .replace(/\{\{referralLink\}\}/g, registrationLink);
+      .replace(/\{\{registration_link\}\}/g, registrationLink)
+      .replace(/\{\{referral_link\}\}/g, registrationLink)
+      .replace(/\{\{referralLink\}\}/g, registrationLink)
+      .replace(/\{\{referral_code\}\}/g, settings.referral_code);
 
     const emailText = (customBodyText || template.body_text)
       .replace(/\{\{inviter_name\}\}/g, inviterName)
+      .replace(/\{\{referrer_name\}\}/g, inviterName)
+      .replace(/\{\{referrerName\}\}/g, inviterName)
       .replace(/\{\{registration_link\}\}/g, registrationLink)
+      .replace(/\{\{referral_link\}\}/g, registrationLink)
+      .replace(/\{\{referralLink\}\}/g, registrationLink)
       .replace(/\{\{referral_code\}\}/g, settings.referral_code);
 
     const emailResponse = await fetch(
