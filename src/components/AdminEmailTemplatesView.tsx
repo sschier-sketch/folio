@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Mail, Eye, Clock, CheckCircle, AlertTriangle, Megaphone, Send, Filter } from "lucide-react";
+import { Mail, Eye, Clock, CheckCircle, AlertTriangle, Megaphone, Send, Filter, FlaskConical, X, Loader2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { Button } from "./ui/Button";
 
@@ -57,6 +57,10 @@ export function AdminEmailTemplatesView() {
   );
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [showTestModal, setShowTestModal] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const [testSending, setTestSending] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   useEffect(() => {
     loadTemplates();
@@ -130,6 +134,50 @@ export function AdminEmailTemplatesView() {
     }
   }
 
+  async function handleSendTest() {
+    if (!editedTemplate || !testEmail.trim()) return;
+    setTestSending(true);
+    setTestResult(null);
+    try {
+      const demoVars: Record<string, string> = {};
+      (editedTemplate.variables || []).forEach((v) => {
+        demoVars[v] = `[${v}]`;
+      });
+
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = (supabase as any).supabaseUrl as string;
+      const anonKey = (supabase as any).supabaseKey as string;
+
+      const res = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token || anonKey}`,
+          "Apikey": anonKey,
+        },
+        body: JSON.stringify({
+          to: testEmail.trim(),
+          templateKey: editedTemplate.template_key,
+          language: editedTemplate.language,
+          variables: demoVars,
+          category: "transactional",
+          metadata: { test: true, sentBy: "admin_template_preview" },
+        }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setTestResult({ ok: true, message: `E-Mail erfolgreich gesendet an ${testEmail.trim()}` });
+      } else {
+        setTestResult({ ok: false, message: json.error || "Unbekannter Fehler beim Senden." });
+      }
+    } catch (err) {
+      setTestResult({ ok: false, message: err instanceof Error ? err.message : "Fehler beim Senden." });
+    } finally {
+      setTestSending(false);
+    }
+  }
+
   function getVariableLabel(variable: string): string {
     const labels: Record<string, string> = {
       tenant_name: "Mieter Name",
@@ -198,6 +246,87 @@ export function AdminEmailTemplatesView() {
   }
 
   return (
+    <>
+    {showTestModal && editedTemplate && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-primary-blue/10 flex items-center justify-center">
+                <FlaskConical className="w-4.5 h-4.5 text-primary-blue" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-dark">Test-E-Mail senden</h3>
+                <p className="text-xs text-gray-400">{editedTemplate.template_name || editedTemplate.template_key}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => { setShowTestModal(false); setTestResult(null); }}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="px-6 py-5 space-y-4">
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 leading-relaxed">
+              Die E-Mail wird mit Platzhalter-Werten verschickt (<span className="font-mono">[variablenname]</span>). Das aktuelle Template aus der Datenbank wird verwendet – nicht der ungespeicherte Editor-Stand.
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                Empfänger-Adresse
+              </label>
+              <input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && testEmail.trim()) handleSendTest(); }}
+                placeholder="test@beispiel.de"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                autoFocus
+              />
+            </div>
+
+            {testResult && (
+              <div className={`p-3 rounded-lg text-sm flex items-start gap-2.5 ${testResult.ok ? "bg-emerald-50 border border-emerald-200 text-emerald-700" : "bg-red-50 border border-red-200 text-red-700"}`}>
+                {testResult.ok
+                  ? <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  : <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                }
+                <span>{testResult.message}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="px-6 pb-5 flex justify-end gap-2">
+            <button
+              onClick={() => { setShowTestModal(false); setTestResult(null); }}
+              className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Schließen
+            </button>
+            <button
+              onClick={handleSendTest}
+              disabled={testSending || !testEmail.trim()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-blue text-white text-sm font-medium hover:bg-primary-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {testSending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Wird gesendet…
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  Senden
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <div className="lg:col-span-1 bg-white rounded overflow-hidden">
         <div className="p-4 border-b">
@@ -368,9 +497,18 @@ export function AdminEmailTemplatesView() {
                     {editedTemplate.description}
                   </p>
                 </div>
-                <Button onClick={handleSave} disabled={saving} variant="primary">
-                  {saving ? "Speichern..." : "Speichern"}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { setShowTestModal(true); setTestResult(null); }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <FlaskConical className="w-4 h-4" />
+                    Test senden
+                  </button>
+                  <Button onClick={handleSave} disabled={saving} variant="primary">
+                    {saving ? "Speichern..." : "Speichern"}
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -571,5 +709,6 @@ export function AdminEmailTemplatesView() {
         )}
       </div>
     </div>
+    </>
   );
 }
