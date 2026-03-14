@@ -35,7 +35,7 @@ export const PLANS: Record<PlanId, Plan> = {
     features: [
       { text: 'Unbegrenzt Immobilien, Mieter & Einheiten', included: true },
       { text: 'Einnahmen & Ausgaben', included: true },
-      { text: 'Mieteingänge manuell verfolgen', included: true },
+      { text: 'Mieteingänge verfolgen', included: true },
       { text: 'Zähler & Ablesungen', included: true },
       { text: 'Dokumenten-Upload (200 MB)', included: true },
       { text: 'Standard-Vorlagen', included: true },
@@ -57,7 +57,7 @@ export const PLANS: Record<PlanId, Plan> = {
     features: [
       { text: 'Unbegrenzt Immobilien, Mieter & Einheiten', included: true },
       { text: 'Alles aus Basic, plus:', included: true },
-      { text: 'Automatischer Bankabgleich (Mieteingänge)', included: true },
+      { text: 'Automatischer Bankabgleich', included: true },
       { text: 'Ticketsystem & Nachrichten', included: true },
       { text: 'Mieterportal', included: true },
       { text: 'Betriebskostenabrechnung', included: true },
