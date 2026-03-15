@@ -73,9 +73,12 @@ interface UserData {
 
 interface Stats {
   totalUsers: number;
+  totalUsersPrev: number;
   freeUsers: number;
   premiumUsers: number;
+  premiumUsersPrev: number;
   monthlyRevenue: number;
+  monthlyRevenuePrev: number;
   activeUsers: number;
   activeUsersPrev: number;
   totalUnits: number;
@@ -88,9 +91,12 @@ export function Admin() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
+    totalUsersPrev: 0,
     freeUsers: 0,
     premiumUsers: 0,
+    premiumUsersPrev: 0,
     monthlyRevenue: 0,
+    monthlyRevenuePrev: 0,
     activeUsers: 0,
     activeUsersPrev: 0,
     totalUnits: 0,
@@ -136,7 +142,7 @@ export function Admin() {
 
       const { data: snapshots } = await supabase
         .from("admin_analytics_snapshots")
-        .select("snapshot_date, monthly_active_landlords, total_units")
+        .select("snapshot_date, total_users, pro_users, monthly_revenue_cents, monthly_active_landlords, total_units")
         .in("snapshot_date", [today, prevMonthEnd]);
 
       const todaySnap = snapshots?.find(s => s.snapshot_date === today);
@@ -144,9 +150,14 @@ export function Admin() {
 
       setStats({
         totalUsers: enriched.length,
+        totalUsersPrev: prevSnap?.total_users ?? 0,
         freeUsers: freeCount,
         premiumUsers: proCount,
+        premiumUsersPrev: prevSnap?.pro_users ?? 0,
         monthlyRevenue: proCount * 9,
+        monthlyRevenuePrev: prevSnap?.monthly_revenue_cents != null
+          ? Math.round(prevSnap.monthly_revenue_cents / 100)
+          : 0,
         activeUsers: todaySnap?.monthly_active_landlords ?? 0,
         activeUsersPrev: prevSnap?.monthly_active_landlords ?? 0,
         totalUnits: todaySnap?.total_units ?? 0,
@@ -403,29 +414,30 @@ export function Admin() {
             <AdminAnalyticsChart />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
-              <StatCard
+              <TrendStatCard
                 icon={<Users className="w-5 h-5 text-primary-blue" />}
                 value={stats.totalUsers}
+                prev={stats.totalUsersPrev}
                 label="Gesamt Nutzer"
+                sublabel="Registrierte Accounts"
                 bg="bg-blue-50"
               />
-              <StatCard
-                icon={<UserCheck className="w-5 h-5 text-emerald-600" />}
-                value={stats.freeUsers}
-                label="Gratis Nutzer"
-                bg="bg-emerald-50"
-              />
-              <StatCard
+              <TrendStatCard
                 icon={<TrendingUp className="w-5 h-5 text-amber-600" />}
                 value={stats.premiumUsers}
+                prev={stats.premiumUsersPrev}
                 label="Pro Nutzer"
+                sublabel="Zahlende Abonnenten"
                 bg="bg-amber-50"
               />
-              <StatCard
+              <TrendStatCard
                 icon={<DollarSign className="w-5 h-5 text-green-600" />}
-                value={`${stats.monthlyRevenue}\u202F\u20AC`}
+                value={stats.monthlyRevenue}
+                prev={stats.monthlyRevenuePrev}
                 label="Monatl. Umsatz"
+                sublabel="MRR in Euro"
                 bg="bg-green-50"
+                suffix={"\u202F\u20AC"}
               />
               <TrendStatCard
                 icon={<Activity className="w-5 h-5 text-sky-600" />}
@@ -442,6 +454,12 @@ export function Admin() {
                 label="Einheiten"
                 sublabel="Gesamt auf der Plattform"
                 bg="bg-teal-50"
+              />
+              <StatCard
+                icon={<UserCheck className="w-5 h-5 text-emerald-600" />}
+                value={stats.freeUsers}
+                label="Gratis Nutzer"
+                bg="bg-emerald-50"
               />
             </div>
 
@@ -740,18 +758,20 @@ function StatCard({ icon, value, label, bg }: {
   );
 }
 
-function TrendStatCard({ icon, value, prev, label, sublabel, bg }: {
+function TrendStatCard({ icon, value, prev, label, sublabel, bg, suffix = '' }: {
   icon: React.ReactNode;
   value: number;
   prev: number;
   label: string;
   sublabel: string;
   bg: string;
+  suffix?: string;
 }) {
   const diff = value - prev;
   const pct = prev > 0 ? Math.round((diff / prev) * 100) : (value > 0 ? 100 : 0);
   const isUp = diff > 0;
-  const isFlat = diff === 0;
+  const isDown = diff < 0;
+  const hasPrev = prev > 0;
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-5">
@@ -759,7 +779,7 @@ function TrendStatCard({ icon, value, prev, label, sublabel, bg }: {
         <div className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center`}>
           {icon}
         </div>
-        {!isFlat && (
+        {hasPrev && (isUp || isDown) && (
           <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
             isUp
               ? 'bg-emerald-50 text-emerald-600'
@@ -770,11 +790,25 @@ function TrendStatCard({ icon, value, prev, label, sublabel, bg }: {
           </span>
         )}
       </div>
-      <p className="text-2xl font-bold text-gray-800">{value.toLocaleString('de-DE')}</p>
-      <p className="text-xs text-gray-400 mt-0.5">{label}</p>
-      <p className="text-[11px] text-gray-300 mt-1">
-        {sublabel} &middot; Vormonat: {prev.toLocaleString('de-DE')}
+      <p className="text-2xl font-bold text-gray-800">
+        {value.toLocaleString('de-DE')}{suffix}
       </p>
+      <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+      <div className="flex items-center gap-2 mt-1.5">
+        <span className="text-[11px] text-gray-300">
+          {sublabel}
+        </span>
+        {hasPrev && (
+          <>
+            <span className="text-[11px] text-gray-200">&middot;</span>
+            <span className={`text-[11px] font-medium ${
+              isUp ? 'text-emerald-500' : isDown ? 'text-red-400' : 'text-gray-300'
+            }`}>
+              {isUp ? '+' : ''}{diff.toLocaleString('de-DE')}{suffix} ggü. Vormonat
+            </span>
+          </>
+        )}
+      </div>
     </div>
   );
 }
