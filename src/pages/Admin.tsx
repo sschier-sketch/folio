@@ -11,6 +11,10 @@ import {
   Clock,
   X,
   Loader2,
+  Activity,
+  Building2,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -72,6 +76,10 @@ interface Stats {
   freeUsers: number;
   premiumUsers: number;
   monthlyRevenue: number;
+  activeUsers: number;
+  activeUsersPrev: number;
+  totalUnits: number;
+  totalUnitsPrev: number;
 }
 
 export function Admin() {
@@ -83,6 +91,10 @@ export function Admin() {
     freeUsers: 0,
     premiumUsers: 0,
     monthlyRevenue: 0,
+    activeUsers: 0,
+    activeUsersPrev: 0,
+    totalUnits: 0,
+    totalUnitsPrev: 0,
   });
   const [loadingData, setLoadingData] = useState(true);
   const [sortField, setSortField] = useState<keyof UserData>("created_at");
@@ -118,11 +130,27 @@ export function Admin() {
         (u) => u.subscription_plan === "pro",
       ).length;
       const freeCount = enriched.length - proCount;
+      const today = new Date().toISOString().slice(0, 10);
+      const prevMonthEnd = new Date(new Date().getFullYear(), new Date().getMonth(), 0)
+        .toISOString().slice(0, 10);
+
+      const { data: snapshots } = await supabase
+        .from("admin_analytics_snapshots")
+        .select("snapshot_date, monthly_active_landlords, total_units")
+        .in("snapshot_date", [today, prevMonthEnd]);
+
+      const todaySnap = snapshots?.find(s => s.snapshot_date === today);
+      const prevSnap = snapshots?.find(s => s.snapshot_date === prevMonthEnd);
+
       setStats({
         totalUsers: enriched.length,
         freeUsers: freeCount,
         premiumUsers: proCount,
         monthlyRevenue: proCount * 9,
+        activeUsers: todaySnap?.monthly_active_landlords ?? 0,
+        activeUsersPrev: prevSnap?.monthly_active_landlords ?? 0,
+        totalUnits: todaySnap?.total_units ?? 0,
+        totalUnitsPrev: prevSnap?.total_units ?? 0,
       });
     } catch (err) {
       console.error("Error loading admin data:", err);
@@ -374,7 +402,7 @@ export function Admin() {
           <div>
             <AdminAnalyticsChart />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
               <StatCard
                 icon={<Users className="w-5 h-5 text-primary-blue" />}
                 value={stats.totalUsers}
@@ -395,9 +423,25 @@ export function Admin() {
               />
               <StatCard
                 icon={<DollarSign className="w-5 h-5 text-green-600" />}
-                value={`${stats.monthlyRevenue}€`}
+                value={`${stats.monthlyRevenue}\u202F\u20AC`}
                 label="Monatl. Umsatz"
                 bg="bg-green-50"
+              />
+              <TrendStatCard
+                icon={<Activity className="w-5 h-5 text-sky-600" />}
+                value={stats.activeUsers}
+                prev={stats.activeUsersPrev}
+                label="Aktive Nutzer"
+                sublabel="Logins diesen Monat"
+                bg="bg-sky-50"
+              />
+              <TrendStatCard
+                icon={<Building2 className="w-5 h-5 text-teal-600" />}
+                value={stats.totalUnits}
+                prev={stats.totalUnitsPrev}
+                label="Einheiten"
+                sublabel="Gesamt auf der Plattform"
+                bg="bg-teal-50"
               />
             </div>
 
@@ -692,6 +736,45 @@ function StatCard({ icon, value, label, bg }: {
       </div>
       <p className="text-2xl font-bold text-gray-800">{value}</p>
       <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+    </div>
+  );
+}
+
+function TrendStatCard({ icon, value, prev, label, sublabel, bg }: {
+  icon: React.ReactNode;
+  value: number;
+  prev: number;
+  label: string;
+  sublabel: string;
+  bg: string;
+}) {
+  const diff = value - prev;
+  const pct = prev > 0 ? Math.round((diff / prev) * 100) : (value > 0 ? 100 : 0);
+  const isUp = diff > 0;
+  const isFlat = diff === 0;
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="flex items-center justify-between mb-3">
+        <div className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center`}>
+          {icon}
+        </div>
+        {!isFlat && (
+          <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
+            isUp
+              ? 'bg-emerald-50 text-emerald-600'
+              : 'bg-red-50 text-red-500'
+          }`}>
+            {isUp ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+            {isUp ? '+' : ''}{pct}%
+          </span>
+        )}
+      </div>
+      <p className="text-2xl font-bold text-gray-800">{value.toLocaleString('de-DE')}</p>
+      <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+      <p className="text-[11px] text-gray-300 mt-1">
+        {sublabel} &middot; Vormonat: {prev.toLocaleString('de-DE')}
+      </p>
     </div>
   );
 }
