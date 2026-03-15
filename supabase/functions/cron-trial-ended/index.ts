@@ -86,7 +86,7 @@ Deno.serve(async (req: Request) => {
           const trialEndDate = billing.trial_ends_at.split('T')[0];
           const idempotencyKey = `trial_ended:${billing.user_id}:${trialEndDate}`;
 
-          const upgradeLink = `${APP_BASE_URL}/dashboard?view=settings-billing`;
+          const upgradeLink = `${APP_BASE_URL}/dashboard?view=feedback`;
 
           // Send email
           const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
