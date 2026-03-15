@@ -80,6 +80,7 @@ export default function ReferralProgramView() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewSubject, setPreviewSubject] = useState("");
   const [previewBody, setPreviewBody] = useState("");
+  const [sendError, setSendError] = useState(false);
 
   useEffect(() => {
     loadReferralData();
@@ -301,10 +302,11 @@ export default function ReferralProgramView() {
       setPreviewSubject("");
       setPreviewBody("");
 
-      setTimeout(() => setEmailSent(false), 3000);
+      setTimeout(() => setEmailSent(false), 5000);
     } catch (error) {
       console.error("Error sending invitation:", error);
-      alert("Fehler beim Versenden der Einladung. Bitte versuchen Sie es erneut.");
+      setSendError(true);
+      setTimeout(() => setSendError(false), 5000);
     } finally {
       setSendingEmail(false);
     }
@@ -538,6 +540,26 @@ export default function ReferralProgramView() {
             </h3>
           </div>
 
+          {emailSent && (
+            <div className="mb-4 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg animate-in fade-in">
+              <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold">Einladung erfolgreich versendet!</p>
+                <p className="text-xs text-emerald-600 mt-0.5">Die E-Mail wurde an den Empfaenger gesendet.</p>
+              </div>
+            </div>
+          )}
+
+          {sendError && (
+            <div className="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold">Fehler beim Versenden</p>
+                <p className="text-xs text-red-600 mt-0.5">Bitte versuchen Sie es erneut.</p>
+              </div>
+            </div>
+          )}
+
           {!showPreview ? (
             <>
               <form onSubmit={handleShowPreview} className="space-y-4">
@@ -587,7 +609,7 @@ export default function ReferralProgramView() {
                   variant="primary"
                   fullWidth
                 >
-                  {emailSent ? "Einladung gesendet!" : "Vorschau anzeigen"}
+                  Vorschau anzeigen
                 </Button>
               </form>
 
