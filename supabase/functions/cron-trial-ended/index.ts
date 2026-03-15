@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
               },
               userId: billing.user_id,
               mailType: 'trial_ended',
-              category: 'informational',
+              category: 'transactional',
               idempotencyKey: idempotencyKey,
               metadata: {
                 cronRunId: cronRunId,

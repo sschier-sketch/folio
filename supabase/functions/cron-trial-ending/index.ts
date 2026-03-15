@@ -84,6 +84,15 @@ Deno.serve(async (req: Request) => {
           }
 
           const userEmail = authUser.user.email;
+
+          const { data: profile } = await supabase
+            .from('account_profiles')
+            .select('first_name, last_name')
+            .eq('user_id', billing.user_id)
+            .maybeSingle();
+
+          const userName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || userEmail;
+
           const trialEndsAt = new Date(billing.trial_ends_at);
           const formattedDate = trialEndsAt.toLocaleDateString('de-DE', {
             day: '2-digit',
@@ -91,12 +100,10 @@ Deno.serve(async (req: Request) => {
             year: 'numeric',
           });
 
-          // Idempotency key: userId + trial_ends_at date
           const idempotencyKey = `trial_ending:${billing.user_id}:${targetDateStr}`;
 
           const upgradeLink = `${APP_BASE_URL}/dashboard?view=settings-billing`;
 
-          // Send email
           const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
             method: 'POST',
             headers: {
@@ -107,13 +114,14 @@ Deno.serve(async (req: Request) => {
               to: userEmail,
               templateKey: 'trial_ending',
               variables: {
+                user_name: userName,
                 days_remaining: TRIAL_ENDING_DAYS.toString(),
                 trial_end_date: formattedDate,
                 upgrade_link: upgradeLink,
               },
               userId: billing.user_id,
               mailType: 'trial_ending',
-              category: 'informational',
+              category: 'transactional',
               idempotencyKey: idempotencyKey,
               metadata: {
                 cronRunId: cronRunId,

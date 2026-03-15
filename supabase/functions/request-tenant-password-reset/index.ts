@@ -103,6 +103,7 @@ Deno.serve(async (req: Request) => {
         to: normalizedEmail,
         templateKey: 'tenant_password_reset',
         variables: {
+          tenant_name: [tenant.first_name, tenant.last_name].filter(Boolean).join(' ') || normalizedEmail,
           reset_link: resetLink,
         },
         mailType: 'tenant_password_reset',
