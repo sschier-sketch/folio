@@ -12,7 +12,7 @@ import {
 import { ChevronDown, RefreshCw, ArrowUpRight, ArrowDownRight, Minus, GitCompareArrows } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
-type MetricKey = "total_users" | "pro_vs_free" | "revenue";
+type MetricKey = "total_users" | "pro_vs_free" | "revenue" | "monthly_active_landlords" | "active_units";
 
 interface Snapshot {
   snapshot_date: string;
@@ -22,6 +22,10 @@ interface Snapshot {
   trial_users: number;
   monthly_revenue_cents: number;
   new_registrations: number;
+  monthly_active_landlords: number;
+  total_units: number;
+  rented_units: number;
+  vacant_units: number;
 }
 
 interface TimeRange {
@@ -42,6 +46,8 @@ const METRICS: { key: MetricKey; label: string }[] = [
   { key: "total_users", label: "Entwicklung Anzahl Nutzer" },
   { key: "pro_vs_free", label: "Pro Nutzer vs. Gratis Nutzer" },
   { key: "revenue", label: "Entwicklung Umsatz" },
+  { key: "monthly_active_landlords", label: "Monthly Active Landlords" },
+  { key: "active_units", label: "Aktive Einheiten" },
 ];
 
 function formatDate(dateStr: string): string {
@@ -136,6 +142,10 @@ export default function AdminAnalyticsChart() {
       trial_users: s.trial_users,
       revenue: s.monthly_revenue_cents / 100,
       new_registrations: s.new_registrations,
+      monthly_active_landlords: s.monthly_active_landlords,
+      total_units: s.total_units,
+      rented_units: s.rented_units,
+      vacant_units: s.vacant_units,
     }));
   }, [snapshots]);
 
@@ -152,6 +162,10 @@ export default function AdminAnalyticsChart() {
           return d.pro_users;
         case "revenue":
           return d.revenue;
+        case "monthly_active_landlords":
+          return d.monthly_active_landlords;
+        case "active_units":
+          return d.total_units;
       }
     };
 
@@ -170,6 +184,8 @@ export default function AdminAnalyticsChart() {
           case "total_users": return s.total_users;
           case "pro_vs_free": return s.pro_users;
           case "revenue": return s.monthly_revenue_cents / 100;
+          case "monthly_active_landlords": return s.monthly_active_landlords;
+          case "active_units": return s.total_units;
         }
       };
       const compStartVal = getCompValue(compFirst);
@@ -205,6 +221,82 @@ export default function AdminAnalyticsChart() {
             {backfilling ? "Daten werden generiert..." : "Historische Daten generieren"}
           </button>
         </div>
+      );
+    }
+
+    if (metric === "active_units") {
+      return (
+        <ResponsiveContainer width="100%" height={320}>
+          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="gradTotal" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3c8af7" stopOpacity={0.25} />
+                <stop offset="100%" stopColor="#3c8af7" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="gradRented" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="gradVacant" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.25} />
+                <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+            <XAxis
+              dataKey="dateLabel"
+              tick={{ fontSize: 11, fill: "#9ca3af" }}
+              tickLine={false}
+              axisLine={{ stroke: "#e5e7eb" }}
+              interval="preserveStartEnd"
+              minTickGap={40}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: "#9ca3af" }}
+              tickLine={false}
+              axisLine={false}
+              allowDecimals={false}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#fff",
+                border: "1px solid #e5e7eb",
+                borderRadius: "10px",
+                fontSize: "12px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                padding: "10px 14px",
+              }}
+              labelFormatter={(_, payload) => {
+                if (payload?.[0]?.payload?.date) return formatDateFull(payload[0].payload.date);
+                return "";
+              }}
+              formatter={(value: number, name: string) => {
+                const labels: Record<string, string> = {
+                  total_units: "Gesamt",
+                  rented_units: "Vermietet",
+                  vacant_units: "Leerstand",
+                };
+                return [value, labels[name] || name];
+              }}
+            />
+            <Legend
+              iconType="circle"
+              iconSize={8}
+              wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }}
+              formatter={(value: string) => {
+                const labels: Record<string, string> = {
+                  total_units: "Gesamt",
+                  rented_units: "Vermietet",
+                  vacant_units: "Leerstand",
+                };
+                return labels[value] || value;
+              }}
+            />
+            <Area type="monotone" dataKey="total_units" stroke="#3c8af7" strokeWidth={2} fill="url(#gradTotal)" dot={false} activeDot={{ r: 4, strokeWidth: 2 }} />
+            <Area type="monotone" dataKey="rented_units" stroke="#10b981" strokeWidth={2} fill="url(#gradRented)" dot={false} activeDot={{ r: 4, strokeWidth: 2 }} />
+            <Area type="monotone" dataKey="vacant_units" stroke="#f59e0b" strokeWidth={2} fill="url(#gradVacant)" dot={false} activeDot={{ r: 4, strokeWidth: 2 }} />
+          </AreaChart>
+        </ResponsiveContainer>
       );
     }
 
@@ -284,9 +376,12 @@ export default function AdminAnalyticsChart() {
       );
     }
 
-    const color = metric === "revenue" ? "#10b981" : "#3c8af7";
-    const dataKey = metric === "revenue" ? "revenue" : "total_users";
-    const gradId = metric === "revenue" ? "gradRevenue" : "gradUsers";
+    const colorMap: Record<string, string> = { revenue: "#10b981", monthly_active_landlords: "#f59e0b" };
+    const dataKeyMap: Record<string, string> = { revenue: "revenue", monthly_active_landlords: "monthly_active_landlords" };
+    const gradIdMap: Record<string, string> = { revenue: "gradRevenue", monthly_active_landlords: "gradMAL" };
+    const color = colorMap[metric] || "#3c8af7";
+    const dataKey = dataKeyMap[metric] || "total_users";
+    const gradId = gradIdMap[metric] || "gradUsers";
 
     return (
       <ResponsiveContainer width="100%" height={320}>
@@ -328,6 +423,7 @@ export default function AdminAnalyticsChart() {
             }}
             formatter={(value: number) => {
               if (metric === "revenue") return [`${value.toFixed(0)} €`, "Monatl. Umsatz"];
+              if (metric === "monthly_active_landlords") return [value, "Aktive Vermieter (Monat)"];
               return [value, "Nutzer gesamt"];
             }}
           />
@@ -380,7 +476,7 @@ export default function AdminAnalyticsChart() {
             <div className="flex items-center gap-2">
               <span className="text-2xl font-bold text-gray-800">
                 {metric === "revenue"
-                  ? `${summaryStats.endVal.toFixed(0)} €`
+                  ? `${summaryStats.endVal.toFixed(0)} \u20AC`
                   : summaryStats.endVal.toLocaleString("de-DE")}
               </span>
               <span
