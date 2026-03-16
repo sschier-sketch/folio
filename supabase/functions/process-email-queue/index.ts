@@ -70,11 +70,16 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Processing ${queuedEmails.length} queued emails`);
 
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
     let processedCount = 0;
     let successCount = 0;
     let errorCount = 0;
 
     for (const emailLog of queuedEmails) {
+      if (processedCount > 0) {
+        await delay(600);
+      }
       processedCount++;
 
       try {

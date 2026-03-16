@@ -452,25 +452,40 @@ Deno.serve(async (req: Request) => {
 
     console.log('Sending email via Resend:', { to, subject: finalSubject, from: fromAddress });
 
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(emailPayload),
-    });
+    const MAX_RETRIES = 3;
+    let response: Response | null = null;
+    let data: any = null;
 
-    const data = await response.json();
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailPayload),
+      });
 
-    if (!response.ok) {
+      data = await response.json();
+
+      if (response.status === 429 && attempt < MAX_RETRIES - 1) {
+        const retryAfter = parseInt(response.headers.get('retry-after') || '1', 10);
+        const waitMs = Math.max(retryAfter * 1000, 1000);
+        console.warn(`Rate limited (429), retrying in ${waitMs}ms (attempt ${attempt + 1}/${MAX_RETRIES})`);
+        await new Promise((r) => setTimeout(r, waitMs));
+        continue;
+      }
+      break;
+    }
+
+    if (!response!.ok) {
       console.error('Resend API error:', data);
 
       await supabase
         .from('email_logs')
         .update({
           status: 'failed',
-          error_code: `RESEND_${response.status}`,
+          error_code: `RESEND_${response!.status}`,
           error_message: data.message || 'Resend API error',
         })
         .eq('id', logId);
