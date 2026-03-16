@@ -115,6 +115,7 @@ Deno.serve(async (req: Request) => {
             mailType: emailLog.mail_type,
             category: emailLog.category,
             variables: variables,
+            ...(metadata.language ? { language: metadata.language } : {}),
           };
         }
 
