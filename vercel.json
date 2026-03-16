@@ -35,6 +35,9 @@
     { "source": "/magazine", "destination": "/index.html" },
     { "source": "/magazine/:path*", "destination": "/index.html" },
 
+    { "source": "/benutzerhandbuch", "destination": "/index.html" },
+    { "source": "/benutzerhandbuch/:path*", "destination": "/index.html" },
+
     { "source": "/dashboard", "destination": "/index.html" },
     { "source": "/dashboard/:path*", "destination": "/index.html" },
     { "source": "/admin", "destination": "/index.html" },
@@ -48,6 +51,7 @@
     { "source": "/tenant-portal/:path*", "destination": "/index.html" },
     { "source": "/mieterportal-aktivierung", "destination": "/index.html" },
 
+    { "source": "/einladung/:path*", "destination": "/index.html" },
     { "source": "/ref/:path*", "destination": "/index.html" }
   ]
 }

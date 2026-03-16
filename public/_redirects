@@ -30,6 +30,10 @@
 /magazine  /index.html  200
 /magazine/*  /index.html  200
 
+# Help Center / Benutzerhandbuch
+/benutzerhandbuch  /index.html  200
+/benutzerhandbuch/*  /index.html  200
+
 # App routes (any sub-route auto-included)
 /dashboard  /index.html  200
 /dashboard/*  /index.html  200
@@ -45,6 +49,9 @@
 /tenant-portal  /index.html  200
 /tenant-portal/*  /index.html  200
 /mieterportal-aktivierung  /index.html  200
+
+# Invitations
+/einladung/*  /index.html  200
 
 # Referral
 /ref/*  /index.html  200
