@@ -394,13 +394,13 @@ export default function Dashboard() {
                     </button>{" "}
                     <button
                       onClick={() => {
+                        setCurrentView("service");
                         setShowSettingsDropdown(false);
-                        window.open('/benutzerhandbuch', '_blank');
                       }}
                       className="w-full flex items-center gap-3 px-4 py-2 text-gray-400 hover:bg-gray-50 transition-colors"
                     >
                       <Headphones className="w-4 h-4" />
-                      <span className="text-sm">Benutzerhandbuch</span>
+                      <span className="text-sm">Service</span>
                     </button>{" "}
                     {isAdmin && (
                       <>
