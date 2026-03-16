@@ -34,6 +34,7 @@ import AdminEmailAutomationsView from "../components/admin/AdminEmailAutomations
 import AdminEmailCampaignsView from "../components/admin/AdminEmailCampaignsView";
 import AdminCronJobsView from "../components/admin/AdminCronJobsView";
 import AdminFaqsView from "../components/admin/AdminFaqsView";
+import AdminHelpCenterView from "../components/admin/AdminHelpCenterView";
 import AdminCmsView from "../components/admin/AdminCmsView";
 import AdminSystemInfoView from "../components/admin/AdminSystemInfoView";
 import AdminInvoicesView from "../components/admin/AdminInvoicesView";
@@ -700,6 +701,7 @@ export function Admin() {
         {activeTab === "cron_jobs" && <AdminCronJobsView />}
         {activeTab === "faqs" && <AdminFaqsView />}
         {activeTab === "cms" && <AdminCmsView />}
+        {activeTab === "help_center" && <AdminHelpCenterView />}
         {activeTab === "invoices" && <AdminInvoicesView />}
       </AdminLayout>
 

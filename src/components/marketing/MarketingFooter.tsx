@@ -66,6 +66,7 @@ export default function MarketingFooter() {
                 { label: 'Startseite', path: '/' },
                 { label: 'Funktionen', path: '/funktionen' },
                 { label: 'Preise', path: '/preise' },
+                { label: 'Benutzerhandbuch', path: '/benutzerhandbuch' },
               ].map((item) => (
                 <li key={item.label}>
                   <RefLink

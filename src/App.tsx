@@ -49,6 +49,7 @@ import Mieterportal from "./pages/funktionen/Mieterportal";
 import Uebergabeprotokoll from "./pages/funktionen/Uebergabeprotokoll";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import NotFound from "./pages/NotFound";
+import HelpCenter from "./pages/HelpCenter";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -144,6 +145,9 @@ function App() {
           <Route path="/magazin/:slug" element={<MagazinePost />} />
           <Route path="/magazine" element={<Magazine />} />
           <Route path="/magazine/:slug" element={<MagazinePost />} />
+          <Route path="/benutzerhandbuch" element={<HelpCenter />} />
+          <Route path="/benutzerhandbuch/:categorySlug" element={<HelpCenter />} />
+          <Route path="/benutzerhandbuch/:categorySlug/:articleSlug" element={<HelpCenter />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPassword />} />

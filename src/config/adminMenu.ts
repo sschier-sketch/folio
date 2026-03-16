@@ -43,7 +43,8 @@ export type AdminTabKey =
   | "cron_jobs"
   | "faqs"
   | "cms"
-  | "invoices";
+  | "invoices"
+  | "help_center";
 
 export interface AdminMenuItem {
   key: AdminTabKey;
@@ -97,6 +98,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
     items: [
       { key: "cms", label: "CMS", icon: PenLine },
       { key: "magazine", label: "Magazin", icon: BookOpen },
+      { key: "help_center", label: "Benutzerhandbuch", icon: BookOpen },
       { key: "faqs", label: "FAQ-Verwaltung", icon: HelpCircle },
       { key: "seo", label: "SEO", icon: Globe },
       { key: "affiliates", label: "Affiliates", icon: TrendingUp },

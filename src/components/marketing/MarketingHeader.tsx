@@ -16,6 +16,7 @@ import { RefLink } from '../common/RefLink';
 const PLAIN_NAV = [
   { label: 'Über uns', path: '/ueber-uns' },
   { label: 'Preise', path: '/preise' },
+  { label: 'Hilfe', path: '/benutzerhandbuch' },
   { label: 'Magazin', path: '/magazin' },
   { label: 'Kontakt', path: '/kontakt' },
 ];
