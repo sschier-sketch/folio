@@ -175,35 +175,43 @@ export default function PropertyUnitsTab({ propertyId, readOnly = false, onNavig
           if (activeLink) {
             const rc = contractMap.get(activeLink.contract_id);
             if (rc) {
-              const rcuCount = (allRcuData || []).filter((r) => r.contract_id === rc.id).length;
-              const isMultiUnit = rcuCount > 1;
+              const contractRcus = (allRcuData || []).filter((r) => r.contract_id === rc.id);
+              const isMultiUnit = contractRcus.length > 1;
               const rentIncluded = activeLink.rent_included ?? true;
               const separateRent = activeLink.separate_rent || 0;
 
+              const isAncillaryType = unit.unit_type === 'parking' || unit.unit_type === 'storage';
+
               let displayRent: number | null = null;
-              if (isMultiUnit && rentIncluded) {
+              let showIncluded = false;
+              if (isMultiUnit && rentIncluded && isAncillaryType) {
                 displayRent = null;
+                showIncluded = true;
+              } else if (isMultiUnit && rentIncluded && !isAncillaryType) {
+                displayRent = rc.base_rent;
               } else if (isMultiUnit && !rentIncluded) {
                 displayRent = separateRent;
               } else {
                 displayRent = rc.base_rent;
               }
-              rentalContract = { id: rc.id, base_rent: displayRent, rent_included: isMultiUnit ? rentIncluded : undefined };
+              rentalContract = { id: rc.id, base_rent: displayRent, rent_included: showIncluded ? true : undefined };
               const t = tenantMap.get(rc.tenant_id);
               if (t) {
                 tenant = { id: t.id, first_name: t.first_name, last_name: t.last_name };
               }
 
-              const today = new Date().toISOString().split("T")[0];
-              const { data: payments } = await supabase
-                .from("rent_payments")
-                .select("amount, paid_amount, payment_status")
-                .eq("contract_id", rc.id)
-                .in("payment_status", ["unpaid", "partial"])
-                .lt("due_date", today);
+              if (!showIncluded) {
+                const today = new Date().toISOString().split("T")[0];
+                const { data: payments } = await supabase
+                  .from("rent_payments")
+                  .select("amount, paid_amount, payment_status")
+                  .eq("contract_id", rc.id)
+                  .in("payment_status", ["unpaid", "partial"])
+                  .lt("due_date", today);
 
-              if (payments && payments.length > 0) {
-                outstandingRent = payments.reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
+                if (payments && payments.length > 0) {
+                  outstandingRent = payments.reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
+                }
               }
             }
           }

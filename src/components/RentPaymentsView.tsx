@@ -77,7 +77,7 @@ export default function RentPaymentsView() {
   const [partialNote, setPartialNote] = useState("");
   const [filterPaymentType, setFilterPaymentType] = useState<"all" | "rent" | "nebenkosten">("all");
   const [sortBy, setSortBy] = useState<"date" | "property" | "tenant" | "amount" | "status">("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const paymentsPerPage = 12;
   const [allocationMap, setAllocationMap] = useState<Record<string, AllocationInfo[]>>({});
