@@ -152,7 +152,7 @@ export default function RentPaymentsView() {
           `
         )
         .eq("user_id", dataOwnerId)
-        .order("due_date", { ascending: true });
+        .order("due_date", { ascending: false });
       if (filterProperty !== "all") {
         query = query.eq("property_id", filterProperty);
       }
