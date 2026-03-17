@@ -13,6 +13,7 @@ import { Button } from '../ui/Button';
 interface PropertyUnitsTabProps {
   propertyId: string;
   readOnly?: boolean;
+  onNavigateToTenant?: (tenantId: string) => void;
 }
 
 interface PropertyUnit {
@@ -51,7 +52,7 @@ interface PropertyUnit {
   outstanding_rent?: number;
 }
 
-export default function PropertyUnitsTab({ propertyId, readOnly = false }: PropertyUnitsTabProps) {
+export default function PropertyUnitsTab({ propertyId, readOnly = false, onNavigateToTenant }: PropertyUnitsTabProps) {
   const { user } = useAuth();
   const { dataOwnerId, canWrite } = usePermissions();
   const { isPremium } = useSubscription();
@@ -543,6 +544,10 @@ export default function PropertyUnitsTab({ propertyId, readOnly = false }: Prope
                       <div className="flex items-center justify-center">
                         <TableActionsDropdown
                           actions={[
+                            ...(unit.tenant && onNavigateToTenant ? [{
+                              label: 'Zum Mietverhältnis',
+                              onClick: () => onNavigateToTenant(unit.tenant!.id)
+                            }] : []),
                             ...(!readOnly && unit.status !== "rented" && unit.status !== "self_occupied" ? [{
                               label: 'Neues Mietverhältnis anlegen',
                               onClick: () => {

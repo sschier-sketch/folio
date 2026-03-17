@@ -306,7 +306,7 @@ export default function PropertyDetails({ property, onBack, onNavigateToTenant, 
 
       <div>
         {activeTab === "overview" && <PropertyOverviewTab property={currentProperty} onNavigateToTenant={onNavigateToTenant} onUpdate={handlePropertyUpdate} readOnly={readOnly} />}
-        {activeTab === "units" && <PropertyUnitsTab propertyId={currentProperty.id} readOnly={readOnly} />}
+        {activeTab === "units" && <PropertyUnitsTab propertyId={currentProperty.id} readOnly={readOnly} onNavigateToTenant={onNavigateToTenant} />}
         {activeTab === "equipment" && <PropertyEquipmentTab propertyId={currentProperty.id} readOnly={readOnly} />}
         {activeTab === "photos" && <PropertyPhotosTab propertyId={currentProperty.id} readOnly={readOnly} />}
         {activeTab === "documents" && <PropertyDocumentsTab propertyId={currentProperty.id} readOnly={readOnly} />}

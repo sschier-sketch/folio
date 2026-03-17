@@ -25,6 +25,7 @@ interface MonthlyData {
   rentIncome: number;
   baseRentIncome: number;
   operatingCostIncome: number;
+  vatIncome: number;
   manualIncome: number;
   income: number;
   expenses: number;
@@ -303,6 +304,14 @@ export default function CashflowView() {
         const monthOperatingCostIncome = activeContracts
           .reduce((sum, contract) => sum + parseFloat(contract.additional_costs?.toString() || "0"), 0);
 
+        const monthVatIncome = activeContracts
+          .filter((c: Record<string, unknown>) => c.vat_applicable)
+          .reduce((sum, contract) => {
+            const netRent = parseFloat(contract.total_rent?.toString() || "0") + (separateRentByContract.get(contract.id) || 0);
+            const vatRate = parseFloat((contract as Record<string, unknown>).vat_rate?.toString() || "19") / 100;
+            return sum + (netRent * vatRate);
+          }, 0);
+
         const monthManualIncome = manualIncomes
           .filter((i) => {
             const date = new Date(i.entry_date);
@@ -310,7 +319,7 @@ export default function CashflowView() {
           })
           .reduce((sum, i) => sum + parseFloat(i.amount?.toString() || "0"), 0);
 
-        const monthIncome = monthRentIncome + monthManualIncome;
+        const monthIncome = monthRentIncome + monthVatIncome + monthManualIncome;
 
         const monthDbExpenses = expenses
           .filter((e) => {
@@ -349,6 +358,7 @@ export default function CashflowView() {
           rentIncome: monthRentIncome,
           baseRentIncome: monthBaseRentIncome,
           operatingCostIncome: monthOperatingCostIncome,
+          vatIncome: monthVatIncome,
           manualIncome: monthManualIncome,
           income: monthIncome,
           expenses: monthExpenses,
@@ -466,7 +476,7 @@ export default function CashflowView() {
           value={totalIncome}
           label="Einnahmen gesamt"
           average={averageIncome}
-          tooltip={"Kaltmiete + Nebenkosten-Vorauszahlungen + sonstige Einnahmen"}
+          tooltip={"Kaltmiete + Nebenkosten-Vorauszahlungen + MwSt + sonstige Einnahmen"}
         />
         <SummaryTile
           icon={<TrendingDown className="w-6 h-6" />}
@@ -612,6 +622,12 @@ export default function CashflowView() {
                           <td className="px-4 py-2 pl-8 text-gray-600">Nebenkosten-Vorauszahlungen</td>
                           <td className="px-4 py-2 text-right font-medium text-emerald-600">{formatEur(data.operatingCostIncome)}</td>
                         </tr>
+                        {data.vatIncome > 0 && (
+                          <tr className="border-t border-gray-100">
+                            <td className="px-4 py-2 pl-8 text-gray-600">Mehrwertsteuer (MwSt)</td>
+                            <td className="px-4 py-2 text-right font-medium text-emerald-600">{formatEur(data.vatIncome)}</td>
+                          </tr>
+                        )}
                         {data.manualIncome > 0 && (
                           <tr className="border-t border-gray-100">
                             <td className="px-4 py-2 pl-8 text-gray-600">Sonstige Einnahmen</td>

@@ -45,6 +45,7 @@ interface RentPayment {
   property_id?: string | null;
   tenant_id?: string | null;
   unit_id?: string | null;
+  vat_amount?: number;
   property: { name: string; address: string } | null;
   rental_contract: {
     tenants: Array<{ first_name: string; last_name: string; email: string }>;
@@ -828,6 +829,11 @@ export default function RentPaymentsView() {
                 <div className="font-medium text-sm text-dark">
                   {formatCurrency(payment.amount)}
                 </div>
+                {payment.vat_amount != null && payment.vat_amount > 0 && (
+                  <div className="text-xs text-gray-400">
+                    inkl. {formatCurrency(payment.vat_amount)} MwSt
+                  </div>
+                )}
                 {(payment.payment_status === 'partial' || payment.payment_status === 'paid') && payment.paid_amount > 0 && (
                   <div className="text-xs text-gray-500">
                     Bezahlt: {formatCurrency(payment.paid_amount || 0)}

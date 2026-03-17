@@ -72,6 +72,7 @@ interface Contract {
   auto_create_rent_increase_tickets: boolean;
   is_sublet: boolean;
   vat_applicable: boolean;
+  vat_rate: number;
   rent_due_day: number;
   start_date: string;
 }
@@ -146,6 +147,7 @@ export default function TenantRentHistoryTab({
     auto_create_rent_increase_tickets: false,
     is_sublet: false,
     vat_applicable: false,
+    vat_rate: 19,
     rent_due_day: 1,
   });
 
@@ -385,6 +387,7 @@ export default function TenantRentHistoryTab({
           auto_create_rent_increase_tickets: contractData.auto_create_rent_increase_tickets || false,
           is_sublet: contractData.is_sublet || false,
           vat_applicable: contractData.vat_applicable || false,
+          vat_rate: contractData.vat_rate ?? 19,
           rent_due_day: contractData.rent_due_day || 1,
         });
 
@@ -485,6 +488,7 @@ export default function TenantRentHistoryTab({
         auto_create_rent_increase_tickets: editData.rent_increase_type !== "none" ? editData.auto_create_rent_increase_tickets : false,
         is_sublet: editData.is_sublet,
         vat_applicable: editData.vat_applicable,
+        vat_rate: editData.vat_applicable ? editData.vat_rate : 19,
         rent_due_day: editData.rent_due_day,
         cold_rent: editData.rent_type !== "flat_rate" ? parseFloat(editData.cold_rent) || 0 : 0,
         base_rent: monthlyRent,
@@ -1058,6 +1062,16 @@ export default function TenantRentHistoryTab({
                   <label className="text-sm text-gray-700">
                     Mehrwertsteuer berechnen
                   </label>
+                  {editData.vat_applicable && (
+                    <select
+                      value={editData.vat_rate}
+                      onChange={(e) => setEditData({ ...editData, vat_rate: Number(e.target.value) })}
+                      className="ml-2 px-2 py-1 border border-gray-200 rounded text-sm"
+                    >
+                      <option value={19}>19 %</option>
+                      <option value={7}>7 %</option>
+                    </select>
+                  )}
                 </div>
               </div>
             </div>

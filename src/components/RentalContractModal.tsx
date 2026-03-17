@@ -82,6 +82,7 @@ export default function RentalContractModal({
     auto_create_rent_increase_tickets: false,
     is_sublet: false,
     vat_applicable: false,
+    vat_rate: 19,
     graduated_rent_date: "",
     generate_historic_payments: true,
     rent_start_mode: "contract_start" as "contract_start" | "now" | "custom",
@@ -102,6 +103,7 @@ export default function RentalContractModal({
       const contractWithAll = contractWithDeposit as typeof contractWithDeposit & {
         is_sublet?: boolean;
         vat_applicable?: boolean;
+        vat_rate?: number;
         graduated_rent_date?: string;
         generate_historic_payments?: boolean;
       };
@@ -127,6 +129,7 @@ export default function RentalContractModal({
           contractWithAll.auto_create_rent_increase_tickets || false,
         is_sublet: contractWithAll.is_sublet || false,
         vat_applicable: contractWithAll.vat_applicable || false,
+        vat_rate: contractWithAll.vat_rate ?? 19,
         graduated_rent_date: contractWithAll.graduated_rent_date || "",
         generate_historic_payments: contractWithAll.generate_historic_payments ?? true,
         rent_start_mode: (contractWithAll as Record<string, unknown>).rent_start_date
@@ -237,6 +240,7 @@ export default function RentalContractModal({
             : false,
         is_sublet: formData.is_sublet,
         vat_applicable: formData.vat_applicable,
+        vat_rate: formData.vat_applicable ? Number(formData.vat_rate) : 19,
         graduated_rent_date: formData.rent_increase_type === "graduated" ? formData.graduated_rent_date : null,
         generate_historic_payments: formData.rent_start_mode === "contract_start",
         rent_start_date: formData.rent_start_mode === "custom" ? formData.rent_start_date || null : null,
@@ -424,6 +428,19 @@ export default function RentalContractModal({
                 />
                 <span className="text-sm font-medium text-gray-700">Mehrwertsteuer berechnen</span>
               </label>
+              {formData.vat_applicable && (
+                <div className="ml-6">
+                  <label className="block text-sm font-medium text-gray-400 mb-1">MwSt-Satz (%)</label>
+                  <select
+                    value={formData.vat_rate}
+                    onChange={(e) => setFormData({ ...formData, vat_rate: Number(e.target.value) })}
+                    className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue text-sm"
+                  >
+                    <option value={19}>19 %</option>
+                    <option value={7}>7 %</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
           <div className="space-y-4">
@@ -571,23 +588,44 @@ export default function RentalContractModal({
                 />{" "}
               </div>{" "}
               <div className="col-span-2">
-                {" "}
-                <div className="bg-primary-blue/5 rounded-full p-4">
-                  {" "}
-                  <div className="text-sm text-primary-blue mb-1">
-                    Warmmiete (gesamt)
-                  </div>{" "}
-                  <div className="text-2xl font-bold text-blue-900">
-                    {" "}
-                    {(
-                      Number(formData.base_rent) +
-                      Number(formData.additional_costs)
-                    ).toLocaleString("de-DE", {
-                      style: "currency",
-                      currency: "EUR",
-                    })}{" "}
-                  </div>{" "}
-                </div>{" "}
+                <div className="bg-primary-blue/5 rounded-xl p-4 space-y-2">
+                  <div>
+                    <div className="text-sm text-primary-blue mb-1">
+                      Warmmiete (netto)
+                    </div>
+                    <div className={`font-bold text-blue-900 ${formData.vat_applicable ? 'text-lg' : 'text-2xl'}`}>
+                      {(
+                        Number(formData.base_rent) +
+                        Number(formData.additional_costs)
+                      ).toLocaleString("de-DE", {
+                        style: "currency",
+                        currency: "EUR",
+                      })}
+                    </div>
+                  </div>
+                  {formData.vat_applicable && (
+                    <>
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>zzgl. {formData.vat_rate}% MwSt</span>
+                        <span>
+                          {(
+                            (Number(formData.base_rent) + Number(formData.additional_costs)) *
+                            Number(formData.vat_rate) / 100
+                          ).toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
+                        </span>
+                      </div>
+                      <div className="border-t border-primary-blue/20 pt-2">
+                        <div className="text-sm text-primary-blue mb-1">Warmmiete (brutto)</div>
+                        <div className="text-2xl font-bold text-blue-900">
+                          {(
+                            (Number(formData.base_rent) + Number(formData.additional_costs)) *
+                            (1 + Number(formData.vat_rate) / 100)
+                          ).toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>{" "}
               <div className="col-span-2">
                 {" "}
