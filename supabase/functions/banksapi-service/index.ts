@@ -1617,14 +1617,30 @@ async function importTransactionsForProduct(
     const pendingInserts: Record<string, unknown>[] = [];
     let processedCount = 0;
     const anomalySamples: Record<string, unknown>[] = [];
+    const duplicateDetails: Array<{
+      bookingDate: string;
+      amount: number;
+      counterpartyName?: string;
+      usageText?: string;
+      reason: "db" | "batch";
+    }> = [];
+    const MAX_DUPLICATE_DETAILS = 100;
+
+    const batchMeta: Array<{
+      bookingDate: string;
+      amount: number;
+      counterpartyName?: string;
+      usageText?: string;
+    }> = [];
 
     const flushBatch = async () => {
       if (pendingInserts.length === 0) return;
       const batch = pendingInserts.splice(0);
+      const meta = batchMeta.splice(0);
       const { data: inserted, error: batchErr } = await admin
         .from("bank_transactions")
         .upsert(batch, { onConflict: "fingerprint", ignoreDuplicates: true })
-        .select("id");
+        .select("id, fingerprint");
 
       if (batchErr) {
         console.error("Batch upsert error:", batchErr.message, batchErr.details, batchErr.hint);
@@ -1637,6 +1653,24 @@ async function importTransactionsForProduct(
         const dupes = batch.length - actualInserted;
         result.imported += actualInserted;
         result.duplicates += dupes;
+
+        if (dupes > 0 && duplicateDetails.length < MAX_DUPLICATE_DETAILS) {
+          const insertedFps = new Set(
+            (inserted || []).map((r: { fingerprint: string }) => r.fingerprint)
+          );
+          for (let i = 0; i < batch.length && duplicateDetails.length < MAX_DUPLICATE_DETAILS; i++) {
+            const fp = batch[i].fingerprint as string;
+            if (!insertedFps.has(fp)) {
+              duplicateDetails.push({
+                bookingDate: meta[i]?.bookingDate || "",
+                amount: meta[i]?.amount || 0,
+                counterpartyName: meta[i]?.counterpartyName,
+                usageText: meta[i]?.usageText,
+                reason: "db",
+              });
+            }
+          }
+        }
       }
     };
 
@@ -1686,6 +1720,15 @@ async function importTransactionsForProduct(
 
       if (seenFingerprints.has(fp)) {
         result.duplicates++;
+        if (duplicateDetails.length < MAX_DUPLICATE_DETAILS) {
+          duplicateDetails.push({
+            bookingDate: parsed.effectiveDate,
+            amount: parsed.amount,
+            counterpartyName: parsed.counterpartyName || undefined,
+            usageText: parsed.usageText || undefined,
+            reason: "batch",
+          });
+        }
         if (progressCallback && processedCount % 20 === 0) {
           await progressCallback(processedCount, result.imported, result.duplicates, remoteTxs.length);
         }
@@ -1696,6 +1739,13 @@ async function importTransactionsForProduct(
 
       const direction: "credit" | "debit" =
         parsed.amount >= 0 ? "credit" : "debit";
+
+      batchMeta.push({
+        bookingDate: parsed.effectiveDate,
+        amount: parsed.amount,
+        counterpartyName: parsed.counterpartyName || undefined,
+        usageText: parsed.usageText || undefined,
+      });
 
       pendingInserts.push({
         user_id: userId,
@@ -1743,20 +1793,24 @@ async function importTransactionsForProduct(
       await progressCallback(remoteTxs.length, result.imported, result.duplicates, remoteTxs.length);
     }
 
+    const consideredRows = result.totalSeen - result.filteredByDate;
+
     await admin
       .from("bank_import_files")
       .update({
         status: "completed",
-        total_rows: result.totalSeen,
+        total_rows: consideredRows,
         imported_rows: result.imported,
         duplicate_rows: result.duplicates,
         processed_at: new Date().toISOString(),
         raw_meta: {
           filtered_by_date: result.filteredByDate,
+          total_from_provider: result.totalSeen,
           anomalies: result.anomalies,
           anomaly_samples: anomalySamples,
           effective_start: effectiveStart,
           overlap_days: OVERLAP_DAYS,
+          duplicates: duplicateDetails,
         },
       })
       .eq("id", importFileId);

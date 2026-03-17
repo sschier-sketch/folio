@@ -81,7 +81,7 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
 };
 
 interface StoredDuplicate {
-  rowIndex: number;
+  rowIndex?: number;
   bookingDate: string;
   amount: number;
   counterpartyName?: string;
@@ -97,17 +97,35 @@ function DuplicateDetailPanel({
   duplicateRows: number;
 }) {
   const duplicates = (rawMeta?.duplicates as StoredDuplicate[] | undefined) || [];
+  const filteredByDate = (rawMeta?.filtered_by_date as number | undefined) || 0;
+  const effectiveStart = rawMeta?.effective_start as string | undefined;
 
-  if (duplicates.length === 0) {
+  if (duplicates.length === 0 && duplicateRows > 0) {
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-600">
-        {duplicateRows} Duplikate erkannt (Details nicht gespeichert, da Import vor Update stattfand).
+      <div className="space-y-2">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-600">
+          {duplicateRows} Duplikate erkannt (Detailinformationen stehen ab dem n\u00e4chsten Import zur Verf\u00fcgung).
+        </div>
+        {filteredByDate > 0 && effectiveStart && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-500">
+            {filteredByDate} \u00e4ltere Transaktionen (vor {new Date(effectiveStart).toLocaleDateString('de-DE')}) wurden nicht erneut gepr\u00fcft.
+          </div>
+        )}
       </div>
     );
   }
 
   const batchDups = duplicates.filter((d) => d.reason === 'batch');
   const dbDups = duplicates.filter((d) => d.reason === 'db');
+
+  function formatDupLine(d: StoredDuplicate) {
+    const datePart = d.bookingDate
+      ? new Date(d.bookingDate).toLocaleDateString('de-DE')
+      : '–';
+    const amountPart = d.amount != null ? `${d.amount.toFixed(2)} EUR` : '';
+    const namePart = d.counterpartyName || '';
+    return [datePart, amountPart, namePart].filter(Boolean).join(' | ');
+  }
 
   return (
     <div className="space-y-2">
@@ -116,7 +134,7 @@ function DuplicateDetailPanel({
           <div className="flex items-center gap-2 mb-2">
             <Copy className="w-3.5 h-3.5 text-amber-600" />
             <p className="text-xs font-semibold text-amber-700">
-              {batchDups.length} doppelte Zeilen innerhalb der Datei
+              {batchDups.length} doppelte Transaktionen innerhalb des Abrufs
             </p>
           </div>
           <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -125,14 +143,13 @@ function DuplicateDetailPanel({
                 key={i}
                 className="text-xs bg-white/60 rounded px-2 py-1.5 flex items-center gap-3"
               >
-                <span className="text-amber-500 font-mono flex-shrink-0">
-                  Zeile {d.rowIndex}
-                </span>
+                {d.rowIndex != null && (
+                  <span className="text-amber-500 font-mono flex-shrink-0">
+                    Zeile {d.rowIndex}
+                  </span>
+                )}
                 <span className="text-gray-600 truncate">
-                  {new Date(d.bookingDate).toLocaleDateString('de-DE')}
-                  {' | '}
-                  {d.amount.toFixed(2)} EUR
-                  {d.counterpartyName ? ` | ${d.counterpartyName}` : ''}
+                  {formatDupLine(d)}
                 </span>
               </div>
             ))}
@@ -145,7 +162,7 @@ function DuplicateDetailPanel({
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-3.5 h-3.5 text-blue-600" />
             <p className="text-xs font-semibold text-blue-700">
-              {dbDups.length} bereits vorhandene Transaktionen
+              {dbDups.length} bereits importierte Transaktionen
             </p>
           </div>
           <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -154,18 +171,29 @@ function DuplicateDetailPanel({
                 key={i}
                 className="text-xs bg-white/60 rounded px-2 py-1.5 flex items-center gap-3"
               >
-                <span className="text-blue-500 font-mono flex-shrink-0">
-                  Zeile {d.rowIndex}
-                </span>
+                {d.rowIndex != null && (
+                  <span className="text-blue-500 font-mono flex-shrink-0">
+                    Zeile {d.rowIndex}
+                  </span>
+                )}
                 <span className="text-gray-600 truncate">
-                  {new Date(d.bookingDate).toLocaleDateString('de-DE')}
-                  {' | '}
-                  {d.amount.toFixed(2)} EUR
-                  {d.counterpartyName ? ` | ${d.counterpartyName}` : ''}
+                  {formatDupLine(d)}
                 </span>
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {duplicates.length < duplicateRows && (
+        <p className="text-[10px] text-gray-400">
+          Zeige {duplicates.length} von {duplicateRows} Duplikaten
+        </p>
+      )}
+
+      {filteredByDate > 0 && effectiveStart && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-500">
+          {filteredByDate} \u00e4ltere Transaktionen (vor {new Date(effectiveStart).toLocaleDateString('de-DE')}) wurden nicht erneut gepr\u00fcft.
         </div>
       )}
     </div>
@@ -360,8 +388,17 @@ export default function ImportHistoryView({ onRollbackComplete, readOnly = false
               <div className="border-t border-gray-100 px-4 py-3 space-y-3">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                   <div>
-                    <span className="text-gray-400">Gesamt Zeilen</span>
-                    <p className="font-medium text-dark">{file.total_rows}</p>
+                    <span className="text-gray-400">
+                      {file.source_type === 'banksapi' ? 'Gepr\u00fcfte Transaktionen' : 'Gesamt Zeilen'}
+                    </span>
+                    <p className="font-medium text-dark">
+                      {file.total_rows}
+                      {file.source_type === 'banksapi' && file.raw_meta?.total_from_provider && (
+                        <span className="text-gray-400 font-normal ml-1">
+                          / {String(file.raw_meta.total_from_provider)} gesamt
+                        </span>
+                      )}
+                    </p>
                   </div>
                   <div>
                     <span className="text-gray-400">Importiert</span>
