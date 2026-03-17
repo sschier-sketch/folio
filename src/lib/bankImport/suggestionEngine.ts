@@ -1,5 +1,7 @@
 import { supabase } from '../supabase';
 import type { BankTransaction } from './types';
+import { findMatchingRule, incrementRuleMatchCount, getAutoApplySetting } from './ruleService';
+import { allocateBankTransaction } from './allocationService';
 
 export interface MatchSuggestion {
   tenantId: string;
@@ -353,16 +355,21 @@ export async function suggestIncomeMatch(
 }
 
 export interface ParsedSuggestion {
-  type: 'tenant' | 'hausgeld' | 'existing_expense' | 'existing_income';
+  type: 'tenant' | 'hausgeld' | 'existing_expense' | 'existing_income' | 'rule';
   tenantId?: string;
   propertyId?: string;
   unitId?: string;
   category?: string;
   existingEntryId?: string;
   isNk?: boolean;
+  ruleId?: string;
 }
 
 export function parseSuggestion(matchedBy: string): ParsedSuggestion | null {
+  if (matchedBy.startsWith('rule:')) {
+    return { type: 'rule', ruleId: matchedBy.replace('rule:', '') };
+  }
+
   if (!matchedBy.startsWith('suggestion:')) return null;
 
   if (matchedBy.startsWith('suggestion:hausgeld:')) {
@@ -443,6 +450,21 @@ export async function runSuggestionsForUnmatched(userId: string): Promise<number
   let count = 0;
 
   for (const tx of unmatched) {
+    const rule = await findMatchingRule(userId, tx);
+    if (rule) {
+      await supabase
+        .from('bank_transactions')
+        .update({
+          status: 'SUGGESTED',
+          confidence: 0.99,
+          matched_by: `rule:${rule.id}`,
+        })
+        .eq('id', tx.id)
+        .eq('user_id', userId);
+      count++;
+      continue;
+    }
+
     const isCredit = tx.direction === 'credit' || tx.amount > 0;
     let matchedBy: string | null = null;
     let confidence = 0;
@@ -488,4 +510,158 @@ export async function runSuggestionsForUnmatched(userId: string): Promise<number
   }
 
   return count;
+}
+
+export async function applyRulesAutomatically(userId: string): Promise<number> {
+  const autoApply = await getAutoApplySetting(userId);
+  if (!autoApply) return 0;
+
+  const { data: ruleSuggested } = await supabase
+    .from('bank_transactions')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'SUGGESTED')
+    .like('matched_by', 'rule:%')
+    .limit(200);
+
+  if (!ruleSuggested || ruleSuggested.length === 0) return 0;
+
+  let applied = 0;
+
+  for (const tx of ruleSuggested) {
+    const ruleId = tx.matched_by?.replace('rule:', '');
+    if (!ruleId) continue;
+
+    const { data: rule } = await supabase
+      .from('bank_matching_rules')
+      .select('*')
+      .eq('id', ruleId)
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (!rule) continue;
+
+    try {
+      const success = await applyRuleToTransaction(userId, tx, rule);
+      if (success) {
+        await incrementRuleMatchCount(rule.id);
+        applied++;
+      }
+    } catch {
+      // skip failed applications
+    }
+  }
+
+  return applied;
+}
+
+async function applyRuleToTransaction(
+  userId: string,
+  tx: BankTransaction,
+  rule: { id: string; target_type: string; target_config: Record<string, unknown> }
+): Promise<boolean> {
+  const txAmount = Math.abs(tx.amount);
+
+  if (rule.target_type === 'rent_payment') {
+    const tenantId = rule.target_config.tenant_id as string;
+    if (!tenantId) return false;
+
+    const { data: contractIds } = await supabase
+      .from('rental_contracts')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('user_id', userId);
+
+    const cIds = (contractIds || []).map(c => c.id);
+    let payments: { id: string; amount: number; paid_amount: number }[] = [];
+
+    if (cIds.length > 0) {
+      const { data } = await supabase
+        .from('rent_payments')
+        .select('id, amount, paid_amount')
+        .eq('user_id', userId)
+        .in('contract_id', cIds)
+        .in('payment_status', ['unpaid', 'partial'])
+        .order('due_date', { ascending: true });
+      if (data) payments = data;
+    }
+
+    const { data: byTenant } = await supabase
+      .from('rent_payments')
+      .select('id, amount, paid_amount')
+      .eq('tenant_id', tenantId)
+      .eq('user_id', userId)
+      .in('payment_status', ['unpaid', 'partial'])
+      .order('due_date', { ascending: true });
+
+    if (byTenant) {
+      const existingIds = new Set(payments.map(p => p.id));
+      for (const p of byTenant) {
+        if (!existingIds.has(p.id)) payments.push(p);
+      }
+    }
+
+    if (payments.length === 0) return false;
+
+    let remaining = txAmount;
+    const inputs: { target_type: 'rent_payment'; target_id: string; amount_allocated: number }[] = [];
+
+    for (const rp of payments) {
+      if (remaining <= 0) break;
+      const open = Number(rp.amount) - Number(rp.paid_amount || 0);
+      if (open <= 0) continue;
+      const alloc = Math.min(remaining, open);
+      inputs.push({ target_type: 'rent_payment', target_id: rp.id, amount_allocated: Math.round(alloc * 100) / 100 });
+      remaining -= alloc;
+    }
+
+    if (inputs.length === 0) return false;
+    await allocateBankTransaction(userId, tx.id, inputs, 'auto');
+    return true;
+  }
+
+  if (rule.target_type === 'expense' || rule.target_type === 'income_entry') {
+    const table = rule.target_type === 'expense' ? 'expenses' : 'income_entries';
+    const dateCol = rule.target_type === 'expense' ? 'expense_date' : 'entry_date';
+    const config = rule.target_config;
+
+    const record: Record<string, unknown> = {
+      user_id: userId,
+      amount: txAmount,
+      category: config.category || '',
+      description: config.description || tx.usage_text || tx.counterparty_name || '',
+      status: 'paid',
+      source_bank_transaction_id: tx.id,
+      source_bank_import_file_id: tx.import_file_id || null,
+      [dateCol]: tx.transaction_date,
+    };
+
+    if (config.property_id) record.property_id = config.property_id;
+    if (config.category_id) record.category_id = config.category_id;
+
+    const { data: created, error: insertError } = await supabase
+      .from(table)
+      .insert(record)
+      .select('id')
+      .single();
+
+    if (insertError || !created) return false;
+
+    await allocateBankTransaction(
+      userId,
+      tx.id,
+      [{ target_type: rule.target_type as 'expense' | 'income_entry', target_id: created.id, amount_allocated: txAmount }],
+      'auto'
+    );
+    return true;
+  }
+
+  return false;
+}
+
+export async function runPostImportMatching(userId: string): Promise<{ suggestions: number; autoApplied: number }> {
+  const suggestions = await runSuggestionsForUnmatched(userId);
+  const autoApplied = await applyRulesAutomatically(userId);
+  return { suggestions, autoApplied };
 }

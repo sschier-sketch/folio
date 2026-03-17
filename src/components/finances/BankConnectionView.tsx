@@ -10,6 +10,7 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
+  RotateCcw,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -19,8 +20,9 @@ import CamtImportFlow from './bank-import/CamtImportFlow';
 import BanksApiImportFlow from './bank-import/BanksApiImportFlow';
 import TransactionInbox from './bank-import/TransactionInbox';
 import ImportHistoryView from './bank-import/ImportHistoryView';
+import MatchingRulesView from './bank-import/MatchingRulesView';
 
-type MainTab = 'inbox' | 'import' | 'history';
+type MainTab = 'inbox' | 'import' | 'rules' | 'history';
 type ImportTab = 'csv' | 'camt' | 'banksapi';
 type DatePreset = 'all' | 'current_year' | 'last_year' | 'custom';
 
@@ -98,7 +100,8 @@ export default function BankConnectionView() {
       icon: InboxIcon,
       badge: inboxCount > 0 ? inboxCount : undefined,
     },
-    { id: 'import' as MainTab, label: 'Import', icon: Upload }] : []),
+    { id: 'import' as MainTab, label: 'Import', icon: Upload },
+    { id: 'rules' as MainTab, label: 'Regeln', icon: RotateCcw }] : []),
     { id: 'history' as MainTab, label: 'Import-Historie', icon: History },
   ];
 
@@ -290,6 +293,10 @@ export default function BankConnectionView() {
             </div>
           )}
         </>
+      )}
+
+      {mainTab === 'rules' && canWrite && (
+        <MatchingRulesView />
       )}
 
       {mainTab === 'history' && (

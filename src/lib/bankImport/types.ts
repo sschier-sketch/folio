@@ -134,3 +134,19 @@ export interface ImportResult {
   duplicates: DuplicateInfo[];
   errors: string[];
 }
+
+export interface BankMatchingRule {
+  id: string;
+  user_id: string;
+  name: string;
+  counterparty_name: string;
+  amount_cents: number;
+  direction: 'credit' | 'debit';
+  target_type: AllocationTargetType;
+  target_config: Record<string, unknown>;
+  match_count: number;
+  last_matched_at: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

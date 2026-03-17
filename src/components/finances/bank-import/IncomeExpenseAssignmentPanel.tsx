@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { AlertCircle, Loader, ChevronDown, Plus, Check, Search, Sparkles } from 'lucide-react';
+import { AlertCircle, Loader, ChevronDown, Plus, Check, Search, Sparkles, RotateCcw } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '../../ui/Button';
-import { allocateBankTransaction } from '../../../lib/bankImport';
+import { allocateBankTransaction, createMatchingRule } from '../../../lib/bankImport';
 import type { BankTransaction, AllocationTargetType } from '../../../lib/bankImport/types';
 
 interface Property {
@@ -64,6 +64,7 @@ export default function IncomeExpenseAssignmentPanel({
   const [existingLoading, setExistingLoading] = useState(false);
   const [selectedExistingId, setSelectedExistingId] = useState(suggestedExistingEntryId || '');
   const [existingSearch, setExistingSearch] = useState('');
+  const [saveAsRule, setSaveAsRule] = useState(false);
 
   const isIncome = targetType === 'income_entry';
   const txAmount = Math.abs(tx.amount);
@@ -203,6 +204,25 @@ export default function IncomeExpenseAssignmentPanel({
         ],
         'manual',
       );
+
+      if (saveAsRule && tx.counterparty_name) {
+        try {
+          await createMatchingRule(userId, {
+            counterparty_name: tx.counterparty_name.trim(),
+            amount_cents: Math.round(txAmount * 100),
+            direction: tx.direction || (tx.amount >= 0 ? 'credit' : 'debit'),
+            target_type: targetType,
+            target_config: {
+              property_id: propertyId || undefined,
+              category: selectedCategoryName,
+              category_id: categoryId,
+              description: description || undefined,
+            },
+          });
+        } catch {
+          // rule creation failure should not block the allocation
+        }
+      }
 
       onComplete();
     } catch (err) {
@@ -432,6 +452,26 @@ export default function IncomeExpenseAssignmentPanel({
             </span>
           </div>
         </>
+      )}
+
+      {tx.counterparty_name && tab === 'new' && (
+        <label className="flex items-start gap-2.5 p-3 bg-blue-50/60 border border-blue-100 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+          <input
+            type="checkbox"
+            checked={saveAsRule}
+            onChange={(e) => setSaveAsRule(e.target.checked)}
+            className="mt-0.5 rounded border-gray-300 text-[#3c8af7] focus:ring-[#3c8af7]"
+          />
+          <div>
+            <span className="text-xs font-medium text-gray-700">
+              Zuordnung in Zukunft automatisch anwenden
+            </span>
+            <p className="text-[10px] text-gray-500 mt-0.5">
+              Wenn Name und Betrag uebereinstimmen, wird diese Zuordnung kuenftig automatisch vorgeschlagen.
+            </p>
+          </div>
+          <RotateCcw className="w-3.5 h-3.5 text-[#3c8af7] flex-shrink-0 mt-0.5" />
+        </label>
       )}
 
       {error && (

@@ -41,6 +41,8 @@ export {
   parseExpenseSuggestion,
   parseSuggestion,
   runSuggestionsForUnmatched,
+  runPostImportMatching,
+  applyRulesAutomatically,
 } from './suggestionEngine';
 
 export type {
@@ -49,3 +51,14 @@ export type {
   IncomeMatchSuggestion,
   ParsedSuggestion,
 } from './suggestionEngine';
+
+export {
+  createMatchingRule,
+  listMatchingRules,
+  updateMatchingRule,
+  deleteMatchingRule,
+  getAutoApplySetting,
+  setAutoApplySetting,
+} from './ruleService';
+
+export type { BankMatchingRule } from './types';

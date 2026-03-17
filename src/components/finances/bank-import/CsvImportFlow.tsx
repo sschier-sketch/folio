@@ -6,7 +6,7 @@ import CsvPreviewTable from './CsvPreviewTable';
 import CsvColumnMapper, { getRequiredFieldsMissing } from './CsvColumnMapper';
 import CsvSettingsPanel, { DEFAULT_CSV_SETTINGS, type CsvSettings } from './CsvSettingsPanel';
 import SavedMappingsSelect from './SavedMappingsSelect';
-import { detectCsvMapping, importFromCsv } from '../../../lib/bankImport';
+import { detectCsvMapping, importFromCsv, runPostImportMatching } from '../../../lib/bankImport';
 import type { CsvColumnMapping as CsvMapping, ImportResult } from '../../../lib/bankImport/types';
 
 type Step = 'upload' | 'mapping' | 'result';
@@ -211,6 +211,10 @@ export default function CsvImportFlow() {
       const result = await importFromCsv(user.id, rawContent, fileName, mapping);
       setImportResult(result);
       setStep('result');
+
+      if (result.importedRows > 0) {
+        runPostImportMatching(user.id).catch(() => {});
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import fehlgeschlagen');
     } finally {

@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Check, AlertCircle, Loader } from 'lucide-react';
+import { Search, Check, AlertCircle, Loader, RotateCcw } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '../../ui/Button';
-import { allocateBankTransaction } from '../../../lib/bankImport';
+import { allocateBankTransaction, createMatchingRule } from '../../../lib/bankImport';
 import type { BankTransaction, AllocationInput } from '../../../lib/bankImport/types';
 
 interface RentPayment {
@@ -51,6 +51,7 @@ export default function RentAssignmentPanel({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'auto' | 'manual'>('auto');
+  const [saveAsRule, setSaveAsRule] = useState(false);
 
   const txAmount = Math.abs(tx.amount);
 
@@ -200,6 +201,21 @@ export default function RentAssignmentPanel({
 
     try {
       await allocateBankTransaction(userId, tx.id, inputs, 'manual');
+
+      if (saveAsRule && tx.counterparty_name && selectedTenantId) {
+        try {
+          await createMatchingRule(userId, {
+            counterparty_name: tx.counterparty_name.trim(),
+            amount_cents: Math.round(txAmount * 100),
+            direction: tx.direction || (tx.amount >= 0 ? 'credit' : 'debit'),
+            target_type: 'rent_payment',
+            target_config: { tenant_id: selectedTenantId },
+          });
+        } catch {
+          // rule creation failure should not block the allocation
+        }
+      }
+
       onComplete();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Zuordnung fehlgeschlagen');
@@ -452,6 +468,26 @@ export default function RentAssignmentPanel({
           <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
           <p className="text-xs text-red-600">{error}</p>
         </div>
+      )}
+
+      {tx.counterparty_name && (
+        <label className="flex items-start gap-2.5 p-3 bg-blue-50/60 border border-blue-100 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+          <input
+            type="checkbox"
+            checked={saveAsRule}
+            onChange={(e) => setSaveAsRule(e.target.checked)}
+            className="mt-0.5 rounded border-gray-300 text-[#3c8af7] focus:ring-[#3c8af7]"
+          />
+          <div>
+            <span className="text-xs font-medium text-gray-700">
+              Zuordnung in Zukunft automatisch anwenden
+            </span>
+            <p className="text-[10px] text-gray-500 mt-0.5">
+              Wenn Name und Betrag uebereinstimmen, wird diese Zuordnung kuenftig automatisch vorgeschlagen.
+            </p>
+          </div>
+          <RotateCcw className="w-3.5 h-3.5 text-[#3c8af7] flex-shrink-0 mt-0.5" />
+        </label>
       )}
 
       <div className="flex items-center justify-end gap-2">

@@ -19,8 +19,9 @@ import {
   undoAllocation,
   getAllocationsForTransaction,
 } from '../../../lib/bankImport';
-import type { BankTransaction, BankTransactionAllocation } from '../../../lib/bankImport/types';
+import type { BankTransaction, BankTransactionAllocation, BankMatchingRule } from '../../../lib/bankImport/types';
 import { parseSuggestion } from '../../../lib/bankImport/suggestionEngine';
+import { supabase } from '../../../lib/supabase';
 import RentAssignmentPanel from './RentAssignmentPanel';
 import IncomeExpenseAssignmentPanel from './IncomeExpenseAssignmentPanel';
 
@@ -61,11 +62,39 @@ export default function TransactionDetailDrawer({
   const suggestedTenantId = parsed?.type === 'tenant' ? parsed.tenantId : undefined;
   const suggestedNk = parsed?.type === 'tenant' && parsed.isNk;
 
+  const [ruleData, setRuleData] = useState<BankMatchingRule | null>(null);
+  const [ruleLoading, setRuleLoading] = useState(parsed?.type === 'rule');
+
+  useEffect(() => {
+    if (parsed?.type === 'rule' && parsed.ruleId) {
+      setRuleLoading(true);
+      supabase
+        .from('bank_matching_rules')
+        .select('*')
+        .eq('id', parsed.ruleId)
+        .maybeSingle()
+        .then(({ data }) => {
+          setRuleData(data || null);
+          if (data) {
+            if (data.target_type === 'rent_payment') setAction('rent');
+            else if (data.target_type === 'expense') setAction('expense');
+            else if (data.target_type === 'income_entry') setAction('income');
+          }
+          setRuleLoading(false);
+        });
+    }
+  }, [parsed?.type, parsed?.ruleId]);
+
+  const ruleTenantId = ruleData?.target_type === 'rent_payment'
+    ? (ruleData.target_config?.tenant_id as string) || undefined
+    : undefined;
+
   const initialAction: Action = (() => {
     if (!parsed) return 'none';
     if (parsed.type === 'tenant') return 'rent';
     if (parsed.type === 'hausgeld' || parsed.type === 'existing_expense') return 'expense';
     if (parsed.type === 'existing_income') return 'income';
+    if (parsed.type === 'rule') return 'none';
     return 'none';
   })();
 
@@ -311,7 +340,7 @@ export default function TransactionDetailDrawer({
             <RentAssignmentPanel
               tx={tx}
               userId={userId}
-              suggestedTenantId={suggestedTenantId}
+              suggestedTenantId={suggestedTenantId || ruleTenantId}
               suggestedNk={suggestedNk}
               onComplete={handleComplete}
               onCancel={() => setAction('none')}

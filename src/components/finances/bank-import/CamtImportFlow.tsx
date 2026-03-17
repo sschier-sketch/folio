@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Upload, FileCode, AlertCircle, CheckCircle2, Loader, ChevronDown, ChevronUp, Copy, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Button } from '../../ui/Button';
-import { importFromCamt053 } from '../../../lib/bankImport';
+import { importFromCamt053, runPostImportMatching } from '../../../lib/bankImport';
 import type { ImportResult } from '../../../lib/bankImport/types';
 
 export default function CamtImportFlow() {
@@ -34,6 +34,10 @@ export default function CamtImportFlow() {
 
       const result = await importFromCamt053(user.id, content, file.name);
       setImportResult(result);
+
+      if (result.importedRows > 0) {
+        runPostImportMatching(user.id).catch(() => {});
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import fehlgeschlagen');
     } finally {
