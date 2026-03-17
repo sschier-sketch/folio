@@ -388,16 +388,19 @@ export default function RentAssignmentPanel({
                     <td className="px-3 py-2 text-right text-gray-700 tabular-nums">
                       {Number(rp.amount).toLocaleString('de-DE', {
                         minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
                       })}
                     </td>
                     <td className="px-3 py-2 text-right text-gray-500 tabular-nums">
                       {Number(rp.paid_amount || 0).toLocaleString('de-DE', {
                         minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
                       })}
                     </td>
                     <td className="px-3 py-2 text-right font-medium text-amber-600 tabular-nums">
                       {open.toLocaleString('de-DE', {
                         minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
                       })}
                     </td>
                     <td className="px-3 py-2 text-right">
@@ -417,6 +420,7 @@ export default function RentAssignmentPanel({
                         >
                           {allocated.toLocaleString('de-DE', {
                             minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
                           })}
                         </span>
                       )}
@@ -433,21 +437,21 @@ export default function RentAssignmentPanel({
         <div className="text-xs text-gray-500">
           Transaktion:{' '}
           <span className="font-semibold text-dark tabular-nums">
-            {txAmount.toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR
+            {txAmount.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
           </span>
         </div>
         <div className="flex items-center gap-4 text-xs">
           <span>
             Zugeordnet:{' '}
             <span className="font-semibold text-emerald-600 tabular-nums">
-              {totalAllocated.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+              {totalAllocated.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </span>
           {remaining > 0.01 && (
             <span>
               Rest:{' '}
               <span className="font-semibold text-amber-600 tabular-nums">
-                {remaining.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                {remaining.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </span>
           )}

@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import type { BankMatchingRule, BankTransaction, AllocationTargetType } from './types';
+import type { BankMatchingRule, BankTransaction, MatchingRuleTargetType } from './types';
 
 export async function createMatchingRule(
   userId: string,
@@ -7,14 +7,14 @@ export async function createMatchingRule(
     counterparty_name: string;
     amount_cents: number;
     direction: 'credit' | 'debit';
-    target_type: AllocationTargetType;
+    target_type: MatchingRuleTargetType;
     target_config: Record<string, unknown>;
     name?: string;
   }
 ): Promise<BankMatchingRule> {
   const displayName =
     rule.name ||
-    `${rule.counterparty_name} - ${(rule.amount_cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR`;
+    `${rule.counterparty_name} - ${(rule.amount_cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR`;
 
   const { data: existing } = await supabase
     .from('bank_matching_rules')

@@ -172,7 +172,7 @@ async function suggestHausgeldMatch(
         unitNumber: u.unit_number,
         category: 'Hausverwaltung',
         confidence: 0.8,
-        reason: `Betrag entspricht Hausgeld ${(u.housegeld_monthly_cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR fuer ${propName} (${u.unit_number})`,
+        reason: `Betrag entspricht Hausgeld ${(u.housegeld_monthly_cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR fuer ${propName} (${u.unit_number})`,
       };
     }
   }
@@ -207,7 +207,7 @@ async function suggestHausgeldMatch(
         unitNumber: info.unitNumbers.join(', '),
         category: 'Hausverwaltung',
         confidence: 0.75,
-        reason: `Betrag entspricht Gesamt-Hausgeld ${(info.cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR fuer ${info.name}`,
+        reason: `Betrag entspricht Gesamt-Hausgeld ${(info.cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR fuer ${info.name}`,
       };
     }
   }
@@ -241,7 +241,7 @@ async function suggestExistingExpenseMatch(
     const propName = (e.properties as { name: string } | null)?.name || '';
     const label = e.description || e.category || 'Ausgabe';
 
-    reasons.push(`Betrag stimmt ueberein mit "${label}" (${(expCents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR)`);
+    reasons.push(`Betrag stimmt ueberein mit "${label}" (${(expCents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR)`);
 
     if (e.recipient && tx.counterparty_name) {
       const recipLower = e.recipient.toLowerCase();
@@ -322,7 +322,7 @@ export async function suggestIncomeMatch(
     const propName = (e.properties as { name: string } | null)?.name || '';
     const label = e.description || e.category || 'Einnahme';
 
-    reasons.push(`Betrag stimmt ueberein mit "${label}" (${(incomeCents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR)`);
+    reasons.push(`Betrag stimmt ueberein mit "${label}" (${(incomeCents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR)`);
 
     if (e.recipient && tx.counterparty_name) {
       const recipLower = e.recipient.toLowerCase();
@@ -452,6 +452,21 @@ export async function runSuggestionsForUnmatched(userId: string): Promise<number
   for (const tx of unmatched) {
     const rule = await findMatchingRule(userId, tx);
     if (rule) {
+      if (rule.target_type === 'ignore') {
+        await supabase
+          .from('bank_transactions')
+          .update({
+            status: 'IGNORED',
+            confidence: 0.99,
+            matched_by: `rule:${rule.id}`,
+          })
+          .eq('id', tx.id)
+          .eq('user_id', userId);
+        await incrementRuleMatchCount(rule.id);
+        count++;
+        continue;
+      }
+
       await supabase
         .from('bank_transactions')
         .update({

@@ -367,7 +367,7 @@ export default function IncomeExpenseAssignmentPanel({
                       </div>
                     </div>
                     <span className="text-xs font-semibold text-dark tabular-nums flex-shrink-0">
-                      {Number(e.amount).toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR
+                      {Number(e.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
                     </span>
                     {selectedExistingId === e.id && (
                       <Check className="w-4 h-4 text-[#3c8af7] flex-shrink-0" />
@@ -381,7 +381,7 @@ export default function IncomeExpenseAssignmentPanel({
           <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
             <span className="text-xs text-gray-500">Transaktionsbetrag</span>
             <span className="text-sm font-semibold text-dark tabular-nums">
-              {txAmount.toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR
+              {txAmount.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
             </span>
           </div>
         </div>
@@ -448,7 +448,7 @@ export default function IncomeExpenseAssignmentPanel({
           <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
             <span className="text-xs text-gray-500">Betrag</span>
             <span className="text-sm font-semibold text-dark tabular-nums">
-              {txAmount.toLocaleString('de-DE', { minimumFractionDigits: 2 })} EUR
+              {txAmount.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
             </span>
           </div>
         </>

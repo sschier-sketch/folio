@@ -10,6 +10,7 @@ import {
   CircleDollarSign,
   Home,
   AlertCircle,
+  Ban,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { usePermissions } from '../../../hooks/usePermissions';
@@ -90,19 +91,21 @@ export default function MatchingRulesView() {
   }
 
   function formatAmount(cents: number) {
-    return (cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 });
+    return (cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   function getTargetLabel(rule: BankMatchingRule) {
     if (rule.target_type === 'rent_payment') return 'Mietzahlung';
     if (rule.target_type === 'expense') return 'Ausgabe';
     if (rule.target_type === 'income_entry') return 'Einnahme';
+    if (rule.target_type === 'ignore') return 'Ignorieren';
     return rule.target_type;
   }
 
   function getTargetIcon(rule: BankMatchingRule) {
     if (rule.target_type === 'rent_payment') return Home;
     if (rule.target_type === 'expense') return ArrowDownUp;
+    if (rule.target_type === 'ignore') return Ban;
     return CircleDollarSign;
   }
 
@@ -189,10 +192,14 @@ export default function MatchingRulesView() {
                   }`}
                 >
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    rule.direction === 'credit' ? 'bg-emerald-100' : 'bg-amber-100'
+                    rule.target_type === 'ignore'
+                      ? 'bg-gray-200'
+                      : rule.direction === 'credit' ? 'bg-emerald-100' : 'bg-amber-100'
                   }`}>
                     <TargetIcon className={`w-4 h-4 ${
-                      rule.direction === 'credit' ? 'text-emerald-600' : 'text-amber-600'
+                      rule.target_type === 'ignore'
+                        ? 'text-gray-500'
+                        : rule.direction === 'credit' ? 'text-emerald-600' : 'text-amber-600'
                     }`} />
                   </div>
 
@@ -206,6 +213,8 @@ export default function MatchingRulesView() {
                           ? 'bg-blue-100 text-blue-700'
                           : rule.target_type === 'expense'
                           ? 'bg-amber-100 text-amber-700'
+                          : rule.target_type === 'ignore'
+                          ? 'bg-gray-200 text-gray-600'
                           : 'bg-emerald-100 text-emerald-700'
                       }`}>
                         {getTargetLabel(rule)}
@@ -272,9 +281,10 @@ export default function MatchingRulesView() {
           <div className="text-xs text-blue-700 space-y-1">
             <p className="font-medium">So funktionieren die Regeln:</p>
             <ul className="list-disc list-inside space-y-0.5 text-blue-600">
-              <li>Regeln werden beim Zuordnen einer Transaktion erstellt (Checkbox aktivieren)</li>
+              <li>Regeln werden beim Zuordnen oder Ignorieren einer Transaktion erstellt (Checkbox aktivieren)</li>
               <li>Nach jedem Import werden automatisch Vorschlaege generiert</li>
-              <li>Bei aktivierter Auto-Anwendung werden Regel-Treffer direkt zugeordnet</li>
+              <li>Ignorier-Regeln werden immer sofort angewendet (ohne Auto-Anwendung)</li>
+              <li>Bei aktivierter Auto-Anwendung werden Zuordnungs-Treffer direkt zugeordnet</li>
               <li>Matching basiert auf exaktem Abgleich von Name und Betrag</li>
             </ul>
           </div>

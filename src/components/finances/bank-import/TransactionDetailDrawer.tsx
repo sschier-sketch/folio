@@ -11,6 +11,7 @@ import {
   Loader,
   AlertCircle,
   CheckCircle,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '../../ui/Button';
 import {
@@ -18,6 +19,7 @@ import {
   unignoreBankTransaction,
   undoAllocation,
   getAllocationsForTransaction,
+  createMatchingRule,
 } from '../../../lib/bankImport';
 import type { BankTransaction, BankTransactionAllocation, BankMatchingRule } from '../../../lib/bankImport/types';
 import { parseSuggestion } from '../../../lib/bankImport/suggestionEngine';
@@ -102,6 +104,7 @@ export default function TransactionDetailDrawer({
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [allocations, setAllocations] = useState<BankTransactionAllocation[]>([]);
+  const [autoIgnore, setAutoIgnore] = useState(false);
 
   useEffect(() => {
     if (isMatched) loadAllocations();
@@ -121,6 +124,21 @@ export default function TransactionDetailDrawer({
     setError('');
     try {
       await ignoreBankTransaction(userId, tx.id);
+
+      if (autoIgnore && tx.counterparty_name) {
+        try {
+          await createMatchingRule(userId, {
+            counterparty_name: tx.counterparty_name.trim(),
+            amount_cents: Math.round(Math.abs(tx.amount) * 100),
+            direction: tx.direction || (tx.amount >= 0 ? 'credit' : 'debit'),
+            target_type: 'ignore',
+            target_config: {},
+          });
+        } catch {
+          // rule creation failure should not block the ignore
+        }
+      }
+
       onRefresh();
       onClose();
     } catch (err) {
@@ -251,6 +269,7 @@ export default function TransactionDetailDrawer({
                     <span className="font-semibold text-emerald-600 tabular-nums">
                       {Number(a.amount_allocated).toLocaleString('de-DE', {
                         minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
                       })}{' '}
                       EUR
                     </span>
@@ -317,7 +336,26 @@ export default function TransactionDetailDrawer({
                 </button>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-2">
+                {tx.counterparty_name && (
+                  <label className="flex items-start gap-2.5 p-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={autoIgnore}
+                      onChange={(e) => setAutoIgnore(e.target.checked)}
+                      className="mt-0.5 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+                    />
+                    <div>
+                      <span className="text-xs font-medium text-gray-700">
+                        In Zukunft dauerhaft ignorieren
+                      </span>
+                      <p className="text-[10px] text-gray-500 mt-0.5">
+                        Sofern Absender und Betrag identisch sind, werden diese Buchungen kuenftig automatisch ignoriert.
+                      </p>
+                    </div>
+                    <RotateCcw className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                  </label>
+                )}
                 <Button
                   variant="cancel"
                   size="sm"
