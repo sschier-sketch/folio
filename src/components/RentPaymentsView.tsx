@@ -386,10 +386,20 @@ export default function RentPaymentsView() {
     return daysDiff > 1;
   };
 
+  const isUpcoming = (payment: RentPayment) => {
+    if (payment.paid) return false;
+    if (payment.payment_status === 'paid' || payment.payment_status === 'partial') return false;
+    const dueDate = new Date(payment.due_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate > today;
+  };
+
   const isPending = (payment: RentPayment) => {
     if (payment.paid) return false;
     if (payment.payment_status === 'paid' || payment.payment_status === 'partial') return false;
-    return !isOverdue(payment);
+    return !isOverdue(payment) && !isUpcoming(payment);
   };
 
   const handleSort = (column: "date" | "property" | "tenant" | "amount" | "status") => {
@@ -444,6 +454,10 @@ export default function RentPaymentsView() {
 
   const totalUnpaid = filteredPayments
     .filter((p) => isPending(p))
+    .reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
+
+  const totalUpcoming = filteredPayments
+    .filter((p) => isUpcoming(p))
     .reduce((sum, p) => sum + (Number(p.amount) - Number(p.paid_amount || 0)), 0);
 
   const totalOverdue = filteredPayments
@@ -625,7 +639,7 @@ export default function RentPaymentsView() {
       {activeTab === "payments" ? (
         <div className="space-y-6">{/* Existing content moved here */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg p-6">
           <div className="text-sm text-gray-400 mb-1">Offen</div>
           <div className="text-2xl font-bold text-orange-600">
@@ -636,6 +650,12 @@ export default function RentPaymentsView() {
           <div className="text-sm text-gray-400 mb-1">Überfällig</div>
           <div className="text-2xl font-bold text-red-600">
             {formatCurrency(totalOverdue)}
+          </div>
+        </div>
+        <div className="bg-white rounded-lg p-6">
+          <div className="text-sm text-gray-400 mb-1">Anstehend</div>
+          <div className="text-2xl font-bold text-gray-600">
+            {formatCurrency(totalUpcoming)}
           </div>
         </div>
         <div className="bg-white rounded-lg p-6">
@@ -877,6 +897,8 @@ export default function RentPaymentsView() {
                     <StatusBadge type="info" label="Teilzahlung" />
                   ) : isOverdue(payment) ? (
                     <StatusBadge type="error" label="Überfällig" />
+                  ) : isUpcoming(payment) ? (
+                    <StatusBadge type="neutral" label="Anstehend" />
                   ) : (
                     <StatusBadge type="warning" label="Offen" />
                   )}
