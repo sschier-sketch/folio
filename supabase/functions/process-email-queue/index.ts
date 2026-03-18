@@ -116,6 +116,7 @@ Deno.serve(async (req: Request) => {
             category: emailLog.category,
             variables: variables,
             ...(metadata.language ? { language: metadata.language } : {}),
+            ...(emailLog.idempotency_key ? { idempotencyKey: emailLog.idempotency_key } : {}),
           };
         }
 

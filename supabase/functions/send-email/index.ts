@@ -44,6 +44,13 @@ function replaceVariables(content: string, variables: Record<string, string>): s
   return result;
 }
 
+function cleanUnreplacedVariables(content: string): string {
+  let result = content;
+  result = result.replace(/\s*\{\{[a-zA-Z_]+\}\}/g, '');
+  result = result.replace(/\s{2,}/g, ' ');
+  return result;
+}
+
 interface ResolvedSender {
   from: string;
   replyTo: string | null;
@@ -350,11 +357,42 @@ Deno.serve(async (req: Request) => {
       finalHtml = template.body_html;
       finalText = template.body_text;
 
-      if (variables) {
-        finalSubject = replaceVariables(finalSubject, variables);
-        finalHtml = replaceVariables(finalHtml, variables);
-        finalText = replaceVariables(finalText, variables);
+      const enrichedVars: Record<string, string> = { ...(variables || {}) };
+
+      if (!enrichedVars.userName && userId) {
+        const { data: prof } = await supabase
+          .from('account_profiles')
+          .select('first_name, last_name')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (prof) {
+          const fullName = [prof.first_name, prof.last_name].filter(Boolean).join(' ');
+          if (fullName) enrichedVars.userName = fullName;
+        }
+
+        if (!enrichedVars.userName && to) {
+          enrichedVars.userName = to.split('@')[0];
+        }
       }
+
+      if (!enrichedVars.dashboard_link) {
+        enrichedVars.dashboard_link = 'https://rentab.ly/dashboard';
+      }
+
+      if (!enrichedVars.user_email && to) {
+        enrichedVars.user_email = to;
+      }
+
+      if (Object.keys(enrichedVars).length > 0) {
+        finalSubject = replaceVariables(finalSubject, enrichedVars);
+        finalHtml = replaceVariables(finalHtml, enrichedVars);
+        finalText = replaceVariables(finalText, enrichedVars);
+      }
+
+      finalSubject = cleanUnreplacedVariables(finalSubject);
+      finalHtml = cleanUnreplacedVariables(finalHtml);
+      finalText = cleanUnreplacedVariables(finalText);
     }
 
     if (!to || !finalSubject || (!finalHtml && !finalText)) {
