@@ -151,6 +151,45 @@ async function sendWelcomeEmail(
   }
 }
 
+async function createAffiliateReferral(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  userId: string,
+  affiliateCode: string,
+  refSid: string | null,
+  landingPath: string | null,
+  attributionSource: string | null,
+): Promise<void> {
+  try {
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/create-affiliate-referral`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${serviceRoleKey}`,
+        },
+        body: JSON.stringify({
+          userId,
+          affiliateCode,
+          refSid,
+          landingPath,
+          attributionSource: attributionSource || "magic_link",
+        }),
+      }
+    );
+
+    if (response.ok) {
+      console.log("send-magic-link: affiliate referral created for new user:", userId);
+    } else {
+      const errData = await response.text();
+      console.error("send-magic-link: affiliate referral failed:", response.status, errData);
+    }
+  } catch (err) {
+    console.error("send-magic-link: affiliate referral error (non-blocking)", err);
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -172,7 +211,14 @@ Deno.serve(async (req: Request) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { email, redirectTo } = await req.json();
+    const {
+      email,
+      redirectTo,
+      affiliateCode: rawAffiliateCode,
+      refSid,
+      landingPath,
+      attributionSource,
+    } = await req.json();
 
     if (!email) {
       return new Response(
@@ -180,6 +226,8 @@ Deno.serve(async (req: Request) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const affiliateCode = rawAffiliateCode || null;
 
     const timestampBeforeGenerate = Date.now();
 
@@ -345,10 +393,26 @@ Deno.serve(async (req: Request) => {
 
     if (isNewUser && userId) {
       await sendWelcomeEmail(supabase, userId, email, resendApiKey, fromAddress);
+
+      if (affiliateCode || refSid) {
+        await createAffiliateReferral(
+          supabaseUrl,
+          serviceRoleKey,
+          userId,
+          affiliateCode,
+          refSid || null,
+          landingPath || null,
+          attributionSource || null,
+        );
+      }
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: "If the email exists, a magic link has been sent." }),
+      JSON.stringify({
+        success: true,
+        message: "If the email exists, a magic link has been sent.",
+        isNewUser,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

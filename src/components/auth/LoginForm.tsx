@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { Eye, EyeOff, LogIn, Mail } from "lucide-react";
 import { Button } from '../ui/Button';
+import { getReferralCode, getReferralMetadata, initReferralTracking, clearReferralCode } from "../../lib/referralTracking";
+import { getRefSid } from "../../lib/referralSession";
 interface LoginFormProps {
   onSuccess?: () => void;
 }
@@ -17,6 +19,11 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     type: "error" | "success";
     text: string;
   } | null>(null);
+
+  useEffect(() => {
+    initReferralTracking();
+  }, []);
+
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -59,6 +66,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setLoading(true);
     setMessage(null);
     try {
+      const refCode = getReferralCode() || null;
+      const refSid = getRefSid() || null;
+      const metadata = getReferralMetadata();
+
       const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-magic-link`;
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -69,15 +80,22 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         body: JSON.stringify({
           email,
           redirectTo: `${window.location.origin}/dashboard`,
+          affiliateCode: refCode,
+          refSid,
+          landingPath: metadata?.landingPath || null,
+          attributionSource: metadata?.source || "magic_link",
         }),
       });
       const data = await response.json();
       if (!response.ok) {
         setMessage({ type: "error", text: data.error || "Ein Fehler ist aufgetreten" });
       } else {
+        if (data.isNewUser && refCode) {
+          clearReferralCode();
+        }
         setMessage({
           type: "success",
-          text: "Magic Link wurde an Ihre E-Mail-Adresse gesendet! Bitte prüfen Sie Ihr Postfach.",
+          text: "Magic Link wurde an Ihre E-Mail-Adresse gesendet! Bitte pruefen Sie Ihr Postfach.",
         });
       }
     } catch (error) {
