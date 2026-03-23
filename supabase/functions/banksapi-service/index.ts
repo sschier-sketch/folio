@@ -1097,7 +1097,7 @@ async function handleGetConnections(
 
   if (error) return errorResponse(error.message, 500);
 
-  const STUCK_THRESHOLD_MS = 5 * 60 * 1000;
+  const STUCK_THRESHOLD_MS = 2 * 60 * 1000;
 
   const enriched = [];
   for (const conn of connections || []) {
@@ -1912,6 +1912,10 @@ async function importTransactionsForConnection(
 
     if (!products || products.length === 0) {
       result.status = "success";
+      await admin
+        .from("banksapi_connections")
+        .update({ status: "connected", error_message: null, last_sync_at: new Date().toISOString() })
+        .eq("id", connectionId);
       await updateSyncProgress(admin, userId, connectionId, {
         phase: "done",
         total_accounts: 0,
