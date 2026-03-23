@@ -150,6 +150,8 @@ export default function BanksApiImportFlow() {
   const cooldownRef = useRef<Record<string, number>>({});
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const syncFinishedRef = useRef<Set<string>>(new Set());
+  const [justConnected, setJustConnected] = useState(false);
+  const autoOpenedRef = useRef(false);
 
   const token = session?.access_token || '';
 
@@ -212,6 +214,8 @@ export default function BanksApiImportFlow() {
     const params = new URLSearchParams(window.location.search);
     const status = params.get('banksapi_status');
     if (status === 'success') {
+      setJustConnected(true);
+      autoOpenedRef.current = false;
       loadConnections();
       setFlowState('connected');
       const newUrl = new URL(window.location.href);
@@ -224,6 +228,17 @@ export default function BanksApiImportFlow() {
       window.history.replaceState({}, '', newUrl.toString());
     }
   }, [loadConnections]);
+
+  useEffect(() => {
+    if (!justConnected || autoOpenedRef.current || !token || connections.length === 0) return;
+    const unselected = connections.find(
+      c => (c.status === 'connected' || c.status === 'syncing') && c.selected_accounts === 0
+    );
+    if (unselected) {
+      autoOpenedRef.current = true;
+      handleOpenAccountSelection(unselected);
+    }
+  }, [justConnected, connections, token]);
 
   async function handleStartConnection() {
     if (!token) return;
@@ -596,6 +611,9 @@ export default function BanksApiImportFlow() {
 
   const activeConnections = connections.filter(c => c.status !== 'disconnected');
   const hasActiveConnection = activeConnections.some(c => c.status === 'connected' || c.status === 'syncing');
+  const connectionsNeedingSelection = activeConnections.filter(
+    c => (c.status === 'connected' || c.status === 'syncing') && c.selected_accounts === 0
+  );
 
   if (hasActiveConnection || flowState === 'connected') {
     return (
@@ -609,6 +627,32 @@ export default function BanksApiImportFlow() {
             </div>
           </div>
         )}
+
+        {connectionsNeedingSelection.map((conn) => (
+          <div
+            key={`select-hint-${conn.id}`}
+            className="flex items-center justify-between gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg"
+          >
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-amber-900">
+                  Konten auswaehlen{conn.bank_name ? ` (${conn.bank_name})` : ''}
+                </p>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  Waehlen Sie mindestens ein Konto aus, damit Transaktionen importiert werden koennen.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => handleOpenAccountSelection(conn)}
+              disabled={actionLoading}
+              className="px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors flex-shrink-0"
+            >
+              Konten auswaehlen
+            </button>
+          </div>
+        ))}
 
         {refreshingConnectionId && syncProgress && (
           <SyncProgressBar progress={syncProgress} />
