@@ -233,9 +233,7 @@ export default function TenantPortalProfile({
       <div style={{ backgroundColor: "#eff4fe", borderColor: "#DDE7FF" }} className="border rounded-lg p-4">
         <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
         <p className="text-sm text-blue-900">
-          Wählen Sie ein sicheres Passwort mit mindestens 6 Zeichen.
-          Verwenden Sie eine Kombination aus Buchstaben, Zahlen und
-          Sonderzeichen für maximale Sicherheit.
+          Wählen Sie ein Passwort mit mindestens 6 Zeichen.
         </p>
       </div>
     </div>

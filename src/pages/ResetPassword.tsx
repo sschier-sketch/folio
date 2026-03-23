@@ -164,10 +164,9 @@ export function ResetPassword() {
     if (!newPassword) return { score: 0, label: "", color: "" };
     let score = 0;
     if (newPassword.length >= 6) score++;
-    if (newPassword.length >= 10) score++;
-    if (/[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword)) score++;
-    if (/[0-9]/.test(newPassword)) score++;
-    if (/[^A-Za-z0-9]/.test(newPassword)) score++;
+    if (newPassword.length >= 8) score++;
+    if (newPassword.length >= 12) score++;
+    if (newPassword.length >= 16) score++;
 
     if (score <= 1) return { score: 1, label: "Schwach", color: "bg-red-400" };
     if (score <= 2)
@@ -379,12 +378,6 @@ export function ResetPassword() {
                           className={`w-3.5 h-3.5 flex-shrink-0 ${newPassword.length >= 6 ? "text-emerald-500" : "text-gray-300"}`}
                         />
                         Mindestens 6 Zeichen
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle2
-                          className={`w-3.5 h-3.5 flex-shrink-0 ${/[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword) && /[0-9]/.test(newPassword) ? "text-emerald-500" : "text-gray-300"}`}
-                        />
-                        Mix aus Buchstaben und Zahlen empfohlen
                       </li>
                     </ul>
                   </div>
