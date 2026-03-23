@@ -1120,21 +1120,29 @@ async function handleGetConnections(
       }
     }
 
-    const { count: selectedCount } = await admin
+    const { data: allProducts } = await admin
       .from("banksapi_bank_products")
-      .select("id", { count: "exact", head: true })
+      .select("id, iban, account_name, account_type, balance_cents, balance_date, selected_for_import, last_import_at")
       .eq("connection_id", conn.id)
-      .eq("selected_for_import", true);
+      .order("account_name");
 
-    const { count: totalCount } = await admin
-      .from("banksapi_bank_products")
-      .select("id", { count: "exact", head: true })
-      .eq("connection_id", conn.id);
+    const productsList = allProducts || [];
+    const selectedProducts = productsList.filter(p => p.selected_for_import);
 
     enriched.push({
       ...conn,
-      selected_accounts: selectedCount || 0,
-      total_accounts: totalCount || 0,
+      selected_accounts: selectedProducts.length,
+      total_accounts: productsList.length,
+      accounts: productsList.map(p => ({
+        id: p.id,
+        iban: p.iban,
+        account_name: p.account_name,
+        account_type: p.account_type,
+        balance_cents: p.balance_cents,
+        balance_date: p.balance_date,
+        selected: p.selected_for_import,
+        last_import_at: p.last_import_at,
+      })),
     });
   }
 

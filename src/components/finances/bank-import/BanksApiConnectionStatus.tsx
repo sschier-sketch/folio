@@ -14,7 +14,7 @@ import {
   Info,
 } from 'lucide-react';
 import { Button } from '../../ui/Button';
-import type { BanksApiConnection, BanksApiImportLog } from './BanksApiImportFlow';
+import type { BanksApiConnection, BanksApiImportLog, BanksApiAccountSummary } from './BanksApiImportFlow';
 
 interface Props {
   connection: BanksApiConnection;
@@ -213,6 +213,10 @@ export default function BanksApiConnectionStatus({
           </p>
         )}
 
+        {connection.accounts && connection.accounts.length > 0 && (
+          <AccountsList accounts={connection.accounts} />
+        )}
+
         <HealthIndicator connection={connection} onRefreshAndImport={onRefreshAndImport} onConsentRenewal={onConsentRenewal} loading={loading} />
 
         {lastImportLog && (
@@ -342,6 +346,101 @@ export default function BanksApiConnectionStatus({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function formatBalance(cents: number | null): string {
+  if (cents === null) return '';
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(cents / 100);
+}
+
+function formatAccountType(type: string | null): string {
+  if (!type) return '';
+  const map: Record<string, string> = {
+    girokonto: 'Girokonto',
+    sparkonto: 'Sparkonto',
+    tagesgeld: 'Tagesgeldkonto',
+    festgeld: 'Festgeldkonto',
+    kreditkarte: 'Kreditkarte',
+    depot: 'Depot',
+    bausparvertrag: 'Bausparvertrag',
+    checking: 'Girokonto',
+    savings: 'Sparkonto',
+    credit_card: 'Kreditkarte',
+    loan: 'Kredit',
+  };
+  return map[type.toLowerCase()] || type;
+}
+
+function maskIban(iban: string): string {
+  if (iban.length <= 8) return iban;
+  return iban.slice(0, 4) + ' **** ' + iban.slice(-4);
+}
+
+function AccountsList({ accounts }: { accounts: BanksApiAccountSummary[] }) {
+  const selected = accounts.filter(a => a.selected);
+  const unselected = accounts.filter(a => !a.selected);
+
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-100">
+      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2">
+        Konten ({selected.length} aktiv / {accounts.length} gesamt)
+      </p>
+      <div className="space-y-1.5">
+        {selected.map((acc) => (
+          <AccountRow key={acc.id} account={acc} />
+        ))}
+        {unselected.map((acc) => (
+          <AccountRow key={acc.id} account={acc} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AccountRow({ account }: { account: BanksApiAccountSummary }) {
+  const typeLabel = formatAccountType(account.account_type);
+
+  return (
+    <div className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+      account.selected ? 'bg-gray-50' : 'bg-gray-50/50 opacity-60'
+    }`}>
+      <CreditCard className={`w-3.5 h-3.5 flex-shrink-0 ${
+        account.selected ? 'text-[#3c8af7]' : 'text-gray-300'
+      }`} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-dark truncate">
+            {account.account_name || 'Konto'}
+          </span>
+          {typeLabel && (
+            <span className="text-[10px] text-gray-400 flex-shrink-0">
+              {typeLabel}
+            </span>
+          )}
+          {!account.selected && (
+            <span className="text-[10px] text-gray-400 italic flex-shrink-0">
+              (nicht aktiv)
+            </span>
+          )}
+        </div>
+        {account.iban && (
+          <span className="text-[10px] text-gray-400 font-mono">
+            {maskIban(account.iban)}
+          </span>
+        )}
+      </div>
+      {account.balance_cents !== null && (
+        <span className={`text-xs font-semibold flex-shrink-0 ${
+          account.balance_cents >= 0 ? 'text-emerald-600' : 'text-red-600'
+        }`}>
+          {formatBalance(account.balance_cents)}
+        </span>
+      )}
     </div>
   );
 }

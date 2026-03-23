@@ -23,6 +23,17 @@ import BanksApiConnectionStatus from './BanksApiConnectionStatus';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+export interface BanksApiAccountSummary {
+  id: string;
+  iban: string | null;
+  account_name: string;
+  account_type: string | null;
+  balance_cents: number | null;
+  balance_date: string | null;
+  selected: boolean;
+  last_import_at: string | null;
+}
+
 export interface BanksApiConnection {
   id: string;
   bank_access_id: string | null;
@@ -37,6 +48,7 @@ export interface BanksApiConnection {
   consent_expires_at: string | null;
   selected_accounts: number;
   total_accounts: number;
+  accounts: BanksApiAccountSummary[];
   created_at: string;
   updated_at: string;
 }
