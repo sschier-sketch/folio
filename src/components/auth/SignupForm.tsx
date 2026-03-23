@@ -79,10 +79,10 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       setLoading(false);
       return;
     }
-    if (password.length < 10) {
+    if (password.length < 6) {
       setMessage({
         type: "error",
-        text: "Das Passwort muss mindestens 10 Zeichen lang sein",
+        text: "Das Passwort muss mindestens 6 Zeichen lang sein",
       });
       setLoading(false);
       return;
@@ -298,7 +298,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
             onChange={(e) => setPassword(e.target.value)}
             required
             className="w-full h-11 px-3.5 pr-11 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#3c8af7]/30 focus:border-[#3c8af7] transition-colors"
-            placeholder="Mindestens 10 Zeichen"
+            placeholder="Mindestens 6 Zeichen"
           />
           <button
             type="button"

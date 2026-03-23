@@ -92,10 +92,10 @@ export function ResetPassword() {
     setLoading(true);
     setMessage(null);
 
-    if (newPassword.length < 10) {
+    if (newPassword.length < 6) {
       setMessage({
         type: "error",
-        text: "Das Passwort muss mindestens 10 Zeichen lang sein",
+        text: "Das Passwort muss mindestens 6 Zeichen lang sein",
       });
       setLoading(false);
       return;
@@ -163,8 +163,8 @@ export function ResetPassword() {
   const passwordStrength = React.useMemo(() => {
     if (!newPassword) return { score: 0, label: "", color: "" };
     let score = 0;
+    if (newPassword.length >= 6) score++;
     if (newPassword.length >= 10) score++;
-    if (newPassword.length >= 14) score++;
     if (/[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword)) score++;
     if (/[0-9]/.test(newPassword)) score++;
     if (/[^A-Za-z0-9]/.test(newPassword)) score++;
@@ -376,9 +376,9 @@ export function ResetPassword() {
                     <ul className="mt-1.5 space-y-1">
                       <li className="flex items-center gap-2">
                         <CheckCircle2
-                          className={`w-3.5 h-3.5 flex-shrink-0 ${newPassword.length >= 10 ? "text-emerald-500" : "text-gray-300"}`}
+                          className={`w-3.5 h-3.5 flex-shrink-0 ${newPassword.length >= 6 ? "text-emerald-500" : "text-gray-300"}`}
                         />
-                        Mindestens 10 Zeichen
+                        Mindestens 6 Zeichen
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle2

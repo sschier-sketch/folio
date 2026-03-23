@@ -80,8 +80,8 @@ export default function AcceptInvitation() {
       return;
     }
 
-    if (password.length < 10) {
-      setSubmitError("Das Passwort muss mindestens 10 Zeichen lang sein");
+    if (password.length < 6) {
+      setSubmitError("Das Passwort muss mindestens 6 Zeichen lang sein");
       return;
     }
 
