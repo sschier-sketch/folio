@@ -38,6 +38,7 @@ export default function EditMemberModal({ member, onClose, onSave }: EditMemberM
   const [canViewRentPayments, setCanViewRentPayments] = useState(member.can_view_rent_payments);
   const [canViewLeases, setCanViewLeases] = useState(member.can_view_leases);
   const [canViewMessages, setCanViewMessages] = useState(member.can_view_messages);
+  const [canViewTasks, setCanViewTasks] = useState(member.can_view_tasks);
   const [propertyScope, setPropertyScope] = useState(member.property_scope);
   const [propertyAccess, setPropertyAccess] = useState(member.property_access);
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
@@ -128,6 +129,7 @@ export default function EditMemberModal({ member, onClose, onSave }: EditMemberM
         p_can_view_rent_payments: canViewRentPayments,
         p_can_view_leases: canViewLeases,
         p_can_view_messages: canViewMessages,
+        p_can_view_tasks: canViewTasks,
         p_property_scope: propertyScope,
         p_property_access: isReadOnly ? "read" : propertyAccess,
         p_property_ids: propertyScope === "selected" ? selectedPropertyIds : [],
@@ -280,6 +282,7 @@ export default function EditMemberModal({ member, onClose, onSave }: EditMemberM
                 { label: de ? "Bereich Mieteingänge sehen" : "View Rent Payments", value: canViewRentPayments, setter: setCanViewRentPayments },
                 { label: de ? "Bereich Mietverhältnisse sehen" : "View Leases", value: canViewLeases, setter: setCanViewLeases },
                 { label: de ? "Bereich Nachrichten sehen" : "View Messages", value: canViewMessages, setter: setCanViewMessages },
+                { label: de ? "Bereich Aufgaben sehen" : "View Tasks", value: canViewTasks, setter: setCanViewTasks },
               ].map(({ label, value, setter }) => (
                 <div key={label} className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-700">{label}</p>

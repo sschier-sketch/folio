@@ -41,7 +41,7 @@ export function usePermissions() {
               "can_manage_billing, can_manage_users, can_manage_properties, " +
               "can_manage_tenants, can_manage_finances, can_view_analytics, " +
               "can_view_finances, can_view_statements, can_view_rent_payments, " +
-              "can_view_leases, can_view_messages, property_scope, property_access, removed_at"
+              "can_view_leases, can_view_messages, can_view_tasks, property_scope, property_access, removed_at"
             )
             .eq("user_id", user.id)
             .maybeSingle(),

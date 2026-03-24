@@ -16,6 +16,7 @@ export interface UserPermissions {
   canViewRentPayments: boolean;
   canViewLeases: boolean;
   canViewMessages: boolean;
+  canViewTasks: boolean;
   propertyScope: string;
   propertyAccess: string;
 }
@@ -26,6 +27,7 @@ export type SectionKey =
   | "rent_payments"
   | "leases"
   | "messages"
+  | "tasks"
   | "billing"
   | "users";
 
@@ -47,6 +49,7 @@ export const DEFAULT_OWNER_PERMISSIONS: UserPermissions = {
   canViewRentPayments: true,
   canViewLeases: true,
   canViewMessages: true,
+  canViewTasks: true,
   propertyScope: "all",
   propertyAccess: "write",
 };
@@ -57,6 +60,7 @@ export const SECTION_PERMISSION_MAP: Record<SectionKey, keyof UserPermissions> =
   rent_payments: "canViewRentPayments",
   leases: "canViewLeases",
   messages: "canViewMessages",
+  tasks: "canViewTasks",
   billing: "canManageBilling",
   users: "canManageUsers",
 };
@@ -77,6 +81,7 @@ export interface UserSettingsRow {
   can_view_rent_payments?: boolean | null;
   can_view_leases?: boolean | null;
   can_view_messages?: boolean | null;
+  can_view_tasks?: boolean | null;
   property_scope?: string | null;
   property_access?: string | null;
   removed_at?: string | null;
@@ -104,6 +109,7 @@ export function resolvePermissions(data: UserSettingsRow | null): UserPermission
     canViewRentPayments: data.can_view_rent_payments ?? false,
     canViewLeases: data.can_view_leases ?? false,
     canViewMessages: data.can_view_messages ?? false,
+    canViewTasks: data.can_view_tasks ?? true,
     propertyScope: data.property_scope || "all",
     propertyAccess: data.property_access || "write",
   };
@@ -193,6 +199,7 @@ export function isNavHidden(
     case "billing": return !permissions.canViewStatements;
     case "tenants": return !permissions.canViewLeases;
     case "messages": return !permissions.canViewMessages;
+    case "tasks": return !permissions.canViewTasks;
     default: return false;
   }
 }

@@ -22,6 +22,7 @@ interface InvitePayload {
   can_view_rent_payments: boolean;
   can_view_leases: boolean;
   can_view_messages: boolean;
+  can_view_tasks: boolean;
   property_scope: string;
   property_access: string;
   property_ids: string[];
@@ -204,6 +205,7 @@ Deno.serve(async (req: Request) => {
         can_view_rent_payments: payload.can_view_rent_payments ?? false,
         can_view_leases: payload.can_view_leases ?? false,
         can_view_messages: payload.can_view_messages ?? false,
+        can_view_tasks: payload.can_view_tasks ?? true,
         property_scope: payload.property_scope || "all",
         property_access: payload.property_access || "write",
         property_ids: payload.property_ids || [],

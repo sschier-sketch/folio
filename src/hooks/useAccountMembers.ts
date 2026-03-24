@@ -21,6 +21,7 @@ export interface AccountMember {
   can_view_rent_payments: boolean;
   can_view_leases: boolean;
   can_view_messages: boolean;
+  can_view_tasks: boolean;
   property_scope: string;
   property_access: string;
   removed_at: string | null;
@@ -50,6 +51,7 @@ export interface AccountInvitation {
   can_view_rent_payments: boolean;
   can_view_leases: boolean;
   can_view_messages: boolean;
+  can_view_tasks: boolean;
   property_scope: string;
   property_access: string;
   created_at: string;

@@ -26,6 +26,7 @@ interface InvitePayload {
   can_view_rent_payments: boolean;
   can_view_leases: boolean;
   can_view_messages: boolean;
+  can_view_tasks: boolean;
   property_scope: string;
   property_access: string;
   property_ids: string[];
@@ -54,6 +55,7 @@ export default function InviteMemberModal({
   const [canViewRentPayments, setCanViewRentPayments] = useState(true);
   const [canViewLeases, setCanViewLeases] = useState(true);
   const [canViewMessages, setCanViewMessages] = useState(true);
+  const [canViewTasks, setCanViewTasks] = useState(true);
   const [propertyScope, setPropertyScope] = useState("all");
   const [propertyAccess, setPropertyAccess] = useState("write");
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
@@ -90,6 +92,7 @@ export default function InviteMemberModal({
       setCanViewRentPayments(true);
       setCanViewLeases(true);
       setCanViewMessages(true);
+      setCanViewTasks(true);
     } else {
       setIsReadOnly(false);
     }
@@ -120,6 +123,7 @@ export default function InviteMemberModal({
         can_view_rent_payments: canViewRentPayments,
         can_view_leases: canViewLeases,
         can_view_messages: canViewMessages,
+        can_view_tasks: canViewTasks,
         property_scope: propertyScope,
         property_access: isReadOnly ? "read" : propertyAccess,
         property_ids: propertyScope === "selected" ? selectedPropertyIds : [],
@@ -333,6 +337,13 @@ export default function InviteMemberModal({
                     : "View Messages",
                   value: canViewMessages,
                   setter: setCanViewMessages,
+                },
+                {
+                  label: de
+                    ? "Bereich Aufgaben sehen"
+                    : "View Tasks",
+                  value: canViewTasks,
+                  setter: setCanViewTasks,
                 },
               ].map(({ label, value, setter }) => (
                 <div
