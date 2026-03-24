@@ -15,6 +15,7 @@ export interface TaskItem {
   source: string;
   tenant_id: string | null;
   assigned_user_id: string | null;
+  ticket_id: string | null;
   parent_task_id: string | null;
   next_recurrence_date: string | null;
   notify_tenant_on_status: boolean | null;
@@ -26,6 +27,7 @@ export interface TaskItem {
   properties?: { name: string } | null;
   property_units?: { unit_number: string } | null;
   tenants?: { first_name: string; last_name: string } | null;
+  tickets?: { ticket_number: string; status: string } | null;
 }
 
 export interface PropertyOption {

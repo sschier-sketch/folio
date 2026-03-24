@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { usePermissions } from "../../hooks/usePermissions";
 import { Button } from "../ui/Button";
+import { Ticket } from "lucide-react";
 import {
   TaskItem,
   PropertyOption,
@@ -172,6 +173,21 @@ export default function TaskCreateEditModal({
         </div>
 
         <div className="p-6 space-y-4">
+          {task?.ticket_id && task?.tickets?.ticket_number && (
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-lg border border-gray-200">
+              <Ticket className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <span className="text-sm text-gray-600">
+                {de ? "Verknüpft mit Ticket" : "Linked to ticket"}{" "}
+                <span className="font-semibold text-dark">#{task.tickets.ticket_number}</span>
+              </span>
+              {task.source === "tenant_request" && (
+                <span className="ml-auto px-2 py-0.5 rounded-full text-xs font-medium text-teal-700 bg-teal-50">
+                  {de ? "Mieteranfrage" : "Tenant Request"}
+                </span>
+              )}
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {de ? "Immobilie" : "Property"} <span className="text-red-500">*</span>

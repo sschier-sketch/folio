@@ -17,7 +17,7 @@ import {
   Mail,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
-import { getCategoryLabel } from "../../lib/ticketUtils";
+import { getCategoryLabel, isTaskRelevantCategory, mapTicketCategoryToTaskCategory } from "../../lib/ticketUtils";
 import { Button } from '../ui/Button';
 
 interface Ticket {
@@ -223,6 +223,26 @@ export default function TenantPortalCommunication({
             attachments: attachmentData,
           },
         ]);
+      }
+
+      if (ticket && isTaskRelevantCategory(newTicketForm.category)) {
+        try {
+          await supabase.from("maintenance_tasks").insert({
+            property_id: propertyId,
+            user_id: userId,
+            title: newTicketForm.subject,
+            description: newTicketForm.message.trim() || null,
+            status: "open",
+            priority: newTicketForm.priority === "high" ? "high" : newTicketForm.priority === "low" ? "low" : "medium",
+            category: mapTicketCategoryToTaskCategory(newTicketForm.category),
+            source: "tenant_request",
+            tenant_id: tenantId,
+            ticket_id: ticket.id,
+            notify_tenant_on_status: true,
+          });
+        } catch {
+          // task creation is supplementary; don't block ticket flow
+        }
       }
 
       if (sendEmailCopy && ticket) {

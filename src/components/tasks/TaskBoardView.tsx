@@ -130,6 +130,11 @@ export default function TaskBoardView({ tasks, members, de, onEdit, onStatusChan
                         {de ? "Mieter" : "Tenant"}
                       </span>
                     )}
+                    {task.tickets?.ticket_number && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-gray-600 bg-gray-100">
+                        #{task.tickets.ticket_number}
+                      </span>
+                    )}
                     {task.is_recurring && (
                       <RotateCw className="w-3 h-3 text-blue-500" />
                     )}

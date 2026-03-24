@@ -72,7 +72,8 @@ export default function TasksView() {
           *,
           properties (name),
           property_units (unit_number),
-          tenants (first_name, last_name)
+          tenants (first_name, last_name),
+          tickets (ticket_number, status)
         `)
         .eq("user_id", dataOwnerId)
         .order("created_at", { ascending: false });

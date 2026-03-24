@@ -86,6 +86,11 @@ export default function TaskListView({ tasks, members, de, onEdit, onDelete, can
                       {de ? "Mieteranfrage" : "Tenant Request"}
                     </span>
                   )}
+                  {task.tickets?.ticket_number && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium text-gray-600 bg-gray-100">
+                      #{task.tickets.ticket_number}
+                    </span>
+                  )}
                 </div>
 
                 {task.description && (
