@@ -71,7 +71,7 @@ export default function TaskCreateEditModal({
         due_date: task.due_date || "",
         is_recurring: task.is_recurring || false,
         recurrence_interval: task.recurrence_interval || "monthly",
-        property_id: task.property_id,
+        property_id: task.property_id || "",
         unit_id: task.unit_id || "",
         notes: task.notes || "",
         email_notification_enabled: task.email_notification_enabled || false,
@@ -98,8 +98,8 @@ export default function TaskCreateEditModal({
   };
 
   const handleSubmit = async () => {
-    if (!user || !formData.title || !formData.property_id) {
-      alert(de ? "Bitte geben Sie mindestens einen Titel und eine Immobilie an." : "Please provide at least a title and a property.");
+    if (!user || !formData.title) {
+      alert(de ? "Bitte geben Sie mindestens einen Titel an." : "Please provide at least a title.");
       return;
     }
 
@@ -117,7 +117,7 @@ export default function TaskCreateEditModal({
         due_date: formData.due_date || null,
         is_recurring: isRecurring,
         recurrence_interval: interval,
-        property_id: formData.property_id,
+        property_id: formData.property_id || null,
         unit_id: formData.unit_id || null,
         notes: formData.notes || null,
         email_notification_enabled: formData.email_notification_enabled,
@@ -190,14 +190,14 @@ export default function TaskCreateEditModal({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {de ? "Immobilie" : "Property"} <span className="text-red-500">*</span>
+              {de ? "Immobilie" : "Property"}
             </label>
             <select
               value={formData.property_id}
               onChange={(e) => handlePropertyChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">{de ? "Bitte wählen..." : "Please select..."}</option>
+              <option value="">{de ? "Keine Immobilie" : "No property"}</option>
               {properties.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
@@ -340,23 +340,25 @@ export default function TaskCreateEditModal({
             )}
           </div>
 
-          {members.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {de ? "Zugewiesen an" : "Assigned to"}
-              </label>
-              <select
-                value={formData.assigned_user_id}
-                onChange={(e) => setFormData({ ...formData, assigned_user_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">{de ? "Nicht zugewiesen" : "Unassigned"}</option>
-                {members.map(m => (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {de ? "Zugewiesen an" : "Assigned to"}
+            </label>
+            <select
+              value={formData.assigned_user_id}
+              onChange={(e) => setFormData({ ...formData, assigned_user_id: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">{de ? "Nicht zugewiesen" : "Unassigned"}</option>
+              {members.length > 0 ? (
+                members.map(m => (
                   <option key={m.user_id} value={m.user_id}>{m.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
+                ))
+              ) : (
+                user && <option value={user.id}>{user.email}</option>
+              )}
+            </select>
+          </div>
 
           <div className="border-t border-gray-200 pt-4">
             <label className="flex items-center gap-2 mb-3 cursor-pointer">

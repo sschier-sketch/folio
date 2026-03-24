@@ -86,6 +86,12 @@ export default function TaskListView({ tasks, members, de, onEdit, onDelete, can
                       {de ? "Mieteranfrage" : "Tenant Request"}
                     </span>
                   )}
+                  {task.source === "recurring" && task.parent_task_id && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium text-blue-600 bg-blue-50 flex items-center gap-0.5">
+                      <RotateCw className="w-3 h-3" />
+                      {de ? "Serieninstanz" : "Series Instance"}
+                    </span>
+                  )}
                   {task.tickets?.ticket_number && (
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium text-gray-600 bg-gray-100">
                       #{task.tickets.ticket_number}

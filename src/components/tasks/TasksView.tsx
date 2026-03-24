@@ -42,7 +42,7 @@ export default function TasksView() {
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TaskTab>("all");
-  const [viewMode, setViewMode] = useState<TaskViewMode>("list");
+  const [viewMode, setViewMode] = useState<TaskViewMode>("board");
   const [sortKey, setSortKey] = useState<TaskSortKey>("newest");
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
