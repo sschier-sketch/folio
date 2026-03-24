@@ -14,6 +14,7 @@ const SECTION_LABELS_DE: Record<SectionKey, string> = {
   rent_payments: "Mieteingänge",
   leases: "Mietverhältnisse",
   messages: "Nachrichten",
+  tasks: "Aufgaben",
   billing: "Tarif & Abrechnung",
   users: "Benutzerverwaltung",
 };
@@ -24,6 +25,7 @@ const SECTION_LABELS_EN: Record<SectionKey, string> = {
   rent_payments: "Rent Payments",
   leases: "Leases",
   messages: "Messages",
+  tasks: "Tasks",
   billing: "Billing",
   users: "User Management",
 };

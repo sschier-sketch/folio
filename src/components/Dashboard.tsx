@@ -27,6 +27,7 @@ import {
   Copy,
   Mail,
   Headphones,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -54,6 +55,7 @@ import TicketsView from "./TicketsView";
 import MessagesView from "./messages/MessagesView";
 import ServiceView from "./ServiceView";
 import UsersManagementView from "./UsersManagementView";
+import TasksView from "./tasks/TasksView";
 import { SectionGuard } from "./SectionGuard";
 import Footer from "./Footer";
 import SystemUpdatesModal from "./SystemUpdatesModal";
@@ -76,7 +78,8 @@ type View =
   | "feedback"
   | "service"
   | "referral"
-  | "users";
+  | "users"
+  | "tasks";
 export default function Dashboard() {
   const [currentView, setCurrentView] = useState<View>("home");
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
@@ -92,6 +95,7 @@ export default function Dashboard() {
   const [hasNewUpdates, setHasNewUpdates] = useState(false);
   const [copiedPortalUrl, setCopiedPortalUrl] = useState(false);
   const [unreadMailCount, setUnreadMailCount] = useState(0);
+  const [openTaskCount, setOpenTaskCount] = useState(0);
   const [defaultCommissionRate, setDefaultCommissionRate] = useState(25);
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useLanguage();
@@ -110,7 +114,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const view = searchParams.get('view');
-    if (view && ['home', 'properties', 'tenants', 'mieterportal', 'messages', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'service', 'referral', 'users'].includes(view)) {
+    if (view && ['home', 'properties', 'tenants', 'mieterportal', 'messages', 'tasks', 'payments', 'financial', 'documents', 'templates', 'billing', 'tickets', 'settings-profile', 'settings-billing', 'feedback', 'service', 'referral', 'users'].includes(view)) {
       setCurrentView(view as View);
       const preserved: Record<string, string> = {};
       const tab = searchParams.get('tab');
@@ -135,6 +139,22 @@ export default function Dashboard() {
     const interval = setInterval(loadUnreadCount, 30000);
     return () => clearInterval(interval);
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const ownerId = permissions.accountOwnerId || user.id;
+    const loadOpenTaskCount = async () => {
+      const { count } = await supabase
+        .from('maintenance_tasks')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', ownerId)
+        .in('status', ['open', 'in_progress']);
+      setOpenTaskCount(count || 0);
+    };
+    loadOpenTaskCount();
+    const interval = setInterval(loadOpenTaskCount, 60000);
+    return () => clearInterval(interval);
+  }, [user, permissions.accountOwnerId]);
 
   useEffect(() => {
     if (currentView !== 'messages') setComposeLetter(false);
@@ -184,6 +204,7 @@ export default function Dashboard() {
       case "billing": return !permissions.canViewStatements;
       case "tenants": return !permissions.canViewLeases;
       case "messages": return !permissions.canViewMessages;
+      case "tasks": return !permissions.canViewTasks;
       default: return false;
     }
   };
@@ -194,6 +215,7 @@ export default function Dashboard() {
     { id: "tenants", labelKey: "nav.tenants", icon: Users },
     { id: "payments", labelKey: "nav.payments", icon: Wallet },
     { id: "messages", labelKey: "nav.messages", icon: Mail },
+    { id: "tasks", labelKey: "nav.tasks", icon: ClipboardList },
     { id: "mieterportal", labelKey: "nav.mieterportal", icon: MessageSquare },
     { id: "financial", labelKey: "nav.financial", icon: TrendingUp },
     { id: "documents", labelKey: "nav.documents", icon: FileText },
@@ -484,7 +506,7 @@ export default function Dashboard() {
               {" "}
               {navigation.map((item) => {
                 const disabled = isNavDisabled(item.id);
-                const isLocked = (item.id === "mieterportal" || item.id === "messages") && !isPremium;
+                const isLocked = (item.id === "mieterportal" || item.id === "messages" || item.id === "tasks") && !isPremium;
                 const isInactive = disabled || isLocked;
                 return (
                   <button
@@ -514,7 +536,15 @@ export default function Dashboard() {
                           {unreadMailCount > 99 ? '99+' : unreadMailCount}
                         </span>
                       )}
+                      {item.id === "tasks" && isPremium && !disabled && openTaskCount > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-amber-500 text-white">
+                          {openTaskCount > 99 ? '99+' : openTaskCount}
+                        </span>
+                      )}
                       {(item.id === "mieterportal" || item.id === "messages") && (
+                        <Badge variant="pro" size="sm">Pro</Badge>
+                      )}
+                      {item.id === "tasks" && (
                         <Badge variant="pro" size="sm">Pro</Badge>
                       )}
                     </div>{" "}
@@ -592,7 +622,7 @@ export default function Dashboard() {
               {" "}
               {navigation.map((item) => {
                 const disabled = isNavDisabled(item.id);
-                const isLocked = (item.id === "mieterportal" || item.id === "messages") && !isPremium;
+                const isLocked = (item.id === "mieterportal" || item.id === "messages" || item.id === "tasks") && !isPremium;
                 const isInactive = disabled || isLocked;
                 return (
                   <button
@@ -621,7 +651,15 @@ export default function Dashboard() {
                           {unreadMailCount > 99 ? '99+' : unreadMailCount}
                         </span>
                       )}
+                      {item.id === "tasks" && isPremium && !disabled && openTaskCount > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold rounded-full bg-amber-500 text-white">
+                          {openTaskCount > 99 ? '99+' : openTaskCount}
+                        </span>
+                      )}
                       {(item.id === "mieterportal" || item.id === "messages") && (
+                        <Badge variant="pro" size="sm">Pro</Badge>
+                      )}
+                      {item.id === "tasks" && (
                         <Badge variant="pro" size="sm">Pro</Badge>
                       )}
                     </div>{" "}
@@ -708,6 +746,7 @@ export default function Dashboard() {
             {currentView === "service" && <ServiceView key={viewResetKey} />}{" "}
             {currentView === "referral" && <ReferralProgramView key={viewResetKey} />}{" "}
             {currentView === "users" && <SectionGuard section="users"><UsersManagementView key={viewResetKey} /></SectionGuard>}{" "}
+            {currentView === "tasks" && <SectionGuard section="tasks"><TasksView key={viewResetKey} /></SectionGuard>}{" "}
             </>
             )}
           </main>{" "}

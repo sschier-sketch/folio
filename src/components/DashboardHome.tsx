@@ -6,7 +6,6 @@ import {
   TrendingUp,
   TrendingDown,
   Euro,
-  Wrench,
   AlertCircle,
   ChevronRight,
   Receipt,
@@ -38,21 +37,6 @@ interface Stats {
   rentedUnits: number;
   totalUnits: number;
   tenantsMovingOutSoon: number;
-}
-
-interface MaintenanceTask {
-  id: string;
-  title: string;
-  priority: string;
-  due_date: string;
-  property_id: string;
-  unit_id: string | null;
-  properties: {
-    name: string;
-  };
-  property_units?: {
-    unit_number: string;
-  };
 }
 
 interface RentIncrease {
@@ -107,10 +91,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
     tenantsMovingOutSoon: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [upcomingTasks, setUpcomingTasks] = useState<MaintenanceTask[]>([]);
   const [rentIncreases, setRentIncreases] = useState<RentIncrease[]>([]);
   const [openTickets, setOpenTickets] = useState<UnreadTicketThread[]>([]);
-  const [showTasksCard, setShowTasksCard] = useState(true);
   const [showTicketsCard, setShowTicketsCard] = useState(true);
   const [showRentIncreasesCard, setShowRentIncreasesCard] = useState(true);
   const [showProfileWizard, setShowProfileWizard] = useState(false);
@@ -119,7 +101,6 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   useEffect(() => {
     if (!user || permLoading || !dataOwnerId) return;
     loadStats();
-    loadUpcomingTasks();
     loadUpcomingRentIncreases();
     loadOpenTickets();
   }, [user, permLoading, dataOwnerId]);
@@ -336,43 +317,6 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       maximumFractionDigits: decimals,
     }).format(value);
   };
-  const loadUpcomingTasks = async () => {
-    if (!user || !dataOwnerId) return;
-
-    try {
-      const ninetyDaysFromNow = new Date();
-      ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
-
-      const { data, error } = await supabase
-        .from("maintenance_tasks")
-        .select(`
-          id,
-          title,
-          priority,
-          due_date,
-          property_id,
-          unit_id,
-          properties (
-            name
-          ),
-          property_units (
-            unit_number
-          )
-        `)
-        .eq("user_id", dataOwnerId)
-        .in("status", ["open", "in_progress"])
-        .not("due_date", "is", null)
-        .lte("due_date", ninetyDaysFromNow.toISOString().split("T")[0])
-        .order("due_date", { ascending: true })
-        .limit(10);
-
-      if (error) throw error;
-      setUpcomingTasks(filterByPropertyId(data || []).slice(0, 5));
-    } catch (error) {
-      console.error("Error loading upcoming tasks:", error);
-    }
-  };
-
   const loadUpcomingRentIncreases = async () => {
     if (!user || !dataOwnerId) return;
 
@@ -475,16 +419,6 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "text-red-600 bg-red-50";
-      case "low":
-        return "text-gray-600 bg-gray-50";
-      default:
-        return "text-amber-600 bg-amber-50";
-    }
-  };
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -789,55 +723,6 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           </div>{" "}
         </div>{" "}
       </div>{" "}
-
-      {upcomingTasks.length > 0 && showTasksCard && (
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-dark">Anstehende Wartungsaufgaben</h2>
-          </div>
-          <div className="bg-white rounded-lg">
-            {upcomingTasks.map((task, index) => (
-              <div
-                key={task.id}
-                className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => {
-                  if (onNavigateToProperty) {
-                    onNavigateToProperty(task.property_id, "maintenance");
-                  }
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
-                      <Wrench className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-dark truncate">{task.title}</h3>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                          {task.priority === "high" ? "Hoch" : task.priority === "low" ? "Niedrig" : "Mittel"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm text-gray-500">
-                        <span>{task.properties?.name}</span>
-                        {task.property_units?.unit_number && (
-                          <>
-                            <span>•</span>
-                            <span>Einheit {task.property_units.unit_number}</span>
-                          </>
-                        )}
-                        <span>•</span>
-                        <span>Fällig: {new Date(task.due_date).toLocaleDateString("de-DE")}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {rentIncreases.length > 0 && showRentIncreasesCard && (
         <div className="mt-8">
