@@ -1,5 +1,5 @@
-import { Mail, Flag } from 'lucide-react';
-import type { MailThread, TicketPriority, TicketCategory } from './types';
+import { Mail } from 'lucide-react';
+import type { MailThread, TicketCategory } from './types';
 
 interface ThreadListProps {
   threads: MailThread[];
@@ -37,13 +37,8 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
-const priorityConfig: Record<TicketPriority, { color: string; bg: string; label: string }> = {
-  low: { color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Niedrig' },
-  medium: { color: 'text-amber-600', bg: 'bg-amber-50', label: 'Mittel' },
-  high: { color: 'text-red-600', bg: 'bg-red-50', label: 'Hoch' },
-};
-
-const categoryLabels: Record<TicketCategory, string> = {
+const categoryLabels: Record<TicketCategory | 'message', string> = {
+  message: 'Nachricht',
   general: 'Allgemein',
   maintenance: 'Wartung',
   repair: 'Reparatur',
@@ -108,9 +103,6 @@ export default function ThreadList({ threads, selectedThreadId, onSelect, loadin
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  {thread.priority && (
-                    <Flag className={`w-3 h-3 flex-shrink-0 ${priorityConfig[thread.priority].color}`} fill="currentColor" />
-                  )}
                   <span className={`text-sm truncate ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
                     {name}
                   </span>

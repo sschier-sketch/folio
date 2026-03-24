@@ -1,19 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, ArrowLeft, User, UserPlus, Flag, Trash2, RotateCcw, Ligature as FileSignature, Paperclip, Download, FileText, Image as ImageIcon } from 'lucide-react';
+import { Send, ArrowLeft, User, UserPlus, Trash2, RotateCcw, Ligature as FileSignature, Paperclip, Download, FileText, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import AssignSenderModal from './AssignSenderModal';
-import type { MailThread, MailMessage, MailAttachment, TicketPriority, TicketCategory } from './types';
+import type { MailThread, MailMessage, MailAttachment, TicketCategory } from './types';
 import { Button } from '../ui/Button';
 
-const priorityConfig: Record<TicketPriority, { color: string; bg: string; border: string; label: string }> = {
-  low: { color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', label: 'Niedrig' },
-  medium: { color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200', label: 'Mittel' },
-  high: { color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', label: 'Dringend' },
-};
-
-const categoryLabels: Record<TicketCategory, string> = {
+const categoryLabels: Record<TicketCategory | 'message', string> = {
+  message: 'Nachricht',
   general: 'Allgemein',
   maintenance: 'Wartung',
   repair: 'Reparatur',
@@ -242,9 +237,6 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              {thread.priority && (
-                <Flag className={`w-3.5 h-3.5 flex-shrink-0 ${priorityConfig[thread.priority].color}`} fill="currentColor" />
-              )}
               <h3 className="font-semibold text-gray-900 text-sm truncate">{recipientName}</h3>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
@@ -252,11 +244,6 @@ export default function ThreadDetail({ thread, userAlias, onBack, onMessageSent,
               {thread.category && (
                 <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-gray-100 text-gray-600 flex-shrink-0">
                   {categoryLabels[thread.category as TicketCategory] || thread.category}
-                </span>
-              )}
-              {thread.priority && (
-                <span className={`inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded border flex-shrink-0 ${priorityConfig[thread.priority].bg} ${priorityConfig[thread.priority].color} ${priorityConfig[thread.priority].border}`}>
-                  {priorityConfig[thread.priority].label}
                 </span>
               )}
             </div>

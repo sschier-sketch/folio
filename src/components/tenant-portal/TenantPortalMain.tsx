@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Home,
   FileText,
@@ -51,6 +51,7 @@ export default function TenantPortalMain({
     portal_meter_readings_enabled: true,
   });
   const [loading, setLoading] = useState(true);
+  const [unreadCommCount, setUnreadCommCount] = useState(0);
 
   useEffect(() => {
     loadTenantData();
@@ -88,6 +89,10 @@ export default function TenantPortalMain({
       setLoading(false);
     }
   };
+
+  const handleUnreadCountChange = useCallback((count: number) => {
+    setUnreadCommCount(count);
+  }, []);
 
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: Home },
@@ -152,6 +157,7 @@ export default function TenantPortalMain({
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isDisabled = tab.id === "meters" && !contractSettings.portal_meter_readings_enabled;
+                const badge = tab.id === "communication" ? unreadCommCount : 0;
                 return (
                   <button
                     key={tab.id}
@@ -166,7 +172,12 @@ export default function TenantPortalMain({
                     }`}
                   >
                     <Icon className="w-3 h-3" />
-                    <span className="font-medium">{tab.label}</span>
+                    <span className="font-medium flex-1">{tab.label}</span>
+                    {badge > 0 && (
+                      <span className="w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
+                        {badge}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -193,6 +204,7 @@ export default function TenantPortalMain({
                 tenantEmail={tenantData.email}
                 propertyId={tenantData.property_id}
                 userId={tenantData.user_id}
+                onUnreadCountChange={handleUnreadCountChange}
               />
             )}
             {activeTab === "meters" && (
@@ -206,10 +218,10 @@ export default function TenantPortalMain({
                 <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                   <Gauge className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-dark mb-2">
-                    Nicht verfügbar
+                    Nicht verfuegbar
                   </h3>
                   <p className="text-gray-400">
-                    Diese Funktion ist für Sie nicht verfügbar. Bitte wenden Sie sich an Ihren Vermieter.
+                    Diese Funktion ist fuer Sie nicht verfuegbar. Bitte wenden Sie sich an Ihren Vermieter.
                   </p>
                 </div>
               )

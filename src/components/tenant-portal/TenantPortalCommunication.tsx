@@ -15,9 +15,10 @@ import {
   Download,
   Tag,
   Mail,
+  Wrench,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
-import { getCategoryLabel, isTaskRelevantCategory, mapTicketCategoryToTaskCategory } from "../../lib/ticketUtils";
+import { getCategoryLabel, isTaskRelevantCategory, isMessageCategory, mapTicketCategoryToTaskCategory } from "../../lib/ticketUtils";
 import { Button } from '../ui/Button';
 
 interface Ticket {
@@ -29,6 +30,7 @@ interface Ticket {
   category: string;
   created_at: string;
   updated_at: string;
+  has_unread_reply?: boolean;
 }
 
 interface Attachment {
@@ -58,15 +60,12 @@ interface Communication {
   attachment_path?: string;
 }
 
-type ConversationItem =
-  | { type: "ticket"; data: Ticket; sortDate: string }
-  | { type: "communication"; data: Communication; sortDate: string };
-
 interface Props {
   tenantId: string;
   tenantEmail: string;
   propertyId: string;
   userId: string;
+  onUnreadCountChange?: (count: number) => void;
 }
 
 export default function TenantPortalCommunication({
@@ -74,6 +73,7 @@ export default function TenantPortalCommunication({
   tenantEmail,
   propertyId,
   userId,
+  onUnreadCountChange,
 }: Props) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [communications, setCommunications] = useState<Communication[]>([]);
@@ -85,13 +85,13 @@ export default function TenantPortalCommunication({
   const [submitting, setSubmitting] = useState(false);
   const [newTicketForm, setNewTicketForm] = useState({
     subject: "",
-    category: "general",
+    category: "message",
     priority: "medium",
     message: "",
   });
   const [attachments, setAttachments] = useState<File[]>([]);
   const [sendEmailCopy, setSendEmailCopy] = useState(false);
-  const [filter, setFilter] = useState<"all" | "tickets" | "messages">("all");
+  const [filter, setFilter] = useState<"all" | "messages" | "tasks">("all");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -101,6 +101,7 @@ export default function TenantPortalCommunication({
   useEffect(() => {
     if (selectedTicket) {
       loadTicketMessages(selectedTicket.id);
+      markTicketAsRead(selectedTicket.id);
     }
   }, [selectedTicket]);
 
@@ -109,6 +110,11 @@ export default function TenantPortalCommunication({
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  useEffect(() => {
+    const unreadCount = tickets.filter(t => t.has_unread_reply).length;
+    onUnreadCountChange?.(unreadCount);
+  }, [tickets, onUnreadCountChange]);
 
   async function loadAll() {
     setLoading(true);
@@ -123,7 +129,40 @@ export default function TenantPortalCommunication({
       .eq("tenant_id", tenantId)
       .eq("tenant_visible", true)
       .order("created_at", { ascending: false });
-    setTickets(data || []);
+
+    const ticketList = data || [];
+    const ticketIds = ticketList.map(t => t.id);
+
+    if (ticketIds.length > 0) {
+      const { data: lastMessages } = await supabase
+        .from("ticket_messages")
+        .select("ticket_id, sender_type, created_at")
+        .in("ticket_id", ticketIds)
+        .order("created_at", { ascending: false });
+
+      const lastLandlordReply: Record<string, string> = {};
+      const lastTenantView: Record<string, string> = {};
+
+      (lastMessages || []).forEach(msg => {
+        if (msg.sender_type === "landlord" && !lastLandlordReply[msg.ticket_id]) {
+          lastLandlordReply[msg.ticket_id] = msg.created_at;
+        }
+        if (msg.sender_type === "tenant" && !lastTenantView[msg.ticket_id]) {
+          lastTenantView[msg.ticket_id] = msg.created_at;
+        }
+      });
+
+      const enriched = ticketList.map(t => ({
+        ...t,
+        has_unread_reply: !!lastLandlordReply[t.id] && (
+          !lastTenantView[t.id] ||
+          new Date(lastLandlordReply[t.id]) > new Date(lastTenantView[t.id])
+        ),
+      }));
+      setTickets(enriched);
+    } else {
+      setTickets(ticketList);
+    }
   }
 
   async function loadCommunications() {
@@ -156,21 +195,47 @@ export default function TenantPortalCommunication({
     setMessages(data || []);
   }
 
-  const conversationItems: ConversationItem[] = (() => {
-    const items: ConversationItem[] = [];
-    if (filter === "all" || filter === "tickets") {
-      tickets.forEach((t) =>
+  function markTicketAsRead(ticketId: string) {
+    setTickets(prev =>
+      prev.map(t => t.id === ticketId ? { ...t, has_unread_reply: false } : t)
+    );
+  }
+
+  const messageTickets = tickets.filter(t => isMessageCategory(t.category));
+  const taskTickets = tickets.filter(t => !isMessageCategory(t.category));
+
+  const getFilteredItems = () => {
+    if (filter === "messages") {
+      const items: { type: "ticket" | "communication"; data: Ticket | Communication; sortDate: string }[] = [];
+      messageTickets.forEach(t =>
         items.push({ type: "ticket", data: t, sortDate: t.updated_at || t.created_at })
       );
-    }
-    if (filter === "all" || filter === "messages") {
-      communications.forEach((c) =>
+      communications.forEach(c =>
         items.push({ type: "communication", data: c, sortDate: c.created_at })
       );
+      items.sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime());
+      return items;
     }
+    if (filter === "tasks") {
+      return taskTickets
+        .map(t => ({ type: "ticket" as const, data: t, sortDate: t.updated_at || t.created_at }))
+        .sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime());
+    }
+    const items: { type: "ticket" | "communication"; data: Ticket | Communication; sortDate: string }[] = [];
+    tickets.forEach(t =>
+      items.push({ type: "ticket", data: t, sortDate: t.updated_at || t.created_at })
+    );
+    communications.forEach(c =>
+      items.push({ type: "communication", data: c, sortDate: c.created_at })
+    );
     items.sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime());
     return items;
-  })();
+  };
+
+  const filteredItems = getFilteredItems();
+
+  const unreadMessageCount = messageTickets.filter(t => t.has_unread_reply).length;
+  const unreadTaskCount = taskTickets.filter(t => t.has_unread_reply).length;
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,7 +306,7 @@ export default function TenantPortalCommunication({
             notify_tenant_on_status: true,
           });
         } catch {
-          // task creation is supplementary; don't block ticket flow
+          // task creation is supplementary
         }
       }
 
@@ -291,7 +356,7 @@ export default function TenantPortalCommunication({
         }
       }
 
-      setNewTicketForm({ subject: "", category: "general", priority: "medium", message: "" });
+      setNewTicketForm({ subject: "", category: "message", priority: "medium", message: "" });
       setAttachments([]);
       setSendEmailCopy(false);
       setShowNewTicket(false);
@@ -327,7 +392,7 @@ export default function TenantPortalCommunication({
     const files = Array.from(e.target.files || []);
     const imageFiles = files.filter((f) => f.type.startsWith("image/"));
     if (imageFiles.length !== files.length) {
-      alert("Bitte nur Bilddateien auswählen");
+      alert("Bitte nur Bilddateien auswaehlen");
     }
     setAttachments((prev) => [...prev, ...imageFiles].slice(0, 5));
   };
@@ -352,15 +417,6 @@ export default function TenantPortalCommunication({
     );
   };
 
-  const getPriorityDot = (priority: string) => {
-    const colors: Record<string, string> = {
-      high: "bg-red-500",
-      medium: "bg-amber-400",
-      low: "bg-gray-300",
-    };
-    return <span className={`inline-block w-2 h-2 rounded-full ${colors[priority] || colors.medium}`} />;
-  };
-
   const formatRelativeDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
@@ -375,7 +431,6 @@ export default function TenantPortalCommunication({
     return date.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
   };
 
-  // ---- DETAIL: Communication (landlord message) ----
   if (selectedComm) {
     return (
       <div>
@@ -384,7 +439,7 @@ export default function TenantPortalCommunication({
           className="flex items-center gap-2 text-primary-blue hover:text-blue-700 font-medium mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Zurück
+          Zurueck
         </button>
 
         <div className="bg-white rounded-lg shadow-sm">
@@ -436,7 +491,6 @@ export default function TenantPortalCommunication({
     );
   }
 
-  // ---- DETAIL: Ticket thread ----
   if (selectedTicket) {
     return (
       <div>
@@ -448,7 +502,7 @@ export default function TenantPortalCommunication({
           className="flex items-center gap-2 text-primary-blue hover:text-blue-700 font-medium mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Zurück
+          Zurueck
         </button>
 
         <div className="mb-4 flex items-start justify-between">
@@ -464,8 +518,6 @@ export default function TenantPortalCommunication({
                 <Tag className="w-3.5 h-3.5" />
                 {getCategoryLabel(selectedTicket.category)}
               </span>
-              <span>&bull;</span>
-              <span>{getPriorityDot(selectedTicket.priority)}</span>
             </div>
           </div>
         </div>
@@ -559,7 +611,6 @@ export default function TenantPortalCommunication({
     );
   }
 
-  // ---- LIST VIEW ----
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -582,54 +633,79 @@ export default function TenantPortalCommunication({
       </div>
 
       <div className="flex gap-2 mb-5">
-        {(["all", "tickets", "messages"] as const).map((f) => (
+        {([
+          { key: "all", label: "Alle" },
+          { key: "messages", label: "Nachrichten", badge: unreadMessageCount },
+          { key: "tasks", label: "Aufgaben", badge: unreadTaskCount },
+        ] as const).map((f) => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              filter === f
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              filter === f.key
                 ? "bg-primary-blue text-white"
                 : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
             }`}
           >
-            {f === "all" ? "Alle" : f === "tickets" ? "Anfragen" : "Nachrichten"}
+            {f.label}
+            {"badge" in f && f.badge > 0 && (
+              <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${
+                filter === f.key ? "bg-white text-primary-blue" : "bg-red-500 text-white"
+              }`}>
+                {f.badge}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
-      {conversationItems.length === 0 ? (
+      {filteredItems.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-12 text-center">
           <MessageSquare className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-dark mb-2">Keine Eintraege</h3>
           <p className="text-gray-400">
-            {filter === "tickets"
-              ? "Noch keine Anfragen vorhanden."
+            {filter === "tasks"
+              ? "Noch keine Aufgaben vorhanden."
               : filter === "messages"
-                ? "Noch keine Nachrichten von Ihrem Vermieter."
+                ? "Noch keine Nachrichten vorhanden."
                 : "Erstellen Sie eine Anfrage oder warten Sie auf Nachrichten Ihres Vermieters."}
           </p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm divide-y divide-gray-100">
-          {conversationItems.map((item) => {
+          {filteredItems.map((item) => {
             if (item.type === "ticket") {
-              const t = item.data;
+              const t = item.data as Ticket;
+              const isMsgType = isMessageCategory(t.category);
               return (
                 <div
                   key={`ticket-${t.id}`}
                   onClick={() => setSelectedTicket(t)}
-                  className="flex items-center gap-4 p-5 hover:bg-gray-50 cursor-pointer transition-colors"
+                  className={`flex items-center gap-4 p-5 hover:bg-gray-50 cursor-pointer transition-colors ${
+                    t.has_unread_reply ? "bg-blue-50/40" : ""
+                  }`}
                 >
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
+                    style={isMsgType
+                      ? { backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }
+                      : { backgroundColor: "#FEF3C7", border: "1px solid #FDE68A" }
+                    }
                   >
-                    <MessageSquare className="w-5 h-5 text-dark" strokeWidth={1.5} />
+                    {isMsgType ? (
+                      <MessageSquare className="w-5 h-5 text-blue-600" strokeWidth={1.5} />
+                    ) : (
+                      <Wrench className="w-5 h-5 text-amber-600" strokeWidth={1.5} />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      {getPriorityDot(t.priority)}
-                      <h3 className="font-semibold text-dark truncate">{t.subject}</h3>
+                      <h3 className={`font-semibold text-dark truncate ${t.has_unread_reply ? "font-bold" : ""}`}>
+                        {t.subject}
+                      </h3>
+                      {t.has_unread_reply && (
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600 flex-shrink-0" />
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-400">
                       <span className="font-mono">#{t.ticket_number}</span>
@@ -647,7 +723,7 @@ export default function TenantPortalCommunication({
               );
             }
 
-            const c = item.data;
+            const c = item.data as Communication;
             return (
               <div
                 key={`comm-${c.id}`}
@@ -700,7 +776,7 @@ export default function TenantPortalCommunication({
                   value={newTicketForm.subject}
                   onChange={(e) => setNewTicketForm({ ...newTicketForm, subject: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  placeholder="z.B. Heizung defekt"
+                  placeholder="z.B. Frage zur Nebenkostenabrechnung"
                   required
                 />
               </div>
@@ -713,10 +789,11 @@ export default function TenantPortalCommunication({
                     onChange={(e) => setNewTicketForm({ ...newTicketForm, category: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                   >
+                    <option value="message">Nachricht</option>
+                    <option value="complaint">Beschwerde</option>
                     <option value="general">Allgemein</option>
                     <option value="maintenance">Wartung</option>
                     <option value="repair">Reparatur</option>
-                    <option value="complaint">Beschwerde</option>
                   </select>
                 </div>
                 <div>
@@ -733,6 +810,15 @@ export default function TenantPortalCommunication({
                 </div>
               </div>
 
+              {isTaskRelevantCategory(newTicketForm.category) && (
+                <div className="flex items-center gap-2 px-3 py-2.5 bg-amber-50 rounded-lg border border-amber-200">
+                  <Wrench className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span className="text-sm text-amber-700">
+                    Diese Kategorie erstellt automatisch eine Aufgabe fuer Ihren Vermieter.
+                  </span>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-2">Beschreibung *</label>
                 <textarea
@@ -747,12 +833,12 @@ export default function TenantPortalCommunication({
 
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Bilder anhängen (max. 5)
+                  Bilder anhaengen (max. 5)
                 </label>
                 <div className="space-y-3">
                   <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-blue hover:bg-blue-50 transition-colors">
                     <Upload className="w-5 h-5 text-gray-400" />
-                    <span className="text-sm text-gray-600">Bilder auswählen</span>
+                    <span className="text-sm text-gray-600">Bilder auswaehlen</span>
                     <input
                       type="file"
                       accept="image/*"
