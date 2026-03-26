@@ -24,6 +24,7 @@ import {
   Zap,
   Laptop,
   Send,
+  ListTodo,
 } from "lucide-react";
 
 const HERO_CHECKS = [
@@ -47,7 +48,13 @@ const FEATURES = [
   {
     icon: MessageSquare,
     title: "Ticketsystem",
-    description: "Mieteranfragen als Tickets verwalten. Status, Priorität und Zuständigkeit auf einen Blick."
+    description: "Mieteranfragen als Tickets verwalten. Status, Priorit\u00e4t und Zust\u00e4ndigkeit auf einen Blick. Tickets k\u00f6nnen direkt als Aufgabe weiterverarbeitet werden."
+  },
+  {
+    icon: ListTodo,
+    title: "Aufgaben aus Anfragen erstellen",
+    description: "Mieteranfragen und Tickets werden direkt in die Aufgabenverwaltung \u00fcberf\u00fchrt. Weisen Sie Reparaturen und Wartungen Ihrem Team zu.",
+    isNew: true,
   },
   {
     icon: Bell,

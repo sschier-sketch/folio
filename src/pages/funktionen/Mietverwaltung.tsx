@@ -24,6 +24,7 @@ import {
   Zap,
   Laptop,
   Landmark,
+  ListTodo,
 } from "lucide-react";
 
 const HERO_CHECKS = [
@@ -67,7 +68,13 @@ const FEATURES = [
   {
     icon: Clock,
     title: "Teilzahlungen erfassen",
-    description: "Teilbeträge werden erfasst und offene Salden nachverfolgt. Übersicht über alle Zahlungsvorgänge."
+    description: "Teilbetr\u00e4ge werden erfasst und offene Salden nachverfolgt. \u00dcbersicht \u00fcber alle Zahlungsvorg\u00e4nge."
+  },
+  {
+    icon: ListTodo,
+    title: "Aufgaben & Mieteranfragen",
+    description: "Mieteranfragen werden automatisch als Aufgabe erfasst. Weisen Sie Reparaturen und Wartungen direkt Ihrem Team zu.",
+    isNew: true,
   }
 ];
 

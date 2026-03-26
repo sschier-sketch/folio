@@ -27,12 +27,13 @@ import {
   Home,
   TrendingUp,
   Gauge,
+  ListTodo,
 } from "lucide-react";
 
 const HERO_CHECKS = [
   "Unbegrenzt Immobilien & Einheiten verwalten",
   "Alle Objektdaten zentral an einem Ort",
-  "Wertentwicklung & Kennzahlen im Blick",
+  "Aufgaben & Wartungen im Team koordinieren",
   "Multi-User: Gemeinsam im Team verwalten",
 ];
 
@@ -78,6 +79,12 @@ const FEATURES = [
     title: "Benutzerverwaltung",
     description:
       "Laden Sie Teammitglieder, Partner oder Familienmitglieder ein und verwalten Sie Ihre Immobilien gemeinsam. Unbegrenzt viele Benutzer im selben Konto.",
+  },
+  {
+    icon: ListTodo,
+    title: "Aufgabenverwaltung",
+    description:
+      "Wartungen, Reparaturen und Mieteranfragen zentral organisieren. Kanban-Board, Zuweisung an Teammitglieder, wiederkehrende Aufgaben und automatische Erinnerungen.",
     isNew: true,
   },
 ];
@@ -438,11 +445,18 @@ export default function Immobilienmanagement() {
                 auf deutschen Servern gespeichert.
               </p>
               <p>
-                Neu: Mit der integrierten Benutzerverwaltung laden Sie Teammitglieder, Partner oder
+                Mit der integrierten Benutzerverwaltung laden Sie Teammitglieder, Partner oder
                 Familienangeh&ouml;rige in Ihr Konto ein und verwalten Ihre Immobilien gemeinsam.
                 Jeder Benutzer erh&auml;lt eigene Zugangsdaten und arbeitet im selben Datenbestand.
-                So k&ouml;nnen Sie Aufgaben verteilen und die Verwaltung Ihres Portfolios als Team
-                erledigen &ndash; ohne separate Konten oder doppelte Datenpflege.
+              </p>
+              <p>
+                Die neue Aufgabenverwaltung bringt Ordnung in Wartungen, Reparaturen und
+                Mieteranfragen: Aufgaben erstellen, priorisieren und an Teammitglieder zuweisen &ndash;
+                mit Kanban-Board, Listenansicht und automatischen Erinnerungen. Wiederkehrende Wartungen
+                wie Heizungspr&uuml;fungen oder Rauchmelderkontrollen werden automatisch eingeplant.
+                Mieteranfragen aus dem Ticketsystem landen direkt als Aufgabe in Ihrer &Uuml;bersicht.
+                So koordinieren Sie die Arbeit an Ihrem Portfolio als Team &ndash; ohne separate
+                Konten oder doppelte Datenpflege.
               </p>
             </div>
           </RevealOnScroll>

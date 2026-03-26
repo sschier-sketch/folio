@@ -11,6 +11,7 @@ import {
   ArrowRight,
   RefreshCw,
   Landmark,
+  ListTodo,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { RefLink } from "../common/RefLink";
@@ -19,8 +20,8 @@ import { RevealOnScroll } from "../common/RevealOnScroll";
 const HIGHLIGHTS: { icon: LucideIcon; text: string }[] = [
   { icon: Landmark, text: "Bankkonto anbinden & Zahlungen automatisch zuordnen" },
   { icon: FileText, text: "Mietvertr\u00e4ge und Zahlungseing\u00e4nge verwalten" },
+  { icon: ListTodo, text: "Aufgaben & Wartungen im Team koordinieren" },
   { icon: Calculator, text: "Betriebskostenabrechnungen automatisiert erstellen" },
-  { icon: Archive, text: "Dokumente digital archivieren und teilen" },
   { icon: MessageCircle, text: "Kommunikation mit Mietern zentral b\u00fcndeln" },
 ];
 

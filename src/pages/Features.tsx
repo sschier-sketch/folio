@@ -20,6 +20,7 @@ import {
   Laptop,
   Clock,
   LayoutDashboard,
+  ListTodo,
 } from "lucide-react";
 
 const FEATURES = [
@@ -76,14 +77,28 @@ const FEATURES = [
     visual: "finance",
   },
   {
+    icon: ListTodo,
+    title: "Aufgabenverwaltung",
+    description:
+      "Wartungen, Reparaturen und Mieteranfragen zentral organisieren. Kanban-Board, Zuweisung an Teammitglieder und automatische Erinnerungen.",
+    bullets: [
+      "Board- & Listenansicht",
+      "Wiederkehrende Aufgaben automatisch planen",
+      "Aufgaben im Team zuweisen & verfolgen",
+    ],
+    path: "/funktionen/immobilienmanagement",
+    visual: "tasks",
+    isNew: true,
+  },
+  {
     icon: MessagesSquare,
     title: "Mieterkommunikation",
     description:
-      "Ihre gesamte Kommunikation zentral gebündelt. E-Mail-Postfach, Vorlagen und Ticketsystem.",
+      "Ihre gesamte Kommunikation zentral geb\u00fcndelt. E-Mail-Postfach, Vorlagen und Ticketsystem.",
     bullets: [
       "Integriertes E-Mail-Postfach",
       "Professionelle Vorlagen",
-      "Ticketsystem für Anfragen",
+      "Ticketsystem f\u00fcr Anfragen",
     ],
     path: "/funktionen/kommunikation",
     visual: "messages",
@@ -361,6 +376,34 @@ function FeatureVisual({ type }: { type: string }) {
     );
   }
 
+  if (type === "tasks") {
+    return (
+      <div className="space-y-2">
+        {[
+          { label: "Heizung warten", prio: "Hoch", prioColor: "text-red-600 bg-red-50" },
+          { label: "Treppenlicht", prio: "Mittel", prioColor: "text-amber-600 bg-amber-50" },
+          { label: "Rauchmelder", prio: "Niedrig", prioColor: "text-emerald-600 bg-emerald-50" },
+        ].map((task, i) => (
+          <div key={task.label} className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                  i === 2 ? "border-emerald-500 bg-emerald-50" : "border-gray-300"
+                }`}
+              >
+                {i === 2 && <div className="w-2 h-2 rounded-sm bg-emerald-500" />}
+              </div>
+              <span className="text-[11px] text-gray-600 font-medium">{task.label}</span>
+            </div>
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${task.prioColor}`}>
+              {task.prio}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (type === "portal") {
     return (
       <div className="space-y-2.5">
@@ -401,8 +444,8 @@ export default function Features() {
                 brauchen
               </h1>
               <p className="mt-6 text-lg sm:text-xl text-gray-500 leading-relaxed max-w-[640px] mx-auto">
-                Acht leistungsstarke Module, die Ihre gesamte Vermietung abdecken &ndash; von der
-                Objektverwaltung bis zur Nebenkostenabrechnung. Alles in einer Plattform.
+                Neun leistungsstarke Module, die Ihre gesamte Vermietung abdecken &ndash; von der
+                Objektverwaltung bis zur Aufgabenverteilung. Alles in einer Plattform.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <button
@@ -429,7 +472,12 @@ export default function Features() {
             {FEATURES.map((feature, i) => (
               <RevealOnScroll key={feature.title} delay={i * 60}>
                 <RefLink to={feature.path} className="block h-full">
-                  <div className="group relative bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 hover:shadow-xl hover:border-gray-300 transition-all duration-300 h-full overflow-hidden">
+                  <div className={`group relative bg-white border rounded-2xl p-5 sm:p-7 hover:shadow-xl hover:border-gray-300 transition-all duration-300 h-full overflow-hidden ${feature.isNew ? 'border-[#3c8af7]/30 ring-1 ring-[#3c8af7]/10' : 'border-gray-200'}`}>
+                    {feature.isNew && (
+                      <span className="absolute top-4 right-4 sm:top-5 sm:right-5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#3c8af7]/10 text-[#3c8af7] border border-[#3c8af7]/20 z-10">
+                        Neu
+                      </span>
+                    )}
                     <div className="flex gap-6">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-4">
@@ -545,13 +593,14 @@ export default function Features() {
                 jedem weiteren Objekt unübersichtlicher wird.
               </p>
               <p>
-                Rentably bündelt alle Bereiche der Immobilienverwaltung in einer einzigen
+                Rentably b&uuml;ndelt alle Bereiche der Immobilienverwaltung in einer einzigen
                 Plattform: Immobilienmanagement mit Stammdaten, Einheiten und Fotodokumentation,
-                Mietverwaltung mit digitalen Verträgen und automatischer Zahlungsüberwachung,
-                Buchhaltung mit Einnahmen-Ausgaben-Erfassung und Steuerexport,
-                Nebenkostenabrechnungen mit geführtem Assistenten, Dokumentenmanagement mit
-                Cloud-Archiv, Mieterkommunikation über ein integriertes E-Mail-System,
-                professionelle Übergabeprotokolle und ein Self-Service-Mieterportal.
+                Mietverwaltung mit digitalen Vertr&auml;gen und automatischer Zahlungs&uuml;berwachung,
+                Buchhaltung mit Bankanbindung und Steuerexport,
+                Nebenkostenabrechnungen mit gef&uuml;hrtem Assistenten, Dokumentenmanagement mit
+                Cloud-Archiv, Mieterkommunikation &uuml;ber ein integriertes E-Mail-System,
+                professionelle &Uuml;bergabeprotokolle, ein Self-Service-Mieterportal und eine
+                zentrale Aufgabenverwaltung f&uuml;r Wartungen, Reparaturen und Teamkoordination.
               </p>
               <p>
                 Jedes Modul ist so konzipiert, dass es für sich allein funktioniert, aber im
