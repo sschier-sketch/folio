@@ -8,6 +8,8 @@ import {
   X,
   Search,
   ArrowUpDown,
+  Users,
+  UserCog,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
@@ -227,10 +229,10 @@ export default function TasksView() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-dark">
+          <h1 className="text-3xl font-bold text-dark">
             {de ? "Aufgaben" : "Tasks"}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-gray-400 mt-1">
             {de
               ? `${openCount} offen, ${inProgressCount} in Bearbeitung, ${completedCount} erledigt`
               : `${openCount} open, ${inProgressCount} in progress, ${completedCount} completed`}
@@ -248,25 +250,29 @@ export default function TasksView() {
         <ScrollableTabNav>
           <div className="flex">
             {([
-              { key: "all", de: "Alle Aufgaben", en: "All Tasks" },
-              { key: "tenant_requests", de: "Mieteranfragen", en: "Tenant Requests" },
-              { key: "internal", de: "Eigene / Intern", en: "Internal" },
-            ] as const).map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
-                  tab === t.key
-                    ? "text-primary-blue"
-                    : "text-gray-400 hover:text-dark"
-                }`}
-              >
-                {de ? t.de : t.en}
-                {tab === t.key && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
-                )}
-              </button>
-            ))}
+              { key: "all", de: "Alle Aufgaben", en: "All Tasks", icon: ClipboardList },
+              { key: "tenant_requests", de: "Mieteranfragen", en: "Tenant Requests", icon: Users },
+              { key: "internal", de: "Eigene / Intern", en: "Internal", icon: UserCog },
+            ] as const).map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                    tab === t.key
+                      ? "text-primary-blue"
+                      : "text-gray-400 hover:text-dark"
+                  }`}
+                >
+                  <Icon className="w-3 h-3" />
+                  {de ? t.de : t.en}
+                  {tab === t.key && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </ScrollableTabNav>
       </div>
@@ -334,7 +340,7 @@ export default function TasksView() {
       </div>
 
       {showFilters && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+        <div className="bg-white rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold text-dark">{de ? "Filter" : "Filters"}</span>
             {hasActiveFilters && (
