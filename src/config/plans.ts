@@ -147,6 +147,8 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
   {
     name: 'Kommunikation',
     rows: [
+      { feature: 'Aufgabenverwaltung (Board & Liste)', basic: false, pro: true, isNew: true },
+      { feature: 'Aufgaben aus Mieteranfragen erstellen', basic: false, pro: true, isNew: true },
       { feature: 'Briefversand', basic: true, pro: true, isNew: true },
       { feature: 'Ticketsystem', basic: false, pro: true },
       { feature: 'Nachrichten & E-Mail (@rentab.ly)', basic: false, pro: true },
