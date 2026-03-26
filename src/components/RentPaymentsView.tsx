@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell, ArrowUpDown, FileText, Clock, Landmark, Plus } from "lucide-react";
+import { Check, X, Filter, Lock, Building2, CheckCircle, XCircle, Coins, Bell, ArrowUpDown, FileText, Clock, Landmark, Plus, Zap } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { usePermissions } from "../hooks/usePermissions";
@@ -58,6 +59,7 @@ export default function RentPaymentsView() {
   const { user } = useAuth();
   const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, canWrite, loading: permLoading } = usePermissions();
   const { isPremium } = useSubscription();
+  const [, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<"payments" | "dunning" | "dunning-templates" | "dunning-history">("payments");
   const [payments, setPayments] = useState<RentPayment[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
@@ -548,26 +550,38 @@ export default function RentPaymentsView() {
             Verwalten Sie ausstehende und bezahlte Mieten und Nebenkosten
           </p>
         </div>
-        {canWrite && (
+        <div className="flex items-center gap-3">
           <Button
-            variant="primary"
+            variant="outlined"
+            className="!border-[#3c8af7] !text-[#3c8af7] hover:!bg-[#3c8af7]/5"
             onClick={() => {
-              setNkForm({
-                property_id: "",
-                contract_id: "",
-                tenant_id: "",
-                amount: "",
-                due_date: new Date().toISOString().split("T")[0],
-                description: "",
-                notes: "",
-              });
-              setShowNebenkostenModal(true);
+              setSearchParams({ view: 'financial', tab: 'bank' });
             }}
           >
-            <Plus className="w-4 h-4 mr-1.5" />
-            Nebenkosten erfassen
+            <Zap className="w-4 h-4 mr-1.5" />
+            Automatisieren
           </Button>
-        )}
+          {canWrite && (
+            <Button
+              variant="primary"
+              onClick={() => {
+                setNkForm({
+                  property_id: "",
+                  contract_id: "",
+                  tenant_id: "",
+                  amount: "",
+                  due_date: new Date().toISOString().split("T")[0],
+                  description: "",
+                  notes: "",
+                });
+                setShowNebenkostenModal(true);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Nebenkosten erfassen
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-lg mb-6">

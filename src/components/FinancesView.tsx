@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   TrendingUp,
   TrendingDown,
@@ -46,9 +47,24 @@ export default function FinancesView() {
   const { user } = useAuth();
   const { dataOwnerId, canWrite } = usePermissions();
   const { isPremium } = useSubscription();
-  const [activeTab, setActiveTab] = useState<Tab>("income");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['income', 'expenses', 'cashflow', 'indexrent', 'intelligence', 'bank'].includes(tab)) {
+      return tab as Tab;
+    }
+    return 'income';
+  });
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['income', 'expenses', 'cashflow', 'indexrent', 'intelligence', 'bank'].includes(tab)) {
+      setActiveTab(tab as Tab);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const tabs = [
     { id: "income" as Tab, label: "Einnahmen", icon: TrendingUp },
