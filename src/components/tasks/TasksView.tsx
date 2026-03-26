@@ -16,6 +16,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import { useSubscription } from "../../hooks/useSubscription";
 import { PremiumUpgradePrompt } from "../PremiumUpgradePrompt";
 import { Button } from "../ui/Button";
+import ScrollableTabNav from "../common/ScrollableTabNav";
 import TaskListView from "./TaskListView";
 import TaskBoardView from "./TaskBoardView";
 import TaskCreateEditModal from "./TaskCreateEditModal";
@@ -243,24 +244,31 @@ export default function TasksView() {
         )}
       </div>
 
-      <div className="flex items-center gap-2 mb-4 bg-white rounded-lg p-1 border border-gray-200 w-fit">
-        {([
-          { key: "all", de: "Alle Aufgaben", en: "All Tasks" },
-          { key: "tenant_requests", de: "Mieteranfragen", en: "Tenant Requests" },
-          { key: "internal", de: "Eigene / Intern", en: "Internal" },
-        ] as const).map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-              tab === t.key
-                ? "bg-blue-600 text-white"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-            }`}
-          >
-            {de ? t.de : t.en}
-          </button>
-        ))}
+      <div className="bg-white rounded-lg mb-4">
+        <ScrollableTabNav>
+          <div className="flex">
+            {([
+              { key: "all", de: "Alle Aufgaben", en: "All Tasks" },
+              { key: "tenant_requests", de: "Mieteranfragen", en: "Tenant Requests" },
+              { key: "internal", de: "Eigene / Intern", en: "Internal" },
+            ] as const).map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`px-6 py-4 font-medium transition-colors relative whitespace-nowrap text-sm ${
+                  tab === t.key
+                    ? "text-primary-blue"
+                    : "text-gray-400 hover:text-dark"
+                }`}
+              >
+                {de ? t.de : t.en}
+                {tab === t.key && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-blue" />
+                )}
+              </button>
+            ))}
+          </div>
+        </ScrollableTabNav>
       </div>
 
       <div className="flex items-center gap-3 mb-4 flex-wrap">
