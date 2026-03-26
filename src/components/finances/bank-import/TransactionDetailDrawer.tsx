@@ -350,7 +350,7 @@ export default function TransactionDetailDrawer({
                         In Zukunft dauerhaft ignorieren
                       </span>
                       <p className="text-[10px] text-gray-500 mt-0.5">
-                        Sofern Absender und Betrag identisch sind, werden diese Buchungen kuenftig automatisch ignoriert.
+                        Sofern Absender und Betrag identisch sind, werden diese Buchungen künftig automatisch ignoriert.
                       </p>
                     </div>
                     <RotateCcw className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />

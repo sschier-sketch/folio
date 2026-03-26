@@ -91,7 +91,7 @@ function formatImportStatus(status: string): { label: string; color: string } {
     case 'failed':
       return { label: 'Fehlgeschlagen', color: 'text-red-600' };
     case 'requires_sca':
-      return { label: 'Freigabe noetig', color: 'text-amber-600' };
+      return { label: 'Freigabe nötig', color: 'text-amber-600' };
     default:
       return { label: status, color: 'text-gray-500' };
   }
@@ -243,7 +243,7 @@ export default function BanksApiConnectionStatus({
               <div>
                 <p className="text-[10px] text-gray-400 uppercase tracking-wide">Duplikate</p>
                 <p className="text-xs font-medium text-gray-500">
-                  {lastImportLog.total_duplicates_skipped} uebersprungen
+                  {lastImportLog.total_duplicates_skipped} übersprungen
                 </p>
               </div>
             </div>
@@ -274,7 +274,7 @@ export default function BanksApiConnectionStatus({
               <p className="text-xs font-medium text-amber-800">
                 {consentExpired
                   ? 'Ihre PSD2-Bankfreigabe ist abgelaufen.'
-                  : `Ihre PSD2-Bankfreigabe laeuft in ${consentDays} Tagen ab (${formatDate(connection.consent_expires_at)}).`
+                  : `Ihre PSD2-Bankfreigabe läuft in ${consentDays} Tagen ab (${formatDate(connection.consent_expires_at)}).`
                 }
               </p>
               <p className="text-[10px] text-amber-600 mt-0.5">
@@ -341,7 +341,7 @@ export default function BanksApiConnectionStatus({
             </button>
             <p className="text-[10px] text-gray-400 mt-1.5">
               Aktualisiert die Bankdaten und importiert neue Transaktionen.
-              Automatischer Import taeglich um 09:00 Uhr.
+              Automatischer Import täglich um 09:00 Uhr.
             </p>
           </div>
         )}
@@ -484,14 +484,14 @@ function HealthIndicator({
     action = { label: 'Bankfreigabe erneuern', handler: onConsentRenewal };
   } else if (isCritical) {
     title = 'Synchronisierung unterbrochen';
-    description = reason || 'Die automatische Aktualisierung konnte seit laengerem nicht erfolgreich durchgefuehrt werden.';
+    description = reason || 'Die automatische Aktualisierung konnte seit längerem nicht erfolgreich durchgeführt werden.';
     if (failures >= 5) {
       description += ` (${failures} aufeinanderfolgende Fehlversuche)`;
     }
     action = { label: 'Jetzt erneut versuchen', handler: onRefreshAndImport };
   } else {
-    title = 'Aktualisierung verzoegert';
-    description = reason || 'Die letzte automatische Aktualisierung liegt laenger zurueck als erwartet.';
+    title = 'Aktualisierung verzögert';
+    description = reason || 'Die letzte automatische Aktualisierung liegt länger zurück als erwartet.';
     if (failures >= 2) {
       description += ` (${failures} Fehlversuche)`;
     }

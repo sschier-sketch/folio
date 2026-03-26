@@ -467,7 +467,7 @@ export default function IncomeExpenseAssignmentPanel({
               Zuordnung in Zukunft automatisch anwenden
             </span>
             <p className="text-[10px] text-gray-500 mt-0.5">
-              Wenn Name und Betrag uebereinstimmen, wird diese Zuordnung kuenftig automatisch vorgeschlagen.
+              Wenn Name und Betrag übereinstimmen, wird diese Zuordnung künftig automatisch vorgeschlagen.
             </p>
           </div>
           <RotateCcw className="w-3.5 h-3.5 text-[#3c8af7] flex-shrink-0 mt-0.5" />

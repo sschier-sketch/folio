@@ -492,7 +492,7 @@ export default function BanksApiImportFlow() {
 
   async function handleDisconnect(connectionId: string) {
     if (!token) return;
-    if (!window.confirm('Moechten Sie diese Bankverbindung wirklich trennen?')) return;
+    if (!window.confirm('Möchten Sie diese Bankverbindung wirklich trennen?')) return;
     setError('');
     setActionLoading(true);
 
@@ -637,10 +637,10 @@ export default function BanksApiImportFlow() {
               <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-amber-900">
-                  Konten auswaehlen{conn.bank_name ? ` (${conn.bank_name})` : ''}
+                  Konten auswählen{conn.bank_name ? ` (${conn.bank_name})` : ''}
                 </p>
                 <p className="text-xs text-amber-700 mt-0.5">
-                  Waehlen Sie mindestens ein Konto aus, damit Transaktionen importiert werden koennen.
+                  Wählen Sie mindestens ein Konto aus, damit Transaktionen importiert werden können.
                 </p>
               </div>
             </div>
@@ -649,7 +649,7 @@ export default function BanksApiImportFlow() {
               disabled={actionLoading}
               className="px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors flex-shrink-0"
             >
-              Konten auswaehlen
+              Konten auswählen
             </button>
           </div>
         ))}
@@ -667,7 +667,7 @@ export default function BanksApiImportFlow() {
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Die Synchronisierung laeuft im Hintergrund. Fortschritt wird gleich angezeigt.
+              Die Synchronisierung läuft im Hintergrund. Fortschritt wird gleich angezeigt.
             </p>
           </div>
         )}
@@ -697,7 +697,7 @@ export default function BanksApiImportFlow() {
             disabled={actionLoading}
             className="text-sm text-[#3c8af7] hover:text-[#3579de] font-medium transition-colors"
           >
-            + Weitere Bankverbindung hinzufuegen
+            + Weitere Bankverbindung hinzufügen
           </button>
         </div>
       </div>
@@ -707,14 +707,14 @@ export default function BanksApiImportFlow() {
   return (
     <div className="space-y-4">
       <div className="text-center py-6">
-        <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <Landmark className="w-7 h-7 text-emerald-600" />
+        <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+          <Landmark className="w-7 h-7 text-gray-900" />
         </div>
         <h3 className="text-base font-semibold text-dark mb-2">
           Bankimport (BanksAPI / PSD2)
         </h3>
         <p className="text-sm text-gray-500 max-w-md mx-auto mb-4 leading-relaxed">
-          Verbinden Sie Ihr Bankkonto direkt ueber die PSD2-Schnittstelle.
+          Verbinden Sie Ihr Bankkonto direkt über die PSD2-Schnittstelle.
           Ihre Kontobewegungen werden sicher und automatisch abgerufen &ndash; ohne manuellen Datei-Upload.
         </p>
 
@@ -725,7 +725,7 @@ export default function BanksApiImportFlow() {
           </div>
           <div className="flex items-center gap-1.5 text-xs text-gray-500">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            Bankgeheimnis geschuetzt
+            Bankgeheimnis geschützt
           </div>
           <div className="flex items-center gap-1.5 text-xs text-gray-500">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
@@ -772,10 +772,7 @@ export default function BanksApiImportFlow() {
               Verbinde...
             </>
           ) : (
-            <>
-              <ExternalLink className="w-4 h-4" />
-              Bankfreigabe erteilen
-            </>
+            'Bankfreigabe erteilen'
           )}
         </Button>
       </div>
@@ -789,7 +786,7 @@ export default function BanksApiImportFlow() {
           <li>Klicken Sie auf &quot;Bankfreigabe erteilen&quot;</li>
           <li>Sie werden zur Seite Ihrer Bank weitergeleitet</li>
           <li>Autorisieren Sie den Lesezugriff (TAN/Freigabe)</li>
-          <li>Waehlen Sie die Konten aus, die importiert werden sollen</li>
+          <li>Wählen Sie die Konten aus, die importiert werden sollen</li>
         </ol>
       </div>
     </div>
@@ -920,7 +917,7 @@ function ImportResultBanner({
               </span>
               {result.totalDuplicates > 0 && (
                 <span className="text-xs text-gray-500">
-                  {result.totalDuplicates} Duplikate uebersprungen
+                  {result.totalDuplicates} Duplikate übersprungen
                 </span>
               )}
               {result.totalFiltered > 0 && (
@@ -934,7 +931,7 @@ function ImportResultBanner({
             )}
             {result.status === 'partial' && (
               <p className="text-xs text-amber-600 mt-1">
-                Einige Konten konnten nicht vollstaendig importiert werden.
+                Einige Konten konnten nicht vollständig importiert werden.
               </p>
             )}
           </div>

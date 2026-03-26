@@ -119,10 +119,10 @@ export default function BanksApiAccountSelection({
         </button>
         <div>
           <h3 className="text-base font-semibold text-dark">
-            Konten auswaehlen
+            Konten auswählen
           </h3>
           <p className="text-xs text-gray-400">
-            {connection.bank_name || 'Bankverbindung'} &middot; Waehlen Sie die Konten fuer den Import
+            {connection.bank_name || 'Bankverbindung'} &middot; Wählen Sie die Konten für den Import
           </p>
         </div>
       </div>

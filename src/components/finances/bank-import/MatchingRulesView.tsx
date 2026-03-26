@@ -9,7 +9,6 @@ import {
   ArrowDownUp,
   CircleDollarSign,
   Home,
-  AlertCircle,
   Ban,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -119,7 +118,7 @@ export default function MatchingRulesView() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-5">
+      <div className="bg-white rounded-lg p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -129,10 +128,10 @@ export default function MatchingRulesView() {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-dark">
-                Vorschlaege automatisch anwenden
+                Vorschläge automatisch anwenden
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">
-                Wenn aktiviert, werden nach jedem Import Regel-basierte Vorschlaege automatisch zugeordnet.
+                Wenn aktiviert, werden nach jedem Import Regel-basierte Vorschläge automatisch zugeordnet.
               </p>
             </div>
           </div>
@@ -162,11 +161,11 @@ export default function MatchingRulesView() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12 bg-white rounded-lg border border-gray-200">
+          <div className="flex items-center justify-center py-12 bg-white rounded-lg">
             <Loader className="w-5 h-5 text-gray-400 animate-spin" />
           </div>
         ) : rules.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+          <div className="bg-white rounded-lg p-8 text-center">
             <RotateCcw className="w-10 h-10 text-gray-300 mx-auto mb-3" />
             <p className="text-sm font-medium text-gray-500 mb-1">
               Noch keine Regeln erstellt
@@ -177,7 +176,7 @@ export default function MatchingRulesView() {
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden divide-y divide-gray-100">
+          <div className="bg-white rounded-lg overflow-hidden divide-y divide-gray-100">
             {rules.map((rule) => {
               const TargetIcon = getTargetIcon(rule);
               const detail = getTargetDetail(rule);
@@ -259,7 +258,7 @@ export default function MatchingRulesView() {
                       onClick={() => handleDelete(rule.id)}
                       disabled={isDeleting}
                       className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-                      title="Regel loeschen"
+                      title="Regel löschen"
                     >
                       {isDeleting ? (
                         <Loader className="w-3.5 h-3.5 animate-spin" />
@@ -275,20 +274,15 @@ export default function MatchingRulesView() {
         )}
       </div>
 
-      <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-4">
-        <div className="flex gap-3">
-          <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-          <div className="text-xs text-blue-700 space-y-1">
-            <p className="font-medium">So funktionieren die Regeln:</p>
-            <ul className="list-disc list-inside space-y-0.5 text-blue-600">
-              <li>Regeln werden beim Zuordnen oder Ignorieren einer Transaktion erstellt (Checkbox aktivieren)</li>
-              <li>Nach jedem Import werden automatisch Vorschlaege generiert</li>
-              <li>Ignorier-Regeln werden immer sofort angewendet (ohne Auto-Anwendung)</li>
-              <li>Bei aktivierter Auto-Anwendung werden Zuordnungs-Treffer direkt zugeordnet</li>
-              <li>Matching basiert auf exaktem Abgleich von Name und Betrag</li>
-            </ul>
-          </div>
-        </div>
+      <div style={{ backgroundColor: '#eff4fe', borderColor: '#DDE7FF' }} className="border rounded-lg p-4">
+        <p className="text-sm font-medium text-blue-900 mb-1">So funktionieren die Regeln:</p>
+        <ul className="list-disc list-inside space-y-0.5 text-sm text-blue-900">
+          <li>Regeln werden beim Zuordnen oder Ignorieren einer Transaktion erstellt (Checkbox aktivieren)</li>
+          <li>Nach jedem Import werden automatisch Vorschläge generiert</li>
+          <li>Ignorier-Regeln werden immer sofort angewendet (ohne Auto-Anwendung)</li>
+          <li>Bei aktivierter Auto-Anwendung werden Zuordnungs-Treffer direkt zugeordnet</li>
+          <li>Matching basiert auf exaktem Abgleich von Name und Betrag</li>
+        </ul>
       </div>
     </div>
   );

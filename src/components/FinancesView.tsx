@@ -161,11 +161,6 @@ export default function FinancesView() {
                     <span className="px-3 py-1 text-xs rounded-full font-medium" style={{ backgroundColor: "#faf8f8", color: "#000000" }}>
                       Bald
                     </span>
-                  ) : tab.id === "bank" ? (
-                    <>
-                      <Badge variant="pro" size="sm">Pro</Badge>
-                      <Badge variant="danger" size="sm">Beta</Badge>
-                    </>
                   ) : tab.premium ? (
                     <Badge variant="pro" size="sm">Pro</Badge>
                   ) : null}

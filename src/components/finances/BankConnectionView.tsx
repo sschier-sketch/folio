@@ -100,7 +100,7 @@ export default function BankConnectionView() {
       icon: InboxIcon,
       badge: inboxCount > 0 ? inboxCount : undefined,
     },
-    { id: 'import' as MainTab, label: 'Import', icon: Upload },
+    { id: 'import' as MainTab, label: 'Importmöglichkeiten', icon: Upload },
     { id: 'rules' as MainTab, label: 'Regeln', icon: RotateCcw }] : []),
     { id: 'history' as MainTab, label: 'Import-Historie', icon: History },
   ];
@@ -139,7 +139,7 @@ export default function BankConnectionView() {
                 bankApiBanner === 'success' ? 'text-emerald-600' : 'text-red-600'
               }`}>
                 {bankApiBanner === 'success'
-                  ? 'Ihr Bankkonto ist nun verbunden. Sie koennen jetzt Konten auswaehlen und Transaktionen importieren.'
+                  ? 'Ihr Bankkonto ist nun verbunden. Sie können jetzt Konten auswählen und Transaktionen importieren.'
                   : 'Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.'}
               </p>
             </div>
@@ -249,7 +249,7 @@ export default function BankConnectionView() {
                   Kontoauszug importieren
                 </h3>
                 <p className="text-xs text-gray-400">
-                  Laden Sie Ihre Kontoauszuege als CSV, CAMT.053 XML hoch oder verbinden Sie Ihr Konto direkt
+                  Laden Sie Ihre Kontoauszüge als CSV, CAMT.053 XML hoch oder verbinden Sie Ihr Konto direkt
                 </p>
               </div>
             </div>
@@ -287,7 +287,7 @@ export default function BankConnectionView() {
               <p className="text-sm font-medium text-blue-900 mb-1">Hinweis:</p>
               <p className="text-sm text-blue-900">
                 Importierte Transaktionen werden automatisch auf Duplikate
-                geprueft. Bereits importierte Buchungen werden uebersprungen. Ihre
+                geprüft. Bereits importierte Buchungen werden übersprungen. Ihre
                 Daten werden sicher verarbeitet und nie an Dritte weitergegeben.
               </p>
             </div>
