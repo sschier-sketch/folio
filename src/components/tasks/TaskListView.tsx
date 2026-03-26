@@ -59,7 +59,7 @@ export default function TaskListView({ tasks, members, de, onEdit, onDelete, can
       {tasks.map((task) => (
         <div
           key={task.id}
-          className="bg-white rounded-lg p-4 shadow-sm cursor-pointer group border border-gray-100"
+          className="bg-white rounded-lg p-4 cursor-pointer group"
           onClick={() => onEdit(task)}
         >
           <div className="flex items-start justify-between">

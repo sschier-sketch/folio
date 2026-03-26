@@ -112,7 +112,7 @@ export default function TaskBoardView({ tasks, members, de, onEdit, onStatusChan
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
                   onClick={() => onEdit(task)}
-                  className="bg-white rounded-lg p-3 shadow-sm cursor-pointer border border-gray-100"
+                  className="bg-white rounded-lg p-3 cursor-pointer"
                 >
                   <div className="flex items-start gap-2 mb-2">
                     <h4 className="text-sm font-semibold text-dark flex-1 line-clamp-2">{task.title}</h4>
