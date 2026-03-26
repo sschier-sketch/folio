@@ -11,12 +11,17 @@ import {
   Receipt,
   BarChart3,
   Minus,
+  ClipboardList,
+  Calendar,
+  Clock,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { getMonthlyHausgeldEur } from "../lib/hausgeldUtils";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePermissions } from "../hooks/usePermissions";
+import { useSubscription } from "../hooks/useSubscription";
+import { getPriorityColor, PRIORITY_LABELS_DE, PRIORITY_ORDER } from "./tasks/taskHelpers";
 import ProfileCompletionCard from "./profile/ProfileCompletionCard";
 import ProfileWizard from "./profile/ProfileWizard";
 import TrialBanner from "./TrialBanner";
@@ -62,6 +67,17 @@ interface UnreadTicketThread {
   } | null;
 }
 
+interface DashboardTask {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  due_date: string | null;
+  category: string;
+  properties: { name: string } | null;
+  property_units: { unit_number: string } | null;
+}
+
 interface DashboardHomeProps {
   onNavigateToTenant?: (tenantId: string) => void;
   onNavigateToProperty?: (propertyId: string, tab?: string) => void;
@@ -73,6 +89,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { dataOwnerId, filterPropertiesByScope, filterByPropertyId, canViewFinances, canViewRentPayments, loading: permLoading } = usePermissions();
+  const { isPremium } = useSubscription();
   const [stats, setStats] = useState<Stats>({
     propertiesCount: 0,
     tenantsCount: 0,
@@ -93,6 +110,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const [loading, setLoading] = useState(true);
   const [rentIncreases, setRentIncreases] = useState<RentIncrease[]>([]);
   const [openTickets, setOpenTickets] = useState<UnreadTicketThread[]>([]);
+  const [openTasks, setOpenTasks] = useState<DashboardTask[]>([]);
   const [showTicketsCard, setShowTicketsCard] = useState(true);
   const [showRentIncreasesCard, setShowRentIncreasesCard] = useState(true);
   const [showProfileWizard, setShowProfileWizard] = useState(false);
@@ -103,7 +121,8 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
     loadStats();
     loadUpcomingRentIncreases();
     loadOpenTickets();
-  }, [user, permLoading, dataOwnerId]);
+    if (isPremium) loadOpenTasks();
+  }, [user, permLoading, dataOwnerId, isPremium]);
   const loadStats = async () => {
     if (!user || !dataOwnerId) return;
     try {
@@ -393,6 +412,31 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       ));
     } catch (error) {
       console.error("Error loading rent increases:", error);
+    }
+  };
+
+  const loadOpenTasks = async () => {
+    if (!user || !dataOwnerId) return;
+    try {
+      const { data, error } = await supabase
+        .from("maintenance_tasks")
+        .select(`
+          id, title, status, priority, due_date, category,
+          properties (name),
+          property_units (unit_number)
+        `)
+        .eq("user_id", dataOwnerId)
+        .in("status", ["open", "in_progress"])
+        .order("created_at", { ascending: false })
+        .limit(8);
+
+      if (error) throw error;
+      const sorted = (data || []).sort(
+        (a: DashboardTask, b: DashboardTask) => (PRIORITY_ORDER[a.priority] ?? 1) - (PRIORITY_ORDER[b.priority] ?? 1)
+      );
+      setOpenTasks(sorted.slice(0, 5));
+    } catch (error) {
+      console.error("Error loading open tasks:", error);
     }
   };
 
@@ -723,6 +767,71 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
           </div>{" "}
         </div>{" "}
       </div>{" "}
+
+      {openTasks.length > 0 && (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-dark">{t("dashboard.tasks.open") || "Offene Aufgaben"}</h2>
+            <button
+              onClick={() => onChangeView?.("tasks")}
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              {t("dashboard.tasks.viewAll") || "Alle anzeigen"}
+            </button>
+          </div>
+          <div className="bg-white rounded-lg divide-y divide-gray-100">
+            {openTasks.map((task) => {
+              const isDueOverdue = task.due_date && new Date(task.due_date) < new Date(new Date().toISOString().split("T")[0]);
+              return (
+                <div
+                  key={task.id}
+                  className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                  onClick={() => onChangeView?.("tasks")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+                        {task.status === "in_progress"
+                          ? <Clock className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+                          : <ClipboardList className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-dark truncate">{task.title}</h3>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                            {PRIORITY_LABELS_DE[task.priority] || task.priority}
+                          </span>
+                          {task.status === "in_progress" && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium text-blue-700 bg-blue-50">
+                              In Bearbeitung
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          {task.properties?.name && (
+                            <span>{task.properties.name}{task.property_units?.unit_number ? ` / Einheit ${task.property_units.unit_number}` : ""}</span>
+                          )}
+                          {task.due_date && (
+                            <>
+                              {task.properties?.name && <span>&bull;</span>}
+                              <span className={`flex items-center gap-1 ${isDueOverdue && task.status !== "completed" ? "text-red-600 font-medium" : ""}`}>
+                                <Calendar className="w-3 h-3" />
+                                {new Date(task.due_date).toLocaleDateString("de-DE")}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {rentIncreases.length > 0 && showRentIncreasesCard && (
         <div className="mt-8">
