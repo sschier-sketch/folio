@@ -70,27 +70,6 @@ Deno.serve(async (req: Request) => {
     }
 
     if (ticket.ticket_type === 'contact' && ticket.contact_email) {
-      const emailSubject = `Re: ${ticket.subject} [Ticket #${ticket.ticket_number}]`;
-
-      const emailHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">Antwort auf Ihre Anfrage</h2>
-          <p>Hallo ${ticket.contact_name},</p>
-          <p>vielen Dank für Ihre Nachricht. Hier ist unsere Antwort:</p>
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="white-space: pre-wrap;">${message}</p>
-          </div>
-          <p style="color: #64748b; font-size: 14px; margin-top: 30px;">
-            Ticket #${ticket.ticket_number}<br>
-            Betreff: ${ticket.subject}
-          </p>
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
-          <p style="color: #64748b; font-size: 12px;">
-            Diese E-Mail wurde automatisch gesendet. Bitte antworten Sie direkt auf diese E-Mail, wenn Sie weitere Fragen haben.
-          </p>
-        </div>
-      `;
-
       const sendEmailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
         method: 'POST',
         headers: {
@@ -99,9 +78,15 @@ Deno.serve(async (req: Request) => {
         },
         body: JSON.stringify({
           to: ticket.contact_email,
-          subject: emailSubject,
-          html: emailHtml,
-          text: message,
+          templateKey: 'ticket_reply',
+          variables: {
+            recipientName: ticket.contact_name || '',
+            ticketNumber: ticket.ticket_number || '',
+            ticketSubject: ticket.subject || '',
+            replyMessage: message,
+            additionalInfo: '',
+            senderName: senderName,
+          },
           replyTo: senderEmail,
           userId: ticket.user_id || undefined,
           useUserAlias: !!ticket.user_id,

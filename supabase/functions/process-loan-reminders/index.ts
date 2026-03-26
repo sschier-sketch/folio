@@ -118,45 +118,26 @@ Deno.serve(async (req: Request) => {
         }
 
         const formattedDate = eventDate ? new Date(eventDate).toLocaleDateString('de-DE') : 'Unbekannt';
-        const formattedBalance = loan.remaining_balance.toLocaleString('de-DE', {
-          style: 'currency',
-          currency: 'EUR',
-        });
+        const formattedBalance = loan.remaining_balance
+          ? loan.remaining_balance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+          : '0,00 EUR';
 
-        const emailSubject = `Erinnerung: ${reminderLabel} - ${loan.lender_name}`;
-
-        let emailBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">`;
-        emailBody += `<h2 style="color: #008CFF;">${reminderLabel}</h2>`;
-        emailBody += `<p>Hallo,</p>`;
-        emailBody += `<p>Dies ist eine automatische Erinnerung fuer einen wichtigen Termin:</p>`;
-        emailBody += `<div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">`;
-        emailBody += `<table style="width: 100%; border-collapse: collapse;">`;
-        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Ereignis:</td><td style="padding: 8px 0;">${reminderLabel}</td></tr>`;
-        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Datum:</td><td style="padding: 8px 0;">${formattedDate}</td></tr>`;
-        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">In:</td><td style="padding: 8px 0;">${reminder.days_before} Tagen</td></tr>`;
-        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Immobilie:</td><td style="padding: 8px 0;">${propertyName}</td></tr>`;
-        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Kreditgeber:</td><td style="padding: 8px 0;">${loan.lender_name}</td></tr>`;
-        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Restschuld:</td><td style="padding: 8px 0;">${formattedBalance}</td></tr>`;
-        emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Zinssatz:</td><td style="padding: 8px 0;">${loan.interest_rate}%</td></tr>`;
-
+        let specialRepaymentInfo = '';
         if (reminder.reminder_type === 'special_repayment' && (loan.special_repayment_max_amount || loan.special_repayment_max_percent)) {
           const maxAmount = loan.special_repayment_max_amount
             ? loan.special_repayment_max_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
             : `${loan.special_repayment_max_percent}%`;
-          emailBody += `<tr><td style="padding: 8px 0; font-weight: bold;">Max. Sondertilgung:</td><td style="padding: 8px 0;">${maxAmount} / Jahr</td></tr>`;
+          specialRepaymentInfo = `<tr><td style="padding: 8px 0; font-weight: bold; color: #1E1E24; font-size: 14px;">Max. Sondertilgung:</td><td style="padding: 8px 0; color: #555; font-size: 14px;">${maxAmount} / Jahr</td></tr>`;
         }
 
-        emailBody += `</table></div>`;
-
+        let importantNote = '';
         if (reminder.reminder_type === 'fixed_interest_end') {
-          emailBody += `<p><strong>Wichtig:</strong> Ihre Zinsbindung endet bald. Wir empfehlen Ihnen, rechtzeitig mit Ihrer Bank ueber eine Anschlussfinanzierung zu sprechen.</p>`;
+          importantNote = '<strong>Wichtig:</strong> Ihre Zinsbindung endet bald. Wir empfehlen Ihnen, rechtzeitig mit Ihrer Bank ueber eine Anschlussfinanzierung zu sprechen.';
         } else if (reminder.reminder_type === 'loan_end') {
-          emailBody += `<p><strong>Wichtig:</strong> Ihr Kredit laeuft bald aus. Bitte stellen Sie sicher, dass alle offenen Betraege beglichen sind.</p>`;
+          importantNote = '<strong>Wichtig:</strong> Ihr Kredit laeuft bald aus. Bitte stellen Sie sicher, dass alle offenen Betraege beglichen sind.';
         } else if (reminder.reminder_type === 'special_repayment') {
-          emailBody += `<p><strong>Hinweis:</strong> Sie haben die Moeglichkeit, eine Sondertilgung vorzunehmen. Nutzen Sie diese Chance, um Ihre Restschuld zu reduzieren.</p>`;
+          importantNote = '<strong>Hinweis:</strong> Sie haben die Moeglichkeit, eine Sondertilgung vorzunehmen. Nutzen Sie diese Chance, um Ihre Restschuld zu reduzieren.';
         }
-
-        emailBody += `<p>Viele Gruesse,<br>Ihr rentably Team</p></div>`;
 
         try {
           const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
@@ -167,8 +148,21 @@ Deno.serve(async (req: Request) => {
             },
             body: JSON.stringify({
               to: userEmail,
-              subject: emailSubject,
-              html: emailBody,
+              templateKey: 'loan_reminder',
+              variables: {
+                reminderLabel,
+                eventDate: formattedDate,
+                daysRemaining: String(reminder.days_before),
+                propertyName,
+                lenderName: loan.lender_name || '',
+                remainingBalance: formattedBalance,
+                interestRate: String(loan.interest_rate || 0),
+                specialRepaymentInfo,
+                importantNote,
+              },
+              userId: reminder.user_id,
+              mailType: 'loan_reminder',
+              category: 'transactional',
             }),
           });
 
