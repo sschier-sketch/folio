@@ -771,12 +771,12 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       {openTasks.length > 0 && (
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-dark">{t("dashboard.tasks.open") || "Offene Aufgaben"}</h2>
+            <h2 className="text-xl font-bold text-dark">Aufgaben</h2>
             <button
               onClick={() => onChangeView?.("tasks")}
               className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
             >
-              {t("dashboard.tasks.viewAll") || "Alle anzeigen"}
+              Aufgaben anzeigen
             </button>
           </div>
           <div className="bg-white rounded-lg divide-y divide-gray-100">
@@ -785,7 +785,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
               return (
                 <div
                   key={task.id}
-                  className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="p-4 cursor-pointer"
                   onClick={() => onChangeView?.("tasks")}
                 >
                   <div className="flex items-center justify-between">
