@@ -113,6 +113,7 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
   {
     name: 'Finanzen',
     rows: [
+      { feature: 'Automatischer Bankabgleich', basic: false, pro: true, isNew: true },
       { feature: 'Einnahmen & Ausgaben', basic: true, pro: true },
       { feature: 'Cashflow-Übersicht', basic: false, pro: true },
       { feature: 'Anlage V', basic: false, pro: true, isNew: true },
@@ -148,7 +149,6 @@ export const COMPARISON_TABLE: ComparisonCategory[] = [
     name: 'Kommunikation',
     rows: [
       { feature: 'Aufgabenverwaltung (Board & Liste)', basic: false, pro: true, isNew: true },
-      { feature: 'Aufgaben aus Mieteranfragen erstellen', basic: false, pro: true, isNew: true },
       { feature: 'Briefversand', basic: true, pro: true, isNew: true },
       { feature: 'Ticketsystem', basic: false, pro: true },
       { feature: 'Nachrichten & E-Mail (@rentab.ly)', basic: false, pro: true },
