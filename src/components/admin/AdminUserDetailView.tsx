@@ -20,6 +20,8 @@ import {
   XCircle,
   Lock,
   Unlock,
+  Send,
+  AlertCircle,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
@@ -31,6 +33,18 @@ interface LoginEntry {
   country: string | null;
   user_agent: string | null;
   logged_in_at: string;
+}
+
+interface EmailLogEntry {
+  id: string;
+  mail_type: string;
+  subject: string;
+  status: string;
+  to_email: string;
+  category: string;
+  created_at: string;
+  sent_at: string | null;
+  error_message: string | null;
 }
 
 interface UserProfile {
@@ -78,6 +92,15 @@ interface AdminUserDetailViewProps {
   onImpersonate: (userId: string, email: string) => void;
 }
 
+type HistoryTab = "logins" | "emails";
+
+const EMAIL_STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  sent: { bg: "bg-emerald-50", text: "text-emerald-700", label: "Gesendet" },
+  queued: { bg: "bg-amber-50", text: "text-amber-700", label: "Warteschlange" },
+  failed: { bg: "bg-red-50", text: "text-red-700", label: "Fehlgeschlagen" },
+  processing: { bg: "bg-blue-50", text: "text-blue-700", label: "In Bearbeitung" },
+};
+
 export default function AdminUserDetailView({
   userId,
   userEmail,
@@ -90,9 +113,12 @@ export default function AdminUserDetailView({
 }: AdminUserDetailViewProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loginHistory, setLoginHistory] = useState<LoginEntry[]>([]);
+  const [emailHistory, setEmailHistory] = useState<EmailLogEntry[]>([]);
   const [members, setMembers] = useState<AccountMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [historyPage, setHistoryPage] = useState(0);
+  const [emailPage, setEmailPage] = useState(0);
+  const [activeHistoryTab, setActiveHistoryTab] = useState<HistoryTab>("logins");
   const PAGE_SIZE = 20;
 
   useEffect(() => {
@@ -102,7 +128,7 @@ export default function AdminUserDetailView({
   async function loadData() {
     setLoading(true);
     try {
-      const [profileRes, historyRes, membersRes] = await Promise.all([
+      const [profileRes, historyRes, membersRes, emailRes] = await Promise.all([
         supabase
           .from("account_profiles")
           .select(
@@ -117,11 +143,18 @@ export default function AdminUserDetailView({
           .order("logged_in_at", { ascending: false })
           .range(0, PAGE_SIZE - 1),
         supabase.rpc("admin_get_account_members", { p_owner_id: userId }),
+        supabase
+          .from("email_logs")
+          .select("id, mail_type, subject, status, to_email, category, created_at, sent_at, error_message")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .range(0, PAGE_SIZE - 1),
       ]);
 
       setProfile(profileRes.data);
       setLoginHistory(historyRes.data || []);
       setMembers((membersRes.data as AccountMember[]) || []);
+      setEmailHistory(emailRes.data || []);
     } catch (err) {
       console.error("Error loading user detail:", err);
     } finally {
@@ -142,6 +175,22 @@ export default function AdminUserDetailView({
     if (data && data.length > 0) {
       setLoginHistory((prev) => [...prev, ...data]);
       setHistoryPage(nextPage);
+    }
+  }
+
+  async function loadMoreEmails() {
+    const nextPage = emailPage + 1;
+    const from = nextPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data } = await supabase
+      .from("email_logs")
+      .select("id, mail_type, subject, status, to_email, category, created_at, sent_at, error_message")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .range(from, to);
+    if (data && data.length > 0) {
+      setEmailHistory((prev) => [...prev, ...data]);
+      setEmailPage(nextPage);
     }
   }
 
@@ -201,7 +250,7 @@ export default function AdminUserDetailView({
         className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Zurueck zur Benutzerliste
+        Zurück zur Benutzerliste
       </button>
 
       <div className="flex items-start justify-between">
@@ -223,7 +272,7 @@ export default function AdminUserDetailView({
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                  <UserCheck className="w-3 h-3" /> Eigentuemer
+                  <UserCheck className="w-3 h-3" /> Eigentümer
                 </span>
               )}
               {subscriptionPlan === "pro" ? (
@@ -373,7 +422,7 @@ export default function AdminUserDetailView({
                       )}
                     </td>
                     <td className="px-4 py-2.5 text-xs text-gray-500">
-                      {m.property_scope === "all" ? "Alle" : "Ausgewaehlte"}
+                      {m.property_scope === "all" ? "Alle" : "Ausgewählte"}
                     </td>
                     <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap">
                       {formatDate(m.created_at)}
@@ -390,74 +439,186 @@ export default function AdminUserDetailView({
       )}
 
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-            <Monitor className="w-4 h-4 text-gray-400" />
-            Login-Verlauf
-          </h2>
-          <span className="text-xs text-gray-400">
-            {loginHistory.length} Eintraege
-          </span>
-        </div>
-        {loginHistory.length === 0 ? (
-          <div className="px-6 py-10 text-center text-sm text-gray-400">
-            Noch keine Logins erfasst
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 text-left">
-                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
-                    Datum & Uhrzeit
-                  </th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
-                    IP-Adresse
-                  </th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
-                    Ort
-                  </th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
-                    Land
-                  </th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
-                    Browser
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {loginHistory.map((entry) => (
-                  <tr key={entry.id} className="hover:bg-gray-50/50">
-                    <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap">
-                      {formatDateTime(entry.logged_in_at)} Uhr
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">
-                      {entry.ip_address || "-"}
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-500">
-                      {entry.city || "-"}
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-500">
-                      {entry.country || "-"}
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-500">
-                      {parseBrowser(entry.user_agent)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        {loginHistory.length > 0 && loginHistory.length % PAGE_SIZE === 0 && (
-          <div className="px-6 py-3 border-t border-gray-100 text-center">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit">
             <button
-              onClick={loadMoreHistory}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              onClick={() => setActiveHistoryTab("logins")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                activeHistoryTab === "logins"
+                  ? "bg-white text-gray-800 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
             >
-              Mehr laden
+              <Monitor className="w-3.5 h-3.5" />
+              Login-Verlauf
+              <span className="text-xs text-gray-400 ml-1">
+                {loginHistory.length}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveHistoryTab("emails")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                activeHistoryTab === "emails"
+                  ? "bg-white text-gray-800 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <Send className="w-3.5 h-3.5" />
+              E-Mail-Verlauf
+              <span className="text-xs text-gray-400 ml-1">
+                {emailHistory.length}
+              </span>
             </button>
           </div>
+        </div>
+
+        {activeHistoryTab === "logins" && (
+          <>
+            {loginHistory.length === 0 ? (
+              <div className="px-6 py-10 text-center text-sm text-gray-400">
+                Noch keine Logins erfasst
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-left">
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Datum & Uhrzeit
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        IP-Adresse
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Ort
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Land
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Browser
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {loginHistory.map((entry) => (
+                      <tr key={entry.id} className="hover:bg-gray-50/50">
+                        <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap">
+                          {formatDateTime(entry.logged_in_at)} Uhr
+                        </td>
+                        <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">
+                          {entry.ip_address || "-"}
+                        </td>
+                        <td className="px-4 py-2.5 text-gray-500">
+                          {entry.city || "-"}
+                        </td>
+                        <td className="px-4 py-2.5 text-gray-500">
+                          {entry.country || "-"}
+                        </td>
+                        <td className="px-4 py-2.5 text-gray-500">
+                          {parseBrowser(entry.user_agent)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {loginHistory.length > 0 && loginHistory.length % PAGE_SIZE === 0 && (
+              <div className="px-6 py-3 border-t border-gray-100 text-center">
+                <button
+                  onClick={loadMoreHistory}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Mehr laden
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeHistoryTab === "emails" && (
+          <>
+            {emailHistory.length === 0 ? (
+              <div className="px-6 py-10 text-center text-sm text-gray-400">
+                Noch keine E-Mails an diesen Nutzer gesendet
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-left">
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Datum
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Betreff
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Typ
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Kategorie
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {emailHistory.map((entry) => {
+                      const statusStyle = EMAIL_STATUS_STYLES[entry.status] || {
+                        bg: "bg-gray-50",
+                        text: "text-gray-600",
+                        label: entry.status,
+                      };
+                      return (
+                        <tr key={entry.id} className="hover:bg-gray-50/50 group">
+                          <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap">
+                            {formatDateTime(entry.sent_at || entry.created_at)} Uhr
+                          </td>
+                          <td className="px-4 py-2.5 text-gray-800 max-w-xs">
+                            <div className="truncate">{entry.subject}</div>
+                            {entry.error_message && (
+                              <div className="flex items-center gap-1 mt-0.5 text-xs text-red-500">
+                                <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{entry.error_message}</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <span className="text-xs font-mono text-gray-500">
+                              {entry.mail_type}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5 text-xs text-gray-500">
+                            {entry.category === "transactional" ? "Transaktional" : "Informativ"}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}
+                            >
+                              {statusStyle.label}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {emailHistory.length > 0 && emailHistory.length % PAGE_SIZE === 0 && (
+              <div className="px-6 py-3 border-t border-gray-100 text-center">
+                <button
+                  onClick={loadMoreEmails}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Mehr laden
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

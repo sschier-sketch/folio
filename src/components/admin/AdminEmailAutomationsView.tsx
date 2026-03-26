@@ -10,12 +10,12 @@ import {
   Settings2,
   Users,
   CalendarClock,
-  Send,
   Info,
   Pencil,
   Save,
   X,
   AlertTriangle,
+  AtSign,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
@@ -49,6 +49,26 @@ const TRIGGER_TYPE_LABELS: Record<string, { label: string; color: string }> = {
   event: { label: "Ereignisbasiert", color: "bg-blue-100 text-blue-700" },
   manual: { label: "Manuell", color: "bg-gray-100 text-gray-600" },
 };
+
+const DEFAULT_SENDER = "hallo@rentab.ly";
+
+function getSenderEmail(automation: Automation): string {
+  return automation.trigger_config?.sender_email || DEFAULT_SENDER;
+}
+
+function getScheduleLabel(automation: Automation): string | null {
+  const schedule = automation.trigger_config?.cron_schedule;
+  if (!schedule) return null;
+
+  const CRON_LABELS: Record<string, string> = {
+    "0 7 * * *": "Täglich um 08:00 Uhr (MEZ)",
+    "30 7 * * *": "Täglich um 08:30 Uhr (MEZ)",
+    "0 8 * * *": "Täglich um 09:00 Uhr (MEZ)",
+    "15 8 * * *": "Täglich um 09:15 Uhr (MEZ)",
+  };
+
+  return CRON_LABELS[schedule] || schedule;
+}
 
 export default function AdminEmailAutomationsView() {
   const [automations, setAutomations] = useState<Automation[]>([]);
@@ -150,12 +170,23 @@ export default function AdminEmailAutomationsView() {
   function renderTriggerConfig(automation: Automation) {
     const config = automation.trigger_config;
     const entries = Object.entries(config).filter(
-      ([k]) => !k.startsWith("configurable")
+      ([k]) =>
+        !k.startsWith("configurable") &&
+        k !== "sender_email" &&
+        k !== "sender_name" &&
+        k !== "cron_schedule"
     );
-    if (entries.length === 0) return null;
+
+    const scheduleLabel = getScheduleLabel(automation);
 
     return (
       <div className="space-y-1.5">
+        {scheduleLabel && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-gray-400 min-w-[140px]">Zeitplan:</span>
+            <span className="text-dark font-medium">{scheduleLabel}</span>
+          </div>
+        )}
         {entries.map(([key, value]) => (
           <div key={key} className="flex items-center gap-2 text-sm">
             <span className="text-gray-400 min-w-[140px]">
@@ -277,7 +308,7 @@ export default function AdminEmailAutomationsView() {
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 rounded-lg">
             <Info className="w-3.5 h-3.5 text-blue-600" />
             <span className="text-xs text-blue-700">
-              Automationen werden durch Events oder Cron Jobs ausgeloest
+              Automationen werden durch Events oder Cron Jobs ausgelöst
             </span>
           </div>
         </div>
@@ -290,6 +321,8 @@ export default function AdminEmailAutomationsView() {
           const triggerMeta =
             TRIGGER_TYPE_LABELS[automation.trigger_type] ||
             TRIGGER_TYPE_LABELS.manual;
+          const senderEmail = getSenderEmail(automation);
+          const isCustomSender = senderEmail !== DEFAULT_SENDER;
 
           return (
             <div
@@ -344,16 +377,26 @@ export default function AdminEmailAutomationsView() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 truncate">
-                    {automation.description}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs text-gray-400 truncate">
+                      {automation.description}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-4 flex-shrink-0">
+                  {isCustomSender && (
+                    <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 border border-teal-200 rounded-lg">
+                      <AtSign className="w-3 h-3 text-teal-600" />
+                      <span className="text-xs font-medium text-teal-700">
+                        {senderEmail}
+                      </span>
+                    </div>
+                  )}
                   <div className="text-right hidden sm:block">
-                    <p className="text-xs text-gray-400">Template</p>
+                    <p className="text-xs text-gray-400">Absender</p>
                     <p className="text-xs font-mono text-gray-600">
-                      {automation.template_key}
+                      {senderEmail}
                     </p>
                   </div>
                   <div className="text-right hidden md:block">
@@ -376,7 +419,7 @@ export default function AdminEmailAutomationsView() {
                     <div>
                       <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        Ausloeser & Timing
+                        Auslöser & Timing
                       </h4>
                       {isEditing ? (
                         renderEditableConfig()
@@ -399,6 +442,18 @@ export default function AdminEmailAutomationsView() {
                         Details
                       </h4>
                       <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Absender:</span>
+                          <span className={`font-mono text-xs ${isCustomSender ? "text-teal-700 font-semibold" : "text-gray-600"}`}>
+                            {senderEmail}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Template:</span>
+                          <span className="font-mono text-xs text-gray-600">
+                            {automation.template_key}
+                          </span>
+                        </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Edge Function:</span>
                           <span className="font-mono text-xs text-gray-600">
@@ -488,7 +543,7 @@ export default function AdminEmailAutomationsView() {
                         Diese Automation ist pausiert. E-Mails werden nicht
                         verschickt, bis sie wieder aktiviert wird. Die
                         Deaktivierung hier dient nur zur Dokumentation -- die
-                        tatsaechliche Ausfuehrung wird durch die Edge Function
+                        tatsächliche Ausführung wird durch die Edge Function
                         gesteuert.
                       </p>
                     </div>
@@ -516,6 +571,8 @@ function formatConfigKey(key: string): string {
     days_before_expiry: "Tage vor Ablauf",
     cron_schedule: "Zeitplan",
     configurable_env: "Env-Variable",
+    inactive_days: "Inaktiv seit (Tage)",
+    days_after_signup: "Tage nach Registrierung",
   };
   return labels[key] || key.replace(/_/g, " ");
 }
@@ -533,7 +590,9 @@ function formatSegment(segment: string): string {
     ticket_absender: "Ticket-Absender",
     aktivierter_mieter: "Aktivierter Mieter",
     neuer_pro_nutzer: "Neuer Pro-Nutzer",
-    kündigender_nutzer: "Kuendigender Nutzer",
+    kündigender_nutzer: "Kündigender Nutzer",
+    inaktive_nutzer_mit_immobilie: "Inaktive Nutzer mit Immobilie",
+    nutzer_ohne_immobilie: "Nutzer ohne Immobilie",
   };
   return labels[segment] || segment;
 }

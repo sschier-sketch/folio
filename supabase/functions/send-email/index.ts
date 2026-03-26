@@ -33,6 +33,7 @@ interface EmailRequest {
   recipientName?: string;
   tenantId?: string;
   replyTo?: string;
+  from?: string;
 }
 
 function replaceVariables(content: string, variables: Record<string, string>): string {
@@ -253,6 +254,7 @@ Deno.serve(async (req: Request) => {
       recipientName,
       tenantId,
       replyTo,
+      from: fromOverride,
     }: EmailRequest = await req.json();
 
     let finalSubject = subject || '';
@@ -433,8 +435,16 @@ Deno.serve(async (req: Request) => {
     }
 
     const DEFAULT_FROM = Deno.env.get('EMAIL_FROM') || 'rentably <hallo@rentab.ly>';
-    const resolved = await resolveFromAddress(supabase, userId, useUserAlias, DEFAULT_FROM);
-    const fromAddress = resolved.from;
+    let fromAddress: string;
+    let resolved: ResolvedSender;
+
+    if (fromOverride) {
+      fromAddress = fromOverride;
+      resolved = { from: fromOverride, replyTo: null };
+    } else {
+      resolved = await resolveFromAddress(supabase, userId, useUserAlias, DEFAULT_FROM);
+      fromAddress = resolved.from;
+    }
 
     const emailPayload: any = {
       from: fromAddress,
