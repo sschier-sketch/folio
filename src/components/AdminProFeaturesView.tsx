@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, Edit, Save, X, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Sparkles, CreditCard as Edit, Save, X, Plus, Trash2, AlertCircle } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { Button } from "./ui/Button";
 
@@ -160,6 +160,8 @@ export default function AdminProFeaturesView() {
     property: "Immobilie",
     documents: "Dokumente",
     messages: "Nachrichten",
+    tasks: "Aufgaben",
+    users: "Benutzerverwaltung",
   };
 
   const tabLabels: Record<string, string> = {
