@@ -26,16 +26,47 @@ import {
   Shield,
   Sparkles,
   Zap,
-  Laptop
+  Laptop,
+  Landmark,
+  ArrowRightLeft,
+  ListFilter,
+  Wand2,
+  RotateCcw,
+  Upload,
 } from "lucide-react";
 
 const HERO_CHECKS = [
+  "Bankkonto anbinden & Zahlungen automatisch zuordnen",
   "Einnahmen & Ausgaben automatisch erfassen",
   "Anlage V direkt aus Ihren Daten erstellen",
   "Restschuld & Darlehen tagesgenau berechnen"
 ];
 
 const FEATURES = [
+  {
+    icon: Landmark,
+    title: "Bankanbindung",
+    description: "Verbinden Sie Ihr Bankkonto per PSD2-Schnittstelle. Transaktionen werden täglich automatisch abgerufen — ohne manuellen Export.",
+    isNew: true,
+  },
+  {
+    icon: Wand2,
+    title: "Intelligente Zuordnung",
+    description: "rentably analysiert Betrag, Verwendungszweck und IBAN und schlägt automatisch passende Zuordnungen vor. Ein Klick genügt.",
+    isNew: true,
+  },
+  {
+    icon: ArrowRightLeft,
+    title: "Zuordnungsregeln",
+    description: "Erstellen Sie eigene Regeln für wiederkehrende Buchungen. Mit Auto-Anwendung werden neue Transaktionen sofort zugeordnet.",
+    isNew: true,
+  },
+  {
+    icon: Upload,
+    title: "CSV- & CAMT053-Import",
+    description: "Laden Sie Kontoauszüge als CSV oder CAMT053 hoch. Spalten frei zuordnen und als Vorlage für spätere Importe speichern.",
+    isNew: true,
+  },
   {
     icon: Euro,
     title: "Einnahmen & Ausgaben",
@@ -70,13 +101,11 @@ const FEATURES = [
     icon: Calculator,
     title: "Anlage V",
     description: "Erstellen Sie die steuerliche Anlage V direkt aus Ihren erfassten Daten. Einnahmen und Werbungskosten werden automatisch zugeordnet.",
-    isNew: true,
   },
   {
     icon: Scale,
     title: "Restschuldberechnung",
     description: "Berechnen Sie die aktuelle Restschuld Ihrer Darlehen tagesgenau. Zinsbindungsende, Sondertilgungen und Anschlussfinanzierung im Blick.",
-    isNew: true,
   },
 ];
 
@@ -256,9 +285,9 @@ export default function Buchhaltung() {
                 <span className="text-[#3c8af7]">smartem Finanzmanagement</span>
               </h1>
               <p className="mt-6 text-lg sm:text-[20px] text-gray-500 leading-relaxed max-w-[540px]">
-                Mieteinnahmen, Ausgaben und Cashflows — alles übersichtlich an einem Ort.
-                Mit rentably behalten Sie Ihre Immobilienfinanzen jederzeit im Blick und
-                sparen sich den Papierkram.
+                Bankkonto anbinden, Zahlungen automatisch zuordnen, Cashflows analysieren.
+                Mit rentably behalten Sie Ihre Immobilienfinanzen jederzeit im Blick &ndash;
+                ohne manuelles Abtippen.
               </p>
               <ul className="mt-6 space-y-2.5">
                 {HERO_CHECKS.map((item) => (
@@ -340,6 +369,113 @@ export default function Buchhaltung() {
         <div className="max-w-[1200px] mx-auto">
           <RevealOnScroll>
             <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 mb-5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="text-sm font-medium text-emerald-700">Neu</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-gray-900 tracking-tight leading-tight mb-4">
+                Bankanbindung &ndash; Zahlungen automatisch zuordnen
+              </h2>
+              <p className="text-gray-500 max-w-[700px] mx-auto">
+                Verbinden Sie Ihr Bankkonto und lassen Sie rentably die Arbeit &uuml;bernehmen.
+                Mietzahlungen, Ausgaben und Einnahmen werden automatisch erkannt und zugeordnet.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          <RevealOnScroll delay={100}>
+            <div className="max-w-[960px] mx-auto">
+              <div className="grid md:grid-cols-3 gap-5 mb-10">
+                <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+                  <div className="w-12 h-12 rounded-full bg-[#3c8af7]/10 flex items-center justify-center mx-auto mb-4">
+                    <Landmark className="w-5 h-5 text-[#3c8af7]" strokeWidth={1.5} />
+                  </div>
+                  <h4 className="text-base font-semibold text-gray-900 mb-2">1. Konto verbinden</h4>
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    Authentifizieren Sie sich einmalig bei Ihrer Bank &uuml;ber die sichere PSD2-Schnittstelle.
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+                  <div className="w-12 h-12 rounded-full bg-[#3c8af7]/10 flex items-center justify-center mx-auto mb-4">
+                    <ListFilter className="w-5 h-5 text-[#3c8af7]" strokeWidth={1.5} />
+                  </div>
+                  <h4 className="text-base font-semibold text-gray-900 mb-2">2. Transaktionen pr&uuml;fen</h4>
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    Alle Buchungen landen in Ihrer Inbox &ndash; mit intelligenten Zuordnungsvorschl&auml;gen.
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+                  <div className="w-12 h-12 rounded-full bg-[#3c8af7]/10 flex items-center justify-center mx-auto mb-4">
+                    <Wand2 className="w-5 h-5 text-[#3c8af7]" strokeWidth={1.5} />
+                  </div>
+                  <h4 className="text-base font-semibold text-gray-900 mb-2">3. Automatisch zuordnen</h4>
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    Vorschl&auml;ge mit einem Klick &uuml;bernehmen oder eigene Regeln f&uuml;r die Zukunft erstellen.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
+                <div className="bg-gradient-to-r from-[#3c8af7] to-[#3579de] p-6 sm:p-8 text-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <Landmark className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">Transaktions-Inbox</h3>
+                      <p className="text-white/80 text-sm">3 neue Transaktionen &ndash; 2 Vorschl&auml;ge verf&uuml;gbar</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {[
+                    { date: "01.03.2026", sender: "Sarah Meyer", purpose: "Miete M\u00e4rz 2026", amount: "+1.450,00 \u20ac", amountColor: "text-emerald-600", suggestion: "Mietzahlung M\u00e4rz \u2013 Sarah Meyer", suggestionColor: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                    { date: "28.02.2026", sender: "Stadtwerke Berlin", purpose: "Abschlag Gas 02/2026", amount: "-187,50 \u20ac", amountColor: "text-red-500", suggestion: "Ausgabe \u2013 Heizkosten (Musterstr. 10)", suggestionColor: "bg-amber-50 text-amber-700 border-amber-200" },
+                    { date: "27.02.2026", sender: "Thomas Klein", purpose: "Miete Maerz 2026", amount: "+1.120,00 \u20ac", amountColor: "text-emerald-600", suggestion: "Mietzahlung M\u00e4rz \u2013 Thomas Klein", suggestionColor: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                  ].map((tx, i) => (
+                    <div key={i} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs text-gray-400 font-medium">{tx.date}</span>
+                          <span className="text-sm font-semibold text-gray-900 truncate">{tx.sender}</span>
+                        </div>
+                        <p className="text-sm text-gray-500 truncate">{tx.purpose}</p>
+                      </div>
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${tx.suggestionColor}`}>
+                          <Wand2 className="w-3 h-3" />
+                          {tx.suggestion}
+                        </span>
+                        <span className={`text-sm font-bold whitespace-nowrap ${tx.amountColor}`}>{tx.amount}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-gray-100 bg-gray-50 px-6 py-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-gray-400">Auch m&ouml;glich:</span>
+                    <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                      <Upload className="w-3.5 h-3.5" /> CSV-Import
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                      <Upload className="w-3.5 h-3.5" /> CAMT053
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                      <RotateCcw className="w-3.5 h-3.5" /> Rollback
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-400">DSGVO-konform &uuml;ber PSD2</span>
+                </div>
+              </div>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
+      <section className="py-20 px-6">
+        <div className="max-w-[1200px] mx-auto">
+          <RevealOnScroll>
+            <div className="text-center mb-16">
               <p className="text-sm font-semibold text-[#3c8af7] uppercase tracking-wide mb-3">
                 Praxisbeispiel
               </p>
@@ -358,7 +494,7 @@ export default function Buchhaltung() {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold">Portfolio Finanzbericht 2024</h3>
-                    <p className="text-white/80 text-sm">Gesamtübersicht aller Immobilien</p>
+                    <p className="text-white/80 text-sm">Gesamt&uuml;bersicht aller Immobilien</p>
                   </div>
                 </div>
               </div>
@@ -372,19 +508,19 @@ export default function Buchhaltung() {
                     <div className="space-y-3">
                       <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Kaltmiete</span>
-                        <span className="font-semibold text-gray-900">36.000,00 €</span>
+                        <span className="font-semibold text-gray-900">36.000,00 &euro;</span>
                       </div>
                       <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Nebenkosten</span>
-                        <span className="font-semibold text-gray-900">7.200,00 €</span>
+                        <span className="font-semibold text-gray-900">7.200,00 &euro;</span>
                       </div>
                       <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Stellplätze</span>
-                        <span className="font-semibold text-gray-900">1.680,00 €</span>
+                        <span className="text-gray-600">Stellpl&auml;tze</span>
+                        <span className="font-semibold text-gray-900">1.680,00 &euro;</span>
                       </div>
                       <div className="flex justify-between py-2">
                         <span className="text-gray-600 font-semibold">Gesamt Einnahmen</span>
-                        <span className="font-bold text-emerald-600">44.880,00 €</span>
+                        <span className="font-bold text-emerald-600">44.880,00 &euro;</span>
                       </div>
                     </div>
                   </div>
@@ -396,23 +532,23 @@ export default function Buchhaltung() {
                     <div className="space-y-3">
                       <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Instandhaltung</span>
-                        <span className="font-semibold text-gray-900">7.840,00 €</span>
+                        <span className="font-semibold text-gray-900">7.840,00 &euro;</span>
                       </div>
                       <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Verwaltung</span>
-                        <span className="font-semibold text-gray-900">4.200,00 €</span>
+                        <span className="font-semibold text-gray-900">4.200,00 &euro;</span>
                       </div>
                       <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Versicherung</span>
-                        <span className="font-semibold text-gray-900">3.600,00 €</span>
+                        <span className="font-semibold text-gray-900">3.600,00 &euro;</span>
                       </div>
                       <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Grundsteuer</span>
-                        <span className="font-semibold text-gray-900">2.600,00 €</span>
+                        <span className="font-semibold text-gray-900">2.600,00 &euro;</span>
                       </div>
                       <div className="flex justify-between py-2">
                         <span className="text-gray-600 font-semibold">Gesamt Ausgaben</span>
-                        <span className="font-bold text-red-500">18.240,00 €</span>
+                        <span className="font-bold text-red-500">18.240,00 &euro;</span>
                       </div>
                     </div>
                   </div>
@@ -425,11 +561,11 @@ export default function Buchhaltung() {
                   <div className="grid md:grid-cols-3 gap-6">
                     <div>
                       <p className="text-sm text-gray-500 mb-1">Jahres-Cashflow</p>
-                      <p className="text-2xl font-bold text-gray-900">26.640,00 €</p>
+                      <p className="text-2xl font-bold text-gray-900">26.640,00 &euro;</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 mb-1">Monatlicher Durchschnitt</p>
-                      <p className="text-2xl font-bold text-gray-900">2.220,00 €</p>
+                      <p className="text-2xl font-bold text-gray-900">2.220,00 &euro;</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 mb-1">Cashflow-Marge</p>
@@ -600,6 +736,16 @@ export default function Buchhaltung() {
                 Ausgaben lassen sich mit wenigen Klicks erfassen und nach steuerrelevanten Kategorien
                 wie Anlage V sortieren. Die Cashflow-Analyse zeigt Ihnen in Echtzeit, wie sich
                 jede Immobilie finanziell entwickelt &ndash; &uuml;ber Monate und Jahre hinweg.
+              </p>
+              <p>
+                Mit der neuen Bankanbindung verbinden Sie Ihr Konto direkt &uuml;ber die sichere
+                PSD2-Schnittstelle. Transaktionen werden t&auml;glich automatisch abgerufen und
+                landen in einer &uuml;bersichtlichen Inbox. Intelligente Zuordnungsvorschl&auml;ge
+                erkennen Mietzahlungen, Betriebskosten und wiederkehrende Ausgaben anhand von Betrag,
+                Verwendungszweck und IBAN. Wer keine Online-Anbindung nutzen m&ouml;chte, kann
+                Kontoausz&uuml;ge auch per CSV oder CAMT053 importieren. Eigene Zuordnungsregeln
+                mit Auto-Anwendung sorgen daf&uuml;r, dass bekannte Buchungen beim n&auml;chsten
+                Import automatisch verarbeitet werden &ndash; komplett ohne manuellen Aufwand.
               </p>
               <p>
                 Dar&uuml;ber hinaus behalten Sie Ihre Immobiliendarlehen mit Zinsen, Tilgung und

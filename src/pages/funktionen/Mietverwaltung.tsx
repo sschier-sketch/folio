@@ -22,12 +22,13 @@ import {
   LayoutDashboard,
   Sparkles,
   Zap,
-  Laptop
+  Laptop,
+  Landmark,
 } from "lucide-react";
 
 const HERO_CHECKS = [
   "Mietverträge komplett digital verwalten",
-  "Automatische Zahlungsüberwachung",
+  "Zahlungseingänge per Bankanbindung automatisch abgleichen",
   "Indexmieterhöhungen automatisch berechnen"
 ];
 
@@ -38,9 +39,15 @@ const FEATURES = [
     description: "Alle Vertragsdaten zentral erfasst. Laufzeiten, Fristen und Sonderklauseln automatisch überwacht."
   },
   {
+    icon: Landmark,
+    title: "Bankanbindung & Zahlungsabgleich",
+    description: "Verbinden Sie Ihr Bankkonto per PSD2 und lassen Sie Mietzahlungen automatisch zuordnen. Offene Posten und Verzug sofort erkennbar.",
+    isNew: true,
+  },
+  {
     icon: CreditCard,
     title: "Automatische Zahlungsverfolgung",
-    description: "Soll-Ist-Abgleich erfolgt automatisch. Offene Posten und Zahlungsverzug sofort erkennbar."
+    description: "Soll-Ist-Abgleich erfolgt automatisch. Teilzahlungen werden erfasst, Zahlungsverzug sofort erkennbar."
   },
   {
     icon: TrendingUp,
@@ -291,7 +298,12 @@ export default function Mietverwaltung() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {FEATURES.map((feature, i) => (
               <RevealOnScroll key={feature.title} delay={i * 80}>
-                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow h-full">
+                <div className={`bg-white border rounded-xl p-6 hover:shadow-md transition-shadow h-full relative ${feature.isNew ? 'border-[#3c8af7]/30 ring-1 ring-[#3c8af7]/10' : 'border-gray-200'}`}>
+                  {feature.isNew && (
+                    <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#3c8af7]/10 text-[#3c8af7] border border-[#3c8af7]/20">
+                      Neue Funktion
+                    </span>
+                  )}
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center mb-5"
                     style={{ backgroundColor: "#EEF4FF", border: "1px solid #DDE7FF" }}
@@ -639,7 +651,9 @@ export default function Mietverwaltung() {
                 Digitale Mietvertr&auml;ge mit allen Details von Kaltmiete bis Betriebskostenvorauszahlung,
                 automatische Zahlungsverfolgung mit Soll-Ist-Abgleich, Index-basierte Mietanpassungen
                 mit Verbraucherpreisindex-Anbindung, Kautionsverwaltung mit vollst&auml;ndiger Historie
-                und ein integriertes Mahnwesen f&uuml;r s&auml;umige Zahlungen.
+                und ein integriertes Mahnwesen f&uuml;r s&auml;umige Zahlungen. Mit der neuen Bankanbindung
+                werden Zahlungseing&auml;nge direkt vom Bankkonto abgerufen und Mietzahlungen automatisch
+                dem richtigen Mieter und Monat zugeordnet &ndash; manuelles Abgleichen entf&auml;llt.
               </p>
               <p>
                 Jeder Mieter hat ein eigenes Profil mit Vertragsdaten, Zahlungshistorie und
