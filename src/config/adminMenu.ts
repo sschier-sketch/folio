@@ -18,6 +18,7 @@ import {
   Receipt,
   Zap,
   Send,
+  Landmark,
   type LucideIcon,
 } from "lucide-react";
 
@@ -44,7 +45,8 @@ export type AdminTabKey =
   | "faqs"
   | "cms"
   | "invoices"
-  | "help_center";
+  | "help_center"
+  | "banksapi";
 
 export interface AdminMenuItem {
   key: AdminTabKey;
@@ -120,6 +122,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
     items: [
       { key: "system_settings", label: "Einstellungen", icon: Settings },
       { key: "system_info", label: "Systeminfos", icon: Monitor },
+      { key: "banksapi", label: "BanksAPI", icon: Landmark },
       { key: "system_updates", label: "System-Updates", icon: Bell },
       { key: "cron_jobs", label: "Cron Jobs", icon: Timer },
     ],

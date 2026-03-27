@@ -12,9 +12,11 @@ import {
   X,
   FileText,
   Download,
+  Plus,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { Button } from './ui/Button';
+import AdminNewMessageModal from "./admin/AdminNewMessageModal";
 
 interface Ticket {
   id: string;
@@ -62,6 +64,7 @@ export function AdminTicketsView() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [activePanel, setActivePanel] = useState<"tickets" | "settings">("tickets");
+  const [showNewMessage, setShowNewMessage] = useState(false);
   const [signature, setSignature] = useState("");
   const [savingSignature, setSavingSignature] = useState(false);
   const [signatureSaved, setSignatureSaved] = useState(false);
@@ -364,19 +367,44 @@ export function AdminTicketsView() {
     );
   };
 
+  async function handleMessageCreated(ticketId: string) {
+    setShowNewMessage(false);
+    const updatedTickets = await loadTickets();
+    const created = updatedTickets.find((t) => t.id === ticketId);
+    if (created) {
+      handleSelectTicket(created);
+    }
+  }
+
   return (
+    <>
+    {showNewMessage && (
+      <AdminNewMessageModal
+        onClose={() => setShowNewMessage(false)}
+        onCreated={handleMessageCreated}
+      />
+    )}
     <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4 h-full">
       <div className="bg-white rounded overflow-hidden flex flex-col">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-dark">Kontakt-Tickets</h2>
-            <button
-              onClick={() => setActivePanel(activePanel === "settings" ? "tickets" : "settings")}
-              className={`p-1.5 rounded-lg transition-colors ${activePanel === "settings" ? "bg-primary-blue/10 text-primary-blue" : "text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}
-              title="Einstellungen"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowNewMessage(true)}
+                className="p-1.5 rounded-lg transition-colors text-gray-400 hover:bg-gray-50 hover:text-primary-blue"
+                title="Neue Nachricht"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setActivePanel(activePanel === "settings" ? "tickets" : "settings")}
+                className={`p-1.5 rounded-lg transition-colors ${activePanel === "settings" ? "bg-primary-blue/10 text-primary-blue" : "text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}
+                title="Einstellungen"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           {activePanel === "tickets" && (
             <div className="flex gap-2">
@@ -727,6 +755,7 @@ export function AdminTicketsView() {
         )}
       </div>
     </div>
+    </>
   );
 }
 

@@ -37,6 +37,7 @@ import AdminFaqsView from "../components/admin/AdminFaqsView";
 import AdminHelpCenterView from "../components/admin/AdminHelpCenterView";
 import AdminCmsView from "../components/admin/AdminCmsView";
 import AdminSystemInfoView from "../components/admin/AdminSystemInfoView";
+import AdminBanksApiView from "../components/admin/AdminBanksApiView";
 import AdminInvoicesView from "../components/admin/AdminInvoicesView";
 import AdminAnalyticsChart from "../components/admin/AdminAnalyticsChart";
 import DeleteUserModal from "../components/admin/DeleteUserModal";
@@ -715,6 +716,7 @@ export function Admin() {
         {activeTab === "faqs" && <AdminFaqsView />}
         {activeTab === "cms" && <AdminCmsView />}
         {activeTab === "help_center" && <AdminHelpCenterView />}
+        {activeTab === "banksapi" && <AdminBanksApiView />}
         {activeTab === "invoices" && <AdminInvoicesView />}
       </AdminLayout>
 

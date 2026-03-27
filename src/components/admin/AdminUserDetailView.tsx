@@ -22,10 +22,12 @@ import {
   Unlock,
   Send,
   AlertCircle,
+  MessageSquare,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
 import UserActionsDropdown from "./UserActionsDropdown";
+import AdminNewMessageModal from "./AdminNewMessageModal";
 
 interface LoginEntry {
   id: string;
@@ -139,6 +141,7 @@ export default function AdminUserDetailView({
   const [emailHistory, setEmailHistory] = useState<EmailLogEntry[]>([]);
   const [members, setMembers] = useState<AccountMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showNewMessage, setShowNewMessage] = useState(false);
   const [historyPage, setHistoryPage] = useState(0);
   const [emailPage, setEmailPage] = useState(0);
   const [activeHistoryTab, setActiveHistoryTab] = useState<HistoryTab>("logins");
@@ -252,9 +255,11 @@ export default function AdminUserDetailView({
     );
   }
 
-  const displayName = [profile?.first_name, profile?.last_name]
+  const prefillName = [profile?.first_name, profile?.last_name]
     .filter(Boolean)
-    .join(" ") || userEmail;
+    .join(" ") || "";
+
+  const displayName = prefillName || userEmail;
 
   const address = [
     [profile?.address_street, profile?.address_house_number]
@@ -267,6 +272,18 @@ export default function AdminUserDetailView({
     .join(", ");
 
   return (
+    <>
+    {showNewMessage && (
+      <AdminNewMessageModal
+        onClose={() => setShowNewMessage(false)}
+        onCreated={() => {
+          setShowNewMessage(false);
+          loadData();
+        }}
+        prefillEmail={userEmail}
+        prefillName={prefillName}
+      />
+    )}
     <div className="space-y-6">
       <button
         onClick={onBack}
@@ -311,6 +328,13 @@ export default function AdminUserDetailView({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => setShowNewMessage(true)}
+          >
+            <MessageSquare className="w-4 h-4 mr-1.5" />
+            Nachricht schreiben
+          </Button>
           <Button
             variant="secondary"
             onClick={() => onImpersonate(userId, userEmail)}
@@ -665,6 +689,7 @@ export default function AdminUserDetailView({
         )}
       </div>
     </div>
+    </>
   );
 }
 
