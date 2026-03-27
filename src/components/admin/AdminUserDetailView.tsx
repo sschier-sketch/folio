@@ -635,6 +635,7 @@ export default function AdminUserDetailView({
                 connected: { color: "text-emerald-600", label: "Verbunden", icon: <CheckCircle className="w-3.5 h-3.5" /> },
                 requires_sca: { color: "text-amber-600", label: "Freigabe noetig", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
                 syncing: { color: "text-blue-600", label: "Synchronisiert", icon: <Loader2 className="w-3.5 h-3.5 animate-spin" /> },
+                disconnected: { color: "text-gray-400", label: "Getrennt", icon: <AlertCircle className="w-3.5 h-3.5" /> },
                 error: { color: "text-red-600", label: "Fehler", icon: <AlertCircle className="w-3.5 h-3.5" /> },
               };
               const s = statusMap[conn.status] || statusMap.error;
