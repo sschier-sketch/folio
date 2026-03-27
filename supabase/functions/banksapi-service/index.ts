@@ -2383,6 +2383,17 @@ async function handleCronSync(admin: Admin): Promise<Response> {
     .not("bank_access_id", "is", null);
 
   if (!connections || connections.length === 0) {
+    await admin.from("banksapi_import_logs").insert({
+      user_id: null,
+      connection_id: null,
+      bank_access_id: null,
+      trigger_type: "cron",
+      started_at: new Date().toISOString(),
+      finished_at: new Date().toISOString(),
+      status: "success",
+      total_new_transactions_imported: 0,
+      error_message: "No active connections to sync",
+    });
     return jsonResponse({
       status: "success",
       message: "No active connections to sync",

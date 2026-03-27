@@ -688,6 +688,7 @@ function BanksApiDiagnosticsSection({
   const products = (stats?.products || {}) as Record<string, number>;
   const imp = (stats?.import_24h || {}) as Record<string, number>;
   const lastCron = (stats?.last_cron || {}) as Record<string, unknown>;
+  const cronJob = (stats?.cron_job || {}) as Record<string, unknown>;
   const connList = (stats?.connection_list || []) as Array<Record<string, unknown>>;
 
   const statCards = [
@@ -749,33 +750,41 @@ function BanksApiDiagnosticsSection({
               })}
             </div>
 
-            {lastCron && (lastCron.started_at || lastCron.status) && (
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Letzter Cron-Lauf</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                  <div>
-                    <p className="text-[10px] text-gray-400">Gestartet</p>
-                    <p className="font-medium text-dark">{formatDt(lastCron.started_at as string)}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-gray-400">Status</p>
-                    <p className={`font-medium ${lastCron.status === "failed" ? "text-red-600" : "text-emerald-600"}`}>
-                      {lastCron.status === "failed" ? "Fehlgeschlagen" : "Erfolgreich"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-gray-400">Importiert</p>
-                    <p className="font-medium text-dark">{(lastCron.total_new_transactions_imported as number) ?? 0}</p>
-                  </div>
-                  {lastCron.error_message && (
-                    <div className="col-span-2 sm:col-span-4">
-                      <p className="text-[10px] text-gray-400">Fehler</p>
-                      <p className="text-xs text-red-600">{lastCron.error_message as string}</p>
-                    </div>
-                  )}
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Letzter Cron-Lauf</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                <div>
+                  <p className="text-[10px] text-gray-400">Cron-Trigger</p>
+                  <p className="font-medium text-dark">{cronJob.last_trigger_at ? formatDt(cronJob.last_trigger_at as string) : "Nie"}</p>
                 </div>
+                <div>
+                  <p className="text-[10px] text-gray-400">Trigger-Status</p>
+                  <p className={`font-medium ${cronJob.last_trigger_status === "failed" ? "text-red-600" : cronJob.last_trigger_at ? "text-emerald-600" : "text-gray-400"}`}>
+                    {cronJob.last_trigger_status === "failed" ? "Fehlgeschlagen" : cronJob.last_trigger_at ? "Ausgeloest" : "-"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400">Letzter Sync</p>
+                  <p className="font-medium text-dark">{lastCron.started_at ? formatDt(lastCron.started_at as string) : "Kein Sync"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400">Importiert</p>
+                  <p className="font-medium text-dark">{(lastCron.total_new_transactions_imported as number) ?? 0}</p>
+                </div>
+                {lastCron.error_message && lastCron.status === "failed" && (
+                  <div className="col-span-2 sm:col-span-4">
+                    <p className="text-[10px] text-gray-400">Fehler</p>
+                    <p className="text-xs text-red-600">{lastCron.error_message as string}</p>
+                  </div>
+                )}
+                {lastCron.error_message && lastCron.status !== "failed" && (
+                  <div className="col-span-2 sm:col-span-4">
+                    <p className="text-[10px] text-gray-400">Hinweis</p>
+                    <p className="text-xs text-gray-500">{lastCron.error_message as string}</p>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             {connList.length > 0 && (
               <div>
