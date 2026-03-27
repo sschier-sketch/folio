@@ -199,7 +199,7 @@ export default function AdminUserDetailView({
   async function loadData() {
     setLoading(true);
     try {
-      const [profileRes, historyRes, membersRes, emailRes, ticketsRes, bankRes] = await Promise.all([
+      const [profileRes, historyRes, membersRes, emailRes, ticketsRes, detailStatsRes] = await Promise.all([
         supabase
           .from("account_profiles")
           .select(
@@ -226,12 +226,7 @@ export default function AdminUserDetailView({
           .eq("ticket_type", "contact")
           .ilike("contact_email", userEmail)
           .order("created_at", { ascending: false }),
-        supabase
-          .from("banksapi_connections")
-          .select("id, bank_name, status, last_sync_at, error_message, last_issue_message, created_at")
-          .eq("user_id", userId)
-          .neq("status", "disconnected")
-          .order("created_at", { ascending: false }),
+        supabase.rpc("admin_get_user_detail_stats", { target_user_id: userId }),
       ]);
 
       setProfile(profileRes.data);
@@ -239,39 +234,18 @@ export default function AdminUserDetailView({
       setMembers((membersRes.data as AccountMember[]) || []);
       setEmailHistory(emailRes.data || []);
       setContactTickets(ticketsRes.data || []);
-      setBankConnections(bankRes.data || []);
 
-      const [subUsersRes, propertiesRes, tenantsRes] = await Promise.all([
-        supabase
-          .from("user_settings")
-          .select("id", { count: "exact", head: true })
-          .eq("account_owner_id", userId)
-          .neq("user_id", userId),
-        supabase
-          .from("properties")
-          .select("id, name, address_street, address_city, property_units(id)")
-          .eq("user_id", userId),
-        supabase
-          .from("rental_contracts")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .is("deleted_at", null),
-      ]);
-
-      const props: PropertyWithUnits[] = (propertiesRes.data || []).map((p: Record<string, unknown>) => ({
-        id: p.id as string,
-        name: p.name as string,
-        address_street: p.address_street as string | null,
-        address_city: p.address_city as string | null,
-        units_count: Array.isArray(p.property_units) ? p.property_units.length : 0,
-      }));
-
-      setUserStats({
-        subUsers: subUsersRes.count ?? 0,
-        properties: props,
-        totalUnits: props.reduce((s, p) => s + p.units_count, 0),
-        totalTenants: tenantsRes.count ?? 0,
-      });
+      const stats = detailStatsRes.data as Record<string, unknown> | null;
+      if (stats) {
+        const props = (stats.properties as PropertyWithUnits[]) || [];
+        setBankConnections((stats.bank_connections as BankConnection[]) || []);
+        setUserStats({
+          subUsers: (stats.sub_users as number) ?? 0,
+          properties: props,
+          totalUnits: (stats.total_units as number) ?? 0,
+          totalTenants: (stats.total_tenants as number) ?? 0,
+        });
+      }
     } catch (err) {
       console.error("Error loading user detail:", err);
     } finally {
