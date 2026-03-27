@@ -12,6 +12,7 @@ import {
   Trash2,
   Mail,
   FileText,
+  Clock,
 } from 'lucide-react';
 
 interface UserActionsDropdownProps {
@@ -31,6 +32,7 @@ interface UserActionsDropdownProps {
   onDelete: (userId: string, email: string) => void;
   onEditEmail: (userId: string, email: string) => void;
   onViewDetails?: (userId: string) => void;
+  onExtendTrial?: (userId: string, email: string) => void;
 }
 
 interface ActionItem {
@@ -59,6 +61,7 @@ export default function UserActionsDropdown({
   onDelete,
   onEditEmail,
   onViewDetails,
+  onExtendTrial,
 }: UserActionsDropdownProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -131,6 +134,13 @@ export default function UserActionsDropdown({
       description: 'E-Mail-Adresse dieses Nutzers aktualisieren',
       icon: <Mail className="w-4 h-4" />,
       onClick: () => onEditEmail(userId, userEmail),
+    },
+    {
+      label: 'Trial verlängern / neu starten',
+      description: 'Testzeitraum verlängern oder erneut gewähren',
+      icon: <Clock className="w-4 h-4" />,
+      onClick: () => onExtendTrial?.(userId, userEmail),
+      hidden: !onExtendTrial || isPro,
     },
     {
       label: 'Abo zum Laufzeitende kündigen',

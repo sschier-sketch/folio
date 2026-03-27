@@ -109,6 +109,7 @@ export function Admin() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
   const [refundTarget, setRefundTarget] = useState<{ id: string; email: string } | null>(null);
   const [editEmailTarget, setEditEmailTarget] = useState<{ id: string; email: string } | null>(null);
+  const [trialTarget, setTrialTarget] = useState<{ id: string; email: string } | null>(null);
   const [userFilter, setUserFilter] = useState<UserFilter>('all');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
@@ -655,6 +656,7 @@ export function Admin() {
                       onDelete={(id, email) => setDeleteTarget({ id, email })}
                       onEditEmail={(id, email) => setEditEmailTarget({ id, email })}
                       onViewDetails={openUserDetail}
+                      onExtendTrial={(id, email) => setTrialTarget({ id, email })}
                     />
                   )
                 }
@@ -733,6 +735,19 @@ export function Admin() {
           onClose={() => setEditEmailTarget(null)}
           onSaved={() => {
             setEditEmailTarget(null);
+            reloadUsers();
+          }}
+        />
+      )}
+
+      {trialTarget && (
+        <ExtendTrialModal
+          userId={trialTarget.id}
+          userEmail={trialTarget.email}
+          currentTrialEndsAt={users.find(u => u.id === trialTarget.id)?.trial_ends_at ?? null}
+          onClose={() => setTrialTarget(null)}
+          onSaved={() => {
+            setTrialTarget(null);
             reloadUsers();
           }}
         />
@@ -928,6 +943,168 @@ function EditEmailModal({ userId, currentEmail, onClose, onSaved }: {
             variant="primary"
           >
             {saving ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Speichern...</> : "Speichern"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExtendTrialModal({ userId, userEmail, currentTrialEndsAt, onClose, onSaved }: {
+  userId: string;
+  userEmail: string;
+  currentTrialEndsAt: string | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [days, setDays] = useState(7);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const now = new Date();
+  const currentEnd = currentTrialEndsAt ? new Date(currentTrialEndsAt) : null;
+  const isExpired = !currentEnd || currentEnd <= now;
+  const daysRemaining = currentEnd && currentEnd > now
+    ? Math.ceil((currentEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
+  const baseDate = isExpired ? now : currentEnd!;
+  const newEndDate = new Date(baseDate.getTime() + days * 24 * 60 * 60 * 1000);
+
+  async function handleSave() {
+    if (days < 1 || days > 365) {
+      setError("Bitte einen Wert zwischen 1 und 365 Tagen eingeben");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const newTrialEndsAt = newEndDate.toISOString();
+      const updates: Record<string, string> = {
+        trial_ends_at: newTrialEndsAt,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (isExpired) {
+        updates.trial_started_at = now.toISOString();
+      }
+
+      const { error: updateError } = await supabase
+        .from("billing_info")
+        .update(updates)
+        .eq("user_id", userId);
+
+      if (updateError) throw updateError;
+
+      await supabase
+        .from("admin_activity_log")
+        .insert({
+          admin_user_id: (await supabase.auth.getUser()).data.user?.id,
+          action: isExpired ? "trial_restart" : "trial_extend",
+          target_user_id: userId,
+          details: {
+            days_added: days,
+            new_trial_ends_at: newTrialEndsAt,
+            previous_trial_ends_at: currentTrialEndsAt,
+          },
+        });
+
+      onSaved();
+    } catch (err: any) {
+      setError(err.message || "Unbekannter Fehler");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h3 className="font-semibold text-dark">
+            {isExpired ? "Trial neu starten" : "Trial verlängern"}
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Benutzer</label>
+            <p className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">{userEmail}</p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Aktueller Trial-Status</label>
+            {isExpired ? (
+              <p className="text-sm bg-red-50 text-red-700 px-3 py-2 rounded-lg">
+                {currentEnd
+                  ? `Abgelaufen am ${currentEnd.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}`
+                  : "Kein Trial vorhanden"}
+              </p>
+            ) : (
+              <p className="text-sm bg-sky-50 text-sky-700 px-3 py-2 rounded-lg">
+                Aktiv - noch {daysRemaining} {daysRemaining === 1 ? "Tag" : "Tage"} (bis {currentEnd!.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })})
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              {isExpired ? "Neuer Testzeitraum (Tage)" : "Verlängerung um (Tage)"}
+            </label>
+            <div className="flex items-center gap-2">
+              {[7, 14, 30].map(d => (
+                <button
+                  key={d}
+                  onClick={() => setDays(d)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    days === d
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {d} Tage
+                </button>
+              ))}
+              <input
+                type="number"
+                min={1}
+                max={365}
+                value={days}
+                onChange={e => { setDays(parseInt(e.target.value) || 0); setError(""); }}
+                className="w-20 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+              />
+            </div>
+          </div>
+
+          {days > 0 && (
+            <div className="bg-blue-50 rounded-lg px-3 py-2">
+              <p className="text-xs text-blue-700">
+                {isExpired ? "Neuer Trial ab heute" : "Trial wird verlängert"} bis zum{" "}
+                <span className="font-semibold">
+                  {newEndDate.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                </span>
+              </p>
+            </div>
+          )}
+
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+          )}
+        </div>
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100">
+          <Button onClick={onClose} variant="secondary">Abbrechen</Button>
+          <Button
+            onClick={handleSave}
+            disabled={saving || days < 1}
+            variant="primary"
+          >
+            {saving
+              ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Speichern...</>
+              : isExpired ? "Trial starten" : "Trial verlängern"}
           </Button>
         </div>
       </div>
