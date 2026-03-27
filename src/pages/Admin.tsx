@@ -15,6 +15,9 @@ import {
   Building2,
   ArrowUpRight,
   ArrowDownRight,
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { AdminTicketsView } from "../components/AdminTicketsView";
@@ -113,6 +116,9 @@ export function Admin() {
   const [trialTarget, setTrialTarget] = useState<{ id: string; email: string } | null>(null);
   const [userFilter, setUserFilter] = useState<UserFilter>('all');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const USERS_PER_PAGE = 100;
 
   function openUserDetail(userId: string) {
     setSelectedUserId(userId);
@@ -207,14 +213,27 @@ export function Admin() {
     return new Date(user.trial_ends_at) > new Date();
   }
 
+  const searchLower = searchQuery.trim().toLowerCase();
+
   const filteredUsers = users.filter((user) => {
-    switch (userFilter) {
-      case 'pro': return user.subscription_plan === 'pro' && !isUserCancelling(user);
-      case 'cancelling': return isUserCancelling(user);
-      case 'trial': return isUserTrial(user);
-      case 'free': return user.subscription_plan !== 'pro' && !isUserTrial(user);
-      default: return true;
-    }
+    const matchesFilter = (() => {
+      switch (userFilter) {
+        case 'pro': return user.subscription_plan === 'pro' && !isUserCancelling(user);
+        case 'cancelling': return isUserCancelling(user);
+        case 'trial': return isUserTrial(user);
+        case 'free': return user.subscription_plan !== 'pro' && !isUserTrial(user);
+        default: return true;
+      }
+    })();
+    if (!matchesFilter) return false;
+    if (!searchLower) return true;
+    return (
+      (user.email?.toLowerCase().includes(searchLower)) ||
+      (user.first_name?.toLowerCase().includes(searchLower)) ||
+      (user.last_name?.toLowerCase().includes(searchLower)) ||
+      (user.customer_number?.toLowerCase().includes(searchLower)) ||
+      (user.company_name?.toLowerCase().includes(searchLower))
+    );
   });
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
@@ -231,6 +250,10 @@ export function Admin() {
       ? (aValue > bValue ? 1 : -1)
       : (bValue > aValue ? 1 : -1);
   });
+
+  const totalPages = Math.max(1, Math.ceil(sortedUsers.length / USERS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages - 1);
+  const paginatedUsers = sortedUsers.slice(safePage * USERS_PER_PAGE, (safePage + 1) * USERS_PER_PAGE);
 
   const filterCounts = {
     all: users.length,
@@ -496,10 +519,30 @@ export function Admin() {
 
         {activeTab === "users" && (
           <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <div className="p-5 border-b border-gray-100">
-              <h2 className="text-base font-semibold text-gray-800 mb-4">
-                Benutzer
-              </h2>
+            <div className="p-5 border-b border-gray-100 space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-base font-semibold text-gray-800">
+                  Benutzer
+                </h2>
+                <div className="relative w-80">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(0); }}
+                    placeholder="Suche: Name, E-Mail, Kundennummer..."
+                    className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-colors"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => { setSearchQuery(""); setCurrentPage(0); }}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
               <div className="flex items-center gap-2 flex-wrap">
                 {([
                   { key: 'all', label: 'Alle' },
@@ -510,7 +553,7 @@ export function Admin() {
                 ] as { key: UserFilter; label: string }[]).map(({ key, label }) => (
                   <button
                     key={key}
-                    onClick={() => setUserFilter(key)}
+                    onClick={() => { setUserFilter(key); setCurrentPage(0); }}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                       userFilter === key
                         ? 'bg-gray-900 text-white'
@@ -525,6 +568,11 @@ export function Admin() {
                     </span>
                   </button>
                 ))}
+                {searchLower && (
+                  <span className="text-xs text-gray-400 ml-2">
+                    {sortedUsers.length} Ergebnis{sortedUsers.length !== 1 ? "se" : ""}
+                  </span>
+                )}
               </div>
             </div>
             <BaseTable
@@ -662,10 +710,57 @@ export function Admin() {
                   )
                 }
               ]}
-              data={sortedUsers}
+              data={paginatedUsers}
               loading={loadingData}
-              emptyMessage="Keine Benutzer gefunden"
+              emptyMessage={searchLower ? "Keine Benutzer fuer diese Suche gefunden" : "Keine Benutzer gefunden"}
             />
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+                <span className="text-xs text-gray-500">
+                  {safePage * USERS_PER_PAGE + 1}–{Math.min((safePage + 1) * USERS_PER_PAGE, sortedUsers.length)} von {sortedUsers.length}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(0, safePage - 1))}
+                    disabled={safePage === 0}
+                    className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i)
+                    .filter(i => i === 0 || i === totalPages - 1 || Math.abs(i - safePage) <= 1)
+                    .reduce<(number | "...")[]>((acc, i, idx, arr) => {
+                      if (idx > 0 && i - (arr[idx - 1] as number) > 1) acc.push("...");
+                      acc.push(i);
+                      return acc;
+                    }, [])
+                    .map((item, idx) =>
+                      item === "..." ? (
+                        <span key={`dots-${idx}`} className="px-1 text-xs text-gray-400">...</span>
+                      ) : (
+                        <button
+                          key={item}
+                          onClick={() => setCurrentPage(item as number)}
+                          className={`min-w-[2rem] h-8 rounded-lg text-xs font-medium transition-colors ${
+                            safePage === item
+                              ? "bg-gray-900 text-white"
+                              : "text-gray-600 hover:bg-gray-200"
+                          }`}
+                        >
+                          {(item as number) + 1}
+                        </button>
+                      )
+                    )}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages - 1, safePage + 1))}
+                    disabled={safePage >= totalPages - 1}
+                    className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

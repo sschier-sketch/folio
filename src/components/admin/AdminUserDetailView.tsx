@@ -23,6 +23,8 @@ import {
   Send,
   AlertCircle,
   MessageSquare,
+  Landmark,
+  AlertTriangle,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
@@ -94,6 +96,16 @@ interface ContactTicketEntry {
   closed_at: string | null;
 }
 
+interface BankConnection {
+  id: string;
+  bank_name: string;
+  status: string;
+  last_sync_at: string | null;
+  error_message: string | null;
+  last_issue_message: string | null;
+  created_at: string;
+}
+
 interface AdminUserDetailViewProps {
   userId: string;
   userEmail: string;
@@ -151,6 +163,7 @@ export default function AdminUserDetailView({
   const [emailHistory, setEmailHistory] = useState<EmailLogEntry[]>([]);
   const [members, setMembers] = useState<AccountMember[]>([]);
   const [contactTickets, setContactTickets] = useState<ContactTicketEntry[]>([]);
+  const [bankConnections, setBankConnections] = useState<BankConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewMessage, setShowNewMessage] = useState(false);
   const [historyPage, setHistoryPage] = useState(0);
@@ -165,7 +178,7 @@ export default function AdminUserDetailView({
   async function loadData() {
     setLoading(true);
     try {
-      const [profileRes, historyRes, membersRes, emailRes, ticketsRes] = await Promise.all([
+      const [profileRes, historyRes, membersRes, emailRes, ticketsRes, bankRes] = await Promise.all([
         supabase
           .from("account_profiles")
           .select(
@@ -192,6 +205,12 @@ export default function AdminUserDetailView({
           .eq("ticket_type", "contact")
           .ilike("contact_email", userEmail)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("banksapi_connections")
+          .select("id, bank_name, status, last_sync_at, error_message, last_issue_message, created_at")
+          .eq("user_id", userId)
+          .neq("status", "disconnected")
+          .order("created_at", { ascending: false }),
       ]);
 
       setProfile(profileRes.data);
@@ -199,6 +218,7 @@ export default function AdminUserDetailView({
       setMembers((membersRes.data as AccountMember[]) || []);
       setEmailHistory(emailRes.data || []);
       setContactTickets(ticketsRes.data || []);
+      setBankConnections(bankRes.data || []);
     } catch (err) {
       console.error("Error loading user detail:", err);
     } finally {
@@ -457,6 +477,69 @@ export default function AdminUserDetailView({
             value={profile?.newsletter_opt_in ? "Ja" : "Nein"}
           />
         </Section>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <Landmark className="w-4 h-4 text-gray-400" />
+            Bankanbindung
+          </h2>
+          {bankConnections.length > 0 ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <CheckCircle className="w-3 h-3" />
+              {bankConnections.length} {bankConnections.length === 1 ? "Verbindung" : "Verbindungen"}
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200">
+              Keine Verbindung
+            </span>
+          )}
+        </div>
+        {bankConnections.length === 0 ? (
+          <div className="px-6 py-6 text-center text-sm text-gray-400">
+            Keine aktive Bankanbindung vorhanden
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {bankConnections.map((conn) => {
+              const statusMap: Record<string, { color: string; label: string; icon: React.ReactNode }> = {
+                connected: { color: "text-emerald-600", label: "Verbunden", icon: <CheckCircle className="w-3.5 h-3.5" /> },
+                requires_sca: { color: "text-amber-600", label: "Freigabe noetig", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+                syncing: { color: "text-blue-600", label: "Synchronisiert", icon: <Loader2 className="w-3.5 h-3.5 animate-spin" /> },
+                error: { color: "text-red-600", label: "Fehler", icon: <AlertCircle className="w-3.5 h-3.5" /> },
+              };
+              const s = statusMap[conn.status] || statusMap.error;
+              return (
+                <div key={conn.id} className="px-6 py-3 flex items-center gap-4">
+                  <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Landmark className="w-4 h-4 text-teal-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-800">{conn.bank_name || "Unbekannte Bank"}</span>
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium ${s.color}`}>
+                        {s.icon}
+                        {s.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-400">
+                      <span>Verbunden seit {formatDate(conn.created_at)}</span>
+                      {conn.last_sync_at && (
+                        <span>Letzter Sync: {formatDateTime(conn.last_sync_at)}</span>
+                      )}
+                    </div>
+                    {(conn.error_message || conn.last_issue_message) && (
+                      <p className="text-xs text-red-500 mt-0.5 truncate">
+                        {conn.error_message || conn.last_issue_message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {members.length > 0 && (
