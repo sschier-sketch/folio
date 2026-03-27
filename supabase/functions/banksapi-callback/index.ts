@@ -48,6 +48,35 @@ Deno.serve(async (req: Request) => {
     }
 
     const admin = getSupabaseAdmin();
+
+    const NON_FINISHED_ERRORS: Record<string, string> = {
+      USER_CANCELLED: "Vorgang vom Benutzer abgebrochen",
+      LEGAL_NOT_ACCEPTED: "AGB nicht akzeptiert",
+      INVALID_CREDENTIALS: "Zugangsdaten ungültig",
+      INVALID_TAN: "TAN ungültig",
+      BACKEND_ERROR: "Bankfehler",
+      ERROR: "Allgemeiner Fehler",
+      NO_ACCOUNTS: "Keine Konten gefunden",
+      SESSION_TIMEOUT: "Sitzung abgelaufen",
+      CONCURRENT_CREATION_OF_SAME_ACCESS: "Paralleler Zugriff",
+    };
+
+    if (baReentry !== "FINISHED" && baReentry !== "ACCOUNT_CREATED") {
+      const reason = NON_FINISHED_ERRORS[baReentry] || baReentry;
+      console.warn(`banksapi-callback: Non-success baReentry=${baReentry} (${reason})`);
+
+      await admin
+        .from("banksapi_connections")
+        .update({
+          status: "error",
+          error_message: `Bankfreigabe fehlgeschlagen: ${reason}`,
+        })
+        .eq("status", "requires_sca")
+        .gte("updated_at", new Date(Date.now() - 30 * 60 * 1000).toISOString());
+
+      return redirect(callerOrigin, "error");
+    }
+
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
     const { data: pendingConns } = await admin

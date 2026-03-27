@@ -633,13 +633,25 @@ async function persistBankAccess(
       })
       .eq("id", connectionId);
   } else {
-    const { data: pendingConn } = await admin
+    const { data: pendingConnNull } = await admin
       .from("banksapi_connections")
       .select("id")
       .eq("user_id", userId)
       .is("bank_access_id", null)
       .eq("status", "requires_sca")
       .maybeSingle();
+
+    const pendingConn = pendingConnNull || (await (async () => {
+      const { data: pendingAny } = await admin
+        .from("banksapi_connections")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("status", "requires_sca")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return pendingAny;
+    })());
 
     if (pendingConn) {
       connectionId = pendingConn.id;
@@ -1034,6 +1046,17 @@ async function handleCompleteCallback(
 ): Promise<Response> {
   const userId = body.userId;
   const customerId = getCustomerId(userId);
+
+  if (body.baReentry && body.baReentry !== "FINISHED" && body.baReentry !== "ACCOUNT_CREATED") {
+    console.warn(`complete-callback: baReentry=${body.baReentry} for user ${userId}`);
+    if (body.connectionId) {
+      await admin
+        .from("banksapi_connections")
+        .update({ status: "error", error_message: `SCA failed: ${body.baReentry}` })
+        .eq("id", body.connectionId);
+    }
+    return errorResponse(`SCA not completed: ${body.baReentry}`, 400);
+  }
 
   if (body.connectionId) {
     const { data: conn } = await admin
