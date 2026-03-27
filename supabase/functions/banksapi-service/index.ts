@@ -2283,6 +2283,83 @@ async function handleRefreshAndImport(
   }
 }
 
+// ─── Recover: try to resolve error connections ─────────────────
+
+async function handleRecoverConnections(admin: Admin): Promise<Response> {
+  const { data: errorConns } = await admin
+    .from("banksapi_connections")
+    .select("id, user_id, banksapi_customer_id, bank_access_id")
+    .eq("status", "error")
+    .order("updated_at", { ascending: false })
+    .limit(50);
+
+  if (!errorConns || errorConns.length === 0) {
+    return jsonResponse({ status: "success", message: "No error connections to recover", recovered: 0 });
+  }
+
+  const results: Array<{ connectionId: string; userId: string; status: string; bankName?: string; error?: string }> = [];
+
+  for (const conn of errorConns) {
+    try {
+      const customerId = getCustomerId(conn.user_id);
+      const res = await banksapiFetch(admin, `/customer/v2/bankzugaenge`, { method: "GET" }, conn.user_id);
+
+      if (!res.ok) {
+        const errText = await res.text();
+        results.push({ connectionId: conn.id, userId: conn.user_id, status: "failed", error: `API ${res.status}: ${errText.substring(0, 200)}` });
+        continue;
+      }
+
+      const bankAccessesRaw = await res.json();
+      const accessList: Record<string, unknown>[] = [];
+      if (typeof bankAccessesRaw === "object" && bankAccessesRaw !== null && !Array.isArray(bankAccessesRaw)) {
+        for (const [key, value] of Object.entries(bankAccessesRaw)) {
+          if (key !== "relations" && typeof value === "object" && value !== null) {
+            accessList.push({ id: key, ...(value as Record<string, unknown>) });
+          }
+        }
+      } else if (Array.isArray(bankAccessesRaw)) {
+        accessList.push(...bankAccessesRaw);
+      }
+
+      if (accessList.length === 0) {
+        results.push({ connectionId: conn.id, userId: conn.user_id, status: "no_access", error: "No bank accesses found at BanksAPI" });
+        continue;
+      }
+
+      const latest = accessList[accessList.length - 1];
+      const realBankAccessId = String(latest.id || "");
+      const baStatus = String((latest as Record<string, unknown>).status || "");
+
+      if (baStatus !== "VOLLSTAENDIG") {
+        results.push({ connectionId: conn.id, userId: conn.user_id, status: "incomplete", error: `BanksAPI status: ${baStatus}` });
+        continue;
+      }
+
+      const persistResult = await persistBankAccess(admin, conn.user_id, customerId, latest);
+      const persistBody = await persistResult.json();
+
+      results.push({
+        connectionId: conn.id,
+        userId: conn.user_id,
+        status: persistResult.ok ? "recovered" : "persist_failed",
+        bankName: persistBody.bankName,
+        error: persistResult.ok ? undefined : persistBody.error,
+      });
+    } catch (e) {
+      results.push({
+        connectionId: conn.id,
+        userId: conn.user_id,
+        status: "exception",
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }
+
+  const recovered = results.filter(r => r.status === "recovered").length;
+  return jsonResponse({ status: "success", recovered, total: errorConns.length, details: results });
+}
+
 // ─── Cron: sync all connections ─────────────────────────────────
 
 async function handleCronSync(admin: Admin): Promise<Response> {
@@ -2536,6 +2613,15 @@ Deno.serve(async (req: Request) => {
         return errorResponse("Forbidden", 403);
       }
       return handleCronSync(admin);
+    }
+
+    if (action === "recover-connections") {
+      const internalKey = req.headers.get("X-Internal-Key") || "";
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+      if (internalKey !== serviceKey) {
+        return errorResponse("Forbidden", 403);
+      }
+      return handleRecoverConnections(admin);
     }
 
     const authHeader = req.headers.get("Authorization") || "";

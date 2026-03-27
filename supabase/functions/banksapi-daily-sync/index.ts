@@ -15,23 +15,54 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const internalHeaders = {
+      "Content-Type": "application/json",
+      "X-Internal-Key": serviceKey,
+    };
 
-    const res = await fetch(
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action");
+
+    if (action === "recover") {
+      const recoverRes = await fetch(
+        `${supabaseUrl}/functions/v1/banksapi-service/recover-connections`,
+        { method: "POST", headers: internalHeaders, body: "{}" }
+      );
+      const recoverBody = await recoverRes.text();
+      return new Response(recoverBody, {
+        status: recoverRes.status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const syncRes = await fetch(
       `${supabaseUrl}/functions/v1/banksapi-service/cron-sync`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Internal-Key": serviceKey,
-        },
+        headers: internalHeaders,
         body: JSON.stringify({ trigger: "cron" }),
       }
     );
 
-    const body = await res.text();
+    const syncBody = await syncRes.text();
 
-    return new Response(body, {
-      status: res.status,
+    const recoverRes = await fetch(
+      `${supabaseUrl}/functions/v1/banksapi-service/recover-connections`,
+      { method: "POST", headers: internalHeaders, body: "{}" }
+    ).catch(() => null);
+
+    let recoverBody = null;
+    if (recoverRes?.ok) {
+      recoverBody = await recoverRes.json().catch(() => null);
+    }
+
+    const combined = {
+      sync: JSON.parse(syncBody),
+      recover: recoverBody,
+    };
+
+    return new Response(JSON.stringify(combined), {
+      status: syncRes.status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
