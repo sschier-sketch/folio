@@ -83,6 +83,7 @@ Deno.serve(async (req: Request) => {
         priority: "medium",
         category: "inquiry",
         created_by_name: formData.name,
+        notify_admin_on_reply: true,
       })
       .select()
       .single();
