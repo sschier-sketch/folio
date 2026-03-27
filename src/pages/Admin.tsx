@@ -679,8 +679,19 @@ export function Admin() {
               lastSignInAt={u.last_sign_in_at}
               subscriptionPlan={u.subscription_plan}
               isAdmin={u.is_admin}
+              isBanned={!!u.banned}
+              isCancelling={isUserCancelling(u)}
               onBack={() => setActiveTab("users")}
               onImpersonate={handleImpersonate}
+              onCancelSubscription={handleCancelSubscription}
+              onRefund={handleRefund}
+              onGrantAdmin={handleGrantAdmin}
+              onRevokeAdmin={handleRevokeAdmin}
+              onBan={handleBanUser}
+              onUnban={handleUnbanUser}
+              onDelete={(id, email) => setDeleteTarget({ id, email })}
+              onEditEmail={(id, email) => setEditEmailTarget({ id, email })}
+              onExtendTrial={(id, email) => setTrialTarget({ id, email })}
             />
           );
         })()}

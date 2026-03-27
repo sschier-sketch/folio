@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
+import UserActionsDropdown from "./UserActionsDropdown";
 
 interface LoginEntry {
   id: string;
@@ -88,8 +89,19 @@ interface AdminUserDetailViewProps {
   lastSignInAt?: string;
   subscriptionPlan?: string;
   isAdmin?: boolean;
+  isBanned?: boolean;
+  isCancelling?: boolean;
   onBack: () => void;
   onImpersonate: (userId: string, email: string) => void;
+  onCancelSubscription: (userId: string) => void;
+  onRefund: (userId: string, email: string) => void;
+  onGrantAdmin: (userId: string, email: string) => void;
+  onRevokeAdmin: (userId: string, email: string) => void;
+  onBan: (userId: string, email: string) => void;
+  onUnban: (userId: string, email: string) => void;
+  onDelete: (userId: string, email: string) => void;
+  onEditEmail: (userId: string, email: string) => void;
+  onExtendTrial?: (userId: string, email: string) => void;
 }
 
 type HistoryTab = "logins" | "emails";
@@ -108,8 +120,19 @@ export default function AdminUserDetailView({
   lastSignInAt,
   subscriptionPlan,
   isAdmin,
+  isBanned,
+  isCancelling,
   onBack,
   onImpersonate,
+  onCancelSubscription,
+  onRefund,
+  onGrantAdmin,
+  onRevokeAdmin,
+  onBan,
+  onUnban,
+  onDelete,
+  onEditEmail,
+  onExtendTrial,
 }: AdminUserDetailViewProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loginHistory, setLoginHistory] = useState<LoginEntry[]>([]);
@@ -287,13 +310,33 @@ export default function AdminUserDetailView({
             </div>
           </div>
         </div>
-        <Button
-          variant="secondary"
-          onClick={() => onImpersonate(userId, userEmail)}
-        >
-          <Eye className="w-4 h-4 mr-1.5" />
-          Als Nutzer anmelden
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => onImpersonate(userId, userEmail)}
+          >
+            <Eye className="w-4 h-4 mr-1.5" />
+            Als Nutzer anmelden
+          </Button>
+          <UserActionsDropdown
+            userId={userId}
+            userEmail={userEmail}
+            isPro={subscriptionPlan === "pro"}
+            isCancelling={!!isCancelling}
+            isAdmin={!!isAdmin}
+            isBanned={!!isBanned}
+            onImpersonate={onImpersonate}
+            onCancelSubscription={onCancelSubscription}
+            onRefund={onRefund}
+            onGrantAdmin={onGrantAdmin}
+            onRevokeAdmin={onRevokeAdmin}
+            onBan={onBan}
+            onUnban={onUnban}
+            onDelete={onDelete}
+            onEditEmail={onEditEmail}
+            onExtendTrial={onExtendTrial}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
