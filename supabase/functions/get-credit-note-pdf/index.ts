@@ -39,19 +39,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: adminRecord } = await supabase
-      .from('admin_users')
-      .select('user_id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (!adminRecord) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const url = new URL(req.url);
     const creditNoteId = url.searchParams.get('credit_note_id');
     if (!creditNoteId) {
@@ -61,9 +48,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    const { data: adminRecord } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const isAdmin = !!adminRecord;
+
     const { data: creditNote } = await supabase
       .from('stripe_credit_notes')
-      .select('pdf_storage_path, pdf_url, number, stripe_credit_note_id')
+      .select('pdf_storage_path, pdf_url, number, stripe_credit_note_id, stripe_customer_id')
       .eq('stripe_credit_note_id', creditNoteId)
       .maybeSingle();
 
@@ -72,6 +67,21 @@ Deno.serve(async (req) => {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    if (!isAdmin) {
+      const { data: billingInfo } = await supabase
+        .from('billing_info')
+        .select('stripe_customer_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!billingInfo?.stripe_customer_id || billingInfo.stripe_customer_id !== creditNote.stripe_customer_id) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     if (creditNote.pdf_storage_path) {

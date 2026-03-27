@@ -1,5 +1,6 @@
 import { useLanguage } from "../contexts/LanguageContext";
 import { SubscriptionPlans } from "./subscription/SubscriptionPlans";
+import UserBillingDocuments from "./billing/UserBillingDocuments";
 
 export default function BillingSettingsView() {
   const { language } = useLanguage();
@@ -19,6 +20,10 @@ export default function BillingSettingsView() {
 
       <div className="bg-white rounded shadow-sm p-6">
         <SubscriptionPlans showCurrentPlanCard={true} />
+      </div>
+
+      <div className="mt-8">
+        <UserBillingDocuments />
       </div>
     </div>
   );

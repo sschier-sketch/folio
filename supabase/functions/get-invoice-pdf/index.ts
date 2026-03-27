@@ -39,19 +39,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: adminRecord } = await supabase
-      .from('admin_users')
-      .select('user_id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (!adminRecord) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const url = new URL(req.url);
     const invoiceId = url.searchParams.get('invoice_id');
     if (!invoiceId) {
@@ -61,9 +48,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    const { data: adminRecord } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const isAdmin = !!adminRecord;
+
     const { data: invoice } = await supabase
       .from('stripe_invoices')
-      .select('pdf_storage_path, hosted_invoice_url, invoice_number, stripe_invoice_id')
+      .select('pdf_storage_path, hosted_invoice_url, invoice_number, stripe_invoice_id, stripe_customer_id')
       .eq('stripe_invoice_id', invoiceId)
       .maybeSingle();
 
@@ -72,6 +67,21 @@ Deno.serve(async (req) => {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    if (!isAdmin) {
+      const { data: billingInfo } = await supabase
+        .from('billing_info')
+        .select('stripe_customer_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!billingInfo?.stripe_customer_id || billingInfo.stripe_customer_id !== invoice.stripe_customer_id) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     if (invoice.pdf_storage_path) {
