@@ -84,6 +84,16 @@ interface AccountMember {
   last_sign_in_at: string | null;
 }
 
+interface ContactTicketEntry {
+  id: string;
+  ticket_number: string;
+  subject: string;
+  status: string;
+  created_at: string;
+  answered_at: string | null;
+  closed_at: string | null;
+}
+
 interface AdminUserDetailViewProps {
   userId: string;
   userEmail: string;
@@ -106,7 +116,7 @@ interface AdminUserDetailViewProps {
   onExtendTrial?: (userId: string, email: string) => void;
 }
 
-type HistoryTab = "logins" | "emails";
+type HistoryTab = "logins" | "emails" | "tickets";
 
 const EMAIL_STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   sent: { bg: "bg-emerald-50", text: "text-emerald-700", label: "Gesendet" },
@@ -140,6 +150,7 @@ export default function AdminUserDetailView({
   const [loginHistory, setLoginHistory] = useState<LoginEntry[]>([]);
   const [emailHistory, setEmailHistory] = useState<EmailLogEntry[]>([]);
   const [members, setMembers] = useState<AccountMember[]>([]);
+  const [contactTickets, setContactTickets] = useState<ContactTicketEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewMessage, setShowNewMessage] = useState(false);
   const [historyPage, setHistoryPage] = useState(0);
@@ -154,7 +165,7 @@ export default function AdminUserDetailView({
   async function loadData() {
     setLoading(true);
     try {
-      const [profileRes, historyRes, membersRes, emailRes] = await Promise.all([
+      const [profileRes, historyRes, membersRes, emailRes, ticketsRes] = await Promise.all([
         supabase
           .from("account_profiles")
           .select(
@@ -175,12 +186,19 @@ export default function AdminUserDetailView({
           .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .range(0, PAGE_SIZE - 1),
+        supabase
+          .from("tickets")
+          .select("id, ticket_number, subject, status, created_at, answered_at, closed_at")
+          .eq("ticket_type", "contact")
+          .ilike("contact_email", userEmail)
+          .order("created_at", { ascending: false }),
       ]);
 
       setProfile(profileRes.data);
       setLoginHistory(historyRes.data || []);
       setMembers((membersRes.data as AccountMember[]) || []);
       setEmailHistory(emailRes.data || []);
+      setContactTickets(ticketsRes.data || []);
     } catch (err) {
       console.error("Error loading user detail:", err);
     } finally {
@@ -536,6 +554,22 @@ export default function AdminUserDetailView({
                 {emailHistory.length}
               </span>
             </button>
+            <button
+              onClick={() => setActiveHistoryTab("tickets")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                activeHistoryTab === "tickets"
+                  ? "bg-white text-gray-800 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              Tickets
+              {contactTickets.length > 0 && (
+                <span className="text-xs text-gray-400 ml-1">
+                  {contactTickets.length}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -683,6 +717,71 @@ export default function AdminUserDetailView({
                 >
                   Mehr laden
                 </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeHistoryTab === "tickets" && (
+          <>
+            {contactTickets.length === 0 ? (
+              <div className="px-6 py-10 text-center text-sm text-gray-400">
+                Keine Kontakt-Tickets fuer diesen Nutzer
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-left">
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Ticket-Nr.
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Betreff
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Status
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Erstellt
+                      </th>
+                      <th className="px-4 py-2.5 text-xs font-medium text-gray-500">
+                        Beantwortet
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {contactTickets.map((ticket) => {
+                      const statusStyles: Record<string, { bg: string; text: string; label: string }> = {
+                        open: { bg: "bg-blue-50", text: "text-blue-700", label: "Offen" },
+                        answered: { bg: "bg-emerald-50", text: "text-emerald-700", label: "Beantwortet" },
+                        closed: { bg: "bg-gray-100", text: "text-gray-600", label: "Geschlossen" },
+                      };
+                      const s = statusStyles[ticket.status] || statusStyles.open;
+                      return (
+                        <tr key={ticket.id} className="hover:bg-gray-50/50">
+                          <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">
+                            #{ticket.ticket_number}
+                          </td>
+                          <td className="px-4 py-2.5 text-gray-800 max-w-xs">
+                            <div className="truncate">{ticket.subject}</div>
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${s.bg} ${s.text}`}>
+                              {s.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap">
+                            {formatDateTime(ticket.created_at)} Uhr
+                          </td>
+                          <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap">
+                            {ticket.answered_at ? formatDateTime(ticket.answered_at) + " Uhr" : "-"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </>
