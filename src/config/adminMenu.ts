@@ -73,7 +73,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
   {
     id: "users_communication",
     label: "User & Kommunikation",
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { key: "users", label: "Benutzer", icon: Users },
       { key: "tickets", label: "Tickets", icon: MessageSquare },
@@ -83,7 +83,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
   {
     id: "email_documents",
     label: "E-Mail & Dokumente",
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { key: "templates", label: "E-Mail Templates", icon: Mail },
       { key: "email_automations", label: "Automationen", icon: Zap },
@@ -96,7 +96,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
   {
     id: "content_growth",
     label: "Content & Growth",
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { key: "cms", label: "CMS", icon: PenLine },
       { key: "magazine", label: "Magazin", icon: BookOpen },
@@ -110,7 +110,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
   {
     id: "billing",
     label: "Finanzen",
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { key: "invoices", label: "Rechnungen", icon: Receipt },
     ],
@@ -118,7 +118,7 @@ export const adminMenuGroups: AdminMenuGroup[] = [
   {
     id: "system",
     label: "System",
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { key: "system_settings", label: "Einstellungen", icon: Settings },
       { key: "system_info", label: "Systeminfos", icon: Monitor },

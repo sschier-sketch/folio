@@ -1,10 +1,9 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   ChevronDown,
   ChevronLeft,
   ChevronsLeft,
   ChevronsRight,
-  Search,
   Shield,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +28,6 @@ export default function AdminSidebar({
   onToggleCollapse,
 }: AdminSidebarProps) {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
   const [openTicketCount, setOpenTicketCount] = useState(0);
 
   useEffect(() => {
@@ -49,30 +47,25 @@ export default function AdminSidebar({
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     adminMenuGroups.forEach((g) => {
-      initial[g.id] = g.defaultOpen !== false;
+      const containsActive = g.items.some((i) => i.key === activeTab);
+      initial[g.id] = containsActive || g.defaultOpen !== false;
     });
     return initial;
   });
 
-  const filteredGroups = useMemo(() => {
-    if (!search.trim()) return adminMenuGroups;
-    const q = search.toLowerCase();
-    return adminMenuGroups
-      .map((group) => ({
-        ...group,
-        items: group.items.filter((item) =>
-          item.label.toLowerCase().includes(q)
-        ),
-      }))
-      .filter((group) => group.items.length > 0);
-  }, [search]);
+  useEffect(() => {
+    const group = adminMenuGroups.find((g) => g.items.some((i) => i.key === activeTab));
+    if (group && !openGroups[group.id]) {
+      setOpenGroups((prev) => ({ ...prev, [group.id]: true }));
+    }
+  }, [activeTab]);
 
   function toggleGroup(groupId: string) {
     setOpenGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
   }
 
   const isGroupOpen = (group: AdminMenuGroup) =>
-    search.trim() ? true : openGroups[group.id] !== false;
+    openGroups[group.id] !== false;
 
   return (
     <aside
@@ -116,23 +109,8 @@ export default function AdminSidebar({
         </button>
       </div>
 
-      {!collapsed && (
-        <div className="px-3 pt-3 pb-1 flex-shrink-0">
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
-            <input
-              type="text"
-              placeholder="Suchen..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-100 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary-blue/30 focus:border-primary-blue/40 placeholder:text-gray-300 text-gray-600"
-            />
-          </div>
-        </div>
-      )}
-
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-thin">
-        {filteredGroups.map((group) => (
+        {adminMenuGroups.map((group) => (
           <div key={group.id} className="mb-0.5">
             {!collapsed && (
               <button

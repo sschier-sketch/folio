@@ -62,13 +62,13 @@ export function AdminTicketsView({ initialTicketId }: AdminTicketsViewProps = {}
   const [sending, setSending] = useState(false);
   const [statusFilter, setStatusFilter] = useState<
     "all" | "open" | "answered" | "closed"
-  >("open");
+  >(initialTicketId ? "all" : "open");
   const [searchQuery, setSearchQuery] = useState("");
   const [replyMessage, setReplyMessage] = useState("");
   const [closeAfterReply, setCloseAfterReply] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const initialTicketHandled = useRef(false);
+  const pendingInitialTicketId = useRef(initialTicketId || null);
 
   const [activePanel, setActivePanel] = useState<"tickets" | "settings">("tickets");
   const [showNewMessage, setShowNewMessage] = useState(false);
@@ -84,19 +84,6 @@ export function AdminTicketsView({ initialTicketId }: AdminTicketsViewProps = {}
   useEffect(() => {
     loadTickets();
   }, [statusFilter]);
-
-  useEffect(() => {
-    if (initialTicketId && !initialTicketHandled.current && tickets.length > 0) {
-      const target = tickets.find((t) => t.id === initialTicketId);
-      if (target) {
-        initialTicketHandled.current = true;
-        handleSelectTicket(target);
-      } else if (!initialTicketHandled.current) {
-        initialTicketHandled.current = true;
-        setStatusFilter("all");
-      }
-    }
-  }, [initialTicketId, tickets]);
 
   async function loadSignature() {
     try {
@@ -159,6 +146,13 @@ export function AdminTicketsView({ initialTicketId }: AdminTicketsViewProps = {}
         );
       });
       setTickets(sortedTickets);
+      if (pendingInitialTicketId.current) {
+        const target = sortedTickets.find((t) => t.id === pendingInitialTicketId.current);
+        if (target) {
+          pendingInitialTicketId.current = null;
+          handleSelectTicket(target);
+        }
+      }
       return sortedTickets;
     } catch (err) {
       console.error("Error loading tickets:", err);

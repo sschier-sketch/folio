@@ -131,6 +131,11 @@ export function Admin() {
     setActiveTab("tickets");
   }
 
+  function handleTabChange(tab: AdminTabKey) {
+    if (tab !== "tickets") setInitialTicketId(null);
+    setActiveTab(tab);
+  }
+
   async function reloadUsers() {
     try {
       const { data: usersData, error: usersError } =
@@ -440,7 +445,7 @@ export function Admin() {
 
   return (
     <>
-      <AdminLayout activeTab={activeTab} onTabChange={setActiveTab} fullHeight={activeTab === "tickets"}>
+      <AdminLayout activeTab={activeTab} onTabChange={handleTabChange} fullHeight={activeTab === "tickets"}>
         {activeTab === "overview" && (
           <div>
             <AdminAnalyticsChart />
