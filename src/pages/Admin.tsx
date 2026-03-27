@@ -116,6 +116,7 @@ export function Admin() {
   const [trialTarget, setTrialTarget] = useState<{ id: string; email: string } | null>(null);
   const [userFilter, setUserFilter] = useState<UserFilter>('all');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [initialTicketId, setInitialTicketId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const USERS_PER_PAGE = 100;
@@ -123,6 +124,11 @@ export function Admin() {
   function openUserDetail(userId: string) {
     setSelectedUserId(userId);
     setActiveTab("user_detail");
+  }
+
+  function navigateToTicket(ticketId: string) {
+    setInitialTicketId(ticketId);
+    setActiveTab("tickets");
   }
 
   async function reloadUsers() {
@@ -788,11 +794,12 @@ export function Admin() {
               onDelete={(id, email) => setDeleteTarget({ id, email })}
               onEditEmail={(id, email) => setEditEmailTarget({ id, email })}
               onExtendTrial={(id, email) => setTrialTarget({ id, email })}
+              onNavigateToTicket={navigateToTicket}
             />
           );
         })()}
 
-        {activeTab === "tickets" && <AdminTicketsView />}
+        {activeTab === "tickets" && <AdminTicketsView initialTicketId={initialTicketId ?? undefined} />}
         {activeTab === "templates" && <AdminEmailTemplatesView />}
         {activeTab === "document_templates" && <AdminTemplatesView />}
         {activeTab === "system_updates" && <AdminSystemUpdatesView />}

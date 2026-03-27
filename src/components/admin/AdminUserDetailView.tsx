@@ -29,6 +29,7 @@ import {
   Download,
   Home,
   Key,
+  ExternalLink,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
@@ -145,6 +146,7 @@ interface AdminUserDetailViewProps {
   onDelete: (userId: string, email: string) => void;
   onEditEmail: (userId: string, email: string) => void;
   onExtendTrial?: (userId: string, email: string) => void;
+  onNavigateToTicket?: (ticketId: string) => void;
 }
 
 type HistoryTab = "logins" | "emails" | "tickets";
@@ -176,6 +178,7 @@ export default function AdminUserDetailView({
   onDelete,
   onEditEmail,
   onExtendTrial,
+  onNavigateToTicket,
 }: AdminUserDetailViewProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loginHistory, setLoginHistory] = useState<LoginEntry[]>([]);
@@ -226,7 +229,7 @@ export default function AdminUserDetailView({
           .eq("ticket_type", "contact")
           .ilike("contact_email", userEmail)
           .order("created_at", { ascending: false }),
-        supabase.rpc("admin_get_user_detail_stats", { target_user_id: userId }),
+        supabase.rpc("admin_get_user_detail_stats", { p_user_id: userId }),
       ]);
 
       setProfile(profileRes.data);
@@ -989,7 +992,11 @@ export default function AdminUserDetailView({
                       };
                       const s = statusStyles[ticket.status] || statusStyles.open;
                       return (
-                        <tr key={ticket.id} className="hover:bg-gray-50/50">
+                        <tr
+                          key={ticket.id}
+                          onClick={() => onNavigateToTicket?.(ticket.id)}
+                          className={`hover:bg-gray-50/50 ${onNavigateToTicket ? "cursor-pointer" : ""}`}
+                        >
                           <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">
                             #{ticket.ticket_number}
                           </td>
@@ -1006,6 +1013,11 @@ export default function AdminUserDetailView({
                           </td>
                           <td className="px-4 py-2.5 text-gray-500 whitespace-nowrap">
                             {ticket.answered_at ? formatDateTime(ticket.answered_at) + " Uhr" : "-"}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            {onNavigateToTicket && (
+                              <ExternalLink className="w-3.5 h-3.5 text-gray-300 hover:text-primary-blue" />
+                            )}
                           </td>
                         </tr>
                       );

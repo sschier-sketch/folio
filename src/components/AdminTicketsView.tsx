@@ -13,6 +13,7 @@ import {
   FileText,
   Download,
   Plus,
+  Search,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { Button } from './ui/Button';
@@ -49,7 +50,11 @@ interface TicketMessage {
   attachments?: TicketAttachment[];
 }
 
-export function AdminTicketsView() {
+interface AdminTicketsViewProps {
+  initialTicketId?: string;
+}
+
+export function AdminTicketsView({ initialTicketId }: AdminTicketsViewProps = {}) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [messages, setMessages] = useState<TicketMessage[]>([]);
@@ -58,10 +63,12 @@ export function AdminTicketsView() {
   const [statusFilter, setStatusFilter] = useState<
     "all" | "open" | "answered" | "closed"
   >("open");
+  const [searchQuery, setSearchQuery] = useState("");
   const [replyMessage, setReplyMessage] = useState("");
   const [closeAfterReply, setCloseAfterReply] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const initialTicketHandled = useRef(false);
 
   const [activePanel, setActivePanel] = useState<"tickets" | "settings">("tickets");
   const [showNewMessage, setShowNewMessage] = useState(false);
@@ -77,6 +84,19 @@ export function AdminTicketsView() {
   useEffect(() => {
     loadTickets();
   }, [statusFilter]);
+
+  useEffect(() => {
+    if (initialTicketId && !initialTicketHandled.current && tickets.length > 0) {
+      const target = tickets.find((t) => t.id === initialTicketId);
+      if (target) {
+        initialTicketHandled.current = true;
+        handleSelectTicket(target);
+      } else if (!initialTicketHandled.current) {
+        initialTicketHandled.current = true;
+        setStatusFilter("all");
+      }
+    }
+  }, [initialTicketId, tickets]);
 
   async function loadSignature() {
     try {
@@ -367,6 +387,18 @@ export function AdminTicketsView() {
     );
   };
 
+  const filteredTickets = searchQuery.trim()
+    ? tickets.filter((t) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          (t.ticket_number || "").toLowerCase().includes(q) ||
+          (t.subject || "").toLowerCase().includes(q) ||
+          (t.contact_name || "").toLowerCase().includes(q) ||
+          (t.contact_email || "").toLowerCase().includes(q)
+        );
+      })
+    : tickets;
+
   async function handleMessageCreated(ticketId: string) {
     setShowNewMessage(false);
     const updatedTickets = await loadTickets();
@@ -407,6 +439,25 @@ export function AdminTicketsView() {
             </div>
           </div>
           {activePanel === "tickets" && (
+            <>
+            <div className="relative mb-2">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Suche nach Nr., Betreff, Name, E-Mail..."
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue placeholder:text-gray-300"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setStatusFilter("all")}
@@ -433,6 +484,7 @@ export function AdminTicketsView() {
                 Geschlossen
               </button>
             </div>
+            </>
           )}
         </div>
 
@@ -474,14 +526,14 @@ export function AdminTicketsView() {
               <div className="flex items-center justify-center p-8">
                 <div className="w-6 h-6 border-2 border-primary-blue border-t-transparent rounded-full animate-spin" />
               </div>
-            ) : tickets.length === 0 ? (
+            ) : filteredTickets.length === 0 ? (
               <div className="p-6 text-center text-gray-300">
                 <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-200" />
-                <p>Keine Tickets gefunden</p>
+                <p>{searchQuery ? "Keine Treffer" : "Keine Tickets gefunden"}</p>
               </div>
             ) : (
               <div className="divide-y divide-slate-200">
-                {tickets.map((ticket) => (
+                {filteredTickets.map((ticket) => (
                   <button
                     key={ticket.id}
                     onClick={() => handleSelectTicket(ticket)}
