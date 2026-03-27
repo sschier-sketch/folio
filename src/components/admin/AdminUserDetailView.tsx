@@ -25,6 +25,10 @@ import {
   MessageSquare,
   Landmark,
   AlertTriangle,
+  Trash2,
+  Download,
+  Home,
+  Key,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
@@ -106,6 +110,21 @@ interface BankConnection {
   created_at: string;
 }
 
+interface PropertyWithUnits {
+  id: string;
+  name: string;
+  address_street: string | null;
+  address_city: string | null;
+  units_count: number;
+}
+
+interface UserStats {
+  subUsers: number;
+  properties: PropertyWithUnits[];
+  totalUnits: number;
+  totalTenants: number;
+}
+
 interface AdminUserDetailViewProps {
   userId: string;
   userEmail: string;
@@ -164,6 +183,8 @@ export default function AdminUserDetailView({
   const [members, setMembers] = useState<AccountMember[]>([]);
   const [contactTickets, setContactTickets] = useState<ContactTicketEntry[]>([]);
   const [bankConnections, setBankConnections] = useState<BankConnection[]>([]);
+  const [userStats, setUserStats] = useState<UserStats>({ subUsers: 0, properties: [], totalUnits: 0, totalTenants: 0 });
+  const [bankActionBusy, setBankActionBusy] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showNewMessage, setShowNewMessage] = useState(false);
   const [historyPage, setHistoryPage] = useState(0);
@@ -219,6 +240,38 @@ export default function AdminUserDetailView({
       setEmailHistory(emailRes.data || []);
       setContactTickets(ticketsRes.data || []);
       setBankConnections(bankRes.data || []);
+
+      const [subUsersRes, propertiesRes, tenantsRes] = await Promise.all([
+        supabase
+          .from("user_settings")
+          .select("id", { count: "exact", head: true })
+          .eq("account_owner_id", userId)
+          .neq("user_id", userId),
+        supabase
+          .from("properties")
+          .select("id, name, address_street, address_city, property_units(id)")
+          .eq("user_id", userId),
+        supabase
+          .from("rental_contracts")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .is("deleted_at", null),
+      ]);
+
+      const props: PropertyWithUnits[] = (propertiesRes.data || []).map((p: Record<string, unknown>) => ({
+        id: p.id as string,
+        name: p.name as string,
+        address_street: p.address_street as string | null,
+        address_city: p.address_city as string | null,
+        units_count: Array.isArray(p.property_units) ? p.property_units.length : 0,
+      }));
+
+      setUserStats({
+        subUsers: subUsersRes.count ?? 0,
+        properties: props,
+        totalUnits: props.reduce((s, p) => s + p.units_count, 0),
+        totalTenants: tenantsRes.count ?? 0,
+      });
     } catch (err) {
       console.error("Error loading user detail:", err);
     } finally {
@@ -255,6 +308,36 @@ export default function AdminUserDetailView({
     if (data && data.length > 0) {
       setEmailHistory((prev) => [...prev, ...data]);
       setEmailPage(nextPage);
+    }
+  }
+
+  async function handleBankAction(action: "sync" | "delete", connectionId: string, bankName: string) {
+    if (action === "delete" && !confirm(`Bankverbindung "${bankName}" wirklich loeschen?`)) return;
+    setBankActionBusy(`${action}-${connectionId}`);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-banksapi-action`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action, connectionId }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) {
+        alert(result.error || "Aktion fehlgeschlagen");
+      } else {
+        loadData();
+      }
+    } catch {
+      alert("Netzwerkfehler");
+    } finally {
+      setBankActionBusy(null);
     }
   }
 
@@ -401,6 +484,74 @@ export default function AdminUserDetailView({
         </div>
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center">
+              <Users className="w-3.5 h-3.5 text-blue-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">{userStats.subUsers}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">Team-Mitglieder</p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
+              <Home className="w-3.5 h-3.5 text-teal-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">{userStats.properties.length}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">Immobilien</p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 bg-amber-50 rounded-lg flex items-center justify-center">
+              <Building2 className="w-3.5 h-3.5 text-amber-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">{userStats.totalUnits}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">Einheiten gesamt</p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <Key className="w-3.5 h-3.5 text-emerald-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">{userStats.totalTenants}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">Mietverhaeltnisse</p>
+        </div>
+      </div>
+
+      {userStats.properties.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+              <Home className="w-4 h-4 text-gray-400" />
+              Immobilien
+            </h2>
+            <span className="text-xs text-gray-400">
+              {userStats.properties.length} Objekte, {userStats.totalUnits} Einheiten
+            </span>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {userStats.properties.map((prop) => (
+              <div key={prop.id} className="px-6 py-3 flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-800 truncate">{prop.name}</p>
+                  <p className="text-xs text-gray-400 truncate">
+                    {[prop.address_street, prop.address_city].filter(Boolean).join(", ") || "Keine Adresse"}
+                  </p>
+                </div>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex-shrink-0 ml-3">
+                  {prop.units_count} {prop.units_count === 1 ? "Einheit" : "Einheiten"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Section title="Stammdaten">
           <InfoRow
@@ -534,6 +685,28 @@ export default function AdminUserDetailView({
                         {conn.error_message || conn.last_issue_message}
                       </p>
                     )}
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {conn.status === "connected" && (
+                      <button
+                        onClick={() => handleBankAction("sync", conn.id, conn.bank_name)}
+                        disabled={!!bankActionBusy}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-colors disabled:opacity-40"
+                        title="Kontoumsaetze abrufen"
+                      >
+                        {bankActionBusy === `sync-${conn.id}` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                        Sync
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleBankAction("delete", conn.id, conn.bank_name)}
+                      disabled={!!bankActionBusy}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-40"
+                      title="Verbindung loeschen"
+                    >
+                      {bankActionBusy === `delete-${conn.id}` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                      Loeschen
+                    </button>
                   </div>
                 </div>
               );

@@ -11,6 +11,9 @@ import {
   AlertTriangle,
   Activity,
   Loader,
+  Trash2,
+  Download,
+  Loader2,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import {
@@ -510,6 +513,7 @@ function BanksApiDiagnosticsSection({
                         <th className="text-left px-3 py-2 font-medium">Letzter Sync</th>
                         <th className="text-left px-3 py-2 font-medium">Letzter Import</th>
                         <th className="text-left px-3 py-2 font-medium">Hinweis</th>
+                        <th className="text-right px-3 py-2 font-medium">Aktionen</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -537,6 +541,13 @@ function BanksApiDiagnosticsSection({
                             </td>
                             <td className="px-3 py-2 text-gray-500 max-w-[200px] truncate">
                               {(c.last_issue_message as string) || (c.error_message as string) || "\u2013"}
+                            </td>
+                            <td className="px-3 py-2 text-right">
+                              <BankConnectionActions
+                                connectionId={c.connection_id as string}
+                                status={st}
+                                onDone={onRefresh}
+                              />
                             </td>
                           </tr>
                         );
@@ -568,6 +579,73 @@ function BanksApiDiagnosticsSection({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function BankConnectionActions({
+  connectionId,
+  status,
+  onDone,
+}: {
+  connectionId: string;
+  status: string;
+  onDone: () => void;
+}) {
+  const [busy, setBusy] = useState<"sync" | "delete" | null>(null);
+
+  async function callAction(action: "sync" | "delete") {
+    if (action === "delete" && !confirm("Bankverbindung wirklich loeschen?")) return;
+    setBusy(action);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-banksapi-action`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action, connectionId }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) {
+        alert(result.error || "Aktion fehlgeschlagen");
+      } else {
+        onDone();
+      }
+    } catch {
+      alert("Netzwerkfehler");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-end gap-1">
+      {status === "connected" && (
+        <button
+          onClick={() => callAction("sync")}
+          disabled={!!busy}
+          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-colors disabled:opacity-40"
+          title="Kontoumsaetze abrufen"
+        >
+          {busy === "sync" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+          Sync
+        </button>
+      )}
+      <button
+        onClick={() => callAction("delete")}
+        disabled={!!busy}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-40"
+        title="Verbindung loeschen"
+      >
+        {busy === "delete" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+        Loeschen
+      </button>
     </div>
   );
 }
