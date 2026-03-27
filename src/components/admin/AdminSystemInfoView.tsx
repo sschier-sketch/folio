@@ -797,6 +797,7 @@ function BanksApiDiagnosticsSection({
                         <th className="text-left px-3 py-2 font-medium">Bank</th>
                         <th className="text-left px-3 py-2 font-medium">Status</th>
                         <th className="text-left px-3 py-2 font-medium">Konten</th>
+                        <th className="text-left px-3 py-2 font-medium">Verbunden seit</th>
                         <th className="text-left px-3 py-2 font-medium">Letzter Sync</th>
                         <th className="text-left px-3 py-2 font-medium">Letzter Import</th>
                         <th className="text-left px-3 py-2 font-medium">Hinweis</th>
@@ -816,6 +817,7 @@ function BanksApiDiagnosticsSection({
                             <td className="px-3 py-2 text-gray-600">
                               {(c.selected_accounts as number) ?? 0}/{(c.total_accounts as number) ?? 0}
                             </td>
+                            <td className="px-3 py-2 text-gray-600">{formatDt(c.created_at as string)}</td>
                             <td className="px-3 py-2 text-gray-600">{formatDt(c.last_sync_at as string)}</td>
                             <td className="px-3 py-2 text-gray-600">
                               {c.last_import_status ? (
