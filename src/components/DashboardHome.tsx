@@ -27,6 +27,7 @@ import ProfileCompletionCard from "./profile/ProfileCompletionCard";
 import ProfileWizard from "./profile/ProfileWizard";
 import TrialBanner from "./TrialBanner";
 import OnboardingImportWizard from "./onboarding-import/OnboardingImportWizard";
+import { Button } from './ui/Button';
 
 interface Stats {
   propertiesCount: number;
@@ -515,23 +516,22 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
       )}
 
       {stats.propertiesCount === 0 && !loading && (
-        <div className="mb-8 bg-white rounded-xl border border-dashed border-gray-200 p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <FileSpreadsheet className="w-5 h-5 text-blue-600" />
+        <div className="mb-8 rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
+              <FileSpreadsheet className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900">Daten per Excel importieren</h3>
-              <p className="text-sm text-gray-500 mt-0.5">
-                Importieren Sie Immobilien, Einheiten und Mietverhältnisse direkt aus einer Excel-Datei, um schnell loszulegen.
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Bestandsdaten importieren</h3>
+              <p className="text-sm text-gray-600">
+                Laden Sie Ihre Immobilien, Einheiten und Mietverhältnisse per Excel-Datei hoch -- so sparen Sie sich die manuelle Eingabe und können direkt loslegen.
               </p>
             </div>
-            <button
-              onClick={() => setShowImportWizard(true)}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
-            >
-              Excel importieren
-            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button onClick={() => setShowImportWizard(true)} variant="primary">
+              Jetzt importieren
+            </Button>
           </div>
         </div>
       )}
