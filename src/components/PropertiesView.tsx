@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Building2, Pencil, Trash2, TrendingUp, AlertCircle, CheckCircle, X, Tag, Grid3x3, List, Eye } from "lucide-react";
+import { Plus, Building2, Pencil, Trash2, TrendingUp, AlertCircle, CheckCircle, X, Tag, Grid3x3, List, Eye, FileSpreadsheet } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
@@ -11,6 +11,7 @@ import { BaseTable, StatusBadge, ActionButton, ActionsCell, TableColumn } from "
 import TableActionsDropdown, { ActionItem } from "./common/TableActionsDropdown";
 import Badge from "./common/Badge";
 import { Button } from './ui/Button';
+import OnboardingImportWizard from "./onboarding-import/OnboardingImportWizard";
 
 interface PropertyLabel {
   id: string;
@@ -81,6 +82,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exportDialog, setExportDialog] = useState<{ format: 'pdf' | 'csv' | 'excel' } | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [showImportWizard, setShowImportWizard] = useState(false);
   const [filters, setFilters] = useState({
     status: "",
     property_type: "",
@@ -481,18 +483,37 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
             </>
           )}
           {canWriteProperty() && (
-            <Button
-              onClick={() => {
-                setSelectedProperty(null);
-                setShowModal(true);
-              }}
-              variant="primary"
-            >
-              Immobilie hinzufügen
-            </Button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowImportWizard(true)}
+                className="inline-flex items-center gap-2 px-3 py-2 border border-gray-200 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                title="Excel importieren"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span className="hidden sm:inline">Import</span>
+              </button>
+              <Button
+                onClick={() => {
+                  setSelectedProperty(null);
+                  setShowModal(true);
+                }}
+                variant="primary"
+              >
+                Immobilie hinzufügen
+              </Button>
+            </div>
           )}
         </div>
       </div>
+      {showImportWizard && (
+        <OnboardingImportWizard
+          onClose={() => setShowImportWizard(false)}
+          onComplete={() => {
+            setShowImportWizard(false);
+            loadProperties();
+          }}
+        />
+      )}
       {properties.length === 0 ? (
         <div className="bg-white rounded shadow-sm p-12 text-center">
           <Building2 className="w-16 h-16 text-gray-200 mx-auto mb-4" />
@@ -506,15 +527,24 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
             }
           </p>
           {canWriteProperty() && (
-            <Button
-              onClick={() => {
-                setSelectedProperty(null);
-                setShowModal(true);
-              }}
-              variant="primary"
-            >
-              Erste Immobilie hinzufügen
-            </Button>
+            <div className="flex items-center justify-center gap-3">
+              <Button
+                onClick={() => {
+                  setSelectedProperty(null);
+                  setShowModal(true);
+                }}
+                variant="primary"
+              >
+                Erste Immobilie hinzufügen
+              </Button>
+              <button
+                onClick={() => setShowImportWizard(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                Excel importieren
+              </button>
+            </div>
           )}
         </div>
       ) : (

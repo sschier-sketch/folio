@@ -14,6 +14,7 @@ import {
   ClipboardList,
   Calendar,
   Clock,
+  FileSpreadsheet,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -25,6 +26,7 @@ import { getPriorityColor, PRIORITY_LABELS_DE, PRIORITY_ORDER } from "./tasks/ta
 import ProfileCompletionCard from "./profile/ProfileCompletionCard";
 import ProfileWizard from "./profile/ProfileWizard";
 import TrialBanner from "./TrialBanner";
+import OnboardingImportWizard from "./onboarding-import/OnboardingImportWizard";
 
 interface Stats {
   propertiesCount: number;
@@ -115,6 +117,7 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
   const [showRentIncreasesCard, setShowRentIncreasesCard] = useState(true);
   const [showProfileWizard, setShowProfileWizard] = useState(false);
   const [profileRefreshTrigger, setProfileRefreshTrigger] = useState(0);
+  const [showImportWizard, setShowImportWizard] = useState(false);
 
   useEffect(() => {
     if (!user || permLoading || !dataOwnerId) return;
@@ -500,6 +503,38 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         onClose={() => setShowProfileWizard(false)}
         onComplete={() => setProfileRefreshTrigger((prev) => prev + 1)}
       />
+
+      {showImportWizard && (
+        <OnboardingImportWizard
+          onClose={() => setShowImportWizard(false)}
+          onComplete={() => {
+            setShowImportWizard(false);
+            onChangeView?.('properties');
+          }}
+        />
+      )}
+
+      {stats.propertiesCount === 0 && !loading && (
+        <div className="mb-8 bg-white rounded-xl border border-dashed border-gray-200 p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <FileSpreadsheet className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-900">Daten per Excel importieren</h3>
+              <p className="text-sm text-gray-500 mt-0.5">
+                Importieren Sie Immobilien, Einheiten und Mietverhältnisse direkt aus einer Excel-Datei, um schnell loszulegen.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowImportWizard(true)}
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
+            >
+              Excel importieren
+            </button>
+          </div>
+        </div>
+      )}
       {" "}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {" "}
