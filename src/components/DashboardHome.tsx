@@ -515,22 +515,25 @@ export default function DashboardHome({ onNavigateToTenant, onNavigateToProperty
         />
       )}
 
-      {stats.propertiesCount === 0 && !loading && (
+      {stats.propertiesCount === 0 && (
         <div className="mb-8 rounded-lg p-6" style={{ backgroundColor: '#EEF4FF' }}>
           <div className="flex items-start gap-3 mb-4">
             <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF4FF', border: '1px solid #DDE7FF' }}>
               <FileSpreadsheet className="w-5 h-5" style={{ color: '#1E1E24' }} strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Bestandsdaten importieren</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Schnellstart: Bestandsdaten importieren</h3>
               <p className="text-sm text-gray-600">
-                Laden Sie Ihre Immobilien, Einheiten und Mietverhältnisse per Excel-Datei hoch -- so sparen Sie sich die manuelle Eingabe und können direkt loslegen.
+                Sie verwalten bereits Immobilien? Laden Sie Ihre Daten per Excel hoch &ndash; Immobilien, Einheiten und Mietverhältnisse werden automatisch angelegt. So sparen Sie sich die manuelle Eingabe und können sofort loslegen.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Button onClick={() => setShowImportWizard(true)} variant="primary">
               Jetzt importieren
+            </Button>
+            <Button onClick={() => onChangeView?.('properties')} variant="secondary">
+              Manuell anlegen
             </Button>
           </div>
         </div>

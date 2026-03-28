@@ -520,7 +520,7 @@ export default function PropertiesView({ selectedPropertyId: externalSelectedPro
           </h3>
           <p className="text-gray-400 mb-6">
             {canWriteProperty()
-              ? "Fügen Sie Ihre erste Immobilie hinzu, um mit der Verwaltung zu beginnen."
+              ? "Fügen Sie Ihre erste Immobilie manuell hinzu oder importieren Sie bestehende Daten per Excel-Datei."
               : "Ihnen sind derzeit keine Immobilien zugewiesen."
             }
           </p>
