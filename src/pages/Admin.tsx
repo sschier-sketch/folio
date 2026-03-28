@@ -724,6 +724,9 @@ export function Admin() {
               data={paginatedUsers}
               loading={loadingData}
               emptyMessage={searchLower ? "Keine Benutzer fuer diese Suche gefunden" : "Keine Benutzer gefunden"}
+              sortKey={sortField}
+              sortDirection={sortDirection}
+              onSort={(key) => handleSort(key as keyof UserData)}
             />
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-gray-50/50">
