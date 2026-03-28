@@ -100,8 +100,8 @@ export default function BankConnectionView() {
       icon: InboxIcon,
       badge: inboxCount > 0 ? inboxCount : undefined,
     },
-    { id: 'import' as MainTab, label: 'Importmöglichkeiten', icon: Upload },
-    { id: 'rules' as MainTab, label: 'Regeln', icon: RotateCcw }] : []),
+    { id: 'rules' as MainTab, label: 'Regeln', icon: RotateCcw },
+    { id: 'import' as MainTab, label: 'Importmöglichkeiten', icon: Upload }] : []),
     { id: 'history' as MainTab, label: 'Import-Historie', icon: History },
   ];
 

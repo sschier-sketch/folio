@@ -10,6 +10,13 @@ import {
   CircleDollarSign,
   Home,
   Ban,
+  Shield,
+  CreditCard,
+  User,
+  FileText,
+  Building2,
+  Receipt,
+  Lock,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { usePermissions } from '../../../hooks/usePermissions';
@@ -22,6 +29,91 @@ import {
 } from '../../../lib/bankImport';
 import type { BankMatchingRule } from '../../../lib/bankImport/types';
 
+interface SystemRule {
+  id: string;
+  name: string;
+  description: string;
+  confidence: string;
+  icon: typeof Shield;
+  color: string;
+  bgColor: string;
+}
+
+const SYSTEM_RULES: SystemRule[] = [
+  {
+    id: 'iban-match',
+    name: 'IBAN-Abgleich',
+    description: 'Wenn die IBAN der Transaktion mit der hinterlegten IBAN eines Mieters uebereinstimmt, wird die Zahlung automatisch als Vorschlag zugeordnet.',
+    confidence: '95%',
+    icon: CreditCard,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-100',
+  },
+  {
+    id: 'name-exact-match',
+    name: 'Exakter Namensabgleich',
+    description: 'Wenn der Auftraggeber exakt mit dem vollstaendigen Namen oder Anzeigenamen eines Mieters uebereinstimmt.',
+    confidence: '85%',
+    icon: User,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-100',
+  },
+  {
+    id: 'name-partial-match',
+    name: 'Nachname im Auftraggeber',
+    description: 'Wenn der Nachname des Mieters im Namen des Auftraggebers enthalten ist.',
+    confidence: '60%',
+    icon: User,
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-50',
+  },
+  {
+    id: 'usage-text-match',
+    name: 'Name im Verwendungszweck',
+    description: 'Wenn der vollstaendige Name des Mieters im Verwendungszweck der Transaktion gefunden wird.',
+    confidence: '65%',
+    icon: FileText,
+    color: 'text-sky-600',
+    bgColor: 'bg-sky-100',
+  },
+  {
+    id: 'nebenkosten-detection',
+    name: 'Nebenkosten-Erkennung',
+    description: 'Erkennt Schluesselwoerter wie "Nebenkosten", "Betriebskosten", "NKA" oder "BKA" im Verwendungszweck und markiert die Zahlung entsprechend.',
+    confidence: 'Automatisch',
+    icon: Receipt,
+    color: 'text-teal-600',
+    bgColor: 'bg-teal-100',
+  },
+  {
+    id: 'hausgeld-match',
+    name: 'Hausgeld-Abgleich',
+    description: 'Wenn der Abbuchungsbetrag exakt mit dem hinterlegten monatlichen Hausgeld einer Einheit uebereinstimmt.',
+    confidence: '80%',
+    icon: Building2,
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-100',
+  },
+  {
+    id: 'expense-amount-recipient',
+    name: 'Offene Ausgaben (Betrag + Empfaenger)',
+    description: 'Wenn Betrag und Empfaengername mit einer offenen Ausgabe uebereinstimmen, wird diese als Zuordnungsvorschlag angezeigt.',
+    confidence: '85%',
+    icon: ArrowDownUp,
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50',
+  },
+  {
+    id: 'income-amount-sender',
+    name: 'Offene Einnahmen (Betrag + Absender)',
+    description: 'Wenn Betrag und Absendername mit einer offenen Einnahme uebereinstimmen, wird diese als Zuordnungsvorschlag angezeigt.',
+    confidence: '85%',
+    icon: CircleDollarSign,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50',
+  },
+];
+
 export default function MatchingRulesView() {
   const { user } = useAuth();
   const { dataOwnerId } = usePermissions();
@@ -31,6 +123,7 @@ export default function MatchingRulesView() {
   const [autoApplyLoading, setAutoApplyLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [showSystemRules, setShowSystemRules] = useState(true);
 
   const userId = dataOwnerId || user?.id || '';
 
@@ -128,10 +221,10 @@ export default function MatchingRulesView() {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-dark">
-                Vorschläge automatisch anwenden
+                Vorschlaege automatisch anwenden
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">
-                Wenn aktiviert, werden nach jedem Import Regel-basierte Vorschläge automatisch zugeordnet.
+                Wenn aktiviert, werden nach jedem Import Regel-basierte Vorschlaege automatisch zugeordnet.
               </p>
             </div>
           </div>
@@ -152,10 +245,61 @@ export default function MatchingRulesView() {
       </div>
 
       <div>
+        <button
+          onClick={() => setShowSystemRules(!showSystemRules)}
+          className="flex items-center gap-2 mb-3 group"
+        >
+          <Shield className="w-4 h-4 text-[#3c8af7]" />
+          <h3 className="text-sm font-semibold text-dark">Systemregeln</h3>
+          <span className="text-xs text-gray-400">({SYSTEM_RULES.length})</span>
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#3c8af7]/10 text-[#3c8af7]">
+            <Lock className="w-2.5 h-2.5" />
+            Immer aktiv
+          </span>
+          <span className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors ml-1">
+            {showSystemRules ? 'Ausblenden' : 'Einblenden'}
+          </span>
+        </button>
+
+        {showSystemRules && (
+          <div className="bg-white rounded-lg overflow-hidden divide-y divide-gray-100 mb-6">
+            {SYSTEM_RULES.map((rule) => {
+              const Icon = rule.icon;
+              return (
+                <div key={rule.id} className="px-4 py-3.5 flex items-center gap-4">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${rule.bgColor}`}>
+                    <Icon className={`w-4 h-4 ${rule.color}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-dark">
+                        {rule.name}
+                      </p>
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 tabular-nums">
+                        {rule.confidence}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                      {rule.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="p-1.5" title="Systemregel - immer aktiv">
+                      <ToggleRight className="w-5 h-5 text-[#3c8af7] opacity-60" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <RotateCcw className="w-4 h-4 text-gray-400" />
-            <h3 className="text-sm font-semibold text-dark">Zuordnungsregeln</h3>
+            <h3 className="text-sm font-semibold text-dark">Benutzerdefinierte Regeln</h3>
             <span className="text-xs text-gray-400">({rules.length})</span>
           </div>
         </div>
@@ -168,7 +312,7 @@ export default function MatchingRulesView() {
           <div className="bg-white rounded-lg p-8 text-center">
             <RotateCcw className="w-10 h-10 text-gray-300 mx-auto mb-3" />
             <p className="text-sm font-medium text-gray-500 mb-1">
-              Noch keine Regeln erstellt
+              Noch keine eigenen Regeln erstellt
             </p>
             <p className="text-xs text-gray-400 max-w-sm mx-auto">
               Regeln werden automatisch erstellt, wenn Sie bei einer Zuordnung die Option
@@ -258,7 +402,7 @@ export default function MatchingRulesView() {
                       onClick={() => handleDelete(rule.id)}
                       disabled={isDeleting}
                       className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-                      title="Regel löschen"
+                      title="Regel loeschen"
                     >
                       {isDeleting ? (
                         <Loader className="w-3.5 h-3.5 animate-spin" />
@@ -277,11 +421,11 @@ export default function MatchingRulesView() {
       <div style={{ backgroundColor: '#eff4fe', borderColor: '#DDE7FF' }} className="border rounded-lg p-4">
         <p className="text-sm font-medium text-blue-900 mb-1">So funktionieren die Regeln:</p>
         <ul className="list-disc list-inside space-y-0.5 text-sm text-blue-900">
-          <li>Regeln werden beim Zuordnen oder Ignorieren einer Transaktion erstellt (Checkbox aktivieren)</li>
-          <li>Nach jedem Import werden automatisch Vorschläge generiert</li>
+          <li><strong>Systemregeln</strong> laufen immer im Hintergrund und erzeugen Vorschlaege basierend auf IBAN, Name, Betrag und Verwendungszweck</li>
+          <li><strong>Benutzerdefinierte Regeln</strong> werden beim Zuordnen einer Transaktion erstellt (Checkbox aktivieren)</li>
+          <li>Nach jedem Import werden automatisch Vorschlaege generiert</li>
           <li>Ignorier-Regeln werden immer sofort angewendet (ohne Auto-Anwendung)</li>
           <li>Bei aktivierter Auto-Anwendung werden Zuordnungs-Treffer direkt zugeordnet</li>
-          <li>Matching basiert auf exaktem Abgleich von Name und Betrag</li>
         </ul>
       </div>
     </div>
