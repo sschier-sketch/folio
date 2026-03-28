@@ -450,125 +450,123 @@ export default function TenantsView({ selectedTenantId: externalSelectedTenantId
               </h3>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Einheit
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Mieter
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Mietbeginn
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Warmmiete
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Mietart
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Aktionen
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
-                  {filteredTenants.map((tenant) => {
-                    const currentContract = tenant.contracts && tenant.contracts.length > 0 ? tenant.contracts[0] : null;
-                    const tenantStatus = getTenantStatus(tenant);
+            <table className="w-full table-fixed">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="w-[22%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Einheit
+                  </th>
+                  <th className="w-[22%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mieter
+                  </th>
+                  <th className="w-[12%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mietbeginn
+                  </th>
+                  <th className="w-[12%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Warmmiete
+                  </th>
+                  <th className="w-[12%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mietart
+                  </th>
+                  <th className="w-[12%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="w-[8%] px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Aktionen
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {filteredTenants.map((tenant) => {
+                  const currentContract = tenant.contracts && tenant.contracts.length > 0 ? tenant.contracts[0] : null;
+                  const tenantStatus = getTenantStatus(tenant);
 
-                    return (
-                      <tr key={tenant.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-700">
-                            {tenant.properties?.name || "Unbekannt"}
+                  return (
+                    <tr key={tenant.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-700 truncate">
+                          {tenant.properties?.name || "Unbekannt"}
+                        </div>
+                        {currentContract?.all_units && currentContract.all_units.length > 0 && (
+                          <div className="text-xs text-gray-500 truncate">
+                            {currentContract.all_units.map((u) => u.unit_number).join(", ")}
                           </div>
-                          {currentContract?.all_units && currentContract.all_units.length > 0 && (
-                            <div className="text-xs text-gray-500">
-                              {currentContract.all_units.map((u) => u.unit_number).join(", ")}
-                            </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <button
+                          onClick={() => setSelectedTenantId(tenant.id)}
+                          className="text-left group w-full min-w-0"
+                        >
+                          <div className="font-medium text-dark text-sm group-hover:text-primary-blue transition-colors truncate">
+                            {tenant.name}
+                          </div>
+                          {tenant.email && (
+                            <div className="text-xs text-gray-400 truncate">{tenant.email}</div>
                           )}
-                        </td>
-                        <td className="px-6 py-4 max-w-[200px]">
-                          <button
-                            onClick={() => setSelectedTenantId(tenant.id)}
-                            className="text-left group w-full min-w-0"
-                          >
-                            <div className="font-medium text-dark text-sm group-hover:text-primary-blue transition-colors truncate">
-                              {tenant.name}
-                            </div>
-                            {tenant.email && (
-                              <div className="text-xs text-gray-400 truncate">{tenant.email}</div>
-                            )}
-                          </button>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {currentContract ? (
-                            <span className="text-sm text-gray-700">
-                              {new Date(currentContract.start_date).toLocaleDateString("de-DE")}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {currentContract ? (
-                            <span className="text-sm font-medium text-dark">
-                              {(currentContract.total_rent || currentContract.monthly_rent || 0).toFixed(2)} €
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {currentContract ? (
-                            <span className="text-xs text-gray-700">
-                              {currentContract.rent_increase_type === "index" ? "Indexmiete" : "Festmiete"}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                            tenantStatus === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                            tenantStatus === 'ending_soon' ? 'bg-amber-100 text-amber-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {getStatusLabel(tenantStatus)}
+                        </button>
+                      </td>
+                      <td className="px-4 py-4">
+                        {currentContract ? (
+                          <span className="text-sm text-gray-700 whitespace-nowrap">
+                            {new Date(currentContract.start_date).toLocaleDateString("de-DE")}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center">
-                            <TableActionsDropdown
-                              actions={[
-                                {
-                                  label: 'Details anzeigen',
-                                  onClick: () => setSelectedTenantId(tenant.id)
-                                },
-                                ...((canWrite && (tenantStatus === 'active' || tenantStatus === 'ending_soon')) ? [{
-                                  label: 'Mietverhältnis beenden',
-                                  onClick: () => setEndContractTarget({
-                                    tenantId: tenant.id,
-                                    tenantName: tenant.name,
-                                    contractId: currentContract?.id || null,
-                                  }),
-                                }] : []),
-                              ]}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        {currentContract ? (
+                          <span className="text-sm font-medium text-dark whitespace-nowrap">
+                            {(currentContract.total_rent || currentContract.monthly_rent || 0).toFixed(2)} €
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        {currentContract ? (
+                          <span className="text-xs text-gray-700">
+                            {currentContract.rent_increase_type === "index" ? "Indexmiete" : "Festmiete"}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                          tenantStatus === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                          tenantStatus === 'ending_soon' ? 'bg-amber-100 text-amber-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {getStatusLabel(tenantStatus)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <div className="flex items-center justify-center">
+                          <TableActionsDropdown
+                            actions={[
+                              {
+                                label: 'Details anzeigen',
+                                onClick: () => setSelectedTenantId(tenant.id)
+                              },
+                              ...((canWrite && (tenantStatus === 'active' || tenantStatus === 'ending_soon')) ? [{
+                                label: 'Mietverhältnis beenden',
+                                onClick: () => setEndContractTarget({
+                                  tenantId: tenant.id,
+                                  tenantName: tenant.name,
+                                  contractId: currentContract?.id || null,
+                                }),
+                              }] : []),
+                            ]}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
 
           </div>
         </>
