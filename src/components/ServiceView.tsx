@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Button } from "./ui/Button";
 
-const WHATSAPP_NUMBER = "493022334468";
+const WHATSAPP_NUMBER = "4915679796826";
 
 export default function ServiceView() {
   const { user } = useAuth();
